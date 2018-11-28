@@ -4,6 +4,7 @@
 
 // GuestViewCrossProcessFrames overrides for guest_view.js.
 
+var $HTMLIFrameElement = require('safeMethods').SafeMethods.$HTMLIFrameElement;
 var GuestViewImpl = require('guestView').GuestViewImpl;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var ResizeEvent = require('guestView').ResizeEvent;
@@ -15,7 +16,7 @@ var getIframeContentWindow = function(viewInstanceId) {
 
   var internalIframeElement = view.internalElement;
   if (internalIframeElement)
-    return internalIframeElement.contentWindow;
+    return $HTMLIFrameElement.contentWindow.get(internalIframeElement);
 
   return null;
 };

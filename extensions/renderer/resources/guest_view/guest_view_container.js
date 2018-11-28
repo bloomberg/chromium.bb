@@ -9,13 +9,19 @@
 // TODO(mcnee): When BrowserPlugin is removed, merge
 // guest_view_iframe_container.js into this file.
 
+var $parseInt = require('safeMethods').SafeMethods.$parseInt;
+var $getComputedStyle = require('safeMethods').SafeMethods.$getComputedStyle;
+var $Element = require('safeMethods').SafeMethods.$Element;
+var $EventTarget = require('safeMethods').SafeMethods.$EventTarget;
+var $HTMLElement = require('safeMethods').SafeMethods.$HTMLElement;
+var $Node = require('safeMethods').SafeMethods.$Node;
 var GuestView = require('guestView').GuestView;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 
 function GuestViewContainer(element, viewType) {
-  this.attributes = {};
+  this.attributes = $Object.create(null);
   this.element = element;
   this.elementAttached = false;
   this.viewInstanceId = IdGenerator.GetNextId();
@@ -26,16 +32,16 @@ function GuestViewContainer(element, viewType) {
   this.setupAttributes();
 
   this.internalElement = this.createInternalElement$();
-  var shadowRoot = this.element.attachShadow({mode: 'open'});
-  shadowRoot.appendChild(this.internalElement);
+  this.shadowRoot = $Element.attachShadow(this.element, {mode: 'open'});
+  $Node.appendChild(this.shadowRoot, this.internalElement);
 
   GuestViewInternalNatives.RegisterView(this.viewInstanceId, this, viewType);
 }
 
 // Prevent GuestViewContainer inadvertently inheriting code from the global
 // Object, allowing a pathway for executing unintended user code execution.
-// TODO(wjmaclean): Use utils.expose() here instead? Track down other issues
-// of Object inheritance. https://crbug.com/701034
+// TODO(wjmaclean): Track down other issues of Object inheritance.
+// https://crbug.com/701034
 GuestViewContainer.prototype.__proto__ = null;
 
 // Create the 'guest' property to track new GuestViews and always listen for
@@ -77,7 +83,7 @@ GuestViewContainer.prototype.prepareForReattach$ = function() {};
 
 GuestViewContainer.prototype.focus = function() {
   // Focus the internal element when focus() is called on the GuestView element.
-  this.internalElement.focus();
+  $HTMLElement.focus(this.internalElement);
 }
 
 GuestViewContainer.prototype.attachWindow$ = function() {
@@ -117,8 +123,9 @@ GuestViewContainer.prototype.onInternalInstanceId = function(
 GuestViewContainer.prototype.handleInternalElementAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    this.internalElement.removeAttribute('internalinstanceid');
-    this.onInternalInstanceId(parseInt(newValue));
+    $Element.removeAttribute(
+        this.internalElement, 'internalinstanceid');
+    this.onInternalInstanceId($parseInt(newValue));
   }
 };
 
@@ -136,18 +143,18 @@ GuestViewContainer.prototype.buildParams = function() {
   // However, in the case where the GuestViewContainer has a fixed size we can
   // use that value to initially size the guest so as to avoid a relayout of the
   // on display:block.
-  var css = window.getComputedStyle(this.element, null);
-  var elementRect = this.element.getBoundingClientRect();
-  params['elementWidth'] = parseInt(elementRect.width) ||
-      parseInt(css.getPropertyValue('width'));
-  params['elementHeight'] = parseInt(elementRect.height) ||
-      parseInt(css.getPropertyValue('height'));
+  var css = $getComputedStyle(this.element, null);
+  var elementRect = $Element.getBoundingClientRect(this.element);
+  params['elementWidth'] =
+      $parseInt(elementRect.width) || $parseInt(css.getPropertyValue('width'));
+  params['elementHeight'] = $parseInt(elementRect.height) ||
+      $parseInt(css.getPropertyValue('height'));
   return params;
 };
 
 GuestViewContainer.prototype.dispatchEvent = function(event) {
-  return this.element.dispatchEvent(event);
-}
+  return $EventTarget.dispatchEvent(this.element, event);
+};
 
 // Returns a wrapper function for |func| with a weak reference to |this|.
 GuestViewContainer.prototype.weakWrapper = function(func) {
@@ -163,7 +170,9 @@ GuestViewContainer.prototype.weakWrapper = function(func) {
 GuestViewContainer.prototype.willAttachElement$ = function() {};
 
 // Implemented by the specific view type, if needed.
-GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
+GuestViewContainer.prototype.buildContainerParams = function() {
+  return $Object.create(null);
+};
 GuestViewContainer.prototype.onElementAttached = function() {};
 GuestViewContainer.prototype.onElementDetached = function() {};
 GuestViewContainer.prototype.setupAttributes = function() {};
