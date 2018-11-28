@@ -7,7 +7,9 @@ package org.chromium.chromecast.shell;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.os.IBinder;
 import android.support.annotation.ColorInt;
+import android.support.annotation.Nullable;
 import android.widget.FrameLayout;
 
 import org.chromium.chromecast.base.Observer;
@@ -19,6 +21,11 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 class CastWebContentsScopes {
+    interface WindowTokenProvider {
+        @Nullable
+        IBinder provideWindowToken();
+    }
+
     public static Observer<WebContents> onLayoutActivity(
             Activity activity, FrameLayout layout, @ColorInt int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
@@ -31,6 +38,18 @@ class CastWebContentsScopes {
         layout.setBackgroundColor(backgroundColor);
         WindowAndroid window = new WindowAndroid(activity);
         return onLayoutInternal(activity, layout, window, backgroundColor);
+    }
+
+    static Observer<WebContents> onLayoutView(Context context, FrameLayout layout,
+            @ColorInt int backgroundColor, WindowTokenProvider windowTokenProvider) {
+        layout.setBackgroundColor(backgroundColor);
+        WindowAndroid window = new WindowAndroid(context) {
+            @Override
+            protected IBinder getWindowToken() {
+                return windowTokenProvider.provideWindowToken();
+            }
+        };
+        return onLayoutInternal(context, layout, window, backgroundColor);
     }
 
     private static Observer<WebContents> onLayoutInternal(Context context, FrameLayout layout,
