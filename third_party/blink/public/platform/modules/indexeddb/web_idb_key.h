@@ -161,9 +161,7 @@ class WebIDBKey {
   WebIDBKey& operator=(std::unique_ptr<IDBKey>) noexcept;
   operator IDBKey*() const noexcept { return private_.get(); }
 
-  std::unique_ptr<IDBKey> ReleaseIdbKey() noexcept {
-    return std::move(private_);
-  }
+  std::unique_ptr<IDBKey> ReleaseIdbKey() noexcept;
 #endif  // INSIDE_BLINK
 
  private:

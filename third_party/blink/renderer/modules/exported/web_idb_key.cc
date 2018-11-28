@@ -122,6 +122,10 @@ WebIDBKey& WebIDBKey::operator=(WebIDBKey&&) noexcept = default;
 
 WebIDBKey::~WebIDBKey() noexcept = default;
 
+std::unique_ptr<IDBKey> WebIDBKey::ReleaseIdbKey() noexcept {
+  return std::move(private_);
+}
+
 WebIDBKey::WebIDBKey(std::unique_ptr<IDBKey> idb_key) noexcept
     : private_(std::move(idb_key)) {}
 WebIDBKey& WebIDBKey::operator=(std::unique_ptr<IDBKey> idb_key) noexcept {
