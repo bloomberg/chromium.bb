@@ -310,6 +310,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/robolectric/robolectric_utils_java.jar" sourcepath="third_party/robolectric/robolectric/robolectric-utils/src/main/java"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/robolectric/shadows-core-3.2.jar" sourcepath="third_party/robolectric/robolectric/robolectric-shadows/shadows-core/src/main/java"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/robolectric/shadows-multidex-3.0.jar" sourcepath="third_party/robolectric/robolectric/robolectric-shadows/shadows-multidex/src/main/java"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_deps/com_android_support_support_compat_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_support_test_runner/runner-0.5-release-no-dep.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/android_support_test_runner/rules_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/third_party/blink/public/blink_headers_java.jar"/>
