@@ -27,7 +27,7 @@ enum CorsOriginAccessMatchPriority {
   kMaxPriority
 };
 
-// Parameters for representing a access origin whitelist or blacklist for CORS.
+// Parameters for representing a access origin allowlist or blocklist for CORS.
 struct CorsOriginPattern {
   // The protocol part of the destination URL.
   string protocol;
@@ -35,12 +35,21 @@ struct CorsOriginPattern {
   // The domain part of the destination URL.
   string domain;
 
-  // Whether subdomains match this protocol and host pattern.
-  bool allow_subdomains;
+  // Specifies a mode for domain match.
+  CorsOriginAccessMatchMode mode;
 
   // Order of preference in which the pattern is applied.  Higher priority
   // patterns take precedence over lower ones.  In the case were both a
   // allow list and block list rule of the same priority match a request,
   // the block list rule takes priority.
   CorsOriginAccessMatchPriority priority;
+};
+
+// Parameters for representing pairs of source origin and allow/block-lists
+// for CORS.
+struct CorsOriginAccessPatterns {
+  string source_origin;
+
+  array<CorsOriginPattern> allow_patterns;
+  array<CorsOriginPattern> block_patterns;
 };

@@ -18,6 +18,10 @@ class Origin;
 
 namespace network {
 
+namespace mojom {
+class CorsOriginPattern;
+}  // namespace mojom
+
 namespace cors {
 
 // A class to hold a protocol and host pair and to provide methods to determine
@@ -37,12 +41,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   // IPv6 addresses must include brackets (e.g.
   // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
   // The priority argument is used to break ties when multiple entries match.
-  OriginAccessEntry(
-      const std::string& protocol,
-      const std::string& host,
-      const mojom::CorsOriginAccessMatchMode mode,
-      const mojom::CorsOriginAccessMatchPriority priority =
-          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
+  OriginAccessEntry(const std::string& protocol,
+                    const std::string& host,
+                    const mojom::CorsOriginAccessMatchMode mode,
+                    const mojom::CorsOriginAccessMatchPriority priority =
+                        mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
   // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
@@ -55,6 +58,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   const std::string& registerable_domain() const {
     return registerable_domain_;
   }
+
+  // Creates mojom::CorsOriginPattern instance that represents |this|
+  // OriginAccessEntry instance.
+  mojo::InlinedStructPtr<mojom::CorsOriginPattern> CreateCorsOriginPattern()
+      const;
 
  private:
   const std::string protocol_;

@@ -32,6 +32,11 @@ namespace content {
 
 namespace {
 
+const auto kAllowSubdomains =
+    network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains;
+const auto kDisallowSubdomains =
+    network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains;
+
 const char kTestPath[] = "/loader/cors_origin_access_list_test.html";
 
 const char kTestHost[] = "crossorigin.example.com";
@@ -101,10 +106,10 @@ class CorsOriginAccessListBrowserTest
 
   void SetAllowList(const std::string& scheme,
                     const std::string& host,
-                    bool allow_subdomains) {
+                    network::mojom::CorsOriginAccessMatchMode mode) {
     std::vector<network::mojom::CorsOriginPatternPtr> list1;
     list1.push_back(network::mojom::CorsOriginPattern::New(
-        scheme, host, allow_subdomains,
+        scheme, host, mode,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
     bool first_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
@@ -116,7 +121,7 @@ class CorsOriginAccessListBrowserTest
 
     std::vector<network::mojom::CorsOriginPatternPtr> list2;
     list2.push_back(network::mojom::CorsOriginPattern::New(
-        scheme, host, allow_subdomains,
+        scheme, host, mode,
         network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
     bool second_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
@@ -162,7 +167,7 @@ class CorsOriginAccessListBrowserTest
 
 // Tests if specifying only protocol allows all hosts to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAll) {
-  SetAllowList("http", "", true);
+  SetAllowList("http", "", kAllowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(
@@ -173,7 +178,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAll) {
 
 // Tests if specifying only protocol allows all IP address based hosts to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAllForIp) {
-  SetAllowList("http", "", true);
+  SetAllowList("http", "", kAllowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -185,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAllForIp) {
 
 // Tests if complete allow list set allows only exactly matched host to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowExactHost) {
-  SetAllowList("http", kTestHost, false);
+  SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(
@@ -198,7 +203,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowExactHost) {
 // case insensitive way to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        AllowExactHostInCaseInsensitive) {
-  SetAllowList("http", kTestHost, false);
+  SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -210,7 +215,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
 // Tests if complete allow list set does not allow a host with a different port
 // to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
-  SetAllowList("http", kTestHost, false);
+  SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -221,7 +226,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
 
 // Tests if complete allow list set allows a subdomain to pass if it is allowed.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowSubdomain) {
-  SetAllowList("http", kTestHost, true);
+  SetAllowList("http", kTestHost, kAllowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -232,7 +237,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowSubdomain) {
 
 // Tests if complete allow list set does not allow a subdomain to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockSubdomain) {
-  SetAllowList("http", kTestHost, false);
+  SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(
@@ -245,7 +250,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockSubdomain) {
 // protocol to pass.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        BlockDifferentProtocol) {
-  SetAllowList("https", kTestHost, false);
+  SetAllowList("https", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(
@@ -257,7 +262,7 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
 // Tests if IP address based hosts should not follow subdomain match rules.
 IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        SubdomainMatchShouldNotBeAppliedForIPAddress) {
-  SetAllowList("http", "*.0.0.1", true);
+  SetAllowList("http", "*.0.0.1", kAllowSubdomains);
 
   std::unique_ptr<TitleWatcher> watcher = CreateWatcher();
   EXPECT_TRUE(NavigateToURL(

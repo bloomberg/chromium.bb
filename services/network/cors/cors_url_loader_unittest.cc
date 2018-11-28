@@ -76,7 +76,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     on_create_loader_and_start_ = closure;
   }
 
-  const network::ResourceRequest& request() const { return request_; }
+  const ResourceRequest& request() const { return request_; }
   const GURL& GetRequestedURL() const { return request_.url; }
   int num_created_loaders() const { return num_created_loaders_; }
 
@@ -228,12 +228,10 @@ class CorsURLLoaderTest : public testing::Test {
   void AddAllowListEntryForOrigin(const url::Origin& source_origin,
                                   const std::string& protocol,
                                   const std::string& domain,
-                                  bool allow_subdomains) {
+                                  const mojom::CorsOriginAccessMatchMode mode) {
     origin_access_list_.AddAllowListEntryForOrigin(
-        source_origin,
-        network::mojom::CorsOriginPattern::New(
-            protocol, domain, allow_subdomains,
-            network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+        source_origin, protocol, domain, mode,
+        mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   }
 
   static net::RedirectInfo CreateRedirectInfo(
@@ -1014,8 +1012,9 @@ TEST_F(CorsURLLoaderTest, OriginAccessList) {
 
   // Adds an entry to allow the cross origin request beyond the CORS
   // rules.
-  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
-                             url.host(), false);
+  AddAllowListEntryForOrigin(
+      url::Origin::Create(origin), url.scheme(), url.host(),
+      mojom::CorsOriginAccessMatchMode::kDisallowSubdomains);
 
   CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCors);
 
