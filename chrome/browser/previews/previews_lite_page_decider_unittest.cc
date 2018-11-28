@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -17,6 +18,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -229,6 +231,20 @@ TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabled) {
 
   // Should still be true after a navigation
   EXPECT_TRUE(manager->NeedsToNotifyUser());
+}
+
+TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledCmdLineIgnored) {
+  PreviewsLitePageNavigationThrottleManager* manager =
+      GetManagerWithDRPEnabled(true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+  EXPECT_FALSE(manager->NeedsToNotifyUser());
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  // Should still be false after a navigation.
+  EXPECT_FALSE(manager->NeedsToNotifyUser());
 }
 
 TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledThenNotify) {
