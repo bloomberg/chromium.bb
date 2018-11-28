@@ -295,22 +295,30 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
   if (!scrollable_area->ScrollsOverflow())
     return false;
 
-  // If any of the ancestors are user scrollable (i.e. overflow == scroll|auto)
-  // then don't promote as we'd likely break intended scrolling by stopping
-  // chaining at this scroller.
+  // If any of the ancestors clip overflow, don't promote. Promoting a
+  // descendant of an overflow clip means it may not resize when the URL bar
+  // hides so we'd leave a portion of the page hidden/unreachable.
   for (LayoutBox* ancestor = element.GetLayoutObject()->ContainingBlock();
        ancestor; ancestor = ancestor->ContainingBlock()) {
-    const ComputedStyle* style = ancestor->Style();
-    if (!style)
-      continue;
+    // The LayoutView is allowed to have a clip (since its clip is resized by
+    // the URL bar movement). Test it for scrolling so that we only promote if
+    // we know we won't block scrolling the main document.
+    if (ancestor->IsLayoutView()) {
+      const ComputedStyle* style = ancestor->Style();
+      DCHECK(style);
 
-    PaintLayerScrollableArea* area = ancestor->GetScrollableArea();
-    if (!area)
-      continue;
+      PaintLayerScrollableArea* area = ancestor->GetScrollableArea();
+      DCHECK(area);
 
-    if ((style->ScrollsOverflowX() && area->HasHorizontalOverflow()) ||
-        (style->ScrollsOverflowY() && area->HasVerticalOverflow())) {
-      return false;
+      if ((style->ScrollsOverflowX() && area->HasHorizontalOverflow()) ||
+          (style->ScrollsOverflowY() && area->HasVerticalOverflow())) {
+        return false;
+      }
+    } else {
+      if (ancestor->ShouldClipOverflow() || ancestor->HasMask() ||
+          ancestor->HasClip() || ancestor->HasClipPath()) {
+        return false;
+      }
     }
   }
 

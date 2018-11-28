@@ -1589,6 +1589,9 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScroller) {
               width: 0px;
               height: 0px;
             }
+            html {
+              overflow: hidden;
+            }
             body, html {
               width: 100%;
               height: 100%;
@@ -1602,17 +1605,9 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScroller) {
               width: 100%;
               height: 100%;
             }
-            /* Makes sure the document doesn't have any overflow itself */
-            #clip {
-              overflow: hidden;
-              width: 100%;
-              height: 100%;
-            }
           </style>
-          <div id="clip">
-            <div id="container">
-              <div id="spacer"></div>
-            </div>
+          <div id="container">
+            <div id="spacer"></div>
           </div>
       )HTML");
   Compositor().BeginFrame();
@@ -2389,6 +2384,9 @@ TEST_F(ImplicitRootScrollerSimTest, ContinuallyReevaluateImplicitPromotion) {
               width: 0px;
               height: 0px;
             }
+            html {
+              overflow: hidden;
+            }
             body, html {
               width: 100%;
               height: 100%;
@@ -2398,21 +2396,14 @@ TEST_F(ImplicitRootScrollerSimTest, ContinuallyReevaluateImplicitPromotion) {
               width: 100%;
               height: 100%;
             }
-            #clip {
-              width: 100%;
-              height: 100%;
-              overflow: hidden;
-            }
             #parent {
               width: 100%;
               height: 100%;
             }
           </style>
-          <div id="clip">
-            <div id="parent">
-              <div id="container">
-                <div id="spacer"></div>
-              </div>
+          <div id="parent">
+            <div id="container">
+              <div id="spacer"></div>
             </div>
           </div>
       )HTML");
@@ -2635,7 +2626,8 @@ TEST_F(ImplicitRootScrollerSimTest, OverflowInMainDocumentRestrictsImplicit) {
       << "Once vertical overflow is removed, the iframe should be promoted.";
 }
 
-// Test that we overflow in an ancestor is ok as long as it is overflow:hidden.
+// Test that we overflow in the document allows promotion only so long as the
+// document isn't scrollable.
 TEST_F(ImplicitRootScrollerSimTest, OverflowHiddenDoesntRestrictImplicit) {
   WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
   SimRequest main_request("https://example.com/test.html", "text/html");
@@ -2695,11 +2687,19 @@ TEST_F(ImplicitRootScrollerSimTest, OverflowHiddenDoesntRestrictImplicit) {
   EXPECT_EQ(GetDocument(),
             GetDocument().GetRootScrollerController().EffectiveRootScroller())
       << "iframe should now be demoted since main document scrolls overflow.";
+
+  html->style()->setProperty(&GetDocument(), "overflow", "visible", String(),
+                             ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "iframe should remain demoted since overflow:visible on document "
+      << "allows scrolling.";
 }
 
-// Test that we user-scrollable overflow in an ancestor prevents implicit
-// promotion.
-TEST_F(ImplicitRootScrollerSimTest, UserScrollableAncestorPreventsPromotion) {
+// Test that any non-document, clipping ancestor prevents implicit promotion.
+TEST_F(ImplicitRootScrollerSimTest, ClippingAncestorPreventsPromotion) {
   WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
   SimRequest main_request("https://example.com/test.html", "text/html");
   SimRequest child_request("https://example.com/child.html", "text/html");
@@ -2725,9 +2725,12 @@ TEST_F(ImplicitRootScrollerSimTest, UserScrollableAncestorPreventsPromotion) {
               border: 0;
             }
             #ancestor {
+              position: absolute;
               width: 100%;
               height: 100%;
-              overflow: scroll;
+              overflow: visible;
+              /* opacity ensures #ancestor doesn't get considered for root
+               * scroller promotion. */
               opacity: 0.5;
             }
             #spacer {
@@ -2748,20 +2751,45 @@ TEST_F(ImplicitRootScrollerSimTest, UserScrollableAncestorPreventsPromotion) {
           }
         </style>
   )HTML");
-
-  Compositor().BeginFrame();
-  EXPECT_EQ(GetDocument(),
-            GetDocument().GetRootScrollerController().EffectiveRootScroller())
-      << "iframe should not promote since ancestor div scrolls overflow.";
-
-  Element* ancestor = GetDocument().getElementById("ancestor");
-  ancestor->style()->setProperty(&GetDocument(), "overflow", "hidden", String(),
-                                 ASSERT_NO_EXCEPTION);
   Compositor().BeginFrame();
 
-  EXPECT_EQ(GetDocument().getElementById("container"),
-            GetDocument().GetRootScrollerController().EffectiveRootScroller())
-      << "iframe should now be promoted since ancestor's overflow is hidden.";
+  // Each of these style-value pairs should prevent promotion of the iframe.
+  std::vector<std::tuple<String, String>> test_cases = {
+      {"overflow", "scroll"},
+      {"overflow", "hidden"},
+      {"overflow", "auto"},
+      {"contain", "paint"},
+      {"-webkit-mask-image", "linear-gradient(black 25%, transparent 50%)"},
+      {"clip", "rect(10px, 290px, 190px, 10px"},
+      {"clip-path", "circle(40%)"}};
+
+  for (auto test_case : test_cases) {
+    String& style = std::get<0>(test_case);
+    String& style_val = std::get<1>(test_case);
+    Element* ancestor = GetDocument().getElementById("ancestor");
+    Element* iframe = GetDocument().getElementById("container");
+
+    ASSERT_EQ(iframe,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "iframe should start off promoted.";
+
+    ancestor->style()->setProperty(&GetDocument(), style, style_val, String(),
+                                   ASSERT_NO_EXCEPTION);
+    Compositor().BeginFrame();
+
+    EXPECT_EQ(GetDocument(),
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "iframe should be demoted since ancestor has " << style << ": "
+        << style_val;
+
+    ancestor->style()->setProperty(&GetDocument(), style, String(), String(),
+                                   ASSERT_NO_EXCEPTION);
+    Compositor().BeginFrame();
+    ASSERT_EQ(iframe,
+              GetDocument().GetRootScrollerController().EffectiveRootScroller())
+        << "iframe should be promoted since ancestor removed " << style << ": "
+        << style_val;
+  }
 }
 
 TEST_F(ImplicitRootScrollerSimTest, AppliedAtFractionalZoom) {
