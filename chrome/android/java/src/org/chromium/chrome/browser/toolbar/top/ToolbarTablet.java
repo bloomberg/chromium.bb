@@ -105,7 +105,6 @@ public class ToolbarTablet extends ToolbarLayout
         mLocationBar = (LocationBarTablet) findViewById(R.id.location_bar);
 
         mHomeButton = findViewById(R.id.home_button);
-        changeIconToNTPIcon(mHomeButton);
         mBackButton = findViewById(R.id.back_button);
         mForwardButton = findViewById(R.id.forward_button);
         mReloadButton = findViewById(R.id.refresh_button);
@@ -163,7 +162,6 @@ public class ToolbarTablet extends ToolbarLayout
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
         mLocationBar.onNativeLibraryReady();
-        changeIconToNTPIcon(mHomeButton);
         mHomeButton.setOnClickListener(this);
         mHomeButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override

@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
@@ -958,15 +957,4 @@ public abstract class ToolbarLayout extends FrameLayout {
      * it.
      */
     void setTabModelSelector(TabModelSelector selector) {}
-
-    /**
-     * Sets the icon drawable for the ntp button if the ntp button feature is enabled.
-     * Note: This method is called twice in ToolbarLayout's children - once in
-     * #onNativeLibraryReady() & once in #onFinishInflate() (see https://crbug.com/862887).
-     * @param ntpButton The button that needs to be changed.
-     */
-    void changeIconToNTPIcon(ImageButton ntpButton) {
-        if (FeatureUtilities.isNewTabPageButtonEnabled())
-            ntpButton.setImageResource(R.drawable.ic_home);
-    }
 }

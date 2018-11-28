@@ -382,7 +382,6 @@ public class ToolbarPhone
             mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
             mHomeButton = findViewById(R.id.home_button);
-            changeIconToNTPIcon(mHomeButton);
             if (FeatureUtilities.isBottomToolbarEnabled()) {
                 disableMenuButton();
                 if (mHomeButton != null) {
@@ -510,7 +509,6 @@ public class ToolbarPhone
         if (!FeatureUtilities.isBottomToolbarEnabled()) enableTabSwitchingResources();
 
         if (mHomeButton != null) {
-            changeIconToNTPIcon(mHomeButton);
             mHomeButton.setOnClickListener(this);
         }
 
