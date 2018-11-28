@@ -35,12 +35,9 @@ class ReopenTabInProductHelp : public BrowserListObserver, public KeyedService {
   ReopenTabInProductHelp(Profile* profile, const base::TickClock* clock);
   ~ReopenTabInProductHelp() override;
 
-  // Should be called when the user opens a blank new tab.
-  void NewTabOpened();
-
-  // Should be called when the user focuses on the omnibox. Possibly triggers
+  // Should be called when the user opens a blank new tab. Possibly triggers
   // IPH.
-  void OmniboxFocused();
+  void NewTabOpened();
 
   // Should be called when the user reopens a previously closed tab, either
   // through CTRL+SHIFT+T or through the recent tabs menu.

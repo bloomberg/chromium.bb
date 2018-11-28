@@ -16,9 +16,6 @@ const base::TimeDelta ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration =
 // static
 const base::TimeDelta ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout =
     base::TimeDelta::FromSeconds(10);
-// static
-const base::TimeDelta ReopenTabInProductHelpTrigger::kOmniboxFocusedTimeout =
-    base::TimeDelta::FromSeconds(10);
 
 ReopenTabInProductHelpTrigger::ReopenTabInProductHelpTrigger(
     feature_engagement::Tracker* tracker,
@@ -27,9 +24,8 @@ ReopenTabInProductHelpTrigger::ReopenTabInProductHelpTrigger(
   DCHECK(tracker);
   DCHECK(clock);
 
-  // Timeouts must be non-zero.
+  // Timeout must be non-zero.
   DCHECK(!kNewTabOpenedTimeout.is_zero());
-  DCHECK(!kOmniboxFocusedTimeout.is_zero());
 }
 
 ReopenTabInProductHelpTrigger::~ReopenTabInProductHelpTrigger() = default;
@@ -61,26 +57,14 @@ void ReopenTabInProductHelpTrigger::NewTabOpened() {
   const base::TimeDelta elapsed_time = clock_->NowTicks() - time_of_last_step_;
 
   if (elapsed_time < kNewTabOpenedTimeout) {
-    trigger_state_ = NEW_TAB_OPENED;
-    time_of_last_step_ = clock_->NowTicks();
-  } else {
-    ResetTriggerState();
-  }
-}
-
-void ReopenTabInProductHelpTrigger::OmniboxFocused() {
-  if (trigger_state_ != NEW_TAB_OPENED)
-    return;
-
-  const base::TimeDelta elapsed_time = clock_->NowTicks() - time_of_last_step_;
-
-  if (elapsed_time < kOmniboxFocusedTimeout) {
     tracker_->NotifyEvent(feature_engagement::events::kReopenTabConditionsMet);
     if (tracker_->ShouldTriggerHelpUI(
             feature_engagement::kIPHReopenTabFeature)) {
       DCHECK(cb_);
       cb_.Run();
     }
+  } else {
+    ResetTriggerState();
   }
 }
 

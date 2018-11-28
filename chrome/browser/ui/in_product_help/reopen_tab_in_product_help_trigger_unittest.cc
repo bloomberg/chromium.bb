@@ -57,7 +57,6 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersIPH) {
   reopen_tab_iph.ActiveTabClosed(
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 }
 
 TEST(ReopenTabInProductHelpTriggerTest, RespectsBackendShouldTrigger) {
@@ -77,7 +76,6 @@ TEST(ReopenTabInProductHelpTriggerTest, RespectsBackendShouldTrigger) {
   reopen_tab_iph.ActiveTabClosed(
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 }
 
 TEST(ReopenTabInProductHelpTriggerTest, TabNotActiveLongEnough) {
@@ -92,10 +90,9 @@ TEST(ReopenTabInProductHelpTriggerTest, TabNotActiveLongEnough) {
   reopen_tab_iph.ActiveTabClosed(
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration / 2);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 }
 
-TEST(ReopenTabInProductHelpTriggerTest, RespectsTimeouts) {
+TEST(ReopenTabInProductHelpTriggerTest, RespectsTimeout) {
   NiceMock<MockTracker> mock_tracker;
 
   EXPECT_CALL(mock_tracker, NotifyEvent(_)).Times(0);
@@ -111,13 +108,6 @@ TEST(ReopenTabInProductHelpTriggerTest, RespectsTimeouts) {
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   clock.Advance(ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
-
-  reopen_tab_iph.ActiveTabClosed(
-      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.NewTabOpened();
-  clock.Advance(ReopenTabInProductHelpTrigger::kOmniboxFocusedTimeout);
-  reopen_tab_iph.OmniboxFocused();
 }
 
 TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
@@ -142,7 +132,6 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
   reopen_tab_iph.ActiveTabClosed(
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 
   EXPECT_TRUE(triggered);
   triggered = false;
@@ -150,7 +139,6 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
   reopen_tab_iph.ActiveTabClosed(
       ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
-  reopen_tab_iph.OmniboxFocused();
 
   EXPECT_TRUE(triggered);
 }
