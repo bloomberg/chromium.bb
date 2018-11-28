@@ -210,65 +210,6 @@ bool IsLocalFile(const GURL& url) {
 }
 #endif
 
-// Handles destruction of media::Renderer dependent components after the
-// renderer has been destructed on the media thread.
-void DestructionHelper(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> vfc_task_runner,
-    std::unique_ptr<Demuxer> demuxer,
-    std::unique_ptr<DataSource> data_source,
-    std::unique_ptr<VideoFrameCompositor> compositor,
-    std::unique_ptr<CdmContextRef> cdm_context_1,
-    std::unique_ptr<CdmContextRef> cdm_context_2,
-    std::unique_ptr<MediaLog> media_log,
-    std::unique_ptr<RendererFactorySelector> renderer_factory_selector,
-    bool is_chunk_demuxer) {
-  // Since the media::Renderer is gone we can now destroy the compositor and
-  // renderer factory selector.
-  vfc_task_runner->DeleteSoon(FROM_HERE, std::move(compositor));
-  main_task_runner->DeleteSoon(FROM_HERE, std::move(renderer_factory_selector));
-
-  // ChunkDemuxer can be deleted on any thread, but other demuxers are bound to
-  // the main thread and must be deleted there now that the renderer is gone.
-  if (!is_chunk_demuxer) {
-    main_task_runner->DeleteSoon(FROM_HERE, std::move(demuxer));
-    main_task_runner->DeleteSoon(FROM_HERE, std::move(data_source));
-    main_task_runner->DeleteSoon(FROM_HERE, std::move(cdm_context_1));
-    main_task_runner->DeleteSoon(FROM_HERE, std::move(cdm_context_2));
-    main_task_runner->DeleteSoon(FROM_HERE, std::move(media_log));
-    return;
-  }
-
-  // ChunkDemuxer's streams may contain much buffered, compressed media that
-  // may need to be paged back in during destruction.  Paging delay may exceed
-  // the renderer hang monitor's threshold on at least Windows while also
-  // blocking other work on the renderer main thread, so we do the actual
-  // destruction in the background without blocking WMPI destruction or
-  // |task_runner|.  On advice of task_scheduler OWNERS, MayBlock() is not
-  // used because virtual memory overhead is not considered blocking I/O; and
-  // CONTINUE_ON_SHUTDOWN is used to allow process termination to not block on
-  // completing the task.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(
-          [](scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-             std::unique_ptr<Demuxer> demuxer_to_destroy,
-             std::unique_ptr<CdmContextRef> cdm_context_1,
-             std::unique_ptr<CdmContextRef> cdm_context_2,
-             std::unique_ptr<MediaLog> media_log) {
-            SCOPED_UMA_HISTOGRAM_TIMER("Media.MSE.DemuxerDestructionTime");
-            demuxer_to_destroy.reset();
-            main_task_runner->DeleteSoon(FROM_HERE, std::move(cdm_context_1));
-            main_task_runner->DeleteSoon(FROM_HERE, std::move(cdm_context_2));
-            main_task_runner->DeleteSoon(FROM_HERE, std::move(media_log));
-          },
-          std::move(main_task_runner), std::move(demuxer),
-          std::move(cdm_context_1), std::move(cdm_context_2),
-          std::move(media_log)));
-}
-
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -419,11 +360,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   watch_time_reporter_.reset();
 
   // The underlying Pipeline must be stopped before it is destroyed.
-  //
-  // Note: This destruction happens synchronously on the media thread and
-  // |demuxer_|, |data_source_|, |compositor_|, and |media_log_| must outlive
-  // this process. They will be destructed by the DestructionHelper below
-  // after trampolining through the media thread.
   pipeline_controller_.Stop();
 
   if (last_reported_memory_usage_)
@@ -435,25 +371,48 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  if (!surface_layer_for_video_enabled_ && video_layer_)
+  if (!surface_layer_for_video_enabled_ && video_layer_) {
     video_layer_->StopUsingProvider();
+  }
+
+  vfc_task_runner_->DeleteSoon(FROM_HERE, std::move(compositor_));
+
+  if (chunk_demuxer_) {
+    // Continue destruction of |chunk_demuxer_| on the |media_task_runner_| to
+    // avoid racing other pending tasks on |chunk_demuxer_| on that runner while
+    // not further blocking |main_task_runner_| to perform the destruction.
+    media_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerImpl::DemuxerDestructionHelper,
+                                  media_task_runner_, std::move(demuxer_)));
+  }
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+}
 
-  if (data_source_)
-    data_source_->Stop();
-
-  // Handle destruction of things that need to be destructed after the pipeline
-  // completes stopping on the media thread.
-  media_task_runner_->PostTask(
+// static
+void WebMediaPlayerImpl::DemuxerDestructionHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    std::unique_ptr<Demuxer> demuxer) {
+  DCHECK(task_runner->BelongsToCurrentThread());
+  // ChunkDemuxer's streams may contain much buffered, compressed media that may
+  // need to be paged back in during destruction.  Paging delay may exceed the
+  // renderer hang monitor's threshold on at least Windows while also blocking
+  // other work on the renderer main thread, so we do the actual destruction in
+  // the background without blocking WMPI destruction or |task_runner|.  On
+  // advice of task_scheduler OWNERS, MayBlock() is not used because virtual
+  // memory overhead is not considered blocking I/O; and CONTINUE_ON_SHUTDOWN is
+  // used to allow process termination to not block on completing the task.
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::BindOnce(&DestructionHelper, std::move(main_task_runner_),
-                     std::move(vfc_task_runner_), std::move(demuxer_),
-                     std::move(data_source_), std::move(compositor_),
-                     std::move(cdm_context_ref_),
-                     std::move(pending_cdm_context_ref_), std::move(media_log_),
-                     std::move(renderer_factory_selector_), !!chunk_demuxer_));
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          [](std::unique_ptr<Demuxer> demuxer_to_destroy) {
+            SCOPED_UMA_HISTOGRAM_TIMER("Media.MSE.DemuxerDestructionTime");
+            demuxer_to_destroy.reset();
+          },
+          std::move(demuxer)));
 }
 
 WebMediaPlayer::LoadTiming WebMediaPlayerImpl::Load(
