@@ -127,8 +127,9 @@ bool GetCodecSpecificDataForAudio(AudioCodec codec,
 
       if (profile == 5 || profile == 29) {
         // Read extension config.
-        RETURN_ON_ERROR(reader.ReadBits(4, &frequency_index));
-        if (frequency_index == 0xf)
+        uint8_t ext_frequency_index = 0;
+        RETURN_ON_ERROR(reader.ReadBits(4, &ext_frequency_index));
+        if (ext_frequency_index == 0xf)
           RETURN_ON_ERROR(reader.SkipBits(24));
         RETURN_ON_ERROR(reader.ReadBits(5, &profile));
       }
