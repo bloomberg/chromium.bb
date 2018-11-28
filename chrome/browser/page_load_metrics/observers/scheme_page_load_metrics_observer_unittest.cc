@@ -36,6 +36,8 @@ class SchemePageLoadMetricsObserverTest
         base::TimeDelta::FromMilliseconds(600);
     timing->document_timing->load_event_start =
         base::TimeDelta::FromMilliseconds(1000);
+    timing->interactive_timing->interactive =
+        base::TimeDelta::FromMilliseconds(1200);
     PopulateRequiredTimingFields(timing);
   }
 
@@ -138,12 +140,12 @@ class SchemePageLoadMetricsObserverTest
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPNavigation) {
   SimulateNavigation(url::kHttpScheme);
-  CheckHistograms(3, url::kHttpScheme);
+  CheckHistograms(5, url::kHttpScheme);
 }
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPSNavigation) {
   SimulateNavigation(url::kHttpsScheme);
-  CheckHistograms(3, url::kHttpsScheme);
+  CheckHistograms(5, url::kHttpsScheme);
 }
 
 // Make sure no metrics are recorded for an unobserved scheme.
