@@ -224,11 +224,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // independent of first-setup state.
   virtual bool IsFirstSetupComplete() const = 0;
 
-  // Called when Sync has been setup by the user and can be started.
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  virtual void SetFirstSetupComplete() = 0;
-
   //////////////////////////////////////////////////////////////////////////////
   // SETUP-IN-PROGRESS HANDLING
   //////////////////////////////////////////////////////////////////////////////

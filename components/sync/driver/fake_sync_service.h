@@ -42,7 +42,6 @@ class FakeSyncService : public SyncService {
   ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             ModelTypeSet chosen_types) override;
-  void SetFirstSetupComplete() override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
