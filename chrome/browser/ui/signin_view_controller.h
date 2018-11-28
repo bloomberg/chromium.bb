@@ -61,10 +61,6 @@ class SigninViewController {
   // of the |browser|'s window.
   void ShowModalSyncConfirmationDialog(Browser* browser);
 
-  // Shows the modal sync consent bump as a browser-modal dialog on top
-  // of the |browser|'s window.
-  void ShowModalSyncConsentBump(Browser* browser);
-
   // Shows the modal sign-in error dialog as a browser-modal dialog on top of
   // the |browser|'s window.
   void ShowModalSigninErrorDialog(Browser* browser);

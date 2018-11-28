@@ -143,8 +143,6 @@ const char kChromeUISupervisedUserPassphrasePageHost[] =
     "managed-user-passphrase";
 const char kChromeUISyncConfirmationHost[] = "sync-confirmation";
 const char kChromeUISyncConfirmationURL[] = "chrome://sync-confirmation/";
-const char kChromeUISyncConsentBumpURL[] =
-    "chrome://sync-confirmation/?consent-bump";
 const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";

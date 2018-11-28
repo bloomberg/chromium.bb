@@ -197,12 +197,9 @@ SigninViewControllerDelegateViews::CreateGaiaWebView(
 
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
-    Browser* browser,
-    bool is_consent_bump) {
+    Browser* browser) {
   return CreateDialogWebView(
-      browser,
-      is_consent_bump ? chrome::kChromeUISyncConsentBumpURL
-                      : chrome::kChromeUISyncConfirmationURL,
+      browser, chrome::kChromeUISyncConfirmationURL,
       GetSyncConfirmationDialogPreferredHeight(browser->profile()),
       GetSyncConfirmationDialogPreferredWidth(browser->profile()));
 }
@@ -256,12 +253,10 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
     SigninViewController* signin_view_controller,
-    Browser* browser,
-    bool is_consent_bump) {
+    Browser* browser) {
   return new SigninViewControllerDelegateViews(
       signin_view_controller,
-      SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
-          browser, is_consent_bump),
+      SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(browser),
       browser, ui::MODAL_TYPE_WINDOW, true);
 }
 
