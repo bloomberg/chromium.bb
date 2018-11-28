@@ -285,7 +285,7 @@ class BASE_EXPORT TaskQueueImpl {
       return pending_high_res_tasks_;
     }
 
-    void SweepCancelledTasks(const SequenceManagerImpl*);
+    void SweepCancelledTasks();
     std::priority_queue<Task> TakeTasks() { return std::move(queue_); }
     void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
