@@ -92,6 +92,9 @@ const CFTimeInterval kDrainTimeout = 5;
   BOOL _isHTTPServerStopped;
   BOOL _isMockAuthenticationDisabled;
   std::unique_ptr<net::EmbeddedTestServer> _testServer;
+
+  // The orientation of the device when entering these tests.
+  UIDeviceOrientation _originalOrientation;
 }
 
 // Cleans up mock authentication.
@@ -192,6 +195,7 @@ const CFTimeInterval kDrainTimeout = 5;
   _isHTTPServerStopped = NO;
   _isMockAuthenticationDisabled = NO;
   _tearDownHandler = nil;
+  _originalOrientation = [[UIDevice currentDevice] orientation];
 
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
@@ -224,6 +228,12 @@ const CFTimeInterval kDrainTimeout = 5;
   // state.
   [[self class] removeAnyOpenMenusAndInfoBars];
   [[self class] closeAllTabs];
+
+  if ([[UIDevice currentDevice] orientation] != _originalOrientation) {
+    // Rotate the device back to the original orientation, since some tests
+    // attempt to run in other orientations.
+    [EarlGrey rotateDeviceToOrientation:_originalOrientation errorOrNil:nil];
+  }
   [super tearDown];
 }
 
