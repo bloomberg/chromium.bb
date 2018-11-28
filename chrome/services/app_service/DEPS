@@ -1,5 +1,2 @@
 include_rules = [
-  "+components/pref_registry",
-  "+components/prefs",
-  "+services/preferences/public",
 ]
