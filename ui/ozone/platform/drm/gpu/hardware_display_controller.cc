@@ -309,13 +309,9 @@ gfx::Size HardwareDisplayController::GetModeSize() const {
                    crtc_controllers_[0]->mode().vdisplay);
 }
 
-uint32_t HardwareDisplayController::GetRefreshRate() const {
-  // If there are multiple CRTCs they should all have the same size.
-  return crtc_controllers_[0]->mode().vrefresh;
-}
-
 base::TimeDelta HardwareDisplayController::GetRefreshInterval() const {
-  uint32_t vrefresh = GetRefreshRate();
+  // If there are multiple CRTCs they should all have the same refresh rate.
+  float vrefresh = ModeRefreshRate(crtc_controllers_[0]->mode());
   return vrefresh ? base::TimeDelta::FromSeconds(1) / vrefresh
                   : base::TimeDelta();
 }
