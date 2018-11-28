@@ -231,6 +231,7 @@ _CONFIG = [
             'css_parsing_utils::.+',
             'cssvalue::.+',
             'encoding::.+',
+            'encoding_enum::.+',
             'event_handling_util::.+',
             'event_util::.+',
             'file_error::.+',
