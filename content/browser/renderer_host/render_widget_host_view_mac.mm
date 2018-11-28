@@ -1392,18 +1392,6 @@ BrowserAccessibilityManager*
       BrowserAccessibilityManagerMac::GetEmptyDocument(), delegate);
 }
 
-gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
-    const gfx::Rect& bounds) {
-  NSPoint origin = NSMakePoint(bounds.x(), bounds.y());
-  NSSize size = NSMakeSize(bounds.width(), bounds.height());
-  origin.y = NSHeight([cocoa_view() bounds]) - origin.y;
-  NSPoint originInWindow = [cocoa_view() convertPoint:origin toView:nil];
-  NSPoint originInScreen =
-      ui::ConvertPointFromWindowToScreen([cocoa_view() window], originInWindow);
-  originInScreen.y = originInScreen.y - size.height;
-  return gfx::Point(originInScreen.x, originInScreen.y);
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
   if (remote_view_accessible_)
