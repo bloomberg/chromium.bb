@@ -2098,6 +2098,98 @@ static int active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
          active_v_edge(cpi, mi_col, cpi->common.seq_params.mib_size);
 }
 
+// Performs a motion search in SIMPLE_TRANSLATION mode using
+// reference frame ref. Returns the sad of the result
+static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize, int ref,
+                                 int num_planes, int use_subpixel) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+
+  mbmi->ref_frame[0] = ref;
+  mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->sb_type = bsize;
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+
+  YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
+  const YV12_BUFFER_CONFIG *scaled_ref_frame =
+      av1_get_scaled_ref_frame(cpi, ref);
+  struct buf_2d backup_yv12;
+  // ref_mv is in units of 1/8-pel whereas ref_mv_full is in units of pel
+  MV ref_mv = { 0, 0 };
+  MV ref_mv_full = { 0, 0 };
+  const int step_param = cpi->mv_step_param;
+  const MvLimits tmp_mv_limits = x->mv_limits;
+  const SEARCH_METHODS search_methods = NSTEP;
+  const int do_mesh_search = 0;
+  const int sadpb = x->sadperbit16;
+  int cost_list[5];
+  const int ref_idx = 0;
+  int var;
+
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
+
+  if (scaled_ref_frame) {
+    backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
+    av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL,
+                         num_planes);
+  } else {
+    av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
+                         &cm->current_frame.frame_refs[ref - LAST_FRAME].sf,
+                         num_planes);
+  }
+
+  // This overwrites the mv_limits so we will need to restore it later.
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
+  var = av1_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param,
+                              search_methods, do_mesh_search, sadpb,
+                              cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX,
+                              1, mi_col * MI_SIZE, mi_row * MI_SIZE, 0);
+  // Restore
+  x->mv_limits = tmp_mv_limits;
+
+  const int use_subpel_search =
+      var < INT_MAX && !cpi->common.cur_frame_force_integer_mv && use_subpixel;
+  if (use_subpel_search) {
+    int not_used = 0;
+    if (cpi->sf.use_accurate_subpel_search) {
+      const int pw = block_size_wide[bsize];
+      const int ph = block_size_high[bsize];
+      cpi->find_fractional_mv_step(
+          x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
+          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
+          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+          x->nmv_vec_cost, x->mv_cost_stack, &not_used, &x->pred_sse[ref], NULL,
+          NULL, 0, 0, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
+    } else {
+      cpi->find_fractional_mv_step(
+          x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
+          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
+          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+          x->nmv_vec_cost, x->mv_cost_stack, &not_used, &x->pred_sse[ref], NULL,
+          NULL, 0, 0, 0, 0, 0, 1);
+    }
+  } else {
+    // Manually convert from units of pixel to 1/8-pixels if we are not doing
+    // subpel search
+    x->best_mv.as_mv.row *= 8;
+    x->best_mv.as_mv.col *= 8;
+  }
+
+  mbmi->mv[0].as_mv = x->best_mv.as_mv;
+
+  // Get a copy of the prediction output
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+
+  aom_clear_system_state();
+
+  if (scaled_ref_frame) {
+    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
+  }
+}
+
 // Look at neighboring blocks and set a min and max partition size based on
 // what they chose.
 static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
@@ -3386,76 +3478,26 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   // model with the correct data should give better performance.
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
-  AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
-  mbmi->motion_mode = SIMPLE_TRANSLATION;
-
-  mbmi->ref_frame[1] = NONE_FRAME;
-  mbmi->sb_type = bsize;
-
-  int pred_stride = 128;
   DECLARE_ALIGNED(16, uint16_t, pred_buffer[MAX_SB_SQUARE]);
-  uint8_t *const pred_buf = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-                                ? CONVERT_TO_BYTEPTR(pred_buffer)
-                                : (uint8_t *)pred_buffer;
+  int pred_stride = 128;
 
   // Perform a single motion search in Y_PLANE to make a prediction
   const MV_REFERENCE_FRAME ref =
       cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
-  YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
-  const YV12_BUFFER_CONFIG *scaled_ref_frame =
-      av1_get_scaled_ref_frame(cpi, ref);
-  struct buf_2d backup_yv12;
-  // ref_mv is in units of 1/8-pel whereas ref_mv_full is in units of pel
-  MV ref_mv = { 0, 0 };
-  MV ref_mv_full = { 0, 0 };
-  const int step_param = 1;
-  const MvLimits tmp_mv_limits = x->mv_limits;
-  const SEARCH_METHODS search_methods = NSTEP;
-  const int do_mesh_search = 0;
-  const int sadpb = x->sadperbit16;
-  int cost_list[5];
-  int num_planes = 1;
-  const int ref_idx = 0;
+  const int use_subpixel = 0;
+  const int num_planes = 1;
 
-  if (scaled_ref_frame) {
-    backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
-    av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL,
-                         num_planes);
-  } else {
-    av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
-                         &cm->current_frame.frame_refs[ref - LAST_FRAME].sf,
-                         num_planes);
-  }
-
-  mbmi->ref_frame[0] = ref;
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
-  av1_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param, search_methods,
-                        do_mesh_search, sadpb, cond_cost_list(cpi, cost_list),
-                        &ref_mv, INT_MAX, 1, mi_col * MI_SIZE, mi_row * MI_SIZE,
-                        0);
-  // Restore
-  x->mv_limits = tmp_mv_limits;
-
-  // Convert from units of pixel to 1/8-pixels
-  x->best_mv.as_mv.row *= 8;
-  x->best_mv.as_mv.col *= 8;
-  mbmi->mv[0].as_mv = x->best_mv.as_mv;
-
-  // Get a copy of the prediction output
-  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  uint8_t *const pred_buf = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+                                ? CONVERT_TO_BYTEPTR(pred_buffer)
+                                : (uint8_t *)pred_buffer;
   xd->plane[0].dst.buf = pred_buf;
   xd->plane[0].dst.stride = pred_stride;
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
 
-  aom_clear_system_state();
+  simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, num_planes,
+                       use_subpixel);
 
-  if (scaled_ref_frame) {
-    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
-  }
-
-  // Now that we have the frame, we can print features out
+  // Start getting the features
   int f_idx = 0;
 
   // Q_INDEX
@@ -3463,8 +3505,6 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
 
   // VARIANCE
-  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes,
-                       BLOCK_128X128);
   const uint8_t *src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
   unsigned int sse = 0;
