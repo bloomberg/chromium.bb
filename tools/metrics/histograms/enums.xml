@@ -10536,6 +10536,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Failed transparent"/>
   <int value="7" label="Failed non-root renderpass"/>
   <int value="8" label="Failed too many overlays"/>
+  <int value="9" label="Failed no hw overlay support"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">

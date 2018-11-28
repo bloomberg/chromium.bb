@@ -2842,6 +2842,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   TestOverlayProcessor* processor =
       new TestOverlayProcessor(output_surface.get());
   processor->Initialize();
+  processor->SetDCHasHwOverlaySupportForTesting();
   renderer.SetOverlayProcessor(processor);
   std::unique_ptr<DCLayerValidator> validator(new DCLayerValidator);
   output_surface->SetOverlayCandidateValidator(validator.get());

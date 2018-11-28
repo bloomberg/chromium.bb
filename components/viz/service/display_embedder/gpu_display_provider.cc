@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -190,8 +191,12 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     } else {
 #if defined(OS_WIN)
       const auto& capabilities = context_provider->ContextCapabilities();
+      const bool use_overlays_for_sw_protected_video =
+          base::FeatureList::IsEnabled(
+              features::kUseDCOverlaysForSoftwareProtectedVideo);
       const bool use_overlays =
-          capabilities.dc_layers && capabilities.use_dc_overlays_for_video;
+          capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
+                                     use_overlays_for_sw_protected_video);
       output_surface = std::make_unique<GLOutputSurfaceWin>(
           std::move(context_provider), synthetic_begin_frame_source,
           use_overlays);

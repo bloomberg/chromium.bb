@@ -88,6 +88,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       OverlayCandidate* primary,
       OverlayCandidateList* candidate_list);
 
+  void SetDCHasHwOverlaySupportForTesting() {
+    dc_processor_.SetHasHwOverlaySupport();
+  }
+
  protected:
   StrategyList strategies_;
   OutputSurface* surface_;

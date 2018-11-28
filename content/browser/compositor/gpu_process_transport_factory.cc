@@ -58,6 +58,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
@@ -526,7 +527,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       } else {
         std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(OS_WIN)
-        if (capabilities.dc_layers && capabilities.use_dc_overlays_for_video)
+        const bool use_overlays_for_sw_protected_video =
+            base::FeatureList::IsEnabled(
+                features::kUseDCOverlaysForSoftwareProtectedVideo);
+        if (capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
+                                       use_overlays_for_sw_protected_video))
           validator = CreateOverlayCandidateValidator(compositor->widget());
 #elif !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
