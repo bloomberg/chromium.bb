@@ -16,7 +16,7 @@ namespace blink {
 using protocol::Maybe;
 using protocol::Response;
 
-namespace EncodingEnum = protocol::Audits::GetEncodedResponse::EncodingEnum;
+namespace encoding_enum = protocol::Audits::GetEncodedResponse::EncodingEnum;
 
 namespace {
 
@@ -82,8 +82,8 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
     Maybe<protocol::Binary>* out_body,
     int* out_original_size,
     int* out_encoded_size) {
-  DCHECK(encoding == EncodingEnum::Jpeg || encoding == EncodingEnum::Png ||
-         encoding == EncodingEnum::Webp);
+  DCHECK(encoding == encoding_enum::Jpeg || encoding == encoding_enum::Png ||
+         encoding == encoding_enum::Webp);
 
   String body;
   bool is_base64_encoded;
