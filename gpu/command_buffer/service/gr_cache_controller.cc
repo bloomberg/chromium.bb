@@ -21,6 +21,7 @@ GrCacheController::~GrCacheController() = default;
 
 void GrCacheController::ScheduleGrContextCleanup() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(context_state_->context->IsCurrent(nullptr));
 
   if (!context_state_->gr_context)
     return;
@@ -34,7 +35,6 @@ void GrCacheController::ScheduleGrContextCleanup() {
   // a long while even if it is under budget. Below we set a call back to
   // purge all possible GrContext resources if the context itself is not being
   // used.
-  context_state_->context->MakeCurrent(context_state_->surface.get());
   context_state_->gr_context->performDeferredCleanup(
       std::chrono::seconds(kOldResourceCleanupDelaySeconds));
 
@@ -50,6 +50,17 @@ void GrCacheController::ScheduleGrContextCleanup() {
 void GrCacheController::PurgeGrCache(uint64_t idle_id) {
   purge_gr_cache_cb_.Cancel();
 
+  if (context_state_->context_lost)
+    return;
+
+  // Skip unnecessary MakeCurrent to improve
+  // performance. https://crbug.com/457431
+  if (!context_state_->context->IsCurrent(nullptr) &&
+      !context_state_->context->MakeCurrent(context_state_->surface.get())) {
+    context_state_->context_lost = true;
+    return;
+  }
+
   // If the idle id changed, the context was used after this callback was
   // posted. Schedule another one.
   if (idle_id != current_idle_id_) {
@@ -57,7 +68,6 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     return;
   }
 
-  context_state_->context->MakeCurrent(context_state_->surface.get());
   context_state_->gr_context->freeGpuResources();
 }
 
