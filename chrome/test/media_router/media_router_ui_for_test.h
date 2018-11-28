@@ -7,8 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
+#include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -18,8 +20,6 @@ class WebContents;
 }  // namespace content
 
 namespace media_router {
-
-class MediaRouterDialogControllerViews;
 
 class MediaRouterUiForTest
     : public content::WebContentsUserData<MediaRouterUiForTest>,
@@ -39,31 +39,41 @@ class MediaRouterUiForTest
 
   // These methods require that the dialog is shown and the specified sink is
   // shown in the dialog.
-  void StartCasting(const MediaSink::Id& sink_id);
-  void StopCasting(const MediaSink::Id& sink_id);
+  void StartCasting(const std::string& sink_name);
+  void StopCasting(const std::string& sink_name);
   // Stops casting to the first active sink found on the sink list. Requires
   // that such a sink exists.
   void StopCasting();
 
-  // Waits until . Requires that the dialog is shown.
-  void WaitForSink(const MediaSink::Id& sink_id);
+  // Waits until a condition is met. Requires that the dialog is shown.
+  void WaitForSink(const std::string& sink_name);
+  void WaitForSinkAvailable(const std::string& sink_name);
   void WaitForAnyIssue();
   void WaitForAnyRoute();
-  void WaitForDialogClosed();
+  void WaitForDialogShown();
+  void WaitForDialogHidden();
+  void WaitUntilNoRoutes();
 
   // These methods require that the dialog is shown, and the sink specified by
-  // |sink_id| is in the dialog.
-  std::string GetSinkName(const MediaSink::Id& sink_id) const;
-  MediaRoute::Id GetRouteIdForSink(const MediaSink::Id& sink_id) const;
-  std::string GetStatusTextForSink(const MediaSink::Id& sink_id) const;
-  std::string GetIssueTextForSink(const MediaSink::Id& sink_id) const;
+  // |sink_name| is in the dialog.
+  MediaRoute::Id GetRouteIdForSink(const std::string& sink_name) const;
+  std::string GetStatusTextForSink(const std::string& sink_name) const;
+  std::string GetIssueTextForSink(const std::string& sink_name) const;
 
   content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   friend class content::WebContentsUserData<MediaRouterUiForTest>;
 
-  enum class WatchType { kNone, kSink, kAnyIssue, kAnyRoute, kDialogClosed };
+  enum class WatchType {
+    kNone,
+    kSink,           // Sink is found in any state.
+    kSinkAvailable,  // Sink is found in the "Available" state.
+    kAnyIssue,
+    kAnyRoute,
+    kDialogShown,
+    kDialogHidden
+  };
 
   explicit MediaRouterUiForTest(content::WebContents* web_contents);
 
@@ -71,20 +81,25 @@ class MediaRouterUiForTest
   void OnDialogModelUpdated(CastDialogView* dialog_view) override;
   void OnDialogWillClose(CastDialogView* dialog_view) override;
 
-  CastDialogSinkButton* GetSinkButton(const MediaSink::Id& sink_id) const;
+  // Called by MediaRouterDialogControllerViews.
+  void OnDialogCreated();
+
+  CastDialogSinkButton* GetSinkButton(const std::string& sink_name) const;
 
   // Registers itself as an observer to the dialog, and waits until an event
-  // of |watch_type| is observed. |sink_id| should be set only if observing for
-  // a sink.
+  // of |watch_type| is observed. |sink_name| should be set only if observing
+  // for a sink.
   void ObserveDialog(WatchType watch_type,
-                     base::Optional<MediaSink::Id> sink_id = base::nullopt);
+                     base::Optional<std::string> sink_name = base::nullopt);
 
   content::WebContents* web_contents_;
   MediaRouterDialogControllerViews* dialog_controller_;
 
-  base::Optional<MediaSink::Id> watch_sink_id_;
+  base::Optional<std::string> watch_sink_name_;
   base::Optional<base::OnceClosure> watch_callback_;
   WatchType watch_type_ = WatchType::kNone;
+
+  base::WeakPtrFactory<MediaRouterUiForTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUiForTest);
 };

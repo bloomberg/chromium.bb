@@ -197,10 +197,13 @@ class MediaRouterUIBase
   // Creates and sends an issue if route creation timed out.
   void SendIssueForRouteTimeout(
       MediaCastMode cast_mode,
+      const MediaSink::Id& sink_id,
       const base::string16& presentation_request_source_name);
 
-  // Creates and sends an issue if casting fails for any other reason.
-  void SendIssueForUnableToCast(MediaCastMode cast_mode);
+  // Creates and sends an issue if casting fails for any reason other than
+  // timeout.
+  void SendIssueForUnableToCast(MediaCastMode cast_mode,
+                                const MediaSink::Id& sink_id);
 
   // Returns the IssueManager associated with |router_|.
   IssueManager* GetIssueManager();

@@ -100,6 +100,11 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // If the dialog loses focus during a test and closes, the test can
+  // fail unexpectedly. This method prevents that by keeping the dialog from
+  // closing on blur.
+  void KeepShownForTesting();
+
   // Called by tests.
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
@@ -225,6 +230,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   base::Optional<base::string16> local_file_name_;
 
   base::ObserverList<Observer> observers_;
+
+  // When this is set to true, the dialog does not close on blur.
+  bool keep_shown_for_testing_ = false;
 
   base::WeakPtrFactory<CastDialogView> weak_factory_;
 

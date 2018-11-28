@@ -41,18 +41,17 @@ class MediaRouterIntegrationOneUABrowserTest
   }
 };
 
-// TODO(crbug.com/822231): Flaky in Chromium waterfall.
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, MANUAL_Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest, Basic) {
   RunBasicTest();
 }
 
-// TODO(crbug.com/822216): Flaky in Chromium waterfall.
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
-// TODO(crbug.com/821717): Flaky in Chromium waterfall.
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
                        MANUAL_ReceiverCloseConnection) {
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
@@ -60,21 +59,18 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
-// TODO(crbug.com/824889): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_Fail_SendMessage) {
+                       Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_ReconnectSession) {
+                       ReconnectSession) {
   RunReconnectSessionTest();
 }
 
-// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       MANUAL_ReconnectSessionSameTab) {
+                       ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
@@ -87,28 +83,23 @@ class MediaRouterIntegrationOneUANoReceiverBrowserTest
   }
 };
 
-// TODO(crbug.com/822179,822337): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_Basic) {
+                       Basic) {
   RunBasicTest();
 }
 
-// TODO(crbug.com/821717): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_Fail_SendMessage) {
+                       Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-// TODO(crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_ReconnectSession) {
+                       ReconnectSession) {
   RunReconnectSessionTest();
 }
 
-// TODO(crbug.com/826016): Crashes on ASAN.
-// TODO(crbug.com/834681): Crashes elsewhere too, flakily.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       MANUAL_ReconnectSessionSameTab) {
+                       ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 

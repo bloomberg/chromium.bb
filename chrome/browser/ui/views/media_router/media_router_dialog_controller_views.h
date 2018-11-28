@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
 #include "ui/views/widget/widget_observer.h"
@@ -35,6 +36,9 @@ class MediaRouterDialogControllerViews
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // Sets a callback to be called whenever a dialog is created.
+  void SetDialogCreationCallbackForTesting(base::RepeatingClosure callback);
+
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerViews>;
 
@@ -46,6 +50,8 @@ class MediaRouterDialogControllerViews
   // sending route requests to MediaRouter. Set to nullptr when the dialog is
   // closed.
   std::unique_ptr<MediaRouterViewsUI> ui_;
+
+  base::RepeatingClosure dialog_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerViews);
 };

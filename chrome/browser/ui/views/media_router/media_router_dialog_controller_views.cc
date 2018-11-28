@@ -65,6 +65,8 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
                                           dialog_creation_time);
   }
   CastDialogView::GetCurrentDialogWidget()->AddObserver(this);
+  if (dialog_creation_callback_)
+    dialog_creation_callback_.Run();
 }
 
 void MediaRouterDialogControllerViews::CloseMediaRouterDialog() {
@@ -76,8 +78,11 @@ bool MediaRouterDialogControllerViews::IsShowingMediaRouterDialog() const {
 }
 
 void MediaRouterDialogControllerViews::Reset() {
-  MediaRouterDialogControllerImplBase::Reset();
-  ui_.reset();
+  // If |ui_| is null, Reset() has already been called.
+  if (ui_) {
+    MediaRouterDialogControllerImplBase::Reset();
+    ui_.reset();
+  }
 }
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
@@ -88,6 +93,11 @@ void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
 void MediaRouterDialogControllerViews::OnWidgetDestroying(
     views::Widget* widget) {
   widget->RemoveObserver(this);
+}
+
+void MediaRouterDialogControllerViews::SetDialogCreationCallbackForTesting(
+    base::RepeatingClosure callback) {
+  dialog_creation_callback_ = std::move(callback);
 }
 
 MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(

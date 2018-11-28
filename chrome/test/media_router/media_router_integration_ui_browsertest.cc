@@ -17,150 +17,37 @@
 
 namespace media_router {
 
-namespace {
-const char kTestSinkName[] = "test-sink-1";
-}
-
-// Disabled due to flakiness: https://crbug.com/873912.
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_Dialog_Basic DISABLED_Dialog_Basic
-#else
-#define MAYBE_Dialog_Basic Dialog_Basic
-#endif
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MAYBE_Dialog_Basic) {
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-  WaitUntilSinkDiscoveredOnUI();
-  // Verify the sink list.
-  std::string sink_length_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container')."
-      "sinksToShow_.length)");
-  ASSERT_GT(ExecuteScriptAndExtractInt(dialog_contents, sink_length_script), 0);
-  LOG(INFO) << "Choose Sink";
-  ChooseSink(web_contents, kTestSinkName);
+  test_ui_->ShowDialog();
+  test_ui_->WaitForSinkAvailable(receiver_);
+  test_ui_->StartCasting(receiver_);
+  test_ui_->WaitForAnyRoute();
 
-// Linux and Windows bots run browser tests without a physical display, which
-// is causing flaky event dispatching of mouseenter and mouseleave events. This
-// causes the dialog to sometimes close prematurely even though a mouseenter
-// event is explicitly dispatched in the test.
-// Here, we still dispatch the mouseenter event for OSX, but close
-// the dialog and reopen it on Linux and Windows.
-// The test succeeds fine when run with a physical display.
-// http://crbug.com/577943 http://crbug.com/591779
-#if defined(OS_MACOSX)
-  // Simulate keeping the mouse on the dialog to prevent it from automatically
-  // closing after the route has been created. Then, check that the dialog
-  // remains open.
-  std::string mouse_enter_script = base::StringPrintf(
-      "window.document.getElementById('media-router-container')"
-      "    .dispatchEvent(new Event('mouseenter'));");
-  ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_enter_script));
-#endif
-  WaitUntilRouteCreated();
+  if (!test_ui_->IsDialogShown())
+    test_ui_->ShowDialog();
 
-#if defined(OS_MACOSX)
-  CheckDialogRemainsOpen(web_contents);
-#elif defined(OS_LINUX) || defined(OS_WIN)
-  Wait(base::TimeDelta::FromSeconds(5));
-  LOG(INFO) << "Waiting for dialog to be closed";
-  WaitUntilDialogClosed(web_contents);
-  LOG(INFO) << "Reopen MR dialog";
-  dialog_contents = OpenMRDialog(web_contents);
-#endif
+  ASSERT_EQ("Test Route", test_ui_->GetStatusTextForSink(receiver_));
 
-  LOG(INFO) << "Check route details dialog";
-  std::string route_script;
-  // Verify the route details is not undefined.
-  route_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').shadowRoot."
-      "getElementById('route-details') != undefined)");
-  ASSERT_TRUE(ConditionalWait(
-      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(
-        &MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractBool,
-        dialog_contents, route_script)));
-  route_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').currentView_ "
-      "== media_router.MediaRouterView.ROUTE_DETAILS)");
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(dialog_contents, route_script));
-
-  // Verify the route details page.
-  route_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').shadowRoot."
-      "getElementById('route-details').shadowRoot.getElementById("
-      "'route-description').innerText)");
-  std::string route_information = ExecuteScriptAndExtractString(
-      dialog_contents, route_script);
-  ASSERT_EQ("Test Route", route_information);
-
-  std::string sink_script;
-  // Verify the container header is not undefined.
-  sink_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').shadowRoot."
-      "getElementById('container-header') != undefined)");
-  LOG(INFO) << "Checking container-header";
-  ASSERT_TRUE(ConditionalWait(
-      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(
-        &MediaRouterIntegrationBrowserTest::ExecuteScriptAndExtractBool,
-        dialog_contents, sink_script)));
-
-  sink_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container').shadowRoot."
-      "getElementById('container-header').shadowRoot.getElementById("
-      "'header-text').innerText)");
-  std::string sink_name = ExecuteScriptAndExtractString(
-      dialog_contents, sink_script);
-  ASSERT_EQ(kTestSinkName, sink_name);
-  LOG(INFO) << "Finish verification";
-
-#if defined(OS_MACOSX)
-  // Simulate moving the mouse off the dialog. Confirm that the dialog closes
-  // automatically after the route is closed.
-  // In tests, it sometimes takes too long to CloseRouteOnUI() to finish so
-  // the timer started when the route is initially closed times out before the
-  // mouseleave event is dispatched. In that case, the dialog remains open.
-  std::string mouse_leave_script = base::StringPrintf(
-      "window.document.getElementById('media-router-container')"
-      "    .dispatchEvent(new Event('mouseleave'));");
-  ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
-#endif
-  LOG(INFO) << "Closing route on UI";
-  CloseRouteOnUI();
-#if defined(OS_MACOSX)
-  LOG(INFO) << "Waiting for dialog to be closed";
-  WaitUntilDialogClosed(web_contents);
-#endif
-  LOG(INFO) << "Closed dialog, end of test";
+  test_ui_->StopCasting(receiver_);
+  test_ui_->WaitUntilNoRoutes();
+  // TODO(takumif): Remove the HideDialog() call once the dialog can close on
+  // its own.
+  test_ui_->HideDialog();
 }
 
-// TODO(crbug.com/822301): Flaky in Chromium waterfall.
+// TODO(https://crbug.com/822231): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_Dialog_RouteCreationTimedOut) {
   SetTestData(FILE_PATH_LITERAL("route_creation_timed_out.json"));
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-
-  // Verify the sink list.
-  std::string sink_length_script = base::StringPrintf(
-      "domAutomationController.send("
-      "window.document.getElementById('media-router-container')."
-      "sinksToShow_.length)");
-  ASSERT_GT(ExecuteScriptAndExtractInt(dialog_contents, sink_length_script), 0);
+  test_ui_->ShowDialog();
+  test_ui_->WaitForSinkAvailable(receiver_);
 
   base::TimeTicks start_time(base::TimeTicks::Now());
-  ChooseSink(web_contents, kTestSinkName);
-  WaitUntilIssue();
+  test_ui_->StartCasting(receiver_);
+  test_ui_->WaitForAnyIssue();
 
   base::TimeDelta elapsed(base::TimeTicks::Now() - start_time);
   // The hardcoded timeout route creation timeout for the UI.
@@ -170,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   EXPECT_GE(elapsed, expected_timeout);
   EXPECT_LE(elapsed - expected_timeout, base::TimeDelta::FromSeconds(5));
 
-  std::string issue_title = GetIssueTitle();
+  std::string issue_title = test_ui_->GetIssueTextForSink(receiver_);
   // TODO(imcheng): Fix host name for file schemes (crbug.com/560576).
   ASSERT_EQ(
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
@@ -178,7 +65,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       issue_title);
 
   // Route will still get created, it just takes longer than usual.
-  WaitUntilRouteCreated();
+  test_ui_->WaitForAnyRoute();
+  test_ui_->HideDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
@@ -191,33 +79,22 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   // Enable media routing and open media router dialog.
   SetEnableMediaRouter(true);
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  OpenMRDialog(web_contents);
-
-  MediaRouterDialogControllerWebUIImpl* controller =
-      MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
-          web_contents);
-  ASSERT_TRUE(controller->IsShowingMediaRouterDialog());
+  test_ui_->ShowDialog();
+  ASSERT_TRUE(test_ui_->IsDialogShown());
+  test_ui_->HideDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        DisableMediaRoutingWhenDialogIsOpened) {
   // Open media router dialog.
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  OpenMRDialog(web_contents);
-
-  MediaRouterDialogControllerWebUIImpl* controller =
-      MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
-          web_contents);
-  ASSERT_TRUE(controller->IsShowingMediaRouterDialog());
+  test_ui_->ShowDialog();
+  ASSERT_TRUE(test_ui_->IsDialogShown());
 
   // Disable media routing.
   SetEnableMediaRouter(false);
 
-  ASSERT_FALSE(controller->IsShowingMediaRouterDialog());
+  ASSERT_FALSE(test_ui_->IsDialogShown());
 }
 
 }  // namespace media_router

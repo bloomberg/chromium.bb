@@ -102,7 +102,7 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
   base::Optional<RouteParameters> params =
       GetRouteParameters(sink_id, MediaCastMode::PRESENTATION);
   if (!params) {
-    SendIssueForUnableToCast(MediaCastMode::PRESENTATION);
+    SendIssueForUnableToCast(MediaCastMode::PRESENTATION, sink_id);
     return false;
   }
   GetIssueManager()->ClearNonBlockingIssues();
@@ -315,8 +315,6 @@ void MediaRouterUI::OnRouteResponseReceived(
       route_request_id, sink_id, cast_mode, presentation_request_source_name,
       result);
   handler_->OnCreateRouteResponseReceived(sink_id, result.route());
-  if (result.result_code() == RouteRequestResult::TIMED_OUT)
-    SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
 }
 
 void MediaRouterUI::HandleCreateSessionRequestRouteResponse(

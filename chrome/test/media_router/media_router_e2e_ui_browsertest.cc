@@ -29,22 +29,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-  ASSERT_TRUE(dialog_contents);
-  // Wait util the dialog finishes rendering.
-  WaitUntilDialogFullyLoaded(dialog_contents);
-
-  // Get the media router UI
-  MediaRouterUI* media_router_ui = GetMediaRouterUI(dialog_contents);
+  test_ui_->ShowDialog();
+  test_ui_->WaitForSinkAvailable(receiver_);
 
   // Mock out file dialog operations, as those can't be simulated.
-  FileDialogSelectsFile(media_router_ui, file_url);
-  // Open the Cast mode list.
-  ClickHeader(dialog_contents);
+  FileDialogSelectsFile(file_url);
   // Click on the desired mode.
-  ClickCastMode(dialog_contents, MediaCastMode::LOCAL_FILE);
-  WaitUntilSinkDiscoveredOnUI();
-  ChooseSink(web_contents, receiver());
+  test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
+  test_ui_->WaitForSinkAvailable(receiver_);
+  test_ui_->StartCasting(receiver_);
 
   // Play the file for 10 seconds.
   Wait(base::TimeDelta::FromSeconds(10));
@@ -61,9 +54,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
                                              &is_fullscreen));
 
   ASSERT_TRUE(is_fullscreen);
-  if (IsDialogClosed(web_contents))
-    OpenMRDialog(web_contents);
-  CloseRouteOnUI();
+  test_ui_->WaitForSink(receiver_);
+  test_ui_->StopCasting(receiver_);
   // Wait 15s for Chromecast to back to home screen and ready to use status.
   Wait(base::TimeDelta::FromSeconds(15));
 }
@@ -71,23 +63,18 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-
-  content::WebContents* dialog_contents = OpenMRDialog(web_contents);
-  ASSERT_TRUE(dialog_contents);
+  test_ui_ = MediaRouterUiForTest::GetOrCreateForWebContents(web_contents);
+  test_ui_->ShowDialog();
 
   // Wait until the dialog finishes rendering.
-  WaitUntilDialogFullyLoaded(dialog_contents);
-  WaitUntilSinkDiscoveredOnUI();
-  ChooseSink(web_contents, receiver());
+  test_ui_->WaitForSinkAvailable(receiver_);
+  test_ui_->StartCasting(receiver_);
 
   // Mirror tab for 10s.
   Wait(base::TimeDelta::FromSeconds(10));
-  if (IsDialogClosed(web_contents))
-    dialog_contents = OpenMRDialog(web_contents);
-  WaitUntilDialogFullyLoaded(dialog_contents);
 
   // Check the mirroring session has started successfully.
-  ASSERT_TRUE(!GetRouteId(receiver()).empty());
+  ASSERT_FALSE(test_ui_->GetRouteIdForSink(receiver_).empty());
   OpenMediaPage();
 
   // Play the video on loop and wait 5s for it to play smoothly.
@@ -101,16 +88,18 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
       "webkitRequestFullScreen();";
   ExecuteScript(web_contents, script);
   Wait(base::TimeDelta::FromSeconds(5));
-  if (IsDialogClosed(web_contents))
-    dialog_contents = OpenMRDialog(web_contents);
-  WaitUntilDialogFullyLoaded(dialog_contents);
+  if (!test_ui_->IsDialogShown())
+    test_ui_->ShowDialog();
 
   // Check the mirroring session is still live.
-  ASSERT_TRUE(!GetRouteId(receiver()).empty());
+  ASSERT_FALSE(test_ui_->GetRouteIdForSink(receiver_).empty());
   Wait(base::TimeDelta::FromSeconds(20));
-  if (IsDialogClosed(web_contents))
-    OpenMRDialog(web_contents);
-  CloseRouteOnUI();
+  if (!test_ui_->IsDialogShown())
+    test_ui_->ShowDialog();
+  test_ui_->WaitForSink(receiver_);
+  test_ui_->StopCasting(receiver_);
+  test_ui_->WaitUntilNoRoutes();
+  test_ui_->HideDialog();
 }
 
 }  // namespace media_router
