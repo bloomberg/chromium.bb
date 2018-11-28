@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -84,6 +85,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   BlockedPopupTabHelper::CreateForWebState(web_state);
   FindTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
+  JavaScriptConsoleTabHelper::CreateForWebState(tab.webState);
   if (base::FeatureList::IsEnabled(kITunesUrlsStoreKitHandling)) {
     ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   }

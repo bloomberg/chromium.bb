@@ -23,7 +23,7 @@ function sendConsoleMessage(method, originalArgs) {
   } catch (err) {
   }
   __gCrWeb.message.invokeOnHost({
-    'command': 'console',
+    'command': 'console.msg',
     'method': method,
     'message': message,
     'origin': document.location.origin
