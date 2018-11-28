@@ -534,10 +534,14 @@ class ConstructTrait<T, false> {
  public:
   template <typename... Args>
   static T* Construct(Args&&... args) {
+    void* memory =
+        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    header->MarkIsInConstruction();
     // Placement new as regular operator new() is deleted.
-    return ::new (
-        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value))
-        T(std::forward<Args>(args)...);
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->UnmarkIsInConstruction();
+    return object;
   }
 };
 
@@ -545,9 +549,19 @@ template <typename T>
 class ConstructTrait<T, true> {
  public:
   template <typename... Args>
-  static T* Construct(Args&&... args) {
-    // TODO(mlippautz): Inline GarbageCollectedMixin::operator new() here.
-    return new T(std::forward<Args>(args)...);
+  NO_SANITIZE_UNRELATED_CAST static T* Construct(Args&&... args) {
+    void* memory =
+        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    header->MarkIsInConstruction();
+    ThreadState* state =
+        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
+    state->EnterGCForbiddenScopeIfNeeded(
+        &(reinterpret_cast<T*>(memory)->mixin_constructor_marker_));
+    // Placement new as regular operator new() is deleted.
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->UnmarkIsInConstruction();
+    return object;
   }
 };
 

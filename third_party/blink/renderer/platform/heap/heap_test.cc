@@ -6822,4 +6822,61 @@ TEST(HeapTest, NoConservativeGCDuringMixinConstruction) {
   MakeGarbageCollected<UsingMixinCheckingConstructionScope>();
 }
 
+namespace {
+
+class ObjectCheckingForInConstruction
+    : public GarbageCollected<ObjectCheckingForInConstruction> {
+ public:
+  ObjectCheckingForInConstruction() {
+    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
+  }
+
+  virtual void Trace(Visitor* v) { v->Trace(foo_); }
+
+ private:
+  Member<IntWrapper> foo_;
+};
+
+class MixinCheckingInConstruction : public GarbageCollectedMixin {
+ public:
+  MixinCheckingInConstruction() {
+    BasePage* const page = PageFromObject(reinterpret_cast<Address>(this));
+    HeapObjectHeader* const header =
+        static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+            reinterpret_cast<Address>(
+                const_cast<MixinCheckingInConstruction*>(this)));
+    CHECK(header->IsInConstruction());
+  }
+
+  void Trace(Visitor* v) override { v->Trace(bar_); }
+
+ private:
+  Member<IntWrapper> bar_;
+};
+
+class MixinAppCheckingInConstruction
+    : public GarbageCollected<MixinAppCheckingInConstruction>,
+      public MixinCheckingInConstruction {
+  USING_GARBAGE_COLLECTED_MIXIN(MixinAppCheckingInConstruction)
+ public:
+  MixinAppCheckingInConstruction() {
+    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
+  }
+
+  void Trace(Visitor* v) override { v->Trace(foo_); }
+
+ private:
+  Member<IntWrapper> foo_;
+};
+
+}  // namespace
+
+TEST(HeapTest, GarbageCollectedInConstruction) {
+  MakeGarbageCollected<ObjectCheckingForInConstruction>();
+}
+
+TEST(HeapTest, GarbageCollectedMixinInConstruction) {
+  MakeGarbageCollected<MixinAppCheckingInConstruction>();
+}
+
 }  // namespace blink
