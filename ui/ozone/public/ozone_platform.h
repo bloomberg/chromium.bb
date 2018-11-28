@@ -87,15 +87,6 @@ class OZONE_EXPORT OzonePlatform {
 
   // Struct used to indicate platform properties.
   struct PlatformProperties {
-    PlatformProperties();
-    PlatformProperties(bool needs_request,
-                       bool custom_frame_default,
-                       bool can_use_system_title_bar,
-                       bool requires_mojo_for_ipc,
-                       std::vector<gfx::BufferFormat> buffer_formats);
-    ~PlatformProperties();
-    PlatformProperties(const PlatformProperties& other);
-
     // Fuchsia only: set to true when the platforms requires |view_token| field
     // in PlatformWindowInitProperties when creating a window.
     bool needs_view_token = false;
@@ -111,9 +102,6 @@ class OZONE_EXPORT OzonePlatform {
     // Determines if the platform requires mojo communication for the IPC.
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
-
-    // Wayland only: carries buffer formats supported by a Wayland server.
-    std::vector<gfx::BufferFormat> supported_buffer_formats;
   };
 
   using StartupCallback = base::OnceCallback<void(OzonePlatform*)>;
@@ -160,6 +148,10 @@ class OZONE_EXPORT OzonePlatform {
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
   virtual std::unique_ptr<PlatformScreen> CreateScreen();
+
+  // Returns true if the specified buffer format is supported.
+  virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+                                             gfx::BufferUsage usage) const;
 
   // Returns a struct that contains configuration and requirements for the
   // current platform implementation.

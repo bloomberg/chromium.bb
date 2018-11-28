@@ -25,10 +25,6 @@ class GFX_EXPORT ClientNativePixmapFactory {
  public:
   virtual ~ClientNativePixmapFactory() {}
 
-  // Returns true if format/usage configuration is supported.
-  virtual bool IsConfigurationSupported(gfx::BufferFormat format,
-                                        gfx::BufferUsage usage) const = 0;
-
   // Import the native pixmap from |handle| to be used in non-GPU processes.
   // This function takes ownership of any file descriptors in |handle|.
   virtual std::unique_ptr<ClientNativePixmap> ImportFromHandle(

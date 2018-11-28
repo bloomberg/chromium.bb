@@ -34,12 +34,11 @@ namespace ui {
 
 namespace {
 
-const OzonePlatform::PlatformProperties kScenicPlatformProperties(
-    /*needs_view_owner_request=*/true,
+constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
+    /*needs_view_token=*/true,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
-    /*requires_mojo=*/false,
-    std::vector<gfx::BufferFormat>());
+    /*requires_mojo=*/false};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:

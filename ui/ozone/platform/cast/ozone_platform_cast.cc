@@ -102,6 +102,11 @@ class OzonePlatformCast : public OzonePlatform {
     // On Cast platform the display is initialized by low-level non-Ozone code.
     return nullptr;
   }
+  bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+                                     gfx::BufferUsage usage) const override {
+    return format == gfx::BufferFormat::BGRA_8888 &&
+           usage == gfx::BufferUsage::SCANOUT;
+  }
 
   void InitializeUI(const InitParams& params) override {
     device_manager_ = CreateDeviceManager();
