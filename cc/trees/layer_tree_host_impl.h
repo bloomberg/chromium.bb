@@ -67,12 +67,12 @@ class CompositorFrameMetadata;
 
 namespace cc {
 class BrowserControlsOffsetManager;
-class LayerTreeFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class ImageAnimationController;
 class LayerImpl;
+class LayerTreeFrameSink;
 class LayerTreeImpl;
 class MemoryHistory;
 class MutatorEvents;
@@ -91,7 +91,6 @@ class SwapPromiseMonitor;
 class SynchronousTaskGraphRunner;
 class TaskGraphRunner;
 class UIResourceBitmap;
-struct ScrollAndScaleSet;
 class Viewport;
 
 using BeginFrameCallbackList = std::vector<base::Closure>;
