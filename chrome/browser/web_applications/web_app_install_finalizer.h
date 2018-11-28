@@ -8,17 +8,21 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
 struct WebApplicationInfo;
 
 namespace web_app {
 
+class WebApp;
+class WebAppIconManager;
 class WebAppRegistrar;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
-  explicit WebAppInstallFinalizer(WebAppRegistrar* registrar);
+  WebAppInstallFinalizer(WebAppRegistrar* registrar,
+                         WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
   // InstallFinalizer:
@@ -26,7 +30,14 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                        InstallFinalizedCallback callback) override;
 
  private:
+  void OnDataWritten(InstallFinalizedCallback callback,
+                     std::unique_ptr<WebApp> web_app,
+                     bool success);
+
   WebAppRegistrar* registrar_;
+  WebAppIconManager* icon_manager_;
+
+  base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallFinalizer);
 };

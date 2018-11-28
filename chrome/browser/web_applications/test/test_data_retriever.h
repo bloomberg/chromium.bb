@@ -33,6 +33,8 @@ class TestDataRetriever : public WebAppDataRetriever {
   // Set icons to respond on |GetIcons|.
   void SetIcons(IconsMap icons_map);
 
+  WebApplicationInfo& web_app_info() { return *web_app_info_; }
+
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;
   IconsMap icons_map_;

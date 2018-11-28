@@ -7,9 +7,15 @@
 
 class Profile;
 
+namespace base {
+class FilePath;
+}
+
 namespace web_app {
 
 bool AllowWebAppInstallation(Profile* profile);
+
+base::FilePath GetWebAppsDirectory(Profile* profile);
 
 }  // namespace web_app
 
