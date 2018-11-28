@@ -53,6 +53,10 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // the offline content list.
     virtual void ListVisibilityChanged(bool is_visible) = 0;
 
+    // Save a new high score for the easer egg game in the user's synced
+    // preferences.
+    virtual void UpdateEasterEggHighScore(int high_score) = 0;
+
    protected:
     Delegate();
     virtual ~Delegate();
@@ -83,8 +87,9 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   // Execute a "Details" button click.
   bool DetailsButtonClick();
 
-  // Track easter egg plays.
+  // Track easter egg plays and high scores.
   bool TrackEasterEgg();
+  bool UpdateEasterEggHighScore(int high_score);
 
   // Execute a "Diagnose Errors" button click.
   bool DiagnoseErrorsButtonClick();

@@ -437,6 +437,9 @@ const char kQuicAllowed[] = "net.quic_allowed";
 // Prefs for persisting network qualities.
 const char kNetworkQualities[] = "net.network_qualities";
 
+// Pref storing the user's network easter egg game high score.
+const char kNetworkEasterEggHighScore[] = "net.easter_egg_high_score";
+
 #if defined(OS_ANDROID)
 // Last time that a check for cloud policy management was done. This time is
 // recorded on Android so that retries aren't attempted on every startup.
