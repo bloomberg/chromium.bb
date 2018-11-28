@@ -465,11 +465,6 @@ void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
     host()->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
 }
 
-gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(
-    const gfx::Rect& bounds) {
-  return bounds.origin();
-}
-
 gfx::AcceleratedWidget
     RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;

@@ -273,8 +273,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool AccessibilityViewHasFocus() const override;
   gfx::Rect AccessibilityGetViewBounds() const override;
-  gfx::Point AccessibilityOriginInScreen(
-      const gfx::Rect& bounds) const override;
   float AccessibilityGetDeviceScaleFactor() const override;
   void AccessibilityFatalError() override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;

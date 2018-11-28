@@ -70,9 +70,10 @@ struct AXTextEdit {
 // Determines if this object is alive, i.e. it hasn't been detached.
 - (BOOL)instanceActive;
 
-// Convert the local objet's origin to a global point.
-- (NSPoint)pointInScreen:(NSPoint)origin
-                    size:(NSSize)size;
+// Convert from the view's local coordinate system (with the origin in the upper
+// left) to the primary NSScreen coordinate system (with the origin in the lower
+// left).
+- (NSRect)rectInScreen:(gfx::Rect)rect;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

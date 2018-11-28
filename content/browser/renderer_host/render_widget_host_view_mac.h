@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool RequestRepaintForTesting() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
-  gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   base::Optional<SkColor> GetBackgroundColor() const override;
 

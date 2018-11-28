@@ -61,10 +61,6 @@ class TestBrowserAccessibilityDelegate
   void AccessibilityPerformAction(const ui::AXActionData& data) override {}
   bool AccessibilityViewHasFocus() const override { return false; }
   gfx::Rect AccessibilityGetViewBounds() const override { return gfx::Rect(); }
-  gfx::Point AccessibilityOriginInScreen(
-      const gfx::Rect& bounds) const override {
-    return gfx::Point();
-  }
   float AccessibilityGetDeviceScaleFactor() const override { return 1.0f; }
   void AccessibilityFatalError() override { got_fatal_error_ = true; }
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
