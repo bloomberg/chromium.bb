@@ -33,6 +33,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -62,6 +63,8 @@ namespace OnImeMenuItemsChanged =
     extensions::api::input_method_private::OnImeMenuItemsChanged;
 namespace GetSurroundingText =
     extensions::api::input_method_private::GetSurroundingText;
+namespace GetSetting = extensions::api::input_method_private::GetSetting;
+namespace SetSetting = extensions::api::input_method_private::SetSetting;
 
 namespace {
 
@@ -342,6 +345,40 @@ InputMethodPrivateGetSurroundingTextFunction::Run() {
                                             text_after_end - text_after_start));
 
   return RespondNow(OneArgument(std::move(ret)));
+#endif
+}
+
+ExtensionFunction::ResponseAction InputMethodPrivateGetSettingFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  const auto params = GetSetting::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  const base::DictionaryValue* inputMethods =
+      Profile::FromBrowserContext(browser_context())
+          ->GetPrefs()
+          ->GetDictionary(prefs::kLanguageInputMethodSpecificSettings);
+  const base::Value* result =
+      inputMethods->FindPath({params->engine_id, params->key});
+  return RespondNow(
+      OneArgument(result ? std::make_unique<base::Value>(result->Clone())
+                         : std::make_unique<base::Value>()));
+#endif
+}
+
+ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  const auto params = SetSetting::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DictionaryPrefUpdate update(
+      Profile::FromBrowserContext(browser_context())->GetPrefs(),
+      prefs::kLanguageInputMethodSpecificSettings);
+  update->SetPath({params->engine_id, params->key}, params->value->Clone());
+  return RespondNow(NoArguments());
 #endif
 }
 
