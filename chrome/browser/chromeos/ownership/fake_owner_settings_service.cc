@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chromeos/settings/install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 
 namespace chromeos {
@@ -27,6 +28,11 @@ FakeOwnerSettingsService::FakeOwnerSettingsService(
 }
 
 FakeOwnerSettingsService::~FakeOwnerSettingsService() {
+}
+
+bool FakeOwnerSettingsService::IsOwner() {
+  return !InstallAttributes::Get()->IsEnterpriseManaged() &&
+         settings_provider_->current_user_is_owner();
 }
 
 bool FakeOwnerSettingsService::Set(const std::string& setting,

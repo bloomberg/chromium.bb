@@ -804,20 +804,12 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Check if setting requires owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    if (service->Set(pref_name, *value))
-      return settings_private::SetPrefResult::SUCCESS;
-    return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
+  if (service && service->HandlesSetting(pref_name) &&
+      service->Set(pref_name, *value)) {
+    return settings_private::SetPrefResult::SUCCESS;
   }
+  return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
 
-  // TODO(olsen): Remove this call, as per http://crbug.com/433840
-  // Note: Since kSystemTimezone (the only system setting) is already handled,
-  // we should only arrive here in two cases (of which one may be a bug):
-  // 1. User is guest, so service=nullptr. Maybe a bug to call Set in this case?
-  // 2. kStubCrosSettings is true, so service->HandlesSetting is false.
-  CrosSettings::Get()->Set(pref_name, *value);
-  return settings_private::SetPrefResult::SUCCESS;
 #else
   return settings_private::SetPrefResult::PREF_NOT_FOUND;
 #endif
@@ -830,13 +822,9 @@ bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Returns false if not the owner, for settings requiring owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    return service->AppendToList(pref_name, value);
-  }
+  return service && service->HandlesSetting(pref_name) &&
+         service->AppendToList(pref_name, value);
 
-  CrosSettings::Get()->AppendToList(pref_name, &value);
-  return true;
 #else
   return false;
 #endif
@@ -849,13 +837,9 @@ bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Returns false if not the owner, for settings requiring owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    return service->RemoveFromList(pref_name, value);
-  }
+  return service && service->HandlesSetting(pref_name) &&
+         service->RemoveFromList(pref_name, value);
 
-  CrosSettings::Get()->RemoveFromList(pref_name, &value);
-  return true;
 #else
   return false;
 #endif

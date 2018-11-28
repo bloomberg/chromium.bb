@@ -30,6 +30,8 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   void SetTrustedStatus(TrustedStatus status);
   void SetCurrentUserIsOwner(bool owner);
 
+  bool current_user_is_owner() const { return current_user_is_owner_; }
+
  private:
   // CrosSettingsProvider implementation:
   void DoSet(const std::string& path, const base::Value& value) override;
