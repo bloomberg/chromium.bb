@@ -177,7 +177,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabNavigationEventObserver mTabNavigationEventObserver;
     private DynamicModuleNavigationEventObserver mModuleNavigationEventObserver;
     /** Adds and removes observers from tabs when needed. */
-    private final TabObserverRegistrar mTabObserverRegistrar = new TabObserverRegistrar();
+    private TabObserverRegistrar mTabObserverRegistrar;
 
     private String mSpeculatedUrl;
 
@@ -285,6 +285,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
 
         super.preInflationStartup();
+        mTabObserverRegistrar = getComponent().resolveTabObserverRegistrar();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             getComponent().resolveTrustedWebActivityCoordinator();
@@ -1678,7 +1679,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     protected CustomTabActivityComponent createComponent(ChromeActivityCommonsModule commonsModule,
             ContextualSuggestionsModule contextualSuggestionsModule) {
         CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(mIntentDataProvider, mTabObserverRegistrar);
+                new CustomTabActivityModule(mIntentDataProvider);
         return ChromeApplication.getComponent().createCustomTabActivityComponent(
                 commonsModule, contextualSuggestionsModule, customTabsModule);
     }
