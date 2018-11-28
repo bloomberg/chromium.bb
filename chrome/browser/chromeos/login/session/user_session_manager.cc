@@ -1448,7 +1448,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
 
   if (!tpm_util::TpmIsEnabled() || tpm_util::TpmIsBeingOwned()) {
-    ClearSigninProfileAndFinalizePrepareProfile(profile);
+    FinalizePrepareProfile(profile);
     return;
   }
 
@@ -1475,13 +1475,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
 void UserSessionManager::OnCryptohomeOperationCompleted(Profile* profile,
                                                         bool result) {
   DCHECK(result);
-  ClearSigninProfileAndFinalizePrepareProfile(profile);
-}
-
-void UserSessionManager::ClearSigninProfileAndFinalizePrepareProfile(
-    Profile* profile) {
-  ProfileHelper::Get()->ClearSigninProfile(base::BindRepeating(
-      &UserSessionManager::FinalizePrepareProfile, AsWeakPtr(), profile));
+  FinalizePrepareProfile(profile);
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
