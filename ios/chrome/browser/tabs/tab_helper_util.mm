@@ -57,12 +57,6 @@
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
-  // Tab's WebStateObserver callbacks expect VoiceSearchNavigationTabHelper's
-  // callbacks to be executed first so that state stays in sync.
-  // TODO(crbug.com/778416): Remove this ordering requirement by relying solely
-  // on the tab helper without going through Tab.
-  VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
-
   // TabIdHelper sets up the tab ID which is required for the creation of the
   // Tab by LegacyTabHelper.
   TabIdTabHelper::CreateForWebState(web_state);
@@ -79,6 +73,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);
+  VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
   IOSSecurityStateTabHelper::CreateForWebState(web_state);
