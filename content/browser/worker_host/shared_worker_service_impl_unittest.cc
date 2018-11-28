@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 
 #include <memory>
 #include <queue>
@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/browser/shared_worker/mock_shared_worker.h"
-#include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/worker_host/mock_shared_worker.h"
+#include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"

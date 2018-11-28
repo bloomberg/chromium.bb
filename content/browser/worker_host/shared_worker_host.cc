@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_host.h"
+#include "content/browser/worker_host/shared_worker_host.h"
 
 #include <utility>
 
@@ -14,10 +14,10 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
-#include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
-#include "content/browser/shared_worker/shared_worker_instance.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
+#include "content/browser/worker_host/shared_worker_instance.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_context.h"

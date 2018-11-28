@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEDICATED_WORKER_DEDICATED_WORKER_HOST_H_
-#define CONTENT_BROWSER_DEDICATED_WORKER_DEDICATED_WORKER_HOST_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
+#define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
 
@@ -21,4 +21,4 @@ void CreateDedicatedWorkerHostFactory(
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEDICATED_WORKER_DEDICATED_WORKER_HOST_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_

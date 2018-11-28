@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
+#include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
 
 #include <utility>
 
-#include "content/browser/shared_worker/shared_worker_host.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_host/shared_worker_host.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "url/gurl.h"
 
 namespace content {

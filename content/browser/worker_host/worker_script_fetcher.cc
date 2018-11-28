@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/shared_worker/worker_script_fetcher.h"
+#include "content/browser/worker_host/worker_script_fetcher.h"
 
 #include "base/feature_list.h"
-#include "content/browser/shared_worker/worker_script_loader.h"
-#include "content/browser/shared_worker/worker_script_loader_factory.h"
+#include "content/browser/worker_host/worker_script_loader.h"
+#include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_loader_throttle.h"
