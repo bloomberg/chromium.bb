@@ -98,8 +98,9 @@ bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,
 bool Cryptographer::EncryptString(const std::string& serialized,
                                   sync_pb::EncryptedData* encrypted) const {
   if (CanDecryptUsingDefaultKey(*encrypted)) {
-    const std::string& original_serialized = DecryptToString(*encrypted);
-    if (original_serialized == serialized) {
+    std::string original_serialized;
+    if (DecryptToString(*encrypted, &original_serialized) &&
+        original_serialized == serialized) {
       DVLOG(2) << "Re-encryption unnecessary, encrypted data already matches.";
       return true;
     }
@@ -122,28 +123,29 @@ bool Cryptographer::EncryptString(const std::string& serialized,
 bool Cryptographer::Decrypt(const sync_pb::EncryptedData& encrypted,
                             ::google::protobuf::MessageLite* message) const {
   DCHECK(message);
-  std::string plaintext = DecryptToString(encrypted);
+  std::string plaintext;
+  if (!DecryptToString(encrypted, &plaintext)) {
+    return false;
+  }
   return message->ParseFromString(plaintext);
 }
 
-std::string Cryptographer::DecryptToString(
-    const sync_pb::EncryptedData& encrypted) const {
-  // TODO(mamir): DecryptToString() should return a boolean to signal failure
-  // instead of an empty string.
+bool Cryptographer::DecryptToString(const sync_pb::EncryptedData& encrypted,
+                                    std::string* decrypted) const {
+  decrypted->clear();
   auto it = nigoris_.find(encrypted.key_name());
   if (nigoris_.end() == it) {
     // The key used to encrypt the blob is not part of the set of installed
     // nigoris.
     LOG(ERROR) << "Cannot decrypt message";
-    return std::string();
+    return false;
   }
 
-  std::string plaintext;
-  if (!it->second->Decrypt(encrypted.blob(), &plaintext)) {
-    return std::string();
+  if (!it->second->Decrypt(encrypted.blob(), decrypted)) {
+    return false;
   }
 
-  return plaintext;
+  return true;
 }
 
 bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {

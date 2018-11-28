@@ -85,9 +85,9 @@ bool BaseNode::DecryptIfNecessary() {
   }
 
   const sync_pb::EncryptedData& encrypted = specifics.encrypted();
-  std::string plaintext_data =
-      GetTransaction()->GetCryptographer()->DecryptToString(encrypted);
-  if (plaintext_data.length() == 0) {
+  std::string plaintext_data;
+  if (!GetTransaction()->GetCryptographer()->DecryptToString(encrypted,
+                                                             &plaintext_data)) {
     GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
         FROM_HERE, std::string("Failed to decrypt encrypted node of type ") +
                        ModelTypeToString(GetModelType()));
