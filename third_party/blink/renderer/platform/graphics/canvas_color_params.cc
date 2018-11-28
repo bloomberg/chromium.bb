@@ -44,51 +44,8 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
       pixel_format_(pixel_format),
       opacity_mode_(opacity_mode) {}
 
-CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
-                                     SkColorType color_type) {
-  color_space_ = kSRGBCanvasColorSpace;
-  pixel_format_ = kRGBA8CanvasPixelFormat;
-  // When there is no color space information, the SkImage is in legacy mode and
-  // the color type is kN32_SkColorType (which translates to kRGBA8 canvas pixel
-  // format).
-  if (!color_space)
-    return;
-  // kSRGBCanvasColorSpace covers sRGB and e-sRGB. We need to check for
-  // linear-rgb, rec2020 and p3.
-  if (SkColorSpace::Equals(color_space.get(),
-                           SkColorSpace::MakeSRGB()->makeLinearGamma().get())) {
-    color_space_ = kLinearRGBCanvasColorSpace;
-  } else if (SkColorSpace::Equals(
-                 color_space.get(),
-                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                       SkColorSpace::kRec2020_Gamut)
-                     .get())) {
-    color_space_ = kRec2020CanvasColorSpace;
-  } else if (SkColorSpace::Equals(
-                 color_space.get(),
-                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                       SkColorSpace::kDCIP3_D65_Gamut)
-                     .get())) {
-    color_space_ = kP3CanvasColorSpace;
-  }
-  if (color_type == kRGBA_F16_SkColorType)
-    pixel_format_ = kF16CanvasPixelFormat;
-}
-
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
     : CanvasColorParams(info.refColorSpace(), info.colorType()) {}
-
-void CanvasColorParams::SetCanvasColorSpace(CanvasColorSpace color_space) {
-  color_space_ = color_space;
-}
-
-void CanvasColorParams::SetCanvasPixelFormat(CanvasPixelFormat pixel_format) {
-  pixel_format_ = pixel_format;
-}
-
-void CanvasColorParams::SetOpacityMode(OpacityMode opacity_mode) {
-  opacity_mode_ = opacity_mode;
-}
 
 bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
   return color_space_ == kSRGBCanvasColorSpace &&
@@ -97,9 +54,8 @@ bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
 
 std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(
     SkCanvas* canvas) const {
-  if (NeedsSkColorSpaceXformCanvas()) {
+  if (NeedsSkColorSpaceXformCanvas())
     return std::make_unique<cc::SkiaPaintCanvas>(canvas, GetSkColorSpace());
-  }
   // |canvas| already does its own color correction.
   return std::make_unique<cc::SkiaPaintCanvas>(canvas);
 }
@@ -138,9 +94,7 @@ SkColorType CanvasColorParams::PixelFormatToSkColorType(
 }
 
 SkAlphaType CanvasColorParams::GetSkAlphaType() const {
-  if (opacity_mode_ == kOpaque)
-    return kOpaque_SkAlphaType;
-  return kPremul_SkAlphaType;
+  return opacity_mode_ == kOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
 }
 
 const SkSurfaceProps* CanvasColorParams::GetSkSurfaceProps() const {
@@ -268,6 +222,37 @@ viz::ResourceFormat CanvasColorParams::TransferableResourceFormat() const {
   }
   NOTREACHED();
   return viz::RGBA_8888;
+}
+
+CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
+                                     SkColorType color_type) {
+  color_space_ = kSRGBCanvasColorSpace;
+  pixel_format_ = kRGBA8CanvasPixelFormat;
+  // When there is no color space information, the SkImage is in legacy mode and
+  // the color type is kN32_SkColorType (which translates to kRGBA8 canvas pixel
+  // format).
+  if (!color_space)
+    return;
+  // kSRGBCanvasColorSpace covers sRGB and e-sRGB. We need to check for
+  // linear-rgb, rec2020 and p3.
+  if (SkColorSpace::Equals(color_space.get(),
+                           SkColorSpace::MakeSRGB()->makeLinearGamma().get())) {
+    color_space_ = kLinearRGBCanvasColorSpace;
+  } else if (SkColorSpace::Equals(
+                 color_space.get(),
+                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                       SkColorSpace::kRec2020_Gamut)
+                     .get())) {
+    color_space_ = kRec2020CanvasColorSpace;
+  } else if (SkColorSpace::Equals(
+                 color_space.get(),
+                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                       SkColorSpace::kDCIP3_D65_Gamut)
+                     .get())) {
+    color_space_ = kP3CanvasColorSpace;
+  }
+  if (color_type == kRGBA_F16_SkColorType)
+    pixel_format_ = kF16CanvasPixelFormat;
 }
 
 }  // namespace blink

@@ -43,16 +43,15 @@ class PLATFORM_EXPORT CanvasColorParams {
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
-  explicit CanvasColorParams(const sk_sp<SkColorSpace> color_space,
-                             SkColorType color_type);
   explicit CanvasColorParams(const SkImageInfo&);
+
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
 
-  void SetCanvasColorSpace(CanvasColorSpace);
-  void SetCanvasPixelFormat(CanvasPixelFormat);
-  void SetOpacityMode(OpacityMode);
+  void SetCanvasColorSpace(CanvasColorSpace c) { color_space_ = c; }
+  void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
+  void SetOpacityMode(OpacityMode m) { opacity_mode_ = m; }
 
   // Indicates whether rendering needs to go through an SkColorSpaceXformCanvas
   // in order to enforce non-gamma-aware pixel math behaviour.
@@ -99,6 +98,9 @@ class PLATFORM_EXPORT CanvasColorParams {
   viz::ResourceFormat TransferableResourceFormat() const;
 
  private:
+  CanvasColorParams(const sk_sp<SkColorSpace> color_space,
+                    SkColorType color_type);
+
   CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
   CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
   OpacityMode opacity_mode_ = kNonOpaque;
