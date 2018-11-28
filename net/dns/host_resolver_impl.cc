@@ -515,14 +515,23 @@ void MakeNotStale(HostCache::EntryStaleness* stale_info) {
 // DNS-over-HTTPS?
 bool DnsServerSupportsDoh(const IPAddress& dns_server) {
   static const base::NoDestructor<std::unordered_set<std::string>>
-      upgradable_servers({
+      upgradable_servers(std::initializer_list<std::string>({
           // Google Public DNS
-          "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844",
+          "8.8.8.8",
+          "8.8.4.4",
+          "2001:4860:4860::8888",
+          "2001:4860:4860::8844",
           // Cloudflare DNS
-          "1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001",
+          "1.1.1.1",
+          "1.0.0.1",
+          "2606:4700:4700::1111",
+          "2606:4700:4700::1001",
           // Quad9 DNS
-          "9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9",
-      });
+          "9.9.9.9",
+          "149.112.112.112",
+          "2620:fe::fe",
+          "2620:fe::9",
+      }));
   return upgradable_servers->find(dns_server.ToString()) !=
          upgradable_servers->end();
 }
