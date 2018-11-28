@@ -42,7 +42,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include "xdg-shell-unstable-v6-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -57,7 +57,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
-	struct zxdg_shell_v6 *shell;
+	struct xdg_wm_base *wm_base;
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
 	struct wl_touch *touch;
@@ -92,8 +92,8 @@ struct window {
 	uint32_t benchmark_time, frames;
 	struct wl_egl_window *native;
 	struct wl_surface *surface;
-	struct zxdg_surface_v6 *xdg_surface;
-	struct zxdg_toplevel_v6 *xdg_toplevel;
+	struct xdg_surface *xdg_surface;
+	struct xdg_toplevel *xdg_toplevel;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
 	int fullscreen, maximized, opaque, buffer_size, frame_sync, delay;
@@ -290,22 +290,22 @@ init_gl(struct window *window)
 }
 
 static void
-handle_surface_configure(void *data, struct zxdg_surface_v6 *surface,
+handle_surface_configure(void *data, struct xdg_surface *surface,
 			 uint32_t serial)
 {
 	struct window *window = data;
 
-	zxdg_surface_v6_ack_configure(surface, serial);
+	xdg_surface_ack_configure(surface, serial);
 
 	window->wait_for_configure = false;
 }
 
-static const struct zxdg_surface_v6_listener xdg_surface_listener = {
+static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_configure
 };
 
 static void
-handle_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+handle_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
 			  int32_t width, int32_t height,
 			  struct wl_array *states)
 {
@@ -317,10 +317,10 @@ handle_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
 	wl_array_for_each(p, states) {
 		uint32_t state = *p;
 		switch (state) {
-		case ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN:
+		case XDG_TOPLEVEL_STATE_FULLSCREEN:
 			window->fullscreen = 1;
 			break;
-		case ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED:
+		case XDG_TOPLEVEL_STATE_MAXIMIZED:
 			window->maximized = 1;
 			break;
 		}
@@ -344,12 +344,12 @@ handle_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
 }
 
 static void
-handle_toplevel_close(void *data, struct zxdg_toplevel_v6 *xdg_toplevel)
+handle_toplevel_close(void *data, struct xdg_toplevel *xdg_toplevel)
 {
 	running = 0;
 }
 
-static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+static const struct xdg_toplevel_listener xdg_toplevel_listener = {
 	handle_toplevel_configure,
 	handle_toplevel_close,
 };
@@ -371,17 +371,17 @@ create_surface(struct window *window)
 						   display->egl.conf,
 						   window->native, NULL);
 
-	window->xdg_surface = zxdg_shell_v6_get_xdg_surface(display->shell,
-							    window->surface);
-	zxdg_surface_v6_add_listener(window->xdg_surface,
-				     &xdg_surface_listener, window);
+	window->xdg_surface = xdg_wm_base_get_xdg_surface(display->wm_base,
+							  window->surface);
+	xdg_surface_add_listener(window->xdg_surface,
+				 &xdg_surface_listener, window);
 
 	window->xdg_toplevel =
-		zxdg_surface_v6_get_toplevel(window->xdg_surface);
-	zxdg_toplevel_v6_add_listener(window->xdg_toplevel,
-				      &xdg_toplevel_listener, window);
+		xdg_surface_get_toplevel(window->xdg_surface);
+	xdg_toplevel_add_listener(window->xdg_toplevel,
+				  &xdg_toplevel_listener, window);
 
-	zxdg_toplevel_v6_set_title(window->xdg_toplevel, "simple-egl");
+	xdg_toplevel_set_title(window->xdg_toplevel, "simple-egl");
 
 	window->wait_for_configure = true;
 	wl_surface_commit(window->surface);
@@ -393,11 +393,11 @@ create_surface(struct window *window)
 	if (!window->frame_sync)
 		eglSwapInterval(display->egl.dpy, 0);
 
-	if (!display->shell)
+	if (!display->wm_base)
 		return;
 
 	if (window->fullscreen)
-		zxdg_toplevel_v6_set_fullscreen(window->xdg_toplevel, NULL);
+		xdg_toplevel_set_fullscreen(window->xdg_toplevel, NULL);
 }
 
 static void
@@ -413,9 +413,9 @@ destroy_surface(struct window *window)
 	wl_egl_window_destroy(window->native);
 
 	if (window->xdg_toplevel)
-		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
+		xdg_toplevel_destroy(window->xdg_toplevel);
 	if (window->xdg_surface)
-		zxdg_surface_v6_destroy(window->xdg_surface);
+		xdg_surface_destroy(window->xdg_surface);
 	wl_surface_destroy(window->surface);
 
 	if (window->callback)
@@ -575,8 +575,8 @@ pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
 		return;
 
 	if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED)
-		zxdg_toplevel_v6_move(display->window->xdg_toplevel,
-				      display->seat, serial);
+		xdg_toplevel_move(display->window->xdg_toplevel,
+				  display->seat, serial);
 }
 
 static void
@@ -600,10 +600,10 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 {
 	struct display *d = (struct display *)data;
 
-	if (!d->shell)
+	if (!d->wm_base)
 		return;
 
-	zxdg_toplevel_v6_move(d->window->xdg_toplevel, d->seat, serial);
+	xdg_toplevel_move(d->window->xdg_toplevel, d->seat, serial);
 }
 
 static void
@@ -662,15 +662,14 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 {
 	struct display *d = data;
 
-	if (!d->shell)
+	if (!d->wm_base)
 		return;
 
 	if (key == KEY_F11 && state) {
 		if (d->window->fullscreen)
-			zxdg_toplevel_v6_unset_fullscreen(d->window->xdg_toplevel);
+			xdg_toplevel_unset_fullscreen(d->window->xdg_toplevel);
 		else
-			zxdg_toplevel_v6_set_fullscreen(d->window->xdg_toplevel,
-							NULL);
+			xdg_toplevel_set_fullscreen(d->window->xdg_toplevel, NULL);
 	} else if (key == KEY_ESC && state)
 		running = 0;
 }
@@ -728,13 +727,13 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 static void
-xdg_shell_ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
+xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
 {
-	zxdg_shell_v6_pong(shell, serial);
+	xdg_wm_base_pong(shell, serial);
 }
 
-static const struct zxdg_shell_v6_listener xdg_shell_listener = {
-	xdg_shell_ping,
+static const struct xdg_wm_base_listener wm_base_listener = {
+	xdg_wm_base_ping,
 };
 
 static void
@@ -748,10 +747,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 			wl_registry_bind(registry, name,
 					 &wl_compositor_interface,
 					 MIN(version, 4));
-	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-		d->shell = wl_registry_bind(registry, name,
-					    &zxdg_shell_v6_interface, 1);
-		zxdg_shell_v6_add_listener(d->shell, &xdg_shell_listener, d);
+	} else if (strcmp(interface, "xdg_wm_base") == 0) {
+		d->wm_base = wl_registry_bind(registry, name,
+					      &xdg_wm_base_interface, 1);
+		xdg_wm_base_add_listener(d->wm_base, &wm_base_listener, d);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		d->seat = wl_registry_bind(registry, name,
 					   &wl_seat_interface, 1);
@@ -881,8 +880,8 @@ main(int argc, char **argv)
 	if (display.cursor_theme)
 		wl_cursor_theme_destroy(display.cursor_theme);
 
-	if (display.shell)
-		zxdg_shell_v6_destroy(display.shell);
+	if (display.wm_base)
+		xdg_wm_base_destroy(display.wm_base);
 
 	if (display.compositor)
 		wl_compositor_destroy(display.compositor);

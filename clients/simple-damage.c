@@ -39,7 +39,7 @@
 #include <wayland-client.h>
 #include "shared/os-compatibility.h"
 #include "shared/zalloc.h"
-#include "xdg-shell-unstable-v6-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
 
@@ -51,7 +51,7 @@ struct display {
 	int compositor_version;
 	struct wl_compositor *compositor;
 	struct wp_viewporter *viewporter;
-	struct zxdg_shell_v6 *shell;
+	struct xdg_wm_base *wm_base;
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct wl_shm *shm;
 	uint32_t formats;
@@ -74,8 +74,8 @@ struct window {
 	int width, height, border;
 	struct wl_surface *surface;
 	struct wp_viewport *viewport;
-	struct zxdg_surface_v6 *xdg_surface;
-	struct zxdg_toplevel_v6 *xdg_toplevel;
+	struct xdg_surface *xdg_surface;
+	struct xdg_toplevel *xdg_toplevel;
 	struct wl_callback *callback;
 	struct buffer buffers[2];
 	struct buffer *prev_buffer;
@@ -149,12 +149,12 @@ create_shm_buffer(struct display *display, struct buffer *buffer,
 }
 
 static void
-xdg_surface_handle_configure(void *data, struct zxdg_surface_v6 *surface,
+xdg_surface_handle_configure(void *data, struct xdg_surface *surface,
 			     uint32_t serial)
 {
 	struct window *window = data;
 
-	zxdg_surface_v6_ack_configure(surface, serial);
+	xdg_surface_ack_configure(surface, serial);
 
 	if (window->wait_for_configure) {
 		redraw(window, NULL, 0);
@@ -162,24 +162,24 @@ xdg_surface_handle_configure(void *data, struct zxdg_surface_v6 *surface,
 	}
 }
 
-static const struct zxdg_surface_v6_listener xdg_surface_listener = {
+static const struct xdg_surface_listener xdg_surface_listener = {
 	xdg_surface_handle_configure,
 };
 
 static void
-xdg_toplevel_handle_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
+xdg_toplevel_handle_configure(void *data, struct xdg_toplevel *toplevel,
 			      int32_t width, int32_t height,
 			      struct wl_array *states)
 {
 }
 
 static void
-xdg_toplevel_handle_close(void *data, struct zxdg_toplevel_v6 *xdg_toplevel)
+xdg_toplevel_handle_close(void *data, struct xdg_toplevel *xdg_toplevel)
 {
 	running = 0;
 }
 
-static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
+static const struct xdg_toplevel_listener xdg_toplevel_listener = {
 	xdg_toplevel_handle_configure,
 	xdg_toplevel_handle_close,
 };
@@ -317,25 +317,25 @@ create_window(struct display *display, int width, int height,
 		window->viewport = wp_viewporter_get_viewport(display->viewporter,
 							      window->surface);
 
-	if (display->shell) {
+	if (display->wm_base) {
 		window->xdg_surface =
-			zxdg_shell_v6_get_xdg_surface(display->shell,
-						      window->surface);
+			xdg_wm_base_get_xdg_surface(display->wm_base,
+						    window->surface);
 
 		assert(window->xdg_surface);
 
-		zxdg_surface_v6_add_listener(window->xdg_surface,
-					     &xdg_surface_listener, window);
+		xdg_surface_add_listener(window->xdg_surface,
+					 &xdg_surface_listener, window);
 
 		window->xdg_toplevel =
-			zxdg_surface_v6_get_toplevel(window->xdg_surface);
+			xdg_surface_get_toplevel(window->xdg_surface);
 
 		assert(window->xdg_toplevel);
 
-		zxdg_toplevel_v6_add_listener(window->xdg_toplevel,
-					      &xdg_toplevel_listener, window);
+		xdg_toplevel_add_listener(window->xdg_toplevel,
+					  &xdg_toplevel_listener, window);
 
-		zxdg_toplevel_v6_set_title(window->xdg_toplevel, "simple-damage");
+		xdg_toplevel_set_title(window->xdg_toplevel, "simple-damage");
 
 		window->wait_for_configure = true;
 		wl_surface_commit(window->surface);
@@ -370,9 +370,9 @@ destroy_window(struct window *window)
 		wl_buffer_destroy(window->buffers[1].buffer);
 
 	if (window->xdg_toplevel)
-		zxdg_toplevel_v6_destroy(window->xdg_toplevel);
+		xdg_toplevel_destroy(window->xdg_toplevel);
 	if (window->xdg_surface)
-		zxdg_surface_v6_destroy(window->xdg_surface);
+		xdg_surface_destroy(window->xdg_surface);
 	if (window->viewport)
 		wp_viewport_destroy(window->viewport);
 	wl_surface_destroy(window->surface);
@@ -711,13 +711,13 @@ struct wl_shm_listener shm_listener = {
 };
 
 static void
-xdg_shell_ping(void *data, struct zxdg_shell_v6*shell, uint32_t serial)
+xdg_wm_base_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
 {
-	zxdg_shell_v6_pong(shell, serial);
+	xdg_wm_base_pong(shell, serial);
 }
 
-static const struct zxdg_shell_v6_listener xdg_shell_listener = {
-	xdg_shell_ping,
+static const struct xdg_wm_base_listener wm_base_listener = {
+	xdg_wm_base_ping,
 };
 
 static void
@@ -743,10 +743,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "wp_viewporter") == 0) {
 		d->viewporter = wl_registry_bind(registry, id,
 						 &wp_viewporter_interface, 1);
-	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-		d->shell = wl_registry_bind(registry,
-					    id, &zxdg_shell_v6_interface, 1);
-		zxdg_shell_v6_add_listener(d->shell, &xdg_shell_listener, d);
+	} else if (strcmp(interface, "xdg_wm_base") == 0) {
+		d->wm_base = wl_registry_bind(registry,
+					      id, &xdg_wm_base_interface, 1);
+		xdg_wm_base_add_listener(d->wm_base, &wm_base_listener, d);
 	} else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
 		d->fshell = wl_registry_bind(registry,
 					     id, &zwp_fullscreen_shell_v1_interface, 1);
@@ -808,8 +808,8 @@ destroy_display(struct display *display)
 	if (display->shm)
 		wl_shm_destroy(display->shm);
 
-	if (display->shell)
-		zxdg_shell_v6_destroy(display->shell);
+	if (display->wm_base)
+		xdg_wm_base_destroy(display->wm_base);
 
 	if (display->fshell)
 		zwp_fullscreen_shell_v1_release(display->fshell);

@@ -607,8 +607,8 @@ demo_clients +=					\
 
 weston_simple_shm_SOURCES = clients/simple-shm.c
 nodist_weston_simple_shm_SOURCES =		\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h	\
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -618,8 +618,8 @@ weston_simple_damage_SOURCES = clients/simple-damage.c
 nodist_weston_simple_damage_SOURCES =		\
 	protocol/viewporter-protocol.c		\
 	protocol/viewporter-client-protocol.h	\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h	\
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_simple_damage_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
@@ -649,8 +649,8 @@ if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
 weston_simple_egl_SOURCES = clients/simple-egl.c
 nodist_weston_simple_egl_SOURCES =		\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h
+	protocol/xdg-shell-protocol.c		\
+	protocol/xdg-shell-client-protocol.h
 weston_simple_egl_CFLAGS = $(AM_CFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
 weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
@@ -661,8 +661,8 @@ weston_simple_dmabuf_drm_SOURCES =			\
 	clients/simple-dmabuf-drm.c			\
 	clients/simple-dmabuf-drm-data.h
 nodist_weston_simple_dmabuf_drm_SOURCES =		\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h	\
+	protocol/xdg-shell-protocol.c			\
+	protocol/xdg-shell-client-protocol.h		\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
@@ -679,8 +679,8 @@ if BUILD_SIMPLE_DMABUF_V4L_CLIENT
 demo_clients += weston-simple-dmabuf-v4l
 weston_simple_dmabuf_v4l_SOURCES = clients/simple-dmabuf-v4l.c
 nodist_weston_simple_dmabuf_v4l_SOURCES =		\
-	protocol/xdg-shell-unstable-v6-protocol.c		\
-	protocol/xdg-shell-unstable-v6-client-protocol.h	\
+	protocol/xdg-shell-protocol.c			\
+	protocol/xdg-shell-client-protocol.h		\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
 	protocol/linux-dmabuf-unstable-v1-protocol.c \
@@ -717,8 +717,8 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/viewporter-protocol.c			\
 	protocol/viewporter-client-protocol.h		\
-	protocol/xdg-shell-unstable-v6-protocol.c			\
-	protocol/xdg-shell-unstable-v6-client-protocol.h		\
+	protocol/xdg-shell-protocol.c			\
+	protocol/xdg-shell-client-protocol.h		\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
 	protocol/pointer-constraints-unstable-v1-client-protocol.h	\
 	protocol/relative-pointer-unstable-v1-protocol.c		\
@@ -966,6 +966,8 @@ BUILT_SOURCES +=					\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-unstable-v6-protocol.c			\
 	protocol/xdg-shell-unstable-v6-client-protocol.h		\
+	protocol/xdg-shell-protocol.c					\
+	protocol/xdg-shell-client-protocol.h				\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
