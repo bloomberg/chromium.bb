@@ -324,7 +324,6 @@ void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.cert);
   WriteParam(m, p.unverified_cert);
   WriteParam(m, p.cert_status);
-  WriteParam(m, p.security_bits);
   WriteParam(m, p.key_exchange_group);
   WriteParam(m, p.peer_signature_algorithm);
   WriteParam(m, p.connection_status);
@@ -352,7 +351,6 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
   return ReadParam(m, iter, &r->cert) &&
          ReadParam(m, iter, &r->unverified_cert) &&
          ReadParam(m, iter, &r->cert_status) &&
-         ReadParam(m, iter, &r->security_bits) &&
          ReadParam(m, iter, &r->key_exchange_group) &&
          ReadParam(m, iter, &r->peer_signature_algorithm) &&
          ReadParam(m, iter, &r->connection_status) &&

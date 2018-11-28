@@ -202,7 +202,6 @@ class MockClientCertJobProtocolHandler
 // Set up dummy values to use in test HTTPS requests.
 
 const net::CertStatus kTestCertError = net::CERT_STATUS_DATE_INVALID;
-const int kTestSecurityBits = 256;
 // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
 const int kTestConnectionStatus = 0x300039;
 
@@ -227,7 +226,6 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
     info->ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     info->ssl_info.cert_status = kTestCertError;
-    info->ssl_info.security_bits = kTestSecurityBits;
     info->ssl_info.connection_status = kTestConnectionStatus;
   }
 

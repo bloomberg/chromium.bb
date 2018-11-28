@@ -1122,15 +1122,12 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   // numbers begin with a stray 0x03, so mask them off.
   quic::QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
   uint16_t cipher_suite;
-  int security_bits;
   switch (aead) {
     case quic::kAESG:
       cipher_suite = TLS1_CK_AES_128_GCM_SHA256 & 0xffff;
-      security_bits = 128;
       break;
     case quic::kCC20:
       cipher_suite = TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff;
-      security_bits = 256;
       break;
     default:
       NOTREACHED();
@@ -1183,7 +1180,6 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->connection_status = ssl_connection_status;
   ssl_info->client_cert_sent = false;
   ssl_info->channel_id_sent = crypto_stream_->WasChannelIDSent();
-  ssl_info->security_bits = security_bits;
   ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;

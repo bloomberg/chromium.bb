@@ -71,11 +71,6 @@ class NET_EXPORT SSLInfo {
   // See cert_status_flags.h for values.
   CertStatus cert_status = 0;
 
-  // The security strength, in bits, of the SSL cipher suite.
-  // 0 means the connection is not encrypted.
-  // -1 means the security strength is unknown.
-  int security_bits = -1;
-
   // The ID of the (EC)DH group used by the key exchange or zero if unknown
   // (older cache entries may not store the value) or not applicable.
   uint16_t key_exchange_group = 0;

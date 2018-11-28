@@ -376,9 +376,6 @@ std::unique_ptr<UploadDataStream> CreateSimpleUploadData(const char* data) {
 
 // Verify that the SSLInfo of a successful SSL connection has valid values.
 void CheckSSLInfo(const SSLInfo& ssl_info) {
-  // -1 means unknown.  0 means no encryption.
-  EXPECT_GT(ssl_info.security_bits, 0);
-
   // The cipher suite TLS_NULL_WITH_NULL_NULL (0) must not be negotiated.
   uint16_t cipher_suite =
       SSLConnectionStatusToCipherSuite(ssl_info.connection_status);

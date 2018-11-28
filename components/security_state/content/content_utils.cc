@@ -429,7 +429,6 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->connection_status = ssl.connection_status;
   state->key_exchange_group = ssl.key_exchange_group;
   state->peer_signature_algorithm = ssl.peer_signature_algorithm;
-  state->security_bits = ssl.security_bits;
   state->pkp_bypassed = ssl.pkp_bypassed;
   state->displayed_mixed_content =
       !!(ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT);

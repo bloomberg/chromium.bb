@@ -220,7 +220,6 @@ class ServiceWorkerURLRequestJobTest
     http_info->ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     EXPECT_TRUE(http_info->ssl_info.is_valid());
-    http_info->ssl_info.security_bits = 0x100;
     // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
     http_info->ssl_info.connection_status = 0x300039;
     http_info->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
@@ -304,7 +303,6 @@ class ServiceWorkerURLRequestJobTest
     const net::SSLInfo& ssl_info = request_->response_info().ssl_info;
     if (expect_valid_ssl) {
       EXPECT_TRUE(ssl_info.is_valid());
-      EXPECT_EQ(ssl_info.security_bits, 0x100);
       EXPECT_EQ(ssl_info.connection_status, 0x300039);
     } else {
       EXPECT_FALSE(ssl_info.is_valid());
