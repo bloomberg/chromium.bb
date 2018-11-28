@@ -545,7 +545,21 @@ bool UsageTimeLimitProcessor::HasActiveOverride() {
       has_lock_override && time_limit_override_->created_at > last_reset_time &&
       !override_cancelled_by_window_limit;
 
-  return has_valid_lock_override;
+  if (!has_valid_lock_override)
+    return false;
+
+  // Check if the usage time was increased before the override creation, which
+  // invalidates it.
+  if (previous_state_ && previous_state_->is_time_usage_limit_enabled &&
+      previous_state_->remaining_usage <= base::TimeDelta::FromMinutes(0)) {
+    if (enabled_time_usage_limit_ &&
+        time_limit_override_->created_at <
+            enabled_time_usage_limit_->last_updated) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool UsageTimeLimitProcessor::IsLocked() {
