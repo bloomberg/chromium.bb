@@ -9461,6 +9461,105 @@
       }
     ]
   },
+  "WebKit Linux Trusty ASAN": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/ASANExpectations",
+          "--time-out-ms",
+          "48000",
+          "--enable-sanitizer"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 20
+        }
+      }
+    ]
+  },
+  "WebKit Linux Trusty Leak": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/LeakExpectations",
+          "--time-out-ms",
+          "48000",
+          "--enable-leak-detection"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 10
+        }
+      }
+    ]
+  },
+  "WebKit Linux Trusty MSAN": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/MSANExpectations",
+          "--time-out-ms",
+          "66000",
+          "--enable-sanitizer"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "io_timeout": 3600,
+          "shards": 20
+        }
+      }
+    ]
+  },
   "win-asan": {
     "gtest_tests": [
       {
