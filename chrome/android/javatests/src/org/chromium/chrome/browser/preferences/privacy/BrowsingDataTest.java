@@ -67,6 +67,7 @@ public class BrowsingDataTest {
         BrowsingDataCounterBridge[] counter = {null};
         CallbackHelper helper = new CallbackHelper();
         BrowsingDataCounterBridge.BrowsingDataCounterCallback callback = (result) -> {
+            if (result.equals("Calculating...")) return;
             out[0] = result;
             helper.notifyCalled();
         };
@@ -77,7 +78,9 @@ public class BrowsingDataTest {
         helper.waitForCallback(0);
         // The counter returns a result like "3 sites" or "None".
         if (out[0].equals("None")) return 0;
-        return Integer.parseInt(out[0].replaceAll("[^0-9]", ""));
+        String cookieCount = out[0].replaceAll("[^0-9]", "");
+        Assert.assertFalse("Result should contain a number: " + out[0], cookieCount.isEmpty());
+        return Integer.parseInt(cookieCount);
     }
 
     private String runJavascriptAsync(String type) throws Exception {
