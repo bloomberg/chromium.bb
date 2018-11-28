@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,6 +19,11 @@ const char kContentInsetChoiceValue[] = "content-inset";
 const char kSafeAreaChoiceValue[] = "safe-area";
 const char kHybridChoiceValue[] = "hybrid";
 const char kSmoothScrollingChoiceValue[] = "smooth";
+
+// Feature used by finch config to enable smooth scrolling when the default
+// viewport adjustment experiment is selected via command line switches.
+const base::Feature kSmoothScrollingDefault{"FullscreenSmoothScrollingDefault",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 }
 
 namespace fullscreen {
@@ -55,7 +61,9 @@ ViewportAdjustmentExperiment GetActiveViewportExperiment() {
     if (viewport_experiment == std::string(kFrameChoiceValue))
       return ViewportAdjustmentExperiment::FRAME;
   }
-  return ViewportAdjustmentExperiment::SMOOTH_SCROLLING;
+  return base::FeatureList::IsEnabled(kSmoothScrollingDefault)
+             ? ViewportAdjustmentExperiment::SMOOTH_SCROLLING
+             : ViewportAdjustmentExperiment::FRAME;
 }
 
 }  // namespace features
