@@ -19,6 +19,8 @@ JavaCrashKey& GetCrashKey(int index) {
       {"loaded_dynamic_module", JavaCrashKey::Tag::kArray},
       {"active_dynamic_module", JavaCrashKey::Tag::kArray},
       {"application_status", JavaCrashKey::Tag::kArray},
+      {"installed_modules", JavaCrashKey::Tag::kArray},
+      {"emulated_modules", JavaCrashKey::Tag::kArray},
   };
   static_assert(
       base::size(crash_keys) == static_cast<size_t>(CrashKeyIndex::NUM_KEYS),

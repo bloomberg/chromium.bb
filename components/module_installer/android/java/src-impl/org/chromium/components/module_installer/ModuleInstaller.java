@@ -4,17 +4,30 @@
 
 package org.chromium.components.module_installer;
 
-import com.google.android.play.core.splitcompat.SplitCompat;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
+import android.text.TextUtils;
 
+import com.google.android.play.core.splitcompat.SplitCompat;
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
+
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.crash.CrashKeyIndex;
+import org.chromium.components.crash.CrashKeys;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /** Installs dynamic feature modules (DFMs). */
 public class ModuleInstaller {
@@ -30,6 +43,40 @@ public class ModuleInstaller {
         try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
             SplitCompat.install(ContextUtils.getApplicationContext());
         }
+        // SplitCompat.install may add emulated modules. Thus, update crash keys.
+        updateCrashKeys();
+    }
+
+    /** Writes fully installed and emulated modules to crash keys. */
+    public static void updateCrashKeys() {
+        Context context = ContextUtils.getApplicationContext();
+
+        // Get modules that are fully installed as split APKs (excluding base which is always
+        // intalled). Tree set to have ordered and, thus, deterministic results.
+        Set<String> fullyInstalledModules = new TreeSet<>();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Split APKs are only supported on Android L+.
+            try {
+                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
+                        BuildInfo.getInstance().packageName, 0);
+                if (packageInfo.splitNames != null) {
+                    fullyInstalledModules.addAll(Arrays.asList(packageInfo.splitNames));
+                }
+            } catch (NameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Create temporary split install manager to retrieve both fully installed and emulated
+        // modules. Then remove fully installed ones to get emulated ones only.
+        Set<String> emulatedModules =
+                new TreeSet<>(SplitInstallManagerFactory.create(context).getInstalledModules());
+        emulatedModules.removeAll(fullyInstalledModules);
+
+        CrashKeys.getInstance().set(
+                CrashKeyIndex.INSTALLED_MODULES, encodeCrashKeyValue(fullyInstalledModules));
+        CrashKeys.getInstance().set(
+                CrashKeyIndex.EMULATED_MODULES, encodeCrashKeyValue(emulatedModules));
     }
 
     /**
@@ -73,6 +120,8 @@ public class ModuleInstaller {
             sBackend.close();
             sBackend = null;
         }
+
+        updateCrashKeys();
     }
 
     private static ModuleInstallerBackend getBackend() {
@@ -83,6 +132,13 @@ public class ModuleInstaller {
                     : new PlayCoreModuleInstallerBackend(listener);
         }
         return sBackend;
+    }
+
+    private static String encodeCrashKeyValue(Set<String> moduleNames) {
+        if (moduleNames.isEmpty()) return "<none>";
+        // Values with dots are interpreted as URLs. Some module names have dots in them. Make sure
+        // they don't get sanitized.
+        return TextUtils.join(",", moduleNames).replace('.', '$');
     }
 
     private ModuleInstaller() {}
