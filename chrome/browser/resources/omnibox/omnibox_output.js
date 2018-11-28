@@ -50,6 +50,13 @@ cr.define('omnibox_output', function() {
       tooltip: 'The text that is presented identifying the result.'
     },
     {
+      header: 'Description',
+      url: '',
+      propertyName: 'description',
+      displayAlways: false,
+      tooltip: 'The page title of the result.'
+    },
+    {
       header: 'CanBeDefault',
       url: '',
       propertyName: 'allowedToBeDefaultMatch',
@@ -75,13 +82,6 @@ cr.define('omnibox_output', function() {
       tooltip:
           'A green checkmark indicates that the result URL matches an open' +
           'tab.'
-    },
-    {
-      header: 'Description',
-      url: '',
-      propertyName: 'description',
-      displayAlways: false,
-      tooltip: 'The page title of the result.'
     },
     {
       header: 'URL',
