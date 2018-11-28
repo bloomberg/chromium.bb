@@ -727,7 +727,9 @@ TEST_F(GLES2FormatTest, CullFace) {
 
 TEST_F(GLES2FormatTest, DeleteBuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteBuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteBuffersImmediate>();
@@ -745,7 +747,9 @@ TEST_F(GLES2FormatTest, DeleteBuffersImmediate) {
 
 TEST_F(GLES2FormatTest, DeleteFramebuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteFramebuffersImmediate>();
@@ -773,7 +777,9 @@ TEST_F(GLES2FormatTest, DeleteProgram) {
 
 TEST_F(GLES2FormatTest, DeleteRenderbuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::DeleteRenderbuffersImmediate>();
@@ -791,7 +797,9 @@ TEST_F(GLES2FormatTest, DeleteRenderbuffersImmediate) {
 
 TEST_F(GLES2FormatTest, DeleteSamplersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteSamplersImmediate& cmd =
       *GetBufferAs<cmds::DeleteSamplersImmediate>();
@@ -829,7 +837,9 @@ TEST_F(GLES2FormatTest, DeleteShader) {
 
 TEST_F(GLES2FormatTest, DeleteTexturesImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteTexturesImmediate& cmd =
       *GetBufferAs<cmds::DeleteTexturesImmediate>();
@@ -847,7 +857,9 @@ TEST_F(GLES2FormatTest, DeleteTexturesImmediate) {
 
 TEST_F(GLES2FormatTest, DeleteTransformFeedbacksImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteTransformFeedbacksImmediate& cmd =
       *GetBufferAs<cmds::DeleteTransformFeedbacksImmediate>();
@@ -1059,7 +1071,9 @@ TEST_F(GLES2FormatTest, FrontFace) {
 
 TEST_F(GLES2FormatTest, GenBuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenBuffersImmediate& cmd = *GetBufferAs<cmds::GenBuffersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
@@ -1086,7 +1100,9 @@ TEST_F(GLES2FormatTest, GenerateMipmap) {
 
 TEST_F(GLES2FormatTest, GenFramebuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenFramebuffersImmediate& cmd =
       *GetBufferAs<cmds::GenFramebuffersImmediate>();
@@ -1104,7 +1120,9 @@ TEST_F(GLES2FormatTest, GenFramebuffersImmediate) {
 
 TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenRenderbuffersImmediate& cmd =
       *GetBufferAs<cmds::GenRenderbuffersImmediate>();
@@ -1122,7 +1140,9 @@ TEST_F(GLES2FormatTest, GenRenderbuffersImmediate) {
 
 TEST_F(GLES2FormatTest, GenSamplersImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenSamplersImmediate& cmd = *GetBufferAs<cmds::GenSamplersImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
@@ -1139,7 +1159,9 @@ TEST_F(GLES2FormatTest, GenSamplersImmediate) {
 
 TEST_F(GLES2FormatTest, GenTexturesImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenTexturesImmediate& cmd = *GetBufferAs<cmds::GenTexturesImmediate>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
@@ -1156,7 +1178,9 @@ TEST_F(GLES2FormatTest, GenTexturesImmediate) {
 
 TEST_F(GLES2FormatTest, GenTransformFeedbacksImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenTransformFeedbacksImmediate& cmd =
       *GetBufferAs<cmds::GenTransformFeedbacksImmediate>();
@@ -3739,7 +3763,9 @@ TEST_F(GLES2FormatTest, TexStorage2DEXT) {
 
 TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::GenQueriesEXTImmediate>();
@@ -3757,7 +3783,9 @@ TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
 
 TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::DeleteQueriesEXTImmediate>();
@@ -3880,7 +3908,9 @@ TEST_F(GLES2FormatTest, PopGroupMarkerEXT) {
 
 TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::GenVertexArraysOESImmediate>();
@@ -3898,7 +3928,9 @@ TEST_F(GLES2FormatTest, GenVertexArraysOESImmediate) {
 
 TEST_F(GLES2FormatTest, DeleteVertexArraysOESImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteVertexArraysOESImmediate& cmd =
       *GetBufferAs<cmds::DeleteVertexArraysOESImmediate>();
