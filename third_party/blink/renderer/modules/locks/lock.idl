@@ -5,8 +5,7 @@
 // https://wicg.github.io/web-locks/#lock
 [
     SecureContext,
-    Exposed=(Window,Worker),
-    RuntimeEnabled=WebLocksAPI
+    Exposed=(Window,Worker)
 ] interface Lock {
     readonly attribute DOMString name;
     readonly attribute LockMode mode;
