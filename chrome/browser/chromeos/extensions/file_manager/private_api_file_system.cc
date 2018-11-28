@@ -749,7 +749,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(
             &CheckLocalDiskSpace,
-            file_manager::util::GetDownloadsFolderForProfile(GetProfile()),
+            file_manager::util::GetMyFilesFolderForProfile(GetProfile()),
             file_info.size),
         base::BindOnce(
             &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
