@@ -44,6 +44,8 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   // blink::WebAudioDevice implementation.
   void Start() override;
   void Stop() override;
+  void Pause() override;
+  void Resume() override;
   double SampleRate() override;
   int FramesPerBuffer() override;
 
