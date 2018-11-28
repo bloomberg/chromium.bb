@@ -159,7 +159,7 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,WebFrameMessaging,SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -250,7 +250,7 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,WebFrameMessaging,SlimNavigationManager"
       ],
       "xctest": true,
       "device type": "iPad Air 2",
@@ -342,7 +342,7 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,WebFrameMessaging,SlimNavigationManager"
       ],
       "xctest": true,
       "device type": "iPhone X",
@@ -433,7 +433,7 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,WebFrameMessaging,SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
