@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -249,6 +250,63 @@ void OverlayProcessor::UpdateDamageRect(
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 
   damage_rect->Union(output_surface_overlay_damage_rect);
+}
+
+namespace {
+
+bool DiscardableQuad(const DrawQuad* q) {
+  float opacity = q->shared_quad_state->opacity;
+  if (opacity < std::numeric_limits<float>::epsilon())
+    return true;
+
+  if (q->material == DrawQuad::SOLID_COLOR) {
+    if (SolidColorDrawQuad::MaterialCast(q)->color == SK_ColorBLACK ||
+        SolidColorDrawQuad::MaterialCast(q)->color == SK_ColorTRANSPARENT)
+      return true;
+
+    const SkColor color = SolidColorDrawQuad::MaterialCast(q)->color;
+    const float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+    return q->ShouldDrawWithBlending() &&
+           alpha < std::numeric_limits<float>::epsilon();
+  }
+
+  return false;
+}
+
+}  // namespace
+
+// static
+void OverlayProcessor::EliminateOrCropPrimary(
+    const QuadList& quad_list,
+    const QuadList::Iterator& candidate_iterator,
+    OverlayCandidate* primary,
+    OverlayCandidateList* candidate_list) {
+  gfx::RectF content_rect;
+
+  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+    if (it == candidate_iterator)
+      continue;
+    if (!DiscardableQuad(*it)) {
+      auto& transform = it->shared_quad_state->quad_to_target_transform;
+      gfx::RectF display_rect = gfx::RectF(it->rect);
+      transform.TransformRect(&display_rect);
+      content_rect.Union(display_rect);
+    }
+  }
+
+  if (!content_rect.IsEmpty()) {
+    // Sometimes the content quads extend past primary->display_rect, so first
+    // clip the content_rect to that.
+    content_rect.Intersect(primary->display_rect);
+    DCHECK_NE(0, primary->display_rect.width());
+    DCHECK_NE(0, primary->display_rect.height());
+    primary->uv_rect = gfx::ScaleRect(
+        content_rect, 1. / primary->resource_size_in_pixels.width(),
+        1. / primary->resource_size_in_pixels.height());
+    primary->display_rect = content_rect;
+
+    candidate_list->push_back(*primary);
+  }
 }
 
 }  // namespace viz
