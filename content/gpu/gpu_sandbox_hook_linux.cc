@@ -139,6 +139,13 @@ void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevImageProc0Path));
 }
 
+void AddImgPvrGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  // Device node needed by the IMG GPU userspace.
+  static const char kPvrSyncPath[] = "/dev/pvr_sync";
+
+  permissions->push_back(BrokerFilePermission::ReadWrite(kPvrSyncPath));
+}
+
 void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   static const char* const kReadOnlyList[] = {"/etc/ld.so.cache",
                                               "/usr/lib64/libEGL.so.1",
@@ -247,6 +254,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     if (UseV4L2Codec())
       AddV4L2GpuWhitelist(&permissions, options);
     if (IsArchitectureArm()) {
+      AddImgPvrGpuWhitelist(&permissions);
       AddArmGpuWhitelist(&permissions);
       return permissions;
     }
