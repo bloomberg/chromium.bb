@@ -108,9 +108,14 @@ NavigationPredictor::NavigationPredictor(
                   is_same_host_scale_ + contains_image_scale_ +
                   is_url_incremented_scale_ + source_engagement_score_scale_ +
                   target_engagement_score_scale_ + area_rank_scale_),
-      is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
+      is_low_end_device_(base::SysInfo::IsLowEndDevice()),
+      prefetch_url_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kRecordAnchorMetricsVisible,
+          "prefetch_url_score_threshold",
+          0)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_LE(0, prefetch_url_score_threshold_);
 
   if (render_frame_host != GetMainFrame(render_frame_host))
     return;
@@ -702,15 +707,22 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   if (source_is_default_search_engine_page_)
     return base::nullopt;
 
-  // Return the same-origin URL that has the highest navigation score.
-  for (const auto& navigation_score : sorted_navigation_scores) {
-    // Currently, only same origin URLs can be prefetched.
-    if (url::Origin::Create(navigation_score->url) != document_origin)
-      continue;
-    return navigation_score->url;
+  if (sorted_navigation_scores.empty())
+    return base::nullopt;
+
+  // Only the same origin URLs are eligible for prefetching. If the URL with
+  // the highest score is from a different origin, then we skip prefetching
+  // since same origin URLs are not likely to be clicked.
+  if (url::Origin::Create(sorted_navigation_scores[0]->url) !=
+      document_origin) {
+    return base::nullopt;
   }
 
-  return base::nullopt;
+  // If the prediction score of the highest scoring URL is less than the
+  // threshold, then return.
+  if (sorted_navigation_scores[0]->score < prefetch_url_score_threshold_)
+    return base::nullopt;
+  return sorted_navigation_scores[0]->url;
 }
 
 void NavigationPredictor::RecordMetricsOnLoad(

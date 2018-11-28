@@ -82,6 +82,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   };
 
  protected:
+  // URL that we decided to prefetch.
   base::Optional<GURL> prefetch_url_;
 
  private:
@@ -182,6 +183,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // True if device is a low end device.
   const bool is_low_end_device_;
+
+  // Minimum score that a URL should have for it to be prefetched.
+  const int prefetch_url_score_threshold_;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
