@@ -3513,6 +3513,7 @@ jumbo_split_static_library("browser") {
       "policy/cloud/machine_level_user_cloud_policy_helper.h",
       "policy/cloud/user_policy_signin_service.cc",
       "policy/cloud/user_policy_signin_service.h",
+      "policy/cloud/user_policy_signin_service_internal.h",
       "policy/machine_level_user_cloud_policy_controller.cc",
       "policy/machine_level_user_cloud_policy_controller.h",
       "policy/machine_level_user_cloud_policy_register_watcher.cc",

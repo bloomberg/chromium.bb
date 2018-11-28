@@ -66,47 +66,32 @@
 #endif
 
 namespace {
+
+// List of sources for which sign out is always allowed.
+signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    // Allowed, because data has not been synced yet.
+    signin_metrics::ProfileSignout::ABORT_SIGNIN,
+#endif
+    // Allowed, because only used on Android and the primary account must be
+    // cleared when the account is removed from device
+    signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE,
+    signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST};
+
 SigninClient::SignoutDecision IsSignoutAllowed(
     Profile* profile,
-    const signin_metrics::ProfileSignout signout_source_metric) {
-  // TODO(msarda): This logic should be reworked to only prohibit user-
-  // initiated sign-out. For now signin_util::IsUserSignoutAllowedForProfile()
-  // prohibits ALL sign-outs with the exception of ACCOUNT_REMOVED_FROM_DEVICE
-  // because this preserves the original behavior. A follow-up CL will make the
-  // slightly riskier change described above.
+    const signin_metrics::ProfileSignout signout_source) {
   if (signin_util::IsUserSignoutAllowedForProfile(profile))
     return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
 
-  switch (signout_source_metric) {
-    case signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE:
+  for (const auto& always_allowed_source : kAlwaysAllowedSignoutSources) {
+    if (signout_source == always_allowed_source)
       return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
-
-    case signin_metrics::ProfileSignout::ABORT_SIGNIN:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      // Allowed, because data has not been synced yet.
-      return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
-#else
-      // ABORT_SIGNIN is only used on Dice platforms.
-      NOTREACHED();
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
-#endif
-
-    case signin_metrics::ProfileSignout::SIGNOUT_PREF_CHANGED:
-    case signin_metrics::ProfileSignout::GOOGLE_SERVICE_NAME_PATTERN_CHANGED:
-    case signin_metrics::ProfileSignout::SIGNIN_PREF_CHANGED_DURING_SIGNIN:
-    case signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS:
-    case signin_metrics::ProfileSignout::SERVER_FORCED_DISABLE:
-    case signin_metrics::ProfileSignout::TRANSFER_CREDENTIALS:
-    case signin_metrics::ProfileSignout::
-        AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN:
-    case signin_metrics::ProfileSignout::USER_TUNED_OFF_SYNC_FROM_DICE_UI:
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
-
-    case signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS:
-      NOTREACHED();
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
   }
+
+  return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
 }
+
 }  // namespace
 
 ChromeSigninClient::ChromeSigninClient(
