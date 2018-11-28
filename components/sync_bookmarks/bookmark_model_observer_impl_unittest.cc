@@ -36,10 +36,12 @@ const size_t kMaxEntries = 1000;
 class BookmarkModelObserverImplTest : public testing::Test {
  public:
   BookmarkModelObserverImplTest()
-      : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
-        bookmark_tracker_(std::vector<NodeMetadataPair>(),
+      : bookmark_tracker_(std::vector<NodeMetadataPair>(),
                           std::make_unique<sync_pb::ModelTypeState>()),
-        observer_(nudge_for_commit_closure_.Get(), &bookmark_tracker_) {
+        observer_(nudge_for_commit_closure_.Get(),
+                  /*on_bookmark_model_being_deleted_closure=*/base::DoNothing(),
+                  &bookmark_tracker_),
+        bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()) {
     bookmark_model_->AddObserver(&observer_);
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_bookmark()->set_title(kBookmarkBarTag);
@@ -51,6 +53,10 @@ class BookmarkModelObserverImplTest : public testing::Test {
             syncer::UniquePosition::RandomSuffix())
             .ToProto(),
         specifics);
+  }
+
+  ~BookmarkModelObserverImplTest() {
+    bookmark_model_->RemoveObserver(&observer_);
   }
 
   void SimulateCommitResponseForAllLocalChanges() {
@@ -80,11 +86,11 @@ class BookmarkModelObserverImplTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   NiceMock<base::MockCallback<base::RepeatingClosure>>
       nudge_for_commit_closure_;
   SyncedBookmarkTracker bookmark_tracker_;
   BookmarkModelObserverImpl observer_;
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
 
 TEST_F(BookmarkModelObserverImplTest,
@@ -475,13 +481,17 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   model->Remove(unsyncable_node);
   // Only bookmark bar should be tracked.
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 1U);
+  model->RemoveObserver(observer());
 }
 
 TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   SyncedBookmarkTracker bookmark_tracker(
       std::vector<NodeMetadataPair>(),
       std::make_unique<sync_pb::ModelTypeState>());
-  BookmarkModelObserverImpl observer(base::DoNothing(), &bookmark_tracker);
+  BookmarkModelObserverImpl observer(
+      /*nudge_for_commit_closure=*/base::DoNothing(),
+      /*on_bookmark_model_being_deleted_closure=*/base::DoNothing(),
+      &bookmark_tracker);
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   // Add the bookmark bar to the tracker.
@@ -526,6 +536,23 @@ TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   EXPECT_TRUE(PositionOf(nodes[1]).LessThan(PositionOf(nodes[2])));
   EXPECT_TRUE(PositionOf(nodes[2]).LessThan(PositionOf(nodes[3])));
   EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[4])));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldCallOnBookmarkModelBeingDeletedClosure) {
+  SyncedBookmarkTracker bookmark_tracker(
+      std::vector<NodeMetadataPair>(),
+      std::make_unique<sync_pb::ModelTypeState>());
+
+  NiceMock<base::MockCallback<base::OnceClosure>>
+      on_bookmark_model_being_deleted_closure_mock;
+
+  BookmarkModelObserverImpl observer(
+      /*nudge_for_commit_closure=*/base::DoNothing(),
+      on_bookmark_model_being_deleted_closure_mock.Get(), &bookmark_tracker);
+
+  EXPECT_CALL(on_bookmark_model_being_deleted_closure_mock, Run());
+  observer.BookmarkModelBeingDeleted(/*model=*/nullptr);
 }
 
 }  // namespace

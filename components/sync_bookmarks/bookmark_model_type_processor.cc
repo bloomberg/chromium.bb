@@ -372,6 +372,15 @@ void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
   }
 }
 
+void BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted() {
+  DCHECK(bookmark_model_);
+  DCHECK(bookmark_model_observer_);
+  bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
+  bookmark_model_ = nullptr;
+  bookmark_model_observer_.reset();
+  DisconnectSync();
+}
+
 void BookmarkModelTypeProcessor::StartTrackingMetadata(
     std::vector<NodeMetadataPair> nodes_metadata,
     std::unique_ptr<sync_pb::ModelTypeState> model_type_state) {
@@ -381,6 +390,8 @@ void BookmarkModelTypeProcessor::StartTrackingMetadata(
   bookmark_model_observer_ = std::make_unique<BookmarkModelObserverImpl>(
       base::BindRepeating(&BookmarkModelTypeProcessor::NudgeForCommitIfNeeded,
                           base::Unretained(this)),
+      base::BindOnce(&BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted,
+                     base::Unretained(this)),
       bookmark_tracker_.get());
   bookmark_model_->AddObserver(bookmark_model_observer_.get());
 }

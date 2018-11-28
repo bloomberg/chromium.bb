@@ -29,6 +29,7 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   // |bookmark_tracker_| must not be null and must outlive this object.
   BookmarkModelObserverImpl(
       const base::RepeatingClosure& nudge_for_commit_closure,
+      base::OnceClosure on_bookmark_model_being_deleted_closure,
       SyncedBookmarkTracker* bookmark_tracker);
   ~BookmarkModelObserverImpl() override;
 
@@ -85,6 +86,10 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   // The callback used to inform the sync engine that there are local changes to
   // be committed.
   const base::RepeatingClosure nudge_for_commit_closure_;
+
+  // The callback used to inform the processor that the bookmark is getting
+  // deleted.
+  base::OnceClosure on_bookmark_model_being_deleted_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelObserverImpl);
 };

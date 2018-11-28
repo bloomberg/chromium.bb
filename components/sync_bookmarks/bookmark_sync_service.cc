@@ -22,10 +22,6 @@ BookmarkSyncService::BookmarkSyncService(
 
 BookmarkSyncService::~BookmarkSyncService() {}
 
-void BookmarkSyncService::Shutdown() {
-  bookmark_model_type_processor_.reset();
-}
-
 std::string BookmarkSyncService::EncodeBookmarkSyncMetadata() {
   if (!bookmark_model_type_processor_) {
     return std::string();

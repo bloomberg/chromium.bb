@@ -37,7 +37,6 @@ class BookmarkSyncService : public KeyedService {
 
   // KeyedService implemenation.
   ~BookmarkSyncService() override;
-  void Shutdown() override;
 
   // Analgous to Encode/Decode methods in BookmarkClient.
   std::string EncodeBookmarkSyncMetadata();
