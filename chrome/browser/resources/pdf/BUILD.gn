@@ -26,9 +26,6 @@ js_library("browser_api") {
 js_library("pdf_fitting_type") {
 }
 
-js_library("coords_transformer") {
-}
-
 js_library("gesture_detector") {
 }
 
@@ -50,7 +47,6 @@ js_library("viewport_scroller") {
 js_type_check("pdf_resources") {
   deps = [
     ":browser_api",
-    ":coords_transformer",
     ":gesture_detector",
     ":open_pdf_params_parser",
     ":pdf_fitting_type",

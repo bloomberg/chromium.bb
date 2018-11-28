@@ -57,7 +57,6 @@ constexpr char kChromeExtension[] =
 
 // Constants used in handling postMessage() messages.
 constexpr char kType[] = "type";
-constexpr char kJSId[] = "id";
 // Beep messge arguments. (Plugin -> Page).
 constexpr char kJSBeepType[] = "beep";
 // Viewport message arguments. (Page -> Plugin).
@@ -157,9 +156,6 @@ constexpr char kJSGetNamedDestination[] = "namedDestination";
 // Reply with the page number of the named destination (Plugin -> Page)
 constexpr char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
 constexpr char kJSNamedDestinationPageNumber[] = "pageNumber";
-
-constexpr char kJSTransformPagePointType[] = "transformPagePoint";
-constexpr char kJSTransformPagePointReplyType[] = "transformPagePointReply";
 
 // Selecting text in document (Plugin -> Page)
 constexpr char kJSSetIsSelectingType[] = "setIsSelecting";
@@ -770,25 +766,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     reply.Set(
         pp::Var(kJSNamedDestinationPageNumber),
         named_destination ? static_cast<int>(named_destination->page) : -1);
-    PostMessage(reply);
-  } else if (type == kJSTransformPagePointType) {
-    if (!(dict.Get(pp::Var(kJSPageNumber)).is_int() &&
-          dict.Get(pp::Var(kJSPageX)).is_int() &&
-          dict.Get(pp::Var(kJSPageY)).is_int() &&
-          dict.Get(pp::Var(kJSId)).is_int())) {
-      NOTREACHED();
-      return;
-    }
-    gfx::PointF page_xy(dict.Get(pp::Var(kJSPageX)).AsInt(),
-                        dict.Get(pp::Var(kJSPageY)).AsInt());
-    gfx::PointF device_xy = engine_->TransformPagePoint(
-        dict.Get(pp::Var(kJSPageNumber)).AsInt(), page_xy);
-
-    pp::VarDictionary reply;
-    reply.Set(pp::Var(kType), pp::Var(kJSTransformPagePointReplyType));
-    reply.Set(pp::Var(kJSPositionX), device_xy.x());
-    reply.Set(pp::Var(kJSPositionY), device_xy.y());
-    reply.Set(pp::Var(kJSId), dict.Get(pp::Var(kJSId)).AsInt());
     PostMessage(reply);
   } else {
     NOTREACHED();

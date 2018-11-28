@@ -449,8 +449,6 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
                           IDR_PDF_GESTURE_DETECTOR_JS);
   source->AddResourcePath("pdf/browser_api.js", IDR_PDF_BROWSER_API_JS);
   source->AddResourcePath("pdf/metrics.js", IDR_PDF_METRICS_JS);
-  source->AddResourcePath("pdf/coords_transformer.js",
-                          IDR_PDF_COORDS_TRANSFORMER_JS);
 
   source->AddResourcePath("pdf/elements/shared-vars.html",
                           IDR_PDF_SHARED_VARS_HTML);

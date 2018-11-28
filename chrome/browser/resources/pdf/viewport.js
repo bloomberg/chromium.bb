@@ -12,17 +12,27 @@ let Point;
 
 /**
  * @typedef {{
- *   x: number | undefined,
- *   y: number | undefined
+ *   x: (number|undefined),
+ *   y: (number|undefined),
  * }}
  */
 let PartialPoint;
 
 /**
+ * @typedef {{
+ *   x: number,
+ *   y: number,
+ *   width: number,
+ *   heigh: number,
+ * }}
+ */
+let Rect;
+
+/**
  * Returns the height of the intersection of two rectangles.
  *
- * @param {Object} rect1 the first rect
- * @param {Object} rect2 the second rect
+ * @param {Rect} rect1 the first rect
+ * @param {Rect} rect2 the second rect
  * @return {number} the height of the intersection of the rects
  */
 function getIntersectionHeight(rect1, rect2) {
@@ -51,6 +61,7 @@ function frameToPluginCoordinate(coordinateInFrame) {
   };
 }
 
+// TODO: convert Viewport to ES6 class syntax
 /**
  * Create a new viewport.
  *
@@ -92,6 +103,7 @@ function Viewport(
   this.pinchPanVector_ = null;
   this.pinchCenter_ = null;
   this.firstPinchCenterInFrame_ = null;
+  this.rotations_ = 0;
 
   window.addEventListener('scroll', this.updateViewport_.bind(this));
   window.addEventListener('resize', this.resizeWrapper_.bind(this));
@@ -160,6 +172,68 @@ Viewport.PAGE_SHADOW = {
 };
 
 Viewport.prototype = {
+
+  /**
+   * @param {number} n the number of clockwise 90-degree rotations to
+   *     increment by.
+   */
+  rotateClockwise: function(n) {
+    this.rotations_ = (this.rotations_ + n) % 4;
+  },
+
+  /**
+   * @return {number} the number of clockwise 90-degree rotations that have been
+   *     applied.
+   */
+  getClockwiseRotations: function() {
+    return this.rotations_;
+  },
+
+  /**
+   * Converts a page position (e.g. the location of a bookmark) to a screen
+   * position.
+   *
+   * @param {number} page
+   * @param {Point} point The position on `page`.
+   * @return The screen position.
+   */
+  convertPageToScreen: function(page, point) {
+    const dimensions = this.getPageInsetDimensions(page);
+
+    // width & height are already rotated.
+    const height = dimensions.height;
+    const width = dimensions.width;
+
+    const matrix = new DOMMatrix();
+
+    const rotation = this.rotations_ * 90;
+    // Set origin for rotation.
+    if (rotation == 90) {
+      matrix.translateSelf(width, 0);
+    } else if (rotation == 180) {
+      matrix.translateSelf(width, height);
+    } else if (rotation == 270) {
+      matrix.translateSelf(0, height);
+    }
+    matrix.rotateSelf(0, 0, rotation);
+
+    // Invert Y position with respect to height as page coordinates are
+    // measured from the bottom left.
+    matrix.translateSelf(0, height);
+    matrix.scaleSelf(1, -1);
+
+    const pointsToPixels = 96 / 72;
+    const result = matrix.transformPoint({
+      x: point.x * pointsToPixels,
+      y: point.y * pointsToPixels,
+    });
+    return {
+      x: result.x + Viewport.PAGE_SHADOW.left,
+      y: result.y + Viewport.PAGE_SHADOW.top,
+    };
+  },
+
+
   /**
    * Returns the zoomed and rounded document dimensions for the given zoom.
    * Rounding is necessary when interacting with the renderer which tends to
@@ -272,7 +346,7 @@ Viewport.prototype = {
   },
 
   /**
-   * @type {Object} the scroll position of the viewport.
+   * @type {Point} the scroll position of the viewport.
    */
   get position() {
     return {
@@ -284,7 +358,7 @@ Viewport.prototype = {
   /**
    * Scroll the viewport to the specified position.
    *
-   * @type {Object} position The position to scroll to.
+   * @type {Point} position The position to scroll to.
    */
   set position(position) {
     this.window_.scrollTo(position.x, position.y + this.topToolbarHeight_);
@@ -348,7 +422,7 @@ Viewport.prototype = {
    * so that while zooming is taking place it can stop reacting to scroll events
    * from the viewport. This is to avoid flickering.
    *
-   * @param {function} f Function to wrap
+   * @param {Function} f Function to wrap
    * @private
    */
   mightZoom_: function(f) {
@@ -918,6 +992,21 @@ Viewport.prototype = {
   },
 
   /**
+   * @param {number} page
+   * @return {Rect} The bounds for page `page` minus the shadows.
+   */
+  getPageInsetDimensions: function(page) {
+    const pageDimensions = this.pageDimensions_[page];
+    const shadow = Viewport.PAGE_SHADOW;
+    return {
+      x: pageDimensions.x + shadow.left,
+      y: pageDimensions.y + shadow.top,
+      width: pageDimensions.width - shadow.left - shadow.right,
+      height: pageDimensions.height - shadow.top - shadow.bottom,
+    };
+  },
+
+  /**
    * Get the coordinates of the page contents (excluding the page shadow)
    * relative to the screen.
    *
@@ -934,14 +1023,7 @@ Viewport.prototype = {
     var pageDimensions = this.pageDimensions_[page];
 
     // Compute the page dimensions minus the shadows.
-    var insetDimensions = {
-      x: pageDimensions.x + Viewport.PAGE_SHADOW.left,
-      y: pageDimensions.y + Viewport.PAGE_SHADOW.top,
-      width: pageDimensions.width - Viewport.PAGE_SHADOW.left -
-          Viewport.PAGE_SHADOW.right,
-      height: pageDimensions.height - Viewport.PAGE_SHADOW.top -
-          Viewport.PAGE_SHADOW.bottom
-    };
+    var insetDimensions = this.getPageInsetDimensions(page);
 
     // Compute the x-coordinate of the page within the document.
     // TODO(raymes): This should really be set when the PDF plugin passes the
