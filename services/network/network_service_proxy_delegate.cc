@@ -102,7 +102,12 @@ NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
     mojom::CustomProxyConfigClientRequest config_client_request)
     : proxy_config_(std::move(initial_config)),
       binding_(this, std::move(config_client_request)),
-      should_use_alternate_proxy_list_cache_(kMaxCacheSize) {}
+      should_use_alternate_proxy_list_cache_(kMaxCacheSize) {
+  // Make sure there is always a valid proxy config so we don't need to null
+  // check it.
+  if (!proxy_config_)
+    proxy_config_ = mojom::CustomProxyConfig::New();
+}
 
 void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
