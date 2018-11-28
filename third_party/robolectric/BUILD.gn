@@ -20,6 +20,11 @@ java_group("robolectric_all_java") {
   ]
 }
 
+java_prebuilt("android-all-4.1.2_r1-robolectric-0_java") {
+  testonly = true
+  jar_path = "lib/android-all-4.1.2_r1-robolectric-0.jar"
+}
+
 java_prebuilt("android-all-4.3_r2-robolectric-0_java") {
   testonly = true
   jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
@@ -67,6 +72,7 @@ java_library("robolectric_java") {
     "//third_party/xstream:xstream_java",
   ]
   data_deps = [
+    ":android-all-4.1.2_r1-robolectric-0_java",
     ":android-all-4.3_r2-robolectric-0_java",
     ":android-all-5.0.0_r2-robolectric-1_java",
     ":android-all-7.1.0_r7-robolectric-0_java",
