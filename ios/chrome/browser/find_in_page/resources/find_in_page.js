@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * Based heavily on code from the Google iOS app.
+ * Based on code from the Google iOS app.
  *
- * @fileoverview A find in page tool.  It scans the DOM for elements with the
- * text being search for, and wraps them with a span that highlights them.
+ * @fileoverview A find in page tool. It can:
+ *   1. Search for given string in the DOM, and highlight them in yellow color;
+ *   2. Allow users to navigate through all match results, and highlight the
+ * selected one in orange color;
  */
 
 (function() {
@@ -16,17 +18,70 @@
 __gCrWeb.findInPage = {};
 
 /**
+ * A string made by concatenating textContent.toLowerCase() of all TEXT nodes
+ * within current web page.
+ * @type {string}
+ */
+let allText_ = '';
+
+/**
+ * A Section contains the info of one TEXT node in the |allText_|. The node's
+ * textContent is [begin, end) of |allText_|.
+ */
+class Section {
+  /**
+   * @param {number} begin Beginning index of |node|.textContent in |allText_|.
+   * @param {number} end Ending index of |node|.textContent in |allText_|.
+   * @param {Node} node The TEXT Node of this section.
+   */
+  constructor(begin, end, node) {
+    this.begin = begin;
+    this.end = end;
+    this.node = node;
+  }
+}
+
+/**
+ * All the sections_ in |allText_|.
+ * @type {Array<Section>}
+ */
+let sections_ = [];
+
+/**
+ * The index of the Section where the last PartialMatch is found.
+ */
+let sectionsIndex_ = 0;
+
+/**
+ * Do binary search in |sections_|[sectionsIndex_, ...) to find the first
+ * Section S which has S.end > |index|.
+ * @param {number} index The search target. This should be a valid index of
+ *     |allText_|.
+ * @return {number} The index of the result in |sections_|.
+ */
+function findFirstSectionEndsAfter_(index) {
+  let left = sectionsIndex_;
+  let right = sections_.length;
+  while (left < right) {
+    let mid = Math.floor((left + right) / 2);
+    if (sections_[mid].end <= index) {
+      left = mid + 1;
+    } else {
+      right = mid;
+    }
+  }
+  return left;
+}
+
+/**
  * A Match represents a match result in the document. |this.nodes| stores all
  * the <chrome_find> Nodes created for highlighting the matched text. If it
  * contains only one Node, it means the match is found within one HTML TEXT
  * Node, otherwise the match involves multiple HTML TEXT Nodes.
  */
 class Match {
-  /**
-   * @param{Array<Node>} nodes All <chrome_find> Nodes of this match.
-   */
-  constructor(nodes) {
-    this.nodes = nodes;
+  constructor() {
+    this.nodes = [];
   }
 
   /**
@@ -75,6 +130,35 @@ __gCrWeb.findInPage.matches = [];
  * @type {number}
  */
 __gCrWeb.findInPage.selectedMatchIndex = -1;
+
+/**
+ * The ID for the next Match found in |allText_|. This ID is used for
+ * identifying PartialMatches of the Match, so that when
+ * |processPartialMatchesInCurrentSection| is called, the <chrome_find> Nodes
+ * created for each PartialMatch can be recorded in the corresponding Match.
+ */
+let matchId_ = 0;
+
+/**
+ * A part of a Match, within a Section. A Match may cover multiple sections_ in
+ * |allText_|, so it must be split into multiple PartialMatches and then
+ * dispatched into the Sections they belong. The range of a PartialMatch in
+ * |allText_| is [begin, end). Exactly one <chrome_find> will be created for
+ * each PartialMatch.
+ */
+class PartialMatch {
+  constructor(matchId, begin, end) {
+    this.matchId = matchId;
+    this.begin = begin;
+    this.end = end;
+  }
+}
+
+/**
+ * A temporary array used for storing all PartialMatches inside current Section.
+ * @type {Array<PartialMatch>}
+ */
+let partialMatches_ = [];
 
 /**
  * A Replacement represents a DOM operation that swaps |oldNode| with |newNodes|
@@ -134,6 +218,57 @@ let replacements_ = [];
  * @type {Number}
  */
 let replacementsIndex_ = 0;
+
+/**
+ * Process all PartialMatches inside current Section. For current Section's
+ * node.textContent, all texts that are match results will be wrapped in
+ * <chrome_find>, and other texts will be put inside plain TEXT Nodes. All
+ * created Nodes will be stored in the Replacement of current Section, and all
+ * <chrome_find> Nodes will also be recorded in their belonging Matches.
+ * |partialMatches_| will be cleared when processing ends.
+ * @return {undefined}
+ */
+function processPartialMatchesInCurrentSection() {
+  if (partialMatches_.length == 0)
+    return;
+  let section = sections_[sectionsIndex_];
+  let oldNode = section.node;
+  let newNodes = [];
+  let previousEnd = section.begin;
+  for (let i = 0; i < partialMatches_.length; ++i) {
+    let partialMatch = partialMatches_[i];
+    // Create the TEXT node for leading non-matching string piece. Notice that
+    // substr must be taken from TEXT Node.textContent instead of |allText_|
+    // since it's in lower case.
+    if (partialMatch.begin > previousEnd) {
+      newNodes.push(
+          oldNode.ownerDocument.createTextNode(oldNode.textContent.substring(
+              previousEnd - section.begin,
+              partialMatch.begin - section.begin)));
+    }
+    // Create the <chrome_find> Node for matching text.
+    let newNode = oldNode.ownerDocument.createElement('chrome_find');
+    newNode.setAttribute('class', CSS_CLASS_NAME);
+    newNode.innerHTML = escapeHTML_(oldNode.textContent.substring(
+        partialMatch.begin - section.begin, partialMatch.end - section.begin));
+    newNodes.push(newNode);
+    previousEnd = partialMatch.end;
+
+    // Record the <chrome_find> Node in corresponding Match.
+    __gCrWeb.findInPage.matches[partialMatch.matchId].nodes.push(newNode);
+  }
+  // Create the TEXT node for trailing non-matching string piece.
+  if (previousEnd != section.end) {
+    newNodes.push(
+        oldNode.ownerDocument.createTextNode(oldNode.textContent.substring(
+            previousEnd - section.begin, section.end - section.begin)));
+  }
+
+  // Create the Replacement of current Section.
+  replacements_.push(new Replacement(oldNode, newNodes));
+
+  partialMatches_ = [];
+}
 
 /**
  * The list of frame documents.
@@ -285,9 +420,21 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
 };
 
 /**
- * Break up find in page DOM regex, DOM manipulation and visibility check
- * into sections that can be stopped and restarted later.  Because the js runs
- * in the main UI thread, anything over timeout will cause the UI to lock up.
+ * Do following steps:
+ *   1. Do a DFS in the page, concatenate all TEXT Nodes' content into
+ *      |allText_|, and create |sections_| to record which part of |allText_|
+ *      belongs to which Node;
+ *   2. Do regex match in |allText_| to find all matches, create |replacements_|
+ *      for highlighting all results and |__gCrWeb.findInPage.matches| for
+ *      highlighting selected result;
+ *   3. Execute |replacements_| to highlight all results;
+ *   4. Check the visibility of each Match;
+ *   5. Call __gCrWeb.findInPage.goNext.
+ *
+ * If |timeout| has been reached, the function will return '[false]', and the
+ * caller need to call this function again to continue searching. This prevents
+ * the Js thread from blocking the WebView's UI.
+ *
  * @param {number} timeout Only run find in page until timeout.
  * @return {string} string in the form of "[bool, int]", where bool indicates
                     whether the text was found and int idicates text position.
@@ -299,7 +446,6 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 
   let timer = new Timer(timeout);
 
-  let regex = __gCrWeb.findInPage.regex;
   // Go through every node in DFS fashion.
   while (__gCrWeb.findInPage.node) {
     let node = __gCrWeb.findInPage.node;
@@ -314,42 +460,12 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
         }
       }
     }
+
+    // Build up |allText_| and |sections_|.
     if (node.nodeType == 3 && node.parentNode) {
-      let strIndex = 0;
-      let nodes = [];
-      let match;
-      while (match = regex.exec(node.textContent)) {
-        try {
-          let matchText = match[0];
-
-          // If there is content before this match, add it to a new text node.
-          if (match.index > 0) {
-            let nodeSubstr = node.textContent.substring(strIndex, match.index);
-            nodes.push(node.ownerDocument.createTextNode(nodeSubstr));
-          }
-
-          // Now create our matched element.
-          let element = node.ownerDocument.createElement('chrome_find');
-          element.setAttribute('class', CSS_CLASS_NAME);
-          element.innerHTML = escapeHTML_(matchText);
-          nodes.push(element);
-          __gCrWeb.findInPage.matches.push(new Match([element]));
-
-          strIndex = match.index + matchText.length;
-        } catch (e) {
-          // Do nothing.
-        }
-      }
-      if (nodes.length) {
-        // Add any text after our matches to a new text node.
-        if (strIndex < node.textContent.length) {
-          let substr =
-              node.textContent.substring(strIndex, node.textContent.length);
-          nodes.push(node.ownerDocument.createTextNode(substr));
-        }
-        replacements_.push(new Replacement(node, nodes));
-        regex.lastIndex = 0;
-      }
+      sections_.push(new Section(
+          allText_.length, allText_.length + node.textContent.length, node));
+      allText_ += node.textContent.toLowerCase();
     }
 
     if (timer.overtime())
@@ -360,6 +476,53 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
     } else {
       __gCrWeb.findInPage.node = null;
     }
+  }
+
+  // Do regex match in |allText_|, create |matches| and |replacements|. The
+  // regex is set on __gCrWeb, so its state is kept between continuous calls on
+  // pumpSearch.
+  let regex = __gCrWeb.findInPage.regex;
+  if (regex) {
+    for (let res; res = regex.exec(allText_);) {
+      // The range of current Match in |allText_| is [begin, end).
+      let begin = res.index;
+      let end = begin + res[0].length;
+      __gCrWeb.findInPage.matches.push(new Match());
+
+      // Find the Section where current Match starts.
+      let oldSectionIndex = sectionsIndex_;
+      let newSectionIndex = findFirstSectionEndsAfter_(begin);
+      // If current Match starts at a new Section, process current Section and
+      // move to the new Section.
+      if (newSectionIndex > oldSectionIndex) {
+        processPartialMatchesInCurrentSection();
+        sectionsIndex_ = newSectionIndex;
+      }
+
+      // Create all PartialMatches of current Match.
+      while (true) {
+        let section = sections_[sectionsIndex_];
+        partialMatches_.push(new PartialMatch(
+            matchId_, Math.max(section.begin, begin),
+            Math.min(section.end, end)));
+        // If current Match.end exceeds current Section.end, process current
+        // Section and move to next Section.
+        if (section.end < end) {
+          processPartialMatchesInCurrentSection();
+          ++sectionsIndex_;
+        } else {
+          // Current Match ends in current Section.
+          break;
+        }
+      }
+      ++matchId_;
+
+      if (timer.overtime())
+        return '[false]';
+    }
+    // Process remaining PartialMatches.
+    processPartialMatchesInCurrentSection();
+    __gCrWeb.findInPage.regex = undefined;
   }
 
   // Execute replacements to highlight search results.
@@ -415,6 +578,11 @@ function clearHighlight_() {
   replacementsIndex_ = 0;
   __gCrWeb.findInPage.matches = [];
   __gCrWeb.findInPage.selectedMatchIndex = -1;
+  allText_ = '';
+  sections_ = [];
+  sectionsIndex_ = 0;
+  matchId_ = 0;
+  partialMatches_ = [];
 };
 
 /**

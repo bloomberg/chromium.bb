@@ -244,4 +244,22 @@ TEST_F(FindInPageJsTest, SearchForWhitespace) {
   AssertJavaScriptValue(kJavaScriptSpansLength, 8);
 }
 
+// Tests that FindInPage works when match results cover mutiple HTML Nodes.
+TEST_F(FindInPageJsTest, SearchOverMultipleNodes) {
+  LoadHtml(@"<html><body>"
+           @"<p>xx1<span>2</span>3<a>4512345xxx12</a>34<a>5xxx12345xx</p>"
+           @"</body></html>");
+  // Assert the index and span count contain their initialized values.
+  AssertJavaScriptValue(kJavaScriptIndex, -1);
+  AssertJavaScriptValue(kJavaScriptSpansLength, 0);
+
+  // Search for "12345". Performing the search sets the index to
+  // point to the first visible occurrence of "12345".
+  NSString* result = ExecuteJavaScript(
+      [NSString stringWithFormat:kJavaScriptSearchCallFormat, @"12345"]);
+  ASSERT_TRUE(result);
+  AssertJavaScriptValue(kJavaScriptIndex, 0);
+  AssertJavaScriptValue(kJavaScriptSpansLength, 4);
+}
+
 }  // namespace
