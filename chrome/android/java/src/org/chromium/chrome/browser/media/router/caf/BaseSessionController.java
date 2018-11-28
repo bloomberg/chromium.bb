@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
+import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;
@@ -30,6 +31,7 @@ public class BaseSessionController {
 
     private CastSession mCastSession;
     private final CafBaseMediaRouteProvider mProvider;
+    private final MediaRouter.Callback mMediaRouterCallbackForSessionLaunch;
     private CreateRouteRequestInfo mRouteCreationInfo;
     @VisibleForTesting
     CafNotificationController mNotificationController;
@@ -37,6 +39,7 @@ public class BaseSessionController {
 
     public BaseSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
+        mMediaRouterCallbackForSessionLaunch = new MediaRouterCallbackForSessionLaunch();
         mNotificationController = new CafNotificationController(this);
         mRemoteMediaClientCallback = new RemoteMediaClientCallback();
     }
@@ -46,10 +49,21 @@ public class BaseSessionController {
         CastUtils.getCastContext().setReceiverApplicationId(
                 mRouteCreationInfo.source.getApplicationId());
 
-        // When the user clicks a route on the MediaRouteChooserDialog, we intercept the click event
-        // and do not select the route. Instead the route selection is postponed to here. This will
-        // trigger CAF to launch the session.
-        mRouteCreationInfo.routeInfo.select();
+        if (mRouteCreationInfo.routeInfo.isSelected()) {
+            // If a route has just been selected, CAF might not be ready yet before setting the app
+            // ID. So unselect and select the route will let CAF be aware that the route has been
+            // selected thus it can start the session.
+            //
+            // An issue of this workaround is that if a route is unselected and selected in a very
+            // short time, the selection might be ignored by MediaRouter, so put the reselection in
+            // a callback.
+            mProvider.getAndroidMediaRouter().addCallback(
+                    mRouteCreationInfo.source.buildRouteSelector(),
+                    mMediaRouterCallbackForSessionLaunch);
+            mProvider.getAndroidMediaRouter().unselect(MediaRouter.UNSELECT_REASON_UNKNOWN);
+        } else {
+            mRouteCreationInfo.routeInfo.select();
+        }
     }
 
     public MediaSource getSource() {
@@ -156,6 +170,20 @@ public class BaseSessionController {
                         + message + "\"");
         if (CastSessionUtil.MEDIA_NAMESPACE.equals(namespace)) {
             updateRemoteMediaClient(message);
+        }
+    }
+
+    private class MediaRouterCallbackForSessionLaunch extends MediaRouter.Callback {
+        @Override
+        public void onRouteUnselected(MediaRouter mediaRouter, MediaRouter.RouteInfo routeInfo) {
+            if (mProvider.getPendingCreateRouteRequestInfo() == null) return;
+
+            if (routeInfo.getId().equals(
+                        mProvider.getPendingCreateRouteRequestInfo().routeInfo.getId())) {
+                routeInfo.select();
+                mProvider.getAndroidMediaRouter().removeCallback(
+                        mMediaRouterCallbackForSessionLaunch);
+            }
         }
     }
 

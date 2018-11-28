@@ -13,11 +13,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.MediaRouteChooserDialog;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
 import android.support.v7.media.MediaRouteSelector;
-import android.support.v7.media.MediaRouter;
-import android.support.v7.mediarouter.R;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 /**
  * Manages the dialog responsible for selecting a {@link MediaSink}.
@@ -39,7 +34,7 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
         private final Handler mHandler = new Handler();
         private final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
         private BaseMediaRouteDialogManager mManager;
-        private boolean mIsSinkSelected;
+        private boolean mCancelled;
 
         public Fragment() {
             mHandler.post(new Runnable() {
@@ -57,7 +52,8 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
         @Override
         public MediaRouteChooserDialog onCreateChooserDialog(
                 Context context, Bundle savedInstanceState) {
-            MediaRouteChooserDialog dialog = new DelayedSelectionDialog(context, getTheme());
+            MediaRouteChooserDialog dialog =
+                    super.onCreateChooserDialog(context, savedInstanceState);
             dialog.setCanceledOnTouchOutside(true);
             return dialog;
         }
@@ -75,45 +71,26 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
         }
 
         @Override
+        public void onCancel(DialogInterface dialog) {
+            mCancelled = true;
+
+            mManager.delegate().onDialogCancelled();
+
+            super.onCancel(dialog);
+        }
+
+        @Override
         public void onDismiss(DialogInterface dialog) {
             super.onDismiss(dialog);
+            if (mManager == null) return;
 
-            if (!mIsSinkSelected) mManager.delegate().onDialogCancelled();
-        }
+            mManager.mDialogFragment = null;
 
-        private class DelayedSelectionDialog extends MediaRouteChooserDialog {
-            public DelayedSelectionDialog(Context context) {
-                super(context);
-            }
+            if (mCancelled) return;
 
-            public DelayedSelectionDialog(Context context, int theme) {
-                super(context, theme);
-            }
-
-            @Override
-            public void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-
-                ListView listView = (ListView) findViewById(R.id.mr_chooser_list);
-                if (listView != null) {
-                    listView.setOnItemClickListener(Fragment.this::onItemClick);
-                }
-            }
-        }
-
-        private void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            MediaRouter.RouteInfo routeInfo =
-                    (MediaRouter.RouteInfo) parent.getItemAtPosition(position);
-            if (routeInfo != null && routeInfo.isEnabled()) {
-                MediaSink newSink = MediaSink.fromRoute(routeInfo);
-
-                // When a item is clicked, the route is not selected right away. Instead, the route
-                // selection is postponed to the actual session launch.
-                mManager.delegate().onSinkSelected(mManager.sourceId(), newSink);
-                mIsSinkSelected = true;
-
-                dismiss();
-            }
+            MediaSink newSink =
+                    MediaSink.fromRoute(mManager.androidMediaRouter().getSelectedRoute());
+            mManager.delegate().onSinkSelected(mManager.sourceId(), newSink);
         }
     }
 
