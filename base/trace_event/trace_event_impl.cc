@@ -45,49 +45,37 @@ bool ConvertableToTraceFormat::AppendToProto(ProtoAppender* appender) {
   return false;
 }
 
-TraceEvent::TraceEvent()
-    : duration_(TimeDelta::FromInternalValue(-1)),
-      scope_(trace_event_internal::kGlobalScope),
-      id_(0u),
-      category_group_enabled_(nullptr),
-      name_(nullptr),
-      thread_id_(0),
-      flags_(0),
-      phase_(TRACE_EVENT_PHASE_BEGIN) {
-  for (int i = 0; i < kTraceMaxNumArgs; ++i)
+// See comment for name TraceEvent::scope_ definition.
+static_assert(trace_event_internal::kGlobalScope == nullptr,
+              "Invalid TraceEvent::scope default initializer value");
+
+TraceEvent::TraceEvent() {
+  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
+    arg_values_[i].as_uint = 0u;
     arg_names_[i] = nullptr;
-  memset(arg_values_, 0, sizeof(arg_values_));
+    arg_types_[i] = TRACE_VALUE_TYPE_UINT;
+  }
 }
 
 TraceEvent::~TraceEvent() = default;
 
-void TraceEvent::MoveFrom(std::unique_ptr<TraceEvent> other) {
-  timestamp_ = other->timestamp_;
-  thread_timestamp_ = other->thread_timestamp_;
-  duration_ = other->duration_;
-  scope_ = other->scope_;
-  id_ = other->id_;
-  category_group_enabled_ = other->category_group_enabled_;
-  name_ = other->name_;
-  if (other->flags_ & TRACE_EVENT_FLAG_HAS_PROCESS_ID)
-    process_id_ = other->process_id_;
-  else
-    thread_id_ = other->thread_id_;
-  phase_ = other->phase_;
-  flags_ = other->flags_;
-  parameter_copy_storage_ = std::move(other->parameter_copy_storage_);
+TraceEvent::TraceEvent(TraceEvent&& other) noexcept = default;
 
-  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
-    arg_names_[i] = other->arg_names_[i];
-    arg_types_[i] = other->arg_types_[i];
-    arg_values_[i] = other->arg_values_[i];
-    convertable_values_[i] = std::move(other->convertable_values_[i]);
+#if !defined(__clang__)
+// Clang will crash at runtime when trying to compile the line below
+// with coverage instrumentation enabled (https://crbug.com/908937)
+TraceEvent& TraceEvent::operator=(TraceEvent&& other) noexcept = default;
+#else  // defined(__clang__)
+TraceEvent& TraceEvent::operator=(TraceEvent&& other) noexcept {
+  if (this != &other) {
+    this->~TraceEvent();
+    new (this) TraceEvent(std::move(other));
   }
-
-  other->Reset();
+  return *this;
 }
+#endif  // defined(__clang__)
 
-void TraceEvent::Initialize(
+TraceEvent::TraceEvent(
     int thread_id,
     TimeTicks timestamp,
     ThreadTicks thread_timestamp,
@@ -102,19 +90,28 @@ void TraceEvent::Initialize(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned int flags) {
-  timestamp_ = timestamp;
-  thread_timestamp_ = thread_timestamp;
-  duration_ = TimeDelta::FromInternalValue(-1);
-  scope_ = scope;
-  id_ = id;
-  category_group_enabled_ = category_group_enabled;
-  name_ = name;
-  thread_id_ = thread_id;
-  phase_ = phase;
-  flags_ = flags;
-  bind_id_ = bind_id;
+    unsigned int flags)
+    : timestamp_(timestamp),
+      thread_timestamp_(thread_timestamp),
+      scope_(scope),
+      id_(id),
+      category_group_enabled_(category_group_enabled),
+      name_(name),
+      thread_id_(thread_id),
+      flags_(flags),
+      bind_id_(bind_id),
+      phase_(phase) {
+  InitArgs(num_args, arg_names, arg_types, arg_values, convertable_values,
+           flags);
+}
 
+void TraceEvent::InitArgs(
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
+    unsigned int flags) {
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
   int i = 0;
@@ -139,7 +136,7 @@ void TraceEvent::Initialize(
   bool copy = !!(flags & TRACE_EVENT_FLAG_COPY);
   size_t alloc_size = 0;
   if (copy) {
-    alloc_size += GetAllocLength(name) + GetAllocLength(scope);
+    alloc_size += GetAllocLength(name_) + GetAllocLength(scope_);
     for (i = 0; i < num_args; ++i) {
       alloc_size += GetAllocLength(arg_names_[i]);
       if (arg_types_[i] == TRACE_VALUE_TYPE_STRING)
@@ -182,7 +179,7 @@ void TraceEvent::Initialize(
 }
 
 void TraceEvent::Reset() {
-  // Only reset fields that won't be initialized in Initialize(), or that may
+  // Only reset fields that won't be initialized in Reset(int, ...), or that may
   // hold references to other objects.
   duration_ = TimeDelta::FromInternalValue(-1);
 
@@ -201,6 +198,38 @@ void TraceEvent::Reset() {
 
   for (int i = 0; i < kTraceMaxNumArgs; ++i)
     convertable_values_[i].reset();
+}
+
+void TraceEvent::Reset(
+    int thread_id,
+    TimeTicks timestamp,
+    ThreadTicks thread_timestamp,
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    const char* scope,
+    unsigned long long id,
+    unsigned long long bind_id,
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
+    unsigned int flags) {
+  Reset();
+  timestamp_ = timestamp;
+  thread_timestamp_ = thread_timestamp;
+  scope_ = scope;
+  id_ = id;
+  category_group_enabled_ = category_group_enabled;
+  name_ = name;
+  thread_id_ = thread_id;
+  flags_ = flags;
+  bind_id_ = bind_id;
+  phase_ = phase;
+
+  InitArgs(num_args, arg_names, arg_types, arg_values, convertable_values,
+           flags);
 }
 
 void TraceEvent::UpdateDuration(const TimeTicks& now,
