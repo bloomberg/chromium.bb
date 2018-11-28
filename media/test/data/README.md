@@ -46,6 +46,9 @@ bear-vp8-webvtt.webm as a 'subt' handler type.
 Just the first initialization segment of bear-1280x720_av_frag.mp4, modified to
 have the mvhd version 0 32-bit duration field set to all 1's.
 
+#### media/test/data/negative-audio-timestamps.avi
+A truncated audio/video file with audio packet timestamps of -1. We need to ensure that these packets arent dropped.
+
 ### FLAC
 
 #### bear-flac.mp4

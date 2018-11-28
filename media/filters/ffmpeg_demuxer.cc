@@ -382,13 +382,19 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // video frame dropping is handled by the renderer when correcting for a/v
   // sync.
   if (is_audio && !fixup_chained_ogg_ && last_packet_pos_ != AV_NOPTS_VALUE) {
+    // Some containers have unknown position...
+    if (packet->pos == -1)
+      packet->pos = last_packet_pos_;
+
     if (packet->pos < last_packet_pos_) {
-      DVLOG(3) << "Dropped packet with out of order position";
+      DVLOG(3) << "Dropped packet with out of order position (" << packet->pos
+               << " < " << last_packet_pos_ << ")";
       return;
     }
     if (packet->pos == last_packet_pos_ && packet_dts <= last_packet_dts_) {
       DCHECK_NE(last_packet_dts_, AV_NOPTS_VALUE);
-      DVLOG(3) << "Dropped packet with out of order display timestamp";
+      DVLOG(3) << "Dropped packet with out of order display timestamp ("
+               << packet_dts << " < " << last_packet_dts_ << ")";
       return;
     }
   }
@@ -405,7 +411,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     if (packet->flags & AV_PKT_FLAG_KEY)
       waiting_for_keyframe_ = false;
     else {
-      DVLOG(3) << "Dropped non-keyframe pts=" << packet->pts;
+      DLOG(WARNING) << "Dropped non-keyframe pts=" << packet->pts;
       return;
     }
   }
