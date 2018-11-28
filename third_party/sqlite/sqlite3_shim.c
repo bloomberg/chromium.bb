@@ -36,4 +36,17 @@
 
 #endif  // defined(__linux__)
 
+// For unfortunately complex reasons, Chrome has release builds where
+// DCHECK_IS_ON() (so we want SQLITE_DEBUG to be on) but NDEBUG is also defined.
+// This causes declarations for mutex-checking functions used by SQLITE_DEBUG
+// code (sqlite3_mutex_held, sqlite3_mutex_notheld) to be omitted, resulting in
+// warnings.
+//
+// The easiest solution for now is to undefine NDEBUG when SQLITE_DEBUG is
+// defined. The #undef only takes effect for the SQLite implementation (included
+// below), and does not impact any dependency.
+#if defined(SQLITE_DEBUG) && defined(NDEBUG)
+#undef NDEBUG
+#endif  // defined(SQLITE_DEBUG) && defined(NDEBUG)
+
 #include "third_party/sqlite/amalgamation/sqlite3.c"

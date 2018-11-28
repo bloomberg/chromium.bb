@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.24.0
+Version: 3.25.3
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -138,8 +138,10 @@ diffs. The second CL is still large, but it's a fraction of the first
 # The steps below are easier if done in the SQLite directory.
 cd third_party/sqlite
 
-export OLD=3240000
-export NEW=3250000
+# The numbers below are SQLite version numbers, and use upstream's convention
+# for tagging release binaries and source zipballs.
+export OLD=3250300
+export NEW=3260000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Download and unpack the new SQLite release.
@@ -156,11 +158,11 @@ xdg-open sqlite-src-$NEW  # Make sure everything looks right.
 #### Add the new release code in a separate CL, for code review sanity.
 git add sqlite-src-$NEW  # Committing the code as downloaded, on purpose.
 git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
-git commit -m "sqlite: Add code for release 3.25.0"
+git commit -m "sqlite: Add code for release 3.26.0"
 git cl upload  # Have the new code in a separate (impossible to review) CL.
 
 #### Create a branch for the old SQLite release's upstream version.
-git new-branch --upstream-current sqlite-old-base
+git new-branch sqlite-old-base
 git rm -rf src
 cp -r sqlite-src-${OLD}/ src
 # Clean up trailing whitespace and CRLF so any patches look clean.
@@ -169,7 +171,7 @@ find src/ -type f -not -iname "*.db" -not -iname "*.eps" -not -iname "*.ico" \
     -not -iname "*.tiff" -not -iname "*.vsix" \
     -exec $GNU_SED --in-place 's/[[:space:]]\+$//' {} \+
 git add src/
-git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
+git clean -i -d -x src  # Make sure no file is git-ignored.
 git commit -m "Squash: Reset SQLite src/ to sqlite-src-${OLD}."
 # This branch will not build. It will be used for rebasing, then deleted.
 
@@ -183,14 +185,15 @@ git diff --ignore-space-change origin/master src/
 git checkout sqlite-old-base
 git new-branch --upstream-current sqlite-new-base
 git rm -rf src
-cp -r sqlite-src-${NEW}/ src
+git checkout sqlite-new-upstream -- sqlite-src-$NEW/
+git mv sqlite-src-${NEW}/ src
 # Clean up trailing whitespace and CRLF so any patches look clean.
 find src/ -type f -not -iname "*.db" -not -iname "*.eps" -not -iname "*.ico" \
     -not -iname "*.jpg" -not -iname "*.pfx" -not -iname "*.png" \
     -not -iname "*.tiff" -not -iname "*.vsix" \
     -exec $GNU_SED --in-place 's/[[:space:]]\+$//' {} \+
 git add src/
-git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
+git clean -i -d -x src  # Make sure no file is git-ignored.
 git commit -m "Squash: Reset SQLite src/ to sqlite-src-${NEW}."
 # This branch will not build. It will be used for rebasing, then deleted.
 
@@ -213,23 +216,23 @@ git cl format amalgamation/rename_exports.h
 # handle conflicts.  So use git-rebase and slipstream fixups back into their
 # original CL until everything builds and works.
 cd ../..
-ninja -C out/Default
+autoninja -C out/Default
 # Check that extract_sqlite_api.py added chrome_ to all exported symbols.
 # Only "_fini" and "_init" should be unprefixed.
 nm -B out/Default/libchromium_sqlite3.so | cut -c 18- | sort | grep '^T'
 out/Default/sql_unittests
-third_party/blink/tools/run_web_tests.py -t Default storage/websql/*
+third_party/blink/tools/run_web_tests.py -t Default storage/websql/
 cd third_party/sqlite
 
 #### Create the review.
 # Rebuild the patch set.
 git rm patches/*
 git format-patch --output-directory=patches --ignore-space-change \
-    sqlite-new-base..sqlite-new
+    --zero-commit sqlite-new-base..sqlite-new
 git add amalgamation/
 git add patches/*.patch
 git commit -m "Squash: regenerate amalgamation and patches."
-git branch --set-upstream-to=sqlite-new-upstream
+git branch --set-upstream-to=origin/master
 git cl upload --squash
 # Edit the commit message appropriately to reflect anything from
 # <https://www.sqlite.org/changes.html> which might be deemed important. Don't
@@ -241,8 +244,9 @@ git cl upload --squash
 
 #### Drop the old version of SQLite.
 git new-branch sqlite-rm-old
-git rm -r sqlite_${BASE}
+git rm -r sqlite-src-${OLD}
 git commit -m "sqlite: Remove source code for old release ${OLD}."
+git cl upload
 
 Note that things can be broken down differently, if you prefer.  For instance,
 adding the new version of the SQLite distro and removing the old one can be

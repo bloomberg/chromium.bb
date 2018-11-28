@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Compile-time options passed to SQLite.
@@ -27,21 +28,11 @@ config("chromium_sqlite3_compile_options") {
     "SQLITE_DISABLE_FTS4_DEFERRED",
     "SQLITE_ENABLE_ICU",
 
-    # Enables memory tracking needed to release unused memory.
-    #
-    # Needed for sqlite3_release_memory() and its variants to work. Without this
-    # option, the interfaces exist, but the methods are no-ops.
-    "SQLITE_ENABLE_MEMORY_MANAGEMENT",
-
     # Defaults the secure_delete pragma to 1.
     #
     # This causes SQLite to overwrite all deleted information with zeroes,
     # trading additional I/O for better privacy guarantees.
     "SQLITE_SECURE_DELETE",
-
-    # Custom flag to tweak pcache pools.
-    # TODO(pwnall): This shouldn't use faux-SQLite naming.
-    "SQLITE_SEPARATE_CACHE_POOLS",
 
     # TODO(pwnall): SQLite adds mutexes to protect structures which cross
     # threads. In theory Chrome should be able to turn this to "2" which
@@ -60,11 +51,6 @@ config("chromium_sqlite3_compile_options") {
     # TODO(pwnall): A 64-bit-specific value could be 1G or more.
     # TODO(pwnall): Figure out if exceeding this is costly.
     "SQLITE_MAX_MMAP_SIZE=268435456",
-
-    # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
-    # stompers from directly corrupting the database.
-    # TODO(pwnall): Upstream the ability to use this define.
-    "SQLITE_MMAP_READ_ONLY=1",
 
     # The default POSIX permissions for a newly created SQLite database.
     #
@@ -144,6 +130,12 @@ config("chromium_sqlite3_compile_options") {
     # Chrome doesn't use sqlite3_{profile,trace}().
     "SQLITE_OMIT_TRACE",
 
+    # Chrome doesn't use UPSERT.
+    "SQLITE_OMIT_UPSERT",
+
+    # Chrome doesn't use window functions in SQL.
+    "SQLITE_OMIT_WINDOWFUNC",
+
     # Uses isnan() in the C99 standard library.
     "SQLITE_HAVE_ISNAN",
   ]
@@ -183,8 +175,21 @@ config("chromium_sqlite3_compile_options") {
   }
 
   if (is_debug || dcheck_always_on) {
+    if (use_fuzzing_engine && use_sanitizer_coverage) {
+      # Enable SQLite's assert() macros.
+      #
+      # TODO(pwnall): Fix all the bugs preventing us from enabling this flag for
+      #               all DCHECK builds. See https://crbug.com/907371 and
+      #               https://crrev.com/c/1343529.
+      defines += [ "SQLITE_DEBUG" ]
+    }
+
     # Check preconditions when SQLite APIs are called. See
     # https://sqlite.org/compile.html#enable_api_armor
+    #
+    # fuzzing builds have this disabled because the fuzzers are guaranteed to
+    # use the API correctly, and removing the checks opens up the possibility
+    # that the fuzzers will get more code coverage.
     defines += [ "SQLITE_ENABLE_API_ARMOR" ]
   }
 }
@@ -198,12 +203,20 @@ config("sqlite_warnings") {
     # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
     # sqlite3Fts3InitTok).
     cflags += [ "-Wno-unused-function" ]
+
+    if (is_debug || dcheck_always_on) {
+      cflags += [
+        # SQLite uses assert(!"description") to express
+        # NOT_REACHED() << "description". This is considered an implicit
+        # conversion from char[] to bool, and triggers a warning.
+        "-Wno-string-conversion",
+      ]
+    }
   }
   if (is_linux) {
     cflags += [
-      # SQLite doesn"t believe in compiler warnings,
-      # preferring testing.
-      #   http://www.sqlite.org/faq.html#q17
+      # SQLite doesn't believe in compiler warnings, preferring testing.
+      # http://www.sqlite.org/faq.html#q17
       "-Wno-int-to-pointer-cast",
       "-Wno-pointer-to-int-cast",
     ]
@@ -327,7 +340,7 @@ group("sqlite") {
   ]
 }
 
-if (is_linux) {
+if (is_linux || is_mac) {
   executable("sqlite_shell") {
     include_dirs = [
       # shell.c contains an '#include "sqlite3.h", which we want to be
@@ -337,11 +350,20 @@ if (is_linux) {
 
     sources = [
       "amalgamation/shell/shell.c",
-      "src/src/shell_icu_linux.c",
 
       # Include a dummy c++ file to force linking of libstdc++.
       "build_as_cpp.cc",
     ]
+
+    if (is_linux) {
+      sources += [ "src/src/shell_icu_linux.c" ]
+    }
+
+    # TODO(pwnall): Re-enable the shell on Windows when compilation errors are
+    #               fixed upstream.
+    if (is_win) {
+      sources += [ "src/src/shell_icu_win.c" ]
+    }
 
     deps = [
       ":sqlite",
@@ -360,21 +382,10 @@ if (is_linux) {
   }
 }
 
-fuzzer_test("sqlite3_prepare_v2_fuzzer") {
-  sources = [
-    "fuzz/sqlite3_prepare_v2_fuzzer.cc",
-  ]
-  deps = [
-    ":sqlite",
-  ]
-  dict = "fuzz/sqlite3_prepare_v2_fuzzer.dict"
-}
-
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
-  # TODO(mmoroz, pwnall): remove fuzz/ossfuzz.c in favor of test/osfuzz.c in
-  #                       sqlite's source code
+  include_dirs = [ "." ]
   sources = [
-    "fuzz/ossfuzz.c",
+    "src/test/ossfuzz.c",
   ]
   deps = [
     ":sqlite",

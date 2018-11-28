@@ -70,8 +70,12 @@ function otherStatementsCallback(tx)
     executeStatement(tx, "PRAGMA cache_size;", "SQLITE_PRAGMA");
 
     executeStatement(tx, "ALTER TABLE Test RENAME TO TestTable;", "SQLITE_ALTER_TABLE");
-    // Rename the table back to its original name
-    executeStatement(tx, "ALTER TABLE TestTable RENAME To Test;", "SQLITE_ALTER_TABLE");
+    // Rename the table back to its original name.
+    executeStatement(tx, "ALTER TABLE TestTable RENAME TO Test;", "SQLITE_ALTER_TABLE");
+
+    executeStatement(tx, "ALTER TABLE Test RENAME COLUMN Foo TO Bar;", "SQLITE_ALTER_TABLE");
+    // Rename the column back to its original name.
+    executeStatement(tx, "ALTER TABLE Test RENAME COLUMN Bar TO Foo;", "SQLITE_ALTER_TABLE");
 
     executeStatement(tx, "BEGIN TRANSACTION;", "SQLITE_TRANSACTION");
     executeStatement(tx, "ATTACH main AS TestMain;", "SQLITE_ATTACH");

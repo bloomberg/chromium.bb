@@ -487,7 +487,7 @@ int sqlite3Fts3DeferredTokenList(Fts3DeferredToken *, char **, int *);
 # define sqlite3Fts3DeferToken(x,y,z) SQLITE_OK
 # define sqlite3Fts3CacheDeferredDoclists(x) SQLITE_OK
 # define sqlite3Fts3FreeDeferredDoclists(x)
-# define sqlite3Fts3DeferredTokenList(x,y,z) SQLITE_OK
+# define sqlite3Fts3DeferredTokenList(x,y,z) ((*(y)=0),(*(z)=0),SQLITE_OK)
 #endif
 
 void sqlite3Fts3SegmentsClose(Fts3Table *);
