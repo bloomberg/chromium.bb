@@ -11,15 +11,20 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/common/extensions/api/permissions.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using extensions::api::permissions::Permissions;
 using extensions::permissions_api_helpers::PackPermissionSet;
 using extensions::permissions_api_helpers::UnpackPermissionSet;
+using extensions::permissions_api_helpers::UnpackPermissionSetResult;
+using extensions::permissions_test_util::GetPatternsAsStrings;
 
 namespace extensions {
 
@@ -32,7 +37,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 }  // namespace
 
-// Tests that we can convert PermissionSets to and from values.
+// Tests that we can convert PermissionSets to the generated types.
 TEST(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
@@ -42,48 +47,23 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
   AddPattern(&hosts, "http://a.com/*");
   AddPattern(&hosts, "http://b.com/*");
 
-  PermissionSet permission_set(apis, ManifestPermissionSet(), hosts,
-                               URLPatternSet());
-
   // Pack the permission set to value and verify its contents.
-  std::unique_ptr<Permissions> permissions(PackPermissionSet(permission_set));
-  std::unique_ptr<base::DictionaryValue> value(permissions->ToValue());
-  base::ListValue* api_list = NULL;
-  base::ListValue* origin_list = NULL;
-  EXPECT_TRUE(value->GetList("permissions", &api_list));
-  EXPECT_TRUE(value->GetList("origins", &origin_list));
+  std::unique_ptr<Permissions> pack_result(PackPermissionSet(
+      PermissionSet(apis, ManifestPermissionSet(), hosts, URLPatternSet())));
+  ASSERT_TRUE(pack_result);
+  ASSERT_TRUE(pack_result->permissions);
+  EXPECT_THAT(*pack_result->permissions,
+              testing::UnorderedElementsAre("tabs", "fileBrowserHandler",
+                                            "fileBrowserHandlerInternal"));
 
-  EXPECT_EQ(3u, api_list->GetSize());
-  EXPECT_EQ(2u, origin_list->GetSize());
-
-  std::string expected_apis[] = {"tabs", "fileBrowserHandler",
-                                 "fileBrowserHandlerInternal"};
-  for (size_t i = 0; i < arraysize(expected_apis); ++i) {
-    std::unique_ptr<base::Value> value(new base::Value(expected_apis[i]));
-    EXPECT_NE(api_list->end(), api_list->Find(*value));
-  }
-
-  std::string expected_origins[] = { "http://a.com/*", "http://b.com/*" };
-  for (size_t i = 0; i < arraysize(expected_origins); ++i) {
-    std::unique_ptr<base::Value> value(new base::Value(expected_origins[i]));
-    EXPECT_NE(origin_list->end(), origin_list->Find(*value));
-  }
-
-  // Unpack the value back to a permission set and make sure its equal to the
-  // original one.
-  std::string error;
-  Permissions permissions_object;
-  EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
-  std::unique_ptr<const PermissionSet> from_value =
-      UnpackPermissionSet(permissions_object, true, &error);
-  EXPECT_TRUE(error.empty());
-
-  EXPECT_EQ(permission_set, *from_value);
+  ASSERT_TRUE(pack_result->origins);
+  EXPECT_THAT(*pack_result->origins, testing::UnorderedElementsAre(
+                                         "http://a.com/*", "http://b.com/*"));
 }
 
 // Tests various error conditions and edge cases when unpacking values
 // into PermissionSets.
-TEST(ExtensionPermissionsAPIHelpers, Unpack) {
+TEST(ExtensionPermissionsAPIHelpers, Unpack_Basic) {
   std::unique_ptr<base::ListValue> apis(new base::ListValue());
   apis->AppendString("tabs");
   std::unique_ptr<base::ListValue> origins(new base::ListValue());
@@ -93,15 +73,27 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   std::unique_ptr<const PermissionSet> permissions;
   std::string error;
 
+  APIPermissionSet optional_apis;
+  optional_apis.insert(APIPermission::kTab);
+  URLPatternSet optional_explicit_hosts(
+      {URLPattern(Extension::kValidHostPermissionSchemes, "http://a.com/*")});
+  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
+                                     optional_explicit_hosts, URLPatternSet());
+
   // Origins shouldn't have to be present.
   {
     Permissions permissions_object;
     value->Set("permissions", apis->CreateDeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
-    permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kTab));
-    EXPECT_TRUE(permissions.get());
+
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, PermissionSet(),
+                            optional_permissions, true, &error);
+
+    ASSERT_TRUE(unpack_result);
     EXPECT_TRUE(error.empty());
+    EXPECT_EQ(1u, unpack_result->optional_apis.size());
+    EXPECT_TRUE(unpack_result->optional_apis.count(APIPermission::kTab));
   }
 
   // The api permissions don't need to be present either.
@@ -110,10 +102,15 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Clear();
     value->Set("origins", origins->CreateDeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
-    permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_TRUE(permissions.get());
+
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, PermissionSet(),
+                            optional_permissions, true, &error);
+    ASSERT_TRUE(unpack_result);
     EXPECT_TRUE(error.empty());
-    EXPECT_TRUE(permissions->HasExplicitAccessToOrigin(GURL("http://a.com/")));
+    EXPECT_THAT(permissions_test_util::GetPatternsAsStrings(
+                    unpack_result->optional_explicit_hosts),
+                testing::UnorderedElementsAre("http://a.com/*"));
   }
 
   // Throw errors for non-string API permissions.
@@ -159,10 +156,15 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     value->Set("origins", origins->CreateDeepCopy());
     value->Set("random", std::make_unique<base::Value>(3));
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
-    permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_TRUE(permissions.get());
+
+    std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+        UnpackPermissionSet(permissions_object, PermissionSet(),
+                            optional_permissions, true, &error);
+    ASSERT_TRUE(unpack_result);
     EXPECT_TRUE(error.empty());
-    EXPECT_TRUE(permissions->HasExplicitAccessToOrigin(GURL("http://a.com/")));
+    EXPECT_THAT(permissions_test_util::GetPatternsAsStrings(
+                    unpack_result->optional_explicit_hosts),
+                testing::UnorderedElementsAre("http://a.com/*"));
   }
 
   // Unknown permissions should throw an error.
@@ -173,11 +175,124 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
     invalid_apis->AppendString("unknown_permission");
     value->Set("permissions", std::move(invalid_apis));
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));
-    permissions = UnpackPermissionSet(permissions_object, true, &error);
-    EXPECT_FALSE(permissions.get());
-    EXPECT_FALSE(error.empty());
+
+    EXPECT_FALSE(UnpackPermissionSet(permissions_object, PermissionSet(),
+                                     optional_permissions, true, &error));
     EXPECT_EQ(error, "'unknown_permission' is not a recognized permission.");
   }
+}
+
+// Tests that host permissions are properly partitioned according to the
+// required/optional permission sets.
+TEST(ExtensionPermissionsAPIHelpers, Unpack_HostSeparation) {
+  auto explicit_url_pattern = [](const char* pattern) {
+    return URLPattern(Extension::kValidHostPermissionSchemes, pattern);
+  };
+
+  constexpr char kRequiredExplicit1[] = "https://required_explicit1.com/*";
+  constexpr char kRequiredExplicit2[] = "https://required_explicit2.com/*";
+  constexpr char kOptionalExplicit1[] = "https://optional_explicit1.com/*";
+  constexpr char kOptionalExplicit2[] = "https://optional_explicit2.com/*";
+  constexpr char kUnlisted1[] = "https://unlisted1.com/*";
+
+  URLPatternSet required_explicit_hosts({
+      explicit_url_pattern(kRequiredExplicit1),
+      explicit_url_pattern(kRequiredExplicit2),
+  });
+  URLPatternSet optional_explicit_hosts({
+      explicit_url_pattern(kOptionalExplicit1),
+      explicit_url_pattern(kOptionalExplicit2),
+  });
+
+  PermissionSet required_permissions(APIPermissionSet(),
+                                     ManifestPermissionSet(),
+                                     required_explicit_hosts, URLPatternSet());
+  PermissionSet optional_permissions(APIPermissionSet(),
+                                     ManifestPermissionSet(),
+                                     optional_explicit_hosts, URLPatternSet());
+
+  Permissions permissions_object;
+  permissions_object.origins =
+      std::make_unique<std::vector<std::string>>(std::vector<std::string>(
+          {kRequiredExplicit1, kOptionalExplicit1, kUnlisted1}));
+
+  std::string error;
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+      UnpackPermissionSet(permissions_object, required_permissions,
+                          optional_permissions, true, &error);
+  ASSERT_TRUE(unpack_result);
+  EXPECT_TRUE(error.empty()) << error;
+
+  EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
+              testing::UnorderedElementsAre(kRequiredExplicit1));
+  EXPECT_THAT(GetPatternsAsStrings(unpack_result->optional_explicit_hosts),
+              testing::UnorderedElementsAre(kOptionalExplicit1));
+  EXPECT_THAT(GetPatternsAsStrings(unpack_result->unlisted_hosts),
+              testing::UnorderedElementsAre(kUnlisted1));
+}
+
+// Tests that host permissions are properly partitioned according to the
+// required/optional permission sets.
+TEST(ExtensionPermissionsAPIHelpers, Unpack_APISeparation) {
+  constexpr APIPermission::ID kRequired1 = APIPermission::kTab;
+  constexpr APIPermission::ID kRequired2 = APIPermission::kStorage;
+  constexpr APIPermission::ID kOptional1 = APIPermission::kCookie;
+  constexpr APIPermission::ID kOptional2 = APIPermission::kAlarms;
+  constexpr APIPermission::ID kUnlisted1 = APIPermission::kIdle;
+
+  APIPermissionSet required_apis;
+  required_apis.insert(kRequired1);
+  required_apis.insert(kRequired2);
+
+  APIPermissionSet optional_apis;
+  optional_apis.insert(kOptional1);
+  optional_apis.insert(kOptional2);
+
+  PermissionSet required_permissions(required_apis, ManifestPermissionSet(),
+                                     URLPatternSet(), URLPatternSet());
+  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
+                                     URLPatternSet(), URLPatternSet());
+
+  Permissions permissions_object;
+  permissions_object.permissions = std::make_unique<std::vector<std::string>>(
+      std::vector<std::string>({"tabs", "cookies", "idle"}));
+
+  std::string error;
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+      UnpackPermissionSet(permissions_object, required_permissions,
+                          optional_permissions, true, &error);
+  ASSERT_TRUE(unpack_result);
+  EXPECT_TRUE(error.empty()) << error;
+
+  EXPECT_EQ(1u, unpack_result->required_apis.size());
+  EXPECT_TRUE(unpack_result->required_apis.count(kRequired1));
+  EXPECT_EQ(1u, unpack_result->optional_apis.size());
+  EXPECT_TRUE(unpack_result->optional_apis.count(kOptional1));
+  EXPECT_EQ(1u, unpack_result->unlisted_apis.size());
+  EXPECT_TRUE(unpack_result->unlisted_apis.count(kUnlisted1));
+}
+
+// Tests that an error is thrown for permissions that cannot be optional, when
+// requested as an optional permission.
+TEST(ExtensionPermissionsAPIHelpers, Unpack_UnsupportedAPIPermission) {
+  APIPermissionSet optional_apis;
+  optional_apis.insert(APIPermission::kWallpaper);
+  EXPECT_FALSE((*optional_apis.begin())->info()->supports_optional());
+  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
+                                     URLPatternSet(), URLPatternSet());
+
+  Permissions permissions_object;
+  permissions_object.permissions = std::make_unique<std::vector<std::string>>(
+      std::vector<std::string>({"wallpaper"}));
+
+  std::string error;
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
+      UnpackPermissionSet(permissions_object, PermissionSet(),
+                          optional_permissions, true, &error);
+  ASSERT_TRUE(unpack_result) << error;
+  EXPECT_EQ(1u, unpack_result->unsupported_optional_apis.size());
+  EXPECT_TRUE(unpack_result->unsupported_optional_apis.count(
+      APIPermission::kWallpaper));
 }
 
 }  // namespace extensions

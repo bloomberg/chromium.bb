@@ -25,6 +25,7 @@
 namespace extensions {
 
 using api::permissions::Permissions;
+using permissions_api_helpers::UnpackPermissionSetResult;
 
 namespace {
 
@@ -34,7 +35,7 @@ const char kCantRemoveRequiredPermissionsError[] =
     "You cannot remove required permissions.";
 const char kNotInManifestPermissionsError[] =
     "Only permissions specified in the manifest may be requested.";
-const char kNotWhitelistedError[] =
+const char kCannotBeOptionalError[] =
     "The optional permissions API does not support '*'.";
 const char kUserGestureRequiredError[] =
     "This function must be called during a user gesture";
@@ -54,19 +55,45 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
       api::permissions::Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // NOTE: |permissions| is not used to make any security decisions. Therefore,
+  // NOTE: The result is not used to make any security decisions. Therefore,
   // it is entirely fine to set |allow_file_access| to true below. This will
   // avoid throwing error when extension() doesn't have access to file://.
+  constexpr bool kAllowFileAccess = true;
+
   std::string error;
-  std::unique_ptr<const PermissionSet> permissions =
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
       permissions_api_helpers::UnpackPermissionSet(
-          params->permissions, true /* allow_file_access */, &error);
-  if (!permissions.get())
+          params->permissions,
+          PermissionsParser::GetRequiredPermissions(extension()),
+          PermissionsParser::GetOptionalPermissions(extension()),
+          kAllowFileAccess, &error);
+
+  if (!unpack_result)
     return RespondNow(Error(error));
 
-  return RespondNow(ArgumentList(api::permissions::Contains::Results::Create(
-      extension()->permissions_data()->active_permissions().Contains(
-          *permissions))));
+  const PermissionSet& active_permissions =
+      extension()->permissions_data()->active_permissions();
+
+  bool has_all_permissions =
+      // An extension can never have an active permission that wasn't listed in
+      // the manifest, so we know it won't contain all permissions in
+      // |unpack_result| if there are any unlisted.
+      unpack_result->unlisted_apis.empty() &&
+      unpack_result->unlisted_hosts.is_empty() &&
+      // Unsupported optional permissions can never be granted, so we know if
+      // there are any specified, the extension doesn't actively have them.
+      unpack_result->unsupported_optional_apis.empty() &&
+      // Otherwise, check each expected location for whether it contains the
+      // relevant permissions.
+      active_permissions.apis().Contains(unpack_result->optional_apis) &&
+      active_permissions.apis().Contains(unpack_result->required_apis) &&
+      active_permissions.explicit_hosts().Contains(
+          unpack_result->optional_explicit_hosts) &&
+      active_permissions.explicit_hosts().Contains(
+          unpack_result->required_explicit_hosts);
+
+  return RespondNow(ArgumentList(
+      api::permissions::Contains::Results::Create(has_all_permissions)));
 }
 
 ExtensionFunction::ResponseAction PermissionsGetAllFunction::Run() {
@@ -83,22 +110,28 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
-  std::unique_ptr<const PermissionSet> permissions =
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
       permissions_api_helpers::UnpackPermissionSet(
           params->permissions,
+          PermissionsParser::GetRequiredPermissions(extension()),
+          PermissionsParser::GetOptionalPermissions(extension()),
           ExtensionPrefs::Get(browser_context())
               ->AllowFileAccess(extension_->id()),
           &error);
 
-  if (!permissions.get())
+  if (!unpack_result)
     return RespondNow(Error(error));
 
-  // Make sure the extension is only trying to remove permissions supported by
-  // this API.
-  APIPermissionSet apis = permissions->apis();
-  for (const APIPermission* permission : apis) {
-    if (!permission->info()->supports_optional())
-      return RespondNow(Error(kNotWhitelistedError, permission->name()));
+  // We can't remove any permissions that weren't specified in the manifest.
+  if (!unpack_result->unlisted_apis.empty() ||
+      !unpack_result->unlisted_hosts.is_empty()) {
+    return RespondNow(Error(kNotInManifestPermissionsError));
+  }
+
+  if (!unpack_result->unsupported_optional_apis.empty()) {
+    return RespondNow(
+        Error(kCannotBeOptionalError,
+              (*unpack_result->unsupported_optional_apis.begin())->name()));
   }
 
   // Make sure we only remove optional permissions, and not required
@@ -109,26 +142,25 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   // NOTE(devlin): This won't support removal of required permissions that can
   // withheld. I don't think that will be a common use case, and so is probably
   // fine.
-  const PermissionSet& optional =
-      PermissionsParser::GetOptionalPermissions(extension());
-  const PermissionSet& required =
-      PermissionsParser::GetRequiredPermissions(extension());
-  if (!optional.Contains(*permissions) ||
-      !std::unique_ptr<const PermissionSet>(
-           PermissionSet::CreateIntersection(*permissions, required))
-           ->IsEmpty()) {
+  if (!unpack_result->required_apis.empty() ||
+      !unpack_result->required_explicit_hosts.is_empty()) {
     return RespondNow(Error(kCantRemoveRequiredPermissionsError));
   }
+
+  PermissionSet permissions(
+      unpack_result->optional_apis, ManifestPermissionSet(),
+      unpack_result->optional_explicit_hosts, URLPatternSet());
 
   // Only try and remove those permissions that are active on the extension.
   // For backwards compatability with behavior before this check was added, just
   // silently remove any that aren't present.
-  permissions = PermissionSet::CreateIntersection(
-      *permissions, extension()->permissions_data()->active_permissions());
+  std::unique_ptr<const PermissionSet> permissions_to_revoke =
+      PermissionSet::CreateIntersection(
+          permissions, extension()->permissions_data()->active_permissions());
 
   PermissionsUpdater(browser_context())
       .RevokeOptionalPermissions(
-          *extension(), *permissions, PermissionsUpdater::REMOVE_SOFT,
+          *extension(), *permissions_to_revoke, PermissionsUpdater::REMOVE_SOFT,
           base::BindOnce(
               &PermissionsRemoveFunction::Respond, base::RetainedRef(this),
               ArgumentList(api::permissions::Remove::Results::Create(true))));
@@ -171,31 +203,56 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
-  std::unique_ptr<const PermissionSet> requested_permissions =
+  std::unique_ptr<UnpackPermissionSetResult> unpack_result =
       permissions_api_helpers::UnpackPermissionSet(
           params->permissions,
+          PermissionsParser::GetRequiredPermissions(extension()),
+          PermissionsParser::GetOptionalPermissions(extension()),
           ExtensionPrefs::Get(browser_context())
               ->AllowFileAccess(extension_->id()),
           &error);
-  if (!requested_permissions.get())
+
+  if (!unpack_result)
     return RespondNow(Error(error));
 
-  // Make sure they're only requesting permissions supported by this API.
-  for (const auto* api_permission : requested_permissions->apis()) {
-    if (!api_permission->info()->supports_optional()) {
-      return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          kNotWhitelistedError, api_permission->name())));
-    }
+  // Don't allow the extension to request any permissions that weren't specified
+  // in the manifest.
+  if (!unpack_result->unlisted_apis.empty() ||
+      !unpack_result->unlisted_hosts.is_empty()) {
+    return RespondNow(Error(kNotInManifestPermissionsError));
   }
 
-  const PermissionsData* permissions_data = extension()->permissions_data();
-  // Subtract out any permissions already active on the extension.
-  std::unique_ptr<const PermissionSet> new_permissions =
-      PermissionSet::CreateDifference(*requested_permissions,
-                                      permissions_data->active_permissions());
+  if (!unpack_result->unsupported_optional_apis.empty()) {
+    return RespondNow(
+        Error(kCannotBeOptionalError,
+              (*unpack_result->unsupported_optional_apis.begin())->name()));
+  }
+
+  const PermissionSet& active_permissions =
+      extension()->permissions_data()->active_permissions();
+
+  // Determine which of the requested permissions are optional permissions that
+  // are "new", i.e. aren't already active on the extension.
+  requested_optional_ = std::make_unique<const PermissionSet>(
+      unpack_result->optional_apis, ManifestPermissionSet(),
+      unpack_result->optional_explicit_hosts, URLPatternSet());
+  requested_optional_ =
+      PermissionSet::CreateDifference(*requested_optional_, active_permissions);
+
+  // Do the same for withheld permissions.
+  requested_withheld_ = std::make_unique<const PermissionSet>(
+      APIPermissionSet(), ManifestPermissionSet(),
+      unpack_result->required_explicit_hosts, URLPatternSet());
+  requested_withheld_ =
+      PermissionSet::CreateDifference(*requested_withheld_, active_permissions);
+
+  // Determine the total "new" permissions; this is the set of all permissions
+  // that aren't currently active on the extension.
+  std::unique_ptr<const PermissionSet> total_new_permissions =
+      PermissionSet::CreateUnion(*requested_withheld_, *requested_optional_);
 
   // If all permissions are already active, nothing left to do.
-  if (new_permissions->IsEmpty()) {
+  if (total_new_permissions->IsEmpty()) {
     constexpr bool granted = true;
     return RespondNow(OneArgument(std::make_unique<base::Value>(granted)));
   }
@@ -203,42 +260,27 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   // Automatically declines api permissions requests, which are blocked by
   // enterprise policy.
   if (!ExtensionManagementFactory::GetForBrowserContext(browser_context())
-           ->IsPermissionSetAllowed(extension(), *new_permissions)) {
+           ->IsPermissionSetAllowed(extension(), *total_new_permissions)) {
     return RespondNow(Error(kBlockedByEnterprisePolicy));
   }
 
-  // Look for any permissions that were withheld. These previously would have
-  // been auto-granted to the extension, but are now waiting for deliberate
-  // user approval.
-  requested_withheld_ = PermissionSet::CreateIntersection(
-      *new_permissions, permissions_data->withheld_permissions());
-  // Assume any permissions that weren't withheld are being requested as
-  // optional permissions.
-  requested_optional_ =
-      PermissionSet::CreateDifference(*new_permissions, *requested_withheld_);
+  // At this point, all permissions in |requested_withheld_| should be within
+  // the |withheld_permissions| section of the PermissionsData.
+  DCHECK(extension()->permissions_data()->withheld_permissions().Contains(
+      *requested_withheld_));
 
-  // Check that the remaining permissions (assumed to be optional) are specified
-  // in the manifest.
-  if (!PermissionsParser::GetOptionalPermissions(extension())
-           .Contains(*requested_optional_)) {
-    return RespondNow(Error(kNotInManifestPermissionsError));
-  }
-
-  // Find the permissions to prompt the user for.
-  // We prompt for |requested_withheld_| +
-  // (|requested_optional_| - |already_granted_permissions|).
-  // We prompt for |requested_withheld_| since these were deliberately revoked
-  // by the user. We don't prompt for |already_granted_permissions|
-  // since these were either granted to an earlier extension version or removed
-  // by the extension itself (using the permissions.remove() method).
+  // Prompt the user for any new permissions that aren't contained within the
+  // already-granted permissions. We don't prompt for already-granted
+  // permissions since these were either granted to an earlier extension version
+  // or removed by the extension itself (using the permissions.remove() method).
   std::unique_ptr<const PermissionSet> granted_permissions =
       ExtensionPrefs::Get(browser_context())
           ->GetRuntimeGrantedPermissions(extension()->id());
   std::unique_ptr<const PermissionSet> already_granted_permissions =
       PermissionSet::CreateIntersection(*granted_permissions,
                                         *requested_optional_);
-  new_permissions = PermissionSet::CreateDifference(
-      *new_permissions, *already_granted_permissions);
+  total_new_permissions = PermissionSet::CreateDifference(
+      *total_new_permissions, *already_granted_permissions);
 
   // We don't need to show the prompt if there are no new warnings, or if
   // we're skipping the confirmation UI. COMPONENT extensions are allowed to
@@ -251,8 +293,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   bool has_no_warnings =
       message_provider
           ->GetPermissionMessages(message_provider->GetAllPermissionIDs(
-              // |new_permissions| all permissions that need user consent.
-              *new_permissions, extension()->GetType()))
+              *total_new_permissions, extension()->GetType()))
           .empty();
   if (has_no_warnings || extension_->location() == Manifest::COMPONENT) {
     OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
@@ -262,7 +303,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   // Otherwise, we have to prompt the user (though we might "autoconfirm" for a
   // test.
   if (auto_confirm_for_tests != DO_NOT_SKIP) {
-    prompted_permissions_for_testing_ = new_permissions->Clone();
+    prompted_permissions_for_testing_ = total_new_permissions->Clone();
     if (auto_confirm_for_tests == PROCEED)
       OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
     else if (auto_confirm_for_tests == ABORT)
@@ -278,9 +319,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
       extension(), nullptr,
       std::make_unique<ExtensionInstallPrompt::Prompt>(
           ExtensionInstallPrompt::PERMISSIONS_PROMPT),
-      // |new_permissions| includes both |requested_optional_| and
-      // |requested_withheld_|.
-      std::move(new_permissions),
+      std::move(total_new_permissions),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 
   // ExtensionInstallPrompt::ShowDialog() can call the response synchronously.
