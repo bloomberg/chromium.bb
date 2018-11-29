@@ -1000,6 +1000,12 @@ interface PerformanceEntry
     getter startTime
     method constructor
     method toJSON
+interface PerformanceMark : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
+interface PerformanceMeasure : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
 interface PerformanceObserver
     attribute @@toStringTag
     method constructor
