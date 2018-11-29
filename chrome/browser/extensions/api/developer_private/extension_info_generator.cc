@@ -721,8 +721,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     gfx::Size max_size(128, 128);
     image_loader_->LoadImageAsync(
         &extension, icon, max_size,
-        base::Bind(&ExtensionInfoGenerator::OnImageLoaded,
-                   weak_factory_.GetWeakPtr(), base::Passed(&info)));
+        base::BindOnce(&ExtensionInfoGenerator::OnImageLoaded,
+                       weak_factory_.GetWeakPtr(), std::move(info)));
   }
 }
 

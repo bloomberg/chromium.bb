@@ -41,30 +41,41 @@ int ConvertDipToPx(int dip) {
       std::floor(static_cast<float>(dip) * GetDeviceScaleFactor()));
 }
 
-std::string ReadExtensionResource(extensions::ExtensionResource ext_resource) {
+std::vector<uint8_t> ReadExtensionResource(
+    extensions::ExtensionResource ext_resource) {
   std::string data;
   base::ReadFileToString(ext_resource.GetFilePath(), &data);
-  return data;
+  return std::vector<uint8_t>(data.begin(), data.end());
 }
 
 // Runs |callback| passing an IconValuePtr with a compressed image.
-void RunCallbackWithCompressedImage(apps::LoadIconRepeatingCallback callback,
-                                    std::string data) {
+void RunCallbackWithCompressedData(
+    apps::mojom::Publisher::LoadIconCallback callback,
+    std::vector<uint8_t> data) {
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
   iv->icon_compression = data.empty()
                              ? apps::mojom::IconCompression::kUnknown
                              : apps::mojom::IconCompression::kCompressed;
-  iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
-  callback.Run(std::move(iv));
+  iv->compressed = std::move(data);
+  std::move(callback).Run(std::move(iv));
 }
 
 // Runs |callback| passing an IconValuePtr with an uncompressed image.
-void RunCallbackWithUncompressedImage(apps::LoadIconRepeatingCallback callback,
-                                      const gfx::Image& image) {
+void RunCallbackWithUncompressedImageSkia(
+    apps::mojom::Publisher::LoadIconCallback callback,
+    const gfx::ImageSkia image) {
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
   iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-  iv->uncompressed = image.AsImageSkia();
-  callback.Run(std::move(iv));
+  iv->uncompressed = image;
+  std::move(callback).Run(std::move(iv));
+}
+
+// Runs |callback| passing an IconValuePtr with an uncompressed image.
+void RunCallbackWithUncompressedImage(
+    apps::mojom::Publisher::LoadIconCallback callback,
+    const gfx::Image& image) {
+  RunCallbackWithUncompressedImageSkia(std::move(callback),
+                                       image.AsImageSkia());
 }
 
 }  // namespace
@@ -73,7 +84,7 @@ namespace apps {
 
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            int size_hint_in_dip,
-                           LoadIconRepeatingCallback callback,
+                           apps::mojom::Publisher::LoadIconCallback callback,
                            content::BrowserContext* context,
                            const std::string& extension_id) {
   int size_hint_in_px = ConvertDipToPx(size_hint_in_dip);
@@ -95,14 +106,16 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         extensions::ImageLoader::Get(context)->LoadImageAsync(
             extension, std::move(ext_resource),
             gfx::Size(size_hint_in_px, size_hint_in_px),
-            base::BindRepeating(&RunCallbackWithUncompressedImage, callback));
+            base::BindOnce(&RunCallbackWithUncompressedImage,
+                           std::move(callback)));
         return;
 
       case apps::mojom::IconCompression::kCompressed:
         base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
             base::BindOnce(&ReadExtensionResource, std::move(ext_resource)),
-            base::BindOnce(&RunCallbackWithCompressedImage, callback));
+            base::BindOnce(&RunCallbackWithCompressedData,
+                           std::move(callback)));
         return;
     }
   }
@@ -123,13 +136,11 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
         gfx::ImageSkia* unscaled =
             ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 resource_id);
-
-        apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-        iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-        iv->uncompressed = gfx::ImageSkiaOperations::CreateResizedImage(
-            *unscaled, skia::ImageOperations::RESIZE_BEST,
-            gfx::Size(size_hint_in_dip, size_hint_in_dip));
-        std::move(callback).Run(std::move(iv));
+        RunCallbackWithUncompressedImageSkia(
+            std::move(callback),
+            gfx::ImageSkiaOperations::CreateResizedImage(
+                *unscaled, skia::ImageOperations::RESIZE_BEST,
+                gfx::Size(size_hint_in_dip, size_hint_in_dip)));
         return;
       }
 
@@ -137,11 +148,9 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
         base::StringPiece data =
             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
                 resource_id);
-
-        apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-        iv->icon_compression = apps::mojom::IconCompression::kCompressed;
-        iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
-        std::move(callback).Run(std::move(iv));
+        RunCallbackWithCompressedData(
+            std::move(callback),
+            std::vector<uint8_t>(data.begin(), data.end()));
         return;
       }
     }

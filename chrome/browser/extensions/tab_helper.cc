@@ -366,8 +366,8 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
                                    ExtensionIconSet::MATCH_BIGGER),
         gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
                   extension_misc::EXTENSION_ICON_SMALL),
-        base::Bind(&TabHelper::OnImageLoaded,
-                   image_loader_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&TabHelper::OnImageLoaded,
+                       image_loader_ptr_factory_.GetWeakPtr()));
   }
 }
 

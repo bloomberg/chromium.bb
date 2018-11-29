@@ -184,8 +184,8 @@ void GetShortcutInfoForApp(const extensions::Extension* extension,
   // image and exit immediately.
   extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
       extension, info_list,
-      base::Bind(&OnImageLoaded, base::Passed(&shortcut_info),
-                 base::Passed(&callback)));
+      base::BindOnce(&OnImageLoaded, base::Passed(&shortcut_info),
+                     std::move(callback)));
 }
 
 std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(

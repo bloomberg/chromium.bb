@@ -18,23 +18,11 @@ class BrowserContext;
 
 namespace apps {
 
-// TODO: delete this. See below.
-using LoadIconRepeatingCallback =
-    base::RepeatingCallback<void(apps::mojom::IconValuePtr icon_value)>;
-
-void LoadIconFromExtension(
-    apps::mojom::IconCompression icon_compression,
-    int size_hint_in_dip,
-    // TODO: the next line should be:
-    //
-    // apps::mojom::Publisher::LoadIconCallback callback,
-    //
-    // In other words, we should drop the "Repeating". This will require fixing
-    // extensions::ImageLoader to take a base::OnceCallback instead of an
-    // (implicitly repeating) base::Callback.
-    LoadIconRepeatingCallback callback,
-    content::BrowserContext* context,
-    const std::string& extension_id);
+void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
+                           int size_hint_in_dip,
+                           apps::mojom::Publisher::LoadIconCallback callback,
+                           content::BrowserContext* context,
+                           const std::string& extension_id);
 
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,

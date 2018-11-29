@@ -184,7 +184,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
   // so we'll bind all the pertinent data here.
   extensions::ImageLoader::Get(profile)->LoadImageAsync(
       extension, resource, gfx::Size(size, size),
-      base::Bind(
+      base::BindOnce(
           &NotificationImageReady, extension->name(), extension->id(), message,
           base::MakeRefCounted<CrashNotificationDelegate>(profile, extension),
           profile));

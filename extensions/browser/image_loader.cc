@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -222,17 +223,17 @@ ImageLoader* ImageLoader::Get(content::BrowserContext* context) {
 void ImageLoader::LoadImageAsync(const Extension* extension,
                                  const ExtensionResource& resource,
                                  const gfx::Size& max_size,
-                                 const ImageLoaderImageCallback& callback) {
+                                 ImageLoaderImageCallback callback) {
   std::vector<ImageRepresentation> info_list;
   info_list.push_back(ImageRepresentation(
       resource, ImageRepresentation::RESIZE_WHEN_LARGER, max_size, 1.f));
-  LoadImagesAsync(extension, info_list, callback);
+  LoadImagesAsync(extension, info_list, std::move(callback));
 }
 
 void ImageLoader::LoadImageAtEveryScaleFactorAsync(
     const Extension* extension,
     const gfx::Size& dip_size,
-    const ImageLoaderImageCallback& callback) {
+    ImageLoaderImageCallback callback) {
   std::vector<ImageRepresentation> info_list;
 
   std::set<float> scales;
@@ -253,36 +254,36 @@ void ImageLoader::LoadImageAtEveryScaleFactorAsync(
     info_list.push_back(ImageRepresentation(
         image, ImageRepresentation::ALWAYS_RESIZE, px_size, scale));
   }
-  LoadImagesAsync(extension, info_list, callback);
+  LoadImagesAsync(extension, info_list, std::move(callback));
 }
 
 void ImageLoader::LoadImagesAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
-    const ImageLoaderImageCallback& callback) {
+    ImageLoaderImageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(LoadImagesBlocking, info_list,
-                 LoadResourceBitmaps(extension, info_list)),
-      base::Bind(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      base::BindOnce(LoadImagesBlocking, info_list,
+                     LoadResourceBitmaps(extension, info_list)),
+      base::BindOnce(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void ImageLoader::LoadImageFamilyAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
-    const ImageLoaderImageFamilyCallback& callback) {
+    ImageLoaderImageFamilyCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(LoadImagesBlocking, info_list,
-                 LoadResourceBitmaps(extension, info_list)),
-      base::Bind(&ImageLoader::ReplyBackWithImageFamily,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(LoadImagesBlocking, info_list,
+                     LoadResourceBitmaps(extension, info_list)),
+      base::BindOnce(&ImageLoader::ReplyBackWithImageFamily,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
+void ImageLoader::ReplyBack(ImageLoaderImageCallback callback,
                             const std::vector<LoadResult>& load_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -302,11 +303,11 @@ void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
     image = gfx::Image(image_skia);
   }
 
-  callback.Run(image);
+  std::move(callback).Run(image);
 }
 
 void ImageLoader::ReplyBackWithImageFamily(
-    const ImageLoaderImageFamilyCallback& callback,
+    ImageLoaderImageFamilyCallback callback,
     const std::vector<LoadResult>& load_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -329,7 +330,7 @@ void ImageLoader::ReplyBackWithImageFamily(
     image_family.Add(it->second);
   }
 
-  callback.Run(std::move(image_family));
+  std::move(callback).Run(std::move(image_family));
 }
 
 }  // namespace extensions
