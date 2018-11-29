@@ -1598,7 +1598,11 @@ if (enable_java_templates) {
       deps = _deps
       build_config = _build_config
       proguard_enabled = true
-      forward_variables_from(invoker, [ "proguard_configs" ])
+      forward_variables_from(invoker,
+                             [
+                               "proguard_configs",
+                               "use_r8",
+                             ])
       output = invoker.output
     }
   }
@@ -2451,6 +2455,7 @@ if (enable_java_templates) {
                                "javac_args",
                                "loadable_modules",
                                "no_build_hooks",
+                               "use_r8",
                                "secondary_abi_loadable_modules",
                              ])
       if (_is_bundle_module) {
@@ -2539,6 +2544,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "min_sdk_version",
+                                 "use_r8",
                                  "dexlayout_profile",
                                ])
         proguard_enabled = _proguard_enabled
@@ -2970,6 +2976,7 @@ if (enable_java_templates) {
                                "uncompress_shared_libraries",
                                "uncompress_dex",
                                "use_chromium_linker",
+                               "use_r8",
                                "version_code",
                                "version_name",
                                "write_asset_list",
@@ -3072,6 +3079,7 @@ if (enable_java_templates) {
                                "testonly",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
+                               "use_r8",
                                "version_code",
                                "version_name",
                                "write_asset_list",
@@ -3888,7 +3896,11 @@ if (enable_java_templates) {
         enable_multidex = _enable_multidex
         proguard_enabled = true
         proguard_mapping_path = _proguard_mapping_path
-        forward_variables_from(invoker, [ "proguard_jar_path" ])
+        forward_variables_from(invoker,
+                               [
+                                 "proguard_jar_path",
+                                 "use_r8",
+                               ])
         build_config = _build_config
 
         deps = _module_targets + _module_build_config_targets +
