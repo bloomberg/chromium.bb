@@ -175,14 +175,7 @@ class MessageTransferOperationTest : public testing::Test {
       : test_local_device_(cryptauth::RemoteDeviceRefBuilder()
                                .SetPublicKey("local device")
                                .Build()),
-        test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)) {
-    // These tests are written under the assumption that there are a maximum of
-    // 3 "empty scan" connection attempts and 6 "GATT" connection attempts; the
-    // tests need to be edited if these values change.
-    EXPECT_EQ(3u, MessageTransferOperation::kMaxEmptyScansPerDevice);
-    EXPECT_EQ(6u,
-              MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice);
-  }
+        test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)) {}
 
   void SetUp() override {
     fake_device_sync_client_ =

@@ -31,21 +31,6 @@ class TimerFactory;
 // from remote devices.
 class MessageTransferOperation {
  public:
-  // The number of times to attempt to connect to a device without receiving any
-  // response before giving up. When a connection to a device is attempted, a
-  // BLE discovery session listens for advertisements from the remote device as
-  // the first step of the connection; if no advertisement is picked up, it is
-  // likely that the remote device is not nearby or is not currently responding
-  // to Instant Tethering requests.
-  static const uint32_t kMaxEmptyScansPerDevice;
-
-  // The number of times to attempt a GATT connection to a device, after a BLE
-  // discovery session has already detected a nearby device. GATT connections
-  // may fail for a variety of reasons, but most failures are ephemeral. Thus,
-  // more connection attempts are allowed in such cases since it is likely that
-  // a subsequent attempt will succeed. See https://crbug.com/805218.
-  static const uint32_t kMaxGattConnectionAttemptsPerDevice;
-
   MessageTransferOperation(
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
       secure_channel::ConnectionPriority connection_priority,
