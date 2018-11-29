@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/linux/pkg_config.gni")
-import("//ui/ozone/ozone.gni")
 import("//gpu/vulkan/features.gni")
+import("//ui/ozone/ozone.gni")
 
 visibility = [ "//ui/ozone/*" ]
 
@@ -144,7 +144,8 @@ source_set("gbm") {
     "//ui/gl",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux",
+    "//ui/ozone/common/linux:drm",
+    "//ui/ozone/common/linux:gbm",
     "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]
@@ -191,7 +192,8 @@ source_set("gbm_unittests") {
     "//ui/gfx",
     "//ui/ozone:platform",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux",
+    "//ui/ozone/common/linux:drm",
+    "//ui/ozone/common/linux:gbm",
   ]
 
   if (drm_commit_properties_on_page_flip) {

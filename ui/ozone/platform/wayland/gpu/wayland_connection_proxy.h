@@ -15,7 +15,7 @@
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 #if defined(WAYLAND_GBM)
-#include "ui/ozone/common/linux/gbm_device.h"
+#include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
 #endif
 
 struct wl_shm;
