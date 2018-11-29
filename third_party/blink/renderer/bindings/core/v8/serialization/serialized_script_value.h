@@ -295,6 +295,9 @@ class CORE_EXPORT SerializedScriptValue
   void TransferReadableStreams(ScriptState*,
                                const ReadableStreamArray&,
                                ExceptionState&);
+  void TransferWritableStreams(ScriptState*,
+                               const WritableStreamArray&,
+                               ExceptionState&);
   void CloneSharedArrayBuffers(SharedArrayBufferArray&);
   DataBufferPtr data_buffer_;
   size_t data_buffer_size_ = 0;

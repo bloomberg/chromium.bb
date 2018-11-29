@@ -49,10 +49,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
@@ -394,6 +396,22 @@ void SerializedScriptValue::TransferReadableStreams(
   }
 }
 
+void SerializedScriptValue::TransferWritableStreams(
+    ScriptState* script_state,
+    const WritableStreamArray& writable_streams,
+    ExceptionState& exception_state) {
+  auto* execution_context = ExecutionContext::From(script_state);
+  for (WritableStream* writable_stream : writable_streams) {
+    mojo::MessagePipe pipe;
+    MessagePort* local_port = MessagePort::Create(*execution_context);
+    local_port->Entangle(std::move(pipe.handle0));
+    writable_stream->Serialize(script_state, local_port, exception_state);
+    if (exception_state.HadException())
+      return;
+    stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
+  }
+}
+
 void SerializedScriptValue::TransferArrayBuffers(
     v8::Isolate* isolate,
     const ArrayBufferArray& array_buffers,
@@ -562,6 +580,18 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.readable_streams.push_back(stream);
+    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+               V8WritableStream::HasInstance(transferable_object, isolate)) {
+      WritableStream* stream = V8WritableStream::ToImpl(
+          v8::Local<v8::Object>::Cast(transferable_object));
+      if (transferables.writable_streams.Contains(stream)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "WritableStream at index " + String::Number(i) +
+                " is a duplicate of an earlier WritableStream.");
+        return false;
+      }
+      transferables.writable_streams.push_back(stream);
     } else {
       exception_state.ThrowTypeError("Value at index " + String::Number(i) +
                                      " does not have a transferable type.");
