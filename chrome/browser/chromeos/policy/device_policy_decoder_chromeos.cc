@@ -382,14 +382,12 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_device_wifi_fast_transition_enabled()) {
     const em::DeviceWiFiFastTransitionEnabledProto& container(
         policy.device_wifi_fast_transition_enabled());
-    std::unique_ptr<base::DictionaryValue> fast_transition_status(
-        new base::DictionaryValue());
-
-    if (container.has_enabled()) {
-      fast_transition_status->SetBoolean("enabled", container.enabled());
+    if (container.has_device_wifi_fast_transition_enabled()) {
       policies->Set(key::kDeviceWiFiFastTransitionEnabled,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD, std::move(fast_transition_status),
+                    POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(
+                        container.device_wifi_fast_transition_enabled()),
                     nullptr);
     }
   }

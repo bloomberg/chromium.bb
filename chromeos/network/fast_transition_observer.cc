@@ -33,19 +33,15 @@ FastTransitionObserver::FastTransitionObserver(PrefService* local_state)
 FastTransitionObserver::~FastTransitionObserver() {}
 
 void FastTransitionObserver::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kDeviceWiFiFastTransitionEnabled);
+  registry->RegisterBooleanPref(prefs::kDeviceWiFiFastTransitionEnabled, false);
 }
 
 void FastTransitionObserver::OnPreferenceChanged(const std::string& pref_name) {
   DCHECK(pref_name == prefs::kDeviceWiFiFastTransitionEnabled);
 
-  const base::DictionaryValue* fast_transition_policy =
-      local_state_->GetDictionary(prefs::kDeviceWiFiFastTransitionEnabled);
-
   // Default is to disable Fast Transition if the policy is not found.
-  bool enabled = false;
-  if (fast_transition_policy)
-    fast_transition_policy->GetBoolean("enabled", &enabled);
+  bool enabled =
+      local_state_->GetBoolean(prefs::kDeviceWiFiFastTransitionEnabled);
 
   NetworkHandler::Get()->network_state_handler()->SetFastTransitionStatus(
       enabled);

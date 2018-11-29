@@ -3743,7 +3743,7 @@
 
   "DeviceWiFiFastTransitionEnabled": {
     "os": ["chromeos"],
-    "test_policy": { "DeviceWiFiFastTransitionEnabled": {"enabled": "true"} },
+    "test_policy": { "DeviceWiFiFastTransitionEnabled": true },
     "pref_mappings": [
       { "pref": "net.device_wifi_fast_transition_enabled",
         "local_state": true
