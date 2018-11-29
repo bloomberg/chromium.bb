@@ -58,9 +58,11 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
   if (!IsExploreSitesEnabled())
     return;
 
+  // TODO(https://crbug.com/910255): Ensure the catalog swap doesn't happen
+  // during a session.
   task_queue_.AddTask(std::make_unique<GetCatalogTask>(
-      explore_sites_store_.get(), check_for_new_catalog_, std::move(callback)));
-  check_for_new_catalog_ = false;
+      explore_sites_store_.get(), /*update_current*/ true,
+      std::move(callback)));
 }
 
 void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
