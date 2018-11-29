@@ -112,6 +112,8 @@ using content::WebContents;
 
 namespace android_webview {
 
+class CompositorFrameConsumer;
+
 namespace {
 
 bool g_should_download_favicons = false;
@@ -378,7 +380,7 @@ AwContents::~AwContents() {
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
-  SetAwGLFunctor(nullptr);
+  browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
   AwContentsLifecycleNotifier::OnWebViewDestroyed();
 }
 
@@ -393,15 +395,12 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
   return web_contents_->GetJavaWebContents();
 }
 
-void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
+void AwContents::SetCompositorFrameConsumer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong compositor_frame_consumer) {
   browser_view_renderer_.SetCurrentCompositorFrameConsumer(
-      functor ? functor->GetCompositorFrameConsumer() : nullptr);
-}
-
-void AwContents::SetAwGLFunctor(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>& obj,
-                                jlong gl_functor) {
-  SetAwGLFunctor(reinterpret_cast<AwGLFunctor*>(gl_functor));
+      reinterpret_cast<CompositorFrameConsumer*>(compositor_frame_consumer));
 }
 
 ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
