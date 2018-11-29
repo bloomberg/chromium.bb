@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -291,9 +292,62 @@ TEST_F(WindowAnimationsTest, SlideOutAnimation) {
   EXPECT_TRUE(window->layer()->visible());
 
   ::wm::SetWindowVisibilityAnimationType(
-      window.get(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT);
+      window.get(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
   AnimateOnChildWindowVisibilityChanged(window.get(), false);
 
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_FALSE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(-150, 0, 100, 100), window->layer()->GetTargetBounds());
+}
+
+// Test that a fade in slide out animation fades in.
+TEST_F(WindowAnimationsTest, FadeInAnimation) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->Hide();
+  EXPECT_FALSE(window->layer()->visible());
+
+  ::wm::SetWindowVisibilityAnimationType(
+      window.get(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+
+  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  EXPECT_TRUE(window->layer()->visible());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), window->layer()->GetTargetBounds());
+}
+
+TEST_F(WindowAnimationsTest, SlideOutAnimationPlaysTwiceForPipWindow) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+
+  window->Hide();
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  EXPECT_FALSE(window->layer()->visible());
+  EXPECT_EQ("-150,0 100x100", window->layer()->GetTargetBounds().ToString());
+
+  // Reset the position and try again.
+  window->Show();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_TRUE(window->layer()->visible());
+
+  window->Hide();
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());

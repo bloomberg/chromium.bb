@@ -669,7 +669,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
 void WindowState::UpdatePipState(bool was_pip) {
   if (IsPip()) {
     ::wm::SetWindowVisibilityAnimationType(
-        window(), WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT);
+        window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
   } else if (was_pip) {
     ::wm::SetWindowVisibilityAnimationType(
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
