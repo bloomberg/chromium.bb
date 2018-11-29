@@ -1899,6 +1899,24 @@ crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorig
 
 # ====== Out of Blink CORS related tests END ======
 
+
+# ====== Backdrop-filter related tests BEGIN ======
+# These are known failures - this feature is still being implemented
+crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-basic-opacity.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
+# ====== Backdrop-filter related tests END ======
+
+
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-embed-002.html [ Failure ]
@@ -5704,17 +5722,6 @@ crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins
 
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
-
-# These are known failures, being implemented
-crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
-crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
-crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
-crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
 
 #Sheriff 2018-11-14
 crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass ]
