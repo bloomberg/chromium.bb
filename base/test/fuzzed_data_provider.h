@@ -87,7 +87,7 @@ class FuzzedDataProvider {
       abort();
 
     // Use the biggest type possible to hold the range and the result.
-    uint64_t range = max - min;
+    uint64_t range = static_cast<uint64_t>(max) - min;
     uint64_t result = 0;
     size_t offset = 0;
 
@@ -108,7 +108,7 @@ class FuzzedDataProvider {
     if (range != std::numeric_limits<decltype(range)>::max())
       result = result % (range + 1);
 
-    return min + static_cast<T>(result);
+    return static_cast<T>(min + result);
   }
 
   // Returns a std::string of length from 0 to |max_length|. When it runs out of
