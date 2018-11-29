@@ -597,6 +597,7 @@ void NGInlineNode::ShapeText(const String& text_content,
 
     // If the text is from multiple items, split the ShapeResult to
     // corresponding items.
+    unsigned opaque_context = 0;
     for (; index < end_index; index++) {
       NGInlineItem& item = (*items)[index];
       if (item.Type() != NGInlineItem::kText)
@@ -608,8 +609,8 @@ void NGInlineNode::ShapeText(const String& text_content,
       //
       // When multiple code units shape to one glyph, such as ligatures, the
       // item that has its first code unit keeps the glyph.
-      item.shape_result_ =
-          shape_result->SubRange(item.StartOffset(), item.EndOffset());
+      item.shape_result_ = shape_result->SubRange(
+          item.StartOffset(), item.EndOffset(), &opaque_context);
     }
   }
 }

@@ -1292,7 +1292,8 @@ float ShapeResult::LineRightBounds() const {
 
 void ShapeResult::CopyRange(unsigned start_offset,
                             unsigned end_offset,
-                            ShapeResult* target) const {
+                            ShapeResult* target,
+                            unsigned* start_run_index) const {
   if (!runs_.size())
     return;
 
@@ -1308,7 +1309,9 @@ void ShapeResult::CopyRange(unsigned start_offset,
           : target->EndIndex() - std::max(start_offset, StartIndex());
   unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
-  for (const auto& run : runs_) {
+  unsigned run_index = start_run_index ? *start_run_index : 0;
+  for (; run_index < runs_.size(); run_index++) {
+    const auto& run = runs_[run_index];
     unsigned run_start = run->start_index_;
     unsigned run_end = run_start + run->num_characters_;
 
@@ -1323,6 +1326,14 @@ void ShapeResult::CopyRange(unsigned start_offset,
       target->num_characters_ += sub_run->num_characters_;
       target->num_glyphs_ += sub_run->glyph_data_.size();
       target->runs_.push_back(std::move(sub_run));
+
+      // No need to process runs after the end of the range.
+      if ((!Rtl() && end_offset <= run_end) ||
+          (Rtl() && start_offset > run_start)) {
+        if (start_run_index)
+          *start_run_index = run_index;
+        break;
+      }
     }
   }
 
@@ -1370,11 +1381,13 @@ void ShapeResult::CopyRange(unsigned start_offset,
 #endif
 }
 
-scoped_refptr<ShapeResult> ShapeResult::SubRange(unsigned start_offset,
-                                                 unsigned end_offset) const {
+scoped_refptr<ShapeResult> ShapeResult::SubRange(
+    unsigned start_offset,
+    unsigned end_offset,
+    unsigned* start_run_index) const {
   scoped_refptr<ShapeResult> sub_range =
       Create(primary_font_.get(), 0, Direction());
-  CopyRange(start_offset, end_offset, sub_range.get());
+  CopyRange(start_offset, end_offset, sub_range.get(), start_run_index);
   return sub_range;
 }
 

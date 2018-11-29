@@ -238,11 +238,27 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                          const TextRun&) const;
 
   // Append a copy of a range within an existing result to another result.
-  void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+  //
+  // For sequential copies the opaque_context in/out parameter can be used to
+  // improve performance by avoding a linear scan to find the first run for the
+  // range. It should be set to zero for the first call and the resulting out
+  // value for one call is the appropiate input value for the next.
+  // NOTE: opaque_context assumes non-overlapping ranges.
+  void CopyRange(unsigned start,
+                 unsigned end,
+                 ShapeResult*,
+                 unsigned* opaque_context = nullptr) const;
 
   // Create a new ShapeResult instance from a range within an existing result.
+  //
+  // For sequential copies the opaque_context in/out parameter can be used to
+  // improve performance by avoding a linear scan to find the first run for the
+  // range. It should be set to zero for the first call and the resulting out
+  // value for one call is the appropiate input value for the next.
+  // NOTE: opaque_context assumes non-overlapping ranges.
   scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
-                                      unsigned end_offset) const;
+                                      unsigned end_offset,
+                                      unsigned* opaque_context = nullptr) const;
 
   // Create a new ShapeResult instance with the start offset adjusted.
   scoped_refptr<ShapeResult> CopyAdjustedOffset(unsigned start_offset) const;
