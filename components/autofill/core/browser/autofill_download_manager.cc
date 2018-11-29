@@ -85,6 +85,8 @@ const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
 const char kDefaultAutofillServerURL[] =
     "https://clients1.google.com/tbproxy/af/";
 
+// Header for API key.
+constexpr char kGoogApiKey[] = "X-Goog-Api-Key";
 // Header to get base64 encoded serialized proto from API for safety.
 constexpr char kGoogEncodeResponseIfExecutable[] =
     "X-Goog-Encode-Response-If-Executable";
@@ -612,9 +614,6 @@ AutofillDownloadManager::GetRequestURLAndMethodForApi(
 
   // Add the query parameter to set the response format to a serialized proto.
   url = net::AppendQueryParameter(url, "alt", "proto");
-  // Add the API key query parameter.
-  if (!api_key_.empty())
-    url = net::AppendQueryParameter(url, "key", api_key_);
 
   // Determine the HTTP method that should be used.
   std::string method =
@@ -654,6 +653,9 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
     // Encode response serialized proto in base64 for safety.
     resource_request->headers.SetHeader(kGoogEncodeResponseIfExecutable,
                                         "base64");
+    // Put API key in request's header if there is.
+    if (!api_key_.empty())
+      resource_request->headers.SetHeader(kGoogApiKey, api_key_);
   }
 
   auto simple_loader = network::SimpleURLLoader::Create(
