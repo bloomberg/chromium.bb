@@ -20879,6 +20879,8 @@ Called by update_net_error_codes.py.-->
   <int value="2640" label="WebKitUserModifyPlainTextEffective"/>
   <int value="2641" label="CSSAtRuleFontFeatureValues"/>
   <int value="2642" label="FlexboxSingleLineAlignContent"/>
+  <int value="2643" label="SignedExchangeInnerResponseInMainFrame"/>
+  <int value="2644" label="SignedExchangeInnerResponseInSubFrame"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

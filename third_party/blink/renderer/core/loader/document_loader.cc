@@ -1029,8 +1029,13 @@ void DocumentLoader::DidInstallNewDocument(
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 
-  if (response_.IsSignedExchangeInnerResponse())
+  if (response_.IsSignedExchangeInnerResponse()) {
     UseCounter::Count(*document, WebFeature::kSignedExchangeInnerResponse);
+    UseCounter::Count(*document,
+                      document->GetFrame()->IsMainFrame()
+                          ? WebFeature::kSignedExchangeInnerResponseInMainFrame
+                          : WebFeature::kSignedExchangeInnerResponseInSubFrame);
+  }
 
   GetLocalFrameClient().DidCreateNewDocument();
 }
