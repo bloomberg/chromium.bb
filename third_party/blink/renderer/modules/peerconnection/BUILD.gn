@@ -60,6 +60,8 @@ blink_modules_sources("peerconnection") {
     "rtc_legacy_stats_report.h",
     "rtc_peer_connection.cc",
     "rtc_peer_connection.h",
+    "rtc_peer_connection_controller.cc",
+    "rtc_peer_connection_controller.h",
     "rtc_peer_connection_ice_event.cc",
     "rtc_peer_connection_ice_event.h",
     "rtc_quic_stream.cc",

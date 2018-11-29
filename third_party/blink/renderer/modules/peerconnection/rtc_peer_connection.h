@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/call_setup_state_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_controller.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/async_method_runner.h"
@@ -92,7 +93,7 @@ enum class SdpUsageCategory {
   kMaxValue = kUnknown,
 };
 
-SdpUsageCategory MODULES_EXPORT
+MODULES_EXPORT SdpUsageCategory
 DeduceSdpUsageCategory(const String& sdp_type,
                        const String& sdp,
                        bool sdp_semantics_specified,
@@ -302,17 +303,15 @@ class MODULES_EXPORT RTCPeerConnection final
   static int PeerConnectionCount();
   static int PeerConnectionCountLimit();
 
-  // SLD/SRD helper method, public for testing.
-  // "Complex" Plan B SDP is SDP that is not compatible with Unified Plan, i.e.
-  // SDP that has multiple tracks listed under the same m= sections. We should
-  // show a deprecation warning when setLocalDescription() or
-  // setRemoteDescription() is called and:
-  // - The SDP is complex Plan B SDP.
-  // - sdpSemantics was not specified at RTCPeerConnection construction.
-  // Such calls would normally succeed, but as soon as the default switches to
-  // Unified Plan they would fail. This decides whether to show deprecation for
-  // WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics.
-  bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit*) const;
+  // SLD/SRD Helper method, public for testing.
+  // This function returns a value that indicates if complex SDP is being used
+  // and whether a format is explicitly specified. If the SDP is not complex or
+  // it could not be parsed, base::nullopt is returned.
+  // When "Complex" SDP (i.e., SDP that has multiple tracks) is used without
+  // explicitly specifying the SDP format, there may be errors if the
+  // application assumes a format that differs from the actual default format.
+  base::Optional<ComplexSdpCategory> CheckForComplexSdp(
+      const RTCSessionDescriptionInit* session_description_init) const;
 
   const CallSetupStateTracker& call_setup_state_tracker() const;
   void NoteCallSetupStateEventPending(
@@ -470,6 +469,8 @@ class MODULES_EXPORT RTCPeerConnection final
   DOMException* checkSdpForStateErrors(ExecutionContext*,
                                        const RTCSessionDescriptionInit*,
                                        String* sdp);
+  void MaybeWarnAboutUnsafeSdp(
+      const RTCSessionDescriptionInit* session_description_init) const;
 
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
