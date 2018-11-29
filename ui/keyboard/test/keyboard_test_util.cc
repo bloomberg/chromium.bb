@@ -15,8 +15,6 @@ namespace keyboard {
 
 namespace {
 
-constexpr int kDefaultKeyboardHeight = 100;
-
 class KeyboardVisibilityChangeWaiter : public KeyboardControllerObserver {
  public:
   explicit KeyboardVisibilityChangeWaiter(bool wait_until)
@@ -82,10 +80,6 @@ bool IsKeyboardHiding() {
              KeyboardControllerState::WILL_HIDE ||
          keyboard_controller->GetStateForTest() ==
              KeyboardControllerState::HIDDEN;
-}
-
-gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds) {
-  return KeyboardBoundsFromRootBounds(root_bounds, kDefaultKeyboardHeight);
 }
 
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
