@@ -5102,6 +5102,14 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
 
+    if (seq_params->frame_id_numbers_present_flag &&
+        current_frame->frame_type == KEY_FRAME) {
+      // Displaying a forward key-frame, so reset the ref buffer IDs
+      int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
+      for (int i = 0; i < REF_FRAMES; i++)
+        cm->ref_frame_id[i] = display_frame_id;
+    }
+
     cpi->seq_params_locked = 1;
 
     // Set up frame to show to get ready for stats collection.
