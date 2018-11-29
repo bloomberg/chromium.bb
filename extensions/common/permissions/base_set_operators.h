@@ -11,7 +11,7 @@
 #include <map>
 #include <memory>
 
-#include "base/memory/linked_ptr.h"
+#include "base/logging.h"
 
 namespace extensions {
 
@@ -31,8 +31,7 @@ class BaseSetOperators {
   typedef typename BaseSetOperatorsTraits<T>::ElementType ElementType;
   typedef typename BaseSetOperatorsTraits<T>::ElementIDType ElementIDType;
 
-  // TODO(devlin): Un-link-ptr-ify this.
-  using Map = std::map<ElementIDType, linked_ptr<ElementType>>;
+  using Map = std::map<ElementIDType, std::unique_ptr<ElementType>>;
 
   class const_iterator :
     public std::iterator<std::input_iterator_tag, const ElementType*> {
@@ -249,7 +248,7 @@ class BaseSetOperators {
 
   void insert(std::unique_ptr<ElementType> item) {
     ElementIDType id = item->id();
-    map_[id].reset(item.release());
+    map_[id] = std::move(item);
   }
 
   size_t size() const { return map_.size(); }
