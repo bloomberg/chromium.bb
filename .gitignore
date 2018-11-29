@@ -82,3 +82,6 @@ testing_support/google_appengine
 
 # Ignore the monitoring config. It is unique for each user.
 /metrics.cfg
+
+# Ignore the ninjalog upload config.
+/ninjalog.cfg
