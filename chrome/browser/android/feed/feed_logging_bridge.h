@@ -35,6 +35,9 @@ class FeedLoggingBridge {
                           const jint j_position,
                           const base::android::JavaRef<jstring>& j_url);
 
+  void OnContentSwiped(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this);
+
   void OnContentClicked(JNIEnv* j_env,
                         const base::android::JavaRef<jobject>& j_this,
                         const jint j_position,
@@ -71,11 +74,18 @@ class FeedLoggingBridge {
   void OnOpenedWithNoContent(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this);
 
+  void OnSpinnerShown(JNIEnv* j_env,
+                      const base::android::JavaRef<jobject>& j_this,
+                      const jlong j_shownTimeMs);
+
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
                               const jlong visit_time_ms,
                               const jboolean is_offline,
                               const jboolean return_to_ntp);
+
+  void ReportScrolledAfterOpen(JNIEnv* j_env,
+                               const base::android::JavaRef<jobject>& j_this);
 
  private:
   FeedLoggingMetrics* feed_logging_metrics_;

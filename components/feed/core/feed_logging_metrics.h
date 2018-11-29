@@ -58,6 +58,8 @@ class FeedLoggingMetrics {
 
   void OnSuggestionDismissed(int position, const GURL& url);
 
+  void OnSuggestionSwiped();
+
   void OnSuggestionArticleVisited(base::TimeDelta visit_time,
                                   bool return_to_ntp);
 
@@ -68,6 +70,10 @@ class FeedLoggingMetrics {
   void OnMoreButtonShown(int position);
 
   void OnMoreButtonClicked(int position);
+
+  void OnSpinnerShown(base::TimeDelta shown_time);
+
+  void ReportScrolledAfterOpen();
 
  private:
   void CheckURLVisitedDone(int position, bool visited);

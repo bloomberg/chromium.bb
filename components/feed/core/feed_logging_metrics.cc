@@ -181,6 +181,10 @@ void FeedLoggingMetrics::OnSuggestionDismissed(int position, const GURL& url) {
   base::RecordAction(base::UserMetricsAction("Suggestions.Content.Dismissed"));
 }
 
+void FeedLoggingMetrics::OnSuggestionSwiped() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.Card.SwipedAway"));
+}
+
 void FeedLoggingMetrics::OnSuggestionArticleVisited(base::TimeDelta visit_time,
                                                     bool return_to_ntp) {
   base::UmaHistogramLongTimes(
@@ -210,6 +214,15 @@ void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.MoreButtonClicked.Articles", position,
       kMaxSuggestionsForArticle + 1);
+}
+
+void FeedLoggingMetrics::OnSpinnerShown(base::TimeDelta shown_time) {
+  base::UmaHistogramLongTimes(
+      "ContentSuggestions.FetchPendingSpinner.VisibleDuration", shown_time);
+}
+
+void FeedLoggingMetrics::ReportScrolledAfterOpen() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.ScrolledAfterOpen"));
 }
 
 void FeedLoggingMetrics::CheckURLVisitedDone(int position, bool visited) {
