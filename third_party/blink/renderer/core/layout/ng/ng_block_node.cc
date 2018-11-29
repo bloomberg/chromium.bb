@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
@@ -751,6 +752,15 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
                                       maybe_flipped_offset.left;
         }
         layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
+      }
+
+      // Legacy compatibility. This flag is used in paint layer for
+      // invalidation.
+      if (layout_object && layout_object->IsLayoutInline() &&
+          layout_object->StyleRef().HasOutline() &&
+          !layout_object->IsElementContinuation() &&
+          ToLayoutInline(layout_object)->Continuation()) {
+        box_->SetContainsInlineWithOutlineAndContinuation(true);
       }
 
       // The Location() of inline LayoutObject is relative to the
