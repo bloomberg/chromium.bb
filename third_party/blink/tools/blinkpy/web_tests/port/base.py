@@ -962,8 +962,8 @@ class Port(object):
         Note: this will not work with skipped directories. See also the same
         issue with update_all_test_expectations_files in test_importer.py.
         """
-        # TODO(qyearsley): Extract parsing logic (reading the file,
-        # constructing a parser, etc.) from here and test_copier.py.
+        # Note: The parsing logic here (reading the file, constructing a
+        # parser, etc.) is very similar to blinkpy/w3c/test_copier.py.
         path = self.path_to_never_fix_tests_file()
         contents = self._filesystem.read_text_file(path)
         parser = TestExpectationParser(self, all_tests=(), is_lint_mode=False)
