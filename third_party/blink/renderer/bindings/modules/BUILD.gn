@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 group("bindings_modules_generated") {
   visibility = [ "//third_party/blink/*" ]
@@ -203,8 +203,16 @@ source_set("generated") {
 }
 
 generate_web_idl_collection("modules_web_idl_collection") {
-  sources = modules_definition_idl_files + modules_dependency_idl_files
-  output = "WebIdlCollectionForModules.pickle"
+  # |sources| contains all IDL files under modules/.
+  sources = modules_definition_idl_files + modules_static_interface_idl_files +
+            modules_all_dependency_idl_files
+  output = "web_idl_collection_for_modules.pickle"
   component = "modules"
   output_dir = bindings_modules_output_dir
+
+  deps = [
+    "//third_party/blink/renderer/bindings/modules:modules_core_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
+  ]
 }
