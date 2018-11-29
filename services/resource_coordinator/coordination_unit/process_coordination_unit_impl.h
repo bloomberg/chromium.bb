@@ -35,7 +35,7 @@ class ProcessCoordinationUnitImpl
   ProcessCoordinationUnitImpl(
       const CoordinationUnitID& id,
       CoordinationUnitGraph* graph,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref);
   ~ProcessCoordinationUnitImpl() override;
 
   // mojom::ProcessCoordinationUnit implementation.

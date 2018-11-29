@@ -14,8 +14,8 @@ namespace resource_coordinator {
 FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, graph, std::move(service_ref)),
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
+    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)),
       parent_frame_coordination_unit_(nullptr),
       page_coordination_unit_(nullptr),
       process_coordination_unit_(nullptr) {}

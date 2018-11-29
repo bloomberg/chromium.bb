@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/service_manager/public/service_manifest.gni")
+
 # There should be only one resource coordinator. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
-
 source_set("lib") {
   sources = [
     "coordination_unit/coordination_unit_base.cc",
@@ -79,17 +76,6 @@ service_manifest("manifest") {
   source = "manifest.json"
 }
 
-service("resource_coordinator") {
-  sources = [
-    "service_main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//mojo/public/cpp/system",
-  ]
-}
-
 source_set("tests") {
   testonly = true
 
@@ -131,25 +117,9 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  data_deps = [
-    ":resource_coordinator",
-    ":lib",
-  ]
-}
-
-service_manifest("unittest_manifest") {
-  name = "resource_coordinator_unittests"
-  source = "unittest_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-  standalone_services = [ ":manifest" ]
 }
