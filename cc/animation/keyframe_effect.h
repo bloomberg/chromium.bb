@@ -27,8 +27,8 @@ struct PropertyAnimationState;
 
 typedef size_t KeyframeEffectId;
 
-// An KeyframeEffect owns a group of KeyframeModels for a single target
-// (identified by a ElementId). It is responsible for managing the
+// A KeyframeEffect owns a group of KeyframeModels for a single target
+// (identified by an ElementId). It is responsible for managing the
 // KeyframeModels' running states (starting, running, paused, etc), as well as
 // ticking the KeyframeModels when it is requested to produce new outputs for a
 // given time.
