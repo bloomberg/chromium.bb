@@ -344,7 +344,7 @@ void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   pak_file_path = pak_file_path.AppendASCII("resources.pak");
   ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
 
-  aw_feature_list_creator_->CreateFetureListAndFieldTrials();
+  aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
 }
 
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
