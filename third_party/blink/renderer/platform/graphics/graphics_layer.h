@@ -250,8 +250,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   int GetRenderingContext3D() const { return rendering_context3d_; }
 
-  cc::PictureLayer* ContentLayer() const { return layer_.get(); }
-
   static void RegisterContentsLayer(cc::Layer*);
   static void UnregisterContentsLayer(cc::Layer*);
 

@@ -2361,8 +2361,8 @@ TEST_F(CompositedLayerMappingTest,
     GraphicsLayer* target_graphics_layer =
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
-    EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->transformed_rasterization_allowed());
+    EXPECT_FALSE(
+        target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
   }
   {
     LayoutObject* target = GetLayoutObjectByElementId("target2");
@@ -2371,8 +2371,8 @@ TEST_F(CompositedLayerMappingTest,
     GraphicsLayer* target_graphics_layer =
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
-    EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->transformed_rasterization_allowed());
+    EXPECT_FALSE(
+        target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
   }
   {
     LayoutObject* target = GetLayoutObjectByElementId("target3");
@@ -2381,8 +2381,8 @@ TEST_F(CompositedLayerMappingTest,
     GraphicsLayer* target_graphics_layer =
         target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
     ASSERT_TRUE(target_graphics_layer);
-    EXPECT_FALSE(target_graphics_layer->ContentLayer()
-                     ->transformed_rasterization_allowed());
+    EXPECT_FALSE(
+        target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
   }
 }
 
@@ -2404,8 +2404,8 @@ TEST_F(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
   GraphicsLayer* target_graphics_layer =
       target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
   ASSERT_TRUE(target_graphics_layer);
-  EXPECT_TRUE(target_graphics_layer->ContentLayer()
-                  ->transformed_rasterization_allowed());
+  EXPECT_TRUE(
+      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
 }
 
 // This tests that when the scroller becomes no longer scrollable if a sticky

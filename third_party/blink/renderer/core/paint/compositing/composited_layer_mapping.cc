@@ -495,10 +495,10 @@ void CompositedLayerMapping::UpdateRasterizationPolicy() {
   bool transformed_rasterization_allowed =
       !(owning_layer_.GetCompositingReasons() &
         CompositingReason::kComboAllDirectReasons);
-  graphics_layer_->ContentLayer()->SetTransformedRasterizationAllowed(
+  graphics_layer_->CcLayer()->SetTransformedRasterizationAllowed(
       transformed_rasterization_allowed);
   if (squashing_layer_)
-    squashing_layer_->ContentLayer()->SetTransformedRasterizationAllowed(true);
+    squashing_layer_->CcLayer()->SetTransformedRasterizationAllowed(true);
 }
 
 void CompositedLayerMapping::UpdateCompositedBounds() {
