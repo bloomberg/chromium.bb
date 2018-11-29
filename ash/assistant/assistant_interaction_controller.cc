@@ -47,7 +47,6 @@ AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       assistant_interaction_subscriber_binding_(this),
-      assistant_response_processor_(assistant_controller),
       weak_factory_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
@@ -543,9 +542,15 @@ void AssistantInteractionController::OnProcessPendingResponse() {
     return;
   }
 
+  // Bind an interface to a navigable contents factory that is needed for
+  // processing card elements.
+  content::mojom::NavigableContentsFactoryPtr contents_factory;
+  assistant_controller_->GetNavigableContentsFactory(
+      mojo::MakeRequest(&contents_factory));
+
   // Start processing.
-  assistant_response_processor_.Process(
-      *model_.pending_response(),
+  model_.pending_response()->Process(
+      std::move(contents_factory),
       base::BindOnce(
           &AssistantInteractionController::OnPendingResponseProcessed,
           weak_factory_.GetWeakPtr()));

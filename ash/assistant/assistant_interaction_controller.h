@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "ash/assistant/assistant_controller_observer.h"
-#include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
@@ -26,7 +25,6 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionModelObserver;
-class AssistantResponseProcessor;
 
 class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
@@ -130,8 +128,6 @@ class AssistantInteractionController
 
   mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       assistant_interaction_subscriber_binding_;
-
-  AssistantResponseProcessor assistant_response_processor_;
 
   AssistantInteractionModel model_;
 

@@ -8,7 +8,9 @@
 
 namespace ash {
 
-AssistantResponse::AssistantResponse() : weak_factory_(this) {}
+// AssistantResponse -----------------------------------------------------------
+
+AssistantResponse::AssistantResponse() = default;
 
 AssistantResponse::~AssistantResponse() = default;
 
@@ -50,8 +52,71 @@ AssistantResponse::GetSuggestions() const {
   return suggestions;
 }
 
-base::WeakPtr<AssistantResponse> AssistantResponse::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+void AssistantResponse::Process(
+    content::mojom::NavigableContentsFactoryPtr contents_factory,
+    ProcessingCallback callback) {
+  processor_ = std::make_unique<Processor>(*this, std::move(contents_factory),
+                                           std::move(callback));
+  processor_->Process();
+}
+
+// AssistantResponse::Processor ------------------------------------------------
+
+AssistantResponse::Processor::Processor(
+    AssistantResponse& response,
+    content::mojom::NavigableContentsFactoryPtr contents_factory,
+    ProcessingCallback callback)
+    : response_(response),
+      contents_factory_(std::move(contents_factory)),
+      callback_(std::move(callback)) {}
+
+AssistantResponse::Processor::~Processor() {
+  if (callback_)
+    std::move(callback_).Run(/*success=*/false);
+}
+
+void AssistantResponse::Processor::Process() {
+  // Responses should only be processed once.
+  DCHECK_EQ(ProcessingState::kUnprocessed, response_.processing_state());
+  response_.set_processing_state(ProcessingState::kProcessing);
+
+  for (const auto& ui_element : response_.GetUiElements()) {
+    switch (ui_element->GetType()) {
+      case AssistantUiElementType::kCard:
+        ++processing_count_;
+        // Start asynchronous processing of the card element.
+        static_cast<AssistantCardElement*>(ui_element.get())
+            ->Process(contents_factory_.get(),
+                      base::BindOnce(
+                          &AssistantResponse::Processor::OnFinishedProcessing,
+                          base::Unretained(this)));
+        break;
+      case AssistantUiElementType::kText:
+        // No processing necessary.
+        break;
+    }
+  }
+
+  // If any elements are processing asynchronously this will no-op.
+  TryFinishing();
+}
+
+void AssistantResponse::Processor::OnFinishedProcessing(bool success) {
+  // We handle success/failure cases the same because failures will skipped in
+  // view handling. We decrement our |processing_count_| and attempt to finish
+  // response processing. This will no-op if elements are still processing.
+  --processing_count_;
+  TryFinishing();
+}
+
+void AssistantResponse::Processor::TryFinishing() {
+  // No-op if we are already finished or if elements are still processing.
+  if (!callback_ || processing_count_ > 0)
+    return;
+
+  // Notify processing success.
+  response_.set_processing_state(ProcessingState::kProcessed);
+  std::move(callback_).Run(/*success=*/true);
 }
 
 }  // namespace ash
