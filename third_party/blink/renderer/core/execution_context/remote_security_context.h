@@ -17,6 +17,8 @@ class CORE_EXPORT RemoteSecurityContext
   USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
 
  public:
+  RemoteSecurityContext();
+
   void Trace(blink::Visitor*) override;
 
   static RemoteSecurityContext* Create();
@@ -26,9 +28,6 @@ class CORE_EXPORT RemoteSecurityContext
 
   // FIXME: implement
   void DidUpdateSecurityOrigin() override {}
-
- private:
-  RemoteSecurityContext();
 };
 
 }  // namespace blink

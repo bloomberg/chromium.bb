@@ -35,7 +35,8 @@ PresentationController* PresentationController::From(LocalFrame& frame) {
 
 // static
 void PresentationController::ProvideTo(LocalFrame& frame) {
-  Supplement<LocalFrame>::ProvideTo(frame, new PresentationController(frame));
+  Supplement<LocalFrame>::ProvideTo(
+      frame, MakeGarbageCollected<PresentationController>(frame));
 }
 
 // static

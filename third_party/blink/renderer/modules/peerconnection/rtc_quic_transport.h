@@ -63,6 +63,12 @@ class MODULES_EXPORT RTCQuicTransport final
       ExceptionState& exception_state,
       std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory);
 
+  RTCQuicTransport(
+      ExecutionContext* context,
+      RTCIceTransport* transport,
+      const HeapVector<Member<RTCCertificate>>& certificates,
+      ExceptionState& exception_state,
+      std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory);
   ~RTCQuicTransport() override;
 
   // Called by the RTCIceTransport when it is being closed.
@@ -97,13 +103,6 @@ class MODULES_EXPORT RTCQuicTransport final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  RTCQuicTransport(
-      ExecutionContext* context,
-      RTCIceTransport* transport,
-      const HeapVector<Member<RTCCertificate>>& certificates,
-      ExceptionState& exception_state,
-      std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory);
-
   // QuicTransportProxy::Delegate overrides;
   void OnConnected() override;
   void OnConnectionFailed(const std::string& error_details,

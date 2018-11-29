@@ -698,7 +698,8 @@ bool HTMLVideoElement::IsInAutoPIP() const {
 
 void HTMLVideoElement::OnEnteredPictureInPicture() {
   if (!picture_in_picture_interstitial_) {
-    picture_in_picture_interstitial_ = new PictureInPictureInterstitial(*this);
+    picture_in_picture_interstitial_ =
+        MakeGarbageCollected<PictureInPictureInterstitial>(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(picture_in_picture_interstitial_,
                              shadow_root.firstChild());

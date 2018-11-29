@@ -52,8 +52,11 @@ using namespace html_names;
 class PluginDocument::BeforeUnloadEventListener : public EventListener {
  public:
   static BeforeUnloadEventListener* Create(PluginDocument* document) {
-    return new BeforeUnloadEventListener(document);
+    return MakeGarbageCollected<BeforeUnloadEventListener>(document);
   }
+
+  explicit BeforeUnloadEventListener(PluginDocument* document)
+      : EventListener(kCPPEventListenerType), doc_(document) {}
 
   bool operator==(const EventListener& listener) const override {
     return this == &listener;
@@ -69,9 +72,6 @@ class PluginDocument::BeforeUnloadEventListener : public EventListener {
   }
 
  private:
-  explicit BeforeUnloadEventListener(PluginDocument* document)
-      : EventListener(kCPPEventListenerType), doc_(document) {}
-
   void Invoke(ExecutionContext*, Event* event) override {
     DCHECK_EQ(event->type(), event_type_names::kBeforeunload);
     if (show_dialog_)
@@ -87,8 +87,14 @@ class PluginDocumentParser : public RawDataDocumentParser {
  public:
   static PluginDocumentParser* Create(PluginDocument* document,
                                       Color background_color) {
-    return new PluginDocumentParser(document, background_color);
+    return MakeGarbageCollected<PluginDocumentParser>(document,
+                                                      background_color);
   }
+
+  PluginDocumentParser(Document* document, Color background_color)
+      : RawDataDocumentParser(document),
+        embed_element_(nullptr),
+        background_color_(background_color) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(embed_element_);
@@ -96,11 +102,6 @@ class PluginDocumentParser : public RawDataDocumentParser {
   }
 
  private:
-  PluginDocumentParser(Document* document, Color background_color)
-      : RawDataDocumentParser(document),
-        embed_element_(nullptr),
-        background_color_(background_color) {}
-
   void AppendBytes(const char*, size_t) override;
 
   void Finish() override;

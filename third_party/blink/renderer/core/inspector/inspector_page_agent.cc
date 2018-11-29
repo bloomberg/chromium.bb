@@ -1340,7 +1340,8 @@ protocol::Response InspectorPageAgent::generateTestReport(const String& message,
 
   // Construct the test report.
   TestReportBody* body = new TestReportBody(message);
-  Report* report = new Report("test", document->Url().GetString(), body);
+  Report* report =
+      MakeGarbageCollected<Report>("test", document->Url().GetString(), body);
 
   // Send the test report to any ReportingObservers.
   ReportingContext::From(document)->QueueReport(report);

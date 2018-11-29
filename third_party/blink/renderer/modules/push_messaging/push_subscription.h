@@ -35,6 +35,8 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
       ServiceWorkerRegistration* service_worker_registration);
   static void Dispose(WebPushSubscription* subscription_raw);
 
+  PushSubscription(const WebPushSubscription& subscription,
+                   ServiceWorkerRegistration* service_worker_registration);
   ~PushSubscription() override;
 
   KURL endpoint() const { return endpoint_; }
@@ -52,9 +54,6 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
  private:
   FRIEND_TEST_ALL_PREFIXES(PushSubscriptionTest,
                            SerializesToBase64URLWithoutPadding);
-
-  PushSubscription(const WebPushSubscription& subscription,
-                   ServiceWorkerRegistration* service_worker_registration);
 
   KURL endpoint_;
 

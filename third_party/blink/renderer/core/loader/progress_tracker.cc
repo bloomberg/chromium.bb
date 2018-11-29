@@ -66,7 +66,7 @@ struct ProgressItem {
 };
 
 ProgressTracker* ProgressTracker::Create(LocalFrame* frame) {
-  return new ProgressTracker(frame);
+  return MakeGarbageCollected<ProgressTracker>(frame);
 }
 
 ProgressTracker::ProgressTracker(LocalFrame* frame)

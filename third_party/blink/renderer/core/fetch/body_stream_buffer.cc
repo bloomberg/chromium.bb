@@ -521,7 +521,8 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
       stream_broken_ = true;
       return nullptr;
     }
-    return new ReadableStreamBytesConsumer(script_state_, reader);
+    return MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state_,
+                                                             reader);
   }
   // We need to call these before calling CloseAndLockAndDisturb.
   const base::Optional<bool> is_closed = IsStreamClosed(exception_state);

@@ -14,8 +14,10 @@ namespace blink {
 class RemoteDOMWindow final : public DOMWindow {
  public:
   static RemoteDOMWindow* Create(RemoteFrame& frame) {
-    return new RemoteDOMWindow(frame);
+    return MakeGarbageCollected<RemoteDOMWindow>(frame);
   }
+
+  explicit RemoteDOMWindow(RemoteFrame&);
 
   RemoteFrame* GetFrame() const { return ToRemoteFrame(DOMWindow::GetFrame()); }
 
@@ -35,8 +37,6 @@ class RemoteDOMWindow final : public DOMWindow {
                            Document* source) override;
 
  private:
-  explicit RemoteDOMWindow(RemoteFrame&);
-
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteDOMWindow.
   bool IsLocalDOMWindow() const override { return false; }

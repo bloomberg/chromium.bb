@@ -31,12 +31,12 @@ PerformanceObserver* PerformanceObserver::Create(
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (window) {
     UseCounter::Count(context, WebFeature::kPerformanceObserverForWindow);
-    return new PerformanceObserver(
+    return MakeGarbageCollected<PerformanceObserver>(
         context, DOMWindowPerformance::performance(*window), callback);
   }
   if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
     UseCounter::Count(context, WebFeature::kPerformanceObserverForWorker);
-    return new PerformanceObserver(
+    return MakeGarbageCollected<PerformanceObserver>(
         context, WorkerGlobalScopePerformance::performance(*scope), callback);
   }
   V8ThrowException::ThrowTypeError(
@@ -129,7 +129,7 @@ void PerformanceObserver::Deliver() {
   PerformanceEntryVector performance_entries;
   performance_entries.swap(performance_entries_);
   PerformanceObserverEntryList* entry_list =
-      new PerformanceObserverEntryList(performance_entries);
+      MakeGarbageCollected<PerformanceObserverEntryList>(performance_entries);
   callback_->InvokeAndReportException(this, entry_list, this);
 }
 

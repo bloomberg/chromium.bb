@@ -38,13 +38,15 @@ class RemoveCSSPropertyCommand final : public SimpleEditCommand {
   static RemoveCSSPropertyCommand* Create(Document& document,
                                           Element* element,
                                           CSSPropertyID property) {
-    return new RemoveCSSPropertyCommand(document, element, property);
+    return MakeGarbageCollected<RemoveCSSPropertyCommand>(document, element,
+                                                          property);
   }
+
+  RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
   ~RemoveCSSPropertyCommand() override;
 
   void DoApply(EditingState*) override;

@@ -57,9 +57,9 @@ class PictureInPictureInterstitial::VideoElementResizeObserverDelegate final
 PictureInPictureInterstitial::PictureInPictureInterstitial(
     HTMLVideoElement& videoElement)
     : HTMLDivElement(videoElement.GetDocument()),
-      resize_observer_(
-          ResizeObserver::Create(videoElement.GetDocument(),
-                                 new VideoElementResizeObserverDelegate(this))),
+      resize_observer_(ResizeObserver::Create(
+          videoElement.GetDocument(),
+          MakeGarbageCollected<VideoElementResizeObserverDelegate>(this))),
       interstitial_timer_(
           videoElement.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -119,9 +119,9 @@ void PictureInPictureInterstitial::Hide() {
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
     ContainerNode& root) {
   if (GetVideoElement().isConnected() && !resize_observer_) {
-    resize_observer_ =
-        ResizeObserver::Create(GetVideoElement().GetDocument(),
-                               new VideoElementResizeObserverDelegate(this));
+    resize_observer_ = ResizeObserver::Create(
+        GetVideoElement().GetDocument(),
+        MakeGarbageCollected<VideoElementResizeObserverDelegate>(this));
     resize_observer_->observe(&GetVideoElement());
   }
 

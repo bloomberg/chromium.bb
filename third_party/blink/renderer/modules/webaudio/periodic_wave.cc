@@ -72,7 +72,8 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  PeriodicWave* periodic_wave = new PeriodicWave(context.sampleRate());
+  PeriodicWave* periodic_wave =
+      MakeGarbageCollected<PeriodicWave>(context.sampleRate());
   periodic_wave->CreateBandLimitedTables(real.data(), imag.data(), real.size(),
                                          disable_normalization);
   return periodic_wave;
@@ -108,25 +109,25 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,
 }
 
 PeriodicWave* PeriodicWave::CreateSine(float sample_rate) {
-  PeriodicWave* periodic_wave = new PeriodicWave(sample_rate);
+  PeriodicWave* periodic_wave = MakeGarbageCollected<PeriodicWave>(sample_rate);
   periodic_wave->GenerateBasicWaveform(OscillatorHandler::SINE);
   return periodic_wave;
 }
 
 PeriodicWave* PeriodicWave::CreateSquare(float sample_rate) {
-  PeriodicWave* periodic_wave = new PeriodicWave(sample_rate);
+  PeriodicWave* periodic_wave = MakeGarbageCollected<PeriodicWave>(sample_rate);
   periodic_wave->GenerateBasicWaveform(OscillatorHandler::SQUARE);
   return periodic_wave;
 }
 
 PeriodicWave* PeriodicWave::CreateSawtooth(float sample_rate) {
-  PeriodicWave* periodic_wave = new PeriodicWave(sample_rate);
+  PeriodicWave* periodic_wave = MakeGarbageCollected<PeriodicWave>(sample_rate);
   periodic_wave->GenerateBasicWaveform(OscillatorHandler::SAWTOOTH);
   return periodic_wave;
 }
 
 PeriodicWave* PeriodicWave::CreateTriangle(float sample_rate) {
-  PeriodicWave* periodic_wave = new PeriodicWave(sample_rate);
+  PeriodicWave* periodic_wave = MakeGarbageCollected<PeriodicWave>(sample_rate);
   periodic_wave->GenerateBasicWaveform(OscillatorHandler::TRIANGLE);
   return periodic_wave;
 }

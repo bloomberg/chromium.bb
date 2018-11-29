@@ -374,7 +374,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 }
 
 ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
-  return new ResourceLoadScheduler(
+  return MakeGarbageCollected<ResourceLoadScheduler>(
       context
           ? context
           : &FetchContext::NullInstance(Thread::Current()->GetTaskRunner()));
@@ -430,7 +430,8 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
          ThrottleOption::kThrottleable == option);
   pending_requests_[option].insert(request_info);
   pending_request_map_.insert(
-      *id, new ClientInfo(client, option, priority, intra_priority));
+      *id, MakeGarbageCollected<ClientInfo>(client, option, priority,
+                                            intra_priority));
 
   // Remember the ClientId since MaybeRun() below may destruct the caller
   // instance and |id| may be inaccessible after the call.

@@ -73,7 +73,7 @@ bool IsBackgroundAvailabilityMonitoringDisabled() {
 
 // static
 RemotePlayback* RemotePlayback::Create(HTMLMediaElement& element) {
-  return new RemotePlayback(element);
+  return MakeGarbageCollected<RemotePlayback>(element);
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)

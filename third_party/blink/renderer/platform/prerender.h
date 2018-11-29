@@ -59,9 +59,10 @@ class PLATFORM_EXPORT Prerender final
                            const KURL& url,
                            unsigned rel_types,
                            const Referrer& referrer) {
-    return new Prerender(client, url, rel_types, referrer);
+    return MakeGarbageCollected<Prerender>(client, url, rel_types, referrer);
   }
 
+  Prerender(PrerenderClient*, const KURL&, unsigned rel_types, const Referrer&);
   ~Prerender();
   void Trace(blink::Visitor*);
 
@@ -89,8 +90,6 @@ class PLATFORM_EXPORT Prerender final
   void DidSendDOMContentLoadedForPrerender();
 
  private:
-  Prerender(PrerenderClient*, const KURL&, unsigned rel_types, const Referrer&);
-
   // The embedder's prerendering support holds on to pending Prerender objects;
   // those references should not keep the PrerenderClient alive -- if the client
   // becomes otherwise unreachable it should be GCed (at which point it will

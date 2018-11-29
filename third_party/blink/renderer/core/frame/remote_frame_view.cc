@@ -58,7 +58,7 @@ void RemoteFrameView::DetachFromLayout() {
 }
 
 RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
-  RemoteFrameView* view = new RemoteFrameView(remote_frame);
+  RemoteFrameView* view = MakeGarbageCollected<RemoteFrameView>(remote_frame);
   view->Show();
   return view;
 }

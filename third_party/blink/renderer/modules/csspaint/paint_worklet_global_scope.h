@@ -37,6 +37,12 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerThread*);
 
+  PaintWorkletGlobalScope(LocalFrame*,
+                          std::unique_ptr<GlobalScopeCreationParams>,
+                          WorkerReportingProxy&,
+                          PaintWorkletPendingGeneratorRegistry*);
+  PaintWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                          WorkerThread*);
   ~PaintWorkletGlobalScope() override;
   void Dispose() final;
 
@@ -51,14 +57,6 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   void Trace(blink::Visitor*) override;
 
  private:
-  PaintWorkletGlobalScope(LocalFrame*,
-                          std::unique_ptr<GlobalScopeCreationParams>,
-                          WorkerReportingProxy&,
-                          PaintWorkletPendingGeneratorRegistry*);
-
-  PaintWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                          WorkerThread*);
-
   // Registers the global scope with a proxy client, if not already done. Only
   // used for worklet-thread bound PaintWorkletGlobalScopes.
   void RegisterWithProxyClientIfNeeded();

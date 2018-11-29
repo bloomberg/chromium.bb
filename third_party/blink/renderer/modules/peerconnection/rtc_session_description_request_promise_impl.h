@@ -27,6 +27,12 @@ class RTCSessionDescriptionRequestPromiseImpl final
       ScriptPromiseResolver*,
       const char* interface_name,
       const char* property_name);
+
+  RTCSessionDescriptionRequestPromiseImpl(RTCCreateSessionDescriptionOperation,
+                                          RTCPeerConnection*,
+                                          ScriptPromiseResolver*,
+                                          const char* interface_name,
+                                          const char* property_name);
   ~RTCSessionDescriptionRequestPromiseImpl() override;
 
   // RTCSessionDescriptionRequest
@@ -36,12 +42,6 @@ class RTCSessionDescriptionRequestPromiseImpl final
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCSessionDescriptionRequestPromiseImpl(RTCCreateSessionDescriptionOperation,
-                                          RTCPeerConnection*,
-                                          ScriptPromiseResolver*,
-                                          const char* interface_name,
-                                          const char* property_name);
-
   void Clear();
 
   RTCCreateSessionDescriptionOperation operation_;

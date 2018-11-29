@@ -20,7 +20,7 @@ RTCSessionDescriptionRequestPromiseImpl::Create(
     ScriptPromiseResolver* resolver,
     const char* interface_name,
     const char* property_name) {
-  return new RTCSessionDescriptionRequestPromiseImpl(
+  return MakeGarbageCollected<RTCSessionDescriptionRequestPromiseImpl>(
       operation, requester, resolver, interface_name, property_name);
 }
 

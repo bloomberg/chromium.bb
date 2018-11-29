@@ -92,7 +92,7 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
 
 // static
 RootScrollerController* RootScrollerController::Create(Document& document) {
-  return new RootScrollerController(document);
+  return MakeGarbageCollected<RootScrollerController>(document);
 }
 
 RootScrollerController::RootScrollerController(Document& document)

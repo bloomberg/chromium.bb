@@ -61,6 +61,13 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                        unsigned end_offset);
   static Range* Create(Document&, const Position&, const Position&);
 
+  explicit Range(Document&);
+  Range(Document&,
+        Node* start_container,
+        unsigned start_offset,
+        Node* end_container,
+        unsigned end_offset);
+
   void Dispose();
 
   Document& OwnerDocument() const {
@@ -172,13 +179,6 @@ class CORE_EXPORT Range final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit Range(Document&);
-  Range(Document&,
-        Node* start_container,
-        unsigned start_offset,
-        Node* end_container,
-        unsigned end_offset);
-
   void SetDocument(Document&);
 
   void CheckNodeBA(Node*, ExceptionState&) const;

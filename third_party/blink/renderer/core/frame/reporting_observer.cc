@@ -18,7 +18,8 @@ ReportingObserver* ReportingObserver::Create(
     ExecutionContext* execution_context,
     V8ReportingObserverCallback* callback,
     ReportingObserverOptions* options) {
-  return new ReportingObserver(execution_context, callback, options);
+  return MakeGarbageCollected<ReportingObserver>(execution_context, callback,
+                                                 options);
 }
 
 ReportingObserver::ReportingObserver(ExecutionContext* execution_context,

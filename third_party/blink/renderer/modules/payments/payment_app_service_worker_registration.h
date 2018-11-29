@@ -24,7 +24,9 @@ class PaymentAppServiceWorkerRegistration final
  public:
   static const char kSupplementName[];
 
+  explicit PaymentAppServiceWorkerRegistration(ServiceWorkerRegistration*);
   virtual ~PaymentAppServiceWorkerRegistration();
+
   static PaymentAppServiceWorkerRegistration& From(ServiceWorkerRegistration&);
 
   static PaymentManager* paymentManager(ScriptState*,
@@ -34,8 +36,6 @@ class PaymentAppServiceWorkerRegistration final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit PaymentAppServiceWorkerRegistration(ServiceWorkerRegistration*);
-
   Member<ServiceWorkerRegistration> registration_;
   Member<PaymentManager> payment_manager_;
 };

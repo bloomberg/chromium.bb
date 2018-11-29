@@ -66,13 +66,13 @@ RTCIceCandidate* RTCIceCandidate::Create(
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
-  return new RTCIceCandidate(WebRTCICECandidate::Create(
+  return MakeGarbageCollected<RTCIceCandidate>(WebRTCICECandidate::Create(
       candidate_init->candidate(), sdp_mid, sdp_m_line_index));
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(
     scoped_refptr<WebRTCICECandidate> web_candidate) {
-  return new RTCIceCandidate(std::move(web_candidate));
+  return MakeGarbageCollected<RTCIceCandidate>(std::move(web_candidate));
 }
 
 RTCIceCandidate::RTCIceCandidate(

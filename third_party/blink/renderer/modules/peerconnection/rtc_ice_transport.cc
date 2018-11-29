@@ -85,7 +85,7 @@ RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
       Platform::Current()->GetWebRtcWorkerThread();
-  return new RTCIceTransport(
+  return MakeGarbageCollected<RTCIceTransport>(
       context, std::move(proxy_thread), std::move(host_thread),
       std::make_unique<DefaultIceTransportAdapterCrossThreadFactory>());
 }
@@ -95,9 +95,9 @@ RTCIceTransport* RTCIceTransport::Create(
     scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory) {
-  return new RTCIceTransport(context, std::move(proxy_thread),
-                             std::move(host_thread),
-                             std::move(adapter_factory));
+  return MakeGarbageCollected<RTCIceTransport>(context, std::move(proxy_thread),
+                                               std::move(host_thread),
+                                               std::move(adapter_factory));
 }
 
 RTCIceTransport::RTCIceTransport(

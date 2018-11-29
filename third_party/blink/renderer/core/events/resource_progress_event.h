@@ -52,22 +52,21 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
                                        unsigned long long loaded,
                                        unsigned long long total,
                                        const String& url) {
-    return new ResourceProgressEvent(type, length_computable, loaded, total,
-                                     url);
+    return MakeGarbageCollected<ResourceProgressEvent>(type, length_computable,
+                                                       loaded, total, url);
   }
+
+  ResourceProgressEvent(const AtomicString& type,
+                        bool length_computable,
+                        unsigned long long loaded,
+                        unsigned long long total,
+                        const String& url);
 
   const String& url() const;
 
   const AtomicString& InterfaceName() const override;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  ResourceProgressEvent(const AtomicString& type,
-                        bool length_computable,
-                        unsigned long long loaded,
-                        unsigned long long total,
-                        const String& url);
 
  private:
   String url_;

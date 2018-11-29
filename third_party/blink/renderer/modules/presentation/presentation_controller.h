@@ -38,6 +38,7 @@ class MODULES_EXPORT PresentationController
  public:
   static const char kSupplementName[];
 
+  PresentationController(LocalFrame&);
   ~PresentationController() override;
 
   static PresentationController* From(LocalFrame&);
@@ -76,9 +77,6 @@ class MODULES_EXPORT PresentationController
   // Marked virtual for testing.
   virtual void AddAvailabilityObserver(PresentationAvailabilityObserver*);
   virtual void RemoveAvailabilityObserver(PresentationAvailabilityObserver*);
-
- protected:
-  PresentationController(LocalFrame&);
 
  private:
   // Implementation of ContextLifecycleObserver.

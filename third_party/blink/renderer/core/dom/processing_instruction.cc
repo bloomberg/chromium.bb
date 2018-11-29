@@ -53,7 +53,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document,
 ProcessingInstruction* ProcessingInstruction::Create(Document& document,
                                                      const String& target,
                                                      const String& data) {
-  return new ProcessingInstruction(document, target, data);
+  return MakeGarbageCollected<ProcessingInstruction>(document, target, data);
 }
 
 ProcessingInstruction::~ProcessingInstruction() = default;

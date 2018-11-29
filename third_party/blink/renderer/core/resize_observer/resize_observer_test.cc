@@ -74,9 +74,9 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   Element* dom_target = GetDocument().getElementById("domTarget");
   Element* svg_target = GetDocument().getElementById("svgTarget");
   ResizeObservation* dom_observation =
-      new ResizeObservation(dom_target, observer);
+      MakeGarbageCollected<ResizeObservation>(dom_target, observer);
   ResizeObservation* svg_observation =
-      new ResizeObservation(svg_target, observer);
+      MakeGarbageCollected<ResizeObservation>(svg_target, observer);
 
   // Initial observation is out of sync
   ASSERT_TRUE(dom_observation->ObservationSizeOutOfSync());

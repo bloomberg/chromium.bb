@@ -96,9 +96,9 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-  auto* global_scope =
-      new PaintWorkletGlobalScope(frame, std::move(creation_params),
-                                  reporting_proxy, pending_generator_registry);
+  auto* global_scope = MakeGarbageCollected<PaintWorkletGlobalScope>(
+      frame, std::move(creation_params), reporting_proxy,
+      pending_generator_registry);
   String context_name("PaintWorklet #");
   context_name.append(String::Number(global_scope_number));
   global_scope->ScriptController()->InitializeContextIfNeeded(context_name,
@@ -114,7 +114,8 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread) {
   DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-  return new PaintWorkletGlobalScope(std::move(creation_params), thread);
+  return MakeGarbageCollected<PaintWorkletGlobalScope>(
+      std::move(creation_params), thread);
 }
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(

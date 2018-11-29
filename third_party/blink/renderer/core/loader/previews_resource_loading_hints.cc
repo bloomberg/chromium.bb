@@ -32,8 +32,8 @@ PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
     ExecutionContext& execution_context,
     int64_t ukm_source_id,
     const std::vector<WTF::String>& subresource_patterns_to_block) {
-  return new PreviewsResourceLoadingHints(&execution_context, ukm_source_id,
-                                          subresource_patterns_to_block);
+  return MakeGarbageCollected<PreviewsResourceLoadingHints>(
+      &execution_context, ukm_source_id, subresource_patterns_to_block);
 }
 
 PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(

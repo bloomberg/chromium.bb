@@ -33,6 +33,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   static PaintWorklet* From(LocalDOMWindow&);
   static PaintWorklet* Create(LocalFrame*);
 
+  explicit PaintWorklet(LocalFrame*);
   ~PaintWorklet() override;
 
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
@@ -50,8 +51,6 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit PaintWorklet(LocalFrame*);
-
   // Since paint worklet has more than one global scope, we MUST override this
   // function and provide our own selection logic.
   wtf_size_t SelectGlobalScope() final;

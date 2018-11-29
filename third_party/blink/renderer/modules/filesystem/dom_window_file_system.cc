@@ -183,12 +183,12 @@ ScriptPromise CreateFileHandle(ScriptState* script_state,
         fs->root(), entry->base_name, FileSystemFlags::Create(),
         MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
             new_resolver),
-        new PromiseErrorCallback(new_resolver));
+        MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
   } else {
     fs->GetFile(fs->root(), entry->base_name, FileSystemFlags::Create(),
                 MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
                     new_resolver),
-                new PromiseErrorCallback(new_resolver));
+                MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
   }
   return result;
 }

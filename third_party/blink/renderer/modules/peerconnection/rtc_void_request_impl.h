@@ -57,6 +57,12 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
       RTCPeerConnection*,
       V8VoidFunction*,
       V8RTCPeerConnectionErrorCallback*);
+
+  RTCVoidRequestImpl(ExecutionContext*,
+                     base::Optional<RTCSetSessionDescriptionOperation>,
+                     RTCPeerConnection*,
+                     V8VoidFunction*,
+                     V8RTCPeerConnectionErrorCallback*);
   ~RTCVoidRequestImpl() override;
 
   // RTCVoidRequest
@@ -69,12 +75,6 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCVoidRequestImpl(ExecutionContext*,
-                     base::Optional<RTCSetSessionDescriptionOperation>,
-                     RTCPeerConnection*,
-                     V8VoidFunction*,
-                     V8RTCPeerConnectionErrorCallback*);
-
   void Clear();
 
   base::Optional<RTCSetSessionDescriptionOperation> operation_;

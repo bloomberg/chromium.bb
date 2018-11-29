@@ -18,6 +18,8 @@ class PhotoCapabilities final : public ScriptWrappable {
 
  public:
   static PhotoCapabilities* Create();
+
+  PhotoCapabilities() = default;
   ~PhotoCapabilities() override = default;
 
   MediaSettingsRange* imageHeight() const { return image_height_; }
@@ -41,8 +43,6 @@ class PhotoCapabilities final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  PhotoCapabilities() = default;
-
   Member<MediaSettingsRange> image_height_;
   Member<MediaSettingsRange> image_width_;
   Vector<media::mojom::blink::FillLightMode> fill_light_modes_;

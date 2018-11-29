@@ -362,7 +362,8 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   request1.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
   FetchParameters fetch_params1(request1);
   Persistent<RequestSameResourceOnComplete> client =
-      new RequestSameResourceOnComplete(fetch_params1, fetcher1);
+      MakeGarbageCollected<RequestSameResourceOnComplete>(fetch_params1,
+                                                          fetcher1);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(client->NotifyFinishedCalled());
 }

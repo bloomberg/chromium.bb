@@ -36,17 +36,27 @@ class CORE_EXPORT ProgressEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ProgressEvent* Create() { return new ProgressEvent; }
+  static ProgressEvent* Create() {
+    return MakeGarbageCollected<ProgressEvent>();
+  }
   static ProgressEvent* Create(const AtomicString& type,
                                bool length_computable,
                                unsigned long long loaded,
                                unsigned long long total) {
-    return new ProgressEvent(type, length_computable, loaded, total);
+    return MakeGarbageCollected<ProgressEvent>(type, length_computable, loaded,
+                                               total);
   }
   static ProgressEvent* Create(const AtomicString& type,
                                const ProgressEventInit* initializer) {
-    return new ProgressEvent(type, initializer);
+    return MakeGarbageCollected<ProgressEvent>(type, initializer);
   }
+
+  ProgressEvent();
+  ProgressEvent(const AtomicString& type,
+                bool length_computable,
+                unsigned long long loaded,
+                unsigned long long total);
+  ProgressEvent(const AtomicString&, const ProgressEventInit*);
 
   bool lengthComputable() const { return length_computable_; }
   unsigned long long loaded() const { return loaded_; }
@@ -55,14 +65,6 @@ class CORE_EXPORT ProgressEvent : public Event {
   const AtomicString& InterfaceName() const override;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  ProgressEvent();
-  ProgressEvent(const AtomicString& type,
-                bool length_computable,
-                unsigned long long loaded,
-                unsigned long long total);
-  ProgressEvent(const AtomicString&, const ProgressEventInit*);
 
  private:
   bool length_computable_;

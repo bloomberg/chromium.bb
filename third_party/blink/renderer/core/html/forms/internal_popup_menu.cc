@@ -68,9 +68,11 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
   static PopupMenuCSSFontSelector* Create(
       Document* document,
       CSSFontSelector* owner_font_selector) {
-    return new PopupMenuCSSFontSelector(document, owner_font_selector);
+    return MakeGarbageCollected<PopupMenuCSSFontSelector>(document,
+                                                          owner_font_selector);
   }
 
+  PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
   ~PopupMenuCSSFontSelector() override;
 
   // We don't override willUseFontData() for now because the old PopupListBox
@@ -81,8 +83,6 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
   void Trace(blink::Visitor*) override;
 
  private:
-  PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
-
   void FontsNeedUpdate(FontSelector*) override;
 
   Member<CSSFontSelector> owner_font_selector_;

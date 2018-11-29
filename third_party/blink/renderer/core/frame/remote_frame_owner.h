@@ -29,9 +29,15 @@ class CORE_EXPORT RemoteFrameOwner final
       const ParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties& frame_owner_properties,
       FrameOwnerElementType frame_owner_element_type) {
-    return new RemoteFrameOwner(flags, container_policy, frame_owner_properties,
-                                frame_owner_element_type);
+    return MakeGarbageCollected<RemoteFrameOwner>(flags, container_policy,
+                                                  frame_owner_properties,
+                                                  frame_owner_element_type);
   }
+
+  RemoteFrameOwner(SandboxFlags,
+                   const ParsedFeaturePolicy&,
+                   const WebFrameOwnerProperties&,
+                   FrameOwnerElementType frame_owner_element_type);
 
   // FrameOwner overrides:
   Frame* ContentFrame() const override { return frame_.Get(); }
@@ -87,11 +93,6 @@ class CORE_EXPORT RemoteFrameOwner final
   void Trace(blink::Visitor*) override;
 
  private:
-  RemoteFrameOwner(SandboxFlags,
-                   const ParsedFeaturePolicy&,
-                   const WebFrameOwnerProperties&,
-                   FrameOwnerElementType frame_owner_element_type);
-
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.
   bool IsLocal() const override { return false; }

@@ -60,7 +60,8 @@ RTCDataChannel* RTCDataChannel::Create(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDataChannelHandler> handler) {
   DCHECK(handler);
-  RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
+  RTCDataChannel* channel =
+      MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
   channel->PauseIfNeeded();
 
   return channel;
@@ -79,7 +80,8 @@ RTCDataChannel* RTCDataChannel::Create(
                                       "RTCDataChannel is not supported");
     return nullptr;
   }
-  RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
+  RTCDataChannel* channel =
+      MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
   channel->PauseIfNeeded();
 
   return channel;

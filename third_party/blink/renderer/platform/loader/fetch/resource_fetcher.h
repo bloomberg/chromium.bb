@@ -75,8 +75,10 @@ class PLATFORM_EXPORT ResourceFetcher
 
  public:
   static ResourceFetcher* Create(FetchContext* context) {
-    return new ResourceFetcher(context);
+    return MakeGarbageCollected<ResourceFetcher>(context);
   }
+
+  ResourceFetcher(FetchContext*);
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
 
@@ -196,8 +198,6 @@ class PLATFORM_EXPORT ResourceFetcher
     kExcludingKeepaliveLoaders,
     kIncludingKeepaliveLoaders,
   };
-
-  ResourceFetcher(FetchContext*);
 
   void InitializeRevalidation(ResourceRequest&, Resource*);
   // When |security_origin| of the ResourceLoaderOptions is not a nullptr, it'll

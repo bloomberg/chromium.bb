@@ -52,7 +52,8 @@ PushSubscription* PushSubscription::Take(
     ServiceWorkerRegistration* service_worker_registration) {
   if (!push_subscription)
     return nullptr;
-  return new PushSubscription(*push_subscription, service_worker_registration);
+  return MakeGarbageCollected<PushSubscription>(*push_subscription,
+                                                service_worker_registration);
 }
 
 void PushSubscription::Dispose(WebPushSubscription* push_subscription) {

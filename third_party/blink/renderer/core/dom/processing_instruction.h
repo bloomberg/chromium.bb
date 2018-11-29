@@ -41,6 +41,8 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
   static ProcessingInstruction* Create(Document&,
                                        const String& target,
                                        const String& data);
+
+  ProcessingInstruction(Document&, const String& target, const String& data);
   ~ProcessingInstruction() override;
   void Trace(blink::Visitor*) override;
 
@@ -72,8 +74,6 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
   void ClearEventListenerForXSLT();
 
  private:
-  ProcessingInstruction(Document&, const String& target, const String& data);
-
   String nodeName() const override;
   NodeType getNodeType() const override;
   Node* Clone(Document&, CloneChildrenFlag) const override;

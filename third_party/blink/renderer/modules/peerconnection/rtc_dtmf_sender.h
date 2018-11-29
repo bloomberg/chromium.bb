@@ -47,6 +47,8 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
  public:
   static RTCDTMFSender* Create(ExecutionContext*,
                                std::unique_ptr<WebRTCDTMFSenderHandler>);
+
+  RTCDTMFSender(ExecutionContext*, std::unique_ptr<WebRTCDTMFSenderHandler>);
   ~RTCDTMFSender() override;
 
   bool canInsertDTMF() const;
@@ -71,8 +73,6 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCDTMFSender(ExecutionContext*,
-                std::unique_ptr<WebRTCDTMFSenderHandler>);
   void Dispose();
 
   // WebRTCDTMFSenderHandlerClient

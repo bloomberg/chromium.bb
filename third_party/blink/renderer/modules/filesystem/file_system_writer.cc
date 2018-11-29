@@ -156,7 +156,8 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
   auto reader = stream->getReader(script_state, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
-  auto* consumer = new ReadableStreamBytesConsumer(script_state, reader);
+  auto* consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
 
   stream_loader_ = FetchDataLoader::CreateLoaderAsDataPipe(
       ExecutionContext::From(script_state)

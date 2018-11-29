@@ -25,6 +25,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
  public:
   static RemoteFrame* Create(RemoteFrameClient*, Page&, FrameOwner*);
 
+  RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
   ~RemoteFrame() override;
 
   // Frame overrides:
@@ -67,8 +68,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   bool IsIgnoredForHitTest() const;
 
  private:
-  RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
-
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
 

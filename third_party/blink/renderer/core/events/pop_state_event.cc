@@ -71,19 +71,20 @@ ScriptValue PopStateEvent::state(ScriptState* script_state) const {
 }
 
 PopStateEvent* PopStateEvent::Create() {
-  return new PopStateEvent;
+  return MakeGarbageCollected<PopStateEvent>();
 }
 
 PopStateEvent* PopStateEvent::Create(
     scoped_refptr<SerializedScriptValue> serialized_state,
     History* history) {
-  return new PopStateEvent(std::move(serialized_state), history);
+  return MakeGarbageCollected<PopStateEvent>(std::move(serialized_state),
+                                             history);
 }
 
 PopStateEvent* PopStateEvent::Create(ScriptState* script_state,
                                      const AtomicString& type,
                                      const PopStateEventInit* initializer) {
-  return new PopStateEvent(script_state, type, initializer);
+  return MakeGarbageCollected<PopStateEvent>(script_state, type, initializer);
 }
 
 void PopStateEvent::SetSerializedState(

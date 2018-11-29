@@ -22,7 +22,7 @@ PictureInPictureControllerImpl::~PictureInPictureControllerImpl() = default;
 // static
 PictureInPictureControllerImpl* PictureInPictureControllerImpl::Create(
     Document& document) {
-  return new PictureInPictureControllerImpl(document);
+  return MakeGarbageCollected<PictureInPictureControllerImpl>(document);
 }
 
 // static
@@ -121,7 +121,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnClose();
 
-  picture_in_picture_window_ = new PictureInPictureWindow(
+  picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
       GetSupplementable(), picture_in_picture_window_size);
 
   picture_in_picture_element_->DispatchEvent(

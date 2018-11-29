@@ -177,6 +177,8 @@ class QuoteContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  QuoteContentData(QuoteType quote) : quote_(quote) {}
+
   QuoteType Quote() const { return quote_; }
   void SetQuote(QuoteType quote) { quote_ = quote; }
 
@@ -191,8 +193,6 @@ class QuoteContentData final : public ContentData {
   }
 
  private:
-  QuoteContentData(QuoteType quote) : quote_(quote) {}
-
   ContentData* CloneInternal() const override { return Create(Quote()); }
 
   QuoteType quote_;

@@ -30,7 +30,7 @@ namespace blink {
 RTCLegacyStatsReport* RTCLegacyStatsReport::Create(const String& id,
                                                    const String& type,
                                                    double timestamp) {
-  return new RTCLegacyStatsReport(id, type, timestamp);
+  return MakeGarbageCollected<RTCLegacyStatsReport>(id, type, timestamp);
 }
 
 RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id,

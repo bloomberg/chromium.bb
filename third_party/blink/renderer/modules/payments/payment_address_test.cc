@@ -28,7 +28,8 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver) {
   input->recipient = "Jon Doe";
   input->phone = "Phone Number";
 
-  PaymentAddress* output = new PaymentAddress(std::move(input));
+  PaymentAddress* output =
+      MakeGarbageCollected<PaymentAddress>(std::move(input));
 
   EXPECT_EQ("US", output->country());
   EXPECT_EQ(3U, output->addressLine().size());
@@ -51,7 +52,8 @@ TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
       payments::mojom::blink::PaymentAddress::New();
   input->script_code = "Latn";
 
-  PaymentAddress* output = new PaymentAddress(std::move(input));
+  PaymentAddress* output =
+      MakeGarbageCollected<PaymentAddress>(std::move(input));
 
   EXPECT_TRUE(output->languageCode().IsEmpty());
 }
@@ -61,7 +63,8 @@ TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {
       payments::mojom::blink::PaymentAddress::New();
   input->language_code = "en";
 
-  PaymentAddress* output = new PaymentAddress(std::move(input));
+  PaymentAddress* output =
+      MakeGarbageCollected<PaymentAddress>(std::move(input));
 
   EXPECT_EQ("en", output->languageCode());
 }

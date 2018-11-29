@@ -160,9 +160,9 @@ void PropertyRegistration::registerProperty(
     }
   }
   registry.RegisterProperty(
-      atomic_name, *new PropertyRegistration(atomic_name, syntax_descriptor,
-                                             descriptor->inherits(), initial,
-                                             std::move(initial_variable_data)));
+      atomic_name, *MakeGarbageCollected<PropertyRegistration>(
+                       atomic_name, syntax_descriptor, descriptor->inherits(),
+                       initial, std::move(initial_variable_data)));
 
   document->GetStyleEngine().CustomPropertyRegistered();
 }

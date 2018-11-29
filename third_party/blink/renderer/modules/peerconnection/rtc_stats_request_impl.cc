@@ -33,7 +33,8 @@ RTCStatsRequestImpl* RTCStatsRequestImpl::Create(ExecutionContext* context,
                                                  RTCPeerConnection* requester,
                                                  V8RTCStatsCallback* callback,
                                                  MediaStreamTrack* selector) {
-  return new RTCStatsRequestImpl(context, requester, callback, selector);
+  return MakeGarbageCollected<RTCStatsRequestImpl>(context, requester, callback,
+                                                   selector);
 }
 
 RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,

@@ -270,7 +270,8 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
       : resolver_(resolver) {}
 
   void OnSuccess(rtc::scoped_refptr<rtc::RTCCertificate> certificate) override {
-    resolver_->Resolve(new RTCCertificate(std::move(certificate)));
+    resolver_->Resolve(
+        MakeGarbageCollected<RTCCertificate>(std::move(certificate)));
   }
 
   void OnError() override { resolver_->Reject(); }
@@ -662,7 +663,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
     return nullptr;
   }
 
-  RTCPeerConnection* peer_connection = new RTCPeerConnection(
+  RTCPeerConnection* peer_connection = MakeGarbageCollected<RTCPeerConnection>(
       context, std::move(configuration), rtc_configuration->hasSdpSemantics(),
       constraints, exception_state);
   peer_connection->PauseIfNeeded();
@@ -1439,7 +1440,8 @@ RTCConfiguration* RTCPeerConnection::getConfiguration(
     certificates.ReserveCapacity(
         SafeCast<wtf_size_t>(webrtc_configuration.certificates.size()));
     for (const auto& webrtc_certificate : webrtc_configuration.certificates) {
-      certificates.emplace_back(new RTCCertificate(webrtc_certificate));
+      certificates.emplace_back(
+          MakeGarbageCollected<RTCCertificate>(webrtc_certificate));
     }
     result->setCertificates(certificates);
   }
@@ -2304,7 +2306,8 @@ RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
   RTCRtpSender* sender;
   if (sender_it == rtp_senders_.end()) {
     // Create new sender (with empty stream set).
-    sender = new RTCRtpSender(this, std::move(web_sender), kind, track, {});
+    sender = MakeGarbageCollected<RTCRtpSender>(
+        this, std::move(web_sender), kind, track, MediaStreamVector());
     rtp_senders_.push_back(sender);
   } else {
     // Update existing sender (not touching the stream set).
@@ -2333,7 +2336,8 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   RTCRtpReceiver* receiver;
   if (receiver_it == rtp_receivers_.end()) {
     // Create new receiver.
-    receiver = new RTCRtpReceiver(std::move(web_receiver), track, {});
+    receiver = MakeGarbageCollected<RTCRtpReceiver>(std::move(web_receiver),
+                                                    track, MediaStreamVector());
     // Receiving tracks should be muted by default. SetReadyState() propagates
     // the related state changes to ensure it is muted on all layers. It also
     // fires events - which is not desired - but because they fire synchronously
@@ -2365,8 +2369,8 @@ RTCRtpTransceiver* RTCPeerConnection::CreateOrUpdateTransceiver(
   auto* transceiver_it = FindTransceiver(*web_transceiver);
   if (transceiver_it == transceivers_.end()) {
     // Create new tranceiver.
-    transceiver = new RTCRtpTransceiver(this, std::move(web_transceiver),
-                                        sender, receiver);
+    transceiver = MakeGarbageCollected<RTCRtpTransceiver>(
+        this, std::move(web_transceiver), sender, receiver);
     transceivers_.push_back(transceiver);
   } else {
     // Update existing transceiver.
@@ -2568,11 +2572,11 @@ void RTCPeerConnection::DidAddReceiverPlanB(
     streams.push_back(stream);
   }
   DCHECK(FindReceiver(*web_receiver) == rtp_receivers_.end());
-  RTCRtpReceiver* rtp_receiver =
-      new RTCRtpReceiver(std::move(web_receiver), track, streams);
+  RTCRtpReceiver* rtp_receiver = MakeGarbageCollected<RTCRtpReceiver>(
+      std::move(web_receiver), track, streams);
   rtp_receivers_.push_back(rtp_receiver);
-  ScheduleDispatchEvent(
-      new RTCTrackEvent(rtp_receiver, rtp_receiver->track(), streams, nullptr));
+  ScheduleDispatchEvent(MakeGarbageCollected<RTCTrackEvent>(
+      rtp_receiver, rtp_receiver->track(), streams, nullptr));
 }
 
 void RTCPeerConnection::DidRemoveReceiverPlanB(
@@ -2687,7 +2691,7 @@ void RTCPeerConnection::DidModifyTransceivers(
 
   // Fire "pc.ontrack" synchronously.
   for (auto& transceiver : track_events) {
-    auto* track_event = new RTCTrackEvent(
+    auto* track_event = MakeGarbageCollected<RTCTrackEvent>(
         transceiver->receiver(), transceiver->receiver()->track(),
         transceiver->receiver()->streams(), transceiver);
     DispatchEvent(*track_event);
@@ -2955,7 +2959,7 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
                                               BoolFunction setup_function) {
   scheduled_events_.push_back(
-      new EventWrapper(event, std::move(setup_function)));
+      MakeGarbageCollected<EventWrapper>(event, std::move(setup_function)));
 
   dispatch_scheduled_event_runner_->RunAsync();
 }

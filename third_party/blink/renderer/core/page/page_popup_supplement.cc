@@ -63,7 +63,8 @@ void PagePopupSupplement::Install(LocalFrame& frame,
                                   PagePopup& popup,
                                   PagePopupClient* popup_client) {
   DCHECK(popup_client);
-  ProvideTo(frame, new PagePopupSupplement(frame, popup, popup_client));
+  ProvideTo(frame, MakeGarbageCollected<PagePopupSupplement>(frame, popup,
+                                                             popup_client));
 }
 
 void PagePopupSupplement::Uninstall(LocalFrame& frame) {

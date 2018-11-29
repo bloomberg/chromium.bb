@@ -303,9 +303,9 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
   DCHECK(receiver);
 
   ReceiverPresentationConnection* connection =
-      new ReceiverPresentationConnection(*receiver->GetFrame(), receiver,
-                                         presentation_info.id,
-                                         presentation_info.url);
+      MakeGarbageCollected<ReceiverPresentationConnection>(
+          *receiver->GetFrame(), receiver, presentation_info.id,
+          presentation_info.url);
   connection->Init(std::move(controller_connection),
                    std::move(receiver_connection_request));
 

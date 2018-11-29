@@ -19,7 +19,7 @@ PaintFilterEffect::~PaintFilterEffect() = default;
 
 PaintFilterEffect* PaintFilterEffect::Create(Filter* filter,
                                              const PaintFlags& flags) {
-  return new PaintFilterEffect(filter, flags);
+  return MakeGarbageCollected<PaintFilterEffect>(filter, flags);
 }
 
 sk_sp<PaintFilter> PaintFilterEffect::CreateImageFilter() {

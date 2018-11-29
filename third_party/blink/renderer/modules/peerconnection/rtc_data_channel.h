@@ -64,6 +64,8 @@ class MODULES_EXPORT RTCDataChannel final
                                 const String& label,
                                 const WebRTCDataChannelInit&,
                                 ExceptionState&);
+
+  RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
   ~RTCDataChannel() override;
 
   ReadyState GetHandlerState() const;
@@ -123,7 +125,6 @@ class MODULES_EXPORT RTCDataChannel final
   void DidDetectError() override;
 
  private:
-  RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);

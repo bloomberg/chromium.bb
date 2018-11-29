@@ -32,8 +32,8 @@ PasswordCredential* PasswordCredential::Create(
   if (exception_state.HadException())
     return nullptr;
 
-  return new PasswordCredential(data->id(), data->password(), data->name(),
-                                icon_url);
+  return MakeGarbageCollected<PasswordCredential>(data->id(), data->password(),
+                                                  data->name(), icon_url);
 }
 
 // https://w3c.github.io/webappsec-credential-management/#construct-passwordcredential-form
@@ -84,7 +84,7 @@ PasswordCredential* PasswordCredential::Create(const String& id,
                                                const String& password,
                                                const String& name,
                                                const KURL& icon_url) {
-  return new PasswordCredential(id, password, name, icon_url);
+  return MakeGarbageCollected<PasswordCredential>(id, password, name, icon_url);
 }
 
 PasswordCredential::PasswordCredential(const String& id,

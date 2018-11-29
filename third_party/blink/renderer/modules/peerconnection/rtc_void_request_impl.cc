@@ -42,8 +42,9 @@ RTCVoidRequestImpl* RTCVoidRequestImpl::Create(
     RTCPeerConnection* requester,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  return new RTCVoidRequestImpl(context, std::move(operation), requester,
-                                success_callback, error_callback);
+  return MakeGarbageCollected<RTCVoidRequestImpl>(context, std::move(operation),
+                                                  requester, success_callback,
+                                                  error_callback);
 }
 
 RTCVoidRequestImpl::RTCVoidRequestImpl(

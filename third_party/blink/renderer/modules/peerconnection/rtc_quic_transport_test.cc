@@ -24,9 +24,9 @@ using testing::Mock;
 
 HeapVector<Member<RTCCertificate>> GenerateLocalRTCCertificates() {
   HeapVector<Member<RTCCertificate>> certificates;
-  certificates.push_back(
-      new RTCCertificate(rtc::RTCCertificateGenerator::GenerateCertificate(
-          rtc::KeyParams::ECDSA(), absl::nullopt)));
+  certificates.push_back(MakeGarbageCollected<RTCCertificate>(
+      rtc::RTCCertificateGenerator::GenerateCertificate(rtc::KeyParams::ECDSA(),
+                                                        absl::nullopt)));
   return certificates;
 }
 
@@ -135,7 +135,7 @@ TEST_F(RTCQuicTransportTest, P2PQuicTransportConstructedByStart) {
         return std::make_unique<MockP2PQuicTransport>();
       }));
   HeapVector<Member<RTCCertificate>> certificates;
-  certificates.push_back(new RTCCertificate(certificate));
+  certificates.push_back(MakeGarbageCollected<RTCCertificate>(certificate));
   Persistent<RTCQuicTransport> quic_transport = CreateQuicTransport(
       scope, ice_transport, certificates, std::move(mock_factory));
   quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);

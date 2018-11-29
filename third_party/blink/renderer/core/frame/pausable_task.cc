@@ -20,7 +20,7 @@ void PausableTask::Post(ExecutionContext* context,
   } else {
     // Manages its own lifetime and invokes the callback when script is
     // unpaused.
-    new PausableTask(context, std::move(callback));
+    MakeGarbageCollected<PausableTask>(context, std::move(callback));
   }
 }
 

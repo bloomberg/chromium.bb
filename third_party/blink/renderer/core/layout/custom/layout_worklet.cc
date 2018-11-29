@@ -36,7 +36,7 @@ LayoutWorklet* LayoutWorklet::Create(LocalFrame* frame) {
 LayoutWorklet::LayoutWorklet(LocalFrame* frame)
     : Worklet(frame->GetDocument()),
       Supplement<LocalDOMWindow>(*frame->DomWindow()),
-      pending_layout_registry_(new PendingLayoutRegistry()) {}
+      pending_layout_registry_(MakeGarbageCollected<PendingLayoutRegistry>()) {}
 
 LayoutWorklet::~LayoutWorklet() = default;
 

@@ -244,9 +244,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // FIXME: We should pass in the LayoutBox but this opens a window
   // for crashers during PaintLayer setup (see crbug.com/368062).
   static PaintLayerScrollableArea* Create(PaintLayer& layer) {
-    return new PaintLayerScrollableArea(layer);
+    return MakeGarbageCollected<PaintLayerScrollableArea>(layer);
   }
 
+  explicit PaintLayerScrollableArea(PaintLayer&);
   ~PaintLayerScrollableArea() override;
   void Dispose();
   bool HasBeenDisposed() const override;
@@ -552,8 +553,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   }
 
  private:
-  explicit PaintLayerScrollableArea(PaintLayer&);
-
   bool NeedsScrollbarReconstruction() const;
 
   void ResetScrollOriginChanged() { scroll_origin_changed_ = false; }

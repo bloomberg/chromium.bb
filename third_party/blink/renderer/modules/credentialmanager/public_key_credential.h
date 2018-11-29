@@ -28,6 +28,12 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
       AuthenticatorResponse*,
       const AuthenticationExtensionsClientOutputs*);
 
+  explicit PublicKeyCredential(
+      const String& id,
+      DOMArrayBuffer* raw_id,
+      AuthenticatorResponse*,
+      const AuthenticationExtensionsClientOutputs* extension_outputs);
+
   DOMArrayBuffer* rawId() const { return raw_id_.Get(); }
   AuthenticatorResponse* response() const { return response_.Get(); }
   static ScriptPromise isUserVerifyingPlatformAuthenticatorAvailable(
@@ -39,12 +45,6 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
   bool IsPublicKeyCredential() const override;
 
  private:
-  explicit PublicKeyCredential(
-      const String& id,
-      DOMArrayBuffer* raw_id,
-      AuthenticatorResponse*,
-      const AuthenticationExtensionsClientOutputs* extension_outputs);
-
   const Member<DOMArrayBuffer> raw_id_;
   const Member<AuthenticatorResponse> response_;
   Member<const AuthenticationExtensionsClientOutputs> extension_outputs_;

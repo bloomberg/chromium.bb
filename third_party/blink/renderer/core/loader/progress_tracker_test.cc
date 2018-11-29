@@ -34,7 +34,7 @@ class ProgressTrackerTest : public PageTestBase {
   }
 
   void SetUp() override {
-    client_ = new ProgressClient;
+    client_ = MakeGarbageCollected<ProgressClient>();
     PageTestBase::SetupPageWithClients(nullptr, client_.Get());
   }
 

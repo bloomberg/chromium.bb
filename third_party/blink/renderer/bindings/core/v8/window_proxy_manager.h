@@ -113,10 +113,9 @@ class RemoteWindowProxyManager
     : public WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy> {
  public:
   static RemoteWindowProxyManager* Create(RemoteFrame& frame) {
-    return new RemoteWindowProxyManager(frame);
+    return MakeGarbageCollected<RemoteWindowProxyManager>(frame);
   }
 
- private:
   explicit RemoteWindowProxyManager(RemoteFrame& frame)
       : WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy>(
             frame,

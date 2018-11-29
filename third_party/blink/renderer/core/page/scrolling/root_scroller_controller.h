@@ -42,6 +42,8 @@ class CORE_EXPORT RootScrollerController
   // of this class need to be made aware of layout updates.
   static RootScrollerController* Create(Document&);
 
+  RootScrollerController(Document&);
+
   void Trace(blink::Visitor*);
 
   // Sets the element that will be used as the root scroller. This can be
@@ -93,8 +95,6 @@ class CORE_EXPORT RootScrollerController
   void PerformRootScrollerSelection();
 
  private:
-  RootScrollerController(Document&);
-
   // Ensures the effective root scroller is currently valid and replaces it
   // with the default if not.
   void RecomputeEffectiveRootScroller();

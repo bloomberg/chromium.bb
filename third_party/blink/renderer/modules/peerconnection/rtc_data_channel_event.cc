@@ -28,13 +28,13 @@ namespace blink {
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(const AtomicString& type,
                                                  RTCDataChannel* channel) {
-  return new RTCDataChannelEvent(type, channel);
+  return MakeGarbageCollected<RTCDataChannelEvent>(type, channel);
 }
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(
     const AtomicString& type,
     const RTCDataChannelEventInit* initializer) {
-  return new RTCDataChannelEvent(type, initializer);
+  return MakeGarbageCollected<RTCDataChannelEvent>(type, initializer);
 }
 
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,

@@ -39,6 +39,10 @@ class CORE_EXPORT PerformanceObserver final
                                      V8PerformanceObserverCallback*);
   static void ResumeSuspendedObservers();
 
+  PerformanceObserver(ExecutionContext*,
+                      Performance*,
+                      V8PerformanceObserverCallback*);
+
   void observe(const PerformanceObserverInit*, ExceptionState&);
   void disconnect();
   PerformanceEntryVector takeRecords();
@@ -51,9 +55,6 @@ class CORE_EXPORT PerformanceObserver final
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceObserver(ExecutionContext*,
-                      Performance*,
-                      V8PerformanceObserverCallback*);
   void Deliver();
   bool ShouldBeSuspended() const;
 

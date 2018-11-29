@@ -50,6 +50,8 @@ class CORE_EXPORT PublicURLManager final
  public:
   static PublicURLManager* Create(ExecutionContext*);
 
+  explicit PublicURLManager(ExecutionContext*);
+
   // Generates a new Blob URL and registers the URLRegistrable to the
   // corresponding URLRegistry with the Blob URL. Returns the serialization
   // of the Blob URL.
@@ -76,8 +78,6 @@ class CORE_EXPORT PublicURLManager final
   }
 
  private:
-  explicit PublicURLManager(ExecutionContext*);
-
   typedef String URLString;
   // Map from URLs to the URLRegistry they are registered with.
   typedef HashMap<URLString, URLRegistry*> URLToRegistryMap;

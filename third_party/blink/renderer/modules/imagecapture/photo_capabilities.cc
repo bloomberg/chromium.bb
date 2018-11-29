@@ -8,7 +8,7 @@ namespace blink {
 
 // static
 PhotoCapabilities* PhotoCapabilities::Create() {
-  return new PhotoCapabilities();
+  return MakeGarbageCollected<PhotoCapabilities>();
 }
 
 Vector<String> PhotoCapabilities::fillLightMode() const {

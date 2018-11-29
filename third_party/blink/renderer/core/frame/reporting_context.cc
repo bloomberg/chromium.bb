@@ -25,7 +25,7 @@ ReportingContext* ReportingContext::From(ExecutionContext* context) {
   ReportingContext* reporting_context =
       Supplement<ExecutionContext>::From<ReportingContext>(context);
   if (!reporting_context) {
-    reporting_context = new ReportingContext(*context);
+    reporting_context = MakeGarbageCollected<ReportingContext>(*context);
     Supplement<ExecutionContext>::ProvideTo(*context, reporting_context);
   }
   return reporting_context;

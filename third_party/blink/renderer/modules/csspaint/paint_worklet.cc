@@ -34,7 +34,7 @@ PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
 
 // static
 PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
-  return new PaintWorklet(frame);
+  return MakeGarbageCollected<PaintWorklet>(frame);
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
@@ -129,7 +129,7 @@ bool PaintWorklet::NeedsToCreateGlobalScope() {
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
   if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    return new PaintWorkletGlobalScopeProxy(
+    return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
         pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
   }

@@ -43,13 +43,6 @@ class CORE_EXPORT PausableScriptExecutor final
                            int argc,
                            v8::Local<v8::Value> argv[],
                            WebScriptExecutionCallback*);
-  ~PausableScriptExecutor() override;
-
-  void Run();
-  void RunAsync(BlockingOption);
-  void ContextDestroyed(ExecutionContext*) override;
-
-  void Trace(blink::Visitor*) override;
 
   class Executor : public GarbageCollectedFinalized<Executor> {
    public:
@@ -60,12 +53,19 @@ class CORE_EXPORT PausableScriptExecutor final
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
- private:
   PausableScriptExecutor(LocalFrame*,
                          ScriptState*,
                          WebScriptExecutionCallback*,
                          Executor*);
+  ~PausableScriptExecutor() override;
 
+  void Run();
+  void RunAsync(BlockingOption);
+  void ContextDestroyed(ExecutionContext*) override;
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   void Fired() override;
 
   void ExecuteAndDestroySelf();

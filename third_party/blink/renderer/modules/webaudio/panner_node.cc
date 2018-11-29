@@ -714,7 +714,7 @@ PannerNode* PannerNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new PannerNode(context);
+  return MakeGarbageCollected<PannerNode>(context);
 }
 
 PannerNode* PannerNode::Create(BaseAudioContext* context,

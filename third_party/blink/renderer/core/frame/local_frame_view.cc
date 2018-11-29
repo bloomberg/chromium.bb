@@ -2297,7 +2297,8 @@ void LocalFrameView::SetupPrintContext() {
   if (frame_->GetDocument()->Printing())
     return;
   if (!print_context_) {
-    print_context_ = new PrintContext(frame_, /*use_printing_layout=*/true);
+    print_context_ = MakeGarbageCollected<PrintContext>(
+        frame_, /*use_printing_layout=*/true);
   }
   if (frame_->GetSettings())
     frame_->GetSettings()->SetShouldPrintBackgrounds(true);

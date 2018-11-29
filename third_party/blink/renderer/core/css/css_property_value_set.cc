@@ -611,7 +611,7 @@ CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration() {
     DCHECK(!cssom_wrapper_->ParentElement());
     return cssom_wrapper_.Get();
   }
-  cssom_wrapper_ = new PropertySetCSSStyleDeclaration(*this);
+  cssom_wrapper_ = MakeGarbageCollected<PropertySetCSSStyleDeclaration>(*this);
   return cssom_wrapper_.Get();
 }
 

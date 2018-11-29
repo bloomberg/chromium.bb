@@ -170,12 +170,11 @@ class PromiseObserver {
     static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                   bool* flag_to_set,
                                                   ScriptValue* arg_to_set) {
-      MyScriptFunction* self =
-          new MyScriptFunction(script_state, flag_to_set, arg_to_set);
+      MyScriptFunction* self = MakeGarbageCollected<MyScriptFunction>(
+          script_state, flag_to_set, arg_to_set);
       return self->BindToV8Function();
     }
 
-   private:
     MyScriptFunction(ScriptState* script_state,
                      bool* flag_to_set,
                      ScriptValue* arg_to_set)
@@ -187,6 +186,8 @@ class PromiseObserver {
       *arg_to_set_ = arg;
       return arg;
     }
+
+   private:
     bool* flag_to_set_;
     ScriptValue* arg_to_set_;
   };

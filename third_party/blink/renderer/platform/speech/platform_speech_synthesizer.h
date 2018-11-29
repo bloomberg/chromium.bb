@@ -64,6 +64,7 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
  public:
   static PlatformSpeechSynthesizer* Create(PlatformSpeechSynthesizerClient*);
 
+  explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);
   virtual ~PlatformSpeechSynthesizer();
 
   virtual void Speak(PlatformSpeechSynthesisUtterance*);
@@ -93,8 +94,6 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
   virtual void Trace(blink::Visitor*);
 
  protected:
-  explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);
-
   virtual void InitializeVoiceList();
 
   Vector<scoped_refptr<PlatformSpeechSynthesisVoice>> voice_list_;

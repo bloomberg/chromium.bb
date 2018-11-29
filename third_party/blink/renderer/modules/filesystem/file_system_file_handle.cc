@@ -65,12 +65,13 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
   ScriptPromise result = resolver->Promise();
   KURL file_system_url = filesystem()->CreateFileSystemURL(this);
   FileSystemDispatcher::From(ExecutionContext::From(script_state))
-      .CreateSnapshotFile(file_system_url,
-                          SnapshotFileCallback::Create(
-                              filesystem(), name(), file_system_url,
-                              new OnDidCreateSnapshotFilePromise(resolver),
-                              new PromiseErrorCallback(resolver),
-                              ExecutionContext::From(script_state)));
+      .CreateSnapshotFile(
+          file_system_url,
+          SnapshotFileCallback::Create(
+              filesystem(), name(), file_system_url,
+              new OnDidCreateSnapshotFilePromise(resolver),
+              MakeGarbageCollected<PromiseErrorCallback>(resolver),
+              ExecutionContext::From(script_state)));
   return result;
 }
 

@@ -55,6 +55,9 @@ class CORE_EXPORT Request final : public Body {
   static Request* Create(ScriptState*, const WebServiceWorkerRequest&);
   static Request* Create(ScriptState*, const mojom::blink::FetchAPIRequest&);
 
+  Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
+  Request(ScriptState*, FetchRequestData*);
+
   // Returns false if |credentials_mode| doesn't represent a valid credentials
   // mode.
   static bool ParseCredentialsMode(const String& credentials_mode,
@@ -91,9 +94,6 @@ class CORE_EXPORT Request final : public Body {
   void Trace(blink::Visitor*) override;
 
  private:
-  Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
-  Request(ScriptState*, FetchRequestData*);
-
   const FetchRequestData* GetRequest() const { return request_; }
   static Request* CreateRequestWithRequestOrString(ScriptState*,
                                                    Request*,

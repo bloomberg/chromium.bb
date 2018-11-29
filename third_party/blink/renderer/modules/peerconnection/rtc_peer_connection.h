@@ -114,6 +114,12 @@ class MODULES_EXPORT RTCPeerConnection final
                                    const RTCConfiguration*,
                                    const Dictionary&,
                                    ExceptionState&);
+
+  RTCPeerConnection(ExecutionContext*,
+                    webrtc::PeerConnectionInterface::RTCConfiguration,
+                    bool sdp_semantics_specified,
+                    WebMediaConstraints,
+                    ExceptionState&);
   ~RTCPeerConnection() override;
 
   ScriptPromise createOffer(ScriptState*, const RTCOfferOptions*);
@@ -353,12 +359,6 @@ class MODULES_EXPORT RTCPeerConnection final
    private:
     BoolFunction setup_function_;
   };
-
-  RTCPeerConnection(ExecutionContext*,
-                    webrtc::PeerConnectionInterface::RTCConfiguration,
-                    bool sdp_semantics_specified,
-                    WebMediaConstraints,
-                    ExceptionState&);
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);

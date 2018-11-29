@@ -72,7 +72,11 @@ namespace blink {
 class PagePopupChromeClient final : public EmptyChromeClient {
  public:
   static PagePopupChromeClient* Create(WebPagePopupImpl* popup) {
-    return new PagePopupChromeClient(popup);
+    return MakeGarbageCollected<PagePopupChromeClient>(popup);
+  }
+
+  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
+    DCHECK(popup_->WidgetClient());
   }
 
   void SetWindowRect(const IntRect& rect, LocalFrame&) override {
@@ -82,10 +86,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   bool IsPopup() override { return true; }
 
  private:
-  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
-    DCHECK(popup_->WidgetClient());
-  }
-
   void CloseWindowSoon() override { popup_->ClosePopup(); }
 
   IntRect RootWindowRect() override { return popup_->WindowRectInScreen(); }

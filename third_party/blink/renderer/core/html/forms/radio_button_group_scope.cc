@@ -30,6 +30,9 @@ namespace blink {
 class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
  public:
   static RadioButtonGroup* Create();
+
+  RadioButtonGroup();
+
   bool IsEmpty() const { return members_.IsEmpty(); }
   bool IsRequired() const { return required_count_; }
   HTMLInputElement* CheckedButton() const { return checked_button_; }
@@ -43,7 +46,6 @@ class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
   void Trace(blink::Visitor*);
 
  private:
-  RadioButtonGroup();
   void SetNeedsValidityCheckForAllButtons();
   bool IsValid() const;
   void SetCheckedButton(HTMLInputElement*);
@@ -64,7 +66,7 @@ RadioButtonGroup::RadioButtonGroup()
     : checked_button_(nullptr), required_count_(0) {}
 
 RadioButtonGroup* RadioButtonGroup::Create() {
-  return new RadioButtonGroup;
+  return MakeGarbageCollected<RadioButtonGroup>();
 }
 
 inline bool RadioButtonGroup::IsValid() const {

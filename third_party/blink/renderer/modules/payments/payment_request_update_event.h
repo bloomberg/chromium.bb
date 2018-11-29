@@ -26,6 +26,9 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   USING_GARBAGE_COLLECTED_MIXIN(PaymentRequestUpdateEvent)
 
  public:
+  PaymentRequestUpdateEvent(ExecutionContext*,
+                            const AtomicString& type,
+                            const PaymentRequestUpdateEventInit*);
   ~PaymentRequestUpdateEvent() override;
 
   static PaymentRequestUpdateEvent* Create(
@@ -48,11 +51,6 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   void Trace(blink::Visitor*) override;
 
   void OnUpdateEventTimeoutForTesting();
-
- protected:
-  PaymentRequestUpdateEvent(ExecutionContext*,
-                            const AtomicString& type,
-                            const PaymentRequestUpdateEventInit*);
 
  private:
   void OnUpdateEventTimeout(TimerBase*);

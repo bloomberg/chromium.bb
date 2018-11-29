@@ -40,7 +40,7 @@ PointerLockController::PointerLockController(Page* page)
     : page_(page), lock_pending_(false) {}
 
 PointerLockController* PointerLockController::Create(Page* page) {
-  return new PointerLockController(page);
+  return MakeGarbageCollected<PointerLockController>(page);
 }
 
 void PointerLockController::RequestPointerLock(Element* target) {

@@ -61,7 +61,7 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
     prerenderer_client->WillAddPrerender(prerender);
   prerender->Add();
 
-  return new PrerenderHandle(document, prerender);
+  return MakeGarbageCollected<PrerenderHandle>(document, prerender);
 }
 
 PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)

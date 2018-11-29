@@ -45,8 +45,8 @@ PerformanceServerTiming::FromParsedServerTiming(
     const WebVector<WebServerTimingInfo>& entries) {
   HeapVector<Member<PerformanceServerTiming>> result;
   for (const auto& entry : entries) {
-    result.push_back(new PerformanceServerTiming(entry.name, entry.duration,
-                                                 entry.description));
+    result.push_back(MakeGarbageCollected<PerformanceServerTiming>(
+        entry.name, entry.duration, entry.description));
   }
   return result;
 }

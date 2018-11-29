@@ -21,7 +21,7 @@ ScriptPromise FileSystemBaseHandle::getParent(ScriptState* script_state) {
   filesystem()->GetParent(
       this,
       MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 
@@ -33,7 +33,7 @@ ScriptPromise FileSystemBaseHandle::moveTo(ScriptState* script_state,
   filesystem()->Move(
       this, parent, name,
       MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 
@@ -45,7 +45,7 @@ ScriptPromise FileSystemBaseHandle::copyTo(ScriptState* script_state,
   filesystem()->Copy(
       this, parent, name,
       MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 
@@ -54,7 +54,7 @@ ScriptPromise FileSystemBaseHandle::remove(ScriptState* script_state) {
   ScriptPromise result = resolver->Promise();
   filesystem()->Remove(this,
                        new VoidCallbacks::OnDidSucceedPromiseImpl(resolver),
-                       new PromiseErrorCallback(resolver));
+                       MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 

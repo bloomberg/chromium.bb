@@ -34,7 +34,7 @@ Permissions* WorkerNavigatorPermissions::permissions(
   WorkerNavigatorPermissions& self =
       WorkerNavigatorPermissions::From(worker_navigator);
   if (!self.permissions_)
-    self.permissions_ = new Permissions();
+    self.permissions_ = MakeGarbageCollected<Permissions>();
   return self.permissions_;
 }
 

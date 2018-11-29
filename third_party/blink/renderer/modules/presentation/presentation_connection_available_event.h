@@ -20,17 +20,24 @@ class PresentationConnectionAvailableEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  PresentationConnectionAvailableEvent(const AtomicString& event_type,
+                                       PresentationConnection*);
+  PresentationConnectionAvailableEvent(
+      const AtomicString& event_type,
+      const PresentationConnectionAvailableEventInit* initializer);
   ~PresentationConnectionAvailableEvent() override;
 
   static PresentationConnectionAvailableEvent* Create(
       const AtomicString& event_type,
       PresentationConnection* connection) {
-    return new PresentationConnectionAvailableEvent(event_type, connection);
+    return MakeGarbageCollected<PresentationConnectionAvailableEvent>(
+        event_type, connection);
   }
   static PresentationConnectionAvailableEvent* Create(
       const AtomicString& event_type,
       const PresentationConnectionAvailableEventInit* initializer) {
-    return new PresentationConnectionAvailableEvent(event_type, initializer);
+    return MakeGarbageCollected<PresentationConnectionAvailableEvent>(
+        event_type, initializer);
   }
 
   PresentationConnection* connection() { return connection_.Get(); }
@@ -40,12 +47,6 @@ class PresentationConnectionAvailableEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  PresentationConnectionAvailableEvent(const AtomicString& event_type,
-                                       PresentationConnection*);
-  PresentationConnectionAvailableEvent(
-      const AtomicString& event_type,
-      const PresentationConnectionAvailableEventInit* initializer);
-
   Member<PresentationConnection> connection_;
 };
 

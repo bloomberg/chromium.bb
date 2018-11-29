@@ -64,6 +64,7 @@ class PeriodicWave final : public ScriptWrappable {
                               const PeriodicWaveOptions*,
                               ExceptionState&);
 
+  explicit PeriodicWave(float sample_rate);
   ~PeriodicWave() override;
 
   // Returns pointers to the lower and higher wave data for the pitch range
@@ -90,8 +91,6 @@ class PeriodicWave final : public ScriptWrappable {
   unsigned NumberOfRanges() const { return number_of_ranges_; }
 
  private:
-  explicit PeriodicWave(float sample_rate);
-
   void GenerateBasicWaveform(int);
 
   size_t v8_external_memory_;

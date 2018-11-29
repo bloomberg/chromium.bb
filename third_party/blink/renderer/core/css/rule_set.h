@@ -170,7 +170,9 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
 // ElementRuleCollector::CollectMatchingRules.
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
  public:
-  static RuleSet* Create() { return new RuleSet; }
+  static RuleSet* Create() { return MakeGarbageCollected<RuleSet>(); }
+
+  RuleSet() : rule_count_(0) {}
 
   void AddRulesFromSheet(StyleSheetContents*,
                          const MediaQueryEvaluator&,
@@ -288,8 +290,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   using CompactRuleMap =
       HeapHashMap<AtomicString, Member<HeapVector<Member<const RuleData>>>>;
 
-  RuleSet() : rule_count_(0) {}
-
   void AddToRuleSet(const AtomicString& key, PendingRuleMap&, const RuleData*);
   void AddPageRule(StyleRulePage*);
   void AddViewportRule(StyleRuleViewport*);
@@ -307,7 +307,11 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
    public:
-    static PendingRuleMaps* Create() { return new PendingRuleMaps; }
+    static PendingRuleMaps* Create() {
+      return MakeGarbageCollected<PendingRuleMaps>();
+    }
+
+    PendingRuleMaps() = default;
 
     PendingRuleMap id_rules;
     PendingRuleMap class_rules;
@@ -315,9 +319,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     PendingRuleMap shadow_pseudo_element_rules;
 
     void Trace(blink::Visitor*);
-
-   private:
-    PendingRuleMaps() = default;
   };
 
   PendingRuleMaps* EnsurePendingRules() {

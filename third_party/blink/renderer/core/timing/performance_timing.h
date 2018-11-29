@@ -60,8 +60,10 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
 
  public:
   static PerformanceTiming* Create(LocalFrame* frame) {
-    return new PerformanceTiming(frame);
+    return MakeGarbageCollected<PerformanceTiming>(frame);
   }
+
+  explicit PerformanceTiming(LocalFrame*);
 
   unsigned long long navigationStart() const;
   unsigned long long inputStart() const;
@@ -156,8 +158,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   unsigned long long MonotonicTimeToIntegerMilliseconds(TimeTicks) const;
 
  private:
-  explicit PerformanceTiming(LocalFrame*);
-
   const DocumentTiming* GetDocumentTiming() const;
   const CSSTiming* CssTiming() const;
   const DocumentParserTiming* GetDocumentParserTiming() const;

@@ -132,8 +132,10 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
   static ReferenceFilterOperation* Create(const AtomicString& url,
                                           SVGResource* resource) {
-    return new ReferenceFilterOperation(url, resource);
+    return MakeGarbageCollected<ReferenceFilterOperation>(url, resource);
   }
+
+  ReferenceFilterOperation(const AtomicString& url, SVGResource*);
 
   bool AffectsOpacity() const override { return true; }
   bool MovesPixels() const override { return true; }
@@ -152,8 +154,6 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void Trace(blink::Visitor*) override;
 
  private:
-  ReferenceFilterOperation(const AtomicString& url, SVGResource*);
-
   FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override {
     NOTREACHED();

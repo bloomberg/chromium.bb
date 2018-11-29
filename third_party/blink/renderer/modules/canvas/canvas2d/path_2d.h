@@ -49,14 +49,16 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
   static Path2D* Create(Path2DOrString pathorstring) {
     DCHECK(!pathorstring.IsNull());
     if (pathorstring.IsPath2D())
-      return new Path2D(pathorstring.GetAsPath2D());
+      return MakeGarbageCollected<Path2D>(pathorstring.GetAsPath2D());
     if (pathorstring.IsString())
-      return new Path2D(pathorstring.GetAsString());
+      return MakeGarbageCollected<Path2D>(pathorstring.GetAsString());
     NOTREACHED();
     return nullptr;
   }
-  static Path2D* Create() { return new Path2D; }
-  static Path2D* Create(const Path& path) { return new Path2D(path); }
+  static Path2D* Create() { return MakeGarbageCollected<Path2D>(); }
+  static Path2D* Create(const Path& path) {
+    return MakeGarbageCollected<Path2D>(path);
+  }
 
   const Path& GetPath() const { return path_; }
 
@@ -70,18 +72,13 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
     path_.AddPath(path->GetPath(), matrix->GetAffineTransform());
   }
 
-  ~Path2D() override = default;
-
- private:
   Path2D() : CanvasPath() {}
-
   Path2D(const Path& path) : CanvasPath(path) {}
-
   Path2D(Path2D* path) : CanvasPath(path->GetPath()) {}
-
   Path2D(const String& path_data) : CanvasPath() {
     BuildPathFromString(path_data, path_);
   }
+  ~Path2D() override = default;
 };
 
 }  // namespace blink

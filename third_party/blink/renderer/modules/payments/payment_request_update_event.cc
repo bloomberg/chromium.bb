@@ -91,7 +91,8 @@ PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::Create(
     ExecutionContext* execution_context,
     const AtomicString& type,
     const PaymentRequestUpdateEventInit* init) {
-  return new PaymentRequestUpdateEvent(execution_context, type, init);
+  return MakeGarbageCollected<PaymentRequestUpdateEvent>(execution_context,
+                                                         type, init);
 }
 
 void PaymentRequestUpdateEvent::SetPaymentDetailsUpdater(

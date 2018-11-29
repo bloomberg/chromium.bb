@@ -117,8 +117,10 @@ class RadialGradientAttributesWrapper
     : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
  public:
   static RadialGradientAttributesWrapper* Create() {
-    return new RadialGradientAttributesWrapper;
+    return MakeGarbageCollected<RadialGradientAttributesWrapper>();
   }
+
+  RadialGradientAttributesWrapper() = default;
 
   RadialGradientAttributes& Attributes() { return attributes_; }
   void Set(const RadialGradientAttributes& attributes) {
@@ -127,8 +129,6 @@ class RadialGradientAttributesWrapper
   void Trace(blink::Visitor* visitor) { visitor->Trace(attributes_); }
 
  private:
-  RadialGradientAttributesWrapper() = default;
-
   RadialGradientAttributes attributes_;
 };
 
