@@ -1275,7 +1275,7 @@ TEST_P(
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("A"));
@@ -1328,7 +1328,7 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
@@ -1542,8 +1542,6 @@ TEST_F(MojoAsyncResourceHandlerTest,
 
   // Prepare for loader read complete.
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  EXPECT_EQ(MockResourceLoader::Status::IDLE,
-            mock_loader_->OnWillStart(request_->url()));
   EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   // Only headers are read by the time the response is started.
   mock_loader_->OnReadCompleted(kResponseHeaders);
