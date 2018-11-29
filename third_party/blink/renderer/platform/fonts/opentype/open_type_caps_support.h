@@ -29,7 +29,13 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
   CaseMapIntend NeedsCaseChange(SmallCapsIterator::SmallCapsBehavior run_case);
 
  private:
+  enum class FontFormat { kUndetermined, kOpenType, kAat };
+  // Lazily intializes font_format_ when needed and returns the format of the
+  // underlying HarfBuzzFace/Font.
+  FontFormat GetFontFormat() const;
   void DetermineFontSupport(hb_script_t);
+  bool SupportsFeature(hb_script_t, uint32_t tag) const;
+  bool SupportsAatFeature(uint32_t tag) const;
   bool SupportsOpenTypeFeature(hb_script_t, uint32_t tag) const;
 
   const HarfBuzzFace* harfbuzz_face_;
@@ -50,6 +56,7 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
 
   FontSupport font_support_;
   CapsSynthesis caps_synthesis_;
+  mutable FontFormat font_format_;
 };
 
 };  // namespace blink
