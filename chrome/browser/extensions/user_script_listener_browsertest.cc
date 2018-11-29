@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,17 +41,9 @@ class DidStartNavigationObserver : public content::WebContentsObserver {
 
 using UserScriptListenerTest = ExtensionBrowserTest;
 
-#if defined(OS_WIN)
-#define MAYBE_NavigationWaitsForContentScriptsToLoad \
-  DISABLED_NavigationWaitsForContentScriptsToLoad
-#else
-#define MAYBE_NavigationWaitsForContentScriptsToLoad \
-  NavigationWaitsForContentScriptsToLoad
-#endif
-
 // Test that navigations block while waiting for content scripts to load.
 IN_PROC_BROWSER_TEST_F(UserScriptListenerTest,
-                       MAYBE_NavigationWaitsForContentScriptsToLoad) {
+                       NavigationWaitsForContentScriptsToLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   TestingProfile profile;
