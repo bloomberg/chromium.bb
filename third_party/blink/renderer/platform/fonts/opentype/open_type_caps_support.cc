@@ -4,43 +4,13 @@
 
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
 
-#include <hb-aat.h>
-#include <hb.h>
-
 namespace blink {
-
-namespace {
-
-bool activationSelectorPresent(
-    hb_face_t* hb_face,
-    const hb_aat_layout_feature_type_t feature_type,
-    const hb_aat_layout_feature_selector_t enabled_selector_expectation) {
-  Vector<hb_aat_layout_feature_selector_info_t> feature_selectors;
-  unsigned num_feature_selectors = 0;
-  unsigned default_index = 0;
-  num_feature_selectors = hb_aat_layout_feature_type_get_selector_infos(
-      hb_face, feature_type, 0, nullptr, nullptr, nullptr);
-  feature_selectors.resize(num_feature_selectors);
-  if (!hb_aat_layout_feature_type_get_selector_infos(
-          hb_face, feature_type, 0, &num_feature_selectors,
-          feature_selectors.data(), &default_index)) {
-    return false;
-  }
-  for (hb_aat_layout_feature_selector_info_t selector_info :
-       feature_selectors) {
-    if (selector_info.enable == enabled_selector_expectation)
-      return true;
-  }
-  return false;
-}
-}  // namespace
 
 OpenTypeCapsSupport::OpenTypeCapsSupport()
     : harfbuzz_face_(nullptr),
       requested_caps_(FontDescription::kCapsNormal),
       font_support_(FontSupport::kFull),
-      caps_synthesis_(CapsSynthesis::kNone),
-      font_format_(FontFormat::kUndetermined) {}
+      caps_synthesis_(CapsSynthesis::kNone) {}
 
 OpenTypeCapsSupport::OpenTypeCapsSupport(
     const HarfBuzzFace* harfbuzz_face,
@@ -49,8 +19,7 @@ OpenTypeCapsSupport::OpenTypeCapsSupport(
     : harfbuzz_face_(harfbuzz_face),
       requested_caps_(requested_caps),
       font_support_(FontSupport::kFull),
-      caps_synthesis_(CapsSynthesis::kNone),
-      font_format_(FontFormat::kUndetermined) {
+      caps_synthesis_(CapsSynthesis::kNone) {
   if (requested_caps != FontDescription::kCapsNormal)
     DetermineFontSupport(script);
 }
@@ -133,107 +102,24 @@ CaseMapIntend OpenTypeCapsSupport::NeedsCaseChange(
   return case_map_intend;
 }
 
-OpenTypeCapsSupport::FontFormat OpenTypeCapsSupport::GetFontFormat() const {
-  if (font_format_ == FontFormat::kUndetermined) {
-    hb_face_t* hb_face = hb_font_get_face(
-        harfbuzz_face_->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout));
-    unsigned table_count = 0;
-    Vector<uint32_t> table_tags;
-    table_count = hb_face_get_table_tags(hb_face, 0, nullptr, nullptr);
-    table_tags.resize(table_count);
-    if (!hb_face_get_table_tags(hb_face, 0, &table_count, table_tags.data()))
-      table_tags.resize(0);
-    font_format_ = table_tags.Contains(HB_TAG('m', 'o', 'r', 'x')) &&
-                           !table_tags.Contains(HB_TAG('G', 'S', 'U', 'B'))
-                       ? font_format_ = FontFormat::kAat
-                       : font_format_ = FontFormat::kOpenType;
-  }
-  return font_format_;
-}
-
-bool OpenTypeCapsSupport::SupportsFeature(hb_script_t script,
-                                          uint32_t tag) const {
-  if (GetFontFormat() == FontFormat::kAat)
-    return SupportsAatFeature(tag);
-  return SupportsOpenTypeFeature(script, tag);
-}
-
-bool OpenTypeCapsSupport::SupportsAatFeature(uint32_t tag) const {
-  // We only want to detect small-caps and capitals-to-small-capitals features
-  // for aat-fonts, any other requests are returned as not supported.
-  if (tag != HB_TAG('s', 'm', 'c', 'p') && tag != HB_TAG('c', '2', 's', 'c')) {
-    return false;
-  }
-
-  hb_face_t* hb_face = hb_font_get_face(
-      harfbuzz_face_->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout));
-
-  Vector<hb_aat_layout_feature_type_t> aat_features;
-  unsigned feature_count =
-      hb_aat_layout_get_feature_types(hb_face, 0, nullptr, nullptr);
-  aat_features.resize(feature_count);
-  if (!hb_aat_layout_get_feature_types(hb_face, 0, &feature_count,
-                                       aat_features.data()))
-    return false;
-
-  if (tag == HB_TAG('s', 'm', 'c', 'p')) {
-    // Check for presence of new style (feature id 38) or old style (letter
-    // case, feature id 3) small caps feature presence, then check for the
-    // specific required activation selectors.
-    if (!aat_features.Contains(HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE) &&
-        !aat_features.Contains(HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE))
-      return false;
-
-    // Check for new style small caps, feature id 38.
-    if (aat_features.Contains(HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE)) {
-      if (activationSelectorPresent(
-              hb_face, HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,
-              HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS))
-        return true;
-    }
-
-    // Check for old style small caps enabling selector, feature id 3.
-    if (aat_features.Contains(HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE)) {
-      if (activationSelectorPresent(hb_face,
-                                    HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE,
-                                    HB_AAT_LAYOUT_FEATURE_SELECTOR_SMALL_CAPS))
-        return true;
-    }
-
-    // Neither old or new style small caps present.
-    return false;
-  }
-
-  if (tag == HB_TAG('c', '2', 's', 'c')) {
-    if (!aat_features.Contains(HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE))
-      return false;
-
-    return activationSelectorPresent(
-        hb_face, HB_AAT_LAYOUT_FEATURE_TYPE_UPPER_CASE,
-        HB_AAT_LAYOUT_FEATURE_SELECTOR_UPPER_CASE_SMALL_CAPS);
-  }
-
-  return false;
-}
-
 void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
   switch (requested_caps_) {
     case FontDescription::kSmallCaps:
-      if (!SupportsFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+      if (!SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
         font_support_ = FontSupport::kNone;
         caps_synthesis_ = CapsSynthesis::kLowerToSmallCaps;
       }
       break;
     case FontDescription::kAllSmallCaps:
-      if (!(SupportsFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
-            SupportsFeature(script, HB_TAG('c', '2', 's', 'c')))) {
+      if (!(SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c')))) {
         font_support_ = FontSupport::kNone;
         caps_synthesis_ = CapsSynthesis::kBothToSmallCaps;
       }
       break;
     case FontDescription::kPetiteCaps:
-      if (!SupportsFeature(script, HB_TAG('p', 'c', 'a', 'p'))) {
-        if (SupportsFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+      if (!SupportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p'))) {
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
           font_support_ = FontSupport::kFallback;
         } else {
           font_support_ = FontSupport::kNone;
@@ -242,10 +128,10 @@ void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
       }
       break;
     case FontDescription::kAllPetiteCaps:
-      if (!(SupportsFeature(script, HB_TAG('p', 'c', 'a', 'p')) &&
-            SupportsFeature(script, HB_TAG('c', '2', 'p', 'c')))) {
-        if (SupportsFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
-            SupportsFeature(script, HB_TAG('c', '2', 's', 'c'))) {
+      if (!(SupportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 'p', 'c')))) {
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c'))) {
           font_support_ = FontSupport::kFallback;
         } else {
           font_support_ = FontSupport::kNone;
@@ -254,9 +140,9 @@ void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
       }
       break;
     case FontDescription::kUnicase:
-      if (!SupportsFeature(script, HB_TAG('u', 'n', 'i', 'c'))) {
+      if (!SupportsOpenTypeFeature(script, HB_TAG('u', 'n', 'i', 'c'))) {
         caps_synthesis_ = CapsSynthesis::kUpperToSmallCaps;
-        if (SupportsFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
           font_support_ = FontSupport::kFallback;
         } else {
           font_support_ = FontSupport::kNone;
@@ -264,7 +150,7 @@ void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
       }
       break;
     case FontDescription::kTitlingCaps:
-      if (!SupportsFeature(script, HB_TAG('t', 'i', 't', 'l'))) {
+      if (!SupportsOpenTypeFeature(script, HB_TAG('t', 'i', 't', 'l'))) {
         font_support_ = FontSupport::kNone;
       }
       break;
