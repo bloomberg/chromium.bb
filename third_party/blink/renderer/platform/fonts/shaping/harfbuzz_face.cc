@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
@@ -334,11 +335,13 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                         WTF::Partitions::FastFree);
 }
 
+#if !defined(OS_MACOSX)
 static void DeleteTypefaceStream(void* stream_asset_ptr) {
   SkStreamAsset* stream_asset =
       reinterpret_cast<SkStreamAsset*>(stream_asset_ptr);
   delete stream_asset;
 }
+#endif
 
 hb_face_t* HarfBuzzFace::CreateFace() {
   hb_face_t* face = nullptr;
@@ -347,6 +350,11 @@ hb_face_t* HarfBuzzFace::CreateFace() {
                                   ("Blink.Fonts.HarfBuzzFaceZeroCopyAccess"));
   SkTypeface* typeface = platform_data_->Typeface();
   CHECK(typeface);
+  // The attempt of doing zero copy-mmaped memory access to the font blobs does
+  // not work efficiently on Mac, since what is returned from
+  // typeface->openStream is a synthesized font assembled from copying all font
+  // tables on Mac. See the implementation of SkTypeface_Mac::onOpenStream.
+#if !defined(OS_MACOSX)
   int ttc_index = 0;
   SkStreamAsset* typeface_stream = typeface->openStream(&ttc_index);
   if (typeface_stream && typeface_stream->getMemoryBase()) {
@@ -358,6 +366,7 @@ hb_face_t* HarfBuzzFace::CreateFace() {
         hb_blob_destroy);
     face = hb_face_create(face_blob.get(), ttc_index);
   }
+#endif
 
   // Fallback to table copies if there is no in-memory access.
   if (!face) {
