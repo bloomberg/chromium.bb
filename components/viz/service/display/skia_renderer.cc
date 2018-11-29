@@ -1153,9 +1153,12 @@ void SkiaRenderer::FinishDrawingQuadList() {
     DrawBatchedTileQuads();
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
+      // Skia doesn't support releasing the last promise image ref on the DDL
+      // recordering thread. So we clear all cached promise images before
+      // SubmitPaint to the GPU thread.
       promise_images_.clear();
       yuv_promise_images_.clear();
+      gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
       lock_set_for_external_use_.UnlockResources(sync_token);
       break;
     }
