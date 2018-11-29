@@ -2130,9 +2130,11 @@
           "board_name": "octopus",
           "name": "phaser360",
           "test_suites": [
+            "sanity",
             "bvt-inline",
             "bvt-installer",
             "bvt-arc",
+            "au",
             "bvt-cq",
             "bvt-perbuild"
           ],
