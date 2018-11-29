@@ -3126,6 +3126,27 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Part of the ChromeVox touch tutorial page. Concludes this page." name="IDS_CHROMEVOX_TUTORIAL_TOUCH_LEARN_MORE">
         Explore more gestures in Learn Mode and the Chromebook Help Center
       </message>
+      <message desc="Title of the bluetooth braille display section in ChromeVox options." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_TITLE">
+        Bluetooth Braille Display
+      </message>
+      <message desc="Labels a button which when pressed, connects to a selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_CONNECT">
+        Connect
+      </message>
+      <message desc="Labels a button which when pressed, disconnects from a selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_DISCONNECT">
+        Disconnect
+      </message>
+      <message desc="Labels a button which is disabled and indicates the system is connecting to a braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_CONNECTING">
+        Connecting
+      </message>
+      <message desc="Labels a button which when pressed, forgets the selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_FORGET">
+        Forget
+      </message>
+      <message desc="Labels a text field which prompts the user for a pincode when pairing a braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_PINCODE_LABEL">
+        Please enter a pin
+      </message>
+      <message desc="Labels a select control which lists all bluetooth braille displays." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_SELECT_LABEL">
+        Select a bluetooth braille display
+      </message>
     </messages>
   </release>
 </grit>

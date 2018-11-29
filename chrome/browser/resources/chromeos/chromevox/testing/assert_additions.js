@@ -110,5 +110,22 @@ function assertNotReached() {
   assertFalse(true);
 }
 
+/**
+ * Asserts an actual DOM equals an expected stringified DOM.
+ * @param {string} expected
+ * @param {Node} actual
+ */
+function assertEqualsDOM(expected, actual) {
+  expected = expected.replace(/>\s+</gm, '><').trim(/\s/gm);
+  var actualStr = actual.outerHTML;
+  actualStr = actualStr.replace(/>\s+</gm, '><').trim(/\s/gm);
+
+  for (var i = 0; i < expected.length; i++)
+    assertEquals(
+        expected[i], actualStr[i],
+        'Mismatch at index ' + i + ' in expected:\n' + expected +
+            '\nactual:\n' + actualStr + '\n');
+}
+
 assertSame = assertEquals;
 assertNotSame = assertNotEquals;
