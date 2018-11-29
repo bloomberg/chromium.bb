@@ -8,7 +8,7 @@ Googlers can read more [here](https://goto.google.com/clusterfuzz).
 ## Status Links
 
 * [Buildbot] - status of all libFuzzer builds.
-* [ClusterFuzz Fuzzer Status] - fuzzing metrics.
+* [ClusterFuzz Fuzzer Stats] - fuzzing metrics.
 * [Code Coverage] - code coverage of libFuzzer targets in Chrome.
 * [ClusterFuzz libFuzzer Logs] - individual fuzz target run logs.
 * [Corpus GCS Bucket] - current corpus for each fuzz target. Can be used to
@@ -27,7 +27,7 @@ Recipe is defined in [chromium_libfuzzer.py].
 * Fuzzing corpus is maintained for each fuzz target in [Corpus GCS Bucket]. Once
 a day, the corpus is minimized to reduce number of duplicates and/or reduce
 effect of parasitic coverage.
-* [ClusterFuzz Fuzzer Status] displays fuzzer runtime metrics as well as
+* [ClusterFuzz Fuzzer Stats] displays fuzzer runtime metrics as well as
 provides links to crashes and coverage reports.
 
 
