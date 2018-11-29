@@ -44,7 +44,7 @@ class SyncSetupService : public KeyedService {
     kNumberOfSyncableDatatypes
   };
 
-  SyncSetupService(syncer::SyncService* sync_service);
+  explicit SyncSetupService(syncer::SyncService* sync_service);
   ~SyncSetupService() override;
 
   // Returns the |syncer::ModelType| associated to the given
@@ -72,8 +72,8 @@ class SyncSetupService : public KeyedService {
   void SetDataTypeEnabled(syncer::ModelType datatype, bool enabled);
 
   // Returns whether the user needs to enter a passphrase or enable sync to make
-  // sync work.
-  bool UserActionIsRequiredToHaveSyncWork();
+  // tab sync work.
+  bool UserActionIsRequiredToHaveTabSyncWork();
 
   // Returns whether all datatypes are being synced.
   virtual bool IsSyncingAllDataTypes() const;
