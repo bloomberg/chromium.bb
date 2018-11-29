@@ -19,6 +19,7 @@ import android.media.ThumbnailUtils;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.text.TextUtilsCompat;
@@ -92,6 +93,7 @@ class AutofillAssistantUiDelegate {
     private final View mFullContainer;
     private final TouchEventFilter mTouchEventFilter;
     private final LinearLayout mBottomBar;
+    private final BottomSheetBehavior mBottomBarBehavior;
     private final HorizontalScrollView mCarouselScroll;
     private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
@@ -255,6 +257,7 @@ class AutofillAssistantUiDelegate {
         // TODO(crbug.com/806868): Set hint text on overlay.
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
+        mBottomBarBehavior = BottomSheetBehavior.from(mBottomBar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());
         mBottomBar.findViewById(R.id.feedback_button)
@@ -423,6 +426,7 @@ class AutofillAssistantUiDelegate {
             mTouchEventFilter.init(mClient, mActivity.getFullscreenManager(),
                     mActivity.getActivityTab().getWebContents());
             mFullContainer.setVisibility(View.VISIBLE);
+            mBottomBarBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
             // Announce Autofill Assistant is available for accessibility.
             mBottomBar.announceForAccessibility(
