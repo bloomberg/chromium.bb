@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "jingle/glue/network_service_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
@@ -68,12 +68,12 @@ class XmppConnection : public sigslot::has_slots<> {
   // NULL.  Takes ownership of |pre_xmpp_auth|, which may be NULL.
   //
   // TODO(akalin): Avoid the need for |pre_xmpp_auth|.
-  XmppConnection(
-      const buzz::XmppClientSettings& xmpp_client_settings,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      Delegate* delegate,
-      buzz::PreXmppAuth* pre_xmpp_auth,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  XmppConnection(const buzz::XmppClientSettings& xmpp_client_settings,
+                 jingle_glue::GetProxyResolvingSocketFactoryCallback
+                     get_socket_factory_callback,
+                 Delegate* delegate,
+                 buzz::PreXmppAuth* pre_xmpp_auth,
+                 const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Invalidates any weak pointers passed to the delegate by
   // OnConnect(), but does not trigger a call to the delegate's

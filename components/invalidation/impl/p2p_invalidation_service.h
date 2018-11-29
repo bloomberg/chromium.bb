@@ -15,8 +15,8 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace jingle_glue {
+class NetworkServiceConfigTestUtil;
 }
 
 namespace network {
@@ -37,7 +37,7 @@ class InvalidationLogger;
 class P2PInvalidationService : public InvalidationService {
  public:
   P2PInvalidationService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> config_helper,
       network::NetworkConnectionTracker* network_connection_tracker,
       syncer::P2PNotificationTarget notification_target);
   ~P2PInvalidationService() override;
@@ -63,6 +63,7 @@ class P2PInvalidationService : public InvalidationService {
 
  private:
   std::unique_ptr<syncer::P2PInvalidator> invalidator_;
+  std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> config_helper_;
   std::string invalidator_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "jingle/glue/network_service_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -26,14 +27,11 @@
 
 namespace jingle_glue {
 
-using GetProxyResolvingFactoryCallback = base::RepeatingCallback<void(
-    network::mojom::ProxyResolvingSocketFactoryRequest)>;
-
 class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
                                   public network::mojom::SocketObserver {
  public:
   NetworkServiceAsyncSocket(
-      GetProxyResolvingFactoryCallback get_socket_factory_callback,
+      GetProxyResolvingSocketFactoryCallback get_socket_factory_callback,
       bool use_fake_tls_handshake,
       size_t read_buf_size,
       size_t write_buf_size,
@@ -202,7 +200,7 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
 
   // |socket_factory_| is recreated every time via |get_socket_factory_callback|
   // to handle network service restarts after crashes.
-  GetProxyResolvingFactoryCallback get_socket_factory_callback_;
+  GetProxyResolvingSocketFactoryCallback get_socket_factory_callback_;
   network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
   // The handle to the proxy resolving socket for the current connection, if one
   // exists.

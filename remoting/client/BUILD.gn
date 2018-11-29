@@ -64,6 +64,7 @@ static_library("client") {
       "//mojo/core/embedder",
       "//remoting/client/input",
       "//remoting/client/ui",
+      "//services/network:network_service",
       "//services/network/public/mojom",
     ]
 

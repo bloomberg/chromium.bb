@@ -19,7 +19,6 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 static const char* kOAuth2Scopes[] = {
@@ -61,7 +60,11 @@ TiclInvalidationService::TiclInvalidationService(
     IdentityProvider* identity_provider,
     std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    base::RepeatingCallback<
+        void(base::WeakPtr<TiclInvalidationService>,
+             network::mojom::ProxyResolvingSocketFactoryRequest)>
+        get_socket_factory_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker)
     : user_agent_(user_agent),
@@ -71,9 +74,15 @@ TiclInvalidationService::TiclInvalidationService(
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),
-      request_context_(request_context),
+      network_task_runner_(network_task_runner),
       url_loader_factory_(std::move(url_loader_factory)),
-      network_connection_tracker_(network_connection_tracker) {}
+      network_connection_tracker_(network_connection_tracker),
+      weak_ptr_factory_(this) {
+  if (get_socket_factory_callback) {  // sometimes null in unit tests
+    get_socket_factory_callback_ = base::BindRepeating(
+        get_socket_factory_callback, weak_ptr_factory_.GetWeakPtr());
+  }
+}
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -359,7 +368,9 @@ void TiclInvalidationService::StartInvalidator(
       notifier::NotifierOptions options =
           ParseNotifierOptions(*base::CommandLine::ForCurrentProcess());
       options.network_connection_tracker = network_connection_tracker_;
-      options.request_context_getter = request_context_;
+      options.network_config.get_proxy_resolving_socket_factory_callback =
+          get_socket_factory_callback_;
+      options.network_config.task_runner = network_task_runner_;
       options.auth_mechanism = "X-OAUTH2";
       network_channel_options_.SetString("Options.HostPort",
                                          options.xmpp_host_port.ToString());
@@ -392,8 +403,7 @@ void TiclInvalidationService::StartInvalidator(
       invalidation_state_tracker_->GetInvalidatorClientId(),
       invalidation_state_tracker_->GetSavedInvalidations(),
       invalidation_state_tracker_->GetBootstrapData(),
-      invalidation_state_tracker_.get(), user_agent_,
-      request_context_->GetNetworkTaskRunner()));
+      invalidation_state_tracker_.get(), user_agent_, network_task_runner_));
 
   UpdateInvalidatorCredentials();
 

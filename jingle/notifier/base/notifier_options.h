@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "jingle/glue/network_service_config.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "net/base/host_port_pair.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace network {
 class NetworkConnectionTracker;
@@ -46,8 +46,8 @@ struct NotifierOptions {
   // Specifies the auth mechanism to use ("X-GOOGLE-TOKEN", "X-OAUTH2", etc),
   std::string auth_mechanism;
 
-  // The URLRequestContextGetter to use for doing I/O.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
+  // Specifies how to get sockets out of network service.
+  jingle_glue::NetworkServiceConfig network_config;
 
   // Used to listen for network connection changes.
   network::NetworkConnectionTracker* network_connection_tracker;
