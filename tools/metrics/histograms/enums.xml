@@ -27256,6 +27256,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Page Control Drag"/>
 </enum>
 
+<enum name="IOSWKWebViewLinkPreviewAction">
+  <summary>
+    This enum is used to track the user actions that occur when previewing links
+    using the WKWebView 3D touch API. This feature is not currently supported,
+    and &quot;Preview Attempted&quot; will be used to gauge user interest in 3D
+    touch link previewing.
+  </summary>
+  <int value="0" label="Preview Attempted">
+    Recorded when a WKWebView link preview is attempted.
+  </int>
+</enum>
+
 <enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError">
   <int value="0" label="DESTINATION_FOUND">
     The brokerable attachment had a valid destination. This is the success case.
