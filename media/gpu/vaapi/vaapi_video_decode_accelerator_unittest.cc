@@ -64,9 +64,9 @@ class MockVaapiWrapper : public VaapiWrapper {
  public:
   MockVaapiWrapper() = default;
   MOCK_METHOD4(
-      CreateSurfaces,
+      CreateContextAndSurfaces,
       bool(unsigned int, const gfx::Size&, size_t, std::vector<VASurfaceID>*));
-  MOCK_METHOD0(DestroySurfaces, void());
+  MOCK_METHOD0(DestroyContextAndSurfaces, void());
 
  private:
   ~MockVaapiWrapper() override = default;
@@ -205,7 +205,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
         .WillOnce(Return(num_pictures));
     EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
-    EXPECT_CALL(*mock_vaapi_wrapper_, DestroySurfaces());
+    EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces());
 
     if (expect_dismiss_picture_buffers) {
       EXPECT_CALL(*this, DismissPictureBuffer(_))
@@ -238,13 +238,13 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     base::Closure quit_closure = run_loop.QuitClosure();
 
     EXPECT_CALL(*mock_vaapi_wrapper_,
-                CreateSurfaces(_, picture_size, num_pictures, _))
-        .WillOnce(DoAll(
-            WithArg<3>(Invoke(
-                [num_pictures](std::vector<VASurfaceID>* va_surface_ids) {
-                  va_surface_ids->resize(num_pictures);
-                })),
-            Return(true)));
+                CreateContextAndSurfaces(_, picture_size, num_pictures, _))
+        .WillOnce(
+            DoAll(WithArg<3>(Invoke(
+                      [num_pictures](std::vector<VASurfaceID>* va_surface_ids) {
+                        va_surface_ids->resize(num_pictures);
+                      })),
+                  Return(true)));
     EXPECT_CALL(*mock_vaapi_picture_factory_,
                 MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
         .Times(num_pictures);

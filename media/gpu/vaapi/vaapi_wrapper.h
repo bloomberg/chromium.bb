@@ -53,6 +53,7 @@ class ScopedVAImage;
 // It is also responsible for managing and freeing VABuffers (not VASurfaces),
 // which are used to queue parameters and slice data to the HW codec,
 // as well as underlying memory for VASurfaces themselves.
+// TODO(crbug.com/909547): Use GUARDED_BY in VaapiWrapper.
 class MEDIA_GPU_EXPORT VaapiWrapper
     : public base::RefCountedThreadSafe<VaapiWrapper> {
  public:
@@ -95,27 +96,29 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static bool IsImageFormatSupported(const VAImageFormat& format);
 
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
-  // |va_format|, each of size |size|. Returns true when successful, with the
-  // created IDs in |va_surfaces| to be managed and later wrapped in
-  // VASurfaces.
-  // The client must DestroySurfaces() each time before calling this method
-  // again to free the allocated surfaces first, but is not required to do so
-  // at destruction time, as this will be done automatically from
-  // the destructor.
-  virtual bool CreateSurfaces(unsigned int va_format,
-                              const gfx::Size& size,
-                              size_t num_surfaces,
-                              std::vector<VASurfaceID>* va_surfaces);
-
-  // Creates a VA Context associated with |format| and |size|.
+  // |va_format|, each of size |size| and initializes |va_context_id_| with
+  // |format| and |size|. Returns true when successful, with the created IDs in
+  // |va_surfaces| to be managed and later wrapped in VASurfaces. The client
+  // must DestroyContextAndSurfaces() each time before calling this method again
+  // to free the allocated surfaces first, but is not required to do so at
+  // destruction time, as this will be done automatically from the destructor.
+  virtual bool CreateContextAndSurfaces(unsigned int va_format,
+                                        const gfx::Size& size,
+                                        size_t num_surfaces,
+                                        std::vector<VASurfaceID>* va_surfaces);
+  // Creates a VA Context associated with |format| and |size|, and sets
+  // |va_context_id_|. The |va_context_id_| will be destroyed by
+  // DestroyContextAndSurfaces().
   bool CreateContext(unsigned int va_format, const gfx::Size& size);
 
-  // Frees all memory allocated in CreateSurfaces.
-  virtual void DestroySurfaces();
+  // Frees all memory allocated in CreateContextAndSurfaces() and destroys
+  // |va_context_id_|.
+  virtual void DestroyContextAndSurfaces();
 
   // Create a VASurface for |pixmap|. The ownership of the surface is
   // transferred to the caller. It differs from surfaces created using
-  // CreateSurfaces(), where VaapiWrapper is the owner of the surfaces.
+  // CreateContextAndSurfaces(), where VaapiWrapper is the owner of the
+  // surfaces.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       const scoped_refptr<gfx::NativePixmap>& pixmap);
 
@@ -225,9 +228,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   void Deinitialize();
   bool VaInitialize(const base::Closure& report_error_to_uma_cb);
 
-  // Free all memory allocated in CreateSurfaces.
-  void DestroySurfaces_Locked();
-
   // Destroys a |va_surface_id|.
   void DestroySurface(VASurfaceID va_surface_id);
 
@@ -260,8 +260,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // All valid after successful Initialize() and until Deinitialize().
   VADisplay va_display_;
   VAConfigID va_config_id_;
-  // Created for the current set of va_surface_ids_ in CreateSurfaces() and
-  // valid until DestroySurfaces().
+  // Created in CreateContext() or CreateContextAndSurfaces() and valid until
+  // DestroyContextAndSurfaces().
   VAContextID va_context_id_;
 
   // Data queued up for HW codec, to be committed on next execution.

@@ -453,13 +453,13 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
                            parse_result.frame_header.coded_height);
   if (new_coded_size != coded_size_ || va_surface_id_ == VA_INVALID_SURFACE ||
       picture_va_rt_format != va_rt_format_) {
-    vaapi_wrapper_->DestroySurfaces();
+    vaapi_wrapper_->DestroyContextAndSurfaces();
     va_surface_id_ = VA_INVALID_SURFACE;
     va_rt_format_ = picture_va_rt_format;
 
     std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateSurfaces(va_rt_format_, new_coded_size, 1,
-                                        &va_surfaces)) {
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_rt_format_, new_coded_size,
+                                                  1, &va_surfaces)) {
       VLOGF(1) << "Create VA surface failed";
       NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
       return;
