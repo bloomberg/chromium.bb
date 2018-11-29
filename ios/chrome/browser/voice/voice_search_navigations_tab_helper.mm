@@ -43,19 +43,6 @@ bool VoiceSearchNavigationTabHelper::IsExpectingVoiceSearch() const {
   return will_navigate_to_voice_search_result_;
 }
 
-bool VoiceSearchNavigationTabHelper::IsNavigationFromVoiceSearch(
-    const web::NavigationItem* item) const {
-  DCHECK(item);
-  // Check if a voice search navigation is expected if |item| is pending load.
-  const web::NavigationManager* manager = web_state_->GetNavigationManager();
-  const web::NavigationItem* pending_item = manager->GetPendingItem();
-  const web::NavigationItem* transient_item = manager->GetTransientItem();
-  if (item && (item == pending_item || item == transient_item))
-    return will_navigate_to_voice_search_result_;
-  // Check if the marker exists if it's a committed navigation.
-  return item->GetUserData(kNavigationMarkerKey) != nullptr;
-}
-
 void VoiceSearchNavigationTabHelper::NavigationItemCommitted(
     web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {

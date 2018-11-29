@@ -6,7 +6,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/public/features.h"
-#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -49,63 +48,13 @@ class VoiceSearchNavigationsTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Tests that a NavigationItem is not marked as a voice search if
-// WillLoadVoiceSearchResult() was not called.
-// TODO(crbug.com/900667): Re-enable this test.
-TEST_P(VoiceSearchNavigationsTest, DISABLED_NotVoiceSearchNavigation) {
+// Tests that a navigation commit reset the value of
+// IsExpectingVoiceSearch().
+TEST_P(VoiceSearchNavigationsTest, CommitResetVoiceSearchExpectation) {
+  navigations()->WillLoadVoiceSearchResult();
+  EXPECT_TRUE(navigations()->IsExpectingVoiceSearch());
   LoadHtml(@"<html></html>");
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
-  EXPECT_FALSE(navigations()->IsNavigationFromVoiceSearch(item));
-}
-
-// Tests that a pending NavigationItem is recorded as a voice search navigation
-// if it is added after calling WillLoadVoiceSearchResult().
-TEST_P(VoiceSearchNavigationsTest, PendingVoiceSearchNavigation) {
-  navigations()->WillLoadVoiceSearchResult();
-  const GURL kPendingUrl("http://pending.test");
-  AddPendingItem(kPendingUrl, ui::PAGE_TRANSITION_LINK);
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetPendingItem();
-  EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
-}
-
-// Tests that a committed NavigationItem is recordored as a voice search
-// navigation if it occurs after calling WillLoadVoiceSearchResult().
-TEST_P(VoiceSearchNavigationsTest, CommittedVoiceSearchNavigation) {
-  navigations()->WillLoadVoiceSearchResult();
-  LoadHtml(@"<html></html>");
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
-  EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
-}
-
-// Tests that navigations that occur after a voice search navigation are not
-// marked as voice search navigations.
-TEST_P(VoiceSearchNavigationsTest, NavigationAfterVoiceSearch) {
-  navigations()->WillLoadVoiceSearchResult();
-  const GURL kVoiceSearchUrl("http://voice.test");
-  LoadHtml(@"<html></html>", kVoiceSearchUrl);
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
-  EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
-  // Load another page without calling WillLoadVoiceSearchResult().
-  const GURL kNonVoiceSearchUrl("http://not-voice.test");
-  LoadHtml(@"<html></html>", kNonVoiceSearchUrl);
-  item = web_state()->GetNavigationManager()->GetLastCommittedItem();
-  EXPECT_FALSE(navigations()->IsNavigationFromVoiceSearch(item));
-}
-
-// Tests that transient NavigationItems are handled the same as pending items
-TEST_P(VoiceSearchNavigationsTest, TransientNavigations) {
-  LoadHtml(@"<html></html>", GURL("http://committed_url.test"));
-  const GURL kTransientURL("http://transient.test");
-  AddTransientItem(kTransientURL);
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetTransientItem();
-  EXPECT_FALSE(navigations()->IsNavigationFromVoiceSearch(item));
-  navigations()->WillLoadVoiceSearchResult();
-  EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
+  EXPECT_FALSE(navigations()->IsExpectingVoiceSearch());
 }
 
 INSTANTIATE_TEST_CASE_P(ProgrammaticVoiceSearchNavigationsTest,
