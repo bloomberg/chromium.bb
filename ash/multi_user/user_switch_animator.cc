@@ -5,7 +5,6 @@
 #include "ash/multi_user/user_switch_animator.h"
 
 #include "ash/multi_user/multi_user_window_manager.h"
-#include "ash/multi_user/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -140,8 +139,8 @@ void UserSwitchAnimator::AdvanceUserTransitionAnimation() {
     case ANIMATION_STEP_FINALIZE:
       user_changed_animation_timer_.reset();
       animation_step_ = ANIMATION_STEP_ENDED;
-      if (owner_->delegate_)
-        owner_->delegate_->OnDidSwitchActiveAccount();
+      if (owner_->client_)
+        owner_->client_->OnDidSwitchActiveAccount();
       break;
     case ANIMATION_STEP_ENDED:
       NOTREACHED();
@@ -197,8 +196,8 @@ void UserSwitchAnimator::TransitionUserShelf(AnimationStep animation_step) {
   if (animation_step != ANIMATION_STEP_SHOW_NEW_USER)
     return;
 
-  if (owner_->delegate_)
-    owner_->delegate_->OnTransitionUserShelfToNewAccount();
+  if (owner_->client_)
+    owner_->client_->OnTransitionUserShelfToNewAccount();
 }
 
 void UserSwitchAnimator::TransitionWindows(AnimationStep animation_step) {
