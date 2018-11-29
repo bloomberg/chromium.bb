@@ -2223,8 +2223,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           storage_partition_impl_->GetGeneratedCodeCacheContext())));
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  registry->AddInterface(
-      base::Bind(&CreateReportingServiceProxy, storage_partition_impl_));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&CreateReportingServiceProxy, GetID()));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   registry->AddInterface(base::BindRepeating(
