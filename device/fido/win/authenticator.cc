@@ -43,6 +43,17 @@ base::string16 OptionalGURLToUTF16(const base::Optional<GURL>& in) {
 const char WinWebAuthnApiAuthenticator::kAuthenticatorId[] =
     "WinWebAuthnApiAuthenticator";
 
+// static
+bool WinWebAuthnApiAuthenticator::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
+  BOOL result;
+  return WinWebAuthnApi::GetDefault()->IsAvailable() &&
+         WinWebAuthnApi::GetDefault()
+                 ->IsUserVerifyingPlatformAuthenticatorAvailable(&result) ==
+             S_OK &&
+         result == TRUE;
+}
+
 WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
     WinWebAuthnApi* win_api,
     HWND current_window)
@@ -185,15 +196,26 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
   _WEBAUTHN_CREDENTIAL_LIST exclude_credential_list{exclude_list.size(),
                                                     &exclude_list_ptr};
 
+  uint32_t authenticator_attachment;
+  if (request.is_u2f_only()) {
+    authenticator_attachment =
+        WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
+  } else if (request.is_incognito_mode()) {
+    // Disable all platform authenticators in incognito mode. We are going to
+    // revisit this in crbug/908622.
+    authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
+  } else {
+    authenticator_attachment =
+        ToWinAuthenticatorAttachment(request.authenticator_attachment());
+  }
+
   WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS make_credential_options{
       WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3,
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{
           0, nullptr},  // Ignored because pExcludeCredentialList is set.
       WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
-      request.is_u2f_only()
-          ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
-          : ToWinAuthenticatorAttachment(request.authenticator_attachment()),
+      authenticator_attachment,
       request.resident_key_required(),
       ToWinUserVerificationRequirement(request.user_verification()),
       WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
@@ -301,19 +323,31 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
   _WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list.size(),
                                                   &allow_list_ptr};
 
+  uint32_t authenticator_attachment;
+  if (opt_app_id16) {
+    authenticator_attachment =
+        WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
+  } else if (request.is_incognito_mode()) {
+    // Disable all platform authenticators in incognito mode. We are going to
+    // revisit this in crbug/908622.
+    authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
+  } else {
+    authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
+  }
+
   WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS get_assertion_options{
       WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4,
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{
           0, nullptr},  // Ignored because pAllowCredentialList is set.
       WEBAUTHN_EXTENSIONS{0, nullptr},
-      // Note that attachment is effectively restricted via |allow_list|.
-      WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
+      authenticator_attachment,
       ToWinUserVerificationRequirement(request.user_verification()),
       0,                                               // flags
       opt_app_id16 ? opt_app_id16->c_str() : nullptr,  // pwszU2fAppId
       opt_app_id16 ? &kUseAppIdTrue : nullptr,         // pbU2fAppId
-      &cancellation_id_, &allow_credential_list,
+      &cancellation_id_,
+      &allow_credential_list,
   };
 
   // |assertion| must not not outlive |win_api_|.

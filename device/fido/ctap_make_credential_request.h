@@ -88,6 +88,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   void set_is_u2f_only(bool is_u2f_only) { is_u2f_only_ = is_u2f_only; }
   bool is_u2f_only() { return is_u2f_only_; }
 
+  bool is_incognito_mode() const { return is_incognito_mode_; }
+  void set_is_incognito_mode(bool is_incognito_mode) {
+    is_incognito_mode_ = is_incognito_mode;
+  }
+
  private:
   std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
@@ -107,6 +112,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   // If true, instruct the request handler only to dispatch this request via
   // U2F.
   bool is_u2f_only_ = false;
+  bool is_incognito_mode_ = false;
 
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;

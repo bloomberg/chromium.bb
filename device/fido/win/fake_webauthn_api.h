@@ -16,6 +16,9 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
 
   // Inject the return value for WinWebAuthnApi::IsAvailable().
   void set_available(bool available) { is_available_ = available; }
+  // Inject the return value for
+  // WinWebAuthnApi::IsUserverifyingPlatformAuthenticatorAvailable().
+  void set_is_uvpaa(bool is_uvpaa) { is_uvpaa_ = is_uvpaa; }
 
   // WinWebAuthnApi:
   bool IsAvailable() const override;
@@ -42,6 +45,7 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
 
  private:
   bool is_available_ = true;
+  bool is_uvpaa_ = false;
 };
 
 // ScopedFakeWinWebAuthnApi overrides the value returned

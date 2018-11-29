@@ -88,6 +88,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
     return alternative_application_parameter_;
   }
 
+  bool is_incognito_mode() const { return is_incognito_mode_; }
+  void set_is_incognito_mode(bool is_incognito_mode) {
+    is_incognito_mode_ = is_incognito_mode;
+  }
+
  private:
   std::string rp_id_;
   std::string client_data_json_;
@@ -102,6 +107,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<CableDiscoveryData>> cable_extension_;
   base::Optional<std::array<uint8_t, kRpIdHashLength>>
       alternative_application_parameter_;
+  bool is_incognito_mode_ = false;
 };
 
 }  // namespace device

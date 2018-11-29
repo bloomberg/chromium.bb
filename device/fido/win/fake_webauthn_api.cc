@@ -17,9 +17,9 @@ bool FakeWinWebAuthnApi::IsAvailable() const {
 
 HRESULT FakeWinWebAuthnApi::IsUserVerifyingPlatformAuthenticatorAvailable(
     BOOL* result) {
-  *result = false;
   DCHECK(is_available_);
-  return E_NOTIMPL;
+  *result = is_uvpaa_;
+  return S_OK;
 }
 
 HRESULT FakeWinWebAuthnApi::AuthenticatorMakeCredential(
