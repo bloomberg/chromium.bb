@@ -41,6 +41,12 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
     ClearAccountsAction action,
     signin_metrics::ProfileSignout source_metric,
     signin_metrics::SignoutDelete delete_metric) {
+  // Check if and auth process is ongoing before reporting failure to support
+  // the legacy workflow of cancelling it by clearing the primary account.
+  if (!signin_manager_->IsAuthenticated() &&
+      !LegacyIsPrimaryAccountAuthInProgress())
+    return false;
+
   // TODO: report failure if SignOut is not allowed.
 
   switch (action) {
@@ -88,11 +94,12 @@ void PrimaryAccountMutatorImpl::
         const std::string& username,
         const std::string& password,
         base::OnceCallback<void(const std::string&)> callback) {
-  NOTIMPLEMENTED();
+  signin_manager_->StartSignInWithRefreshToken(refresh_token, gaia_id, username,
+                                               password, std::move(callback));
 }
 
 void PrimaryAccountMutatorImpl::LegacyCompletePendingPrimaryAccountSignin() {
-  NOTIMPLEMENTED();
+  signin_manager_->CompletePendingSignin();
 }
 
 void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
@@ -100,14 +107,20 @@ void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
 }
 
 bool PrimaryAccountMutatorImpl::LegacyIsPrimaryAccountAuthInProgress() const {
-  NOTIMPLEMENTED();
-  return false;
+  return signin_manager_->AuthInProgress();
 }
 
 AccountInfo PrimaryAccountMutatorImpl::LegacyPrimaryAccountForAuthInProgress()
     const {
-  NOTIMPLEMENTED();
-  return AccountInfo{};
+  if (!LegacyIsPrimaryAccountAuthInProgress())
+    return AccountInfo{};
+
+  AccountInfo account_info;
+  account_info.account_id = signin_manager_->GetAccountIdForAuthInProgress();
+  account_info.gaia = signin_manager_->GetGaiaIdForAuthInProgress();
+  account_info.email = signin_manager_->GetUsernameForAuthInProgress();
+
+  return account_info;
 }
 
 void PrimaryAccountMutatorImpl::LegacyCopyCredentialsFrom(
