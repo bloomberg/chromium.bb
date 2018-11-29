@@ -2097,6 +2097,7 @@ enum WebFeature {
   kCSSSelectorNotWithValidList = 2645,
   kCSSSelectorNotWithInvalidList = 2646,
   kCSSSelectorNotWithPartiallyValidList = 2647,
+  kV8IDBFactory_Databases_Method = 2648,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
