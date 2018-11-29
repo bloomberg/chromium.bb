@@ -66,6 +66,12 @@
 
         If the given wl_surface already has an explicit synchronization object
         associated, the synchronization_exists protocol error is raised.
+
+        Graphics APIs, like EGL or Vulkan, that manage the buffer queue and
+        commits of a wl_surface themselves, are likely to be using this
+        extension internally. If a client is using such an API for a
+        wl_surface, it should not directly use this extension on that surface,
+        to avoid raising a synchronization_exists protocol error.
       </description>
 
       <arg name="id" type="new_id"
