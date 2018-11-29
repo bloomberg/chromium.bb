@@ -34,7 +34,7 @@ class BrowserProcessPlatformPartBase {
   virtual void StartTearDown();
 
   // Called from AttemptExitInternal().
-  virtual void AttemptExit();
+  virtual void AttemptExit(bool try_to_quit_application);
 
   // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
   virtual void PreMainMessageLoopRun();

@@ -15,7 +15,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   ~BrowserProcessPlatformPart() override;
 
   // Overridden from BrowserProcessPlatformPartBase:
-  void AttemptExit() override;
+  void AttemptExit(bool try_to_quit_application) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);

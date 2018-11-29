@@ -15,7 +15,7 @@ BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
 }
 
-void BrowserProcessPlatformPart::AttemptExit() {
+void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
   // Tell the Java code to finish() the Activity.
   chrome::TerminateAndroid();
 }

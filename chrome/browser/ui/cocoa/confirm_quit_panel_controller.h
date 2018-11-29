@@ -22,9 +22,8 @@
 + (ConfirmQuitPanelController*)sharedController;
 
 // Runs a modal loop that brings up the panel and handles the logic for if and
-// when to terminate. Returns NSApplicationTerminateReply for use in
-// -[NSApplicationDelegate applicationShouldTerminate:].
-- (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app;
+// when to terminate. Returns YES if the quit should continue.
+- (BOOL)runModalLoopForApplication:(NSApplication*)app;
 
 // Shows the window.
 - (void)showWindow:(id)sender;

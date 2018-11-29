@@ -123,6 +123,10 @@ class ScopedKeepAlive;
 // window closure from causing the application to quit.
 - (void)stopTryingToTerminateApplication:(NSApplication*)app;
 
+// Run the quit confirmation panel and return whether or not to continue
+// quitting.
+- (BOOL)runConfirmQuitPanel;
+
 // Indicate that the system is powering off or logging out.
 - (void)willPowerOff:(NSNotification*)inNotification;
 

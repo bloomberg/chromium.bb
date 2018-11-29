@@ -198,7 +198,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   return self;
 }
 
-- (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app {
+- (BOOL)runModalLoopForApplication:(NSApplication*)app {
   base::scoped_nsobject<ConfirmQuitPanelController> keepAlive([self retain]);
 
   // If this is the second of two such attempts to quit within a certain time
@@ -227,7 +227,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
       confirm_quit::RecordHistogram(confirm_quit::kDoubleTap);
     else
       confirm_quit::RecordHistogram(confirm_quit::kTapHold);
-    return NSTerminateNow;
+    return YES;
   } else {
     [lastQuitAttempt release];  // Harmless if already nil.
     lastQuitAttempt = [timeNow retain];  // Record this attempt for next time.
@@ -277,16 +277,16 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
     // The user held down the combination long enough that quitting should
     // happen.
     confirm_quit::RecordHistogram(confirm_quit::kHoldDuration);
-    return NSTerminateNow;
+    return YES;
   } else {
     // Slowly fade the confirm window out in case the user doesn't
     // understand what they have to do to quit.
     [self dismissPanel];
-    return NSTerminateCancel;
+    return NO;
   }
 
   // Default case: terminate.
-  return NSTerminateNow;
+  return YES;
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
