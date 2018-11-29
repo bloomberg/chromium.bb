@@ -21,9 +21,9 @@ enum WindowVisibilityAnimationType {
   // Window slides down from above screen to show and, meanwhile, home launcher
   // slides down off screen.
   WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN,
-  // Animate a window out of the closest side of the screen.
-  // This is for hiding only, and does not do anything for showing.
-  WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT,
+  // Animate a window out of the closest side of the screen. Fade in if it
+  // re-appears.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT,
 };
 
 }  // namespace wm

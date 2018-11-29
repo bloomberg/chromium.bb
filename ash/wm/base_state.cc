@@ -157,7 +157,7 @@ void BaseState::UpdateMinimizedState(
     // app, but minimized.
     ::wm::SetWindowVisibilityAnimationType(
         window, previous_state_type == mojom::WindowStateType::PIP
-                    ? WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_OUT
+                    ? WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT
                     : WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
     window->Hide();
