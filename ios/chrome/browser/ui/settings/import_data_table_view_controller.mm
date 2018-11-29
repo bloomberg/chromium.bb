@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-#import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,7 +39,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@implementation ImportDataCollectionViewController {
+@implementation ImportDataTableViewController {
   __weak id<ImportDataControllerDelegate> _delegate;
   NSString* _fromEmail;
   NSString* _toEmail;
@@ -53,7 +49,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ImportDataMultilineDetailItem* _keepDataSeparateItem;
 }
 
-#pragma mark Initialization
+#pragma mark - Initialization
 
 - (instancetype)initWithDelegate:(id<ImportDataControllerDelegate>)delegate
                        fromEmail:(NSString*)fromEmail
@@ -61,9 +57,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       isSignedIn:(BOOL)isSignedIn {
   DCHECK(fromEmail);
   DCHECK(toEmail);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _delegate = delegate;
     _fromEmail = [fromEmail copy];
@@ -76,24 +72,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
             ? l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SWITCH)
             : l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
     [self setShouldHideDoneButton:YES];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
-        initWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON)
-                style:UIBarButtonItemStyleDone
-               target:self
-               action:@selector(didTapContinue)];
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
-#pragma mark SettingsRootCollectionViewController
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  [self setShouldHideDoneButton:YES];
+  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(
+                        IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON)
+              style:UIBarButtonItemStyleDone
+             target:self
+             action:@selector(didTapContinue)];
+
+  [self loadModel];
+}
+
+#pragma mark - SettingsRootTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierDisclaimer];
   [model addItem:[self descriptionItem]
@@ -115,13 +116,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark Items
+#pragma mark - Items
 
-- (CollectionViewItem*)descriptionItem {
-  CardMultilineItem* item =
-      [[CardMultilineItem alloc] initWithType:ItemTypeFooter];
+- (TableViewItem*)descriptionItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
   item.text = l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                                       base::SysNSStringToUTF16(_fromEmail));
+  item.textColor = UIColor.blackColor;
   return item;
 }
 
@@ -132,8 +134,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.detailText =
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
                               base::SysNSStringToUTF16(_toEmail));
-  item.accessoryType = _isSignedIn ? MDCCollectionViewCellAccessoryNone
-                                   : MDCCollectionViewCellAccessoryCheckmark;
+  item.accessoryType = _isSignedIn ? UITableViewCellAccessoryNone
+                                   : UITableViewCellAccessoryCheckmark;
   item.accessibilityIdentifier = kImportDataImportCellId;
   return item;
 }
@@ -150,54 +152,52 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.detailText = l10n_util::GetNSString(
         IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SIGNIN);
   }
-  item.accessoryType = _isSignedIn ? MDCCollectionViewCellAccessoryCheckmark
-                                   : MDCCollectionViewCellAccessoryNone;
+  item.accessoryType = _isSignedIn ? UITableViewCellAccessoryCheckmark
+                                   : UITableViewCellAccessoryNone;
   item.accessibilityIdentifier = kImportDataKeepSeparateCellId;
   return item;
 }
 
-#pragma mark MDCCollectionViewStylingDelegate
+#pragma mark - UITableViewDelegate
 
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  CGFloat cardWidth = CGRectGetWidth(collectionView.bounds) -
-                      2 * MDCCollectionViewCellStyleCardSectionInset;
-  return
-      [MDCCollectionViewCell cr_preferredHeightForWidth:cardWidth forItem:item];
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+  if (sectionIdentifier != SectionIdentifierOptions)
+    return NO;
+  return YES;
 }
 
-#pragma mark UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
   NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
+      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
 
   if (sectionIdentifier == SectionIdentifierOptions) {
     // Store the user choice.
-    NSInteger itemType =
-        [self.collectionViewModel itemTypeForIndexPath:indexPath];
+    NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
     _shouldClearData = (itemType == ItemTypeOptionImportData)
                            ? SHOULD_CLEAR_DATA_MERGE_DATA
                            : SHOULD_CLEAR_DATA_CLEAR_DATA;
     [self updateUI];
   }
+
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-#pragma mark Private methods
+#pragma mark - Private
 
 // Updates the UI based on the value of |_shouldClearData|.
 - (void)updateUI {
   BOOL importDataSelected = _shouldClearData == SHOULD_CLEAR_DATA_MERGE_DATA;
   _importDataItem.accessoryType = importDataSelected
-                                      ? MDCCollectionViewCellAccessoryCheckmark
-                                      : MDCCollectionViewCellAccessoryNone;
-  _keepDataSeparateItem.accessoryType =
-      importDataSelected ? MDCCollectionViewCellAccessoryNone
-                         : MDCCollectionViewCellAccessoryCheckmark;
+                                      ? UITableViewCellAccessoryCheckmark
+                                      : UITableViewCellAccessoryNone;
+  _keepDataSeparateItem.accessoryType = importDataSelected
+                                            ? UITableViewCellAccessoryNone
+                                            : UITableViewCellAccessoryCheckmark;
   [self reconfigureCellsForItems:@[ _importDataItem, _keepDataSeparateItem ]];
 }
 

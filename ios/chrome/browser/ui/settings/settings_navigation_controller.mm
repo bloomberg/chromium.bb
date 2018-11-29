@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
@@ -221,11 +221,11 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
               fromEmail:(NSString*)fromEmail
                 toEmail:(NSString*)toEmail
              isSignedIn:(BOOL)isSignedIn {
-  UIViewController* controller = [[ImportDataCollectionViewController alloc]
-      initWithDelegate:importDataDelegate
-             fromEmail:fromEmail
-               toEmail:toEmail
-            isSignedIn:isSignedIn];
+  UIViewController* controller =
+      [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
+                                                    fromEmail:fromEmail
+                                                      toEmail:toEmail
+                                                   isSignedIn:isSignedIn];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller

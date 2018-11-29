@@ -30,7 +30,7 @@
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -396,7 +396,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 #pragma mark - ImportDataControllerDelegate
 
-- (void)didChooseClearDataPolicy:(ImportDataCollectionViewController*)controller
+- (void)didChooseClearDataPolicy:(ImportDataTableViewController*)controller
                  shouldClearData:(ShouldClearData)shouldClearData {
   DCHECK_NE(SHOULD_CLEAR_DATA_USER_CHOICE, shouldClearData);
   if (shouldClearData == SHOULD_CLEAR_DATA_CLEAR_DATA) {

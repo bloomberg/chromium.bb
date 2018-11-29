@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -38,7 +39,7 @@ TEST_F(ImportDataMultilineDetailItemTest, ConfigureCell) {
   EXPECT_FALSE(multilineDetailCell.textLabel.text);
   EXPECT_FALSE(multilineDetailCell.detailTextLabel.text);
 
-  [item configureCell:cell];
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_NSEQ(text, multilineDetailCell.textLabel.text);
   EXPECT_NSEQ(detailText, multilineDetailCell.detailTextLabel.text);
 }

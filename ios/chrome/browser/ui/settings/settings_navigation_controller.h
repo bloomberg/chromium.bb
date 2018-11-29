@@ -94,7 +94,7 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
                  delegate:(id<SettingsNavigationControllerDelegate>)delegate
        feedbackDataSource:(id<UserFeedbackDataSource>)dataSource;
 
-// Creates and displays a new ImportDataCollectionViewController. |browserState|
+// Creates and displays a new ImportDataTableViewController. |browserState|
 // should not be nil.
 + (SettingsNavigationController*)
 newImportDataController:(ios::ChromeBrowserState*)browserState
