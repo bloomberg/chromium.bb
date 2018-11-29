@@ -613,79 +613,73 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::~StreamCopyHelper() = default;
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Run(
     StatusCallback callback) {
+  DCHECK(callback);
+  DCHECK(!completion_callback_);
+
+  completion_callback_ = std::move(callback);
+
   file_progress_callback_.Run(0);
   last_progress_callback_invocation_time_ = base::Time::Now();
-  Read(std::move(callback));
+  Read();
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel() {
   cancel_requested_ = true;
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::Read(
-    StatusCallback callback) {
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+void CopyOrMoveOperationDelegate::StreamCopyHelper::Read() {
   int result = reader_->Read(
       io_buffer_.get(), io_buffer_->size(),
-      base::BindOnce(&StreamCopyHelper::DidRead, weak_factory_.GetWeakPtr(),
-                     repeatable_callback));
+      base::BindOnce(&StreamCopyHelper::DidRead, weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
-    DidRead(repeatable_callback, result);
+    DidRead(result);
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
-    StatusCallback callback,
-    int result) {
+void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
     return;
   }
 
   if (result == 0) {
     // Here is the EOF.
     if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION)
-      Flush(std::move(callback), true /* is_eof */);
+      Flush(true /* is_eof */);
     else
-      std::move(callback).Run(base::File::FILE_OK);
+      std::move(completion_callback_).Run(base::File::FILE_OK);
     return;
   }
 
-  Write(std::move(callback),
-        base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, result));
+  Write(base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, result));
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Write(
-    StatusCallback callback,
     scoped_refptr<net::DrainableIOBuffer> buffer) {
   DCHECK_GT(buffer->BytesRemaining(), 0);
 
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  int result = writer_->Write(
-      buffer.get(), buffer->BytesRemaining(),
-      base::BindOnce(&StreamCopyHelper::DidWrite, weak_factory_.GetWeakPtr(),
-                     repeatable_callback, buffer));
+  int result =
+      writer_->Write(buffer.get(), buffer->BytesRemaining(),
+                     base::BindOnce(&StreamCopyHelper::DidWrite,
+                                    weak_factory_.GetWeakPtr(), buffer));
   if (result != net::ERR_IO_PENDING)
-    DidWrite(repeatable_callback, buffer, result);
+    DidWrite(buffer, result);
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
-    StatusCallback callback,
     scoped_refptr<net::DrainableIOBuffer> buffer,
     int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
     return;
   }
 
@@ -701,44 +695,38 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
   }
 
   if (buffer->BytesRemaining() > 0) {
-    Write(std::move(callback), buffer);
+    Write(buffer);
     return;
   }
 
   if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION &&
       (num_copied_bytes_ - previous_flush_offset_) > kFlushIntervalInBytes) {
-    Flush(std::move(callback), false /* not is_eof */);
+    Flush(false /* not is_eof */);
   } else {
-    Read(std::move(callback));
+    Read();
   }
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(
-    StatusCallback callback,
-    bool is_eof) {
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  int result = writer_->Flush(base::BindOnce(&StreamCopyHelper::DidFlush,
-                                             weak_factory_.GetWeakPtr(),
-                                             repeatable_callback, is_eof));
+void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(bool is_eof) {
+  int result = writer_->Flush(base::BindOnce(
+      &StreamCopyHelper::DidFlush, weak_factory_.GetWeakPtr(), is_eof));
   if (result != net::ERR_IO_PENDING)
-    DidFlush(repeatable_callback, is_eof, result);
+    DidFlush(is_eof, result);
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidFlush(
-    StatusCallback callback,
     bool is_eof,
     int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   previous_flush_offset_ = num_copied_bytes_;
   if (is_eof)
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
   else
-    Read(std::move(callback));
+    Read();
 }
 
 CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
