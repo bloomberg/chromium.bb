@@ -510,7 +510,7 @@ bool ImageResourceContent::IsAcceptableCompressionRatio() {
   if (!pixels)
     return true;
   DCHECK(image_);
-  double resource_length = image_->Data() ? image_->Data()->size() : 0;
+  double resource_length = GetResponse().ExpectedContentLength();
   // Allow no more than 10 bits per compressed pixel
   return (resource_length - 1024) / pixels <= 0.5;
 }

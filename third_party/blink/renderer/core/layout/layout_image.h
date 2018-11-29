@@ -142,6 +142,8 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   FloatSize ImageSizeOverriddenByIntrinsicSize(float multiplier) const;
   IntSize GetOverriddenIntrinsicSize() const;
 
+  void ValidateImagePolicies();
+
   // This member wraps the associated decoded image.
   //
   // This field is set using setImageResource above which can be called in
