@@ -42,12 +42,7 @@ class WebIDBValue {
   // TODO(pwnall): When Onion Soup-ing IndexedDB, ReleaseIDBValue() should
   //               take a v8::Isolate, and all the ownership tracking logic
   //               can be deleted.
-  std::unique_ptr<IDBValue> ReleaseIdbValue() noexcept {
-#if DCHECK_IS_ON()
-    ReleaseIdbValueOwnership();
-#endif  // DCHECK_IS_ON()
-    return std::move(private_);
-  }
+  BLINK_EXPORT std::unique_ptr<IDBValue> ReleaseIdbValue() noexcept;
 #endif  // INSIDE_BLINK
 
  private:
