@@ -8,4 +8,3 @@ TEST COMPLETE
 
 Textarea offsetWidth: 137
 Input offsetWidth: 147
-
