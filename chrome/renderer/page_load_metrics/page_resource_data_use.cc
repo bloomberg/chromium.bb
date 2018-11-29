@@ -38,8 +38,6 @@ void PageResourceDataUse::DidStartResponse(
       data_reduction_proxy::EstimateCompressionRatioFromHeaders(&response_head);
   proxy_used_ = !response_head.proxy_server.is_direct();
   mime_type_ = response_head.mime_type;
-  total_received_bytes_ = 0;
-  last_update_bytes_ = 0;
   was_fetched_via_cache_ = response_head.was_fetched_via_cache;
   is_secure_scheme_ = response_url.SchemeIsCryptographic();
 }
@@ -82,7 +80,7 @@ void PageResourceDataUse::SetIsMainFrameResource(bool is_main_frame_resource) {
 int PageResourceDataUse::CalculateNewlyReceivedBytes() {
   int newly_received_bytes = total_received_bytes_ - last_update_bytes_;
   last_update_bytes_ = total_received_bytes_;
-  DCHECK(newly_received_bytes >= 0);
+  DCHECK_GE(newly_received_bytes, 0);
   return newly_received_bytes;
 }
 

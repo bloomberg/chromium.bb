@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   vanilla_script_response->WaitForRequest();
   vanilla_script_response->Send(kHttpResponseHeader);
   vanilla_script_response->Send(std::string(1024, ' '));
-  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->AddMinimumNetworkBytesExpectation(4000);
   waiter->Wait();
 
   // Verify correct numbers of resources are recorded.

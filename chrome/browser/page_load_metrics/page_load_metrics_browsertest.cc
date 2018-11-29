@@ -1795,7 +1795,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       browser(), embedded_test_server()->GetURL(
                      "foo.com", "/cross_site_iframe_factory.html?foo"));
   waiter->Wait();
-  int64_t one_frame_page_size = waiter->current_resource_bytes();
+  int64_t one_frame_page_size = waiter->current_network_bytes();
 
   waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
@@ -1805,8 +1805,45 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
           "a.com", "/cross_site_iframe_factory.html?a(b,c,d(e,f,g))"));
   // Verify that 7 iframes are fetched, with some amount of tolerance since
   // favicon is fetched only once.
-  waiter->AddMinimumResourceBytesExpectation(7 * (one_frame_page_size - 100));
+  waiter->AddMinimumNetworkBytesExpectation(7 * (one_frame_page_size - 100));
   waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       ChunkedResponse_OverheadDoesNotCountForBodyBytes) {
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Transfer-Encoding: chunked\r\n"
+      "\r\n";
+  const int kChunkSize = 5;
+  const int kNumChunks = 5;
+  auto main_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_response->WaitForRequest();
+  main_response->Send(kHttpResponseHeader);
+  for (int i = 0; i < kNumChunks; i++) {
+    main_response->Send(std::to_string(kChunkSize));
+    main_response->Send("\r\n");
+    main_response->Send(std::string(kChunkSize, '*'));
+    main_response->Send("\r\n");
+  }
+  main_response->Done();
+  waiter->AddMinimumCompleteResourcesExpectation(1);
+  waiter->Wait();
+
+  // Verify that overheads for each chunk are not reported as body bytes.
+  EXPECT_EQ(waiter->current_network_body_bytes(), kChunkSize * kNumChunks);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
@@ -1841,7 +1878,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   main_html_response->Send(std::string(1000, ' '));
   main_html_response->Done();
   waiter->AddMinimumCompleteResourcesExpectation(1);
-  waiter->AddMinimumResourceBytesExpectation(1000);
+  waiter->AddMinimumNetworkBytesExpectation(1000);
   waiter->Wait();
 
   script_response->WaitForRequest();
@@ -1853,7 +1890,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   script_response->Send(std::string(1000, ' '));
   // Data received but resource not complete
   waiter->AddMinimumCompleteResourcesExpectation(1);
-  waiter->AddMinimumResourceBytesExpectation(2000);
+  waiter->AddMinimumNetworkBytesExpectation(2000);
   waiter->Wait();
   script_response->Done();
   waiter->AddMinimumCompleteResourcesExpectation(2);
@@ -1865,7 +1902,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   iframe_response->Send(std::string(2000, ' '));
   iframe_response->Done();
   waiter->AddMinimumCompleteResourcesExpectation(3);
-  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->AddMinimumNetworkBytesExpectation(4000);
   waiter->Wait();
 }
 

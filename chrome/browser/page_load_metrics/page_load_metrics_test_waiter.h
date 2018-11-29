@@ -45,7 +45,7 @@ class PageLoadMetricsTestWaiter
       int expected_minimum_complete_resources);
 
   // Add aggregate received resource bytes expectation.
-  void AddMinimumResourceBytesExpectation(int expected_minimum_resource_bytes);
+  void AddMinimumNetworkBytesExpectation(int expected_minimum_network_bytes);
 
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
@@ -54,7 +54,11 @@ class PageLoadMetricsTestWaiter
   // expectation methods. All matching fields must be set to end this wait.
   void Wait();
 
-  int64_t current_resource_bytes() const { return current_resource_bytes_; }
+  int64_t current_network_bytes() const { return current_network_bytes_; }
+
+  int64_t current_network_body_bytes() const {
+    return current_network_body_bytes_;
+  }
 
  protected:
   virtual bool ExpectationsSatisfied() const;
@@ -163,9 +167,12 @@ class PageLoadMetricsTestWaiter
   TimingFieldBitSet observed_page_fields_;
 
   int current_complete_resources_ = 0;
-  int64_t current_resource_bytes_ = 0;
+  int64_t current_network_bytes_ = 0;
+
+  // Network body bytes are only counted for complete resources.
+  int64_t current_network_body_bytes_ = 0;
   int expected_minimum_complete_resources_ = 0;
-  int expected_minimum_resource_bytes_ = 0;
+  int expected_minimum_network_bytes_ = 0;
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
