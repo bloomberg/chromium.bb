@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Custom Elements: Enqueue a custom element upgrade reaction Uncaught ReferenceError: document_types is not defined
-Harness: the test ran to completion.
-

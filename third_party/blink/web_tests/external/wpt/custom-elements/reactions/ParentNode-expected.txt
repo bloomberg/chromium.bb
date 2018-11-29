@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL prepend on ParentNode must enqueue a connected reaction define_new_custom_element is not defined
-FAIL prepend on ParentNode must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
-FAIL append on ParentNode must enqueue a connected reaction define_new_custom_element is not defined
-FAIL append on ParentNode must enqueue a disconnected reaction, an adopted reaction, and a connected reaction when the custom element was in another document define_new_custom_element is not defined
-Harness: the test ran to completion.
-

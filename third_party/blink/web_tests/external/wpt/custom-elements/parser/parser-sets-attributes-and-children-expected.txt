@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Custom Elements: Changes to the HTML parser Uncaught ReferenceError: create_attribute_changed_callback_log is not defined
-Harness: the test ran to completion.
-

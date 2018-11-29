@@ -2998,6 +2998,7 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/preload/dynamic-adding-preload-imagesrcset.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-033.html [ Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/content-type/response.window.html [ Timeout ]
