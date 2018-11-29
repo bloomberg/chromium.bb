@@ -136,10 +136,14 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return !oof_positioned_candidates_.IsEmpty();
   }
 
-  // Utility routine to move all OOF descendant candidates to descendants.
-  // Use if fragment cannot position any OOF children.
-  void MoveOutOfFlowDescendantCandidatesToDescendants(
-      const LayoutObject* inline_container);
+  // This method should only be used within the inline layout algorithm. It is
+  // used to convert all OOF descendant candidates to descendants.
+  //
+  // During the inline layout algorithm, we don't have enough information to
+  // position OOF candidates yet, (as a containing box may be split over
+  // multiple lines), instead we bubble all the descendants up to the parent
+  // block layout algorithm, to perform the final OOF layout and positioning.
+  void MoveOutOfFlowDescendantCandidatesToDescendants();
 
   NGContainerFragmentBuilder& SetIsPushedByFloats() {
     is_pushed_by_floats_ = true;

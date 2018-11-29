@@ -40,7 +40,6 @@ struct NGInlineBoxState {
   unsigned fragment_start = 0;
   const NGInlineItem* item = nullptr;
   const ComputedStyle* style = nullptr;
-  const LayoutObject* inline_container = nullptr;
 
   // The united metrics for the current box. This includes all objects in this
   // box, including descendants, and adjusted by placement properties such as
@@ -91,7 +90,7 @@ struct NGInlineBoxState {
   LayoutUnit TextTop(FontBaseline baseline_type) const;
 
   // Create a box fragment for this box.
-  void SetNeedsBoxFragment(const LayoutObject* inline_container);
+  void SetNeedsBoxFragment();
 
   // Returns if the text style can be added without open-tag.
   // Text with different font or vertical-align needs to be wrapped with an
@@ -216,7 +215,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
           fragment_end(end),
           item(other.item),
           size(other.size),
-          inline_container(other.inline_container),
           offset(other.offset) {}
 
     // The range of child fragments this box contains.
@@ -226,7 +224,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     const NGInlineItem* item;
     NGLogicalSize size;
 
-    const LayoutObject* inline_container = nullptr;
     bool has_line_left_edge = false;
     bool has_line_right_edge = false;
     NGLineBoxStrut padding;
