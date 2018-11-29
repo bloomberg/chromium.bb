@@ -97,7 +97,8 @@ gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
 
 void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kButton;
+  node_data->role = delegate_->ShownInsideMenu() ? ax::mojom::Role::kMenuItem
+                                                 : ax::mojom::Role::kButton;
 }
 
 std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()

@@ -164,7 +164,7 @@ class BrowserActionsContainer : public views::View,
   std::string GetIdAt(size_t index) const;
 
   // Returns the ToolbarActionView* associated with the given |extension|, or
-  // NULL if none exists.
+  // nullptr if none exists.
   ToolbarActionView* GetViewForId(const std::string& id);
 
   // Update the views to reflect the state of the toolbar actions.
@@ -258,8 +258,6 @@ class BrowserActionsContainer : public views::View,
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
 
-  typedef std::vector<std::unique_ptr<ToolbarActionView>> ToolbarActionViews;
-
   // Clears the |active_bubble_|, and unregisters the container as an observer.
   void ClearActiveBubble(views::Widget* widget);
 
@@ -285,8 +283,8 @@ class BrowserActionsContainer : public views::View,
   // The controlling ToolbarActionsBar, which handles most non-view logic.
   std::unique_ptr<ToolbarActionsBar> toolbar_actions_bar_;
 
-  // The vector of toolbar actions (icons/image buttons for each action).
-  ToolbarActionViews toolbar_action_views_;
+  // Child toolbar action buttons.
+  std::vector<std::unique_ptr<ToolbarActionView>> toolbar_action_views_;
 
   // The Browser object the container is associated with.
   Browser* const browser_;
