@@ -318,6 +318,9 @@ void DOMWebSocket::Connect(const String& url,
     if (!upgrade_insecure_requests_set) {
       was_autoupgraded_to_wss_ = true;
       LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
+      GetExecutionContext()->AddConsoleMessage(
+          MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
+              GetExecutionContext()->Url(), url_));
     }
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
