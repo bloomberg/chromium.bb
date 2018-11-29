@@ -15404,6 +15404,11 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Undefined"/>
 </enum>
 
+<enum name="ExitConcurrentPlaybackContents">
+  <int value="0" label="Most recently audible web contents"/>
+  <int value="1" label="Older audible web contents"/>
+</enum>
+
 <enum name="ExpectCTHeaderResult">
   <int value="0" label="EXPECT_CT_HEADER_BAD_VALUE"/>
   <int value="1" label="EXPECT_CT_HEADER_BUILD_NOT_TIMELY"/>
