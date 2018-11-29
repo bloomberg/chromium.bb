@@ -35,6 +35,7 @@ using ::testing::Not;
 using ::testing::Pair;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
+using ::testing::SizeIs;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -105,6 +106,13 @@ class ScriptExecutorTest : public testing::Test,
     last_script_payload_ = script_payload;
   }
 
+  void OnScriptListChanged(
+      std::vector<std::unique_ptr<Script>> scripts) override {
+    should_update_scripts_ = true;
+    scripts_update_ = std::move(scripts);
+    ++scripts_update_count_;
+  }
+
   std::string Serialize(const google::protobuf::MessageLite& message) {
     std::string output;
     message.SerializeToString(&output);
@@ -170,6 +178,9 @@ class ScriptExecutorTest : public testing::Test,
   std::vector<Script*> ordered_interrupts_;
   std::string last_global_payload_;
   std::string last_script_payload_;
+  bool should_update_scripts_ = false;
+  std::vector<std::unique_ptr<Script>> scripts_update_;
+  int scripts_update_count_ = 0;
   std::unique_ptr<ScriptExecutor> executor_;
   std::map<std::string, std::string> parameters_;
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
@@ -715,6 +726,115 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
               Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
   EXPECT_THAT(scripts_state_,
               Contains(Pair("interrupt", SCRIPT_STATUS_SUCCESS)));
+}
+
+TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
+  should_update_scripts_ = false;
+  scripts_update_.clear();
+  scripts_update_count_ = 0;
+
+  ActionsResponseProto initial_actions_response;
+  initial_actions_response.add_actions()->mutable_tell()->set_message("1");
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(initial_actions_response)));
+
+  ActionsResponseProto next_actions_response;
+  next_actions_response.add_actions()->mutable_tell()->set_message("2");
+  auto* script =
+      next_actions_response.mutable_update_script_list()->add_scripts();
+  script->set_path("path");
+  auto* presentation = script->mutable_presentation();
+  presentation->set_name("name");
+  presentation->mutable_precondition();
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true, Serialize(next_actions_response)))
+      .WillOnce(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_TRUE(should_update_scripts_);
+  EXPECT_THAT(scripts_update_, SizeIs(1));
+  EXPECT_THAT(scripts_update_count_, Eq(1));
+  EXPECT_THAT("path", scripts_update_[0]->handle.path);
+  EXPECT_THAT("name", scripts_update_[0]->handle.name);
+}
+
+TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
+  should_update_scripts_ = false;
+  scripts_update_.clear();
+  scripts_update_count_ = 0;
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("hi");
+  auto* script = actions_response.mutable_update_script_list()->add_scripts();
+  script->set_path("path");
+  auto* presentation = script->mutable_presentation();
+  presentation->set_name("name");
+  presentation->mutable_precondition();
+
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  script->set_path("path2");
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true, Serialize(actions_response)))
+      .WillOnce(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_TRUE(should_update_scripts_);
+  EXPECT_THAT(scripts_update_count_, Eq(2));
+  EXPECT_THAT(scripts_update_, SizeIs(1));
+  EXPECT_THAT("path2", scripts_update_[0]->handle.path);
+}
+
+TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
+  should_update_scripts_ = false;
+  scripts_update_.clear();
+  scripts_update_count_ = 0;
+
+  SetupInterruptibleScript(kScriptPath, "element");
+
+  RegisterInterrupt("interrupt", "interrupt_trigger");
+  ActionsResponseProto interrupt_actions;
+  interrupt_actions.add_actions()->mutable_tell()->set_message("abc");
+
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
+
+  auto* script = interrupt_actions.mutable_update_script_list()->add_scripts();
+  script->set_path("path");
+  auto* presentation = script->mutable_presentation();
+  presentation->set_name("update_from_interrupt");
+  presentation->mutable_precondition();
+
+  // We expect a call from the interrupt which will update the script list and a
+  // second call from the interrupt to terminate. Then a call from the main
+  // script which will finish without running any actions.
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .Times(3)
+      .WillOnce(RunOnceCallback<3>(true, Serialize(interrupt_actions)))
+      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair(kScriptPath, SCRIPT_STATUS_SUCCESS)));
+  EXPECT_THAT(scripts_state_,
+              Contains(Pair("interrupt", SCRIPT_STATUS_SUCCESS)));
+
+  EXPECT_TRUE(should_update_scripts_);
+  EXPECT_THAT(scripts_update_, SizeIs(1));
+  EXPECT_THAT(scripts_update_count_, Eq(1));
+  EXPECT_THAT("path", scripts_update_[0]->handle.path);
+  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.name);
 }
 
 }  // namespace

@@ -216,6 +216,19 @@ message ActionsResponseProto {
   // Actions to be performed in order.
   // Should stop processing as soon as an action fails.
   repeated ActionProto actions = 3;
+
+  // List of scripts to update.
+  //
+  // The client is expected to update the cache of scripts with this new
+  // information. No action is needed when this field is not set. If the field
+  // is set with an empty list of scripts, then no script is eligible to run
+  // anymore.
+  //
+  // Note: This is an intermediate solution and the logic associated with this
+  // field will eventually be absorbed into the supports script response from
+  // the backend.
+  message UpdateScriptListProto { repeated SupportedScriptProto scripts = 1; }
+  optional UpdateScriptListProto update_script_list = 5;
 }
 
 // An action could be performed.

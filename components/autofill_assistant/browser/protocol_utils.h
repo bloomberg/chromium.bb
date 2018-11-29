@@ -40,6 +40,11 @@ class ProtocolUtils {
   static bool ParseScripts(const std::string& response,
                            std::vector<std::unique_ptr<Script>>* scripts);
 
+  // Convert |script_proto| to a script struct and if the script is valid, add
+  // it to |scripts|.
+  static void AddScript(const SupportedScriptProto& script_proto,
+                        std::vector<std::unique_ptr<Script>>* scripts);
+
   // Create initial request to get script actions for the given |script_path|.
   //
   // TODO(b/806868): Remove the script payload from initial requests once the
@@ -63,12 +68,17 @@ class ProtocolUtils {
   //
   // Pass in nullptr for |return_global_payload| or |return_script_payload| to
   // indicate no need to return that payload. Parsed actions are returned
-  // through |actions|, which should not be nullptr. Return false if parse
-  // failed, otherwise return true.
+  // through |actions|, which should not be nullptr. Optionally, parsed scripts
+  // are returned through |scripts| and used to update the list of cached
+  // scripts. The bool |should_update_scripts| makes clear the destinction
+  // between an empty list of |scripts| or the scripts field not even set in the
+  // proto. Return false if parse failed, otherwise return true.
   static bool ParseActions(const std::string& response,
                            std::string* return_global_payload,
                            std::string* return_script_payload,
-                           std::vector<std::unique_ptr<Action>>* actions);
+                           std::vector<std::unique_ptr<Action>>* actions,
+                           std::vector<std::unique_ptr<Script>>* scripts,
+                           bool* should_update_scripts);
 
  private:
   // To avoid instantiate this class by accident.

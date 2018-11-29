@@ -37,6 +37,10 @@ class ScriptExecutor : public ActionDelegate {
     // transitioned to global payloads.
     virtual void OnServerPayloadChanged(const std::string& global_payload,
                                         const std::string& script_payload) = 0;
+
+    // Called when an update list of scripts is available.
+    virtual void OnScriptListChanged(
+        std::vector<std::unique_ptr<Script>> scripts) = 0;
   };
 
   // |delegate|, |listener|, |script_state| and |ordered_interrupts| should
@@ -180,6 +184,8 @@ class ScriptExecutor : public ActionDelegate {
     // Implements ScriptExecutor::Listener
     void OnServerPayloadChanged(const std::string& global_payload,
                                 const std::string& script_payload) override;
+    void OnScriptListChanged(
+        std::vector<std::unique_ptr<Script>> scripts) override;
 
     void OnPreconditionCheckDone(const Script* interrupt,
                                  bool precondition_match);
@@ -230,6 +236,8 @@ class ScriptExecutor : public ActionDelegate {
 
   void OnGetActions(bool result, const std::string& response);
   void ReportPayloadsToListener();
+  void ReportScriptsUpdateToListener(
+      std::vector<std::unique_ptr<Script>> scripts);
   void RunCallback(bool success);
   void RunCallbackWithResult(const Result& result);
   void ProcessNextAction();

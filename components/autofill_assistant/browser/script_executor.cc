@@ -312,13 +312,20 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   processed_actions_.clear();
   actions_.clear();
 
+  bool should_update_scripts = false;
+  std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseActions(
-      response, &last_global_payload_, &last_script_payload_, &actions_);
+      response, &last_global_payload_, &last_script_payload_, &actions_,
+      &scripts, &should_update_scripts);
+
   if (!parse_result) {
     RunCallback(false);
     return;
   }
   ReportPayloadsToListener();
+  if (should_update_scripts) {
+    ReportScriptsUpdateToListener(std::move(scripts));
+  }
 
   if (actions_.empty()) {
     // Finished executing the script if there are no more actions.
@@ -334,6 +341,14 @@ void ScriptExecutor::ReportPayloadsToListener() {
     return;
 
   listener_->OnServerPayloadChanged(last_global_payload_, last_script_payload_);
+}
+
+void ScriptExecutor::ReportScriptsUpdateToListener(
+    std::vector<std::unique_ptr<Script>> scripts) {
+  if (!listener_)
+    return;
+
+  listener_->OnScriptListChanged(std::move(scripts));
 }
 
 void ScriptExecutor::RunCallback(bool success) {
@@ -504,6 +519,11 @@ void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
   // Interrupts and main scripts share global payloads, but not script payloads.
   main_script_->last_global_payload_ = global_payload;
   main_script_->ReportPayloadsToListener();
+}
+
+void ScriptExecutor::WaitWithInterrupts::OnScriptListChanged(
+    std::vector<std::unique_ptr<Script>> scripts) {
+  main_script_->ReportScriptsUpdateToListener(std::move(scripts));
 }
 
 void ScriptExecutor::WaitWithInterrupts::OnPreconditionCheckDone(

@@ -26,6 +26,8 @@ using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::ReturnRef;
 using ::testing::SizeIs;
+using ::testing::StrEq;
+using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
 
 class ScriptTrackerTest : public testing::Test,
@@ -116,12 +118,6 @@ class ScriptTrackerTest : public testing::Test,
     return script;
   }
 
-  static SupportedScriptProto* AddRunnableScript(
-      SupportsScriptResponseProto* response,
-      const std::string& name_and_path) {
-    return AddScript(response, name_and_path, name_and_path, "exists");
-  }
-
   const std::vector<ScriptHandle>& runnable_scripts() {
     return runnable_scripts_;
   }
@@ -132,6 +128,12 @@ class ScriptTrackerTest : public testing::Test,
       paths.emplace_back(handle.path);
     }
     return paths;
+  }
+
+  std::string Serialize(const google::protobuf::MessageLite& message) {
+    std::string output;
+    message.SerializeToString(&output);
+    return output;
   }
 
   GURL url_;
@@ -320,6 +322,91 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
 
   // The script can now run
   ASSERT_THAT(runnable_script_paths(), ElementsAre("script path"));
+}
+
+TEST_F(ScriptTrackerTest, UpdateScriptList) {
+  // 1. Initialize runnable scripts with a single valid script.
+  SupportsScriptResponseProto scripts;
+  AddScript(&scripts, "runnable name", "runnable path", "exists");
+  SetAndCheckScripts(scripts);
+
+  EXPECT_EQ(1, runnable_scripts_changed_);
+  ASSERT_THAT(runnable_scripts(), SizeIs(1));
+  EXPECT_EQ("runnable name", runnable_scripts()[0].name);
+  EXPECT_EQ("runnable path", runnable_scripts()[0].path);
+
+  // 2. Run the action and trigger a script list update.
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("hi");
+
+  *actions_response.mutable_update_script_list()->add_scripts() =
+      *AddScript(&scripts, "update name", "update path", "exists");
+  *actions_response.mutable_update_script_list()->add_scripts() =
+      *AddScript(&scripts, "update name 2", "update path 2", "exists");
+
+  EXPECT_CALL(mock_service_,
+              OnGetActions(StrEq("runnable name"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true, ""));
+
+  base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
+  EXPECT_CALL(execute_callback,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  tracker_.ExecuteScript("runnable name", execute_callback.Get());
+  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+
+  // 3. Verify that the runnable scripts have changed to the updated list.
+  EXPECT_EQ(2, runnable_scripts_changed_);
+  ASSERT_THAT(runnable_scripts(), SizeIs(2));
+  EXPECT_EQ("update name", runnable_scripts()[0].name);
+  EXPECT_EQ("update path", runnable_scripts()[0].path);
+  EXPECT_EQ("update name 2", runnable_scripts()[1].name);
+  EXPECT_EQ("update path 2", runnable_scripts()[1].path);
+}
+
+TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
+  // 1. Initialize runnable scripts with a single valid interrupt script.
+  SupportsScriptResponseProto scripts;
+  auto* script =
+      AddScript(&scripts, "runnable name", "runnable path", "exists");
+  script->mutable_presentation()->set_interrupt(true);
+  SetAndCheckScripts(scripts);
+
+  EXPECT_EQ(1, runnable_scripts_changed_);
+  ASSERT_THAT(runnable_scripts(), SizeIs(1));
+  EXPECT_EQ("runnable name", runnable_scripts()[0].name);
+  EXPECT_EQ("runnable path", runnable_scripts()[0].path);
+
+  // 2. Run the interrupt action and trigger a script list update from an
+  // interrupt.
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("hi");
+
+  *actions_response.mutable_update_script_list()->add_scripts() =
+      *AddScript(&scripts, "update name", "update path", "exists");
+  *actions_response.mutable_update_script_list()->add_scripts() =
+      *AddScript(&scripts, "update name 2", "update path 2", "exists");
+
+  EXPECT_CALL(mock_service_,
+              OnGetActions(StrEq("runnable name"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillOnce(RunOnceCallback<3>(true, ""));
+
+  base::MockCallback<ScriptExecutor::RunScriptCallback> execute_callback;
+  EXPECT_CALL(execute_callback,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  tracker_.ExecuteScript("runnable name", execute_callback.Get());
+  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
+
+  // 3. Verify that the runnable scripts have changed to the updated list.
+  EXPECT_EQ(2, runnable_scripts_changed_);
+  ASSERT_THAT(runnable_scripts(), SizeIs(2));
+  EXPECT_EQ("update name", runnable_scripts()[0].name);
+  EXPECT_EQ("update path", runnable_scripts()[0].path);
+  EXPECT_EQ("update name 2", runnable_scripts()[1].name);
+  EXPECT_EQ("update path 2", runnable_scripts()[1].path);
 }
 
 }  // namespace autofill_assistant
