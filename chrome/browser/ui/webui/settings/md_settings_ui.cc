@@ -249,6 +249,12 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(GOOGLE_CHROME_BUILD)
   html_source->AddResourcePath("partner-logo.svg", IDR_CHROME_CLEANUP_PARTNER);
+
+  // partner-logo.svg is loaded with <embed>, which needs to relax several
+  // security policies.
+  html_source->OverrideContentSecurityPolicyObjectSrc("object-src chrome:;");
+  html_source->OverrideContentSecurityPolicyChildSrc("child-src chrome:;");
+  html_source->DisableDenyXFrameOptions();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   exclude_from_gzip.push_back("partner-logo.svg");
 #endif
