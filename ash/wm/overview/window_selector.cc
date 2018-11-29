@@ -268,12 +268,6 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 
 }  // namespace
 
-// static
-bool WindowSelector::IsSelectable(const aura::Window* window) {
-  auto* window_state = wm::GetWindowState(window);
-  return window_state->IsUserPositionable() && !window_state->IsPip();
-}
-
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(wm::GetFocusedWindow()),
@@ -834,7 +828,8 @@ void WindowSelector::OnWindowHierarchyChanged(
   }
 
   aura::Window* new_window = params.target;
-  if (!IsSelectable(new_window))
+  wm::WindowState* state = wm::GetWindowState(new_window);
+  if (!state->IsUserPositionable() || state->IsPip())
     return;
 
   // If the new window is added when splitscreen is active, do nothing.

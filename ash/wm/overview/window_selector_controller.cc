@@ -9,6 +9,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -52,40 +53,6 @@ constexpr int kOcclusionPauseDurationForStartMs = 50;
 // Wait longer when exiting overview mode in case when a user
 // may re-enter overview mode immediately, contents are ready.
 constexpr int kOcclusionPauseDurationForEndMs = 500;
-
-// Returns true if |window| should be hidden when entering overview.
-bool ShouldHideWindowInOverview(const aura::Window* window) {
-  return window->GetProperty(ash::kHideInOverviewKey);
-}
-
-// Returns true if |window| should be excluded from overview.
-bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
-  if (ShouldHideWindowInOverview(window))
-    return true;
-
-  // Other non-selectable windows will be ignored in overview.
-  if (!WindowSelector::IsSelectable(window))
-    return true;
-
-  // Remove the default snapped window from the window list. The default
-  // snapped window occupies one side of the screen, while the other windows
-  // occupy the other side of the screen in overview mode. The default snap
-  // position is the position where the window was first snapped. See
-  // |default_snap_position_| in SplitViewController for more detail.
-  if (Shell::Get()->IsSplitViewModeActive() &&
-      window ==
-          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow()) {
-    return true;
-  }
-
-  // The window that currently being dragged should be ignored in overview grid.
-  // e.g, a browser window can be dragged through tabs, or app windows can be
-  // dragged through swiping from the specific top area of the display.
-  if (wm::GetWindowState(window)->is_dragged())
-    return true;
-
-  return false;
-}
 
 bool IsBlurAllowed() {
   return !g_disable_wallpaper_blur_for_tests &&
@@ -297,16 +264,14 @@ bool WindowSelectorController::ToggleOverview(
 
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
-  // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
+  // Hidden windows will be removed by wm::ShouldExcludeForOverview so we
   // must copy them out first.
   std::vector<aura::Window*> hide_windows(windows.size());
-  auto end = std::copy_if(windows.begin(), windows.end(), hide_windows.begin(),
-                          ShouldHideWindowInOverview);
+  auto end = std::copy_if(
+      windows.begin(), windows.end(), hide_windows.begin(),
+      [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
   hide_windows.resize(end - hide_windows.begin());
-
-  end = std::remove_if(windows.begin(), windows.end(),
-                       ShouldExcludeWindowFromOverview);
-  windows.resize(end - windows.begin());
+  base::EraseIf(windows, wm::ShouldExcludeForOverview);
 
   // We may want to slide the overview grid in or out in some cases, even if
   // not explicitly stated.
@@ -342,9 +307,8 @@ bool WindowSelectorController::ToggleOverview(
         if (wm::GetWindowState(window)->IsMinimized())
           continue;
 
-        window->SetProperty(aura::client::kAnimationsDisabledKey, true);
+        ScopedAnimationDisabler disable(window);
         wm::GetWindowState(window)->Minimize();
-        window->ClearProperty(aura::client::kAnimationsDisabledKey);
       }
     }
 

@@ -14,6 +14,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
@@ -259,6 +260,49 @@ void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
 
 bool IsDraggingTabs(const aura::Window* window) {
   return window->GetProperty(ash::kIsDraggingTabsKey);
+}
+
+bool ShouldExcludeForBothCycleListAndOverview(const aura::Window* window) {
+  // Exclude windows:
+  // - non user positionable windows, such as extension popups.
+  // - windows being dragged
+  // - pip windows
+  const wm::WindowState* state = wm::GetWindowState(window);
+  if (!state->IsUserPositionable() || state->is_dragged() || state->IsPip())
+    return true;
+
+  return window->GetProperty(kHideInOverviewKey);
+}
+
+bool ShouldExcludeForCycleList(const aura::Window* window) {
+  // Exclude the AppList window, which will hide as soon as cycling starts
+  // anyway. It doesn't make sense to count it as a "switchable" window, yet
+  // a lot of code relies on the MRU list returning the app window. If we
+  // don't manually remove it, the window cycling UI won't crash or misbehave,
+  // but there will be a flicker as the target window changes. Also exclude
+  // unselectable windows such as extension popups.
+  // TODO(sammiequon): Investigate if this is needed.
+  for (auto* parent = window->parent(); parent; parent = parent->parent()) {
+    if (parent->id() == kShellWindowId_AppListContainer)
+      return true;
+  }
+
+  return ShouldExcludeForBothCycleListAndOverview(window);
+}
+
+bool ShouldExcludeForOverview(const aura::Window* window) {
+  // Remove the default snapped window from the window list. The default
+  // snapped window occupies one side of the screen, while the other windows
+  // occupy the other side of the screen in overview mode. The default snap
+  // position is the position where the window was first snapped. See
+  // |default_snap_position_| in SplitViewController for more detail.
+  if (Shell::Get()->IsSplitViewModeActive() &&
+      window ==
+          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow()) {
+    return true;
+  }
+
+  return ShouldExcludeForBothCycleListAndOverview(window);
 }
 
 }  // namespace wm

@@ -102,6 +102,13 @@ ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
 // Returns true if |window| is currently in tab-dragging process.
 ASH_EXPORT bool IsDraggingTabs(const aura::Window* window);
 
+// Returns true if |window| should be excluded from the cycle list and/or
+// overview.
+ASH_EXPORT bool ShouldExcludeForBothCycleListAndOverview(
+    const aura::Window* window);
+ASH_EXPORT bool ShouldExcludeForCycleList(const aura::Window* window);
+ASH_EXPORT bool ShouldExcludeForOverview(const aura::Window* window);
+
 }  // namespace wm
 }  // namespace ash
 
