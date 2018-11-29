@@ -34,9 +34,8 @@ import logging
 import unittest
 
 # pylint: disable=invalid-name
-# Camel-case names are used here to match the style of the TestCase methods.
-# TODO(qyearsley): Change these names to use lowercase-only, for consistency
-# with other unit test helper methods.
+# Camel-case names were used here to match the style of the TestCase
+# methods. It would also be alright to change these to lowercase.
 
 
 class TestLogStream(object):
@@ -163,9 +162,6 @@ class LogTesting(object):
         """Returns the current list of log messages."""
         return self._test_stream.messages
 
-    # FIXME: Add a clearMessages() method for cases where the caller
-    #        deliberately doesn't want to assert every message.
-
     def assertMessages(self, messages):
         """Asserts the current array of log messages, and clear its contents.
 
@@ -227,8 +223,9 @@ class LoggingTestCase(unittest.TestCase):
         """Return the current list of log messages."""
         return self._log.messages()
 
-    # FIXME: Add a clearMessages() method for cases where the caller
-    #        deliberately doesn't want to assert every message.
+    # Note: If there's a case where the caller deliberately doesn't
+    # want to assert every message, a clearMessages() method could
+    # be added here.
 
     # See the docstring for LogTesting.assertMessages() for an explanation
     # of why we clear the array of messages after asserting its contents.

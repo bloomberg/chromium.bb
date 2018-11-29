@@ -390,8 +390,6 @@ class CheckerDispatcher(object):
         #        for this special case.
         basename = os.path.basename(file_path)
         if basename == 'TestExpectations':
-            # TODO(qyearsley): Replace hard-coded "TestExpectations" with a
-            # list of known "TestExpectations" files. Maybe shared with Port.
             return False
         for skipped_file in _SKIPPED_FILES_WITHOUT_WARNING:
             if self._should_skip_file_path(file_path, skipped_file):

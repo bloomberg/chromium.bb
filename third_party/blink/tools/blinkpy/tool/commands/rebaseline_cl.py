@@ -80,8 +80,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         # The WPT manifest is required when iterating through tests
         # TestBaselineSet if there are any tests in web-platform-tests.
-        # TODO(qyearsley): Consider calling ensure_manifest in BlinkTool.
-        # See: crbug.com/698294
+        # TODO(crbug.com/698294): Consider calling ensure_manifest in BlinkTool.
         WPTManifest.ensure_manifest(tool)
 
         if not self.check_ok_to_run():
