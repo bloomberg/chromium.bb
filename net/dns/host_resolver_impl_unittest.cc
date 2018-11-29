@@ -568,34 +568,27 @@ class TestHostResolverImpl : public HostResolverImpl {
   }
 };
 
-const uint16_t kLocalhostLookupPort = 80;
-
-bool HasEndpoint(const IPEndPoint& endpoint, const AddressList& addresses) {
+bool HasAddress(const IPAddress& search_address, const AddressList& addresses) {
   for (const auto& address : addresses) {
-    if (endpoint == address)
+    if (search_address == address.address())
       return true;
   }
   return false;
 }
 
 void TestBothLoopbackIPs(const std::string& host) {
-  IPEndPoint localhost_ipv4(IPAddress::IPv4Localhost(), kLocalhostLookupPort);
-  IPEndPoint localhost_ipv6(IPAddress::IPv6Localhost(), kLocalhostLookupPort);
-
   AddressList addresses;
-  EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
+  EXPECT_TRUE(ResolveLocalHostname(host, &addresses));
   EXPECT_EQ(2u, addresses.size());
-  EXPECT_TRUE(HasEndpoint(localhost_ipv4, addresses));
-  EXPECT_TRUE(HasEndpoint(localhost_ipv6, addresses));
+  EXPECT_TRUE(HasAddress(IPAddress::IPv4Localhost(), addresses));
+  EXPECT_TRUE(HasAddress(IPAddress::IPv6Localhost(), addresses));
 }
 
 void TestIPv6LoopbackOnly(const std::string& host) {
-  IPEndPoint localhost_ipv6(IPAddress::IPv6Localhost(), kLocalhostLookupPort);
-
   AddressList addresses;
-  EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
+  EXPECT_TRUE(ResolveLocalHostname(host, &addresses));
   EXPECT_EQ(1u, addresses.size());
-  EXPECT_TRUE(HasEndpoint(localhost_ipv6, addresses));
+  EXPECT_TRUE(HasAddress(IPAddress::IPv6Localhost(), addresses));
 }
 
 // Used to bind the unique_ptr<Request>* into callbacks.
@@ -5628,7 +5621,9 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName) {
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   ASSERT_THAT(request->WaitForResult(), IsOk());
 
-  EXPECT_TRUE(request->list().canonical_name().empty());
+  // HostResolver may still give name, but if so, it must be correct.
+  std::string result_name = request->list().canonical_name();
+  EXPECT_TRUE(result_name.empty() || result_name == "canonical");
 }
 
 TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
@@ -5645,8 +5640,10 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
       HostPortPair("alias", 80), NetLogWithSource(), base::nullopt));
   ASSERT_THAT(response.result_error(), IsOk());
 
-  EXPECT_TRUE(
-      response.request()->GetAddressResults().value().canonical_name().empty());
+  // HostResolver may still give name, but if so, it must be correct.
+  std::string result_name =
+      response.request()->GetAddressResults().value().canonical_name();
+  EXPECT_TRUE(result_name.empty() || result_name == "canonical");
 }
 
 TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
@@ -5730,40 +5727,25 @@ TEST_F(HostResolverImplTest, ResolveLocalHostname) {
   TestIPv6LoopbackOnly("localhost6.localdomain6");
   TestIPv6LoopbackOnly("localhost6.localdomain6.");
 
-  EXPECT_FALSE(
-      ResolveLocalHostname("127.0.0.1", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("::1", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:1", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname("localhostx", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname("localhost.x", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain.x", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname("localhost6x", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("localhost.localdomain6",
-                                    kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("localhost6.localdomain",
-                                    kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname("127.0.0.1.1", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname(".127.0.0.255", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("::2", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("::1:1", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:1:0:0:1", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("::1:1", kLocalhostLookupPort, &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:0:1", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(ResolveLocalHostname("foo.localhost.com", kLocalhostLookupPort,
-                                    &addresses));
-  EXPECT_FALSE(
-      ResolveLocalHostname("foo.localhoste", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("127.0.0.1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhostx", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost.x", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain.x", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost6x", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost.localdomain6", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost6.localdomain", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("127.0.0.1.1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname(".127.0.0.255", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::2", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1:1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:1:0:0:1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1:1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:0:1", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localhost.com", &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localhoste", &addresses));
 }
 
 TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAfterConfig) {

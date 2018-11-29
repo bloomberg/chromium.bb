@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/expiring_cache.h"
@@ -29,6 +30,8 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_parameters_callback.h"
 
 namespace base {
 class ListValue;
@@ -110,25 +113,57 @@ class NET_EXPORT HostCache {
       SetResult(std::forward<T>(results));
     }
 
+    // For errors with no |results|.
+    Entry(int error, Source source, base::TimeDelta ttl);
+    Entry(int error, Source source);
+
+    Entry(const Entry& entry);
     Entry(Entry&& entry);
     ~Entry();
 
+    Entry& operator=(const Entry& entry);
+    Entry& operator=(Entry&& entry);
+
     int error() const { return error_; }
+    void set_error(int error) { error_ = error; }
     const base::Optional<AddressList>& addresses() const { return addresses_; }
+    void set_addresses(const base::Optional<AddressList>& addresses) {
+      addresses_ = addresses;
+    }
     const base::Optional<std::vector<std::string>>& text_records() const {
       return text_records_;
+    }
+    void set_text_records(
+        base::Optional<std::vector<std::string>> text_records) {
+      text_records_ = std::move(text_records);
     }
     const base::Optional<std::vector<HostPortPair>>& hostnames() const {
       return hostnames_;
     }
+    void set_hostnames(base::Optional<std::vector<HostPortPair>> hostnames) {
+      hostnames_ = std::move(hostnames);
+    }
     Source source() const { return source_; }
     bool has_ttl() const { return ttl_ >= base::TimeDelta(); }
     base::TimeDelta ttl() const { return ttl_; }
+    base::Optional<base::TimeDelta> GetOptionalTtl() const;
+    void set_ttl(base::TimeDelta ttl) { ttl_ = ttl; }
 
     base::TimeTicks expires() const { return expires_; }
 
     // Public for the net-internals UI.
     int network_changes() const { return network_changes_; }
+
+    // Merge |front| and |back|, representing results from multiple
+    // transactions for the same overal host resolution query. On merging result
+    // lists, result elements from |front| will be merged in front of elements
+    // from |back|. Fields that cannot be merged take precedence from |front|.
+    static Entry MergeEntries(Entry front, Entry back);
+
+    // Creates a callback for use with the NetLog that returns a Value
+    // representation of the entry.  The callback must be destroyed before
+    // |this| is.
+    NetLogParametersCallback CreateNetLogCallback() const;
 
    private:
     friend class HostCache;
@@ -162,6 +197,10 @@ class NET_EXPORT HostCache {
     void GetStaleness(base::TimeTicks now,
                       int network_changes,
                       EntryStaleness* out) const;
+
+    std::unique_ptr<base::Value> NetLogCallback(
+        NetLogCaptureMode capture_mode) const;
+    base::DictionaryValue GetAsValue(bool include_staleness) const;
 
     // The resolve results for this entry.
     int error_;

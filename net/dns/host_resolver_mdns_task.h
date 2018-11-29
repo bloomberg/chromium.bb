@@ -9,11 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "net/base/completion_once_callback.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_query_type.h"
@@ -31,28 +32,27 @@ class HostResolverMdnsTask {
                        const std::vector<DnsQueryType>& query_types);
   ~HostResolverMdnsTask();
 
-  // Starts the task. |completion_callback| will be called asynchronously with
-  // results.
+  // Starts the task. |completion_closure| will be called asynchronously.
   //
   // Should only be called once.
-  void Start(CompletionOnceCallback completion_callback);
+  void Start(base::OnceClosure completion_closure);
 
-  const AddressList& result_addresses() { return result_addresses_; }
+  // Results only available after invocation of the completion closure.
+  HostCache::Entry GetResults() const;
 
  private:
   class Transaction;
 
   void CheckCompletion(bool post_needed);
-  void CompleteWithResult(int result, bool post_needed);
+  void Complete(bool post_needed);
 
   MDnsClient* const mdns_client_;
 
   const std::string hostname_;
 
-  AddressList result_addresses_;
   std::vector<Transaction> transactions_;
 
-  CompletionOnceCallback completion_callback_;
+  base::OnceClosure completion_closure_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
