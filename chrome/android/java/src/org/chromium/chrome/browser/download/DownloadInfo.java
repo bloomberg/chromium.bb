@@ -347,7 +347,8 @@ public final class DownloadInfo {
             case DownloadState.INTERRUPTED:
                 DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
                 @ResumeMode
-                int resumeMode = DownloadUtils.getResumeMode(downloadInfo.getFailState());
+                int resumeMode = DownloadUtils.getResumeMode(
+                        downloadInfo.getUrl(), downloadInfo.getFailState());
                 if (resumeMode == ResumeMode.INVALID) {
                     // These are dead end states and no further user actions are needed.
                     offlineItem.state = OfflineItemState.FAILED;

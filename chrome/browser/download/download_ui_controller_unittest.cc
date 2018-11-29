@@ -339,6 +339,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
       .WillRepeatedly(Return(download::DownloadItem::TYPE_HISTORY_IMPORT));
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));
+  EXPECT_CALL(*item, IsDone()).WillRepeatedly(Return(false));
   EXPECT_CALL(
       *manager(),
       PostInitialization(content::DownloadManager::

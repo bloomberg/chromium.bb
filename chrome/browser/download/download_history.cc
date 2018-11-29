@@ -39,6 +39,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_utils.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/download_row.h"
@@ -300,6 +301,8 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     loading_id_ = history::ToContentDownloadId(it->id);
     download::DownloadItem::DownloadState history_download_state =
         history::ToContentDownloadState(it->state);
+    download::DownloadInterruptReason history_reason =
+        history::ToContentDownloadInterruptReason(it->interrupt_reason);
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
@@ -309,8 +312,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
                         // partial file for an interrupted download. No need to
                         // store hash for a completed file.
         history_download_state,
-        history::ToContentDownloadDangerType(it->danger_type),
-        history::ToContentDownloadInterruptReason(it->interrupt_reason),
+        history::ToContentDownloadDangerType(it->danger_type), history_reason,
         it->opened, it->last_access_time, it->transient,
         history::ToContentReceivedSlices(it->download_slice_info));
     // DownloadManager returns a nullptr if it decides to remove the download
@@ -321,13 +323,12 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     }
     DCHECK_EQ(download::DownloadItem::kInvalidId, loading_id_);
 
-    // The download might have been completed or cancelled without informing
+    // The download might have been in the terminal state without informing
     // history DB. If this is the case, populate the new state back to history
     // DB.
-    if ((history_download_state != download::DownloadItem::COMPLETE &&
-         item->GetState() == download::DownloadItem::COMPLETE) ||
-        (history_download_state != download::DownloadItem::CANCELLED &&
-         item->GetState() == download::DownloadItem::CANCELLED)) {
+    if (item->IsDone() &&
+        !download::IsDownloadDone(item->GetURL(), history_download_state,
+                                  history_reason)) {
       OnDownloadUpdated(notifier_.GetManager(), item);
     }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -549,12 +550,10 @@ bool DownloadHistory::NeedToUpdateDownloadHistory(
   }
 #endif
 
-  // When download DB is enabled, only completed or cancelled download should be
-  // added to or updated in history DB. In-progress and interrupted download
+  // When download DB is enabled, only downloads that are in terminal state
+  // are added to or updated in history DB. In-progress and interrupted download
   // will be stored in the in-progress DB.
   return !base::FeatureList::IsEnabled(
              download::features::kDownloadDBForNewDownloads) ||
-         item->IsSavePackageDownload() ||
-         item->GetState() == download::DownloadItem::COMPLETE ||
-         item->GetState() == download::DownloadItem::CANCELLED;
+         item->IsSavePackageDownload() || item->IsDone();
 }

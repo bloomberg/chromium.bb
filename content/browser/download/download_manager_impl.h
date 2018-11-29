@@ -299,7 +299,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Check whether a download should be cleared from history. On Android,
   // cancelled and non-resumable interrupted download will be cleaned up to
   // save memory.
-  bool ShouldClearDownloadFromDB(download::DownloadItem::DownloadState state,
+  bool ShouldClearDownloadFromDB(const GURL& url,
+                                 download::DownloadItem::DownloadState state,
                                  download::DownloadInterruptReason reason);
 #endif  // defined(OS_ANDROID)
 

@@ -688,9 +688,11 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(""));
 
   const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back("http://example.com/1.zip");
   download::DownloadItem* persisted_item =
       download_manager_->CreateDownloadItem(
-          kGuid, 10, base::FilePath(), base::FilePath(), std::vector<GURL>(),
+          kGuid, 10, base::FilePath(), base::FilePath(), url_chain,
           GURL("http://example.com/a"), GURL("http://example.com/a"),
           GURL("http://example.com/a"), GURL("http://example.com/a"),
           "application/octet-stream", "application/octet-stream",
@@ -739,13 +741,14 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
 TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   auto in_progress_manager = std::make_unique<TestInProgressManager>();
   const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back("http://example.com/1.zip");
   auto in_progress_item = std::make_unique<download::DownloadItemImpl>(
       in_progress_manager.get(), kGuid, 10, base::FilePath(), base::FilePath(),
-      std::vector<GURL>(), GURL("http://example.com/a"),
+      url_chain, GURL("http://example.com/a"), GURL("http://example.com/a"),
       GURL("http://example.com/a"), GURL("http://example.com/a"),
-      GURL("http://example.com/a"), "application/octet-stream",
-      "application/octet-stream", base::Time::Now(), base::Time::Now(),
-      std::string(), std::string(), 10, 10, std::string(),
+      "application/octet-stream", "application/octet-stream", base::Time::Now(),
+      base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       download::DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,

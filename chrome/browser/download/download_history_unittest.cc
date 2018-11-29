@@ -411,6 +411,7 @@ class DownloadHistoryTest : public testing::Test {
             Return(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
     EXPECT_CALL(item(index), IsSavePackageDownload())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(item(index), IsDone()).WillRepeatedly(Return(false));
     EXPECT_CALL(item(index), GetDownloadCreationType())
         .WillRepeatedly(
             Return(state == download::DownloadItem::IN_PROGRESS
@@ -858,6 +859,7 @@ TEST_F(DownloadHistoryTest, CreateWithDownloadDB) {
   ExpectNoDownloadCreated();
 
   // Completed download should be inserted.
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
   EXPECT_CALL(item(0), GetState())
       .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
   info.state = history::DownloadState::COMPLETE;
@@ -892,11 +894,44 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   // Completes the item, it should trigger an update.
   EXPECT_CALL(item(0), GetState())
       .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
   info.opened = true;
   info.received_bytes = 50;
   info.state = history::DownloadState::COMPLETE;
   item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info, false);
+}
+
+// Test creating a in-progress history download item that is non-resumable in
+// DownloadDB.
+TEST_F(DownloadHistoryTest,
+       CreateInProgressHistoryItemNonResumableInDownloadDB) {
+  // Enable download DB.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      download::features::kDownloadDBForNewDownloads);
+
+  history::DownloadRow info;
+  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
+                "http://example.com/referrer.html",
+                download::DownloadItem::IN_PROGRESS, &info);
+
+  // Modify the item so it doesn't match the history record.
+  EXPECT_CALL(item(0), GetLastReason())
+      .WillRepeatedly(
+          Return(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN));
+  EXPECT_CALL(item(0), GetState())
+      .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));
+  EXPECT_CALL(item(0), IsDone()).WillRepeatedly(Return(true));
+  std::unique_ptr<InfoVector> infos(new InfoVector());
+  infos->push_back(info);
+
+  // Create the history and a db update should be triggered.
+  CreateDownloadHistory(std::move(infos));
+  EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
+  info.interrupt_reason = download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN;
+  info.state = history::DownloadState::INTERRUPTED;
+  ExpectDownloadUpdated(info, true);
 }
 
 // Test loading history download item that will be cleared by |manager_|

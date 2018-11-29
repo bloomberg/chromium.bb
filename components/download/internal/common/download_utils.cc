@@ -415,9 +415,14 @@ uint64_t GetUniqueDownloadId() {
   return download_id;
 }
 
-ResumeMode GetDownloadResumeMode(DownloadInterruptReason reason,
+ResumeMode GetDownloadResumeMode(const GURL& url,
+                                 DownloadInterruptReason reason,
                                  bool restart_required,
                                  bool user_action_required) {
+  // Only support resumption for HTTP(S).
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return ResumeMode::INVALID;
+
   switch (reason) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
@@ -494,6 +499,25 @@ ResumeMode GetDownloadResumeMode(DownloadInterruptReason reason,
     return ResumeMode::USER_CONTINUE;
 
   return ResumeMode::IMMEDIATE_CONTINUE;
+}
+
+bool IsDownloadDone(const GURL& url,
+                    DownloadItem::DownloadState state,
+                    DownloadInterruptReason reason) {
+  switch (state) {
+    case DownloadItem::IN_PROGRESS:
+      return false;
+    case DownloadItem::COMPLETE:
+      FALLTHROUGH;
+    case DownloadItem::CANCELLED:
+      return true;
+    case DownloadItem::INTERRUPTED:
+      return GetDownloadResumeMode(url, reason, false /* restart_required */,
+                                   false /* user_action_required */) ==
+             download::ResumeMode::INVALID;
+    default:
+      return false;
+  }
 }
 
 bool DeleteDownloadedFile(const base::FilePath& path) {
