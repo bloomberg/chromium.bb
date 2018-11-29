@@ -212,6 +212,23 @@ util.bytesToString = function(bytes) {
                'SIZE_TB',
                'SIZE_PB'];
 
+  // TODO(crbug.com/909997): remove this if clause when translations are fixed.
+  if (window.postProcessedLoadTimeData_ !== true) {
+    const language = loadTimeData.getString('language');
+
+    // Replace invalid Hindi SIZE units translations, crbug.com/908767.
+    if (language === 'hi') {
+      loadTimeData.overrideValues({
+        'SIZE_KB': '$1 केबी',
+        'SIZE_MB': '$1 एमबी',
+      });
+    }
+
+    if (typeof language === 'string') {
+      window.postProcessedLoadTimeData_ = true;
+    }
+  }
+
   // Minimum values for the units above.
   var STEPS = [0,
                Math.pow(2, 10),
