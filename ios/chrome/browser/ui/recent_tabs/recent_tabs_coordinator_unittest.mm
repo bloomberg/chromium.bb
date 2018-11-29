@@ -9,11 +9,12 @@
 #include <memory>
 
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
+#include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -32,7 +33,6 @@
 #endif
 
 using testing::_;
-using testing::AtLeast;
 using testing::Return;
 
 namespace {
@@ -43,26 +43,35 @@ std::unique_ptr<KeyedService> CreateSyncSetupService(
       ios::ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
-  return std::make_unique<SyncSetupServiceMock>(sync_service);
+  return std::make_unique<testing::NiceMock<SyncSetupServiceMock>>(
+      sync_service);
 }
 
-class ProfileSyncServiceMockForRecentTabsTableCoordinator
-    : public browser_sync::ProfileSyncServiceMock {
+class SessionSyncServiceMockForRecentTabsTableCoordinator
+    : public sync_sessions::SessionSyncService {
  public:
-  explicit ProfileSyncServiceMockForRecentTabsTableCoordinator(
-      InitParams init_params)
-      : browser_sync::ProfileSyncServiceMock(std::move(init_params)) {}
-  ~ProfileSyncServiceMockForRecentTabsTableCoordinator() override {}
+  SessionSyncServiceMockForRecentTabsTableCoordinator() {}
+  ~SessionSyncServiceMockForRecentTabsTableCoordinator() override {}
 
+  MOCK_CONST_METHOD0(GetGlobalIdMapper, syncer::GlobalIdMapper*());
   MOCK_METHOD0(GetOpenTabsUIDelegate, sync_sessions::OpenTabsUIDelegate*());
+  MOCK_METHOD1(SubscribeToForeignSessionsChanged,
+               std::unique_ptr<base::CallbackList<void()>::Subscription>(
+                   const base::RepeatingClosure& cb));
+  MOCK_METHOD0(ScheduleGarbageCollection, void());
+  MOCK_METHOD0(GetControllerDelegate,
+               base::WeakPtr<syncer::ModelTypeControllerDelegate>());
+  MOCK_METHOD0(GetFaviconCache, sync_sessions::FaviconCache*());
+  MOCK_METHOD1(ProxyTabsStateChanged,
+               void(syncer::DataTypeController::State state));
+  MOCK_METHOD1(SetSyncSessionsGUID, void(const std::string& guid));
 };
 
 std::unique_ptr<KeyedService>
-BuildMockProfileSyncServiceForRecentTabsTableCoordinator(
+BuildMockSessionSyncServiceForRecentTabsTableCoordinator(
     web::BrowserState* context) {
-  return std::make_unique<ProfileSyncServiceMockForRecentTabsTableCoordinator>(
-      CreateProfileSyncServiceParamsForTest(
-          nullptr, ios::ChromeBrowserState::FromBrowserState(context)));
+  return std::make_unique<
+      testing::NiceMock<SessionSyncServiceMockForRecentTabsTableCoordinator>>();
 }
 
 class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
@@ -93,7 +102,9 @@ class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
 
 class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
  public:
-  RecentTabsTableCoordinatorTest() : no_error_(GoogleServiceAuthError::NONE) {}
+  RecentTabsTableCoordinatorTest()
+      : no_error_(GoogleServiceAuthError::NONE),
+        fake_controller_delegate_(syncer::SESSIONS) {}
 
  protected:
   void SetUp() override {
@@ -104,24 +115,10 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
         SyncSetupServiceFactory::GetInstance(),
         base::BindRepeating(&CreateSyncSetupService));
     test_cbs_builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
+        SessionSyncServiceFactory::GetInstance(),
         base::BindRepeating(
-            &BuildMockProfileSyncServiceForRecentTabsTableCoordinator));
+            &BuildMockSessionSyncServiceForRecentTabsTableCoordinator));
     chrome_browser_state_ = test_cbs_builder.Build();
-
-    ProfileSyncServiceMockForRecentTabsTableCoordinator* sync_service =
-        static_cast<ProfileSyncServiceMockForRecentTabsTableCoordinator*>(
-            ProfileSyncServiceFactory::GetForBrowserState(
-                chrome_browser_state_.get()));
-    EXPECT_CALL(*sync_service, GetAuthError())
-        .WillRepeatedly(::testing::ReturnRef(no_error_));
-    ON_CALL(*sync_service, GetRegisteredDataTypes())
-        .WillByDefault(Return(syncer::ModelTypeSet()));
-    sync_service->Initialize();
-    EXPECT_CALL(*sync_service, GetTransportState())
-        .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
-    EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
-        .WillRepeatedly(Return(nullptr));
   }
 
   void TearDown() override {
@@ -133,6 +130,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
 
   void SetupSyncState(BOOL signedIn,
                       BOOL syncEnabled,
+                      BOOL syncCompleted,
                       BOOL hasForeignSessions) {
     if (signedIn) {
       identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
@@ -143,39 +141,35 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
           signin_metrics::SignoutDelete::IGNORE_METRIC);
     }
 
+    SessionSyncServiceMockForRecentTabsTableCoordinator* session_sync_service =
+        static_cast<SessionSyncServiceMockForRecentTabsTableCoordinator*>(
+            SessionSyncServiceFactory::GetForBrowserState(
+                chrome_browser_state_.get()));
+
+    // Needed by ProfileSyncService's initialization, triggered during
+    // initialization of SyncSetupServiceMock.
+    ON_CALL(*session_sync_service, GetControllerDelegate())
+        .WillByDefault(Return(fake_controller_delegate_.GetWeakPtr()));
+
     SyncSetupServiceMock* syncSetupService = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
-    EXPECT_CALL(*syncSetupService, IsSyncEnabled())
-        .WillRepeatedly(Return(syncEnabled));
-    EXPECT_CALL(*syncSetupService, IsDataTypePreferred(syncer::PROXY_TABS))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*syncSetupService, GetSyncServiceState())
-        .WillRepeatedly(Return(SyncSetupService::kNoSyncServiceError));
+    ON_CALL(*syncSetupService, IsSyncEnabled())
+        .WillByDefault(Return(syncEnabled));
+    ON_CALL(*syncSetupService, IsDataTypePreferred(syncer::PROXY_TABS))
+        .WillByDefault(Return(true));
+    ON_CALL(*syncSetupService, GetSyncServiceState())
+        .WillByDefault(Return(SyncSetupService::kNoSyncServiceError));
 
-    if (syncEnabled) {
-      ProfileSyncServiceMockForRecentTabsTableCoordinator* sync_service =
-          static_cast<ProfileSyncServiceMockForRecentTabsTableCoordinator*>(
-              ProfileSyncServiceFactory::GetForBrowserState(
-                  chrome_browser_state_.get()));
-      open_tabs_ui_delegate_.reset(new OpenTabsUIDelegateMock());
-      EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
-          .WillRepeatedly(Return(open_tabs_ui_delegate_.get()));
-      EXPECT_CALL(*open_tabs_ui_delegate_, GetAllForeignSessions(_))
-          .WillRepeatedly(Return(hasForeignSessions));
+    if (syncCompleted) {
+      ON_CALL(*session_sync_service, GetOpenTabsUIDelegate())
+          .WillByDefault(Return(&open_tabs_ui_delegate_));
+      ON_CALL(open_tabs_ui_delegate_, GetAllForeignSessions(_))
+          .WillByDefault(Return(hasForeignSessions));
     }
   }
 
   void CreateController() {
-    // Sets up the test expectations for the Sync Service Observer Bridge.
-    // RecentTabsTableCoordinator must be added as an observer of
-    // ProfileSyncService changes and removed when it is destroyed.
-    browser_sync::ProfileSyncServiceMock* sync_service =
-        static_cast<browser_sync::ProfileSyncServiceMock*>(
-            ProfileSyncServiceFactory::GetForBrowserState(
-                chrome_browser_state_.get()));
-    EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
-    EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));
     coordinator_ = [[RecentTabsCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:chrome_browser_state_.get()];
@@ -188,8 +182,9 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   IOSChromeScopedTestingLocalState local_state_;
   identity::IdentityTestEnvironment identity_test_env_;
 
+  syncer::FakeModelTypeControllerDelegate fake_controller_delegate_;
+  testing::NiceMock<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.
   RecentTabsCoordinator* coordinator_;
@@ -201,22 +196,31 @@ TEST_F(RecentTabsTableCoordinatorTest, TestConstructorDestructor) {
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedOut) {
-  SetupSyncState(NO, NO, NO);
+  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  SetupSyncState(NO, NO, NO, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOff) {
-  SetupSyncState(YES, NO, NO);
+  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  SetupSyncState(YES, NO, NO, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncInProgress) {
-  SetupSyncState(YES, YES, NO);
+  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  SetupSyncState(YES, YES, NO, NO);
+  CreateController();
+}
+TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOnWithoutSessions) {
+  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  SetupSyncState(YES, YES, YES, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOnWithSessions) {
-  SetupSyncState(YES, YES, YES);
+  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  SetupSyncState(YES, YES, YES, YES);
   CreateController();
 }
 

@@ -139,7 +139,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
   DCHECK([self isSignedIn]);
   SyncSetupService* service =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
-  return !service->UserActionIsRequiredToHaveSyncWork();
+  return !service->UserActionIsRequiredToHaveTabSyncWork();
 }
 
 // Returns whether this profile has any foreign sessions to sync.
@@ -148,11 +148,18 @@ const CGFloat kFaviconMinWidthHeight = 16;
     return SessionsSyncUserState::USER_SIGNED_OUT;
   if (![self isSyncTabsEnabled])
     return SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF;
-  if ([self hasForeignSessions])
-    return SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS;
   if (![self isSyncCompleted])
     return SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS;
+  if ([self hasForeignSessions])
+    return SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS;
   return SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS;
+}
+
+- (BOOL)isSyncCompleted {
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetForBrowserState(_browserState);
+  DCHECK(service);
+  return service->GetOpenTabsUIDelegate() != nullptr;
 }
 
 - (BOOL)hasForeignSessions {
@@ -161,12 +168,9 @@ const CGFloat kFaviconMinWidthHeight = 16;
   DCHECK(service);
   sync_sessions::OpenTabsUIDelegate* openTabs =
       service->GetOpenTabsUIDelegate();
+  DCHECK(openTabs);
   std::vector<const sync_sessions::SyncedSession*> sessions;
-  return openTabs ? openTabs->GetAllForeignSessions(&sessions) : NO;
-}
-
-- (BOOL)isSyncCompleted {
-  return _syncedSessionsObserver->IsFirstSyncCycleCompleted();
+  return openTabs->GetAllForeignSessions(&sessions);
 }
 
 #pragma mark - RecentTabsTableViewControllerDelegate

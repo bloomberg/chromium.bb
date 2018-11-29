@@ -73,7 +73,7 @@ void SyncSetupService::SetDataTypeEnabled(syncer::ModelType datatype,
     SetSyncEnabled(false);
 }
 
-bool SyncSetupService::UserActionIsRequiredToHaveSyncWork() {
+bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
   if (!IsSyncEnabled() || !IsDataTypePreferred(syncer::PROXY_TABS)) {
     return true;
   }

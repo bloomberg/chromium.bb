@@ -4,14 +4,10 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions_bridge.h"
 
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,13 +21,9 @@ namespace synced_sessions {
 SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
     id<SyncedSessionsObserver> owner,
     ios::ChromeBrowserState* browserState)
-    : SyncObserverBridge(
-          owner,
-          ProfileSyncServiceFactory::GetForBrowserState(browserState)),
-      owner_(owner),
+    : owner_(owner),
       identity_manager_(
           IdentityManagerFactory::GetForBrowserState(browserState)),
-      browser_state_(browserState),
       identity_manager_observer_(this) {
   identity_manager_observer_.Add(identity_manager_);
 
@@ -45,24 +37,6 @@ SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
 }
 
 SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
-
-#pragma mark - SyncObserverBridge
-
-void SyncedSessionsObserverBridge::OnSyncConfigurationCompleted(
-    syncer::SyncService* sync) {
-  // TODO(crbug.com/895455): This notification seems redundant because
-  // OnForeignSessionChanged() should be called when the initial sync is
-  // completed.
-  [owner_ reloadSessions];
-}
-
-bool SyncedSessionsObserverBridge::IsFirstSyncCycleCompleted() {
-  // TODO(crbug.com/895455): This could probably be implemented via
-  // SessionSyncService directly and possibly remove all dependencies to
-  // SyncService/SyncSetupService.
-  return SyncSetupServiceFactory::GetForBrowserState(browser_state_)
-      ->IsDataTypeActive(syncer::SESSIONS);
-}
 
 #pragma mark - identity::IdentityManager::Observer
 

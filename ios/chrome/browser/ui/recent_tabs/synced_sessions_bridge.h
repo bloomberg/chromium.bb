@@ -11,8 +11,6 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "components/sync/driver/sync_service_observer.h"
-#import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace ios {
@@ -23,7 +21,7 @@ namespace identity {
 class IdentityManager;
 }
 
-@protocol SyncedSessionsObserver<SyncObserverModelBridge>
+@protocol SyncedSessionsObserver
 // Reloads the session data.
 - (void)reloadSessions;
 @end
@@ -33,21 +31,15 @@ namespace synced_sessions {
 // Bridge class that will notify the panel when the remote sessions content
 // change.
 class SyncedSessionsObserverBridge
-    : public SyncObserverBridge,
-      public identity::IdentityManager::Observer {
+    : public identity::IdentityManager::Observer {
  public:
   SyncedSessionsObserverBridge(id<SyncedSessionsObserver> owner,
                                ios::ChromeBrowserState* browserState);
   ~SyncedSessionsObserverBridge() override;
-  // SyncObserverBridge implementation.
-  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
 
-  // Returns true if the first sync cycle that contains session information is
-  // completed. Returns false otherwise.
-  bool IsFirstSyncCycleCompleted();
   // Returns true if user is signed in.
   bool IsSignedIn();
 
@@ -56,7 +48,6 @@ class SyncedSessionsObserverBridge
 
   __weak id<SyncedSessionsObserver> owner_ = nil;
   identity::IdentityManager* identity_manager_ = nullptr;
-  ios::ChromeBrowserState* browser_state_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;
   std::unique_ptr<base::CallbackList<void()>::Subscription>
@@ -67,4 +58,4 @@ class SyncedSessionsObserverBridge
 
 }  // namespace synced_sessions
 
-#endif  // IOS_CHROME_BROWSER_SYNC_SYNCED_SESSIONS_BRIDGE_H_
+#endif  // IOS_CHROME_BROWSER_UI_RECENT_TABS_SYNCED_SESSIONS_BRIDGE_H_
