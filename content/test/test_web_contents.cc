@@ -81,13 +81,12 @@ TestWebContents::~TestWebContents() {
   EXPECT_FALSE(expect_set_history_offset_and_length_);
 }
 
-TestRenderFrameHost* TestWebContents::GetMainFrame() const {
+TestRenderFrameHost* TestWebContents::GetMainFrame() {
   return static_cast<TestRenderFrameHost*>(WebContentsImpl::GetMainFrame());
 }
 
-TestRenderViewHost* TestWebContents::GetRenderViewHost() const {
-    return static_cast<TestRenderViewHost*>(
-        WebContentsImpl::GetRenderViewHost());
+TestRenderViewHost* TestWebContents::GetRenderViewHost() {
+  return static_cast<TestRenderViewHost*>(WebContentsImpl::GetRenderViewHost());
 }
 
 TestRenderFrameHost* TestWebContents::GetPendingMainFrame() {
@@ -107,14 +106,14 @@ int TestWebContents::DownloadImage(const GURL& url,
   return g_next_image_download_id;
 }
 
-const GURL& TestWebContents::GetLastCommittedURL() const {
+const GURL& TestWebContents::GetLastCommittedURL() {
   if (last_committed_url_.is_valid()) {
     return last_committed_url_;
   }
   return WebContentsImpl::GetLastCommittedURL();
 }
 
-const base::string16& TestWebContents::GetTitle() const {
+const base::string16& TestWebContents::GetTitle() {
   if (title_)
     return title_.value();
 

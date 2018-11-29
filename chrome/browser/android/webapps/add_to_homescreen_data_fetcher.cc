@@ -40,7 +40,7 @@ namespace {
 // Looks up the original, online, visible URL of |web_contents|. The current
 // visible URL may be a distilled article which is not appropriate for a home
 // screen shortcut.
-GURL GetShortcutUrl(const content::WebContents* web_contents) {
+GURL GetShortcutUrl(content::WebContents* web_contents) {
   return dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents->GetVisibleURL());
 }

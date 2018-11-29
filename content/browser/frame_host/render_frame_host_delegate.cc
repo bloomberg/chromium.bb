@@ -22,7 +22,7 @@ bool RenderFrameHostDelegate::OnMessageReceived(
   return false;
 }
 
-const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() const {
+const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() {
   return GURL::EmptyGURL();
 }
 
@@ -79,7 +79,7 @@ std::string RenderFrameHostDelegate::GetDefaultMediaDeviceID(
   return std::string();
 }
 
-ui::AXMode RenderFrameHostDelegate::GetAccessibilityMode() const {
+ui::AXMode RenderFrameHostDelegate::GetAccessibilityMode() {
   return ui::AXMode();
 }
 
@@ -133,11 +133,11 @@ RenderFrameHostDelegate::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
-bool RenderFrameHostDelegate::IsBeingDestroyed() const {
+bool RenderFrameHostDelegate::IsBeingDestroyed() {
   return false;
 }
 
-Visibility RenderFrameHostDelegate::GetVisibility() const {
+Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
 }
 

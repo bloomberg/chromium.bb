@@ -39,11 +39,11 @@ bool IsNTPURL(const GURL& url, Profile* profile);
 // Returns true if the active navigation entry of |contents| is a New Tab page
 // rendered in an Instant process. This is the last committed entry if it
 // exists, and otherwise the visible entry.
-bool IsInstantNTP(const content::WebContents* contents);
+bool IsInstantNTP(content::WebContents* contents);
 
 // Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
 // instead of using the visible entry.
-bool NavEntryIsInstantNTP(const content::WebContents* contents,
+bool NavEntryIsInstantNTP(content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
 
 // Returns true if |url| corresponds to a New Tab page that would get rendered

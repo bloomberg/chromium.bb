@@ -82,7 +82,7 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
 
 // ========== LOG TRANSLATE EVENT ==============
 
-void LogTranslateEvent(const content::WebContents* const web_contents,
+void LogTranslateEvent(content::WebContents* const web_contents,
                        const metrics::TranslateEventProto& translate_event) {
   if (!FeatureList::IsEnabled(switches::kSyncUserTranslationEvents))
     return;

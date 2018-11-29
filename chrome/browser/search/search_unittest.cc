@@ -89,7 +89,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
-  bool InInstantProcess(const content::WebContents* contents) {
+  bool InInstantProcess(content::WebContents* contents) {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile());
     return instant_service->IsInstantProcess(
@@ -181,7 +181,7 @@ TEST_F(SearchTest, ProcessIsolation) {
   for (size_t i = 0; i < arraysize(kProcessIsolationTestCases); ++i) {
     const ProcessIsolationTestCase& test = kProcessIsolationTestCases[i];
     AddTab(browser(), GURL("chrome://blank"));
-    const content::WebContents* contents =
+    content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
     // Navigate to start URL.
@@ -278,7 +278,7 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   AddTab(browser(), GURL("chrome://blank"));
   for (const SearchTestCase& test : kInstantNTPTestCases) {
     NavigateAndCommitActiveTab(GURL(test.url));
-    const content::WebContents* contents =
+    content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
         << test.url << " " << test.comment;

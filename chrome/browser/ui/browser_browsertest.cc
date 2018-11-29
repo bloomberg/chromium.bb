@@ -1616,7 +1616,7 @@ void OnZoomLevelChanged(const base::Closure& callback,
 
 namespace {
 
-int GetZoomPercent(const content::WebContents* contents,
+int GetZoomPercent(content::WebContents* contents,
                    bool* enable_plus,
                    bool* enable_minus) {
   int percent =

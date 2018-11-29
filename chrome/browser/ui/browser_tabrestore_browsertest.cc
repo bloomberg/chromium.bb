@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   // Thus we should wait for "load stop" event before we will perform
   // CheckVisbility on "about:blank".
   {
-    const content::WebContents* about_blank_contents =
+    content::WebContents* about_blank_contents =
         browser->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ("about:blank", about_blank_contents->GetURL().spec());
     if (about_blank_contents->IsLoading() ||
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
   // The same as in RecentTabsMenuTabDisposition test case.
   // See there for the explanation.
   {
-    const content::WebContents* about_blank_contents =
+    content::WebContents* about_blank_contents =
         browser->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ("about:blank", about_blank_contents->GetURL().spec());
     if (about_blank_contents->IsLoading() ||

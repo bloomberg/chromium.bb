@@ -74,7 +74,7 @@ class ContextualSearchRankerLoggerImpl {
   void LogFeature(const std::string& feature_name, int value);
 
   // Sets up the Ranker Predictor for the given |web_contents|.
-  void SetupRankerPredictor(const content::WebContents& web_contents);
+  void SetupRankerPredictor(content::WebContents& web_contents);
 
   // Logs to UMA when an important feature or outcome is present in the example.
   void logImportantFeaturePresent(const std::string& feature,

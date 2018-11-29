@@ -59,16 +59,15 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
 
   // Returns the current zoom level for the specified WebContents. This may
   // be a temporary zoom level, depending on UsesTemporaryZoomLevel().
-  double GetZoomLevelForWebContents(
-      const WebContentsImpl& web_contents_impl) const;
+  double GetZoomLevelForWebContents(WebContentsImpl* web_contents_impl) const;
 
   bool PageScaleFactorIsOneForWebContents(
-      const WebContentsImpl& web_contents_impl) const;
+      WebContentsImpl* web_contents_impl) const;
 
   // Sets the zoom level for this WebContents. If this WebContents is using
   // a temporary zoom level, then level is only applied to this WebContents.
   // Otherwise, the level will be applied on a host level.
-  void SetZoomLevelForWebContents(const WebContentsImpl& web_contents_impl,
+  void SetZoomLevelForWebContents(WebContentsImpl* web_contents_impl,
                                   double level);
 
   // Sets the zoom level for the specified view. The level may be set for only

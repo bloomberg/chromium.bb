@@ -89,7 +89,7 @@ void SuspiciousSiteTrigger::CreateForWebContents(
 
 bool SuspiciousSiteTrigger::MaybeStartReport() {
   SBErrorOptions error_options =
-      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, web_contents());
 
   security_interstitials::UnsafeResource resource;
   resource.threat_type = SB_THREAT_TYPE_SUSPICIOUS_SITE;
@@ -124,7 +124,7 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
 
 void SuspiciousSiteTrigger::FinishReport() {
   SBErrorOptions error_options =
-      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, web_contents());
   if (trigger_manager_->FinishCollectingThreatDetails(
           TriggerType::SUSPICIOUS_SITE, web_contents(), base::TimeDelta(),
           /*did_proceed=*/false, /*num_visits=*/0, error_options)) {
@@ -139,7 +139,7 @@ void SuspiciousSiteTrigger::FinishReport() {
 void SuspiciousSiteTrigger::SuspiciousSiteDetectedWhenMonitoring() {
   DCHECK_EQ(TriggerState::MONITOR_MODE, current_state_);
   SBErrorOptions error_options =
-      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, web_contents());
   TriggerManagerReason reason;
   if (trigger_manager_->CanStartDataCollectionWithReason(
           error_options, TriggerType::SUSPICIOUS_SITE, &reason) ||

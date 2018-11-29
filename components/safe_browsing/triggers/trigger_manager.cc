@@ -74,10 +74,10 @@ void TriggerManager::set_trigger_throttler(TriggerThrottler* throttler) {
 // static
 SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
     const PrefService& pref_service,
-    const content::WebContents& web_contents) {
+    content::WebContents* web_contents) {
   return SBErrorOptions(/*is_main_frame_load_blocked=*/false,
                         IsExtendedReportingOptInAllowed(pref_service),
-                        web_contents.GetBrowserContext()->IsOffTheRecord(),
+                        web_contents->GetBrowserContext()->IsOffTheRecord(),
                         IsExtendedReportingEnabled(pref_service),
                         IsExtendedReportingPolicyManaged(pref_service),
                         /*is_proceed_anyway_disabled=*/false,

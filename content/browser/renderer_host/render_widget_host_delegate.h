@@ -78,7 +78,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // for the pending page. Otherwise, this returns the zoom level for the
   // current page. Note that subframe navigations do not affect the zoom level,
   // which is tracked at the level of the page.
-  virtual double GetPendingPageZoomLevel() const;
+  virtual double GetPendingPageZoomLevel();
 
   // The RenderWidgetHost lost the focus.
   virtual void RenderWidgetLostFocus(
@@ -199,7 +199,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                   bool privileged) {}
 
   // Returns whether the associated tab is in fullscreen mode.
-  virtual bool IsFullscreenForCurrentTab() const;
+  virtual bool IsFullscreenForCurrentTab();
 
   // Returns the display mode for the view.
   virtual blink::WebDisplayMode GetDisplayMode(

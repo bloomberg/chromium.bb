@@ -271,7 +271,7 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
     return false;
   if (scheme.empty())  // Any trusted popup window
     return true;
-  const content::WebContents* web_contents =
+  content::WebContents* web_contents =
       browser->tab_strip_model()->GetWebContentsAt(0);
   if (!web_contents)
     return false;

@@ -284,7 +284,7 @@ void MediaInternals::AudioLogImpl::SendWebContentsTitleHelper(
     return;
   }
 
-  const WebContents* web_contents = WebContents::FromRenderFrameHost(
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
       RenderFrameHost::FromID(render_process_id, render_frame_id));
   if (!web_contents)
     return;

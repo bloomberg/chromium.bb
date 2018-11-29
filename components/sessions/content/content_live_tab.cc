@@ -64,7 +64,7 @@ ContentLiveTab::GetPlatformSpecificTabData() {
       web_contents());
 }
 
-const std::string& ContentLiveTab::GetUserAgentOverride() const {
+const std::string& ContentLiveTab::GetUserAgentOverride() {
   return web_contents()->GetUserAgentOverride();
 }
 

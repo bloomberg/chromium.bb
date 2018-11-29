@@ -24,7 +24,7 @@ using content::BrowserThread;
 namespace zoom {
 
 double ZoomController::GetZoomLevelForWebContents(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   if (!web_contents)
     return 0.0;
 

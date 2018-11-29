@@ -19,7 +19,7 @@
 DownloadPermissionRequest::DownloadPermissionRequest(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
     : host_(host) {
-  const content::WebContents* web_contents = host_->web_contents();
+  content::WebContents* web_contents = host_->web_contents();
   DCHECK(web_contents);
   request_origin_ = web_contents->GetURL().GetOrigin();
 }

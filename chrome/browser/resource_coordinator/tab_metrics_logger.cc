@@ -81,7 +81,7 @@ TabMetricsEvent::ContentType TabMetricsLogger::GetContentTypeFromMimeType(
 
 // static
 int TabMetricsLogger::GetSiteEngagementScore(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   if (!SiteEngagementService::IsEnabled())
     return -1;
 

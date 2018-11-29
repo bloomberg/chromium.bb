@@ -9,9 +9,8 @@
 #include "content/public/browser/web_contents.h"
 
 SearchIPCRouterPolicyImpl::SearchIPCRouterPolicyImpl(
-    const content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      is_incognito_(true) {
+    content::WebContents* web_contents)
+    : web_contents_(web_contents), is_incognito_(true) {
   DCHECK(web_contents);
 
   Profile* profile =

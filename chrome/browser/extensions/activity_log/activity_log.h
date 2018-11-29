@@ -64,7 +64,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   static ActivityLog* GetInstance(content::BrowserContext* context);
 
   // Invoked when a ContentScript is executed.
-  void OnScriptsExecuted(const content::WebContents* web_contents,
+  void OnScriptsExecuted(content::WebContents* web_contents,
                          const ExecutingScriptsMap& extension_ids,
                          const GURL& on_url);
 

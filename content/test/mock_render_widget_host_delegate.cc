@@ -53,7 +53,7 @@ TextInputManager* MockRenderWidgetHostDelegate::GetTextInputManager() {
   return &text_input_manager_;
 }
 
-bool MockRenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
+bool MockRenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
   return is_fullscreen_;
 }
 

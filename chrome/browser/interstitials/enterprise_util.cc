@@ -29,7 +29,7 @@ extensions::SafeBrowsingPrivateEventRouter* GetEventRouter(
       browser_context);
 }
 
-std::string GetUserName(const content::WebContents* web_contents) {
+std::string GetUserName(content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* identity_manager =

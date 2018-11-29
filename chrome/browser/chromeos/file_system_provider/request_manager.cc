@@ -230,8 +230,7 @@ bool RequestManager::IsInteractingWithUser() const {
     const TabStripModel* const tabs = browser->tab_strip_model();
     DCHECK(tabs);
     for (int i = 0; i < tabs->count(); ++i) {
-      const content::WebContents* const web_contents =
-          tabs->GetWebContentsAt(i);
+      content::WebContents* const web_contents = tabs->GetWebContentsAt(i);
       const GURL& url = web_contents->GetURL();
       if (url.SchemeIs(extensions::kExtensionScheme) &&
           url.host_piece() == provider_id_) {

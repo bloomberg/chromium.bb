@@ -106,7 +106,7 @@ class OverscrollTestWebContents : public TestWebContents {
     return fake_contents_window_.get();
   }
 
-  bool IsBeingDestroyed() const override { return is_being_destroyed_; }
+  bool IsBeingDestroyed() override { return is_being_destroyed_; }
 
  private:
   std::unique_ptr<aura::Window> fake_native_view_;

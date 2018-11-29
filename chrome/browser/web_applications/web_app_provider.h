@@ -48,8 +48,7 @@ class WebAppProvider : public KeyedService,
                        public content::NotificationObserver {
  public:
   static WebAppProvider* Get(Profile* profile);
-  static WebAppProvider* GetForWebContents(
-      const content::WebContents* web_contents);
+  static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
 
   explicit WebAppProvider(Profile* profile);
 
@@ -62,7 +61,7 @@ class WebAppProvider : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns true if a bookmark can be installed for a given |web_contents|.
-  static bool CanInstallWebApp(const content::WebContents* web_contents);
+  static bool CanInstallWebApp(content::WebContents* web_contents);
 
   // Starts a bookmark installation process for a given |web_contents|.
   static void InstallWebApp(content::WebContents* web_contents,

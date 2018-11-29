@@ -205,7 +205,7 @@ void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
 }
 
 void CheckIfTabCanCommunicateWithUserWhileInBackground(
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     DecisionDetails* details) {
   DCHECK(details);
 

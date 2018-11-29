@@ -37,7 +37,7 @@ class WebAppInstallManager final : public InstallManager,
   ~WebAppInstallManager() override;
 
   // InstallManager:
-  bool CanInstallWebApp(const content::WebContents* web_contents) override;
+  bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebApp(content::WebContents* contents,
                      bool force_shortcut_app,
                      OnceInstallCallback callback) override;

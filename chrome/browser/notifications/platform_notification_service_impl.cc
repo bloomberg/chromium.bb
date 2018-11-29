@@ -74,7 +74,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
     if (browser->profile() != profile)
       continue;
 
-    const content::WebContents* active_contents =
+    content::WebContents* active_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     if (!active_contents)
       continue;

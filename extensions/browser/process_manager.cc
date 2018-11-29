@@ -450,7 +450,7 @@ const Extension* ProcessManager::GetExtensionForRenderFrameHost(
 }
 
 const Extension* ProcessManager::GetExtensionForWebContents(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   if (!web_contents->GetSiteInstance())
     return nullptr;
   const Extension* extension =

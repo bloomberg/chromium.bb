@@ -180,7 +180,7 @@ void SafeBrowsingTriggeredPopupBlocker::OnSubresourceFilterGoingAway() {
 }
 
 bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   // If feature is disabled, return false. This is done so that if the feature
   // is broken it can be disabled irrespective of the policy.
   if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))

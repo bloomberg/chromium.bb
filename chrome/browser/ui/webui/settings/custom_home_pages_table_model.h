@@ -54,7 +54,7 @@ class CustomHomePagesTableModel : public ui::TableModel {
 
   // Clears any entries and fills the list with pages currently opened in the
   // browser. |ignore_contents| is omitted from the open pages.
-  void SetToCurrentlyOpenPages(const content::WebContents* ignore_contents);
+  void SetToCurrentlyOpenPages(content::WebContents* ignore_contents);
 
   // Returns the set of urls this model contains.
   std::vector<GURL> GetURLs();

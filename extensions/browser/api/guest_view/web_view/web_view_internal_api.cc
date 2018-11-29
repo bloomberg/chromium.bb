@@ -83,7 +83,7 @@ uint32_t MaskForKey(const char* key) {
 }
 
 HostID GenerateHostIDFromEmbedder(const extensions::Extension* extension,
-                                  const content::WebContents* web_contents) {
+                                  content::WebContents* web_contents) {
   if (extension)
     return HostID(HostID::EXTENSIONS, extension->id());
 

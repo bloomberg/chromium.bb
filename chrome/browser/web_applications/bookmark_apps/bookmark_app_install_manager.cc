@@ -18,7 +18,7 @@ BookmarkAppInstallManager::BookmarkAppInstallManager() = default;
 BookmarkAppInstallManager::~BookmarkAppInstallManager() = default;
 
 bool BookmarkAppInstallManager::CanInstallWebApp(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   return extensions::TabHelper::FromWebContents(web_contents)
       ->CanCreateBookmarkApp();
 }

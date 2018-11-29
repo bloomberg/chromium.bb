@@ -1070,7 +1070,7 @@ void ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
 }
 
 bool ChromeLauncherController::IsIncognito(
-    const content::WebContents* web_contents) const {
+    content::WebContents* web_contents) const {
   const Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return profile->IsOffTheRecord() && !profile->IsGuestSession() &&
