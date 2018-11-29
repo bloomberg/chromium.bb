@@ -1344,6 +1344,29 @@ GL_FUNCTIONS = [
   'names': ['glMinSampleShading'],
   'arguments': 'GLfloat value', },
 { 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawArraysANGLE',
+                 'extensions': ['GL_ANGLE_multi_draw'] }],
+  'arguments': 'GLenum mode, const GLint* firsts, '
+               'const GLsizei* counts, GLsizei drawcount', },
+{ 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawArraysInstancedANGLE',
+                 'extensions': ['GL_ANGLE_multi_draw'] }],
+  'arguments': 'GLenum mode, const GLint* firsts, '
+               'const GLsizei* counts, const GLsizei* instanceCounts, '
+               'GLsizei drawcount', },
+{ 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawElementsANGLE',
+                 'extensions': ['GL_ANGLE_multi_draw'] }],
+  'arguments': 'GLenum mode, const GLsizei* counts, '
+               'GLenum type, const GLvoid* const* indices, '
+               'GLsizei drawcount', },
+{ 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawElementsInstancedANGLE',
+                 'extensions': ['GL_ANGLE_multi_draw'] }],
+  'arguments': 'GLenum mode, const GLsizei* counts, '
+               'GLenum type, const GLvoid* const* indices, '
+               'const GLsizei* instanceCounts, GLsizei drawcount', },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glObjectLabel' },
                { 'name': 'glObjectLabelKHR',
                  'extensions': ['GL_KHR_debug'] }],
