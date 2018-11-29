@@ -27,7 +27,10 @@
 - (void)onRefreshTokenUpdatedForAccount:(const AccountInfo&)accountInfo
                                   valid:(BOOL)isValid;
 - (void)onRefreshTokenRemovedForAccount:(const std::string&)accountId;
+- (void)onRefreshTokensLoaded;
 - (void)onAccountsInCookieUpdated:(const std::vector<AccountInfo>&)accounts;
+- (void)onStartBatchOfRefreshTokenStateChanges;
+- (void)onEndBatchOfRefreshTokenStateChanges;
 
 @end
 
@@ -49,8 +52,11 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const std::vector<AccountInfo>& accounts) override;
+  void OnStartBatchOfRefreshTokenStateChanges() override;
+  void OnEndBatchOfRefreshTokenStateChanges() override;
 
  private:
   // Identity manager to observe.
