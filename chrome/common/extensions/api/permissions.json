@@ -15,13 +15,13 @@
             "type": "array",
             "items": {"type": "string"},
             "optional": true,
-            "description": "List of named permissions (does not include hosts or origins).  Anything listed here must appear in the <code>optional_permissions</code> list in the manifest."
+            "description": "List of named permissions (does not include hosts or origins)."
           },
           "origins": {
             "type": "array",
             "items": {"type": "string"},
             "optional": true,
-            "description": "List of origin permissions. Anything listed here must be a subset of a host that appears in the <code>optional_permissions</code> list in the manifest. For example, if <code>http://*.example.com/</code> or <code>http://*/</code> appears in <code>optional_permissions</code>, you can request an origin of <code>http://help.example.com/</code>. Any path is ignored."
+            "description": "The list of host permissions, including those specified in the <code>optional_permissions</code> or <code>permissions</code> keys in the manifest, and those associated with <a href='content_scripts'>Content Scripts</a>."
           }
         }
       }
@@ -65,7 +65,7 @@
                {
                 "name": "permissions",
                 "$ref": "Permissions",
-                "description": "The extension's active permissions."
+                "description": "The extension's active permissions. Note that the <code>origins</code> property will contain granted origins from those specified in the <code>permissions</code> and <code>optional_permissions</code> keys in the manifest and those associated with <a href='content_scripts'>Content Scripts</a>."
               }
             ]
           }
@@ -87,7 +87,7 @@
               {
                 "name": "result",
                 "type": "boolean",
-                "description": "True if the extension has the specified permissions."
+                "description": "True if the extension has the specified permissions. If an origin is specified as both an optional permission and a content script match pattern, this will return <code>false</code> unless both permissions are granted."
               }
             ]
           }
@@ -96,7 +96,7 @@
       {
         "name": "request",
         "type": "function",
-        "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, $(ref:runtime.lastError) will be set.",
+        "description": "Requests access to the specified permissions, displaying a prompt to the user if necessary. These permissions must either be defined in the <code>optional_permissions</code> field of the manifest or be required permissions that were withheld by the user. Paths on origin patterns will be ignored. You can request subsets of optional origin permissions; for example, if you specify <code>*://*/*</code> in the <code>optional_permissions</code> section of the manifest, you can request <code>http://example.com/</code>. If there are any problems requesting the permissions, $(ref:runtime.lastError) will be set.",
         "parameters": [
           {
             "name": "permissions",
