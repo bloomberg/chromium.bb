@@ -58,7 +58,7 @@
   },
   {
     "name": "WebRtcUseEchoCanceller3",
-    // "owners": [ "your-team" ],
+    "owners": [ "peah@chromium.org", "gustaf@chromium.org" ],
     "expiry_milestone": 76
   },
   {
