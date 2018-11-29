@@ -19,6 +19,7 @@
 namespace {
 
 using sessions_helper::CheckInitialState;
+using sessions_helper::CloseTab;
 using sessions_helper::DeleteForeignSession;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
@@ -73,6 +74,30 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 
   ASSERT_TRUE(OpenTab(0, GURL(url)));
   WaitForForeignSessionsToSync(0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientClosed) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Open two tabs on client 0.
+  OpenTab(0, GURL(kURL1));
+  OpenTab(0, GURL(kURL2));
+  WaitForForeignSessionsToSync(0, 1);
+
+  // Close one of the two tabs. We also issue another navigation to make sure
+  // association logic kicks in.
+  CloseTab(/*index=*/0, /*tab_index=*/1);
+  NavigateTab(0, GURL(kURL3));
+  WaitForForeignSessionsToSync(0, 1);
+
+  std::vector<sync_pb::SyncEntity> entities =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::SESSIONS);
+  // Two header entities and two tab entities (one of the two has been closed
+  // but considered "free" for future recycling, i.e. not deleted).
+  ASSERT_EQ(4U, entities.size());
+  for (const auto& entity : entities) {
+    EXPECT_FALSE(entity.deleted());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, E2E_ENABLED(AllChanged)) {

@@ -932,12 +932,20 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
   InitializeBridge();
   StartSyncing();
 
-  ASSERT_THAT(GetData(header_storage_key),
-              EntityDataHasSpecifics(
-                  MatchesHeader(kLocalSessionTag, {kWindowId2}, {kTabId3})));
+  // One tab node de should be free at this point. In the current implementation
+  // (subject to change), this is |kTabNodeId1|. This is because |kTabId3| is
+  // assigned |kTabNodeId2|.
+  ASSERT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               EntityDataHasSpecifics(
+                   MatchesHeader(kLocalSessionTag, {kWindowId2}, {kTabId3}))),
+          Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId2, kTabId3,
+                                     kTabNodeId2, {"http://qux.com/"})))));
 
-  // |kTabNodeId1| should be free at this point. When a new tab is opened
-  // (|kTabId4|), it should be reused.
+  // When a new tab is opened (|kTabId4|), |kTabNodeId1| should be reused.
   AddTab(kWindowId2, "http://quux.com/", kTabId4);
   EXPECT_THAT(
       GetAllData(),

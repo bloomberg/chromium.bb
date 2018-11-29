@@ -34,9 +34,9 @@ using base::HistogramSamples;
 using base::HistogramTester;
 using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
+using sessions_helper::CloseTab;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
-using sessions_helper::SessionsSyncManagerHasTabWithURL;
 using sessions_helper::MoveTab;
 using sessions_helper::NavigateTab;
 using sessions_helper::NavigateTabBack;
@@ -53,6 +53,7 @@ using typed_urls_helper::GetUrlFromClient;
 static const char* kURL1 = "data:text/html,<html><title>Test</title></html>";
 static const char* kURL2 = "data:text/html,<html><title>Test2</title></html>";
 static const char* kURL3 = "data:text/html,<html><title>Test3</title></html>";
+static const char* kURL4 = "data:text/html,<html><title>Test4</title></html>";
 static const char* kBaseFragmentURL =
     "data:text/html,<html><title>Fragment</title><body></body></html>";
 static const char* kSpecifiedFragmentURL =
@@ -68,6 +69,39 @@ void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
   EXPECT_GE(sample_count, expected_inclusive_lower_bound);
   EXPECT_EQ(sample_count, samples->TotalCount());
 }
+
+class IsUrlSyncedChecker : public SingleClientStatusChangeChecker {
+ public:
+  IsUrlSyncedChecker(const std::string& url,
+                     fake_server::FakeServer* fake_server,
+                     browser_sync::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service),
+        url_(url),
+        fake_server_(fake_server) {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    std::vector<sync_pb::SyncEntity> entities =
+        fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
+    for (const sync_pb::SyncEntity& entity : entities) {
+      for (const auto& navigation :
+           entity.specifics().session().tab().navigation()) {
+        if (navigation.virtual_url() == url_) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for URLs to be commited to the server";
+  }
+
+ private:
+  const std::string url_;
+  fake_server::FakeServer* fake_server_;
+};
 
 class SingleClientSessionsSyncTest : public SyncTest {
  public:
@@ -181,6 +215,30 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistory) {
   WaitForURLOnServer(GURL(chrome::kChromeUIHistoryURL));
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  // Two tabs are opened initially.
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
+
+  // Close one of the two tabs immediately after issuing an navigation. We also
+  // issue another navigation to make sure association logic kicks in.
+  NavigateTab(0, GURL(kURL3));
+  CloseTab(/*index=*/0, /*tab_index=*/1);
+  NavigateTab(0, GURL(kURL4));
+
+  ASSERT_TRUE(
+      IsUrlSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0)).Wait());
+
+  // All URLs should be synced, for synced history to be complete. In
+  // particular, |kURL3| should be synced despite the tab being closed.
+  EXPECT_TRUE(
+      IsUrlSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0)).Wait());
+}
+
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -284,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   WaitForURLOnServer(base_url);
 
   GURL first_url = GURL(kURL2);
-  ASSERT_TRUE(NavigateTab(0, first_url));
+  NavigateTab(0, first_url);
   WaitForURLOnServer(first_url);
 
   // Check that the navigation chain matches the above sequence of {base_url,
@@ -448,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
 
     // Trigger a sync and wait for it.
     GURL url = GURL(kURL2);
-    ASSERT_TRUE(NavigateTab(0, url));
+    NavigateTab(0, url);
     WaitForURLOnServer(url);
 
     // Verify the cookie jar mismatch bool is set to false.
