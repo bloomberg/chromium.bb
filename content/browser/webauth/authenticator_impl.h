@@ -108,7 +108,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // requests coming from the CryptoToken U2F extension, modifies the object key
   // 'type' as required[2].
   // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
-  // [2] https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#client-data
+  // [2]
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#client-data
   static std::string SerializeCollectedClientDataToJson(
       const std::string& type,
       const std::string& origin,
@@ -186,11 +187,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
-  // If the "appid" extension is in use then this is the SHA-256 hash of a U2F
-  // AppID. This is used to detect when an assertion request was successfully
-  // retried with this value.
-  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
-      alternative_application_parameter_;
+  base::Optional<std::string> app_id_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;

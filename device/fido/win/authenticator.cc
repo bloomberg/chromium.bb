@@ -261,13 +261,10 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   get_assertion_data_ = GetAssertionData{};
   get_assertion_data_->rp_id16 = base::UTF8ToUTF16(request.rp_id());
   base::Optional<base::string16> opt_app_id16 = base::nullopt;
-  // TODO(martinkr): alternative_application_parameter() is already hashed,
-  // so this doesn't work. We need to make it store the full AppID.
-  if (request.alternative_application_parameter()) {
+  if (request.app_id()) {
     get_assertion_data_->opt_app_id16 = base::UTF8ToUTF16(base::StringPiece(
-        reinterpret_cast<const char*>(
-            request.alternative_application_parameter()->data()),
-        request.alternative_application_parameter()->size()));
+        reinterpret_cast<const char*>(request.app_id()->data()),
+        request.app_id()->size()));
   }
 
   get_assertion_data_->request_client_data = request.client_data_json();
