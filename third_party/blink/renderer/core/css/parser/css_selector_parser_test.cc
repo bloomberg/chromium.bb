@@ -771,4 +771,88 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
   }
 }
 
+TEST(CSSSelectorParserTest, UseCountRejectedNot) {
+  auto ExpectCount = [](const char* selector, WebFeature feature) {
+    std::unique_ptr<DummyPageHolder> dummy_holder =
+        DummyPageHolder::Create(IntSize(500, 500));
+    Document* doc = &dummy_holder->GetDocument();
+    Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
+    CSSParserContext* context = CSSParserContext::Create(
+        kHTMLStandardMode, SecureContextMode::kSecureContext,
+        CSSParserContext::kLiveProfile, doc);
+    StyleSheetContents* sheet = StyleSheetContents::Create(context);
+    EXPECT_FALSE(UseCounter::IsCounted(*doc, feature));
+
+    CSSTokenizer tokenizer(selector);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorParser::ParseSelector(range, context, sheet);
+
+    bool result = UseCounter::IsCounted(*doc, feature);
+    EXPECT_TRUE(result);
+  };
+
+  ExpectCount(":not(:nonsense :gibberish)",
+              WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(:nonsense :gibberish, .a)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not()", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(,)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(,,)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(* .a)", WebFeature::kCSSSelectorNotWithValidList);
+  ExpectCount(":not(:nonsense)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(* * .previouslyFailed)",
+              WebFeature::kCSSSelectorNotWithValidList);
+  ExpectCount(":not(* :nonsense)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(:nonsense *)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(*,)", WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(*,,)", WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(:nonsense ,)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(:nonsense,,)", WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(*, *)", WebFeature::kCSSSelectorNotWithValidList);
+  ExpectCount(":not(*, :nonsense)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(* , * *)", WebFeature::kCSSSelectorNotWithValidList);
+  ExpectCount(":not(*, * :nonsense)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(:nonsense,*)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(:nonsense , :nonsense)",
+              WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(:nonsense, * *)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(:nonsense, * :nonsense )",
+              WebFeature::kCSSSelectorNotWithInvalidList);
+  ExpectCount(":not(*, :not(* * :nonsense))",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(:not(* * :nonsense) , *)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+  ExpectCount(":not(.a || :nonsense, *)",
+              WebFeature::kCSSSelectorNotWithPartiallyValidList);
+}
+
+TEST(CSSSelectorParserTest, SimpleNotNeverCounted) {
+  // :not with a simple selector from CSS Selectors 3 is not counted.
+  std::unique_ptr<DummyPageHolder> dummy_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  Document* doc = &dummy_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kSecureContext,
+      CSSParserContext::kLiveProfile, doc);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  CSSTokenizer tokenizer(":not(*)");
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+  CSSSelectorParser::ParseSelector(range, context, sheet);
+
+  EXPECT_FALSE(
+      UseCounter::IsCounted(*doc, WebFeature::kCSSSelectorNotWithValidList));
+  EXPECT_FALSE(
+      UseCounter::IsCounted(*doc, WebFeature::kCSSSelectorNotWithInvalidList));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      *doc, WebFeature::kCSSSelectorNotWithPartiallyValidList));
+}
+
 }  // namespace blink

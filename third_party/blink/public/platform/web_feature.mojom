@@ -2094,6 +2094,9 @@ enum WebFeature {
   kFlexboxSingleLineAlignContent = 2642,
   kSignedExchangeInnerResponseInMainFrame = 2643,
   kSignedExchangeInnerResponseInSubFrame = 2644,
+  kCSSSelectorNotWithValidList = 2645,
+  kCSSSelectorNotWithInvalidList = 2646,
+  kCSSSelectorNotWithPartiallyValidList = 2647,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
