@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <GLES3/gl3.h>
 #include <stdint.h>
 
 #include <vector>
@@ -272,6 +273,41 @@ TEST_P(GLClearFramebufferTest, SeparateFramebufferClear) {
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   const uint8_t kGreen[] = {0, 255, 0, 255};
   EXPECT_TRUE(GLTestHelper::CheckPixels(3, 3, 1, 1, 0, kGreen, nullptr));
+}
+
+class ES3ClearBufferTest : public testing::Test {
+ protected:
+  static const GLsizei kCanvasSize = 4;
+
+  void SetUp() override {
+    GLManager::Options options;
+    options.size = gfx::Size(kCanvasSize, kCanvasSize);
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
+
+    gl_.Initialize(options);
+  }
+
+  bool ShouldSkipTest() const {
+    // If a driver isn't capable of supporting ES3 context, creating
+    // ContextGroup will fail.
+    // See crbug.com/654709.
+    return (!gl_.decoder() || !gl_.decoder()->GetContextGroup());
+  }
+
+  void TearDown() override {
+    GLTestHelper::CheckGLError("no errors", __LINE__);
+    gl_.Destroy();
+  }
+
+  GLManager gl_;
+};
+
+TEST_F(ES3ClearBufferTest, ClearBuffersuiv) {
+  // This is a regression test for https://crbug.com/908749
+  GLuint value[1] = {0u};
+  glClearBufferuiv(GL_STENCIL, 0, value);
+  // The above call should not crash in ASAN build.
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), glGetError());
 }
 
 }  // namespace gpu

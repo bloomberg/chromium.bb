@@ -243,6 +243,10 @@ void GLES2Implementation::ClearBufferfv(GLenum buffer,
                      << ")");
   size_t count = GLES2Util::CalcClearBufferfvDataCount(buffer);
   DCHECK_LE(count, 4u);
+  if (count == 0) {
+    SetGLErrorInvalidEnum("glClearBufferfv", buffer, "buffer");
+    return;
+  }
   for (size_t ii = 0; ii < count; ++ii)
     GPU_CLIENT_LOG("value[" << ii << "]: " << value[ii]);
   helper_->ClearBufferfvImmediate(buffer, drawbuffers, value);
@@ -259,6 +263,10 @@ void GLES2Implementation::ClearBufferiv(GLenum buffer,
                      << ")");
   size_t count = GLES2Util::CalcClearBufferivDataCount(buffer);
   DCHECK_LE(count, 4u);
+  if (count == 0) {
+    SetGLErrorInvalidEnum("glClearBufferiv", buffer, "buffer");
+    return;
+  }
   for (size_t ii = 0; ii < count; ++ii)
     GPU_CLIENT_LOG("value[" << ii << "]: " << value[ii]);
   helper_->ClearBufferivImmediate(buffer, drawbuffers, value);
@@ -273,7 +281,12 @@ void GLES2Implementation::ClearBufferuiv(GLenum buffer,
                      << GLES2Util::GetStringBufferuiv(buffer) << ", "
                      << drawbuffers << ", " << static_cast<const void*>(value)
                      << ")");
-  size_t count = 4;
+  size_t count = GLES2Util::CalcClearBufferuivDataCount(buffer);
+  DCHECK_LE(count, 4u);
+  if (count == 0) {
+    SetGLErrorInvalidEnum("glClearBufferuiv", buffer, "buffer");
+    return;
+  }
   for (size_t ii = 0; ii < count; ++ii)
     GPU_CLIENT_LOG("value[" << ii << "]: " << value[ii]);
   helper_->ClearBufferuivImmediate(buffer, drawbuffers, value);

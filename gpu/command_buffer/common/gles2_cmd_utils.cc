@@ -1649,6 +1649,15 @@ size_t GLES2Util::CalcClearBufferfvDataCount(int buffer) {
   }
 }
 
+size_t GLES2Util::CalcClearBufferuivDataCount(int buffer) {
+  switch (buffer) {
+    case GL_COLOR:
+      return 4;
+    default:
+      return 0;
+  }
+}
+
 // static
 void GLES2Util::MapUint64ToTwoUint32(
     uint64_t v64, uint32_t* v32_0, uint32_t* v32_1) {

@@ -236,6 +236,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static size_t CalcClearBufferivDataCount(int buffer);
   static size_t CalcClearBufferfvDataCount(int buffer);
+  static size_t CalcClearBufferuivDataCount(int buffer);
 
   static void MapUint64ToTwoUint32(
       uint64_t v64, uint32_t* v32_0, uint32_t* v32_1);
