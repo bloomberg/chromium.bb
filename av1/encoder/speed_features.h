@@ -614,6 +614,10 @@ typedef struct SPEED_FEATURES {
   // Gate warp evaluation for motions of type IDENTITY,
   // TRANSLATION and AFFINE(based on number of warp neighbors)
   int prune_warp_using_wmtype;
+
+  // Perform simple_motion_search on each possible subblock and use it to prune
+  // PARTITION_HORZ and PARTITION_VERT.
+  int simple_motion_search_prune_rect;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
