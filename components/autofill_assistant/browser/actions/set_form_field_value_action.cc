@@ -75,7 +75,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       // DEPRECATED: the field `keycode' used to contain a single character to
       // input as text. Since there is no easy way to convert keycodes to text,
       // this field is now deprecated and only works for US-ASCII characters.
-      // You should use the `key' field instead.
+      // You should use the `keyboard_input' field instead.
       if (key_field.keycode() < 128) {  // US-ASCII
         delegate->SendKeyboardInput(
             selector, std::string(1, char(key_field.keycode())),
