@@ -355,10 +355,11 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
       self.AssertLogsContain(logs, 'Stale args.gn file', inverted=True)
 
-  def testGnArgsStalenessIgnoreStripped(self):
-    """Verifies the GN args ignore stripped args."""
+  def testGnArgsStalenessExtraArgs(self):
+    """Verifies the GN extra args regenerate gn."""
     with cros_test_lib.LoggingCapturer() as logs:
-      self.SetupCommandMock()
+      self.SetupCommandMock(
+          extra_args=['--gn-extra-args=dcheck_always_on=true'])
       self.cmd_mock.inst.Run()
 
       out_dir = 'out_%s' % SDKFetcherMock.BOARD
@@ -368,8 +369,6 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
       osutils.SafeMakedirs(gn_args_file_dir)
       gn_args_dict = gn_helpers.FromGNArgs(self.cmd_mock.env['GN_ARGS'])
-      # 'dcheck_always_on' should be ignored.
-      gn_args_dict['dcheck_always_on'] = True
       osutils.WriteFile(gn_args_file_path, gn_helpers.ToGNString(gn_args_dict))
 
       self.cmd_mock.inst.Run()
