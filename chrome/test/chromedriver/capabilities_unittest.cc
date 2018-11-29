@@ -234,7 +234,7 @@ TEST(ParseCapabilities, IllegalProxyType) {
 TEST(ParseCapabilities, DirectProxy) {
   Capabilities capabilities;
   base::DictionaryValue proxy;
-  proxy.SetString("proxyType", "DIRECT");
+  proxy.SetString("proxyType", "direct");
   base::DictionaryValue caps;
   caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
@@ -257,7 +257,7 @@ TEST(ParseCapabilities, SystemProxy) {
 TEST(ParseCapabilities, PacProxy) {
   Capabilities capabilities;
   base::DictionaryValue proxy;
-  proxy.SetString("proxyType", "PAC");
+  proxy.SetString("proxyType", "pac");
   proxy.SetString("proxyAutoconfigUrl", "test.wpad");
   base::DictionaryValue caps;
   caps.SetKey("proxy", std::move(proxy));
@@ -270,7 +270,7 @@ TEST(ParseCapabilities, PacProxy) {
 TEST(ParseCapabilities, MissingProxyAutoconfigUrl) {
   Capabilities capabilities;
   base::DictionaryValue proxy;
-  proxy.SetString("proxyType", "PAC");
+  proxy.SetString("proxyType", "pac");
   proxy.SetString("httpProxy", "http://localhost:8001");
   base::DictionaryValue caps;
   caps.SetKey("proxy", std::move(proxy));
