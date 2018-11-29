@@ -173,13 +173,13 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && layer_) {
-    layer_->SetBounds(static_cast<gfx::Size>(frame_rect_.Size()));
+    layer_->SetOffsetToTransformParent(
+        gfx::Vector2dF(frame_rect_.X(), frame_rect_.Y()));
+    layer_->SetBounds(gfx::Size(frame_rect_.Size()));
     layer_->SetIsDrawable(true);
     // With Slimming Paint v2, composited plugins should have their layers
     // inserted rather than invoking WebPlugin::paint.
-    RecordForeignLayer(context, *element_->GetLayoutObject(),
-                       DisplayItem::kForeignLayerPlugin, layer_,
-                       FloatPoint(FrameRect().Location()), frame_rect_.Size());
+    RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_);
     return;
   }
 

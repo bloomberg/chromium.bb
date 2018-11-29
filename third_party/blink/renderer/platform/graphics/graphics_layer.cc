@@ -1022,27 +1022,44 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
 
 void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
                                   const IntPoint& layer_offset) {
-  if (!layer_state_) {
+  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
+
+  if (layer_state_) {
+    layer_state_->state = layer_state;
+    layer_state_->offset = layer_offset;
+  } else {
     layer_state_ =
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
-    return;
   }
-  layer_state_->state = layer_state;
-  layer_state_->offset = layer_offset;
 
-  CHECK(layer_state_->state.Transform() && layer_state_->state.Clip() &&
-        layer_state_->state.Effect());
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    CcLayer()->SetOffsetToTransformParent(
+        gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+
+    if (!contents_layer_state_ && ContentsLayer()) {
+      ContentsLayer()->SetOffsetToTransformParent(
+          gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+    }
+  }
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
                                           const IntPoint& layer_offset) {
-  if (!contents_layer_state_) {
+  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
+  DCHECK(ContentsLayer());
+
+  if (contents_layer_state_) {
+    contents_layer_state_->state = layer_state;
+    contents_layer_state_->offset = layer_offset;
+  } else {
     contents_layer_state_ =
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
-    return;
   }
-  contents_layer_state_->state = layer_state;
-  contents_layer_state_->offset = layer_offset;
+
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    ContentsLayer()->SetOffsetToTransformParent(
+        gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+  }
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

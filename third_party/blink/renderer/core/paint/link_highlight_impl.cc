@@ -246,6 +246,13 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
 
   content_layer_->SetPosition(bounding_rect.Location());
 
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    FloatPoint offset(current_graphics_layer_->GetOffsetFromTransformNode());
+    offset.MoveBy(bounding_rect.Location());
+    content_layer_->SetOffsetToTransformParent(
+        gfx::Vector2dF(offset.X(), offset.Y()));
+  }
+
   return path_has_changed;
 }
 

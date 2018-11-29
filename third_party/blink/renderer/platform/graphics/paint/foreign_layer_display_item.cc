@@ -13,23 +13,47 @@
 
 namespace blink {
 
-ForeignLayerDisplayItem::ForeignLayerDisplayItem(
-    const DisplayItemClient& client,
-    Type type,
-    scoped_refptr<cc::Layer> layer,
-    const FloatPoint& location,
-    const IntSize& bounds)
-    : DisplayItem(client, type, sizeof(*this)),
-      layer_(std::move(layer)),
-      location_(location),
-      bounds_(bounds) {
+namespace {
+
+class ForeignLayerDisplayItemClient final : public DisplayItemClient {
+ public:
+  ForeignLayerDisplayItemClient(scoped_refptr<cc::Layer> layer)
+      : layer_(std::move(layer)) {}
+
+  String DebugName() const final { return "ForeignLayer"; }
+
+  LayoutRect VisualRect() const final {
+    const auto& offset = layer_->offset_to_transform_parent();
+    return LayoutRect(LayoutPoint(offset.x(), offset.y()),
+                      LayoutSize(IntSize(layer_->bounds())));
+  }
+
+  cc::Layer* GetLayer() const { return layer_.get(); }
+
+ private:
+  scoped_refptr<cc::Layer> layer_;
+};
+
+}  // anonymous namespace
+
+ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
+                                                 scoped_refptr<cc::Layer> layer)
+    : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer)),
+                  type,
+                  sizeof(*this)) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
-  DCHECK(layer_);
+  DCHECK(GetLayer());
 }
 
-ForeignLayerDisplayItem::~ForeignLayerDisplayItem() = default;
+ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
+  delete &Client();
+}
+
+cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
+  return static_cast<const ForeignLayerDisplayItemClient&>(Client()).GetLayer();
+}
 
 void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
   NOTREACHED();
@@ -42,33 +66,31 @@ void ForeignLayerDisplayItem::AppendToDisplayItemList(
 }
 
 bool ForeignLayerDisplayItem::DrawsContent() const {
-  return true;
+  return false;
 }
 
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
   return DisplayItem::Equals(other) &&
-         layer_ == static_cast<const ForeignLayerDisplayItem&>(other).layer_;
+         GetLayer() ==
+             static_cast<const ForeignLayerDisplayItem&>(other).GetLayer();
 }
 
 #if DCHECK_IS_ON()
 void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
-  json.SetInteger("layer", layer_->id());
+  json.SetInteger("layer", GetLayer()->id());
 }
 #endif
 
 void RecordForeignLayer(GraphicsContext& context,
-                        const DisplayItemClient& client,
                         DisplayItem::Type type,
-                        scoped_refptr<cc::Layer> layer,
-                        const FloatPoint& location,
-                        const IntSize& bounds) {
+                        scoped_refptr<cc::Layer> layer) {
   PaintController& paint_controller = context.GetPaintController();
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
 
-  paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      client, type, std::move(layer), location, bounds);
+  paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(type,
+                                                            std::move(layer));
 }
 
 }  // namespace blink
