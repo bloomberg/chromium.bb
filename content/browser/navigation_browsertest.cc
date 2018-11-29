@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -40,6 +41,8 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_throttle.h"
+#include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -1444,6 +1447,45 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
   histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
                                 NavigationDownloadPolicy::kAllowOpenerNoGesture,
                                 1);
+}
+
+// Regression test for https://crbug.com/872284.
+// A NavigationThrottle cancels a download in WillProcessResponse.
+// The navigation request must be canceled and it must also cancel the network
+// request. Failing to do so resulted in the network socket being leaked.
+IN_PROC_BROWSER_TEST_F(NavigationDownloadBrowserTest,
+                       CancelDownloadOnResponseStarted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), url);
+
+  // Block every iframe in WillProcessResponse.
+  content::TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindLambdaForTesting(
+          [&](NavigationHandle* handle) -> std::unique_ptr<NavigationThrottle> {
+            auto throttle = std::make_unique<TestNavigationThrottle>(handle);
+            throttle->SetResponse(TestNavigationThrottle::WILL_PROCESS_RESPONSE,
+                                  TestNavigationThrottle::SYNCHRONOUS,
+                                  NavigationThrottle::CANCEL_AND_IGNORE);
+
+            return throttle;
+          }));
+
+  // Insert enough iframes so that if sockets are not properly released: there
+  // will not be enough of them to complete all navigations. As of today, only 6
+  // sockets can be used simultaneously. So using 7 iframes is enough. This test
+  // uses 33 as a margin.
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    for(let i = 0; i<33; ++i) {
+      let iframe = document.createElement('iframe');
+      iframe.src = './download-test1.lib'
+      document.body.appendChild(iframe);
+    }
+  )"));
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 }
 
 }  // namespace content

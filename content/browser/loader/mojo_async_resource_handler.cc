@@ -414,6 +414,7 @@ void MojoAsyncResourceHandler::FollowRedirect(
 }
 
 void MojoAsyncResourceHandler::ProceedWithResponse() {
+  was_proceed_with_response_called_ = true;
   DCHECK(did_defer_on_response_started_);
 
   request()->LogUnblocked();
@@ -644,8 +645,20 @@ void MojoAsyncResourceHandler::Cancel(uint32_t custom_reason,
   if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason)
     info->set_custom_cancel_reason(description);
 
-  ResourceDispatcherHostImpl::Get()->CancelRequestFromRenderer(
-      GlobalRequestID(info->GetChildID(), info->GetRequestID()));
+  // Navigation requests are handled by the browser process until
+  // ProceedWithResponse() is called.
+  bool canceled_from_browser =
+      !was_proceed_with_response_called_ &&
+      IsResourceTypeFrame(
+          ResourceRequestInfoImpl::ForRequest(request())->GetResourceType());
+
+  if (canceled_from_browser) {
+    ResourceDispatcherHostImpl::Get()->CancelRequest(info->GetChildID(),
+                                                     info->GetRequestID());
+  } else {
+    ResourceDispatcherHostImpl::Get()->CancelRequestFromRenderer(
+        GlobalRequestID(info->GetChildID(), info->GetRequestID()));
+  }
 }
 
 int64_t MojoAsyncResourceHandler::CalculateRecentlyReceivedBytes() {
