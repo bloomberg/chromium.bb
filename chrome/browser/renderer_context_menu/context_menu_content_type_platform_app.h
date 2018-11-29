@@ -26,7 +26,7 @@ class ContextMenuContentTypePlatformApp : public ContextMenuContentType {
  private:
   friend class ContextMenuContentTypeFactory;
 
-  const extensions::Extension* GetExtension() const;
+  const extensions::Extension* GetExtension();
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentTypePlatformApp);
 };

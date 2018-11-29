@@ -183,7 +183,7 @@ void DownloadProtectionService::CheckDownloadUrl(
     download::DownloadItem* item,
     const CheckDownloadCallback& callback) {
   DCHECK(!item->GetUrlChain().empty());
-  const content::WebContents* web_contents =
+  content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
   // |web_contents| can be null in tests.
   // Checks if this download is whitelisted by enterprise policy.

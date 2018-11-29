@@ -32,12 +32,12 @@ class NavigationControllerDelegate {
   virtual ~NavigationControllerDelegate() {}
 
   // Duplicates of WebContents methods.
-  virtual RenderViewHost* GetRenderViewHost() const = 0;
-  virtual InterstitialPage* GetInterstitialPage() const = 0;
-  virtual const std::string& GetContentsMimeType() const = 0;
+  virtual RenderViewHost* GetRenderViewHost() = 0;
+  virtual InterstitialPage* GetInterstitialPage() = 0;
+  virtual const std::string& GetContentsMimeType() = 0;
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
-  virtual bool IsBeingDestroyed() const = 0;
+  virtual bool IsBeingDestroyed() = 0;
   virtual bool CanOverscrollContent() const = 0;
 
   // Methods from WebContentsImpl that NavigationControllerImpl needs to

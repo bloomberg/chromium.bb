@@ -87,7 +87,7 @@ class PermissionUmaUtil {
 
   static void PermissionPromptResolved(
       const std::vector<PermissionRequest*>& requests,
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       PermissionAction permission_action);
 
   static void RecordWithBatteryBucket(const std::string& histogram);

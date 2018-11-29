@@ -23,7 +23,7 @@ ContextMenuContentTypePlatformApp::ContextMenuContentTypePlatformApp(
 ContextMenuContentTypePlatformApp::~ContextMenuContentTypePlatformApp() {
 }
 
-const Extension* ContextMenuContentTypePlatformApp::GetExtension() const {
+const Extension* ContextMenuContentTypePlatformApp::GetExtension() {
   ProcessManager* process_manager =
       ProcessManager::Get(source_web_contents()->GetBrowserContext());
   return process_manager->GetExtensionForWebContents(

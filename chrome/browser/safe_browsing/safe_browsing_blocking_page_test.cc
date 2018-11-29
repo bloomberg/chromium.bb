@@ -202,7 +202,7 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
   }
 
   void MaybeReportSafeBrowsingHit(const HitReport& hit_report,
-                                  const WebContents* web_contents) override {
+                                  WebContents* web_contents) override {
     if (SafeBrowsingUIManager::ShouldSendHitReport(hit_report, web_contents)) {
       hit_report_sent_ = true;
     }

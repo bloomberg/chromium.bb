@@ -152,7 +152,7 @@ void CustomHomePagesTableModel::Remove(int index) {
 }
 
 void CustomHomePagesTableModel::SetToCurrentlyOpenPages(
-    const content::WebContents* ignore_contents) {
+    content::WebContents* ignore_contents) {
   // Remove the current entries.
   while (RowCount())
     RemoveWithoutNotification(0);
@@ -166,7 +166,7 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages(
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
          ++tab_index) {
-      const content::WebContents* contents =
+      content::WebContents* contents =
           browser->tab_strip_model()->GetWebContentsAt(tab_index);
       if (contents == ignore_contents)
         continue;

@@ -96,7 +96,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual bool ShouldPreserveAbortedURLs();
 
   // Returns the overriden user agent string if it's set.
-  virtual const std::string& GetUserAgentOverride() const = 0;
+  virtual const std::string& GetUserAgentOverride() = 0;
 
   // Returns whether we should override the user agent in new tabs, e.g., for
   // Android Webview's popup window when current entry.
@@ -132,7 +132,7 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // Whether the delegate is displaying an interstitial page over the current
   // page.
-  virtual bool ShowingInterstitialPage() const = 0;
+  virtual bool ShowingInterstitialPage() = 0;
 };
 
 }  // namspace content

@@ -41,7 +41,7 @@ WebAppProvider* WebAppProvider::Get(Profile* profile) {
 
 // static
 WebAppProvider* WebAppProvider::GetForWebContents(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(profile);
@@ -105,8 +105,7 @@ void WebAppProvider::RegisterProfilePrefs(
 }
 
 // static
-bool WebAppProvider::CanInstallWebApp(
-    const content::WebContents* web_contents) {
+bool WebAppProvider::CanInstallWebApp(content::WebContents* web_contents) {
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   if (!provider || !provider->install_manager_)
     return false;

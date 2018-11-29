@@ -425,7 +425,7 @@ InterstitialPage* InterstitialPageImpl::GetAsInterstitialPage() {
   return this;
 }
 
-ui::AXMode InterstitialPageImpl::GetAccessibilityMode() const {
+ui::AXMode InterstitialPageImpl::GetAccessibilityMode() {
   if (web_contents_)
     return static_cast<WebContentsImpl*>(web_contents_)->GetAccessibilityMode();
   else
@@ -488,7 +488,7 @@ WebContents* InterstitialPageImpl::GetWebContents() const {
   return web_contents();
 }
 
-const GURL& InterstitialPageImpl::GetMainFrameLastCommittedURL() const {
+const GURL& InterstitialPageImpl::GetMainFrameLastCommittedURL() {
   return url_;
 }
 
@@ -548,7 +548,7 @@ WebContents* InterstitialPageImpl::OpenURL(const OpenURLParams& params) {
   return nullptr;
 }
 
-const std::string& InterstitialPageImpl::GetUserAgentOverride() const {
+const std::string& InterstitialPageImpl::GetUserAgentOverride() {
   return base::EmptyString();
 }
 
@@ -556,7 +556,7 @@ bool InterstitialPageImpl::ShouldOverrideUserAgentInNewTabs() {
   return false;
 }
 
-bool InterstitialPageImpl::ShowingInterstitialPage() const {
+bool InterstitialPageImpl::ShowingInterstitialPage() {
   // An interstitial page never shows a second interstitial.
   return false;
 }
@@ -796,7 +796,7 @@ void InterstitialPageImpl::SetFocusedFrame(FrameTreeNode* node,
   }
 }
 
-Visibility InterstitialPageImpl::GetVisibility() const {
+Visibility InterstitialPageImpl::GetVisibility() {
   // Interstitials always occlude the underlying web content.
   return Visibility::OCCLUDED;
 }

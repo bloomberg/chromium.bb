@@ -262,7 +262,7 @@ base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
   if (!active_browser)
     return base::Time();
 
-  const content::WebContents* active_tab =
+  content::WebContents* active_tab =
       active_browser->tab_strip_model()->GetActiveWebContents();
   if (!active_tab)
     return base::Time();

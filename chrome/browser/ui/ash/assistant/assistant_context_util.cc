@@ -33,7 +33,7 @@ void CreateAssistantStructureAndRunCallback(
 }
 
 ax::mojom::AssistantExtraPtr CreateAssistantExtra(
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     const gfx::Rect& bounds_pixel) {
   auto assistant_extra = ax::mojom::AssistantExtra::New();
   assistant_extra->url = web_contents->GetLastCommittedURL();

@@ -105,9 +105,8 @@ void SafeBrowsingUIManager::ShowBlockingPageForResource(
 }
 
 // static
-bool SafeBrowsingUIManager::ShouldSendHitReport(
-    const HitReport& hit_report,
-    const WebContents* web_contents) {
+bool SafeBrowsingUIManager::ShouldSendHitReport(const HitReport& hit_report,
+                                                WebContents* web_contents) {
   return web_contents &&
          hit_report.extended_reporting_level != SBER_LEVEL_OFF &&
          !web_contents->GetBrowserContext()->IsOffTheRecord();
@@ -118,7 +117,7 @@ bool SafeBrowsingUIManager::ShouldSendHitReport(
 // extended-reporting users.
 void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report,
-    const WebContents* web_contents) {
+    WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Send report if user opted-in to extended reporting and is not in

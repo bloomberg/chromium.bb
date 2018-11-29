@@ -49,7 +49,7 @@
 
 namespace {
 
-bool IsCacheableNTP(const content::WebContents* contents) {
+bool IsCacheableNTP(content::WebContents* contents) {
   const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   return search::NavEntryIsInstantNTP(contents, entry) &&
@@ -58,7 +58,7 @@ bool IsCacheableNTP(const content::WebContents* contents) {
 
 // Returns true if |contents| are rendered inside an Instant process.
 bool InInstantProcess(const InstantService* instant_service,
-                      const content::WebContents* contents) {
+                      content::WebContents* contents) {
   if (!instant_service || !contents)
     return false;
 

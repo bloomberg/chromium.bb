@@ -219,7 +219,7 @@ struct NewTabURLDetails {
   const NewTabURLState state;
 };
 
-bool IsRenderedInInstantProcess(const content::WebContents* contents,
+bool IsRenderedInInstantProcess(content::WebContents* contents,
                                 Profile* profile) {
 #if defined(OS_ANDROID)
   return false;
@@ -270,7 +270,7 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
                      url == chrome::kChromeSearchLocalNtpUrl);
 }
 
-bool IsInstantNTP(const content::WebContents* contents) {
+bool IsInstantNTP(content::WebContents* contents) {
   if (!contents)
     return false;
 
@@ -284,7 +284,7 @@ bool IsInstantNTP(const content::WebContents* contents) {
   return NavEntryIsInstantNTP(contents, entry);
 }
 
-bool NavEntryIsInstantNTP(const content::WebContents* contents,
+bool NavEntryIsInstantNTP(content::WebContents* contents,
                           const content::NavigationEntry* entry) {
   if (!contents || !entry || !IsInstantExtendedAPIEnabled())
     return false;

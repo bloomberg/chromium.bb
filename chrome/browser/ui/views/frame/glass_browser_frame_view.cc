@@ -394,8 +394,7 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
 
 bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
   DCHECK(ShowCustomIcon());
-  const content::WebContents* current_tab =
-      browser_view()->GetActiveWebContents();
+  content::WebContents* current_tab = browser_view()->GetActiveWebContents();
   return current_tab && current_tab->IsLoading();
 }
 

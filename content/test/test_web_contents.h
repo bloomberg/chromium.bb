@@ -53,16 +53,16 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   static TestWebContents* Create(const CreateParams& params);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)
-  TestRenderFrameHost* GetMainFrame() const override;
-  TestRenderViewHost* GetRenderViewHost() const override;
+  TestRenderFrameHost* GetMainFrame() override;
+  TestRenderViewHost* GetRenderViewHost() override;
   // Overrides to avoid establishing Mojo connection with renderer process.
   int DownloadImage(const GURL& url,
                     bool is_favicon,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     ImageDownloadCallback callback) override;
-  const GURL& GetLastCommittedURL() const override;
-  const base::string16& GetTitle() const override;
+  const GURL& GetLastCommittedURL() override;
+  const base::string16& GetTitle() override;
 
   // WebContentsTester implementation.
   void CommitPendingNavigation() override;

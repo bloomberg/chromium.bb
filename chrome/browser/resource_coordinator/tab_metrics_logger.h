@@ -89,7 +89,7 @@ class TabMetricsLogger {
 
   // Returns the site engagement score for the WebContents, rounded down to 10s
   // to limit granularity. Returns -1 if site engagement service is disabled.
-  static int GetSiteEngagementScore(const content::WebContents* web_contents);
+  static int GetSiteEngagementScore(content::WebContents* web_contents);
 
   // Creates TabFeatures for logging or scoring tabs.
   // A common function for populating these features ensures that the same

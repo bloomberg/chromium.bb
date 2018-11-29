@@ -53,11 +53,11 @@ class TabletModePageBehaviorTest : public InProcessBrowserTest {
   }
 
   content::WebPreferences GetWebKitPreferences(
-      const content::WebContents* web_contents) const {
+      content::WebContents* web_contents) const {
     return web_contents->GetRenderViewHost()->GetWebkitPreferences();
   }
 
-  void ValidateWebPrefs(const content::WebContents* web_contents,
+  void ValidateWebPrefs(content::WebContents* web_contents,
                         bool tablet_mode_enabled) const {
     const content::WebPreferences web_prefs =
         GetWebKitPreferences(web_contents);

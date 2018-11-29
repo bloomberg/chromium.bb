@@ -136,7 +136,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
 
 bool CanRequestAutomation(const Extension* extension,
                           const AutomationInfo* automation_info,
-                          const content::WebContents* contents) {
+                          content::WebContents* contents) {
   if (automation_info->desktop)
     return true;
 

@@ -52,7 +52,7 @@ class BaseUIManager
   // report if the user has enabled SBER and is not currently in incognito mode.
   virtual void MaybeReportSafeBrowsingHit(
       const safe_browsing::HitReport& hit_report,
-      const content::WebContents* web_contents);
+      content::WebContents* web_contents);
 
   // A convenience wrapper method for IsUrlWhitelistedOrPendingForWebContents.
   virtual bool IsWhitelisted(const UnsafeResource& resource);

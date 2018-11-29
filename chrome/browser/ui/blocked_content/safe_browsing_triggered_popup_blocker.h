@@ -97,7 +97,7 @@ class SafeBrowsingTriggeredPopupBlocker
 
   // Enabled state is governed by both a feature flag and a pref (which can be
   // controlled by enterprise policy).
-  static bool IsEnabled(const content::WebContents* web_contents);
+  static bool IsEnabled(content::WebContents* web_contents);
 
   // Data scoped to a single page. Will be reset at navigation commit.
   class PageData {

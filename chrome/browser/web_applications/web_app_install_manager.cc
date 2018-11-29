@@ -31,7 +31,7 @@ WebAppInstallManager::WebAppInstallManager(
 WebAppInstallManager::~WebAppInstallManager() = default;
 
 bool WebAppInstallManager::CanInstallWebApp(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   return IsValidWebAppUrl(web_contents->GetURL());
 }
 

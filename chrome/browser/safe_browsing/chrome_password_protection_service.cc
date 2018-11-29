@@ -117,7 +117,7 @@ PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
 
 // Given a |web_contents|, returns the navigation id of its last committed
 // navigation.
-int64_t GetLastCommittedNavigationID(const content::WebContents* web_contents) {
+int64_t GetLastCommittedNavigationID(content::WebContents* web_contents) {
   if (!web_contents)
     return 0;
   content::NavigationEntry* navigation =
@@ -546,7 +546,7 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
       safe_browsing::TriggerType::GAIA_PASSWORD_REUSE, web_contents, resource,
       url_loader_factory, /*history_service=*/nullptr,
       TriggerManager::GetSBErrorDisplayOptions(*profile_->GetPrefs(),
-                                               *web_contents));
+                                               web_contents));
 }
 
 void ChromePasswordProtectionService::MaybeFinishCollectingThreatDetails(
@@ -563,7 +563,7 @@ void ChromePasswordProtectionService::MaybeFinishCollectingThreatDetails(
       safe_browsing::TriggerType::GAIA_PASSWORD_REUSE, web_contents,
       base::TimeDelta::FromMilliseconds(0), did_proceed, /*num_visit=*/0,
       TriggerManager::GetSBErrorDisplayOptions(*profile_->GetPrefs(),
-                                               *web_contents));
+                                               web_contents));
 }
 
 PrefService* ChromePasswordProtectionService::GetPrefs() {

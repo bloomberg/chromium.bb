@@ -99,9 +99,9 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   // NavigatorDelegate implementation.
   WebContents* OpenURL(const OpenURLParams& params) override;
-  const std::string& GetUserAgentOverride() const override;
+  const std::string& GetUserAgentOverride() override;
   bool ShouldOverrideUserAgentInNewTabs() override;
-  bool ShowingInterstitialPage() const override;
+  bool ShowingInterstitialPage() override;
 
  protected:
   // NotificationObserver method:
@@ -117,7 +117,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
   InterstitialPage* GetAsInterstitialPage() override;
-  ui::AXMode GetAccessibilityMode() const override;
+  ui::AXMode GetAccessibilityMode() override;
   void ExecuteEditCommand(const std::string& command,
                           const base::Optional<base::string16>& value) override;
   void Cut() override;
@@ -137,7 +137,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
-  Visibility GetVisibility() const override;
+  Visibility GetVisibility() override;
   void AudioContextPlaybackStarted(RenderFrameHost* host,
                                    int context_id) override;
   void AudioContextPlaybackStopped(RenderFrameHost* host,
@@ -147,7 +147,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   RenderViewHostDelegateView* GetDelegateView() override;
   bool OnMessageReceived(RenderViewHostImpl* render_view_host,
                          const IPC::Message& message) override;
-  const GURL& GetMainFrameLastCommittedURL() const override;
+  const GURL& GetMainFrameLastCommittedURL() override;
   void RenderViewTerminated(RenderViewHost* render_view_host,
                             base::TerminationStatus status,
                             int error_code) override;

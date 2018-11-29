@@ -191,7 +191,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
 
   DCHECK(extension->is_hosted_app());
 
-  const content::WebContents* web_contents =
+  content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
   // Don't show a toolbar until a navigation has occurred.

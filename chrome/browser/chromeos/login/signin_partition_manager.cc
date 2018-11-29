@@ -98,7 +98,7 @@ SigninPartitionManager::SigninPartitionManager(
 SigninPartitionManager::~SigninPartitionManager() {}
 
 void SigninPartitionManager::StartSigninSession(
-    const content::WebContents* embedder_web_contents,
+    content::WebContents* embedder_web_contents,
     StartSigninSessionDoneCallback signin_session_started) {
   // If we already were in a sign-in session, close it first.
   // This clears stale data from the last-used StorageParittion.

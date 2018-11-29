@@ -55,7 +55,7 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
 }
 
 void ContextualSearchRankerLoggerImpl::SetupRankerPredictor(
-    const content::WebContents& web_contents) {
+    content::WebContents& web_contents) {
   // Create one predictor for the current BrowserContext.
   if (browser_context_) {
     DCHECK(browser_context_ == web_contents.GetBrowserContext());

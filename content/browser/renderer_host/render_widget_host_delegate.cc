@@ -49,7 +49,7 @@ bool RenderWidgetHostDelegate::PreHandleGestureEvent(
   return false;
 }
 
-double RenderWidgetHostDelegate::GetPendingPageZoomLevel() const {
+double RenderWidgetHostDelegate::GetPendingPageZoomLevel() {
   return 0.0;
 }
 
@@ -82,7 +82,7 @@ RenderWidgetHostDelegate::GetRenderWidgetHostWithPageFocus() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
+bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
   return false;
 }
 

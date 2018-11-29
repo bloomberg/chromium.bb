@@ -29,8 +29,7 @@ namespace android_webview {
 // success.
 
 // Note that |pickle| may be changed even if function returns false.
-void WriteToPickle(const content::WebContents& web_contents,
-                   base::Pickle* pickle);
+void WriteToPickle(content::WebContents& web_contents, base::Pickle* pickle);
 
 // |web_contents| will not be modified if function returns false.
 bool RestoreFromPickle(base::PickleIterator* iterator,
