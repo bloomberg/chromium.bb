@@ -149,7 +149,7 @@ void AttemptExitInternal(bool try_to_quit_application) {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-  g_browser_process->platform_part()->AttemptExit();
+  g_browser_process->platform_part()->AttemptExit(try_to_quit_application);
 }
 
 #if !defined(OS_ANDROID)

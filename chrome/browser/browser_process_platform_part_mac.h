@@ -19,7 +19,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
-  void AttemptExit() override;
+  void AttemptExit(bool try_to_quit_application) override;
   void PreMainMessageLoopRun() override;
 
   AppShimHostManager* app_shim_host_manager();

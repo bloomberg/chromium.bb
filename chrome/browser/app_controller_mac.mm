@@ -463,12 +463,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // them in, but I'm not sure about UX; we'd also want to disable other things
   // though.) http://crbug.com/40861
 
-  // Check if the user really wants to quit by employing the confirm-to-quit
-  // mechanism.
-  if (!browser_shutdown::IsTryingToQuit() &&
-      [self applicationShouldTerminate:app] != NSTerminateNow)
-    return NO;
-
   // Check for active apps. If quitting is prevented, only close browsers and
   // sessions.
   if (!browser_shutdown::IsTryingToQuit() && !isPoweringOff &&
@@ -519,30 +513,26 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   }
 }
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
+- (BOOL)runConfirmQuitPanel {
   // If there are no windows, quit immediately.
   if (BrowserList::GetInstance()->empty() &&
       !AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0)) {
-    return NSTerminateNow;
+    return YES;
   }
 
   // Check if the preference is turned on.
   const PrefService* prefs = g_browser_process->local_state();
   if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
     confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
-    return NSTerminateNow;
+    return YES;
   }
 
-  // If the application is going to terminate as the result of a Cmd+Q
-  // invocation, use the special sauce to prevent accidental quitting.
-  // http://dev.chromium.org/developers/design-documents/confirm-to-quit-experiment
-
-  // This logic is only for keyboard-initiated quits.
-  if ([[app currentEvent] type] != NSKeyDown)
+  // Run only for keyboard-initiated quits.
+  if ([[NSApp currentEvent] type] != NSKeyDown)
     return NSTerminateNow;
 
   return [[ConfirmQuitPanelController sharedController]
-      runModalLoopForApplication:app];
+      runModalLoopForApplication:NSApp];
 }
 
 // Called when the app is shutting down. Clean-up as appropriate.
