@@ -27,7 +27,7 @@ class AwFeatureListCreator {
 
   // Initializes all necessary parameters to create the feature list and setup
   // field trials.
-  void CreateFetureListAndFieldTrials();
+  void CreateFeatureListAndFieldTrials();
 
   // Passes ownership of the |local_state_| to the caller.
   std::unique_ptr<PrefService> TakePrefService() {
