@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
