@@ -417,12 +417,13 @@ UIColor* BackgroundColorIncognito() {
 
   // Show append button for search history/search suggestions as the right
   // control element (aka an accessory element of a table view cell).
-  row.trailingButton.hidden = !match.isAppendable && !match.isTabMatch;
+  BOOL hasVisibleTrailingButton = match.isAppendable || match.isTabMatch;
+  row.trailingButton.hidden = !hasVisibleTrailingButton;
   [row.trailingButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
-  if (match.isAppendable || alignmentRight) {
+  if (hasVisibleTrailingButton || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
     layout.size.width -= kTrailingButtonWidth;
