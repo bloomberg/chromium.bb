@@ -70,7 +70,8 @@ TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_InsertAlertLiveRegion',
  * Test making text appear inside an 'alert' live region by setting its
  * display to something other than 'none'.
  */
-TEST_F('ChromeVoxLiveRegionsUnitTest', 'RevealAlertLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_RevealAlertLiveRegion', function() {
   this.loadDoc(function() {/*!
     <div role="alert">
       <style>
@@ -189,7 +190,8 @@ TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_RemoveFromLiveRegion', function
 /**
  * Test live region that's a progress bar through the event watcher.
  */
-TEST_F('ChromeVoxLiveRegionsUnitTest', 'ProgressBarLiveRegionEvents', function() {
+// Flaky on Chromium OS: crbug.com/498881.
+TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_ProgressBarLiveRegionEvents', function() {
   this.loadDoc(function() {/*!
     <div id="progress" role="progressbar" aria-live="polite" aria-valuenow="1">
       <div id="ptext">
