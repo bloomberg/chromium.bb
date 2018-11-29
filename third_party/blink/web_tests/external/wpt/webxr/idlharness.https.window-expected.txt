@@ -9,28 +9,23 @@ PASS XR interface object name
 PASS XR interface: existence and properties of interface prototype object
 PASS XR interface: existence and properties of interface prototype object's "constructor" property
 PASS XR interface: existence and properties of interface prototype object's @@unscopables property
-PASS XR interface: operation requestDevice()
+FAIL XR interface: operation supportsSessionMode(XRSessionMode) assert_own_property: interface prototype object missing non-static operation expected property "supportsSessionMode" missing
+FAIL XR interface: operation requestSession(XRSessionCreationOptions) assert_own_property: interface prototype object missing non-static operation expected property "requestSession" missing
 PASS XR interface: attribute ondevicechange
 PASS XR must be primary interface of navigator.xr
 PASS Stringification of navigator.xr
-PASS XR interface: navigator.xr must inherit property "requestDevice()" with the proper type
+FAIL XR interface: navigator.xr must inherit property "supportsSessionMode(XRSessionMode)" with the proper type assert_inherits: property "supportsSessionMode" not found in prototype chain
+FAIL XR interface: calling supportsSessionMode(XRSessionMode) on navigator.xr with too few arguments must throw TypeError assert_inherits: property "supportsSessionMode" not found in prototype chain
+FAIL XR interface: navigator.xr must inherit property "requestSession(XRSessionCreationOptions)" with the proper type assert_inherits: property "requestSession" not found in prototype chain
+FAIL XR interface: calling requestSession(XRSessionCreationOptions) on navigator.xr with too few arguments must throw TypeError assert_inherits: property "requestSession" not found in prototype chain
 PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
-PASS XRDevice interface: existence and properties of interface object
-PASS XRDevice interface object length
-PASS XRDevice interface object name
-PASS XRDevice interface: existence and properties of interface prototype object
-PASS XRDevice interface: existence and properties of interface prototype object's "constructor" property
-PASS XRDevice interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRDevice interface: operation supportsSession(XRSessionCreationOptions)
-PASS XRDevice interface: operation requestSession(XRSessionCreationOptions)
 PASS XRSession interface: existence and properties of interface object
 PASS XRSession interface object length
 PASS XRSession interface object name
 PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRSession interface: attribute device
-PASS XRSession interface: attribute immersive
+FAIL XRSession interface: attribute mode assert_true: The prototype object must have a property "mode" expected true got false
 PASS XRSession interface: attribute outputContext
 PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute depthNear
@@ -46,6 +41,7 @@ PASS XRSession interface: attribute onfocus
 PASS XRSession interface: attribute onresetpose
 PASS XRSession interface: attribute onend
 FAIL XRSession interface: attribute onselect assert_true: The prototype object must have a property "onselect" expected true got false
+FAIL XRSession interface: attribute oninputsourceschange assert_true: The prototype object must have a property "oninputsourceschange" expected true got false
 FAIL XRSession interface: attribute onselectstart assert_true: The prototype object must have a property "onselectstart" expected true got false
 FAIL XRSession interface: attribute onselectend assert_true: The prototype object must have a property "onselectend" expected true got false
 PASS XRFrame interface: existence and properties of interface object
@@ -55,9 +51,8 @@ PASS XRFrame interface: existence and properties of interface prototype object
 PASS XRFrame interface: existence and properties of interface prototype object's "constructor" property
 PASS XRFrame interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRFrame interface: attribute session
-PASS XRFrame interface: attribute views
-PASS XRFrame interface: operation getDevicePose(XRCoordinateSystem)
-PASS XRFrame interface: operation getInputPose(XRInputSource, XRCoordinateSystem)
+FAIL XRFrame interface: operation getViewerPose(XRFrameOfReference) assert_own_property: interface prototype object missing non-static operation expected property "getViewerPose" missing
+PASS XRFrame interface: operation getInputPose(XRInputSource, XRFrameOfReference)
 PASS XRCoordinateSystem interface: existence and properties of interface object
 PASS XRCoordinateSystem interface object length
 PASS XRCoordinateSystem interface object name
@@ -89,6 +84,7 @@ PASS XRView interface: existence and properties of interface prototype object's 
 PASS XRView interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRView interface: attribute eye
 PASS XRView interface: attribute projectionMatrix
+FAIL XRView interface: attribute viewMatrix assert_true: The prototype object must have a property "viewMatrix" expected true got false
 PASS XRViewport interface: existence and properties of interface object
 PASS XRViewport interface object length
 PASS XRViewport interface object name
@@ -99,14 +95,14 @@ PASS XRViewport interface: attribute x
 PASS XRViewport interface: attribute y
 PASS XRViewport interface: attribute width
 PASS XRViewport interface: attribute height
-PASS XRDevicePose interface: existence and properties of interface object
-PASS XRDevicePose interface object length
-PASS XRDevicePose interface object name
-PASS XRDevicePose interface: existence and properties of interface prototype object
-PASS XRDevicePose interface: existence and properties of interface prototype object's "constructor" property
-PASS XRDevicePose interface: existence and properties of interface prototype object's @@unscopables property
-PASS XRDevicePose interface: attribute poseModelMatrix
-PASS XRDevicePose interface: operation getViewMatrix(XRView)
+FAIL XRViewerPose interface: existence and properties of interface object assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface object length assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface object name assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface: attribute poseMatrix assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+FAIL XRViewerPose interface: attribute views assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
 PASS XRInputSource interface: existence and properties of interface object
 PASS XRInputSource interface object length
 PASS XRInputSource interface object name
@@ -150,7 +146,6 @@ PASS XRWebGLLayer interface: attribute antialias
 PASS XRWebGLLayer interface: attribute depth
 PASS XRWebGLLayer interface: attribute stencil
 PASS XRWebGLLayer interface: attribute alpha
-PASS XRWebGLLayer interface: attribute multiview
 PASS XRWebGLLayer interface: attribute framebuffer
 PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
@@ -186,7 +181,7 @@ FAIL XRCoordinateSystemEvent interface: existence and properties of interface pr
 FAIL XRCoordinateSystemEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRCoordinateSystemEvent" expected property "XRCoordinateSystemEvent" missing
 FAIL XRCoordinateSystemEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRCoordinateSystemEvent" expected property "XRCoordinateSystemEvent" missing
 FAIL XRCoordinateSystemEvent interface: attribute coordinateSystem assert_own_property: self does not have own property "XRCoordinateSystemEvent" expected property "XRCoordinateSystemEvent" missing
-PASS WebGLRenderingContext interface: operation setCompatibleXRDevice(XRDevice)
+FAIL WebGLRenderingContext interface: operation makeXRCompatible() assert_own_property: interface prototype object missing non-static operation expected property "makeXRCompatible" missing
 PASS Navigator interface: attribute xr
 PASS Navigator interface: navigator must inherit property "xr" with the proper type
 Harness: the test ran to completion.
