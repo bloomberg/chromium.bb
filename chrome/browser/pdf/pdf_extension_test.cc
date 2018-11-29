@@ -1859,14 +1859,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 }
 #endif  // !defined(OS_MACOSX)
 
-#if (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_CHROME) && defined(MEMORY_SANITIZER))
-// https://crbug.com/856169, https://crbug.com/892484
-#define MAYBE_MouseLeave DISABLED_MouseLeave
-#else
-#define MAYBE_MouseLeave MouseLeave
-#endif
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, MAYBE_MouseLeave) {
+// Flaky in nearly all configurations; see https://crbug.com/856169.
+IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
