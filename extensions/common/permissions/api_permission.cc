@@ -112,9 +112,10 @@ APIPermissionInfo::APIPermissionInfo(const APIPermissionInfo::InitInfo& info)
 
 APIPermissionInfo::~APIPermissionInfo() { }
 
-APIPermission* APIPermissionInfo::CreateAPIPermission() const {
-  return api_permission_constructor_ ?
-    api_permission_constructor_(this) : new SimpleAPIPermission(this);
+std::unique_ptr<APIPermission> APIPermissionInfo::CreateAPIPermission() const {
+  if (api_permission_constructor_)
+    return api_permission_constructor_(this);
+  return std::make_unique<SimpleAPIPermission>(this);
 }
 
 }  // namespace extensions

@@ -21,8 +21,9 @@ namespace chrome_api_permissions {
 namespace {
 
 template <typename T>
-APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
-  return new T(permission);
+std::unique_ptr<APIPermission> CreateAPIPermission(
+    const APIPermissionInfo* permission) {
+  return std::make_unique<T>(permission);
 }
 
 // WARNING: If you are modifying a permission message in this list, be sure to

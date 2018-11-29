@@ -380,7 +380,8 @@ class APIPermissionInfo {
     kFlagSupportsContentCapabilities = 1 << 5,
   };
 
-  typedef APIPermission* (*APIPermissionConstructor)(const APIPermissionInfo*);
+  using APIPermissionConstructor =
+      std::unique_ptr<APIPermission> (*)(const APIPermissionInfo*);
 
   typedef std::set<APIPermission::ID> IDSet;
 
@@ -398,7 +399,7 @@ class APIPermissionInfo {
   ~APIPermissionInfo();
 
   // Creates a APIPermission instance.
-  APIPermission* CreateAPIPermission() const;
+  std::unique_ptr<APIPermission> CreateAPIPermission() const;
 
   int flags() const { return flags_; }
 

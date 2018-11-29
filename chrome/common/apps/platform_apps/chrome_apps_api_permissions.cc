@@ -4,15 +4,17 @@
 
 #include "chrome/common/apps/platform_apps/chrome_apps_api_permissions.h"
 
+#include <memory>
+
 #include "chrome/common/apps/platform_apps/media_galleries_permission.h"
 
 namespace chrome_apps_api_permissions {
 namespace {
 
 template <typename T>
-extensions::APIPermission* CreateAPIPermission(
+std::unique_ptr<extensions::APIPermission> CreateAPIPermission(
     const extensions::APIPermissionInfo* permission) {
-  return new T(permission);
+  return std::make_unique<T>(permission);
 }
 
 // WARNING: If you are modifying a permission message in this list, be sure to

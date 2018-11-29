@@ -345,8 +345,8 @@ TEST(PermissionsTest, CreateUnion) {
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  std::unique_ptr<APIPermission> permission(
-      permission_info->CreateAPIPermission());
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -389,7 +389,7 @@ TEST(PermissionsTest, CreateUnion) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
 
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -402,7 +402,7 @@ TEST(PermissionsTest, CreateUnion) {
   expected_apis.insert(APIPermission::kProxy);
   expected_apis.insert(APIPermission::kClipboardWrite);
 
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -466,8 +466,8 @@ TEST(PermissionsTest, CreateIntersection) {
   // Intersection with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  std::unique_ptr<APIPermission> permission(
-      permission_info->CreateAPIPermission());
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -502,7 +502,7 @@ TEST(PermissionsTest, CreateIntersection) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
@@ -513,7 +513,7 @@ TEST(PermissionsTest, CreateIntersection) {
   apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kTab);
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
@@ -574,8 +574,8 @@ TEST(PermissionsTest, CreateDifference) {
   // Difference with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  std::unique_ptr<APIPermission> permission(
-      permission_info->CreateAPIPermission());
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -599,7 +599,7 @@ TEST(PermissionsTest, CreateDifference) {
   apis2.insert(APIPermission::kTab);
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
@@ -609,7 +609,7 @@ TEST(PermissionsTest, CreateDifference) {
   apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kBackground);
-  permission.reset(permission_info->CreateAPIPermission());
+  permission = permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
