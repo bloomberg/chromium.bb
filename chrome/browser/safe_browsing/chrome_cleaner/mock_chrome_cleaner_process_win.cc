@@ -39,6 +39,11 @@ using ::chrome_cleaner::mojom::ChromePrompt;
 using ::chrome_cleaner::mojom::ChromePromptPtr;
 using ::chrome_cleaner::mojom::ChromePromptPtrInfo;
 using ::chrome_cleaner::mojom::PromptAcceptance;
+using CrashPoint = MockChromeCleanerProcess::CrashPoint;
+using ExtensionCleaningFeatureStatus =
+    MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
+using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
+using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
 
 constexpr char kCrashPointSwitch[] = "mock-crash-point";
 constexpr char kUwsFoundSwitch[] = "mock-uws-found";
@@ -418,6 +423,65 @@ void MockChromeCleanerProcess::PromptUserCallback(
     exit(kDeliberateCrashExitCode);
 
   std::move(quit_closure).Run();
+}
+
+std::ostream& operator<<(std::ostream& out, CrashPoint crash_point) {
+  switch (crash_point) {
+    case CrashPoint::kNone:
+      return out << "NoCrash";
+    case CrashPoint::kOnStartup:
+      return out << "CrashOnStartup";
+    case CrashPoint::kAfterConnection:
+      return out << "CrashAfterConnection";
+    case CrashPoint::kAfterRequestSent:
+      return out << "CrashAfterRequestSent";
+    case CrashPoint::kAfterResponseReceived:
+      return out << "CrashAfterResponseReceived";
+    default:
+      NOTREACHED();
+      return out << "UnknownCrashPoint";
+  }
+}
+
+std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
+  switch (status) {
+    case UwsFoundStatus::kNoUwsFound:
+      return out << "NoUwsFound";
+    case UwsFoundStatus::kUwsFoundRebootRequired:
+      return out << "UwsFoundRebootRequired";
+    case UwsFoundStatus::kUwsFoundNoRebootRequired:
+      return out << "UwsFoundNoRebootRequired";
+    default:
+      NOTREACHED();
+      return out << "UnknownFoundStatus";
+  }
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         ExtensionCleaningFeatureStatus status) {
+  switch (status) {
+    case ExtensionCleaningFeatureStatus::kEnabled:
+      return out << "ExtensionCleaningEnabled";
+    case ExtensionCleaningFeatureStatus::kDisabled:
+      return out << "ExtensionCleaningDisabled";
+    default:
+      NOTREACHED();
+      return out << "UnknownExtensionCleaningStatus";
+  }
+}
+
+std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {
+  switch (items_reporting) {
+    case ItemsReporting::kUnsupported:
+      return out << "kUnsupported";
+    case ItemsReporting::kNotReported:
+      return out << "kNotReported";
+    case ItemsReporting::kReported:
+      return out << "kReported";
+    default:
+      NOTREACHED();
+      return out << "UnknownItemsReporting";
+  }
 }
 
 }  // namespace safe_browsing

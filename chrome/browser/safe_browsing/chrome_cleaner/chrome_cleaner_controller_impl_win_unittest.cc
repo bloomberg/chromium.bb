@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -50,10 +51,13 @@ using ::testing::UnorderedElementsAreArray;
 using ::testing::Values;
 using ::testing::ValuesIn;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
+using ExtensionCleaningFeatureStatus =
+    MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
 using IdleReason = ChromeCleanerController::IdleReason;
 using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
 using State = ChromeCleanerController::State;
 using UserResponse = ChromeCleanerController::UserResponse;
+using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
 
 // Returns the PromptAcceptance value that ChromeCleanerController is supposed
 // to send to the Chrome Cleaner process when ReplyWithUserResponse() is
@@ -219,17 +223,6 @@ enum class CleanerProcessStatus {
   kFetchFailure,
   kFetchSuccessInvalidProcess,
   kFetchSuccessValidProcess,
-};
-
-enum class UwsFoundStatus {
-  kNoUwsFound,
-  kUwsFoundRebootRequired,
-  kUwsFoundNoRebootRequired,
-};
-
-enum class ExtensionCleaningFeatureStatus {
-  kEnabled,
-  kDisabled,
 };
 
 typedef std::tuple<CleanerProcessStatus,
@@ -660,100 +653,6 @@ std::ostream& operator<<(std::ostream& out, CleanerProcessStatus status) {
   }
 }
 
-std::ostream& operator<<(std::ostream& out, CrashPoint crash_point) {
-  switch (crash_point) {
-    case CrashPoint::kNone:
-      return out << "NoCrash";
-    case CrashPoint::kOnStartup:
-      return out << "CrashOnStartup";
-    case CrashPoint::kAfterConnection:
-      return out << "CrashAfterConnection";
-    case CrashPoint::kAfterRequestSent:
-      return out << "CrashAfterRequestSent";
-    case CrashPoint::kAfterResponseReceived:
-      return out << "CrashAfterResponseReceived";
-    default:
-      NOTREACHED();
-      return out << "UnknownCrashPoint" << crash_point;
-  }
-}
-
-std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
-  switch (status) {
-    case UwsFoundStatus::kNoUwsFound:
-      return out << "NoUwsFound";
-    case UwsFoundStatus::kUwsFoundRebootRequired:
-      return out << "UwsFoundRebootRequired";
-    case UwsFoundStatus::kUwsFoundNoRebootRequired:
-      return out << "UwsFoundNoRebootRequired";
-    default:
-      NOTREACHED();
-      return out << "UnknownFoundStatus" << status;
-  }
-}
-
-std::ostream& operator<<(std::ostream& out,
-                         ExtensionCleaningFeatureStatus status) {
-  switch (status) {
-    case ExtensionCleaningFeatureStatus::kEnabled:
-      return out << "ExtensionCleaningEnabled";
-    case ExtensionCleaningFeatureStatus::kDisabled:
-      return out << "ExtensionCleaningDisabled";
-    default:
-      NOTREACHED();
-      return out << "UnknownExtensionCleaningStatus" << status;
-  }
-}
-
-std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {
-  switch (items_reporting) {
-    case ItemsReporting::kUnsupported:
-      return out << "kUnsupported";
-    case ItemsReporting::kNotReported:
-      return out << "kNotReported";
-    case ItemsReporting::kReported:
-      return out << "kReported";
-    default:
-      NOTREACHED();
-      return out << "UnknownItemsReporting";
-  }
-}
-
-std::ostream& operator<<(std::ostream& out, UserResponse response) {
-  switch (response) {
-    case UserResponse::kAcceptedWithLogs:
-      return out << "UserAcceptedWithLogs";
-    case UserResponse::kAcceptedWithoutLogs:
-      return out << "UserAcceptedWithoutLogs";
-    case UserResponse::kDenied:
-      return out << "UserDenied";
-    case UserResponse::kDismissed:
-      return out << "UserDismissed";
-    default:
-      NOTREACHED();
-      return out << "UnknownUserResponse" << response;
-  }
-}
-
-// ::testing::PrintToStringParamName does not format tuples as a valid test
-// name, so this functor can be used to get each element in the tuple
-// explicitly and format them using the above operator<< overrides.
-struct ChromeCleanerControllerTestParamsToString {
-  std::string operator()(
-      const ::testing::TestParamInfo<ChromeCleanerControllerTestParams>& info)
-      const {
-    std::ostringstream param_name;
-    param_name << std::get<0>(info.param) << "_";
-    param_name << std::get<1>(info.param) << "_";
-    param_name << std::get<2>(info.param) << "_";
-    param_name << std::get<3>(info.param) << "_";
-    param_name << std::get<4>(info.param) << "_";
-    param_name << std::get<5>(info.param) << "_";
-    param_name << std::get<6>(info.param);
-    return param_name.str();
-  }
-};
-
 // This includes all crash points after kOnStartup, except kAfterRequestSent.
 // That one's not used because if we induce a crash after the mock cleaner
 // sends a request, there would be a race condition between the request being
@@ -783,7 +682,7 @@ INSTANTIATE_TEST_CASE_P(
                    UserResponse::kAcceptedWithoutLogs,
                    UserResponse::kDenied,
                    UserResponse::kDismissed)),
-    ChromeCleanerControllerTestParamsToString());
+    chrome_cleaner::GetParamNameForTest());
 
 // Tests where the process gets past the startup phase but finds nothing to
 // clean. Since we don't progress to any stage where the parameters after
@@ -799,7 +698,7 @@ INSTANTIATE_TEST_CASE_P(
             Values(ItemsReporting::kNotReported),
             Values(ItemsReporting::kNotReported),
             Values(UserResponse::kDismissed)),
-    ChromeCleanerControllerTestParamsToString());
+    chrome_cleaner::GetParamNameForTest());
 
 // Tests where the process fails before starting a scan. This never gets far
 // enough to collect results, so we can save time by not repeating the tests
@@ -819,7 +718,7 @@ INSTANTIATE_TEST_CASE_P(
             Values(ItemsReporting::kUnsupported),
             Values(ItemsReporting::kUnsupported),
             Values(UserResponse::kAcceptedWithLogs)),
-    ChromeCleanerControllerTestParamsToString());
+    chrome_cleaner::GetParamNameForTest());
 
 // Tests for the interaction between reporter runs and all possible states.
 // Signals from reporter execution may lead to state transitions only if there
@@ -939,36 +838,15 @@ TEST_P(ChromeCleanerControllerReporterInteractionTest,
       SwReporterInvocationResult::kCleanupToBeOffered);
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         ChromeCleanerController::State state) {
-  switch (state) {
-    case ChromeCleanerController::State::kIdle:
-      return out << "Idle";
-    case ChromeCleanerController::State::kReporterRunning:
-      return out << "ReporterRunning";
-    case ChromeCleanerController::State::kScanning:
-      return out << "Scanning";
-    case ChromeCleanerController::State::kInfected:
-      return out << "Infected";
-    case ChromeCleanerController::State::kCleaning:
-      return out << "Cleaning";
-    case ChromeCleanerController::State::kRebootRequired:
-      return out << "RebootRequired";
-    default:
-      NOTREACHED();
-      return out << "UnknownUserResponse" << state;
-  }
-}
-
-INSTANTIATE_TEST_CASE_P(
-    All,
-    ChromeCleanerControllerReporterInteractionTest,
-    Values(ChromeCleanerController::State::kIdle,
-           ChromeCleanerController::State::kReporterRunning,
-           ChromeCleanerController::State::kScanning,
-           ChromeCleanerController::State::kInfected,
-           ChromeCleanerController::State::kCleaning,
-           ChromeCleanerController::State::kRebootRequired));
+INSTANTIATE_TEST_CASE_P(All,
+                        ChromeCleanerControllerReporterInteractionTest,
+                        Values(ChromeCleanerController::State::kIdle,
+                               ChromeCleanerController::State::kReporterRunning,
+                               ChromeCleanerController::State::kScanning,
+                               ChromeCleanerController::State::kInfected,
+                               ChromeCleanerController::State::kCleaning,
+                               ChromeCleanerController::State::kRebootRequired),
+                        chrome_cleaner::GetParamNameForTest());
 
 }  // namespace
 }  // namespace safe_browsing

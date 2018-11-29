@@ -143,6 +143,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/test:test_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/test/resources:test_resources",
+    "//components/chrome_cleaner/test:test_name_helper",
     "//sandbox/win:sandbox",
     "//testing/gmock",
     "//testing/gtest",

@@ -42,12 +42,12 @@
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
 #include "chrome/chrome_cleaner/strings/string_util.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_registry_util.h"
 #include "chrome/chrome_cleaner/test/test_signature_matcher.h"
 #include "chrome/chrome_cleaner/test/test_strings.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

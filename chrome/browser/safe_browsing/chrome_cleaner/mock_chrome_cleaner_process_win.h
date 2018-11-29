@@ -59,6 +59,17 @@ class MockChromeCleanerProcess {
     kNumItemsReporting,
   };
 
+  enum class UwsFoundStatus {
+    kNoUwsFound,
+    kUwsFoundRebootRequired,
+    kUwsFoundNoRebootRequired,
+  };
+
+  enum class ExtensionCleaningFeatureStatus {
+    kEnabled,
+    kDisabled,
+  };
+
   static constexpr int kInternalTestFailureExitCode = 100001;
   static constexpr int kDeliberateCrashExitCode = 100002;
   static constexpr int kNothingFoundExitCode = 2;
@@ -173,6 +184,22 @@ class MockChromeCleanerProcess {
       chrome_cleaner::mojom::PromptAcceptance::UNSPECIFIED;
   chrome_cleaner::mojom::ChromePromptPtr* chrome_prompt_ptr_ = nullptr;
 };
+
+// Making test parameter types printable.
+
+std::ostream& operator<<(std::ostream& out,
+                         MockChromeCleanerProcess::CrashPoint crash_point);
+
+std::ostream& operator<<(std::ostream& out,
+                         MockChromeCleanerProcess::UwsFoundStatus status);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ExtensionCleaningFeatureStatus status);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ItemsReporting items_reporting);
 
 }  // namespace safe_browsing
 

@@ -3299,6 +3299,7 @@ test("unit_tests") {
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/app_service:unit_tests",
       "//chrome/services/app_service/public/cpp/:unit_tests",
+      "//components/chrome_cleaner/test:test_name_helper",
       "//components/signin/core/browser:signin_buildflags",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
