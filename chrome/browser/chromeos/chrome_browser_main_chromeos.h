@@ -70,7 +70,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   ChromeBrowserMainPartsChromeos(
       const content::MainFunctionParams& parameters,
-      std::unique_ptr<ui::DataPack> data_pack,
       ChromeFeatureListCreator* chrome_feature_list_creator);
   ~ChromeBrowserMainPartsChromeos() override;
 

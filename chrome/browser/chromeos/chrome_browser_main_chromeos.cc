@@ -502,10 +502,8 @@ class SystemTokenCertDBInitializer {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack,
     ChromeFeatureListCreator* chrome_feature_list_creator)
     : ChromeBrowserMainPartsLinux(parameters,
-                                  std::move(data_pack),
                                   chrome_feature_list_creator),
       is_dbus_initialized_(chrome_feature_list_creator != nullptr) {}
 

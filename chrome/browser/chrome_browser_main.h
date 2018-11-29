@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
-#include "ui/base/resource/data_pack.h"
 
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
@@ -57,7 +56,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
  protected:
   ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
-                         std::unique_ptr<ui::DataPack> data_pack,
                          ChromeFeatureListCreator* chrome_feature_list_creator);
 
   // content::BrowserMainParts overrides.
@@ -199,10 +197,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   bool run_message_loop_;
 
   base::FilePath user_data_dir_;
-
-  // This is used to store the ui data pack. The data pack is moved when
-  // resource bundle gets created.
-  std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
 
   ChromeFeatureListCreator* chrome_feature_list_creator_;
 

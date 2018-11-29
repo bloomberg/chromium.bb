@@ -399,12 +399,6 @@ void PreSandboxInit() {
 
 #endif  // OS_LINUX
 
-bool IsRootProcess() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.GetSwitchValueASCII(switches::kProcessType).empty();
-}
-
 }  // namespace
 
 class ContentClientInitializer {
@@ -661,14 +655,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   if (delegate_->BasicStartupComplete(&exit_code))
     return exit_code;
   completed_basic_startup_ = true;
-
-  // We will need to use data from resources.pak in later cl, so load the file
-  // now.
-  if (IsRootProcess()) {
-    ui::DataPack* data_pack = delegate_->LoadServiceManifestDataPack();
-    // TODO(ranj): Read manifest from this data pack.
-    ignore_result(data_pack);
-  }
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

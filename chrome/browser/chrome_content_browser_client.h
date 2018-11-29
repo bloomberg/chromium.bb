@@ -27,7 +27,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "ui/base/resource/data_pack.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -68,7 +67,6 @@ class Origin;
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ChromeContentBrowserClient(
-      std::unique_ptr<ui::DataPack> data_pack = nullptr,
       ChromeFeatureListCreator* chrome_feature_list_creator = nullptr);
   ~ChromeContentBrowserClient() override;
 
@@ -585,8 +583,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistryWithArgs<content::RenderProcessHost*,
                                               const url::Origin&>>
       worker_interfaces_parameterized_;
-
-  std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
 
   ChromeFeatureListCreator* chrome_feature_list_creator_;
 
