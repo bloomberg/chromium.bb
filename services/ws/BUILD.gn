@@ -4,11 +4,11 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//testing/test.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
+import("//testing/test.gni")
 
 component("lib") {
   friend = [
@@ -158,12 +158,13 @@ static_library("test_support") {
 
   deps = [
     ":lib",
+    ":tests_catalog_source",
     "//base",
     "//base/test:test_support",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/ws/common",
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/host",
@@ -194,6 +195,12 @@ catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittests_manifest" ]
   standalone_services = [ "//services/ws/test_ws:manifest" ]
+}
+
+catalog_cpp_source("tests_catalog_source") {
+  testonly = true
+  catalog = ":tests_catalog"
+  generated_function_name = "ws::test::CreateTestCatalog"
 }
 
 source_set("tests") {

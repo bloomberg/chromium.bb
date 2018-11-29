@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-source_set("run_all_service_tests") {
+source_set("run_all_unittests") {
   # This target is in a separate directory because we want to expand DEPS so
   # that it not all of //services can access //ui.
   visibility = [ "//services:*" ]
@@ -12,13 +12,13 @@ source_set("run_all_service_tests") {
   testonly = true
 
   sources = [
-    "run_all_service_tests.cc",
+    "run_all_unittests.cc",
   ]
 
   deps = [
     "//base",
     "//base/test:test_support",
-    "//services/service_manager/public/cpp/test:common_initialization",
+    "//mojo/core/embedder",
     "//ui/base",
   ]
 
@@ -41,7 +41,7 @@ source_set("run_all_service_tests") {
 }
 
 bundle_data("tests_bundle_data") {
-  visibility = [ ":run_all_service_tests" ]
+  visibility = [ ":run_all_unittests" ]
   testonly = true
   sources = [
     "//services/test/data/content-sniffer-test0.html",
