@@ -1247,10 +1247,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   if (!NeedsPaintPropertyUpdate())
     return;
 
-  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_) &&
-      !NeedsFilter(object_) && !NeedsOverflowClip(object_)) {
-    fragment_data_.ClearLocalBorderBoxProperties();
-  } else {
+  if (object_.HasLayer() || properties_) {
     PropertyTreeState local_border_box =
         PropertyTreeState(context_.current.transform, context_.current.clip,
                           context_.current_effect);
@@ -1260,6 +1257,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
       property_added_or_removed_ = true;
 
     fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
+  } else {
+    fragment_data_.ClearLocalBorderBoxProperties();
   }
 }
 
