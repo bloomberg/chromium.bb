@@ -45,8 +45,9 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext()
-    : circular_sequential_id_(0),
+ExecutionContext::ExecutionContext(v8::Isolate* isolate)
+    : isolate_(isolate),
+      circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       is_context_paused_(false),
       is_context_destroyed_(false),
