@@ -460,7 +460,7 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
     return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
         profile_manager->user_data_dir());
   user_manager::UserManager* manager = user_manager::UserManager::Get();
-  const user_manager::User* user = manager->GetActiveUser();
+  const user_manager::User* user = manager->GetPrimaryUser();
   if (!user)  // Can be null in unit tests.
     return nullptr;
   // Note: The ProfileHelper will take care of guest profiles.
