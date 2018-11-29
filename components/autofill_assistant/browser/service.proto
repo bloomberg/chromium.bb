@@ -272,6 +272,8 @@ message PaymentDetails {
   optional string card_issuer_network = 1;
   // Whether the integrated terms and conditions approval checkbox was checked.
   optional bool is_terms_and_conditions_accepted = 2;
+  // The email address of the payer.
+  optional string payer_email = 3;
 }
 
 message ProcessedActionProto {

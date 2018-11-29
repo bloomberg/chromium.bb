@@ -123,6 +123,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     processed_action_proto_->mutable_payment_details()
         ->set_is_terms_and_conditions_accepted(
             payment_information->is_terms_and_conditions_accepted);
+    processed_action_proto_->mutable_payment_details()->set_payer_email(
+        payment_information->payer_email);
   }
 
   UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
