@@ -300,6 +300,9 @@
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="1808715480127969042">Sekat kuki pada tapak ini</translation>
 <translation id="1810261428246410396">Benarkan penggunaan Penambatan Segera.</translation>
+<translation id="1817685358399181673">Dasar ini menetapkan imej <ph name="PLUGIN_VM_NAME" /> bagi pengguna. Dasar ini ditetapkan dengan menyatakan URL yang boleh digunakan oleh peranti untuk memuat turun imej dan cincangan SHA-256 digunakan untuk mengesahkan keutuhan muat turun tersebut.
+
+      Dasar ini harus dinyatakan sebagai rentetan yang menyampaikan URL dan cincangan dalam format JSON.</translation>
 <translation id="1827523283178827583">Gunakan pelayan proksi tetap</translation>
 <translation id="1843117931376765605">Segar semula kadar untuk dasar pengguna</translation>
 <translation id="1844620919405873871">Mengkonfigurasikan dasar yang berkaitan buka kunci pantas.</translation>
@@ -468,6 +471,10 @@
 <translation id="214901426630414675">Hadkan mod dupleks pencetakan</translation>
 <translation id="2149330464730004005">Dayakan pencetakan berwarna</translation>
 <translation id="2156132677421487971">Konfigurasikan dasar untuk <ph name="PRODUCT_NAME" />, ciri yang membolehkan pengguna menghantar kandungan tab, tapak atau desktop daripada penyemak imbas ke paparan dan sistem bunyi jauh.</translation>
+<translation id="2163878108829382394">
+        Jika dasar ini ditetapkan kepada Benar, pendaftaran pengurusan awan adalah mandatori dan menyekat proses pelancaran Chrome jika gagal.
+
+        Jika dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Palsu, pendaftaran pengurusan awan tidak diwajibkan dan tidak menyekat proses pelancaran Chrome jika gagal.</translation>
 <translation id="2166472654199325139">Jangan tapis tapak untuk kandungan dewasa</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
@@ -697,6 +704,7 @@
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="268577405881275241">Dayakan ciri proksi pemampatan data</translation>
 <translation id="2693108589792503178">Konfigurasikan URL tukar kata laluan.</translation>
+<translation id="2696531058295423290">Benarkan peranti untuk menggunakan <ph name="PLUGIN_VM_NAME" /> pada <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Lumpuhkan penggunaan sijil <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="2742843273354638707">Sembunyikan apl Gedung Web Chrome dan pautan pembawah daripada Halaman Tab Baharu dan pelancar apl <ph name="PRODUCT_OS_NAME" />.
 
@@ -1406,6 +1414,7 @@
 <translation id="4483649828988077221">Lumpuhkan Autokemas Kini</translation>
 <translation id="4485425108474077672">Konfigurasi URL halaman Tab Baharu</translation>
 <translation id="4492287494009043413">Lumpuhkan pengambilan tangkapan skrin</translation>
+<translation id="449423975179525290">Konfigurasikan dasar yang berkaitan dengan <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail media cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan saiz cache yang diberikan tidak kira sama ada pengguna telah menyatakan bendera '--saiz-cache-cakera'' atau tidak. Nilai yang dinyatakan dalam dasar ini bukan sempadan keras tetapi lebih kepada cadangan kepada sistem cache, sebarang nilai di bawah beberapa megabait adalah terlalu kecil dan akan dibulatkan kepada jumlah minimum yang munasabah.
@@ -2727,6 +2736,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Harap maklum bahawa sekatan ini dikenakan terhadap muat turun yang dicetuskan daripada kandungan halaman web serta pilihan menu konteks 'muat turun pautan...'. Sekatan ini tidak dikenakan terhadap penyimpanan / muat turun halaman yang sedang dipaparkan dan turut tidak dikenakan pada simpan sebagai PDF daripada pilihan pencetakan.
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
+<translation id="7642803091923523695">Dayakan peranti ini untuk menjalankan PluginVm.
+
+      Jika dasar ini ditetapkan kepada palsu atau dibiarkan tanpa ditetapkan, <ph name="PLUGIN_VM_NAME" /> tidak didayakan untuk peranti. Jika ditetapkan kepada benar, <ph name="PLUGIN_VM_NAME" />didayakan untuk peranti selagi tetapan lain memberikan kebenaran juga. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> perlu ditetapkan kepada benar dan <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> perlu ditetapkan supaya <ph name="PLUGIN_VM_NAME" /> dibenarkan untuk dijalankan.</translation>
 <translation id="7643883929273267746">Sekat akaun yang dapat dilihat di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
 <translation id="7673194325208122247">Tempoh waktu (milisaat)</translation>
@@ -3193,6 +3205,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika tetapan ini didayakan atau tidak ditetapkan, sejarah penyemakan imbas dan muat turun boleh dipadamkan.
 
       Jika tetapan ini dilumpuhkan, sejarah penyemakan imbas dan muat turun tidak boleh dipadamkan.</translation>
+<translation id="8758831693895931466">Dayakan pendaftaran pengurusan awan mandatori</translation>
 <translation id="8759829385824155666">Jenis penyulitan Kerberos yang dibenarkan</translation>
 <translation id="8764119899999036911">Menetapkan sama ada Kerberos SPN yang dihasilkan adalah berdasarkan nama DNS berkanun atau nama asal yang dimasukkan.
 

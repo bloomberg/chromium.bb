@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
+<translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">Ingenting å se ennå</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3454224730401036106">Tilkoblingen din er byttet til et sikrere nettverk</translation>
+<translation id="3465223694362104965">Et annet tastatur er koblet til denne enheten siden du sist logget på. Sørg for at du stoler på dette tastaturet før du bruker det.</translation>
 <translation id="3477079411857374384">Ctrl+Shift+Mellomrom</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3510503721818156981">Chromebook koblet seg til en ny telefon</translation>

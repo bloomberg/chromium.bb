@@ -281,7 +281,7 @@
 <translation id="3312997241656799641">తదుపరి సందర్శించిన లింక్</translation>
 <translation id="3313245066383501820">ChromeVox మాడిఫైయర్ కీ</translation>
 <translation id="3317212938060708859">స్లైడర్</translation>
-<translation id="3321460131042519426">పదాల సర్దుబాటుని ప్రారంభించు</translation>
+<translation id="3321460131042519426">పదాల సర్దుబాటును ప్రారంభించు</translation>
 <translation id="3322936298410871309">మునుపటి స్థాయి 1 శీర్షిక</translation>
 <translation id="3323447499041942178">టెక్స్ట్ బాక్స్</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> స్లయిడర్</translation>
@@ -368,7 +368,7 @@
 <translation id="3716845769494773620">బహుళ పంక్తి</translation>
 <translation id="3731746171184829332">మునుపటి శీర్షిక లేదు.</translation>
 <translation id="3735039640698208086">ఆడియో ప్లే చేస్తున్నప్పుడు...</translation>
-<translation id="3755561384917041694">దయచేసి పొడిగించిన బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి స్థితి ట్రే, ప్రాప్యతలో స్క్రీన్‌పై కీబోర్డ్‌‌ను ఆరంభించండి.</translation>
+<translation id="3755561384917041694">దయచేసి పొడిగించిన బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి స్థితి ట్రే, యాక్సెస్‌ సౌల‌భ్య‌త‌లో స్క్రీన్‌పై కీబోర్డ్‌‌ను ప్రారంభించండి.</translation>
 <translation id="3762198587642264450">ప్రస్తుత అడ్డు వరుస యొక్క చివరకు వెళ్లండి</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">నిష్క్రమణ డైలాగ్.</translation>
@@ -502,7 +502,7 @@
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">మునుపటి సారూప్య మూలకం.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
-<translation id="4867316986324544967">TTS లాగ్ చేయడాన్ని ప్రారంభించండి</translation>
+<translation id="4867316986324544967">TTSను లాగ్ చేయ‌డం ప్రారంభించండి</translation>
 <translation id="4877261390094455813">శోధన ప్రశ్నను నమోదు చేయండి.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">అంతర్గత లింక్</translation>

@@ -298,6 +298,9 @@
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
 <translation id="1810261428246410396">Allow Instant Tethering to be used.</translation>
+<translation id="1817685358399181673">This policy specifies the <ph name="PLUGIN_VM_NAME" /> image for a user. The policy is set by specifying the URL from which the device can download the image and a SHA-256 hash used to verify the integrity of the download.
+
+      The policy should be specified as a string that expresses the URL and hash in the JSON format.</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="1844620919405873871">Configures quick unlock related policies.</translation>
@@ -466,6 +469,10 @@
 <translation id="214901426630414675">Restrict printing duplex mode</translation>
 <translation id="2149330464730004005">Enable colour printing</translation>
 <translation id="2156132677421487971">Configure policies for <ph name="PRODUCT_NAME" />, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
+<translation id="2163878108829382394">
+        If this policy is set to true, cloud management enrolment is mandatory and blocks Chrome launch process if failed.
+
+        If this policy is left unset or set to false, cloud management enrolment is optional and does not block Chrome launch process if failed.</translation>
 <translation id="2166472654199325139">Do not filter sites for adult content</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
@@ -697,6 +704,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
 <translation id="2693108589792503178">Configure the change password URL.</translation>
+<translation id="2696531058295423290">Allow devices to use a <ph name="PLUGIN_VM_NAME" /> on <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
 <translation id="2742843273354638707">Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME" /> app launcher.
 
@@ -1407,6 +1415,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4483649828988077221">Disable Auto Update</translation>
 <translation id="4485425108474077672">Configure the New Tab page URL</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
+<translation id="449423975179525290">Configure <ph name="PLUGIN_VM_NAME" />-related policies.</translation>
 <translation id="450537894712826981">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided cache size regardless of whether the user has specified the '--media-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -2728,6 +2737,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save/download of the currently displayed page, nor do they apply to saving as PDF from the printing options.
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
+<translation id="7642803091923523695">Enable this device to run PluginVm.
+
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME" /> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME" /> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> needs to be true and <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> needs to be set for <ph name="PLUGIN_VM_NAME" /> to be allowed to run.</translation>
 <translation id="7643883929273267746">Restrict accounts that are visible in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
 <translation id="7673194325208122247">Time period (milliseconds)</translation>
@@ -3193,6 +3205,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this setting is enabled or not set, browsing and download history can be deleted.
 
       If this setting is disabled, browsing and download history cannot be deleted.</translation>
+<translation id="8758831693895931466">Enable mandatory cloud management enrolment</translation>
 <translation id="8759829385824155666">Allowed Kerberos encryption types</translation>
 <translation id="8764119899999036911">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 

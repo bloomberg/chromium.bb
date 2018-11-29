@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">Chrome এর উপাদানগুলি একে অপরের সাথে বেমানান৷ Chrome আপগ্রেড করা হতে পারে, অনুগ্রহ করে কয়েক মিনিটের মধ্যে আবার চেষ্টা করুন৷ সমস্যাটি থেকে গেলে, Chrome আনইনস্টল করে পুনরায় ইনস্টল করুন৷</translation>
 <translation id="1446450296470737166">MIDI ডিভাইসগুলির পূর্ণ নিয়ন্ত্রণের অনুমতি দিন</translation>
 <translation id="145097072038377568">Android সেটিংসে বন্ধ করা অাছে</translation>
-<translation id="1469898724493126466">ওয়েব থেকে সেরা জিনিসগুলি খোঁজা হচ্ছে।</translation>
 <translation id="1477626028522505441">সার্ভার সমস্যার কারণে <ph name="FILE_NAME" /> ডাউনলোড ব্যর্থ হয়েছে।</translation>
 <translation id="1501480321619201731">আইটেমের গ্রুপ মুছুন</translation>
 <translation id="1506061864768559482">সার্চ ইঞ্জিন</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">ইউজারনেম কপি করুন</translation>
 <translation id="1576370611341449972">শুধুমাত্র ওয়াই-ফাই চালু থাকাকালীন ডাউনলোড হয়</translation>
 <translation id="1612196535745283361">ডিভাইস স্ক্যান করার জন্য Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন। অবস্থানের অ্যাক্সেস <ph name="BEGIN_LINK" />এই ডিভাইসের জন্য বন্ধ করা হয়েছে<ph name="END_LINK" />।</translation>
-<translation id="162035744160882748">সিঙ্ক, ব্যক্তিগতকরণ এবং অন্যান্য Google পরিষেবাগুলি চালু করুন</translation>
 <translation id="1620510694547887537">ক্যামেরা</translation>
 <translation id="1623104350909869708">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে বাধা দিন</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{১ টি নির্বাচিত আইটেম সরান}one{#টি নির্বাচিত আইটেম সরান}other{#টি নির্বাচিত আইটেম সরান}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1868024384445905608">Chrome এখন আরও দ্রুত ফাইল ডাউনলোড করে</translation>
 <translation id="187628348035757895">ডেভেলপার বিকল্প</translation>
-<translation id="1878302395768190018">আপনি যেকোনও সময়ে Chrome সেটিংসে এটি কাস্টমাইজ করতে পারেন</translation>
 <translation id="1880072593381090678">Chrome এর জনপ্রিয় পৃষ্ঠাগুলি</translation>
 <translation id="1883903952484604915">আমার ফাইল</translation>
 <translation id="1887786770086287077">এই ডিভাইসে লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
@@ -237,6 +234,7 @@
 <translation id="271033894570825754">নতুন</translation>
 <translation id="2728754400939377704">সাইট অনুযায়ী সাজান</translation>
 <translation id="2744248271121720757">ঝটপট সার্চ এবং সম্পর্কিত অ্যাকশন দেখতে একটি শব্দ ট্যাপ করুন</translation>
+<translation id="2760323196215778921">আপনাকে এই অনুমতিটি Chrome-এর জন্য চালু করতে হবে। বিবরণের জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> দেখুন।</translation>
 <translation id="2762000892062317888">এখনই</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> সেকেন্ড বাকি আছে</translation>
 <translation id="2779651927720337254">করা যায়নি</translation>
@@ -359,7 +357,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টি ডাউনলোড মোছা হয়েছে</translation>
 <translation id="3819562311292413223">আপনার জন্য নিবন্ধ ডাউনলোড করা</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
-<translation id="385051799172605136">ফিরুন</translation>
 <translation id="3859306556332390985">সামনে এগোন</translation>
 <translation id="3868004864571585162">কুকি, মিডিয়া লাইসেন্স এবং সাইট ডেটা</translation>
 <translation id="3894427358181296146">ফোল্ডার যোগ করুন</translation>
@@ -408,7 +405,6 @@
 <translation id="4170011742729630528">পরিষেবাটি উপলব্ধ নেই, পরে আবার চেষ্টা করুন৷</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ব্যবহার করা হয়েছে</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
-<translation id="4192273449750167573">পরবর্তী স্ক্রিনে আপনার সেটিংস পর্যালোচনা করুন</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4198423547019359126">ডাউনলোড করার জন্য লোকেশন উপলভ্য নেই</translation>
 <translation id="4209895695669353772">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পেতে সিঙ্ক বিকল্প চালু করুন</translation>
@@ -432,7 +428,6 @@
 <translation id="4398088515904522762">এই ফিচার ব্যবহার করতে, <ph name="BEGIN_LINK" />অ্যাক্টিভিটি এবং ইন্টার‌্যাকশন<ph name="END_LINK" /> চালু করুন।</translation>
 <translation id="4404568932422911380">কোনও বুকমার্ক নেই</translation>
 <translation id="4409723563706114196">পৃষ্ঠার প্রস্তাবনা ব্যবহার করুন</translation>
-<translation id="4419556793104466535">সিঙ্ক, ব্যক্তিগতকরণ এবং আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
 <translation id="4432792777822557199">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠাগুলিকে <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে</translation>
 <translation id="4433925000917964731">Google লাইট পৃষ্ঠা পাঠিয়েছে</translation>
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
@@ -547,7 +542,6 @@
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="5224771365102442243">ভিডিও এর সাথে</translation>
 <translation id="5233638681132016545">নতুন ট্যাব</translation>
-<translation id="5240817131241497236">Chrome-এর মধ্যে যে সেটিংসের মাধ্যমে  সিঙ্ক, ব্যাক্তিগতকরণ এবং অন্যান্য Google পরিষেবাগুলি নিয়ন্ত্রিত হয় সেটিতে পরিবর্তন করা হয়েছে।  এর ফলে আপনার বর্তমান সেটিংস প্রভাবিত হতে পারে।</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />সেটিংস<ph name="END_LINK1" /> যেকোনও সময় কাস্টমাইজ করা যায়। .Google আপনার দেখা সাইটগুলির কন্টেন্ট, এছাড়া ব্রাউজারের অ্যাক্টিভিটি ও ইন্টার‍্যাকশন ব্যবহার করে Chrome এবং অন্যান্য Google পরিষেবা যেমন অনুবাদ, সার্চ ও বিজ্ঞাপনগুলি ব্যক্তিগতকৃত করতে পারে।</translation>
 <translation id="5271967389191913893">ডিভাইস ডাউনলোড করা সামগ্রী খুলতে পারবে না৷</translation>
 <translation id="5274381992091475657">অটোফিল অ্যাসিস্ট্যান্ট</translation>
@@ -587,7 +581,6 @@
 <translation id="5512137114520586844">এই অ্যাকাউন্টটি <ph name="PARENT_NAME" />-এর দ্বারা পরিচালিত হয়৷</translation>
 <translation id="5514904542973294328">এই ডিভাইসের প্রশাসক অক্ষম করেছে</translation>
 <translation id="5515439363601853141">আপনার পাসওয়ার্ড দেখতে আনলক করুন</translation>
-<translation id="5515716148775388141">আপনার আইকন স্ক্রিনের নিচের অংশে সরানো হয়েছে</translation>
 <translation id="5517095782334947753">আপনার জন্য <ph name="FROM_ACCOUNT" /> থেকে বুকমার্কস, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস রয়েছে।</translation>
 <translation id="5524843473235508879">রিডাইরেক্ট ব্লক করা হয়েছে।</translation>
 <translation id="5527082711130173040">ডিভাইস স্ক্যান করার জন্য Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।  <ph name="BEGIN_LINK1" />অনুমতিগুলির আপডেট করুন<ph name="END_LINK1" />। অবস্থানের অ্যাক্সেস <ph name="BEGIN_LINK2" />এই ডিভাইসের জন্যও বন্ধ করা হয়েছে<ph name="END_LINK2" />।</translation>
@@ -675,6 +668,7 @@
 <translation id="6112702117600201073">রিফ্রেশ পৃষ্ঠা</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6140912465461743537">দেশ/অঞ্চল</translation>
+<translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6154478581116148741">এই ডিভাইস থেকে আপনার পাসওয়ার্ড এক্সপোর্ট করতে সেটিংসে স্ক্রিন লক চালু করুন</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ডেটা সঞ্চয়</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
@@ -774,7 +768,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="6846298663435243399">লোড হচ্ছে...</translation>
-<translation id="685040365210406336">কোনও পরিবর্তন করবেন না</translation>
 <translation id="6850409657436465440">ডাউনলোডটি এখনও চলছে</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" />টি ট্যাব বন্ধ হয়েছে</translation>
 <translation id="6864459304226931083">ছবি ডাউনলোড করুন</translation>
@@ -828,6 +821,7 @@
 <translation id="7189372733857464326">Google Play পরিষেবাগুলির আপডেট শেষ হওয়ার জন্য অপেক্ষা করছে</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7191430249889272776">পটভূমিতে ট্যাব খোলা হয়েছে।</translation>
+<translation id="7221869452894271364">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
 <translation id="723171743924126238">ছবি বেছে নিন</translation>
 <translation id="7243308994586599757">স্ক্রীনের প্রায় নীচের দিকে বিকল্পগুলি উপলব্ধ</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
@@ -903,7 +897,6 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7810647596859435254">এর মাধ্যমে খুলুন...</translation>
 <translation id="7821588508402923572">আপনি কত ডেটা সেভ করেছেন তা এখানে দেখা যাবে</translation>
-<translation id="7832327313660264358">Google এ সিঙ্ক করা ডেটা এবং আপনার ব্যবহার করা বৈশিষ্ট্যগুলি পরিবর্তন হবে না</translation>
 <translation id="7837721118676387834">একটি নির্দিষ্ট সাইটের জন্য মিউট করে রাখা ভিডিওগুলি স্বতঃবাজানোর অনুমতি দেয়।</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
 <translation id="784934925303690534">সময় সীমা</translation>
@@ -922,7 +915,6 @@
 <translation id="79859296434321399">অগমেন্টেড রিয়েলিটি কন্টেন্ট দেখার জন্য ARCore ইনস্টল করুন</translation>
 <translation id="7986741934819883144">একটি পরিচিতি বেছে নিন</translation>
 <translation id="7987073022710626672">Chrome পরিষেবার শর্তাবলি</translation>
-<translation id="7987764905897278458">Google স্মার্ট থেকে আরও অনেক কিছু পান</translation>
 <translation id="7998918019931843664">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
 <translation id="7999064672810608036">আপনি কি এই ওয়েবসাইটের কুকি সহ সমস্ত ডেটা পরিষ্কার করার এবং এটির সমস্ত অনুমতি আবার সেট করার বিষয়ে নিশ্চিত?</translation>
 <translation id="8004582292198964060">ব্রাউজার</translation>
@@ -936,6 +928,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> দিন বাকি আছে</translation>
 <translation id="804335162455518893">এসডি কার্ড পাওয়া যায়নি</translation>
 <translation id="805047784848435650">আপনার ব্রাউজিং ইতিহাসের উপর ভিত্তি করে</translation>
+<translation id="8051303708327298699">আপনাকে এই অনুমতিটি Chrome-এর জন্য চালু করতে হবে। বিবরণের জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> দেখুন।</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB  সহজপ্রাপ্য</translation>
 <translation id="8058746566562539958">নতুন Chrome ট্যাবে খুলুন</translation>
 <translation id="8063895661287329888">বুকমার্ক যোগ করতে ব্যর্থ হয়েছে।</translation>
@@ -998,7 +991,6 @@
 <translation id="851751545965956758">সাইটকে ডিভাইসের সাথে কানেক্ট করা থেকে ব্লক করুন</translation>
 <translation id="8523928698583292556">সংরক্ষিত পাসওয়ার্ড মুছুন</translation>
 <translation id="854522910157234410">এই পৃষ্ঠাটি খুলুন</translation>
-<translation id="8555322348396635979">কিছু সমস্যা হয়েছে। আপনার কানেকশন পরীক্ষা করে দেখুন।</translation>
 <translation id="8558485628462305855">অগমেন্টেড রিয়েলিটি কন্টেন্ট দেখার জন্য ARCore আপডেট করুন</translation>
 <translation id="8559990750235505898">অন্য ভাষাতে পৃষ্ঠা অনুবাদ করার প্রস্তাব দিন</translation>
 <translation id="8562452229998620586">আপনার সংরক্ষিত পাসওয়ার্ডগুলি এখানে উপস্থিত হবে৷</translation>

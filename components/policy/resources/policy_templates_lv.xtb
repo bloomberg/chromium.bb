@@ -2044,7 +2044,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Izmantojot šo politiku, ir jāinstalē <ph name="CHROME_REPORTING_EXTENSION_NAME" />, lai varētu veidot pārskatus, un tiek ignorētas jebkādas paplašinājumu politikas, kas saistītas ar attiecīgo paplašinājumu.</translation>
 <translation id="6155247658847899816">Kad šī politika ir iestatīta, katra displeja izšķirtspējas un mērogošanas koeficientam tiek iestatīta norādītā vērtība. Ārējo displeju iestatījumi tiek lietoti visiem pievienotajiem ārējiem displejiem.
 
-      Parametru “external_width” un “external_height” vērtībām ir jābūt norādītām pikseļos. Parametru “external_scale_percentage” un “internal_scale_percentage” vērtībām ir jābūt norādītam procentos.
+      Parametru “external_width” un “external_height” vērtībām ir jābūt norādītām pikseļos. Parametru “external_scale_percentage” un “internal_scale_percentage” vērtībām ir jābūt norādītām procentos.
 
       Ja politikai “external_use_native” ir iestatīta vērtība “True”, politika ignorēs parametru “external_height” un “external_width” vērtības un ārējo displeju izšķirtspējai iestatīs standarta vērtību.
 

@@ -295,6 +295,9 @@
 <translation id="1803646570632580723">Lista przypiętych aplikacji pokazywanych w programie uruchamiającym</translation>
 <translation id="1808715480127969042">Blokuj pliki cookie w tych witrynach</translation>
 <translation id="1810261428246410396">Zezwalaj na używanie funkcji Instant Tethering.</translation>
+<translation id="1817685358399181673">Ta zasada określa obraz <ph name="PLUGIN_VM_NAME" /> dla użytkownika. Zasada jest ustawiana przez podanie adresu URL, z którego urządzenie może pobrać obraz, oraz hasha SHA-256 używanego do weryfikacji integralności pobranego obrazu.
+
+      Zasadę należy określić jako ciąg złożony z adresu URL oraz hasha w formacie JSON.</translation>
 <translation id="1827523283178827583">Używaj stałych serwerów proxy</translation>
 <translation id="1843117931376765605">Częstotliwość odświeżania zasad użytkownika</translation>
 <translation id="1844620919405873871">Konfiguruje zasady szybkiego odblokowania.</translation>
@@ -458,6 +461,10 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="214901426630414675">Ogranicz tryb drukowania dwustronnego</translation>
 <translation id="2149330464730004005">Włącz drukowanie w kolorze</translation>
 <translation id="2156132677421487971">Pozwala skonfigurować zasady dotyczące <ph name="PRODUCT_NAME" /> – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
+<translation id="2163878108829382394">
+        Jeśli ta zasada ma wartość prawda, rejestracja w zarządzaniu przez chmurę jest obowiązkowa. Jeśli zakończy się niepowodzeniem, proces uruchamiania Chrome zostanie zablokowany.
+
+        Jeśli ta zasada ma wartość fałsz lub jest nieskonfigurowana, rejestracja w zarządzaniu przez chmurę jest opcjonalna i w razie niepowodzenia nie zablokuje procesu uruchamiania Chrome.</translation>
 <translation id="2166472654199325139">Nie filtruj witryn pod kątem treści dla dorosłych</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
@@ -673,6 +680,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
 <translation id="2693108589792503178">Skonfiguruj adres URL do zmiany hasła.</translation>
+<translation id="2696531058295423290">Zezwól urządzeniom na korzystanie z wtyczki <ph name="PLUGIN_VM_NAME" /> w systemie <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
 <translation id="2742843273354638707">Ukrywa aplikację Chrome Web Store i link w stopce na stronie Nowa karta oraz w menu z aplikacjami <ph name="PRODUCT_OS_NAME" />.
 
@@ -1371,6 +1379,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4483649828988077221">Wyłącz automatyczne aktualizacje</translation>
 <translation id="4485425108474077672">Skonfiguruj URL strony nowej karty</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
+<translation id="449423975179525290">Skonfiguruj zasady powiązane z wtyczką <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.
@@ -2625,6 +2634,9 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
       Pamiętaj, że te ograniczenia obowiązują w odniesieniu do plików pobieranych z poziomu treści strony internetowej oraz przy użyciu opcji menu kontekstowego „Pobierz link…”. Nie obowiązują one w odniesieniu do zapisywania i pobierania aktualnie wyświetlanej strony ani zapisywania plików jako PDF z poziomu opcji drukowania.
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
+<translation id="7642803091923523695">Zezwól temu urządzeniu na korzystanie z wtyczki PluginVm.
+
+      Jeśli zasada ma wartość fałsz lub nie jest skonfigurowana, wtyczka<ph name="PLUGIN_VM_NAME" />nie jest włączona na urządzeniu. Jeśli zasada ma wartość prawda, wtyczka <ph name="PLUGIN_VM_NAME" /> na urządzeniu jest włączona, o ile zezwalają na to też inne ustawienia. Aby wtyczka <ph name="PLUGIN_VM_NAME" /> mogła być uruchamiana, zasada <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" />musi mieć wartość prawda i musi być ustawiona opcja <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />.</translation>
 <translation id="7643883929273267746">Ogranicz konta widoczne w <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Określa, czy na urządzeniu powinno być włączone przesyłanie danych w roamingu. W przypadku włączenia tej zasady przesyłanie danych w roamingu będzie dozwolone. Jeśli zasada będzie wyłączona lub nieskonfigurowana, przesyłanie danych w roamingu będzie niedostępne.</translation>
 <translation id="7673194325208122247">Czas (w milisekundach)</translation>
@@ -3083,6 +3095,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
       Jeśli to ustawienie jest włączone lub nieustawione, można usuwać historię przeglądania i pobierania.
 
       Jeśli to ustawienie jest wyłączone, nie można usuwać historii przeglądania ani pobierania.</translation>
+<translation id="8758831693895931466">Włącz obowiązkową rejestrację w zarządzaniu przez chmurę</translation>
 <translation id="8759829385824155666">Dozwolone typy szyfrowania Kerberos</translation>
 <translation id="8764119899999036911">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos jest tworzona na podstawie kanonicznej nazwy DNS, czy też wpisanej, oryginalnej nazwy. Włączenie tego ustawienia powoduje pominięcie wyszukiwania rekordu CNAME i użycie wprowadzonej nazwy serwera. Jeśli wyłączysz ustawienie lub nie skonfigurujesz go, nazwa kanoniczna serwera będzie określana za pomocą wyszukiwania rekordu CNAME.</translation>
 <translation id="8782750230688364867">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy urządzenie działa w trybie prezentacji.

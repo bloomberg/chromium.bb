@@ -284,6 +284,9 @@
 <translation id="1803646570632580723">Popis prikvačenih aplikacija za prikazivanje u pokretaču</translation>
 <translation id="1808715480127969042">Blokiraj kolačiće na ovim web-lokacijama</translation>
 <translation id="1810261428246410396">Dopusti upotrebu Automatskog modemskog povezivanja.</translation>
+<translation id="1817685358399181673">Ovo pravilo navodi <ph name="PLUGIN_VM_NAME" /> sliku za korisnika. Pravilo je postavljeno navođenjem URL-a s kojeg uređaj može preuzeti sliku i hashiranje SHA-256 za potvrdu integriteta preuzimanja.
+
+      Pravilo se treba navesti kao niz koji izražava URL i hashiranje u JSON formatu.</translation>
 <translation id="1827523283178827583">Upotrijebi fiksne proxy poslužitelje</translation>
 <translation id="1843117931376765605">Brzina osvježavanja za korisničko pravilo</translation>
 <translation id="1844620919405873871">Konfigurira pravila povezana s brzim otključavanjem.</translation>
@@ -446,6 +449,10 @@
 <translation id="214901426630414675">Ograniči način dvostranog ispisa</translation>
 <translation id="2149330464730004005">Omogući ispis u boji</translation>
 <translation id="2156132677421487971">Konfigurirajte pravila za <ph name="PRODUCT_NAME" />, značajku koja korisnicima omogućuje da sadržaj kartica, web-lokacija ili radne površine iz preglednika pošalju na udaljene zaslone i zvučne sustave.</translation>
+<translation id="2163878108829382394">
+        Ako se to pravilo postavi na True, prijava za upravljanje u oblaku obavezna je i blokira postupak pokretanja Chromea ako ne uspije.
+
+        Ako se pravilo ne postavi ili se postavi na False, prijava za upravljanje u oblaku nije obavezna i ne blokira postupak pokretanja Chromea ako ne uspije.</translation>
 <translation id="2166472654199325139">Nemoj filtrirati web-lokacije na temelju sadržaja za odrasle</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
@@ -661,6 +668,7 @@
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
 <translation id="2693108589792503178">Konfiguriranje URL-a za promjenu zaporke.</translation>
+<translation id="2696531058295423290">Dopusti uređajima da upotrebljavaju <ph name="PLUGIN_VM_NAME" /> na proizvodu <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -1350,6 +1358,7 @@
 <translation id="4483649828988077221">Onemogući automatska ažuriranja</translation>
 <translation id="4485425108474077672">Konfiguriraj URL stranice nove kartice</translation>
 <translation id="4492287494009043413">Onemogući izradu snimki zaslona</translation>
+<translation id="449423975179525290">Konfigurirajte pravila koje se odnose na <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranu predmemoriranih medijskih datoteka na disku.
 
       Ako postavite ovo pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će ponuđenu veličinu predmemorije, bez obzira je li korisnik označio "--media-cache-size". Vrijednost navedena u ovom pravilu nije čvrsto postavljena granica, već prijedlog za sustav predmemoriranja; svaka vrijednost ispod nekoliko megabajta premala je i zaokružit će se na prihvatljivi minimum.
@@ -2613,6 +2622,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Napominjemo da se ta ograničenja primjenjuju na preuzimanja aktivirana iz sadržaja web-stranice, kao i putem opcije kontekstnog izbornika "Preuzmi vezu...". Ta se ograničenja ne primjenjuju na spremanje ili preuzimanje trenutačno prikazane stranice ni na spremanje u obliku PDF-a u opcijama ispisa.
 
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Omogući uređaju da pokreće PluginVm.
+
+      Ako se to pravilo postavi na False ili se ne postavi, <ph name="PLUGIN_VM_NAME" /> nije omogućen za uređaj. Ako se postavi na True, <ph name="PLUGIN_VM_NAME" /> omogućen je za uređaj ako je dopušten i drugim postavkama. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> potrebno je postaviti na True i potrebno je postaviti <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> da bi se <ph name="PLUGIN_VM_NAME" /> mogao pokrenuti.</translation>
 <translation id="7643883929273267746">Ograniči račune koji su vidljivi u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
 <translation id="7673194325208122247">Razdoblje (milisekunde)</translation>
@@ -3070,6 +3082,7 @@ za preglednike imaju isti raspored.
       Ako je ova postavka omogućena ili nije postavljena, povijest pregledavanja i preuzimanja može se izbrisati.
 
       Ako je ova postavka onemogućena, povijest pregledavanja i preuzimanja nije moguće izbrisati.</translation>
+<translation id="8758831693895931466">Omogući obaveznu prijavu za upravljanje u oblaku</translation>
 <translation id="8759829385824155666">Dopuštene vrste enkripcije Kerberos</translation>
 <translation id="8764119899999036911">Određuje temelji li se generirani Kerberos SPN na kanonskom DNS imenu ili unesenom izvornom imenu. Ako omogućite ovu postavku, CNAME pretraživanje bit će preskočeno, a upotrijebit će se uneseni naziv poslužitelja. Ako onemogućite ovu postavku ili ju ne postavite, kanonski naziv poslužitelja bit će utvrđen putem CNAME pretraživanja.</translation>
 <translation id="8782750230688364867">Određuje postotak skaliranja odgode zatamnjivanja zaslona kada je uređaj u načinu prezentacije.

@@ -76,7 +76,6 @@
 <translation id="209018056901015185">Site desktop</translation>
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="2120297377148151361">Activitate și interacțiuni</translation>
 <translation id="213900355088104901">Pentru a naviga privat, deschide o filă incognito</translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articole necitite în Lista de lectură.</translation>
@@ -318,6 +317,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="6127379762771434464">Elementul a fost eliminat</translation>
 <translation id="6136914049981179737">Secunde</translation>
 <translation id="616831107264507309">Citește mai târziu</translation>
+<translation id="6177442314419606057">Caută în Chrome</translation>
 <translation id="6184086493125982861">Afișează butonul File</translation>
 <translation id="6187302354554850004">Ultima sincronizare: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Necitite</translation>
@@ -372,7 +372,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">File recente</translation>
 <translation id="7006788746334555276">Setări privind conținutul</translation>
-<translation id="7017968314960951695">Folosește conținutul de pe site-urile pe care le accesezi, activitatea browserului și interacțiunile pentru personalizare</translation>
 <translation id="7029809446516969842">Parole</translation>
 <translation id="7031882061095297553">Sincronizează cu</translation>
 <translation id="7053983685419859001">Blochează</translation>
@@ -417,6 +416,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7769602470925380267">Acceptă și deconectează-te</translation>
 <translation id="7772032839648071052">Confirmă expresia de acces</translation>
 <translation id="7781829728241885113">Ieri</translation>
+<translation id="778855399387580014">Începe o căutare într-o filă Chrome nouă.</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7840771868269352570">Elementele selectate vor fi eliminate.</translation>
 <translation id="7856733331829174190">Nu s-a putut descărca</translation>

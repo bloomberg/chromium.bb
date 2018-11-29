@@ -51,7 +51,7 @@
 <translation id="1331212799747679585">Chromeని అప్‌డేట్ చేయడం సాధ్యపడదు. మరిన్ని ఎంపికలు</translation>
 <translation id="1332501820983677155">Google Chrome లక్షణ సత్వరమార్గాలు</translation>
 <translation id="1360432990279830238">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయలా?</translation>
-<translation id="136248372334525878">వేగమైన లోడింగ్ మరియు ఆఫ్‌లైన్‌లో చదవడం కోసం పేజీలను ప్రీలోడ్ చేయండి</translation>
+<translation id="136248372334525878">వేగమైన లోడింగ్, ఆఫ్‌లైన్‌లో చదవడం కోసం పేజీలను ప్రీలోడ్ చేయండి</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> సైట్ జోడించబడింది</translation>
 <translation id="1373696734384179344">ఎంచుకున్న కంటెంట్‌ను డౌన్‌లోడ్ చేయడానికి తగినంత మెమరీ లేదు.</translation>
 <translation id="1376578503827013741">గణిస్తోంది...</translation>
@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">Chrome భాగాలు ఒకదానికొకటి అనుకూలంగా లేవు. Chrome అప్‌గ్రేడ్ చేయబడుతుండవచ్చు, దయచేసి కొన్ని నిమిషాల్లో మళ్లీ ప్రయత్నించండి. సమస్య కొనసాగితే, Chromeని అన్ఇన్‌స్టాల్ చేసి, మళ్లీ ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించండి.</translation>
 <translation id="1446450296470737166">MIDI పరికరాల పూర్తి నియం. అనుమ.</translation>
 <translation id="145097072038377568">Android సెట్టింగ్‌ల్లో ఆఫ్ చేయబడింది</translation>
-<translation id="1469898724493126466">వెబ్ నుండి ఉత్తమమైన వాటిని కనుగొంటోంది.</translation>
 <translation id="1477626028522505441">సర్వర్ సమస్యల కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="1501480321619201731">సమూహాన్ని తొలగించు</translation>
 <translation id="1506061864768559482">శోధన ఇంజిన్</translation>
@@ -87,12 +86,11 @@
 <translation id="1571304935088121812">వినియోగదారు పేరును కాపీ చేస్తుంది</translation>
 <translation id="1576370611341449972">డౌన్‌లోడ్ Wi-Fiలో మాత్రమే జరుగుతుంది</translation>
 <translation id="1612196535745283361">పరికరాల కోసం స్కాన్ చేయడానికి Chromeకు స్థాన ప్రాప్యత అవసరం. స్థాన ప్రాప్యత <ph name="BEGIN_LINK" />ఈ పరికరానికి ఆఫ్ చేయబడింది<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">సమకాలీకరణ, వ్యక్తిగతీకరణ మరియు ఇతర Google సేవలను ఆన్ చేయండి</translation>
 <translation id="1620510694547887537">కెమెరా</translation>
 <translation id="1623104350909869708">ఈ పేజీని అదనపు డైలాగ్‌లు సృష్టించనీయకుండా నిరోధించు</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{ఎంచుకోబడిన 1 అంశాన్ని తీసివేస్తుంది}other{ఎంచుకోబడిన # అంశాలను తీసివేస్తుంది}}</translation>
 <translation id="1641113438599504367">సురక్షిత బ్రౌజింగ్</translation>
-<translation id="164269334534774161">మీరు <ph name="CREATION_TIME" /> నుండి ఈ పేజీ యొక్క ఆఫ్‌లైన్ కాపీని వీక్షిస్తున్నారు</translation>
+<translation id="164269334534774161">మీరు <ph name="CREATION_TIME" /> నుండి ఈ పేజీ ఆఫ్‌లైన్ కాపీని వీక్షిస్తున్నారు</translation>
 <translation id="1644574205037202324">చరిత్ర</translation>
 <translation id="1647391597548383849">మీ కెమెరా ప్రాప్యత అనుమతి</translation>
 <translation id="1660204651932907780">ధ్వనిని ప్లే చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేయబడింది)</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1868024384445905608">Chrome ఇప్పుడు ఫైల్‌లను మరింత వేగంగా డౌన్‌లోడ్ చేస్తుంది</translation>
 <translation id="187628348035757895">డెవలపర్ ఎంపికలు</translation>
-<translation id="1878302395768190018">మీరు ఏ సమయంలో అయినా దీనిని Chrome సెట్టింగ్‌లలో అనుకూలీకరించవచ్చు</translation>
 <translation id="1880072593381090678">Chrome నుండి జనాదరణ పొందిన పేజీలు</translation>
 <translation id="1883903952484604915">నా ఫైల్‌లు</translation>
 <translation id="1887786770086287077">ఈ పరికరానికి స్థానం యాక్సెస్ ఆఫ్ చేయబడింది. దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో తిరిగి ఆన్ చేయండి.</translation>
@@ -179,7 +176,7 @@
 <translation id="2280910239864711607">ప్రైవేట్ మోడ్‌లో కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="2286841657746966508">బిల్లింగ్ చిరునామా</translation>
 <translation id="230115972905494466">అనుకూల పరికరాలు ఏవీ కనుగొనబడలేదు</translation>
-<translation id="2315043854645842844">క్లయింట్ తరపు ప్రమాణపత్రం ఎంపికకు ఆపరేటింగ్ సిస్టమ్ మద్దతు లేదు.</translation>
+<translation id="2315043854645842844">క్లయింట్ తరపు స‌ర్టిఫికెట్‌ ఎంపికకు ఆపరేటింగ్ సిస్టమ్ మద్దతు లేదు.</translation>
 <translation id="2321086116217818302">పాస్‌వర్డ్‌లను సిద్ధం చేస్తోంది…</translation>
 <translation id="2321958826496381788">మీరు దీన్ని సౌకర్యవంతంగా చదవగలిగే వరకు స్లైడర్‌ను లాగండి. పేరాపై రెండుసార్లు నొక్కిన తర్వాత వచనం కనీసం ఇంత పెద్దదిగా కనిపించాలి.</translation>
 <translation id="2323763861024343754">సైట్ నిల్వ</translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> డౌన్‌లోడ్‌లు తొలగించబడ్డాయి</translation>
 <translation id="3819562311292413223">మీ కోసం కథనాలను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="3822502789641063741">సైట్ నిల్వను తీసివేయాలా?</translation>
-<translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3859306556332390985">ముందుకు జరుపు</translation>
 <translation id="3868004864571585162">కుక్కీలు, మీడియా లైసెన్స్‌లు మరియు సైట్ డేటా</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">సేవ అందుబాటులో లేదు; తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> వినియోగించబడింది</translation>
 <translation id="4181841719683918333">భాషలు</translation>
-<translation id="4192273449750167573">తర్వాతి స్క్రీన్‌లో మీ సెట్టింగ్‌లను సమీక్షించండి</translation>
 <translation id="4195643157523330669">క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="4198423547019359126">డౌన్‌లోడ్ స్థానాలు అందుబాటులో లేవు</translation>
 <translation id="4209895695669353772">Google ద్వారా మీ అభిరుచికి తగిన కంటెంట్‌ను సిఫార్సుల రూపంలో పొందాలనుకుంటే, సమకాలీకరణ ఎంపికను ఆన్ చేయాలి</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">ఈ ఫీచర్‌ని ఉపయోగించడానికి, <ph name="BEGIN_LINK" />కార్యకలాపం మరియు పరస్పర చర్యలు<ph name="END_LINK" />ని ఆన్ చేయండి.</translation>
 <translation id="4404568932422911380">బుక్‌మార్క్‌లు లేవు</translation>
 <translation id="4409723563706114196">పేజీ సూచనలను ఉపయోగించండి</translation>
-<translation id="4419556793104466535">సమకాలీకరణ, వ్యక్తిగతీకరణ మరియు మరిన్నింటిని నియంత్రించండి</translation>
 <translation id="4432792777822557199">ఇప్పటి నుండి <ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలు <ph name="TARGET_LANGUAGE" />కు అనువదించబడతాయి</translation>
 <translation id="4433925000917964731">Google అందించిన లైట్ పేజీ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5224771365102442243">వీడియోతో</translation>
 <translation id="5233638681132016545">కొత్త టాబ్</translation>
-<translation id="5240817131241497236">Chromeలో సమకాలీకరణ, వ్యక్తిగతీకరణ మరియు ఇతర Google సేవలను నియంత్రించే సెట్టింగ్‌లు మార్చబడ్డాయి. ఇది మీ ప్రస్తుత సెట్టింగ్‌లను ప్రభావితం చేయవచ్చు.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />సెట్టింగ్‌లు<ph name="END_LINK1" /> ఎప్పుడైనా అనుకూలీకరించబడవచ్చు. Chromeతో పాటు అనువాదం, శోధన మరియు ప్రకటనలు వంటి Google సేవలను వ్యక్తిగతీకరించడానికి, మీరు సందర్శించే సైట్‌లలోని కంటెంట్, బ్రౌజర్ కార్యకలాపం మరియు పరస్పర చర్యలను Google ఉపయోగించవచ్చు.</translation>
 <translation id="5271967389191913893">డౌన్‌లోడ్ చేయాల్సిన కంటెంట్‌ను పరికరం తెరవలేదు.</translation>
 <translation id="5274381992091475657">స్వీయ పూరింపు అసిస్టెంట్</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">ఈ ఖాతా <ph name="PARENT_NAME" /> నిర్వహణలో ఉంది.</translation>
 <translation id="5514904542973294328">ఈ పరికరం యొక్క నిర్వాహకుల ద్వారా నిలిపివేయబడింది</translation>
 <translation id="5515439363601853141">మీ పాస్‌వర్డ్‌ను చూడడానికి అన్‌లాక్ చేయండి</translation>
-<translation id="5515716148775388141">మీ చిహ్నాలు స్క్రీన్ దిగువకు తరలించబడ్డాయి</translation>
 <translation id="5517095782334947753">మీరు <ph name="FROM_ACCOUNT" /> నుండి బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌లను కలిగి ఉన్నారు.</translation>
 <translation id="5524843473235508879">మళ్లింపు బ్లాక్ చేయబడింది.</translation>
 <translation id="5527082711130173040">పరికరాల కోసం స్కాన్ చేయడానికి Chromeకు స్థాన ప్రాప్యత అవసరం. <ph name="BEGIN_LINK1" />అనుమతులను నవీకరించండి<ph name="END_LINK1" />. అలాగే స్థాన ప్రాప్యత <ph name="BEGIN_LINK2" />ఈ పరికరానికి ఆఫ్ చేయబడింది<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">పేజీని రిఫ్రెష్ చేస్తోంది</translation>
 <translation id="6127379762771434464">అంశాన్ని తీసివేసారు</translation>
 <translation id="6140912465461743537">దేశం/ప్రాంతం</translation>
+<translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
 <translation id="6154478581116148741">ఈ పరికరం నుండి మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయడానికి సెట్టింగ్‌లలో స్క్రీన్ లాక్‌ను ఆన్ చేయండి</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> డేటా పొదుపులు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
 <translation id="6846298663435243399">లోడ్ అవుతోంది...</translation>
-<translation id="685040365210406336">మార్పులు చేయవద్దు</translation>
 <translation id="6850409657436465440">మీ డౌన్‌లోడ్‌‌ ఇప్పటికీ జరుగుతోంది</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ట్యాబ్‌లు మూసివేయబడ్డాయి</translation>
 <translation id="6864459304226931083">చిత్రాన్ని డౌన్‌లోడ్ చేయి</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">Google Play సేవల నవీకరణ పూర్తి కావడానికి వేచి ఉంది</translation>
 <translation id="7189598951263744875">భాగస్వామ్యం చేయి...</translation>
 <translation id="7191430249889272776">నేపథ్యంలో ట్యాబ్ తెరవబడింది.</translation>
+<translation id="7221869452894271364">ఈ పేజీని రీలోడ్ చెయ్యి</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
 <translation id="7243308994586599757">స్క్రీన్ దిగువభాగం సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
@@ -871,7 +864,7 @@
 <translation id="756809126120519699">Chrome డేటా తీసివేయబడింది</translation>
 <translation id="757524316907819857">రక్షిత కంటెంట్‌ను ప్లే చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="7589445247086920869">ప్రస్తుత శోధన ఇంజిన్‌కి బ్లాక్ చేయండి</translation>
-<translation id="7593557518625677601">Chrome సమకాలీకరణను ప్రారంభించుటకు Android సెట్టింగ్‌లు తెరిచి, Android సిస్టమ్ సమకాలీకరణను మళ్లీ ప్రారంభించండి</translation>
+<translation id="7593557518625677601">Chrome సమకాలీకరణను ప్రారంభిండానికి Android సెట్టింగ్‌లు తెరిచి, Android సిస్టమ్ సమకాలీకరణను మళ్లీ ప్రారంభించండి</translation>
 <translation id="7596558890252710462">ఆపరేటింగ్ సిస్టమ్</translation>
 <translation id="7605594153474022051">సమకాలీకరణ పని చేయడం లేదు</translation>
 <translation id="7612619742409846846">Googleకి ఇలా సైన్ ఇన్ చేసారు</translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7810647596859435254">దీనితో తెరువు…</translation>
 <translation id="7821588508402923572">మీ డేటా పొదుపులు ఇక్కడ కనిపిస్తాయి</translation>
-<translation id="7832327313660264358">మీరు Googleకి సమకాలీకరించే డేటా మరియు మీరు ఉపయోగించే ఫీచర్‌లు మారవు</translation>
 <translation id="7837721118676387834">నిర్దిష్ట సైట్ కోసం మ్యూట్ చేసిన వీడియోలను స్వయంచాలకంగా ప్లే చేయడానికి అనుమతిస్తుంది.</translation>
 <translation id="7846076177841592234">ఎంపికను రద్దు చేయి</translation>
 <translation id="784934925303690534">సమయ పరిధి</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">మెరుగైన వాస్తవిక అనుభవ కంటెంట్‌ను చూడడానికి, ARCoreని ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="7986741934819883144">పరిచయాన్ని ఎంచుకోండి</translation>
 <translation id="7987073022710626672">Chrome సేవా నిబంధనలు</translation>
-<translation id="7987764905897278458">మరిన్ని Google స్మార్ట్‌లను పొందండి</translation>
 <translation id="7998918019931843664">మూసిన ట్యాబ్‌ను మళ్లీ తెరువు</translation>
 <translation id="7999064672810608036">మీరు ఖచ్చితంగా కుక్కీలతో సహా మొత్తం స్థానిక డేటాను తీసివేసి, ఈ వెబ్‌సైట్ కోసం అన్ని అనుమతులను రీసెట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8004582292198964060">బ్రౌజర్</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">పరికరాలకు కనెక్ట్ కాకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="8523928698583292556">నిల్వ చేసిన పాస్‌వర్డ్‌ను తొలగిస్తుంది</translation>
 <translation id="854522910157234410">ఈ పేజీని తెరవండి</translation>
-<translation id="8555322348396635979">అయ్యో! ఏదో తప్పు జరిగింది. దయచేసి మీ కనెక్షన్‌ని తనిఖీ చేయండి.</translation>
 <translation id="8558485628462305855">మెరుగైన వాస్తవిక అనుభవ కంటెంట్‌ను చూడడానికి, ARCoreని అప్‌డేట్ చేయండి</translation>
 <translation id="8559990750235505898">ఇతర భాషలలో పేజీలను అనువదించడాన్ని ఆఫర్ చేస్తుంది</translation>
 <translation id="8562452229998620586">సేవ్ చేయబడిన పాస్‌వర్డ్‌లు ఇక్కడ కనిపిస్తాయి.</translation>

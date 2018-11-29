@@ -63,6 +63,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2314101195544969792">La sesión de <ph name="APPLICATION_NAME" /> estuvo inactiva por un tiempo y se desconectará en breve.</translation>
 <translation id="2317666076142640974">Obtén un adelanto de la nueva <ph name="LINK_BEGIN" />app web de Escritorio remoto de Chrome<ph name="LINK_END" />. Nos encantaría conocer tus comentarios.</translation>
 <translation id="2320166752086256636">Ocultar el teclado</translation>
+<translation id="2332192922827071008">Abrir preferencias</translation>
 <translation id="2353140552984634198">Puedes acceder a esta computadora sin correr ningún riesgo a través de Chromoting.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">No se puede establecer la conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
@@ -190,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Al descargar el instalador del host de Chromoting, aceptas las <ph name="LINK_BEGIN" />Condiciones del servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">Conexión cerrada para <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Para obtener acceso remoto, primero debes configurar la computadora</translation>
+<translation id="5059773780693835145">Para poder controlar esta máquina de forma remota con <ph name="PRODUCT_NAME" />, se necesita un paso adicional de configuración.
+
+Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mostrará el panel de preferencias de Seguridad y privacidad. Luego, marca la casilla correspondiente a "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="507204348399810022">¿Seguro que deseas inhabilitar las conexiones remotas a <ph name="HOSTNAME" />?</translation>
@@ -314,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Mis computadoras</translation>
 <translation id="811307782653349804">Accede a tu computadora desde cualquier lugar.</translation>
 <translation id="8116630183974937060">Se produjo un error de red. Comprueba que el dispositivo esté conectado a Internet y vuelve a intentarlo.</translation>
+<translation id="8123581458650016326">Permite que usuarios remotos controlen esta máquina</translation>
 <translation id="8178433417677596899">Uso compartido de la pantalla entre usuarios, ideal para recibir asistencia técnica remota</translation>
 <translation id="8187079423890319756">Copyright 2013 Los autores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8196755618196986400">Para que podamos comunicarnos contigo y brindarte más información, se incluirá tu dirección de correo electrónico en todos los comentarios que envíes.</translation>

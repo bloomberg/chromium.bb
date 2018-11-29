@@ -76,7 +76,6 @@
 <translation id="209018056901015185">切換為電腦版網站</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
-<translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="213900355088104901">如要進行私密瀏覽，請開啟無痕式分頁</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2207590065820824892">閱讀清單中有 <ph name="UNREAD_COUNT" /> 篇未讀文章。</translation>
@@ -117,6 +116,7 @@
 <translation id="2830972654601096923">管理地址...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />，<ph name="STATE" />，<ph name="URL" /></translation>
 <translation id="2843803966603263712">重設翻譯設定</translation>
+<translation id="2858204748079866344">為保護個人隱私，Chrome 不會將你的密碼自動填入這個欄位。</translation>
 <translation id="285960592395650245">重新嘗試下載</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
@@ -128,6 +128,7 @@
 <translation id="2923448633003185837">貼上並前往</translation>
 <translation id="292639812446257861">標示為未讀取</translation>
 <translation id="2933759065870693102">閃光燈</translation>
+<translation id="2958718410589002129">密碼</translation>
 <translation id="2969979262385602596">無法登入，請稍後再試。</translation>
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3024255823539804759">過去 1 天</translation>
@@ -162,6 +163,7 @@
 <translation id="3494788280727468875">確認清除瀏覽資料</translation>
 <translation id="3519193562722059437">透過新開啟的分頁瀏覽網頁。</translation>
 <translation id="3527085408025491307">資料夾</translation>
+<translation id="3529024052484145543">不安全</translation>
 <translation id="3533202363250687977">關閉所有無痕式分頁</translation>
 <translation id="3533436815740441613">新分頁</translation>
 <translation id="3551320343578183772">關閉分頁</translation>
@@ -179,6 +181,8 @@
 <translation id="3897092660631435901">選單</translation>
 <translation id="3915450441834151894">網站資訊</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
+<translation id="3929457972718048006">地址</translation>
+<translation id="3943492037546055397">密碼</translation>
 <translation id="3950820424414687140">登入</translation>
 <translation id="3967822245660637423">下載完成</translation>
 <translation id="3989635538409502728">登出</translation>
@@ -215,6 +219,7 @@
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
 <translation id="457386861538956877">更多…</translation>
+<translation id="4592368184551360546">鍵盤</translation>
 <translation id="461440297010471931">目前的搜尋引擎是 Google</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620246317052452550">你看過的網頁</translation>
@@ -247,6 +252,7 @@
 <translation id="5010803260590204777">透過新開啟的無痕式分頁以私密模式瀏覽網頁。</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />，您好：</translation>
 <translation id="5039804452771397117">允許</translation>
+<translation id="5059136629401106827">確定</translation>
 <translation id="5062321486222145940">安裝 Google 雲端硬碟</translation>
 <translation id="5083464117946352670">無法確定檔案大小。</translation>
 <translation id="5094827893301452931">已順利發佈到 Twitter。</translation>
@@ -264,6 +270,7 @@
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
+<translation id="5443952882982198570">信用卡</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
@@ -364,7 +371,6 @@
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7006788746334555276">內容設定</translation>
-<translation id="7017968314960951695">使用你所造訪網站的內容、瀏覽器活動和瀏覽器互動行為，提供個人化的使用體驗</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7053983685419859001">封鎖</translation>
@@ -413,6 +419,7 @@
 <translation id="7840771868269352570">系統將移除所選項目。</translation>
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>
+<translation id="7887198238286927132">為保護個人隱私，Chrome 不會自動填入這個欄位。</translation>
 <translation id="7918293828610777738">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請依序輕觸 <ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="READ_LATER_TEXT" />]。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼...</translation>

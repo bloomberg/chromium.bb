@@ -298,6 +298,9 @@
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
 <translation id="1810261428246410396">Leisti momentinį įrenginio kaip modemo naudojimą.</translation>
+<translation id="1817685358399181673">Pagal šią politiką nurodomas „<ph name="PLUGIN_VM_NAME" />“ vaizdas naudotojui. Politika nustatoma nurodant URL, kuriuo įrenginys gali atsisiųsti vaizdą, ir SHA-256 maišą, naudojamą atsisiuntimo vientisumui patvirtinti.
+
+      Politika turi būti nurodoma kaip eilutė, kurioje JSON formatu nurodomi URL ir maiša.</translation>
 <translation id="1827523283178827583">Naudoti fiksuotus tarpinius serverius</translation>
 <translation id="1843117931376765605">Atnaujinti naudotojo politikos dažnį</translation>
 <translation id="1844620919405873871">Konfigūruojama su sparčiuoju atrakinimu susijusi politika.</translation>
@@ -466,6 +469,10 @@
 <translation id="214901426630414675">Spausdinimo dvipusiu režimu ribojimas</translation>
 <translation id="2149330464730004005">Įgalinti spalvotą spausdinimą</translation>
 <translation id="2156132677421487971">Konfigūruojama „<ph name="PRODUCT_NAME" />“ – funkcijos, kurią naudodami naudotojai gali siųsti skirtukų, svetainių ar darbalaukio turinį iš naršyklės į nuotolinius ekranus ir garso sistemas – politika.</translation>
+<translation id="2163878108829382394">
+        Jei ši politika nustatyta kaip „Tiesa“, „Cloud Management“ registracija būtina, o nepavykus užregistruoti blokuojamas „Chrome“ paleidimo procesas.
+
+        Jei ši politika nenustatyta arba nustatyta kaip „Netiesa“, „Cloud Management“ registracija pasirenkama ir nepavykus užregistruoti „Chrome“ paleidimo procesas nėra blokuojamas.</translation>
 <translation id="2166472654199325139">Nefiltruoti turinio suaugusiesiems svetainėse</translation>
 <translation id="2168397434410358693">Neveikos delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2170233653554726857">Įgalinti WPAD optimizavimą</translation>
@@ -697,6 +704,7 @@
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="268577405881275241">Įgalinti duomenų glaudinimo tarpinio serverio funkciją</translation>
 <translation id="2693108589792503178">Slaptažodžio keitimo URL konfigūravimas.</translation>
+<translation id="2696531058295423290">Leidimas įrenginiams naudoti „<ph name="PLUGIN_VM_NAME" />“ sistemoje „<ph name="PRODUCT_OS_NAME" />“.</translation>
 <translation id="2731627323327011390">Neleisti naudoti „<ph name="PRODUCT_OS_NAME" />“ sertifikatų ARC programose</translation>
 <translation id="2742843273354638707">Slėpti „Chrome“ internetinės parduotuvės programą ir poraštės nuorodą Naujo skirtuko puslapyje ir „<ph name="PRODUCT_OS_NAME" />“ programų paleidimo priemonėje.
 
@@ -1405,6 +1413,7 @@
 <translation id="4483649828988077221">Išjungti automatinį naujinimą</translation>
 <translation id="4485425108474077672">Naujo skirtuko puslapio URL konfigūravimas</translation>
 <translation id="4492287494009043413">Neleisti kurti ekrano kopijų</translation>
+<translation id="449423975179525290">Konfigūruojama su „<ph name="PLUGIN_VM_NAME" />“ susijusi politika.</translation>
 <translation id="450537894712826981">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos medijos failams diske saugoti, dydį.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodyto dydžio talpyklą nepaisydama to, ar naudotojas nurodė, ar nenurodė parametro „--media-cache-size“. Šioje politikoje nurodyta vertė nėra griežta riba, bet tiesiog pasiūlymas talpyklos sistemai. Mažesnė nei kelių megabaitų vertė yra per maža ir bus suapvalinta iki įprastos minimalios vertės.
@@ -2726,6 +2735,9 @@
       Atminkite, kad šie apribojimai taikomi atsisiuntimams, kurie suaktyvinti iš tinklalapio turinio ir naudojant kontekstinio meniu parinktį „atsisiųsti nuorodą...“. Šie apribojimai netaikomi, kai naudojama parinktis išsaugoti / atsisiųsti rodomą puslapį arba naudojama spausdinimo parinktis išsaugoti puslapį kaip PDF.
 
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">„PluginVm“ vykdymo šiame įrenginyje įgalinimas.
+
+      Jei politika nustatyta kaip „Netiesa“ arba nenustatyta, „<ph name="PLUGIN_VM_NAME" />“ neįgalinamas įrenginyje. Jei nustatyta kaip „Tiesa“, „<ph name="PLUGIN_VM_NAME" />“ įgalinamas įrenginyje, jei tai taip pat leidžiama atsižvelgiant į kitus nustatymus. Kad būtų leidžiama vykdyti, „<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" />“ turi būti nustatyta kaip „Tiesa“ ir papildiniui „<ph name="PLUGIN_VM_NAME" />“ turi būti nustatyta „<ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />“.</translation>
 <translation id="7643883929273267746">„<ph name="PRODUCT_NAME" />“ matomų paskyrų ribojimas</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
 <translation id="7673194325208122247">Laikotarpis (milisekundėmis)</translation>
@@ -3192,6 +3204,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei šis nustatymas įgalintas arba nenustatytas, naršymo ir atsisiuntimo istorija gali būti ištrinta.
 
       Jei šis nustatymas neleidžiamas, naršymo ir atsisiuntimo istorija negali būti ištrinta.</translation>
+<translation id="8758831693895931466">Būtinos „Cloud Management“ registracijos įgalinimas</translation>
 <translation id="8759829385824155666">Leidžiami „Kerberos“ šifruotės tipai</translation>
 <translation id="8764119899999036911">Nurodoma, ar sugeneruotas „Kerberos“ SPN veikia kanoniniu DNS vardu ar originaliu įvestu vardu.
 

@@ -281,6 +281,9 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="1803646570632580723">Orodha ya programu zilizobanwa ili kuonekana kwenye kizunduzi</translation>
 <translation id="1808715480127969042">Zuia vidakuzi katika tovuti hizi</translation>
 <translation id="1810261428246410396">Ruhusu matumizi ya Usambazaji wa Mtandao Papo Hapo.</translation>
+<translation id="1817685358399181673">Sera hii inabainisha picha ya <ph name="PLUGIN_VM_NAME" /> ya mtumiaji. Sera inawekwa kwa kubainisha URL ambako kifaa kinaweza kupakua picha na upunguzaji wa urefu wa SHA-256 unaotumika kuthibitisha usalama wa kipakuliwa.
+
+      Sera inapaswa kubainishwa kama mfuatano unaoelezea URL na upunguzaji wa urefu katika muundo wa JSON.</translation>
 <translation id="1827523283178827583">Tumia seva za proksi thabiti</translation>
 <translation id="1843117931376765605">Kiwango cha kuonyesha upya kwa sera ya mtumiaji</translation>
 <translation id="1844620919405873871">Huweka sera zinahusiana na kufungua haraka.</translation>
@@ -448,6 +451,10 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="214901426630414675">Dhibiti hali ya uchapishaji kwenye pande mbili</translation>
 <translation id="2149330464730004005">Ruhusu uchapishaji wa rangi</translation>
 <translation id="2156132677421487971">Weka sera za <ph name="PRODUCT_NAME" />, kipengele kinachoruhusu watumiaji kutuma maudhui ya vichupo, tovuti au eneo-kazi kutoka kwenye kivinjari hadi skrini za mbali na spika.</translation>
+<translation id="2163878108829382394">
+        Ikiwa sera hii imewekwa kuwa Ndivyo, ujumuishaji katika udhibiti wa wingu ni wa lazima na huzuia mchakato wa kufungua Chrome ikiwa itashindwa kufunguka.
+
+        Ikiwa sera hii haijawekwa au imewekwa kuwa Sivyo, ujumuishaji katika udhibiti wa wingu si wa lazima na hauzuii mchakato wa kufungua Chrome ikiwa itashindwa kufunguka.</translation>
 <translation id="2166472654199325139">Usichuje tovuti zilizo na maudhui ya watu wazima</translation>
 <translation id="2168397434410358693">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwenye nishati ya AC</translation>
 <translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
@@ -675,6 +682,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Sera hii inaheshimiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
 <translation id="268577405881275241">Washa kipengee cha proksi cha upunguzaji wa data</translation>
 <translation id="2693108589792503178">Weka mipangilio ya URL ya kubadilisha nenosiri.</translation>
+<translation id="2696531058295423290">Ruhusu vifaa vitumie <ph name="PLUGIN_VM_NAME" /> kwenye<ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Zima kipengele cha utumiaji wa vyeti vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
 <translation id="2742843273354638707">Ficha programu ya Duka la Chrome kwenye Wavuti na kiungo cha kijachini kutoka kwenye Ukurasa wa Kichupo Kipya na kifungua programu cha <ph name="PRODUCT_OS_NAME" />.
 
@@ -1383,6 +1391,7 @@ Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
 <translation id="4483649828988077221">Zima kipengele cha Kusasisha Kiotomatiki</translation>
 <translation id="4485425108474077672">Weka URL ya ukurasa wa Kichupo Kipya</translation>
 <translation id="4492287494009043413">Zima upigaji picha za skrini</translation>
+<translation id="449423975179525290">Weka mipangilio ya sera zinazohusiana na <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="450537894712826981">Husanidi ukubwa wa akiba ambao <ph name="PRODUCT_NAME" /> itatumia kwa ajili ya kuhifadhi faili zilizoakibishwa kwenye diski.
 
      Ukiweka sera hii, <ph name="PRODUCT_NAME" />  itatumia ukubwa wa akiba uliotolewa bila kujali kama mtumiaji amebainisha alama ya '- disk-cache-size' au la. Thamani iliyobainishwa katika sera hii sio kikomo kisichoweza kurekebishwa bali ni pendekezo la mfumo wa Kuakibisha, thamani yoyote chini ya megabaiti chache ni ndogo mno na itazidishwa hadi kiwango cha chini kinachokubalika.
@@ -2687,6 +2696,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Kumbuka kuwa vizuizi hivi hutumika kwa vipakuliwa vinavyosababishwa na maudhui kwenye ukurasa wa tovuti pamoja na chaguo la menyu ya 'pakua kiungo...'. Vizuizi hivi havitumiki kwenye vipengele vya kuhifadhi au kupakua vya ukurasa unaoonekana sasa, wala havitumiki kwa kuhifadhi faili katika muundo wa PDF kwenye chaguo za kuchapisha.
      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari salama.</translation>
+<translation id="7642803091923523695">Ruhusu kifaa hiki kitumie PluginVm.
+
+      Iwapo sera hii imewekwa kuwa sivyo au haijawekwa, <ph name="PLUGIN_VM_NAME" /> haitumiwi katika kifaa. Ikiwa sera imewekwa kuwa ndivyo, <ph name="PLUGIN_VM_NAME" /> inatumiwa katika kifaa iwapo mipangilio mingine inairuhusu. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> inahitaji kuwekwa kuwa ndivyo na <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> iwekwe ili <ph name="PLUGIN_VM_NAME" /> uruhusiwe kutumika.</translation>
 <translation id="7643883929273267746">Dhibiti akaunti ambazo zinaonekana kwenye <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Inathibitisha iwapo utumiaji wa data nje ya mtandao wako unapaswa kuwezeshwa kwa kifaa. Ikiwa itawekwa kuwa Ndivyo, utumiaji wa data nje ya mtandao wako unawezeshwa. Ikiwa hautasanidiwa au kuwekwa kuwa siyo Ndivyo, utumiaji wa data nje ya mtandao wako hautapatikana.</translation>
 <translation id="7673194325208122247">Kipindi cha muda (milisekunde)</translation>
@@ -3125,6 +3137,7 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Endapo mpangilio huu utawashwa au usiwekwe, historia ya kuvinjari na upakuaji inaweza kufutwa.
 
       Mpangilio huu ukizimwa, historia ya kuvinjari na upakuaji hauwezi kufutwa.</translation>
+<translation id="8758831693895931466">Washa ujumuishaji wa lazima katika usimamizi wa wingu</translation>
 <translation id="8759829385824155666">Aina za usimbaji wa Kerberos zinazoruhusiwa</translation>
 <translation id="8764119899999036911">Inabainisha ikiwa Kerberos SPN ilitengenezwa kulingana na jina la kanuni ya DNS au jina halisi lililoingizwa.
 

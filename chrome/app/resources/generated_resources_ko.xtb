@@ -19,7 +19,6 @@
 <translation id="1026822031284433028">이미지 로드</translation>
 <translation id="1029317248976101138">확대</translation>
 <translation id="1030706264415084469"><ph name="URL" />에서 내 기기에 대용량 데이터를 영구 저장하려고 합니다</translation>
-<translation id="1030889518049751641">활동 로그 보기</translation>
 <translation id="1031362278801463162">미리보기 로드 중</translation>
 <translation id="103279545524624934">Android 앱을 실행하려면 디스크 저장 공간을 확보하세요.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -432,7 +431,6 @@
 <translation id="1616206807336925449">이 확장 프로그램은 특별한 권한이 필요하지 않습니다.</translation>
 <translation id="1616298854599875024">확장 프로그램 '<ph name="IMPORT_NAME" />'은(는) 공유 모듈이 아니므로 가져올 수 없습니다</translation>
 <translation id="1618268899808219593">고객센터(H)</translation>
-<translation id="162035744160882748">동기화, 맞춤설정 및 기타 Google 서비스 사용 설정</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623132449929929218">현재 이미지를 사용할 수 없습니다. 배경화면 컬렉션을 확인하려면 인터넷에 다시 연결하세요.</translation>
 <translation id="1624026626836496796">이 작업은 한 번만 수행하면 되며 사용자 인증 정보는 저장되지 않습니다.</translation>
@@ -619,7 +617,6 @@
 <translation id="1875312262568496299">시작</translation>
 <translation id="1875387611427697908">이 프로그램은 <ph name="CHROME_WEB_STORE" />에서만 추가할 수 있습니다</translation>
 <translation id="1877520246462554164">인증 토큰을 가져오지 못했습니다. 로그아웃한 다음 다시 로그인하여 다시 시도해 주세요.</translation>
-<translation id="1878302395768190018">Chrome 설정에서 언제든지 맞춤설정할 수 있습니다.</translation>
 <translation id="1879000426787380528">다음 사용자로 로그인</translation>
 <translation id="1880905663253319515">인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="1886996562706621347">사이트에서 프로토콜 기본 핸들러로 사용할지 여부를 묻도록 허용(권장)</translation>
@@ -1646,7 +1643,6 @@
 <translation id="3487007233252413104">익명의 함수</translation>
 <translation id="348780365869651045">AppCache를 기다리는 중...</translation>
 <translation id="3488065109653206955">부분적으로 활성화됨</translation>
-<translation id="348999362308956431">다운로드 완료: <ph name="FILE_NAME" /></translation>
 <translation id="3492788708641132712">동기화가 작동하지 않습니다. 다시 로그인하세요.</translation>
 <translation id="3493881266323043047">유효성</translation>
 <translation id="3494769164076977169">사이트에서 첫 파일 다운로드 후 자동으로 파일을 다운로드하려고 할 때 확인(권장)</translation>
@@ -2112,7 +2108,6 @@
 <translation id="4181602000363099176">20배</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4184885522552335684">디스플레이를 이동하려면 드래그하세요.</translation>
-<translation id="4192273449750167573">다음 화면에서 설정 검토</translation>
 <translation id="4193154014135846272">Google 문서</translation>
 <translation id="4194570336751258953">두드려서 클릭</translation>
 <translation id="4195249722193633765">Linux(베타)로 앱 설치</translation>
@@ -2239,7 +2234,6 @@
 <translation id="4415748029120993980">SECG 타원 곡선 secp384r1(또는 NIST P-384)</translation>
 <translation id="4416582610654027550">유효한 URL을 입력하세요.</translation>
 <translation id="4419409365248380979"><ph name="HOST" />에서 항상 쿠키를 설정하도록 허용</translation>
-<translation id="4419556793104466535">동기화, 맞춤설정 등 관리</translation>
 <translation id="4421932782753506458">복실이</translation>
 <translation id="4422347585044846479">이 페이지에 대한 북마크 편집</translation>
 <translation id="4423376891418188461">설정 복원</translation>
@@ -2378,7 +2372,6 @@
 <translation id="4635398712689569051">게스트 사용자는 <ph name="PAGE_NAME" />을(를) 사용할 수 없음</translation>
 <translation id="4641539339823703554">Chrome에서 시스템 시간을 설정할 수 없습니다. 아래에서 시간을 확인한 다음 필요한 경우 수정해 주세요.</translation>
 <translation id="4643612240819915418">새 탭에서 동영상 열기(&amp;O)</translation>
-<translation id="4644818355646995778">다운로드 중, <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">계속(&amp;K)</translation>
 <translation id="4647090755847581616">탭 닫기(&amp;C)</translation>
 <translation id="4647697156028544508">'<ph name="DEVICE_NAME" />'의 PIN을 입력하세요:</translation>
@@ -2752,7 +2745,6 @@
 <translation id="5235750401727657667">새 탭을 열 때 표시되는 페이지 변경</translation>
 <translation id="5238278114306905396">'<ph name="EXTENSION_NAME" />' 앱이 자동으로 삭제되었습니다.</translation>
 <translation id="5238369540257804368">범위</translation>
-<translation id="5240817131241497236">Chrome에서 동기화, 맞춤설정 및 기타 Google 서비스를 관리하는 설정이 변경되었습니다. 이로 인해 현재 설정이 영향을 받을 수 있습니다.</translation>
 <translation id="5241128660650683457">방문하는 웹사이트의 모든 데이터 읽기</translation>
 <translation id="5242724311594467048">'<ph name="EXTENSION_NAME" />'을(를) 사용하시겠습니까?</translation>
 <translation id="5243522832766285132">잠시 후 다시 시도해 주세요.</translation>
@@ -2908,7 +2900,6 @@
 <translation id="5449551289610225147">비밀번호가 잘못되었습니다.</translation>
 <translation id="5449588825071916739">모든 탭 북마크</translation>
 <translation id="5449716055534515760">창 닫기(&amp;D)</translation>
-<translation id="5451285724299252438">페이지 범위 입력란</translation>
 <translation id="5453029940327926427">탭 닫기</translation>
 <translation id="5454166040603940656">제공업체: <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
@@ -3001,7 +2992,6 @@
 <translation id="5575528586625653441">데모 등록 요청에 문제가 발생했습니다.</translation>
 <translation id="557722062034137776">기기를 재설정해도 Google 계정 또는 계정에 동기화된 데이터에 영향을 주지 않습니다. 하지만 기기에 로컬로 저장된 파일은 모두 삭제됩니다.</translation>
 <translation id="5578059481725149024">자동 로그인</translation>
-<translation id="5581700288664681403"><ph name="CLOUD_PRINT_NAME" /> 로드 중</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
 <translation id="5582839680698949063">기본 메뉴</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -3840,7 +3830,6 @@
 <translation id="6841186874966388268">오류</translation>
 <translation id="6843423766595476978">Ok Google 설정 완료</translation>
 <translation id="6845038076637626672">최대화 상태로 열기</translation>
-<translation id="685040365210406336">변경하지 않음</translation>
 <translation id="6851497530878285708">앱 사용 설정됨</translation>
 <translation id="6853388645642883916">업데이터 절전 모드</translation>
 <translation id="68541483639528434">다른 탭 닫기</translation>
@@ -4001,7 +3990,6 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">이름이 <ph name="HOSTNAMES" />인 기기와 데이터 교환</translation>
 <translation id="7094583680070770403">로컬 파일을 저장하고 새 계정을 설정하세요.</translation>
-<translation id="7096857570999173890">로그아웃되었을 때 PIN을 사용하여 기기를 잠금 해제할 수 있습니다.</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="7098447629416471489">저장한 다른 검색 엔진이 여기에 표시됨</translation>
 <translation id="7099337801055912064">큰 PPD를 로드할 수 없습니다. 최대 크기는 250KB입니다.</translation>
@@ -4492,7 +4480,6 @@
 <translation id="7831491651892296503">네트워크를 설정하는 중에 오류가 발생했습니다</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">종료 시간</translation>
-<translation id="7832327313660264358">Google에 동기화하는 데이터 및 사용하는 기능은 변경되지 않습니다.</translation>
 <translation id="7833720883933317473">저장한 맞춤 단어가 여기에 표시됩니다.</translation>
 <translation id="7835178595033117206">북마크가 삭제됨</translation>
 <translation id="7837307963048806839">•  $1</translation>
@@ -4602,7 +4589,6 @@
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> 미러링</translation>
 <translation id="7986295104073916105">저장된 비밀번호 설정 읽기 및 변경</translation>
-<translation id="7987764905897278458">더욱 스마트한 Google을 사용하세요</translation>
 <translation id="7987814697832569482">항상 이 VPN을 통해 연결</translation>
 <translation id="798835209536175951">Chromebook으로 SMS를 보내고 받으세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">접근성 기능 사용</translation>
@@ -5018,7 +5004,6 @@
 <translation id="8650543407998814195">더 이상 기존 프로필에 액세스할 수 없지만 삭제할 수는 있습니다.</translation>
 <translation id="8651585100578802546">캐시를 무시하고 페이지 새로고침</translation>
 <translation id="8652400352452647993">확장 프로그램 패키지 오류</translation>
-<translation id="8652487083013326477">페이지 범위 라디오 버튼</translation>
 <translation id="8654151524613148204">파일이 너무 커서 컴퓨터에서 처리할 수 없습니다.</translation>
 <translation id="8655295600908251630">채널</translation>
 <translation id="8655319619291175901">문제가 발생했습니다.</translation>
