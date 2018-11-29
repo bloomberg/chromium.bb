@@ -5747,4 +5747,3 @@ crbug.com/908347 [ Mac ] media/autoplay/webaudio-audio-context-resume.html [ Fai
 
 # Sheriff 2018-11-29
 crbug.com/905772 [ Linux ] inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure Pass ]
-crbug.com/910211 [ Linux ] virtual/video-surface-layer/media/autoplay/document-user-activation.html [ Failure Pass ]
