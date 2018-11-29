@@ -619,6 +619,17 @@ bool WorkletAnimation::IsActiveAnimation() const {
   return IsActive(play_state_);
 }
 
+base::Optional<double> WorkletAnimation::CurrentTime() const {
+  bool is_null;
+  double timeline_time = timeline_->currentTime(is_null);
+  if (is_null)
+    return base::nullopt;
+  if (timeline_->IsScrollTimeline())
+    return timeline_time;
+  DCHECK(start_time_);
+  return timeline_time - start_time_->InSecondsF();
+}
+
 void WorkletAnimation::UpdateInputState(
     AnimationWorkletDispatcherInput* input_state) {
   if (!running_on_main_thread_) {
@@ -632,8 +643,8 @@ void WorkletAnimation::UpdateInputState(
   // ScrollTimeline animation doesn't require start_time_ to be set.
   DCHECK(start_time_ || timeline_->IsScrollTimeline());
   DCHECK(last_current_time_ || !was_active);
-  bool is_null;
-  double current_time = timeline_->currentTime(is_null);
+  double current_time =
+      CurrentTime().value_or(std::numeric_limits<double>::quiet_NaN());
 
   bool did_time_change =
       !last_current_time_ || current_time != last_current_time_->InSecondsF();
@@ -641,10 +652,7 @@ void WorkletAnimation::UpdateInputState(
   // is resolved, we apply the last current time to the animation if the scroll
   // timeline becomes newly inactive. See https://crbug.com/906050.
   last_current_time_ = base::TimeDelta::FromSecondsD(current_time);
-
   if (!was_active && is_active) {
-    // TODO(yigu): current_time should be offset by start_time_ for animations
-    // with document timeline. https://crbug.com/905405.
     input_state->Add(
         {id_,
          std::string(animator_name_.Ascii().data(), animator_name_.length()),
