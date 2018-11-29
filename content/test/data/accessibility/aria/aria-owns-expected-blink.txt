@@ -1,8 +1,8 @@
 rootWebArea
 ++list
 ++++listItem
-++++++listMarker name='• '
 ++++++genericContainer
+++++++++listMarker name='• '
 ++++++++staticText name='One'
 ++++++++++inlineTextBox name='One'
 ++++listItem

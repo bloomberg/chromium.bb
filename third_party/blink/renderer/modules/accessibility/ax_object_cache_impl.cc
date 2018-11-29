@@ -391,7 +391,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (node->GetLayoutObject() && !IsHTMLAreaElement(node))
     return GetOrCreate(node->GetLayoutObject());
 
-  if (!LayoutTreeBuilderTraversal::Parent(*node))
+  if (!node->parentElement())
     return nullptr;
 
   if (IsHTMLHeadElement(node))
@@ -787,7 +787,7 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
     return;
   VectorOf<Node> old_nodes_changed_during_layout;
   nodes_changed_during_layout_.swap(old_nodes_changed_during_layout);
-  for (Node* node : old_nodes_changed_during_layout) {
+  for (auto node : old_nodes_changed_during_layout) {
     if (node->GetDocument() != document) {
       nodes_changed_during_layout_.push_back(node);
       continue;
@@ -837,9 +837,9 @@ void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
     PostPlatformNotification(obj, notification);
 
     if (notification == ax::mojom::Event::kChildrenChanged &&
-        obj->CachedParentObject() &&
+        obj->ParentObjectIfExists() &&
         obj->LastKnownIsIgnoredValue() != obj->AccessibilityIsIgnored())
-      ChildrenChanged(obj->CachedParentObject());
+      ChildrenChanged(obj->ParentObject());
   }
 
   notifications_to_post_.clear();
@@ -1011,12 +1011,8 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
   if (!node)
     return;  // Virtual AOM node.
 
-  AXObject* obj = Get(node);
-  if (!obj && IsHTMLSelectElement(node))
-    obj = GetOrCreate(node);
-
   // Invalidate the current object and make the parent reconsider its children.
-  if (obj) {
+  if (AXObject* obj = Get(node)) {
     // Save parent for later use.
     AXObject* parent = obj->ParentObject();
 

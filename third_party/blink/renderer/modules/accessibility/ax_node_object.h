@@ -55,8 +55,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // The accessibility role, not taking ARIA into account.
   ax::mojom::Role native_role_;
 
-  AXObjectInclusion ShouldIncludeBasedOnSemantics(
-      IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
   ax::mojom::Role DetermineAccessibilityRole() override;
@@ -189,14 +187,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
-  virtual void AddListMarker() {}
-  virtual void AddInlineTextBoxChildren(bool force) {}
-  virtual void AddImageMapChildren() {}
-  virtual void AddHiddenChildren() {}
-
   bool CanHaveChildren() const override;
   void AddChild(AXObject*);
-  void InsertChild(AXObject*, unsigned& index);
+  void InsertChild(AXObject*, unsigned index);
   void ClearChildren() override;
   bool NeedsToUpdateChildren() const override { return children_dirty_; }
   void SetNeedsToUpdateChildren() override { children_dirty_ = true; }

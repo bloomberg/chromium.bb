@@ -13,15 +13,13 @@
     assert_not_equals(editable, null);
     assert_equals(editable.childrenCount, 2);
 
-    let staticText = editable.childAtIndex(0);
-    assert_not_equals(staticText, null);
-    assert_equals(staticText.role, 'AXRole: AXStaticText');
-    assert_equals(staticText.childrenCount, 1);
-    let inlineText = staticText.childAtIndex(0);
-    assert_equals(inlineText.role, 'AXRole: AXInlineTextBox');
-    assert_equals(inlineText.name, 'Hello');
+    let anonymousBlock = editable.childAtIndex(0);
+    assert_not_equals(anonymousBlock, null);
+    assert_equals(anonymousBlock.childrenCount, 1);
+    assert_equals(anonymousBlock.childAtIndex(0).role, 'AXRole: AXStaticText');
+    assert_equals(anonymousBlock.childAtIndex(0).name, 'Hello');
 
-    assert_true(staticText.isEditable);
-    assert_true(staticText.isRichlyEditable);
-  }, 'Ensure that the text content of anonymous blocks inside content editables are not ignored and are marked as editable.');
+    assert_true(anonymousBlock.isEditable);
+    assert_true(anonymousBlock.isRichlyEditable);
+  }, 'Ensure that anonymous blocks inside content editables are not ignored and are marked as editable.');
 </script>
