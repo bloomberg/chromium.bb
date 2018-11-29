@@ -4161,7 +4161,7 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   return new_denom;
 }
 
-#define ENERGY_BY_Q2_THRESH 0.015
+#define ENERGY_BY_Q2_THRESH 0.01
 
 static uint8_t get_superres_denom_from_qindex_energy(int qindex, double *energy,
                                                      double thresh) {
@@ -4219,22 +4219,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (q < qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
-        // TODO(debargha): Experiment with the variant below.
-        // new_denom = get_superres_denom_for_qindex(cpi, q);
-        uint8_t max_denom = get_superres_denom_for_qindex(cpi, MAXQ);
-        if (max_denom == SCALE_NUMERATOR) {
-          new_denom = max_denom;
-          break;
-        } else {
-          const uint8_t q_denom_step =
-              max_denom - SCALE_NUMERATOR == 0
-                  ? 255
-                  : (MAXQ - qthresh + 1 + max_denom - SCALE_NUMERATOR - 1) /
-                        (max_denom - SCALE_NUMERATOR);
-          const uint8_t additional_denom =
-              (q - qthresh + 1 + q_denom_step - 1) / q_denom_step;
-          new_denom = AOMMIN(SCALE_NUMERATOR + additional_denom, max_denom);
-        }
+        new_denom = get_superres_denom_for_qindex(cpi, q);
       }
       break;
     }

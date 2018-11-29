@@ -1866,7 +1866,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         SCALE_NUMERATOR,  // rc_superres_denominator
         SCALE_NUMERATOR,  // rc_superres_kf_denominator
         63,               // rc_superres_qthresh
-        63,               // rc_superres_kf_qthresh
+        32,               // rc_superres_kf_qthresh
 
         AOM_VBR,      // rc_end_usage
         { NULL, 0 },  // rc_twopass_stats_in
