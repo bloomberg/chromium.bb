@@ -21,7 +21,6 @@
 #include "net/third_party/quic/core/quic_stream_sequencer.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
-#include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
@@ -96,6 +95,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // Override the base class to not discard response when receiving
   // QUIC_STREAM_NO_ERROR.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
+
+  // Called by the sequencer when new data is available. Decodes the data and
+  // calls OnBodyAvailable() to pass to the upper layer.
+  void OnDataAvailable() override;
+
+  // Called in OnDataAvailable() after it finishes the decoding job.
+  virtual void OnBodyAvailable() = 0;
 
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.

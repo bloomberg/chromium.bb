@@ -45,6 +45,9 @@ const QuicByteCount kMaxGsoPacketSize = 65535 - 40 - 8;
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
+// The minimum size of a packet which can elicit a version negotiation packet,
+// as per section 8.1 of the QUIC spec.
+const QuicByteCount kMinPacketSizeForVersionNegotiation = 1200;
 
 // We match SPDY's use of 32 (since we'd compete with SPDY).
 const QuicPacketCount kInitialCongestionWindow = 32;
@@ -200,6 +203,7 @@ const QuicByteCount kMaxStreamLength = (UINT64_C(1) << 62) - 1;
 const uint64_t kMaxIetfVarInt = UINT64_C(0x3fffffffffffffff);
 
 // The maximum stream id value that is supported - (2^32)-1
+// TODO(fkastenholz): Should update this to 64 bits for IETF Quic.
 const QuicStreamId kMaxQuicStreamId = 0xffffffff;
 
 // Number of bytes reserved for packet header type.
@@ -223,10 +227,6 @@ const QuicPacketNumber kInvalidPacketNumber = 0;
 // Used by clients to tell if a public reset is sent from a Google frontend.
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
-
-// Maximum Stream ID value that the implementation supports
-// TODO(fkastenholz): Should update this to 64 bits for IETF Quic.
-const QuicStreamId kMaximumStreamIdSupported = 0xffffffff;
 
 }  // namespace quic
 

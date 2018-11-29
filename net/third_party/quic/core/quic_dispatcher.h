@@ -226,11 +226,13 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Called when |connection_id| doesn't have an open connection yet, to buffer
   // |current_packet_| until it can be delivered to the connection.
-  void BufferEarlyPacket(QuicConnectionId connection_id, bool ietf_quic);
+  void BufferEarlyPacket(QuicConnectionId connection_id,
+                         bool ietf_quic,
+                         ParsedQuicVersion version);
 
   // Called when |current_packet_| is a CHLO packet. Creates a new connection
   // and delivers any buffered packets for that connection id.
-  void ProcessChlo(PacketHeaderFormat form);
+  void ProcessChlo(PacketHeaderFormat form, ParsedQuicVersion version);
 
   // Returns the actual client address of the current packet.
   // This function should only be called once per packet at the very beginning
@@ -332,6 +334,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   void StatelesslyTerminateConnection(
       QuicConnectionId connection_id,
       PacketHeaderFormat format,
+      ParsedQuicVersion version,
       QuicErrorCode error_code,
       const QuicString& error_details,
       QuicTimeWaitListManager::TimeWaitAction action);
@@ -360,8 +363,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // fate which describes what subsequent processing should be performed on the
   // packets, like ValidityChecks, and invokes ProcessUnauthenticatedHeaderFate.
   void MaybeRejectStatelessly(QuicConnectionId connection_id,
-                              ParsedQuicVersion version,
-                              PacketHeaderFormat form);
+                              PacketHeaderFormat form,
+                              ParsedQuicVersion version);
 
   // Deliver |packets| to |session| for further processing.
   void DeliverPacketsToSession(
@@ -372,7 +375,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // either process, buffer, or drop it.
   void ProcessUnauthenticatedHeaderFate(QuicPacketFate fate,
                                         QuicConnectionId connection_id,
-                                        PacketHeaderFormat form);
+                                        PacketHeaderFormat form,
+                                        ParsedQuicVersion version);
 
   // Invoked when StatelessRejector::Process completes. |first_version| is the
   // version of the packet which initiated the stateless reject.

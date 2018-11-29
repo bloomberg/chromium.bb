@@ -106,6 +106,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     undecryptable_packets_.emplace(
         std::make_pair(connection_id, BufferedPacketList()));
     undecryptable_packets_.back().second.ietf_quic = ietf_quic;
+    undecryptable_packets_.back().second.version = version;
   }
   CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
   BufferedPacketList& queue =

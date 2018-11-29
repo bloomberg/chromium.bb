@@ -218,7 +218,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   void OnPromiseHeaderList(quic::QuicStreamId promised_id,
                            size_t frame_len,
                            const quic::QuicHeaderList& header_list) override;
-  void OnDataAvailable() override;
+  void OnBodyAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
   size_t WriteHeaders(

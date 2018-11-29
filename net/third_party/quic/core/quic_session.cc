@@ -90,11 +90,9 @@ QuicSession::QuicSession(QuicConnection* connection,
   if (faster_get_stream_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
   }
-  if (connection_->deprecate_post_process_after_data()) {
-    closed_streams_clean_up_alarm_ =
-        QuicWrapUnique<QuicAlarm>(connection_->alarm_factory()->CreateAlarm(
-            new ClosedStreamsCleanUpDelegate(this)));
-  }
+  closed_streams_clean_up_alarm_ =
+      QuicWrapUnique<QuicAlarm>(connection_->alarm_factory()->CreateAlarm(
+          new ClosedStreamsCleanUpDelegate(this)));
 }
 
 void QuicSession::Initialize() {
@@ -239,9 +237,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error,
     zombie_streams_.erase(it);
   }
 
-  if (deprecate_post_process_after_data()) {
-    closed_streams_clean_up_alarm_->Cancel();
-  }
+  closed_streams_clean_up_alarm_->Cancel();
 
   if (visitor_) {
     visitor_->OnConnectionClosed(connection_->connection_id(), error,
@@ -503,9 +499,7 @@ void QuicSession::SendRstStream(QuicStreamId id,
     control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
     connection_->OnStreamReset(id, error);
   }
-  if (GetQuicReloadableFlag(quic_fix_reset_zombie_streams) &&
-      error != QUIC_STREAM_NO_ERROR && QuicContainsKey(zombie_streams_, id)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_reset_zombie_streams);
+  if (error != QUIC_STREAM_NO_ERROR && QuicContainsKey(zombie_streams_, id)) {
     OnStreamDoneWaitingForAcks(id);
     return;
   }
@@ -578,8 +572,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     closed_streams_.push_back(std::move(it->second));
     // Do not retransmit data of a closed stream.
     streams_with_pending_retransmission_.erase(stream_id);
-    if (deprecate_post_process_after_data() &&
-        !closed_streams_clean_up_alarm_->IsSet()) {
+    if (!closed_streams_clean_up_alarm_->IsSet()) {
       closed_streams_clean_up_alarm_->Set(
           connection_->clock()->ApproximateNow());
     }
@@ -1119,11 +1112,6 @@ bool QuicSession::HasDataToWrite() const {
          control_frame_manager_.WillingToWrite();
 }
 
-void QuicSession::PostProcessAfterData() {
-  DCHECK(!deprecate_post_process_after_data());
-  closed_streams_.clear();
-}
-
 void QuicSession::OnAckNeedsRetransmittableFrame() {
   flow_controller_.SendWindowUpdate();
 }
@@ -1182,8 +1170,7 @@ void QuicSession::OnStreamDoneWaitingForAcks(QuicStreamId id) {
   }
 
   closed_streams_.push_back(std::move(it->second));
-  if (deprecate_post_process_after_data() &&
-      !closed_streams_clean_up_alarm_->IsSet()) {
+  if (!closed_streams_clean_up_alarm_->IsSet()) {
     closed_streams_clean_up_alarm_->Set(connection_->clock()->ApproximateNow());
   }
   zombie_streams_.erase(it);
@@ -1449,9 +1436,6 @@ void QuicSession::OnMessageLost(QuicMessageId message_id) {
 }
 
 void QuicSession::CleanUpClosedStreams() {
-  DCHECK(deprecate_post_process_after_data());
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_deprecate_post_process_after_data,
-                    1, 3);
   closed_streams_.clear();
 }
 
@@ -1461,10 +1445,6 @@ bool QuicSession::session_decides_what_to_write() const {
 
 QuicPacketLength QuicSession::GetLargestMessagePayload() const {
   return connection_->GetLargestMessagePayload();
-}
-
-bool QuicSession::deprecate_post_process_after_data() const {
-  return connection_->deprecate_post_process_after_data();
 }
 
 void QuicSession::SendStopSending(uint16_t code, QuicStreamId stream_id) {

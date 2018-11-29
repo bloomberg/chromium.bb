@@ -346,8 +346,6 @@ QuicConnection::QuicConnection(
       supports_release_time_(writer->SupportsReleaseTime()),
       release_time_into_future_(QuicTime::Delta::Zero()),
       donot_retransmit_old_window_updates_(false),
-      deprecate_post_process_after_data_(
-          GetQuicReloadableFlag(quic_deprecate_post_process_after_data)),
       no_version_negotiation_(supported_versions.size() == 1),
       decrypt_packets_on_key_change_(
           GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
@@ -901,9 +899,6 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
     return false;
   }
   visitor_->OnStreamFrame(frame);
-  if (!deprecate_post_process_after_data_) {
-    visitor_->PostProcessAfterData();
-  }
   stats_.stream_bytes_received += frame.data_length;
   should_last_packet_instigate_acks_ = true;
   return connected_;
@@ -1153,9 +1148,6 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
                   << " with error: "
                   << QuicRstStreamErrorCodeToString(frame.error_code);
   visitor_->OnRstStream(frame);
-  if (!deprecate_post_process_after_data_) {
-    visitor_->PostProcessAfterData();
-  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1249,9 +1241,6 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
                   << " and reason: " << frame.reason_phrase;
 
   visitor_->OnGoAway(frame);
-  if (!deprecate_post_process_after_data_) {
-    visitor_->PostProcessAfterData();
-  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1270,9 +1259,6 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
                   << frame.stream_id
                   << " with byte offset: " << frame.byte_offset;
   visitor_->OnWindowUpdateFrame(frame);
-  if (!deprecate_post_process_after_data_) {
-    visitor_->PostProcessAfterData();
-  }
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1319,9 +1305,6 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "BLOCKED_FRAME received for stream: " << frame.stream_id;
   visitor_->OnBlockedFrame(frame);
-  if (!deprecate_post_process_after_data_) {
-    visitor_->PostProcessAfterData();
-  }
   stats_.blocked_frames_received++;
   should_last_packet_instigate_acks_ = true;
   return connected_;
@@ -1826,9 +1809,6 @@ void QuicConnection::WriteNewData() {
   {
     ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
     visitor_->OnCanWrite();
-    if (!deprecate_post_process_after_data_) {
-      visitor_->PostProcessAfterData();
-    }
   }
 
   // After the visitor writes, it may have caused the socket to become write
@@ -2866,9 +2846,7 @@ void QuicConnection::SetRetransmissionAlarm() {
 }
 
 void QuicConnection::SetPathDegradingAlarm() {
-  if (GetQuicReloadableFlag(quic_fix_path_degrading_alarm) &&
-      perspective_ == Perspective::IS_SERVER) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_fix_path_degrading_alarm, 1, 2);
+  if (perspective_ == Perspective::IS_SERVER) {
     return;
   }
   const QuicTime::Delta delay = sent_packet_manager_.GetPathDegradingDelay();
@@ -3399,13 +3377,7 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
 }
 
 void QuicConnection::MaybeSetPathDegradingAlarm(bool acked_new_packet) {
-  bool has_unacked_packets = !sent_packet_manager_.unacked_packets().empty();
-  if (GetQuicReloadableFlag(quic_fix_path_degrading_alarm)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_fix_path_degrading_alarm, 2, 2);
-    // If there in flight packets, an ACK is expected in the future.
-    has_unacked_packets = sent_packet_manager_.HasInFlightPackets();
-  }
-  if (!has_unacked_packets) {
+  if (!sent_packet_manager_.HasInFlightPackets()) {
     // There are no retransmittable packets on the wire, so it's impossible to
     // say if the connection has degraded.
     path_degrading_alarm_->Cancel();

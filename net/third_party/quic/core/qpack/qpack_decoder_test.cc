@@ -125,9 +125,18 @@ TEST_P(QpackDecoderTest, NameLenTooLarge) {
   Decode(QuicTextUtils::HexDecode("27ffffffffffffffffffff"));
 }
 
-TEST_P(QpackDecoderTest, ValueLenTooLarge) {
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(QuicStringPiece("ValueLen too large.")));
+// Name Length value can be decoded by varint decoder but exceeds 1 MB limit.
+TEST_P(QpackDecoderTest, NameLenExceedsLimit) {
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            QuicStringPiece("String literal too long.")));
+
+  Decode(QuicTextUtils::HexDecode("27ffff7f"));
+}
+
+// Value Length value is too large for varint decoder to decode.
+TEST_P(QpackDecoderTest, ValueLenTooLargeForVarintDecoder) {
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            QuicStringPiece("Encoded integer too large.")));
 
   Decode(QuicTextUtils::HexDecode("23666f6f7fffffffffffffffffffff"));
 }
@@ -167,8 +176,8 @@ TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
 }
 
 TEST_P(QpackDecoderTest, HuffmanNameDoesNotHaveEOSPrefix) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Error in Huffman-encoded name.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(QuicStringPiece(
+                            "Error in Huffman-encoded string.")));
 
   // 'y' ends in 0b0 on the most significant bit of the last byte.
   // The remaining 7 bits must be a prefix of EOS, which is all 1s.
@@ -177,7 +186,7 @@ TEST_P(QpackDecoderTest, HuffmanNameDoesNotHaveEOSPrefix) {
 
 TEST_P(QpackDecoderTest, HuffmanValueDoesNotHaveEOSPrefix) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(QuicStringPiece(
-                            "Error in Huffman-encoded value.")));
+                            "Error in Huffman-encoded string.")));
 
   // 'e' ends in 0b101, taking up the 3 most significant bits of the last byte.
   // The remaining 5 bits must be a prefix of EOS, which is all 1s.
@@ -185,8 +194,8 @@ TEST_P(QpackDecoderTest, HuffmanValueDoesNotHaveEOSPrefix) {
 }
 
 TEST_P(QpackDecoderTest, HuffmanNameEOSPrefixTooLong) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Error in Huffman-encoded name.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(QuicStringPiece(
+                            "Error in Huffman-encoded string.")));
 
   // The trailing EOS prefix must be at most 7 bits long.  Appending one octet
   // with value 0xff is invalid, even though 0b111111111111111 (15 bits) is a
@@ -197,7 +206,7 @@ TEST_P(QpackDecoderTest, HuffmanNameEOSPrefixTooLong) {
 
 TEST_P(QpackDecoderTest, HuffmanValueEOSPrefixTooLong) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(QuicStringPiece(
-                            "Error in Huffman-encoded value.")));
+                            "Error in Huffman-encoded string.")));
 
   // The trailing EOS prefix must be at most 7 bits long.  Appending one octet
   // with value 0xff is invalid, even though 0b1111111111111 (13 bits) is a
@@ -246,6 +255,7 @@ TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
 
   Decode(QuicTextUtils::HexDecode("ff23ff24"));
 }
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

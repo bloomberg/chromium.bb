@@ -462,16 +462,40 @@ TEST_F(QuicDispatcherTest, DispatcherDoesNotRejectPacketNumberZero) {
 }
 
 TEST_F(QuicDispatcherTest, StatelessVersionNegotiation) {
+  CreateTimeWaitListManager();
+  SetQuicReloadableFlag(quic_limit_version_negotiation, false);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
 
-  EXPECT_CALL(*dispatcher_,
-              CreateQuicSession(1, client_address, QuicStringPiece("hq"), _))
-      .Times(0);
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              SendVersionNegotiationPacket(_, _, _, _, _))
+      .Times(1);
   QuicTransportVersion version =
       static_cast<QuicTransportVersion>(QuicTransportVersionMin() - 1);
   ParsedQuicVersion parsed_version(PROTOCOL_QUIC_CRYPTO, version);
   ProcessPacket(client_address, 1, true, parsed_version, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
+}
+
+TEST_F(QuicDispatcherTest, NoVersionNegotiationWithSmallPacket) {
+  CreateTimeWaitListManager();
+  SetQuicReloadableFlag(quic_limit_version_negotiation, true);
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
+
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              SendVersionNegotiationPacket(_, _, _, _, _))
+      .Times(0);
+  QuicTransportVersion version =
+      static_cast<QuicTransportVersion>(QuicTransportVersionMin() - 1);
+  ParsedQuicVersion parsed_version(PROTOCOL_QUIC_CRYPTO, version);
+  QuicString chlo = SerializeCHLO();
+  // Truncate to 1100 bytes of payload which results in a packet just
+  // under 1200 bytes after framing, packet, and encryption overhead.
+  QuicString truncated_chlo = chlo.substr(0, 1100);
+  ProcessPacket(client_address, 1, true, parsed_version, truncated_chlo,
                 PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, 1);
 }
 

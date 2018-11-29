@@ -22,7 +22,7 @@ class TestQuicSpdyServerStream : public QuicSpdyServerStreamBase {
                            StreamType type)
       : QuicSpdyServerStreamBase(id, session, type) {}
 
-  void OnDataAvailable() override {}
+  void OnBodyAvailable() override {}
 };
 
 class QuicSpdyServerStreamBaseTest : public QuicTest {

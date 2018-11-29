@@ -51,6 +51,7 @@ using testing::AtLeast;
 using testing::DoAll;
 using testing::Exactly;
 using testing::Ge;
+using testing::IgnoreResult;
 using testing::InSequence;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -867,7 +868,6 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     } else {
       EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
     }
-    EXPECT_CALL(visitor_, PostProcessAfterData()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasOpenDynamicStreams())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(visitor_, OnCongestionWindowChange(_)).Times(AnyNumber());
@@ -6890,7 +6890,6 @@ TEST_P(QuicConnectionTest, UnmarkPathDegradingOnForwardProgress) {
 }
 
 TEST_P(QuicConnectionTest, NoPathDegradingOnServer) {
-  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
   set_perspective(Perspective::IS_SERVER);
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
 
@@ -6914,8 +6913,6 @@ TEST_P(QuicConnectionTest, NoPathDegradingOnServer) {
 }
 
 TEST_P(QuicConnectionTest, NoPathDegradingAfterSendingAck) {
-  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
-
   SendAckPacketToPeer();
   EXPECT_FALSE(connection_.sent_packet_manager().unacked_packets().empty());
   EXPECT_FALSE(connection_.sent_packet_manager().HasInFlightPackets());

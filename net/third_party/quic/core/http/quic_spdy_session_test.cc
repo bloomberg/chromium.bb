@@ -123,7 +123,7 @@ class TestStream : public QuicSpdyStream {
 
   using QuicStream::CloseWriteSide;
 
-  void OnDataAvailable() override {}
+  void OnBodyAvailable() override {}
 
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_METHOD3(RetransmitStreamData,
@@ -247,7 +247,6 @@ class TestSession : public QuicSpdySession {
 
   using QuicSession::closed_streams;
   using QuicSession::next_outgoing_stream_id;
-  using QuicSession::PostProcessAfterData;
   using QuicSession::zombie_streams;
 
  private:
@@ -1153,9 +1152,6 @@ TEST_P(QuicSpdySessionTestServer,
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
                                QUIC_STREAM_CANCELLED, kByteOffset);
   session_.OnRstStream(rst_frame);
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
 }
 
@@ -1172,9 +1168,6 @@ TEST_P(QuicSpdySessionTestServer,
       kInitialSessionFlowControlWindowForTest / 2 - 1;
   QuicStreamFrame frame(stream->id(), true, kByteOffset, ".");
   session_.OnStreamFrame(frame);
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_TRUE(connection_->connected());
 
   EXPECT_EQ(0u, stream->flow_controller()->bytes_consumed());
@@ -1383,12 +1376,6 @@ TEST_P(QuicSpdySessionTestServer,
   // Create one more data streams to exceed limit of open stream.
   QuicStreamFrame data1(kFinalStreamId, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
-
-  // Called after any new data is received by the session, and triggers the
-  // call to close the connection.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
 }
 
 TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
@@ -1418,12 +1405,6 @@ TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
     EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
     session_.StreamDraining(i);
     EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
-  }
-
-  // Called after any new data is received by the session, and triggers the call
-  // to close the connection.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
   }
 }
 
@@ -1491,10 +1472,6 @@ TEST_P(QuicSpdySessionTestClient, RecordFinAfterReadSideClosed) {
   stream->Reset(QUIC_STREAM_CANCELLED);
   EXPECT_TRUE(QuicStreamPeer::read_side_closed(stream));
 
-  // Allow the session to delete the stream object.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_TRUE(connection_->connected());
   EXPECT_TRUE(QuicSessionPeer::IsStreamClosed(&session_, stream_id));
   EXPECT_FALSE(QuicSessionPeer::IsStreamCreated(&session_, stream_id));

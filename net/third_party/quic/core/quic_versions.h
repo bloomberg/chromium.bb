@@ -145,6 +145,8 @@ struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   }
 };
 
+QUIC_EXPORT_PRIVATE ParsedQuicVersion UnsupportedQuicVersion();
+
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const ParsedQuicVersion& version);
 

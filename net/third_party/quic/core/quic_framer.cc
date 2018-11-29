@@ -3236,7 +3236,7 @@ bool QuicFramer::ProcessMessageFrame(QuicDataReader* reader,
                                      bool no_message_length,
                                      QuicMessageFrame* frame) {
   if (no_message_length) {
-    frame->message_data = reader->ReadRemainingPayload();
+    frame->message_data = QuicString(reader->ReadRemainingPayload());
     return true;
   }
 
@@ -3245,10 +3245,14 @@ bool QuicFramer::ProcessMessageFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read message length");
     return false;
   }
-  if (!reader->ReadStringPiece(&frame->message_data, message_length)) {
+
+  QuicStringPiece message_piece;
+  if (!reader->ReadStringPiece(&message_piece, message_length)) {
     set_detailed_error("Unable to read message data");
     return false;
   }
+
+  frame->message_data = QuicString(message_piece);
 
   return true;
 }

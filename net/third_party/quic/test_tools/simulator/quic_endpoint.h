@@ -102,7 +102,6 @@ class QuicEndpoint : public Endpoint,
   void OnCongestionWindowChange(QuicTime now) override {}
   void OnConnectionMigration(AddressChangeType type) override {}
   void OnPathDegrading() override {}
-  void PostProcessAfterData() override {}
   void OnAckNeedsRetransmittableFrame() override {}
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;

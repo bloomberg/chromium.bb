@@ -818,7 +818,6 @@ TEST_F(BbrSenderTest, AppLimitedRecoveryNoBandwidthDecrease) {
       kTestRtt + QuicTime::Delta::FromMilliseconds(200);
   simulator_.RunFor(0.60 * time_to_exit_probe_rtt);
   EXPECT_EQ(BbrSender::PROBE_RTT, sender_->ExportDebugState().mode);
-  EXPECT_TRUE(sender_->ExportDebugState().last_sample_is_app_limited);
   // Lose a packet before exiting PROBE_RTT, which puts us in packet
   // conservation and then continue there for a while and ensure the bandwidth
   // estimate doesn't decrease.
@@ -1197,7 +1196,7 @@ TEST_F(BbrSenderTest, SimpleTransferStartupRateReduction) {
     EXPECT_EQ(original_cwnd, sender_->GetCongestionWindow());
     EXPECT_GT(original_pacing_rate, sender_->PacingRate(0));
     EXPECT_GE(pacing_rate, sender_->PacingRate(0));
-    EXPECT_LE(sender_->BandwidthEstimate(), sender_->PacingRate(0));
+    EXPECT_LE(1.25 * sender_->BandwidthEstimate(), sender_->PacingRate(0));
     pacing_rate = sender_->PacingRate(0);
   }
 }
@@ -1247,7 +1246,7 @@ TEST_F(BbrSenderTest, SimpleTransferDoubleStartupRateReduction) {
     EXPECT_EQ(original_cwnd, sender_->GetCongestionWindow());
     EXPECT_GT(original_pacing_rate, sender_->PacingRate(0));
     EXPECT_GE(pacing_rate, sender_->PacingRate(0));
-    EXPECT_LE(sender_->BandwidthEstimate(), sender_->PacingRate(0));
+    EXPECT_LE(1.25 * sender_->BandwidthEstimate(), sender_->PacingRate(0));
     pacing_rate = sender_->PacingRate(0);
   }
 }
