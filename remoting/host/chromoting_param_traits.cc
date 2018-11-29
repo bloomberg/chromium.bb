@@ -13,6 +13,8 @@
 
 namespace IPC {
 
+// webrtc::DesktopVector
+
 // static
 void ParamTraits<webrtc::DesktopVector>::Write(base::Pickle* m,
                                                const webrtc::DesktopVector& p) {
@@ -38,6 +40,8 @@ void ParamTraits<webrtc::DesktopVector>::Log(const webrtc::DesktopVector& p,
                                p.x(), p.y()));
 }
 
+// webrtc::DesktopSize
+
 // static
 void ParamTraits<webrtc::DesktopSize>::Write(base::Pickle* m,
                                              const webrtc::DesktopSize& p) {
@@ -62,6 +66,8 @@ void ParamTraits<webrtc::DesktopSize>::Log(const webrtc::DesktopSize& p,
   l->append(base::StringPrintf("webrtc::DesktopSize(%d, %d)",
                                p.width(), p.height()));
 }
+
+// webrtc::DesktopRect
 
 // static
 void ParamTraits<webrtc::DesktopRect>::Write(base::Pickle* m,
@@ -91,6 +97,8 @@ void ParamTraits<webrtc::DesktopRect>::Log(const webrtc::DesktopRect& p,
   l->append(base::StringPrintf("webrtc::DesktopRect(%d, %d, %d, %d)",
                                p.left(), p.top(), p.right(), p.bottom()));
 }
+
+// webrtc::MouseCursor
 
 // static
 void ParamTraits<webrtc::MouseCursor>::Write(base::Pickle* m,
@@ -153,6 +161,7 @@ void ParamTraits<webrtc::MouseCursor>::Log(
       p.hotspot().x(), p.hotspot().y()));
 }
 
+// remoting::ScreenResolution
 
 // static
 void ParamTraits<remoting::ScreenResolution>::Write(
@@ -189,6 +198,8 @@ void ParamTraits<remoting::ScreenResolution>::Log(
                                p.dimensions().width(), p.dimensions().height(),
                                p.dpi().x(), p.dpi().y()));
 }
+
+// remoting::DesktopEnvironmentOptions
 
 // static
 void ParamTraits<remoting::DesktopEnvironmentOptions>::Write(
@@ -258,6 +269,8 @@ void ParamTraits<remoting::DesktopEnvironmentOptions>::Log(
   l->append("DesktopEnvironmentOptions()");
 }
 
+// remoting::protocol::ProcessResourceUsage
+
 // static
 void ParamTraits<remoting::protocol::ProcessResourceUsage>::Write(
     base::Pickle* m,
@@ -298,6 +311,8 @@ void ParamTraits<remoting::protocol::ProcessResourceUsage>::Log(
   l->append("ProcessResourceUsage(").append(p.process_name()).append(")");
 }
 
+// remoting::protocol::AggregatedProcessResourceUsage
+
 // static
 void ParamTraits<remoting::protocol::AggregatedProcessResourceUsage>::Write(
     base::Pickle* m,
@@ -321,6 +336,8 @@ void ParamTraits<remoting::protocol::AggregatedProcessResourceUsage>::Log(
   LogParam(p.usages(), l);
   l->append(")");
 }
+
+// remoting::protocol::ActionRequest
 
 // static
 void ParamTraits<remoting::protocol::ActionRequest>::Write(
@@ -351,5 +368,45 @@ void ParamTraits<remoting::protocol::ActionRequest>::Log(const param_type& p,
                                p.request_id()));
 }
 
-}  // namespace IPC
+// remoting::protocol::VideoLayout
 
+// static
+void ParamTraits<remoting::protocol::VideoLayout>::Write(
+    base::Pickle* m,
+    const remoting::protocol::VideoLayout& p) {
+  std::string serialized_video_layout;
+  bool result = p.SerializeToString(&serialized_video_layout);
+  DCHECK(result);
+  m->WriteString(serialized_video_layout);
+}
+
+// static
+bool ParamTraits<remoting::protocol::VideoLayout>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    remoting::protocol::VideoLayout* p) {
+  std::string serialized_video_layout;
+  if (!iter->ReadString(&serialized_video_layout))
+    return false;
+
+  return p->ParseFromString(serialized_video_layout);
+}
+
+// static
+void ParamTraits<remoting::protocol::VideoLayout>::Log(
+    const remoting::protocol::VideoLayout& p,
+    std::string* l) {
+  l->append(base::StringPrintf("protocol::VideoLayout(["));
+  for (int i = 0; i < p.video_track_size(); i++) {
+    remoting::protocol::VideoTrackLayout track = p.video_track(i);
+    l->append("])");
+    if (i != 0)
+      l->append(",");
+    l->append(base::StringPrintf("{(%d,%d) %dx%d}", track.position_x(),
+                                 track.position_y(), track.width(),
+                                 track.height()));
+  }
+  l->append("])");
+}
+
+}  // namespace IPC

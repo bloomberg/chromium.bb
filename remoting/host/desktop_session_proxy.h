@@ -21,6 +21,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/screen_resolution.h"
+#include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
@@ -162,6 +163,9 @@ class DesktopSessionProxy
 
   // Drops a cached reference to the shared buffer.
   void OnReleaseSharedBuffer(int id);
+
+  // Handles DesktopDisplayChange notification from the desktop session agent.
+  void OnDesktopDisplayChanged(const protocol::VideoLayout& layout);
 
   // Handles CaptureResult notification from the desktop session agent.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,

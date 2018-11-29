@@ -13,6 +13,10 @@ class DesktopVector;
 
 namespace remoting {
 
+namespace protocol {
+class VideoLayout;
+}  // namespace protocol
+
 // Allows the desktop environment to disconnect the client session and
 // to control the remote input handling (i.e. disable, enable, and pause
 // temporarily if the local mouse movements are detected).
@@ -32,6 +36,10 @@ class ClientSessionControl {
 
   // Disables or enables the remote input in the client session.
   virtual void SetDisableInputs(bool disable_inputs) = 0;
+
+  // Called when the host desktop displays are changed.
+  virtual void OnDesktopDisplayChanged(
+      std::unique_ptr<protocol::VideoLayout> layout) = 0;
 };
 
 }  // namespace remoting
