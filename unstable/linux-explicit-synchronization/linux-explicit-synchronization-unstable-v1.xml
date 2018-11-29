@@ -26,7 +26,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zwp_linux_explicit_synchronization_v1" version="1">
+  <interface name="zwp_linux_explicit_synchronization_v1" version="2">
     <description summary="protocol for providing explicit synchronization">
       This global is a factory interface, allowing clients to request
       explicit synchronization for buffers on a per-surface basis.
@@ -76,7 +76,7 @@
     </request>
   </interface>
 
-  <interface name="zwp_linux_surface_synchronization_v1" version="1">
+  <interface name="zwp_linux_surface_synchronization_v1" version="2">
     <description summary="per-surface explicit synchronization support">
       This object implements per-surface explicit synchronization.
 
@@ -101,8 +101,13 @@
       Each surface can be associated with only one object of this interface at
       any time.
 
-      Explicit synchronization is guaranteed to be supported only for buffers
-      created with any version of the wp_linux_dmabuf buffer factory.
+      In version 1 of this interface, explicit synchronization is only
+      guaranteed to be supported for buffers created with any version of the
+      wp_linux_dmabuf buffer factory. Version 2 additionally guarantees
+      explicit synchronization support for opaque EGL buffers, which is a type
+      of platform specific buffers described in the EGL_WL_bind_wayland_display
+      extension. Compositors are free to support explicit synchronization for
+      additional buffer types.
     </description>
 
     <request name="destroy" type="destructor">
