@@ -25,6 +25,8 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /** Class allowing to measure and report a page view time in UMA. */
@@ -41,6 +43,7 @@ public class PageViewTimer {
      */
     @VisibleForTesting
     @IntDef({DurationBucket.SHORT_CLICK, DurationBucket.MEDIUM_CLICK, DurationBucket.LONG_CLICK})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface DurationBucket {
         int SHORT_CLICK = 0; /** Click <= 4 secconds */
         int MEDIUM_CLICK = 1; /** 4 seconds < Click <= 180 seconds */
@@ -50,6 +53,7 @@ public class PageViewTimer {
 
     /** Track the navigation source to report the page view time under. */
     @IntDef({NavigationSource.OTHER, NavigationSource.CONTEXTUAL_SUGGESTIONS})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface NavigationSource {
         int OTHER = 0;
         int CONTEXTUAL_SUGGESTIONS = 1;
@@ -61,7 +65,7 @@ public class PageViewTimer {
 
     /** Observer for the tab switcher, can be null. */
     private OverviewModeObserver mOverviewModeObserver;
-    /** Currnetly observed tab. */
+    /** Currently observed tab. */
     private Tab mCurrentTab;
     /** Last URL loaded in the observed tab. */
     private String mLastUrl;
@@ -76,7 +80,7 @@ public class PageViewTimer {
     private boolean mIsPaused;
     /** When the timer is paused, track when the pause began. */
     private long mPauseStartTimeMs;
-    /** Keep a cumlative duration of page not being visible. */
+    /** Keep a cumulative duration of page not being visible. */
     private long mPauseDuration;
 
     public PageViewTimer(TabModelSelector tabModelSelector) {
