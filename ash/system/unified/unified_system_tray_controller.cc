@@ -177,11 +177,17 @@ void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
 }
 
 void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   drag_init_point_ = location;
   was_expanded_ = IsExpanded();
 }
 
 void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   animation_->Reset(GetDragExpandedAmount(location));
   UpdateExpandedAmount();
 }
@@ -198,6 +204,9 @@ void UnifiedSystemTrayController::StartAnimation(bool expand) {
 }
 
 void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   if (animation_->is_animating()) {
     // Prevent overwriting the state right after fling event
     return;
@@ -214,6 +223,9 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
 }
 
 void UnifiedSystemTrayController::Fling(int velocity) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   // Expand when flinging up. Collapse otherwise.
   StartAnimation(velocity < 0);
 }
