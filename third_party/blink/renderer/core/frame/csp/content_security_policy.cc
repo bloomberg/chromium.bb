@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -1696,7 +1697,7 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   if (!world.IsIsolatedWorld())
     return false;
 
-  return world.IsolatedWorldHasContentSecurityPolicy();
+  return IsolatedWorldCSP::Get().HasContentSecurityPolicy(world.GetWorldId());
 }
 
 bool ContentSecurityPolicy::ShouldSendViolationReport(

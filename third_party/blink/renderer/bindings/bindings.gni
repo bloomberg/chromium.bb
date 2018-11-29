@@ -70,6 +70,8 @@ bindings_core_v8_files =
                     "core/v8/scheduled_action.h",
                     "core/v8/script_controller.cc",
                     "core/v8/script_controller.h",
+                    "core/v8/isolated_world_csp.cc",
+                    "core/v8/isolated_world_csp.h",
                     "core/v8/script_custom_element_definition.cc",
                     "core/v8/script_custom_element_definition.h",
                     "core/v8/script_custom_element_definition_builder.cc",

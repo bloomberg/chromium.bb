@@ -133,6 +133,7 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -727,7 +728,7 @@ void WebLocalFrameImpl::SetIsolatedWorldContentSecurityPolicy(
     int world_id,
     const WebString& policy) {
   DCHECK(GetFrame());
-  DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(world_id, policy);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(world_id, policy);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldHumanReadableName(

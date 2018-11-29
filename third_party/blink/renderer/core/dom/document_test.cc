@@ -37,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -980,17 +981,19 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   ScriptState* isolated_world_without_csp_script_state =
       ToScriptState(frame, *world_without_csp);
   ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
-  EXPECT_FALSE(world_without_csp->IsolatedWorldHasContentSecurityPolicy());
+  EXPECT_FALSE(IsolatedWorldCSP::Get().HasContentSecurityPolicy(
+      kIsolatedWorldWithoutCSPId));
 
   constexpr int kIsolatedWorldWithCSPId = 2;
   scoped_refptr<DOMWrapperWorld> world_with_csp =
       DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
-  DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
       kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"));
   ScriptState* isolated_world_with_csp_script_state =
       ToScriptState(frame, *world_with_csp);
   ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
-  EXPECT_TRUE(world_with_csp->IsolatedWorldHasContentSecurityPolicy());
+  EXPECT_TRUE(IsolatedWorldCSP::Get().HasContentSecurityPolicy(
+      kIsolatedWorldWithCSPId));
 
   {
     // Since the page is sandboxed, main world script execution shouldn't be
