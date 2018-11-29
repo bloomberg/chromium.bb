@@ -37,7 +37,7 @@ void GetSharedDatabaseInitStateAsync(
 // runner.
 // Should be created, destroyed, and used on the same thread.
 template <typename T>
-class SharedProtoDatabaseClient : public UniqueProtoDatabase<T> {
+class SharedProtoDatabaseClient : public ProtoDatabase<T> {
  public:
   virtual ~SharedProtoDatabaseClient();
 
@@ -48,6 +48,11 @@ class SharedProtoDatabaseClient : public UniqueProtoDatabase<T> {
                     const base::FilePath& database_dir,
                     const leveldb_env::Options& options,
                     typename ProtoDatabase<T>::InitCallback callback) override;
+  virtual void InitWithDatabase(
+      LevelDB* database,
+      const base::FilePath& database_dir,
+      const leveldb_env::Options& options,
+      typename ProtoDatabase<T>::InitCallback callback) override;
 
   // Overrides for prepending namespace and type prefix to all operations on the
   // shared database.
@@ -140,8 +145,9 @@ class SharedProtoDatabaseClient : public UniqueProtoDatabase<T> {
   std::string prefix_;
 
   scoped_refptr<SharedProtoDatabase> parent_db_;
-  std::unique_ptr<base::WeakPtrFactory<SharedProtoDatabaseClient<T>>>
-      weak_ptr_factory_;
+  std::unique_ptr<UniqueProtoDatabase<T>> unique_db_;
+
+  base::WeakPtrFactory<SharedProtoDatabaseClient<T>> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabaseClient);
 };
@@ -152,14 +158,13 @@ SharedProtoDatabaseClient<T>::SharedProtoDatabaseClient(
     const std::string& client_namespace,
     const std::string& type_prefix,
     const scoped_refptr<SharedProtoDatabase>& parent_db)
-    : UniqueProtoDatabase<T>(std::move(db_wrapper)) {
+    : prefix_(base::JoinString({client_namespace, type_prefix, std::string()},
+                               "_")),
+      parent_db_(parent_db),
+      unique_db_(
+          std::make_unique<UniqueProtoDatabase<T>>(std::move(db_wrapper))),
+      weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  prefix_ =
-      base::JoinString({client_namespace, type_prefix, std::string()}, "_");
-  parent_db_ = parent_db;
-  weak_ptr_factory_ =
-      std::make_unique<base::WeakPtrFactory<SharedProtoDatabaseClient<T>>>(
-          this);
 }
 
 template <typename T>
@@ -171,7 +176,7 @@ template <typename T>
 void SharedProtoDatabaseClient<T>::Init(
     const std::string& client_name,
     typename ProtoDatabase<T>::InitCallback callback) {
-  this->db_wrapper_->SetMetricsId(client_name);
+  unique_db_->SetMetricsId(client_name);
   GetSharedDatabaseInitStateAsync(parent_db_, std::move(callback));
 }
 
@@ -185,12 +190,21 @@ void SharedProtoDatabaseClient<T>::Init(
 }
 
 template <typename T>
+void SharedProtoDatabaseClient<T>::InitWithDatabase(
+    LevelDB* database,
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
+    typename ProtoDatabase<T>::InitCallback callback) {
+  NOTREACHED();
+}
+
+template <typename T>
 void SharedProtoDatabaseClient<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
     typename ProtoDatabase<T>::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::UpdateEntries(
+  unique_db_->UpdateEntries(
       PrefixKeyEntryVector(std::move(entries_to_save), prefix_),
       PrefixStrings(std::move(keys_to_remove), prefix_), std::move(callback));
 }
@@ -212,7 +226,7 @@ void SharedProtoDatabaseClient<T>::UpdateEntriesWithRemoveFilter(
     const std::string& target_prefix,
     typename ProtoDatabase<T>::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::UpdateEntriesWithRemoveFilter(
+  unique_db_->UpdateEntriesWithRemoveFilter(
       PrefixKeyEntryVector(std::move(entries_to_save), prefix_),
       base::BindRepeating(&KeyFilterStripPrefix, delete_key_filter, prefix_),
       prefix_ + target_prefix, std::move(callback));
@@ -241,7 +255,7 @@ void SharedProtoDatabaseClient<T>::LoadEntriesWithFilter(
     const std::string& target_prefix,
     typename ProtoDatabase<T>::LoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::LoadEntriesWithFilter(
+  unique_db_->LoadEntriesWithFilter(
       base::BindRepeating(&KeyFilterStripPrefix, filter, prefix_), options,
       prefix_ + target_prefix, std::move(callback));
 }
@@ -258,7 +272,7 @@ void SharedProtoDatabaseClient<T>::LoadKeys(
     const std::string& target_prefix,
     typename ProtoDatabase<T>::LoadKeysCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::LoadKeys(
+  unique_db_->LoadKeys(
       prefix_ + target_prefix,
       base::BindOnce(&SharedProtoDatabaseClient<T>::StripPrefixLoadKeysCallback,
                      std::move(callback), prefix_));
@@ -285,7 +299,7 @@ void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesWithFilter(
     const std::string& target_prefix,
     typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::LoadKeysAndEntriesWithFilter(
+  unique_db_->LoadKeysAndEntriesWithFilter(
       filter, options, prefix_ + target_prefix,
       base::BindOnce(
           &SharedProtoDatabaseClient<T>::StripPrefixLoadKeysAndEntriesCallback,
@@ -297,7 +311,7 @@ void SharedProtoDatabaseClient<T>::GetEntry(
     const std::string& key,
     typename ProtoDatabase<T>::GetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UniqueProtoDatabase<T>::GetEntry(prefix_ + key, std::move(callback));
+  unique_db_->GetEntry(prefix_ + key, std::move(callback));
 }
 
 template <typename T>
