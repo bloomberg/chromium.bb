@@ -1088,14 +1088,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_AddFirstRunTab DISABLED_AddFirstRunTab
-#else
-#define MAYBE_AddFirstRunTab AddFirstRunTab
-#endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       MAYBE_AddFirstRunTab) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(
@@ -1230,13 +1223,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_WelcomePages DISABLED_WelcomePages
-#else
-#define MAYBE_WelcomePages WelcomePages
-#endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1287,14 +1274,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_WelcomePagesWithPolicy DISABLED_WelcomePagesWithPolicy
-#else
-#define MAYBE_WelcomePagesWithPolicy WelcomePagesWithPolicy
-#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       MAYBE_WelcomePagesWithPolicy) {
+                       WelcomePagesWithPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set the following user policies:
