@@ -1351,8 +1351,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       ->FlushProxyConfigMonitorForTesting();
 
   // Verify that the extension can't intercept the network request.
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
-                                              "/pages_with_script/page.html"));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("http://does.not.resolve.test/pages_with_script/page.html"));
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 }
