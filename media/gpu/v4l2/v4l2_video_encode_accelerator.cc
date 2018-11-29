@@ -1104,6 +1104,7 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
       base::checked_cast<__u32>(output_buffer_byte_size_);
   format.fmt.pix_mp.num_planes = 1;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc_);
 
   // Device might have adjusted the required output size.
   size_t adjusted_output_buffer_size =
@@ -1146,7 +1147,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     format.fmt.pix_mp.height = visible_size_.height();
     format.fmt.pix_mp.pixelformat = pix_fmt;
     format.fmt.pix_mp.num_planes = planes_count;
-    if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0) {
+    if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0 &&
+        format.fmt.pix_mp.pixelformat == pix_fmt) {
       VLOGF(2) << "Success: S_FMT with" << FourccToString(pix_fmt);
       // Take device-adjusted sizes for allocated size. If the size is adjusted
       // down, it means the input is too big and the hardware does not support

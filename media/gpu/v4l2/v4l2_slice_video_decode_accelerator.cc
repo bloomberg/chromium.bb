@@ -681,6 +681,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   format.fmt.pix_mp.plane_fmt[0].sizeimage = input_size;
   format.fmt.pix_mp.num_planes = input_planes_count_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat, input_format_fourcc_);
 
   // We have to set up the format for output, because the driver may not allow
   // changing it once we start streaming; whether it can support our chosen
@@ -708,6 +709,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
   format.fmt.pix_mp.num_planes = output_planes_count_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc_);
 
   return true;
 }

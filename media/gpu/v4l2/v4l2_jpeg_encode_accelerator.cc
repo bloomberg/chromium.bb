@@ -379,6 +379,8 @@ bool V4L2JpegEncodeAccelerator::EncodedInstance::SetInputBufferFormat(
   format.fmt.pix_mp.width = coded_size.width();
   format.fmt.pix_mp.height = coded_size.height();
 
+  // TODO(crbug.com/908357): Execute S_FMT with YUV420 and YUV420M separately
+  // and check format.fmt.pix_mp.pixelformat value.
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   // Save V4L2 returned values.
@@ -425,6 +427,7 @@ bool V4L2JpegEncodeAccelerator::EncodedInstance::SetOutputBufferFormat(
   format.fmt.pix_mp.width = coded_size.width();
   format.fmt.pix_mp.height = coded_size.height();
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_buffer_pixelformat_);
 
   return true;
 }
