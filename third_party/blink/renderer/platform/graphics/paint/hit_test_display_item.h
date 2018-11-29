@@ -11,7 +11,7 @@
 
 namespace blink {
 
-// A special DrawingDisplayItem containing hit test data.
+// A special DisplayItem containing hit test data.
 class PLATFORM_EXPORT HitTestDisplayItem final : public DisplayItem {
  public:
   HitTestDisplayItem(const DisplayItemClient& client,
