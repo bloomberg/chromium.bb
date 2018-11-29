@@ -72,15 +72,6 @@ bool IsURLValidForProxy(const GURL& url) {
   return url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url);
 }
 
-// Copies all of the valid proxies in |proxies| to |out|.
-void AddProxies(const net::ProxyList& proxies,
-                std::vector<net::ProxyServer>* out) {
-  for (const auto& proxy : proxies.GetAll()) {
-    if (proxy.is_valid() && !proxy.is_direct())
-      out->push_back(proxy);
-  }
-}
-
 // Merges headers from |in| to |out|. If the header already exists in |out| they
 // are combined.
 void MergeRequestHeaders(net::HttpRequestHeaders* out,
@@ -191,13 +182,6 @@ void NetworkServiceProxyDelegate::MarkProxiesAsBad(
     const net::ProxyList& bad_proxies_list,
     MarkProxiesAsBadCallback callback) {
   std::vector<net::ProxyServer> bad_proxies = bad_proxies_list.GetAll();
-
-  if (bad_proxies.empty()) {
-    // TODO(https://crbug.com/721403): Temporary hack. The throttle currently
-    // passes an empty |bad_proxies_list| to mean "bypass all custom proxies".
-    AddProxies(proxy_config_->rules.proxies_for_http, &bad_proxies);
-    AddProxies(proxy_config_->alternate_proxy_list, &bad_proxies);
-  }
 
   // Synthesize a suitable |ProxyInfo| to add the proxies to the
   // |ProxyRetryInfoMap| of the proxy service.

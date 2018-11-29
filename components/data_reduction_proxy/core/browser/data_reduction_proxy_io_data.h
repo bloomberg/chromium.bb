@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
@@ -49,6 +50,7 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyServer;
 class DataReductionProxyService;
 class NetworkPropertiesManager;
+class DataReductionProxyThrottleManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -174,6 +176,8 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
     return proxy_delegate_.get();
   }
 
+  DataReductionProxyThrottleManager* GetThrottleManager();
+
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
     return io_task_runner_;
   }
@@ -216,6 +220,8 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override;
+  void AddThrottleConfigObserver(
+      mojom::DataReductionProxyThrottleConfigObserverPtr observer) override;
   void Clone(mojom::DataReductionProxyRequest request) override;
 
  private:
@@ -259,6 +265,12 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // Should be called whenever there is a possible change to the custom proxy
   // config.
   void UpdateCustomProxyConfig();
+
+  // Should be called whenever there is a possible change to the throttle
+  // config.
+  void UpdateThrottleConfig();
+
+  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
 
   // The type of Data Reduction Proxy client.
   const Client client_;
@@ -322,12 +334,17 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   // is unavailable, then the destruction will happen on the UI thread.
   std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
 
+  std::unique_ptr<DataReductionProxyThrottleManager> throttle_manager_;
+
   // Current estimate of the effective connection type.
   net::EffectiveConnectionType effective_connection_type_;
 
   network::mojom::CustomProxyConfigClientPtr proxy_config_client_;
 
-  mojo::BindingSet<mojom::DataReductionProxy> bindings_;
+  mojo::BindingSet<mojom::DataReductionProxy> drp_bindings_;
+
+  mojo::InterfacePtrSet<mojom::DataReductionProxyThrottleConfigObserver>
+      drp_throttle_config_observers_;
 
   base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 
