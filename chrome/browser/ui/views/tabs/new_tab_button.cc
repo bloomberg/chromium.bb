@@ -72,7 +72,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   ink_drop_container_ = new views::InkDropContainerView();
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetVisible(false);
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(0.08f);
 
   SetFocusPainter(nullptr);
