@@ -251,9 +251,8 @@ class CONTENT_EXPORT ContentRendererClient {
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
-  virtual bool ShouldOverridePageVisibilityState(
-      const RenderFrame* render_frame,
-      blink::mojom::PageVisibilityState* override_state);
+  virtual bool ShouldOverrideVisibilityAsPrerender(
+      const RenderFrame* render_frame);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
