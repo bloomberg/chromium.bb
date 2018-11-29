@@ -24,3 +24,15 @@ Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 
 crbug.com/898306 http/tests/inspector-protocol/network/raw-headers-for-protected-document.js [ Failure ]
 crbug.com/898306 http/tests/inspector-protocol/network/security-info-on-response.js [ Failure ]
+
+# Sheriff 2018-11-29
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-404.https.html [ Failure ]
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-cache-validation.https.html [ Failure ]
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-redirect.https.html [ Failure ]
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-subdomain-dns-failure.https.html [ Failure ]
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-success-with-subdomain-policy.https.html [ Failure ]
+crbug.com/910011 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-success.https.html [ Failure ]
+crbug.com/910011 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
+crbug.com/910011 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-report-only-sends-reports-on-violation.https.sub.html [ Failure ]
+crbug.com/910011 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-sends-reports-on-violation.https.sub.html [ Failure ]
+crbug.com/910011 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-works-on-frame-src.https.sub.html [ Failure ]
