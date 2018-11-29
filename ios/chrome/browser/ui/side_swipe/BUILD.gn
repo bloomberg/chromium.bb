@@ -33,6 +33,7 @@ source_set("side_swipe") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/ntp",
+    "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
@@ -54,6 +55,8 @@ source_set("unit_tests") {
   deps = [
     ":side_swipe",
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web/public/test",
     "//testing/gtest",

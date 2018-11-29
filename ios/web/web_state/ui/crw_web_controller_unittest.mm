@@ -212,7 +212,7 @@ class CRWWebControllerTest : public WebTestWithWebController,
                        context:nullptr];
     [[result stub] removeObserver:web_controller() forKeyPath:OCMOCK_ANY];
     [[result stub] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
-    // CRWWebController sets this property to NO by default.
+    [[result stub] setAllowsBackForwardNavigationGestures:YES];
     [[result stub] setAllowsBackForwardNavigationGestures:NO];
 
     return result;
@@ -310,13 +310,18 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   EXPECT_FALSE(observer.did_finish_navigation_info());
 }
 
-// Tests allowsBackForwardNavigationGestures default value and setting this
-// property to YES.
+// Tests allowsBackForwardNavigationGestures default value and negating this
+// property.
 TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
-  OCMExpect([mock_web_view_ setAllowsBackForwardNavigationGestures:YES]);
-  EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
-  web_controller().allowsBackForwardNavigationGestures = YES;
-  EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+    web_controller().allowsBackForwardNavigationGestures = NO;
+    EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
+  } else {
+    EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
+    web_controller().allowsBackForwardNavigationGestures = YES;
+    EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+  }
 }
 
 INSTANTIATE_TEST_CASES(CRWWebControllerTest);
