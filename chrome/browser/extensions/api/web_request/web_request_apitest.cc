@@ -1256,8 +1256,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       ->FlushProxyConfigMonitorForTesting();
 
   // Navigate to a page. The URL doesn't matter.
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title2.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve.test/title2.html"));
 
   // The extension should not have seen the PAC request.
   EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
