@@ -9,7 +9,6 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,20 +42,6 @@ public class BrowserServicesMetrics {
     public static void recordVerificationResult(@VerificationResult int result) {
         RecordHistogram.recordEnumeratedHistogram(
                 "BrowserServices.VerificationResult", result, VerificationResult.NUM_ENTRIES);
-    }
-
-    /**
-     * Records that a Trusted Web Activity has been opened.
-     */
-    public static void recordTwaOpened() {
-        RecordUserAction.record("BrowserServices.TwaOpened");
-    }
-
-    /**
-     * Records the time that a Trusted Web Activity has been open for.
-     */
-    public static void recordTwaOpenTime(long duration, TimeUnit unit) {
-        RecordHistogram.recordTimesHistogram("BrowserServices.TwaOpenTime", duration, unit);
     }
 
     /**

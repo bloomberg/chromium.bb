@@ -25,6 +25,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
@@ -798,6 +799,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
         boolean finishActivityImmediately = mSite.getTotalUsage() == 0;
 
         mSiteDataCleaner.clearData(mSite, mDataClearedCallback);
+
+        int navigationSource = getArguments().getInt(
+                SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
+        RecordHistogram.recordEnumeratedHistogram("SingleWebsitePreferences.NavigatedFromToReset",
+                navigationSource, SettingsNavigationSource.NUM_ENTRIES);
 
         if (finishActivityImmediately) {
             getActivity().finish();

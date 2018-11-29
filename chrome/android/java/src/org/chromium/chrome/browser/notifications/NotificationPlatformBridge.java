@@ -30,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
@@ -132,7 +133,9 @@ public class NotificationPlatformBridge {
             mNotificationManager = new NotificationManagerProxyImpl(context);
         }
         mTwaClient = new TrustedWebActivityClient(
-                new TrustedWebActivityServiceConnectionManager(context));
+                new TrustedWebActivityServiceConnectionManager(context),
+                new TrustedWebActivityUmaRecorder(),
+                NotificationUmaTracker.getInstance());
     }
 
     /**

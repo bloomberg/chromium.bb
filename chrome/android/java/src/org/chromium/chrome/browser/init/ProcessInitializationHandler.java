@@ -429,6 +429,10 @@ public class ProcessInitializationHandler {
             MediaViewerUtils.updateMediaLauncherActivityEnabled(
                     ContextUtils.getApplicationContext());
         });
+
+        deferredStartupHandler.addDeferredTask(
+                ChromeApplication.getComponent().resolveTwaClearDataDialogRecorder()
+                        ::makeDeferredRecordings);
     }
 
     private void initChannelsAsync() {

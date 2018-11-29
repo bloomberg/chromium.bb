@@ -11,7 +11,6 @@ import android.support.customtabs.CustomTabsService;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
@@ -162,7 +161,6 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         new OriginVerifier((packageName2, origin2, verified, online) -> {
             if (!origin.equals(new Origin(tab.getUrl()))) return;
 
-            BrowserServicesMetrics.recordTwaOpened();
             handleVerificationResult(verified, origin);
         }, mClientPackageName, RELATIONSHIP).start(origin);
     }

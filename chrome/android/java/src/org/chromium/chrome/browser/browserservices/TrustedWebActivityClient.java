@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED;
+import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.NO_FALLBACK;
+
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,6 +26,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
@@ -34,12 +38,17 @@ import java.util.Set;
  */
 public class TrustedWebActivityClient {
     private final TrustedWebActivityServiceConnectionManager mConnection;
+    private final TrustedWebActivityUmaRecorder mRecorder;
+    private final NotificationUmaTracker mNotificationUmaTracker;
 
     /**
      * Creates a TrustedWebActivityService.
      */
-    public TrustedWebActivityClient(TrustedWebActivityServiceConnectionManager connection) {
+    public TrustedWebActivityClient(TrustedWebActivityServiceConnectionManager connection,
+            TrustedWebActivityUmaRecorder recorder, NotificationUmaTracker notificationUmaTracker) {
         mConnection = connection;
+        mRecorder = recorder;
+        mNotificationUmaTracker = notificationUmaTracker;
     }
 
     /**
@@ -70,26 +79,30 @@ public class TrustedWebActivityClient {
 
             Notification notification = builder.build();
 
-            boolean success =
-                    service.notify(platformTag, platformId, notification, channelDisplayName);
+            service.notify(platformTag, platformId, notification, channelDisplayName);
 
-            if (success) {
-                NotificationUmaTracker.getInstance().onNotificationShown(
-                        NotificationUmaTracker.SystemNotificationType.SITES, notification);
-            }
+            mNotificationUmaTracker.onNotificationShown(
+                    NotificationUmaTracker.SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES,
+                    notification);
         });
     }
 
     private void fallbackToIconFromServiceIfNecessary(NotificationBuilderBase builder,
             TrustedWebActivityServiceWrapper service) throws RemoteException {
         if (builder.hasSmallIconForContent() && builder.hasStatusBarIconBitmap()) {
+            recordFallback(NO_FALLBACK);
             return;
         }
 
         int id = service.getSmallIconId();
         if (id == TrustedWebActivityService.NO_ID) {
+            recordFallback(FALLBACK_ICON_NOT_PROVIDED);
             return;
         }
+
+        recordFallback(builder.hasSmallIconForContent()
+                ? DelegatedNotificationSmallIconFallback.FALLBACK_FOR_STATUS_BAR
+                : DelegatedNotificationSmallIconFallback.FALLBACK_FOR_STATUS_BAR_AND_CONTENT);
 
         Bitmap bitmap = service.getSmallIconBitmap();
         if (!builder.hasStatusBarIconBitmap()) {
@@ -99,6 +112,10 @@ public class TrustedWebActivityClient {
         if (!builder.hasSmallIconForContent()) {
             builder.setContentSmallIconForUntrustedRemoteApp(bitmap);
         }
+    }
+
+    private void recordFallback(@DelegatedNotificationSmallIconFallback int fallback) {
+        mRecorder.recordDelegatedNotificationSmallIconFallback(fallback);
     }
 
     /**

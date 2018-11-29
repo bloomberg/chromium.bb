@@ -29,6 +29,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
 /**
  * Unit tests for {@link TrustedWebActivityClient}.
@@ -46,6 +47,10 @@ public class TrustedWebActivityClientTest {
     private TrustedWebActivityServiceWrapper mService;
     @Mock
     private NotificationBuilderBase mNotificationBuilder;
+    @Mock
+    private TrustedWebActivityUmaRecorder mRecorder;
+    @Mock
+    private NotificationUmaTracker mNotificationUmaTracker;
 
     @Mock
     private Bitmap mServiceSmallIconBitmap;
@@ -67,7 +72,7 @@ public class TrustedWebActivityClientTest {
         when(mService.getSmallIconBitmap()).thenReturn(mServiceSmallIconBitmap);
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
 
-        mClient = new TrustedWebActivityClient(mConnection);
+        mClient = new TrustedWebActivityClient(mConnection, mRecorder, mNotificationUmaTracker);
     }
 
     @Test

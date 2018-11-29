@@ -41,7 +41,8 @@ public class NotificationUmaTracker {
             SystemNotificationType.MEDIA, SystemNotificationType.SITES, SystemNotificationType.SYNC,
             SystemNotificationType.WEBAPK, SystemNotificationType.BROWSER_ACTIONS,
             SystemNotificationType.WEBAPP_ACTIONS,
-            SystemNotificationType.OFFLINE_CONTENT_SUGGESTION})
+            SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
+            SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int DOWNLOAD_FILES = 0;
@@ -60,8 +61,9 @@ public class NotificationUmaTracker {
         int BROWSER_ACTIONS = 10;
         int WEBAPP_ACTIONS = 11;
         int OFFLINE_CONTENT_SUGGESTION = 12;
+        int TRUSTED_WEB_ACTIVITY_SITES = 13;
 
-        int NUM_ENTRIES = 13;
+        int NUM_ENTRIES = 14;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
