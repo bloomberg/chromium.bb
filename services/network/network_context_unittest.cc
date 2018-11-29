@@ -4288,15 +4288,16 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
   } proxy_config_set[2];
 
   proxy_config_set[0].proxy_config.proxy_rules().ParseFromString(
-      base::StringPrintf("http=%s",
-                         test_server.host_port_pair().ToString().c_str()));
-  // The domain here is irrelevant, and it is the path that matters.
+      "http=" + test_server.host_port_pair().ToString());
   proxy_config_set[0].url = GURL("http://does.not.matter/echo");
   proxy_config_set[0].expected_proxy_config_scheme =
       net::ProxyServer::SCHEME_HTTP;
 
   proxy_config_set[1].proxy_config.proxy_rules().ParseFromString(
       "http=direct://");
+  proxy_config_set[1]
+      .proxy_config.proxy_rules()
+      .bypass_rules.AddRulesToSubtractImplicit();
   proxy_config_set[1].url = test_server.GetURL("/echo");
   proxy_config_set[1].expected_proxy_config_scheme =
       net::ProxyServer::SCHEME_DIRECT;
@@ -4319,8 +4320,7 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
                                             std::move(params));
 
     ResourceRequest request;
-    // The domain here is irrelevant, and it is the path that matters.
-    request.url = proxy_data.url;  // test_server.GetURL("/echo");
+    request.url = proxy_data.url;
 
     mojom::URLLoaderPtr loader;
     TestURLLoaderClient client;
