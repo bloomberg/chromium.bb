@@ -13,34 +13,91 @@
   const viewport = consoleView._viewport;
   const prompt = consoleView._prompt;
 
+  await TestRunner.evaluateInPagePromise(`
+    function fn1() {
+      console.error("Custom error with link www.chromium.org/linkInErrMsg");
+    }
+
+    //# sourceURL=foo.js
+  `);
+
   TestRunner.runTestSuite([
     async function testNavigatingLinks(next) {
-      await clearAndLog(`console.log("Text around www.chromium.org/1a multiple links, www.chromium.org/1b");console.log("www.chromium.org/2");`, 2);
+      await clearAndLog(`console.log("Before");console.log("Text around www.chromium.org/1a multiple links, www.chromium.org/1b");console.log("www.chromium.org/2");`, 3);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
 
       TestRunner.addResult(`Setting focus in prompt:`);
       prompt.focus();
       shiftPress('Tab');
 
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
 
       press('ArrowUp');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
 
       press('ArrowUp');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
+
+      press('ArrowUp');
+      dumpFocus(true, 0, true);
+
+      press('ArrowUp');
+      dumpFocus(true, 0, true);
 
       press('ArrowDown');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
 
       press('ArrowDown');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
 
       press('ArrowDown');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
 
       press('ArrowDown');
-      dumpFocus(true, 1, true);
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      next();
+    },
+
+    async function testNavigatingLinksInStackTrace(next) {
+      await clearAndLog(`fn1()`, 1);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+
+      TestRunner.addResult(`Setting focus in prompt:`);
+      prompt.focus();
+      shiftPress('Tab');
+
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      press('ArrowUp');
+      dumpFocus(true, 0, true);
+
+      press('ArrowRight');
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      press('ArrowDown');
+      dumpFocus(true, 0, true);
+
+      press('ArrowLeft');
+      dumpFocus(true, 0, true);
+
+      press('ArrowLeft');
+      dumpFocus(true, 0, true);
 
       next();
     },

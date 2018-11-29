@@ -119,6 +119,8 @@
       dumpFocus(true, 1);
       press('ArrowRight');
       dumpFocus(true, 1);
+      press('ArrowRight');
+      dumpFocus(true, 1);
 
       // Expand object.
       press('ArrowRight');
@@ -130,6 +132,8 @@
       press('ArrowDown');
       dumpFocus(true, 1);
 
+      press('ArrowUp');
+      dumpFocus(true, 1);
       press('ArrowUp');
       dumpFocus(true, 1);
       press('ArrowUp');
