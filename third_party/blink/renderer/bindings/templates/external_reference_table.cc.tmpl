@@ -12,115 +12,109 @@
 
 namespace blink {
 
-{# We use forward declaration instead of include for faster compile time here. #}
+// We use forward declaration instead of include for faster compile time here.
 {% for interface in interfaces %}
 {% if interface.has_constructor_callback %}
-
 namespace {{interface.internal_namespace}} {
-{{interface.exported}}void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+{{interface.component|upper}}_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 }  // namespace {{interface.internal_namespace}}
 
 {% endif %}
 {% endfor %}
 
 const intptr_t* {{class}}::GetTable() {
-  static const intptr_t reference_table[] = {
+  static const intptr_t kReferenceTable[] = {
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
     // Android is sensitive on its APK size, and this table improves it.
     // So we drop the table entries until the V8 context snapshot feature
     // is released on Android.
     {% for interface in interfaces %}
-    {% if not interface.is_array_buffer_or_view %}
-    {%   set v8_class = interface.v8_name %}
+    {%   set v8_class = interface.v8_class %}
     {# Attributes #}
     {%-  for attribute in interface.attributes %}
     {%-    for world_suffix in attribute.world_suffixes %}
-    {%      if not attribute.constructor_type %}
+    {%       if not attribute.constructor_type %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.camel_case_name}}AttributeGetterCallback{{world_suffix}}),
-    {%      else %}
+    {%       else %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.camel_case_name}}ConstructorGetterCallback{{world_suffix}}),
-    {%      endif %}
-    {%      if attribute.has_setter %}
+    {%       endif %}
+    {%       if attribute.has_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.camel_case_name}}AttributeSetterCallback{{world_suffix}}),
-    {%      endif %}
+    {%       endif %}
     {%-    endfor %}{# world_suffix #}
     {%-  endfor %}{# attributes #}
     {# Methods / Operations #}
-    {%  for method in interface.methods %}
-    {%-   for world_suffix in method.world_suffixes %}
-    {%      if not method.overload_index or method.overloads %}
-    {%        if (method.overloads and method.overloads.visible and
-                  (not method.overloads.has_partial_overloads or not interface.is_partial)) or
-                 (not method.overloads and method.visible) %}
-    {# TODO(bashi): Remove this 'if' condition when crbug.com/630986 is fixed. #}
-    {%          if not interface.is_callback %}
+    {%   for method in interface.methods %}
+    {%-    for world_suffix in method.world_suffixes %}
+    {%       if not method.overload_index or method.overloads %}
+    {%         if (method.overloads and method.overloads.visible and
+                   (not method.overloads.has_partial_overloads or not interface.is_partial)) or
+                  (not method.overloads and method.visible) %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{method.camel_case_name}}MethodCallback{{world_suffix}}),
-    {%          endif %}
-    {%        endif %}
-    {%      endif %}{# overload(_index) #}
-    {%         if method.is_cross_origin and method.visible %}
+    {%         endif %}
+    {%       endif %}
+    {%       if method.is_cross_origin and method.visible and not method.overloads %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{method.camel_case_name}}OriginSafeMethodGetterCallback{{world_suffix}}),
-    {%         endif%}
-    {%    endfor %}
-    {%  endfor %}{# method #}
-    {%  if interface.has_origin_safe_method_setter %}
+    {%       endif%}
+    {%     endfor %}
+    {%   endfor %}{# method #}
+    {%   if interface.has_origin_safe_method_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{interface.name}}OriginSafeMethodSetterCallback),
-    {%  endif %}
-    {%  if interface.has_cross_origin_named_getter %}
+    {%   endif %}
+    {%   if interface.has_cross_origin_named_getter %}
     reinterpret_cast<intptr_t>({{v8_class}}::CrossOriginNamedGetter),
-    {%  endif %}
-    {%  if interface.has_cross_origin_named_setter %}
+    {%   endif %}
+    {%   if interface.has_cross_origin_named_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::CrossOriginNamedSetter),
-    {%  endif %}
-    {%  if interface.has_cross_origin_named_enumerator %}
+    {%   endif %}
+    {%   if interface.has_cross_origin_named_enumerator %}
     reinterpret_cast<intptr_t>({{v8_class}}::CrossOriginNamedEnumerator),
-    {%  endif %}
-    {%  if interface.has_cross_origin_indexed_getter %}
+    {%   endif %}
+    {%   if interface.has_cross_origin_indexed_getter %}
     reinterpret_cast<intptr_t>({{v8_class}}::CrossOriginIndexedGetter),
-    {%  endif %}
-    {%  if interface.has_security_check %}
+    {%   endif %}
+    {%   if interface.has_security_check %}
     reinterpret_cast<intptr_t>({{v8_class}}::SecurityCheck),
     reinterpret_cast<intptr_t>(&{{v8_class}}::wrapper_type_info),
     {%  endif %}
     {# Other properties #}
-    {%  if interface.has_constructor_callback %}
+    {%   if interface.has_constructor_callback %}
     reinterpret_cast<intptr_t>({{interface.internal_namespace}}::ConstructorCallback),
-    {%  endif %}
-    {%  if interface.named_property_getter %}
+    {%   endif %}
+    {%   if interface.named_property_getter %}
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertyGetterCallback),
-    {%  endif %}
-    {%-  if interface.named_property_setter %}
+    {%   endif %}
+    {%   if interface.named_property_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertySetterCallback),
-    {%  endif %}
-    {%-  if interface.named_property_deleter %}
+    {%   endif %}
+    {%   if interface.named_property_deleter %}
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertyDeleterCallback),
-    {%  endif %}
-    {%-  if interface.named_property_getter and interface.named_property_getter.is_enumerable %}
+    {%   endif %}
+    {%   if interface.named_property_getter and interface.named_property_getter.is_enumerable %}
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertyQueryCallback),
     reinterpret_cast<intptr_t>({{v8_class}}::NamedPropertyEnumeratorCallback),
-    {%  endif %}
-    {%-  if interface.indexed_property_getter %}
+    {%   endif %}
+    {%   if interface.indexed_property_getter %}
     reinterpret_cast<intptr_t>({{v8_class}}::IndexedPropertyGetterCallback),
     reinterpret_cast<intptr_t>({{v8_class}}::IndexedPropertyDefinerCallback),
     reinterpret_cast<intptr_t>({{v8_class}}::IndexedPropertyDescriptorCallback),
-    {%  endif %}
-    {%-  if interface.indexed_property_getter or interface.named_property_setter %}
+    {%   endif %}
+    {%   if interface.indexed_property_getter or interface.named_property_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::IndexedPropertySetterCallback),
-    {%  endif %}
-    {%-  if interface.indexed_property_deleter %}
+    {%   endif %}
+    {%   if interface.indexed_property_deleter %}
     reinterpret_cast<intptr_t>({{v8_class}}::IndexedPropertyDeleterCallback),
-    {%  endif %}
+    {%   endif %}
     {%   if interface.has_security_check_function %}
     reinterpret_cast<intptr_t>({{v8_class}}::SecurityCheck),
-    {%-  endif %}
-    {% endif %}{# not is_array_buffer_or_view #}
+    {%   endif %}
     {% endfor %}{# interfaces #}
     reinterpret_cast<intptr_t>(V8ObjectConstructor::IsValidConstructorMode),
 #endif  // USE_V8_CONTEXT_SNAPSHOT
     0  // terminate with a null
   };
 
-  return reference_table;
+  return kReferenceTable;
 }
 
 }  // namespace blink
