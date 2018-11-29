@@ -74,7 +74,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
                   ->RootLayer()
                   ->children()[0]
                   .get()
-            : GetLayoutView().Layer()->GraphicsLayerBacking()->ContentLayer();
+            : GetLayoutView().Layer()->GraphicsLayerBacking()->CcLayer();
     return cc_layer->GetLayerClientForTesting()
         ->TakeDebugInfo(cc_layer)
         ->ToString();
