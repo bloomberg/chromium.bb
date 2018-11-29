@@ -14,13 +14,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -131,8 +131,8 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterNetworkChange) {
 
 class MockChromeSigninClient : public ChromeSigninClient {
  public:
-  MockChromeSigninClient(Profile* profile, SigninErrorController* controller)
-      : ChromeSigninClient(profile, controller) {}
+  explicit MockChromeSigninClient(Profile* profile)
+      : ChromeSigninClient(profile) {}
 
   MOCK_METHOD1(ShowUserManager, void(const base::FilePath&));
   MOCK_METHOD1(LockForceSigninProfile, void(const base::FilePath&));
@@ -177,9 +177,9 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   }
 
   void CreateClient(Profile* profile) {
+    client_.reset(new MockChromeSigninClient(profile));
     SigninErrorController* controller = new SigninErrorController(
         SigninErrorController::AccountMode::ANY_ACCOUNT);
-    client_.reset(new MockChromeSigninClient(profile, controller));
     fake_controller_.reset(controller);
   }
 

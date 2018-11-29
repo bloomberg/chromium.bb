@@ -38,9 +38,6 @@ class TestSigninClient : public SigninClient {
   // once there is a unit test that requires it.
   PrefService* GetPrefs() override;
 
-  // Does nothing.
-  void OnSignedOut() override;
-
   // Trace that this was called.
   void PostSignedIn(const std::string& account_id,
                     const std::string& username,

@@ -94,21 +94,16 @@ SigninClient::SignoutDecision IsSignoutAllowed(
 
 }  // namespace
 
-ChromeSigninClient::ChromeSigninClient(
-    Profile* profile,
-    SigninErrorController* signin_error_controller)
+ChromeSigninClient::ChromeSigninClient(Profile* profile)
     : OAuth2TokenService::Consumer("chrome_signin_client"),
       profile_(profile),
-      signin_error_controller_(signin_error_controller),
       weak_ptr_factory_(this) {
-  signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 #endif
 }
 
 ChromeSigninClient::~ChromeSigninClient() {
-  signin_error_controller_->RemoveObserver(this);
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 #endif
@@ -127,22 +122,6 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
-
-void ChromeSigninClient::OnSignedOut() {
-  ProfileAttributesEntry* entry;
-  bool has_entry = g_browser_process->profile_manager()->
-      GetProfileAttributesStorage().
-      GetProfileAttributesWithPath(profile_->GetPath(), &entry);
-
-  // If sign out occurs because Sync setup was in progress and the Profile got
-  // deleted, then the profile's no longer in the ProfileAttributesStorage.
-  if (!has_entry)
-    return;
-
-  entry->SetLocalAuthCredentials(std::string());
-  entry->SetAuthInfo(std::string(), base::string16());
-  entry->SetIsSigninRequired(false);
-}
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeSigninClient::GetURLLoaderFactory() {
@@ -189,19 +168,6 @@ void ChromeSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->RemoveObserver(observer);
-}
-
-void ChromeSigninClient::OnSignedIn(const std::string& account_id,
-                                    const std::string& gaia_id,
-                                    const std::string& username,
-                                    const std::string& password) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesEntry* entry;
-  if (profile_manager->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    entry->SetAuthInfo(gaia_id, base::UTF8ToUTF16(username));
-    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
-  }
 }
 
 void ChromeSigninClient::PostSignedIn(const std::string& account_id,
@@ -259,21 +225,6 @@ void ChromeSigninClient::PreSignOut(
     std::move(on_signout_decision_reached_)
         .Run(IsSignoutAllowed(profile_, signout_source_metric));
   }
-}
-
-void ChromeSigninClient::OnErrorChanged() {
-  // Some tests don't have a ProfileManager.
-  if (g_browser_process->profile_manager() == nullptr)
-    return;
-
-  ProfileAttributesEntry* entry;
-
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    return;
-  }
-
-  entry->SetIsAuthError(signin_error_controller_->HasError());
 }
 
 void ChromeSigninClient::OnGetTokenInfoResponse(

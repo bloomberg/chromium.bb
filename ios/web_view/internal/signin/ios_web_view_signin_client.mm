@@ -36,8 +36,6 @@ void IOSWebViewSigninClient::Shutdown() {
   network_callback_helper_.reset();
 }
 
-void IOSWebViewSigninClient::OnSignedOut() {}
-
 std::string IOSWebViewSigninClient::GetProductVersion() {
   // TODO(crbug.com/768689): Implement this method with appropriate values.
   return "";

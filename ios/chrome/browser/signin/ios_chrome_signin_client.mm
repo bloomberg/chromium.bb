@@ -25,20 +25,16 @@
 
 IOSChromeSigninClient::IOSChromeSigninClient(
     ios::ChromeBrowserState* browser_state,
-    SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map)
     : network_callback_helper_(
           std::make_unique<WaitForNetworkCallbackHelper>()),
       browser_state_(browser_state),
-      signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
       host_content_settings_map_(host_content_settings_map) {
-  signin_error_controller_->AddObserver(this);
 }
 
 IOSChromeSigninClient::~IOSChromeSigninClient() {
-  signin_error_controller_->RemoveObserver(this);
 }
 
 void IOSChromeSigninClient::Shutdown() {
@@ -55,38 +51,6 @@ base::Time IOSChromeSigninClient::GetInstallDate() {
 // If version information is unavailable, returns "invalid."
 std::string IOSChromeSigninClient::GetProductVersion() {
   return GetVersionString();
-}
-
-void IOSChromeSigninClient::OnSignedIn(const std::string& account_id,
-                                       const std::string& gaia_id,
-                                       const std::string& username,
-                                       const std::string& password) {
-  ios::ChromeBrowserStateManager* browser_state_manager =
-      GetApplicationContext()->GetChromeBrowserStateManager();
-  BrowserStateInfoCache* cache =
-      browser_state_manager->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(
-      browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
-  if (index != std::string::npos) {
-    cache->SetAuthInfoOfBrowserStateAtIndex(index, gaia_id,
-                                            base::UTF8ToUTF16(username));
-  }
-}
-
-void IOSChromeSigninClient::OnSignedOut() {
-  BrowserStateInfoCache* cache = GetApplicationContext()
-                                     ->GetChromeBrowserStateManager()
-                                     ->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(
-      browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
-
-  // If sign out occurs because Sync setup was in progress and the browser state
-  // got deleted, then it is no longer in the cache.
-  if (index == std::string::npos)
-    return;
-
-  cache->SetAuthInfoOfBrowserStateAtIndex(index, std::string(),
-                                          base::string16());
 }
 
 PrefService* IOSChromeSigninClient::GetPrefs() {
@@ -138,17 +102,4 @@ void IOSChromeSigninClient::PreGaiaLogout(base::OnceClosure callback) {
   AccountConsistencyService* accountConsistencyService =
       ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state_);
   accountConsistencyService->RemoveChromeConnectedCookies(std::move(callback));
-}
-
-void IOSChromeSigninClient::OnErrorChanged() {
-  BrowserStateInfoCache* cache = GetApplicationContext()
-                                     ->GetChromeBrowserStateManager()
-                                     ->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(
-      browser_state_->GetOriginalChromeBrowserState()->GetStatePath());
-  if (index == std::string::npos)
-    return;
-
-  cache->SetBrowserStateIsAuthErrorAtIndex(
-      index, signin_error_controller_->HasError());
 }

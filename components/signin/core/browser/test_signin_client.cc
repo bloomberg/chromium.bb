@@ -67,8 +67,6 @@ void FakeCookieManager::SetCanonicalCookie(
   std::move(callback).Run(false);
 }
 
-void TestSigninClient::OnSignedOut() {}
-
 void TestSigninClient::PostSignedIn(const std::string& account_id,
                   const std::string& username,
                   const std::string& password) {
