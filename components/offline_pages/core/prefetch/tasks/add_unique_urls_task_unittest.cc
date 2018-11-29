@@ -12,12 +12,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -39,11 +41,19 @@ const base::string16 kTestTitle4 = base::ASCIIToUTF16("Title 4");
 
 class AddUniqueUrlsTaskTest : public PrefetchTaskTestBase {
  public:
-  AddUniqueUrlsTaskTest();
+  AddUniqueUrlsTaskTest() = default;
   ~AddUniqueUrlsTaskTest() override = default;
 
   // Returns all items stored in a map keyed with client id.
-  std::map<std::string, PrefetchItem> GetAllItems();
+  std::map<std::string, PrefetchItem> GetAllItems() {
+    std::set<PrefetchItem> set;
+    store_util()->GetAllItems(&set);
+
+    std::map<std::string, PrefetchItem> map;
+    for (const auto& item : set)
+      map[item.client_id.id] = item;
+    return map;
+  }
 
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
 
@@ -51,17 +61,6 @@ class AddUniqueUrlsTaskTest : public PrefetchTaskTestBase {
   TestPrefetchDispatcher dispatcher_;
 };
 
-AddUniqueUrlsTaskTest::AddUniqueUrlsTaskTest() {}
-
-std::map<std::string, PrefetchItem> AddUniqueUrlsTaskTest::GetAllItems() {
-  std::set<PrefetchItem> set;
-  store_util()->GetAllItems(&set);
-
-  std::map<std::string, PrefetchItem> map;
-  for (const auto& item : set)
-    map[item.client_id.id] = item;
-  return map;
-}
 
 TEST_F(AddUniqueUrlsTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
@@ -113,17 +112,24 @@ TEST_F(AddUniqueUrlsTaskTest, SingleDuplicateUrlNotAdded) {
 }
 
 TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
+  TestScopedOfflineClock clock;
   std::vector<PrefetchURL> urls;
   urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
   urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
+  std::map<std::string, PrefetchItem> items_before = GetAllItems();
 
-  urls.clear();
-  // This PrefetchURL has a duplicate URL, should not be added.
-  urls.push_back(PrefetchURL{kClientId4, kTestURL1, kTestTitle4});
-  urls.push_back(PrefetchURL{kClientId3, kTestURL3, kTestTitle3});
+  // Advance time to verify that timestamp of kClientId1 is updated on the next
+  // task execution.
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+
+  urls = {
+      // This PrefetchURL has a duplicate URL, should not be added.
+      {kClientId4, kTestURL1, kTestTitle4},
+      {kClientId3, kTestURL3, kTestTitle3},
+  };
 
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
@@ -143,6 +149,12 @@ TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
   EXPECT_EQ(kTestURL3, items[kClientId3].url);
   EXPECT_EQ(kTestNamespace, items[kClientId3].client_id.name_space);
   EXPECT_EQ(kTestTitle3, items[kClientId3].title);
+
+  // Although kClientId4 was not inserted, it should have resulted in updating
+  // kClientId1's timestamp.
+  EXPECT_GT(items[kClientId1].creation_time,
+            items_before[kClientId1].creation_time);
+  EXPECT_EQ(items[kClientId1].creation_time, items[kClientId1].freshness_time);
 }
 
 TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
@@ -158,10 +170,11 @@ TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
   EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, urls[0].url));
   EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, urls[1].url));
 
-  urls.clear();
-  urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
-  urls.push_back(PrefetchURL{kClientId3, kTestURL3, kTestTitle3});
-  urls.push_back(PrefetchURL{kClientId4, kTestURL4, kTestTitle4});
+  urls = {
+      {kClientId1, kTestURL1, kTestTitle1},
+      {kClientId3, kTestURL3, kTestTitle3},
+      {kClientId4, kTestURL4, kTestTitle4},
+  };
   // ID-1 is expected to stay in zombie state.
   // ID-2 is expected to be removed, because it is in zombie state.
   // ID-3 is still requested, so it is ignored.
