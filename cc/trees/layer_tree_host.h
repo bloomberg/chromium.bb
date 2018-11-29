@@ -333,6 +333,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return viewport_layers_.outer_viewport_scroll.get();
   }
 
+  // Counterpart of ViewportLayers for CompositeAfterPaint which doesn't create
+  // viewport layers.
+  struct ViewportPropertyIds {
+    int page_scale_transform = TransformTree::kInvalidNodeId;
+    // TODO(crbug.com/909750): Switch other usages of viewport layers to
+    // property ids for CompositeAfterPaint.
+  };
+
+  void RegisterViewportPropertyIds(const ViewportPropertyIds&);
+
   // Sets or gets the position of touch handles for a text selection. These are
   // submitted to the display compositor along with the Layer tree's contents
   // allowing it to present the selection handles. This is done because the
@@ -733,6 +743,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   scoped_refptr<Layer> root_layer_;
 
   ViewportLayers viewport_layers_;
+  // For CompositeAfterPaint.
+  ViewportPropertyIds viewport_property_ids_;
 
   float top_controls_height_ = 0.f;
   float top_controls_shown_ratio_ = 0.f;

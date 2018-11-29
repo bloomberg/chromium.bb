@@ -286,6 +286,11 @@ class CC_EXPORT LayerTreeImpl {
         const_cast<const LayerTreeImpl*>(this)->OuterViewportScrollNode());
   }
 
+  void set_viewport_property_ids(
+      const LayerTreeHost::ViewportPropertyIds& ids) {
+    viewport_property_ids_ = ids;
+  }
+
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
@@ -648,6 +653,7 @@ class CC_EXPORT LayerTreeImpl {
   int last_scrolled_scroll_node_index_;
 
   ViewportLayerIds viewport_layer_ids_;
+  LayerTreeHost::ViewportPropertyIds viewport_property_ids_;
 
   LayerSelection selection_;
 

@@ -290,7 +290,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   return id;
 }
 
-void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
+int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
     const TransformPaintPropertyNode* node) {
   int id = EnsureCompositorTransformNode(node);
   DCHECK(GetTransformTree().Node(id));
@@ -303,6 +303,8 @@ void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   compositor_node.post_local.matrix() = compositor_node.local.matrix();
   compositor_node.pre_local.matrix().setIdentity();
   compositor_node.local.matrix().setIdentity();
+
+  return id;
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(

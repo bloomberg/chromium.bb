@@ -2935,7 +2935,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
-      frame_->GetPage()->GetVisualViewport().GetPageScaleNode());
+      page->GetVisualViewport().GetPageScaleNode());
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(

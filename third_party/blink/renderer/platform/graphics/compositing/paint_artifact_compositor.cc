@@ -780,13 +780,14 @@ void PaintArtifactCompositor::Update(
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(*paint_artifact, pending_layers);
 
-  // The page scale layer would create this below but we need to use the
-  // special EnsureCompositorPageScaleTransformNode method since the transform
-  // created in a different way so we call it here.
+  cc::LayerTreeHost::ViewportPropertyIds viewport_property_ids;
   if (viewport_scale_node) {
-    property_tree_manager.EnsureCompositorPageScaleTransformNode(
-        viewport_scale_node);
+    viewport_property_ids.page_scale_transform =
+        property_tree_manager.EnsureCompositorPageScaleTransformNode(
+            viewport_scale_node);
   }
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    host->RegisterViewportPropertyIds(viewport_property_ids);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());
