@@ -31,7 +31,8 @@ const KEYCODES = {
  * @const
  */
 const IDS = {
-  MV_TILES: 'mv-tiles',  // Most Visited tiles container.
+  MOST_VISITED: 'most-visited',  // Container for all tilesets.
+  MV_TILES: 'mv-tiles',          // Most Visited tiles container.
 };
 
 
@@ -45,13 +46,11 @@ const CLASSES = {
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
   REORDERING: 'reordering',  // Applied while we are reordering.
   // Material Design classes.
-  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   MD_EMPTY_TILE: 'md-empty-tile',
   MD_FALLBACK_BACKGROUND: 'md-fallback-background',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_FAVICON: 'md-favicon',
   MD_ICON: 'md-icon',
-  MD_ICON_BACKGROUND: 'md-icon-background',
   MD_ADD_ICON: 'md-add-icon',
   MD_ADD_BACKGROUND: 'md-add-background',
   MD_MENU: 'md-menu',
@@ -153,13 +152,6 @@ const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
 
 
 /**
- * Number of lines to display in titles.
- * @type {number}
- */
-var NUM_TITLE_LINES = 1;
-
-
-/**
  * The origin of this request, i.e. 'https://www.google.TLD' for the remote NTP,
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
@@ -213,13 +205,6 @@ let reordering = false;
  * @type {?Element}
  */
 let elementToReorder = null;
-
-
-/**
- * True if Material Design styles should be applied.
- * @type {boolean}
- */
-let isMDEnabled = false;
 
 
 /**
@@ -384,10 +369,10 @@ var focusTileMenu = function(info) {
 
 
 /**
- * Removes all old instances of #mv-tiles that are pending for deletion.
+ * Removes all old instances of |IDS.MV_TILES| that are pending for deletion.
  */
 var removeAllOldTiles = function() {
-  var parent = document.querySelector('#most-visited');
+  var parent = document.querySelector('#' + IDS.MOST_VISITED);
   var oldList = parent.querySelectorAll('.mv-tiles-old');
   for (var i = 0; i < oldList.length; ++i) {
     parent.removeChild(oldList[i]);
@@ -416,19 +401,11 @@ var swapInNewTiles = function() {
     tiles.appendChild(renderMaterialDesignTile(data));
   }
 
-  // Create empty tiles until we have |maxNumTiles|. This is not required for
-  // the Material Design style tiles.
-  if (!isMDEnabled) {
-    while (cur.childNodes.length < maxNumTiles) {
-      addTile({});
-    }
-  }
-
-  var parent = document.querySelector('#most-visited');
+  var parent = document.querySelector('#' + IDS.MOST_VISITED);
 
   // Only fade in the new tiles if there were tiles before.
   var fadeIn = false;
-  var old = parent.querySelector('#mv-tiles');
+  var old = parent.querySelector('#' + IDS.MV_TILES);
   if (old) {
     fadeIn = true;
     // Mark old tile DIV for removal after the transition animation is done.
@@ -443,20 +420,18 @@ var swapInNewTiles = function() {
   }
 
   // Add new tileset.
-  cur.id = 'mv-tiles';
+  cur.id = IDS.MV_TILES;
   parent.appendChild(cur);
 
-  // If this is Material Design, re-balance the tiles if there are more than
-  // |MD_MAX_TILES_PER_ROW| in order to make even rows.
-  if (isMDEnabled) {
-    if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
-      cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
-          Math.ceil(cur.childNodes.length / 2) + ')';
-    }
-
-    // Prevent keyboard navigation to tiles that are not visible.
-    updateTileVisibility();
+  // Re-balance the tiles if there are more than |MD_MAX_TILES_PER_ROW| in order
+  // to make even rows.
+  if (cur.childNodes.length > MD_MAX_TILES_PER_ROW) {
+    cur.style.maxWidth = 'calc(var(--md-tile-width) * ' +
+        Math.ceil(cur.childNodes.length / 2) + ')';
   }
+
+  // Prevent keyboard navigation to tiles that are not visible.
+  updateTileVisibility();
 
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
@@ -476,8 +451,8 @@ var swapInNewTiles = function() {
  * navigation.
  */
 function updateTileVisibility() {
-  const allTiles =
-      document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE_CONTAINER);
+  const allTiles = document.querySelectorAll(
+      '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
   if (allTiles.length === 0)
     return;
 
@@ -522,8 +497,7 @@ var addTile = function(args) {
  * @param {Element} tile DOM node of the tile we want to remove.
  */
 var blacklistTile = function(tile) {
-  let tid = isMDEnabled ? Number(tile.firstChild.getAttribute('data-tid')) :
-                          Number(tile.getAttribute('data-tid'));
+  let tid = Number(tile.firstChild.getAttribute('data-tid'));
 
   if (isCustomLinksEnabled) {
     chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(tid);
@@ -656,162 +630,7 @@ function setupReorder(tile) {
  *     empty tile. isAddButton can only be set if custom links is enabled.
  */
 var renderTile = function(data) {
-  if (isMDEnabled) {
-    return renderMaterialDesignTile(data);
-  }
-  return renderMostVisitedTile(data);
-};
-
-
-/**
- * @param {object} data Object containing rid, url, title, favicon, thumbnail.
- *     data is null if you want to construct an empty tile.
- * @return {Element}
- */
-var renderMostVisitedTile = function(data) {
-  var tile = document.createElement('a');
-
-  if (data == null) {
-    tile.className = 'mv-empty-tile';
-    return tile;
-  }
-
-  // The tile will be appended to tiles.
-  var position = tiles.children.length;
-
-  // This is set in the load/error event for the thumbnail image.
-  var tileType = TileVisualType.NONE;
-
-  tile.className = 'mv-tile';
-  tile.setAttribute('data-tid', data.tid);
-
-  if (utils.isSchemeAllowed(data.url)) {
-    tile.href = data.url;
-  }
-  tile.setAttribute('aria-label', data.title);
-  tile.title = data.title;
-
-  tile.addEventListener('click', function(ev) {
-    logMostVisitedNavigation(
-        position, data.tileTitleSource, data.tileSource, tileType,
-        data.dataGenerationTime);
-  });
-
-  tile.addEventListener('keydown', function(event) {
-    if (event.keyCode === KEYCODES.DELETE ||
-        event.keyCode === KEYCODES.BACKSPACE) {
-      event.preventDefault();
-      event.stopPropagation();
-      blacklistTile(this);
-    } else if (
-        event.keyCode === KEYCODES.ENTER|| event.keyCode === KEYCODES.SPACE) {
-      event.preventDefault();
-      this.click();
-    } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
-      // specify the direction of movement
-      var inArrowDirection = function(origin, target) {
-        return (event.keyCode === KEYCODES.LEFT &&
-                origin.offsetTop === target.offsetTop &&
-                origin.offsetLeft > target.offsetLeft) ||
-            (event.keyCode === KEYCODES.UP &&
-             origin.offsetTop > target.offsetTop &&
-             origin.offsetLeft === target.offsetLeft) ||
-            (event.keyCode === KEYCODES.RIGHT &&
-             origin.offsetTop === target.offsetTop &&
-             origin.offsetLeft < target.offsetLeft) ||
-            (event.keyCode === KEYCODES.DOWN &&
-             origin.offsetTop < target.offsetTop &&
-             origin.offsetLeft === target.offsetLeft);
-      };
-
-      var nonEmptyTiles = document.querySelectorAll('#mv-tiles .mv-tile');
-      var nextTile = null;
-      // Find the closest tile in the appropriate direction.
-      for (var i = 0; i < nonEmptyTiles.length; i++) {
-        if (inArrowDirection(this, nonEmptyTiles[i]) &&
-            (!nextTile || inArrowDirection(nonEmptyTiles[i], nextTile))) {
-          nextTile = nonEmptyTiles[i];
-        }
-      }
-      if (nextTile) {
-        nextTile.focus();
-      }
-    }
-  });
-
-  var favicon = document.createElement('div');
-  favicon.className = 'mv-favicon';
-  var fi = document.createElement('img');
-  fi.src = data.faviconUrl;
-  // Set title and alt to empty so screen readers won't say the image name.
-  fi.title = '';
-  fi.alt = '';
-  loadedCounter += 1;
-  fi.addEventListener('load', countLoad);
-  fi.addEventListener('error', countLoad);
-  fi.addEventListener('error', function(ev) {
-    favicon.classList.add(CLASSES.FAILED_FAVICON);
-  });
-  favicon.appendChild(fi);
-  tile.appendChild(favicon);
-
-  var title = document.createElement('div');
-  title.className = 'mv-title';
-  title.innerText = data.title;
-  title.style.direction = data.direction || 'ltr';
-  if (NUM_TITLE_LINES > 1) {
-    title.classList.add('multiline');
-  }
-  tile.appendChild(title);
-
-  var thumb = document.createElement('div');
-  thumb.className = 'mv-thumb';
-  var img = document.createElement('img');
-  img.title = data.title;
-  img.src = data.thumbnailUrl;
-  loadedCounter += 1;
-  img.addEventListener('load', function(ev) {
-    // Store the type for a potential later navigation.
-    tileType = TileVisualType.THUMBNAIL;
-    logMostVisitedImpression(
-        position, data.tileTitleSource, data.tileSource, tileType,
-        data.dataGenerationTime);
-    // Note: It's important to call countLoad last, because that might emit the
-    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
-    countLoad();
-  });
-  img.addEventListener('error', function(ev) {
-    thumb.classList.add('failed-img');
-    thumb.removeChild(img);
-    // Store the type for a potential later navigation.
-    tileType = TileVisualType.THUMBNAIL_FAILED;
-    logMostVisitedImpression(
-        position, data.tileTitleSource, data.tileSource, tileType,
-        data.dataGenerationTime);
-    // Note: It's important to call countLoad last, because that might emit the
-    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
-    countLoad();
-  });
-  thumb.appendChild(img);
-  tile.appendChild(thumb);
-
-  var mvx = document.createElement('button');
-  mvx.className = 'mv-x';
-  mvx.title = queryArgs['removeTooltip'] || '';
-  mvx.addEventListener('click', function(ev) {
-    removeAllOldTiles();
-    blacklistTile(tile);
-    ev.preventDefault();
-    ev.stopPropagation();
-  });
-  // Don't allow the event to bubble out to the containing tile, as that would
-  // trigger navigation to the tile URL.
-  mvx.addEventListener('keydown', function(event) {
-    event.stopPropagation();
-  });
-  tile.appendChild(mvx);
-
-  return tile;
+  return renderMaterialDesignTile(data);
 };
 
 
@@ -870,10 +689,12 @@ function renderMaterialDesignTile(data) {
       event.preventDefault();
       this.click();
     } else if (event.keyCode === KEYCODES.LEFT) {
-      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+      const tiles = document.querySelectorAll(
+          '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE);
       tiles[Math.max(Number(this.getAttribute('data-pos')) - 1, 0)].focus();
     } else if (event.keyCode === KEYCODES.RIGHT) {
-      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+      const tiles = document.querySelectorAll(
+          '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE);
       tiles[Math.min(
                 Number(this.getAttribute('data-pos')) + 1, tiles.length - 1)]
           .focus();
@@ -1031,22 +852,10 @@ var init = function() {
 
   document.title = queryArgs['title'];
 
-  if ('ntl' in queryArgs) {
-    var ntl = parseInt(queryArgs['ntl'], 10);
-    if (isFinite(ntl))
-      NUM_TITLE_LINES = ntl;
-  }
-
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {
     var html = document.querySelector('html');
     html.dir = 'rtl';
-  }
-
-  // Enable Material Design.
-  if (queryArgs['enableMD'] == '1') {
-    isMDEnabled = true;
-    document.body.classList.add(CLASSES.MATERIAL_DESIGN);
   }
 
   // Enable custom links.
