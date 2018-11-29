@@ -1,8 +1,8 @@
 # Getting Started with libFuzzer in Chromium
 
 *** note
-**Prerequisites:** libFuzzer in Chromium is supported on Linux, Mac, and Windows
-only.
+**Prerequisites:** libFuzzer in Chromium is supported on Linux, Chrome OS, Mac,
+and Windows.
 ***
 
 This document will walk you through:
@@ -24,6 +24,8 @@ for speed, coverage and other parameters.
 # AddressSanitizer is the default config we recommend testing with.
 # Linux:
 tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan' out/libfuzzer
+# Chrome OS:
+tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Chrome OS ASan' out/libfuzzer
 # Mac:
 tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Mac ASan' out/libfuzzer
 # Windows:

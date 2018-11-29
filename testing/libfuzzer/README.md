@@ -14,8 +14,8 @@ LibFuzzer is an in-process coverage-driven evolutionary fuzzing engine. It helps
 engineers to uncover potential security & stability problems.
 
 *** note
-**Requirements:** libFuzzer in Chromium is supported with Linux, Mac, and
-Windows only.
+**Requirements:** libFuzzer in Chromium is supported with Linux, Chrome OS, Mac,
+and Windows.
 ***
 
 ## Integration Status
@@ -40,6 +40,8 @@ libFuzzer.
   and reported by ClusterFuzz.
 * [Reproducing on Linux, Mac, and Android] describes how to reproduce bugs
   reported by ClusterFuzz on Linux, Mac, and Android.
+* [Fuzzing on Chrome OS] describes how to write fuzzers for the non-browser
+  parts of Chrome OS.
 * [Reference] contains detailed references for different integration parts.
 
 ## Trophies
@@ -73,3 +75,4 @@ libFuzzer.
 [crbug.com/539572]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
 [libFuzzer]: http://llvm.org/docs/LibFuzzer.html
 [libFuzzer Infrastructure Bugs]: https://bugs.chromium.org/p/chromium/issues/list?q=label:LibFuzzer-Infra
+[Fuzzing on Chrome OS]: https://chromium.googlesource.com/chromiumos/docs/+/master/fuzzing.md
