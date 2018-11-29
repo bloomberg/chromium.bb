@@ -96,7 +96,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
   if (type == DeepLinkType::kWhatsOnMyScreen) {
     // Explicitly call ShowUi() to set the correct Assistant entry point.
     // ShowUi() will no-op if UI is already shown.
-    assistant_controller_->ui_controller()->ShowUi(AssistantSource::kDeepLink);
+    assistant_controller_->ui_controller()->ShowUi(
+        AssistantEntryPoint::kDeepLink);
     StartScreenContextInteraction();
     return;
   }
@@ -118,7 +119,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
-  assistant_controller_->ui_controller()->ShowUi(AssistantSource::kDeepLink);
+  assistant_controller_->ui_controller()->ShowUi(
+      AssistantEntryPoint::kDeepLink);
   StartTextInteraction(query.value(), /*allow_tts=*/false);
 }
 
@@ -153,7 +155,8 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
 void AssistantInteractionController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   switch (new_visibility) {
     case AssistantVisibility::kClosed:
       // When the UI is closed we need to stop any active interaction. We also
@@ -172,7 +175,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      OnUiVisible(source);
+      OnUiVisible(entry_point.value());
       break;
   }
 }
@@ -270,7 +273,8 @@ void AssistantInteractionController::OnInteractionStarted(
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is
     // true, then it will be sure that Assistant is fired via OKG. ShowUi will
     // not update the Assistant entry point if the UI is already visible.
-    assistant_controller_->ui_controller()->ShowUi(AssistantSource::kHotword);
+    assistant_controller_->ui_controller()->ShowUi(
+        AssistantEntryPoint::kHotword);
   }
 
   model_.SetInteractionState(InteractionState::kActive);
@@ -565,14 +569,15 @@ void AssistantInteractionController::OnPendingResponseProcessed(bool success) {
   model_.FinalizePendingResponse();
 }
 
-void AssistantInteractionController::OnUiVisible(AssistantSource source) {
+void AssistantInteractionController::OnUiVisible(
+    AssistantEntryPoint entry_point) {
   DCHECK_EQ(AssistantVisibility::kVisible,
             assistant_controller_->ui_controller()->model()->visibility());
 
-  switch (source) {
-    case AssistantSource::kHotkey:
-    case AssistantSource::kLauncherSearchBox:
-    case AssistantSource::kLongPressLauncher: {
+  switch (entry_point) {
+    case AssistantEntryPoint::kHotkey:
+    case AssistantEntryPoint::kLauncherSearchBox:
+    case AssistantEntryPoint::kLongPressLauncher: {
       // When the user prefers it or when we are in tablet mode, launching
       // Assistant UI will immediately start a voice interaction.
       const bool launch_with_mic_open =
@@ -581,13 +586,13 @@ void AssistantInteractionController::OnUiVisible(AssistantSource source) {
         StartVoiceInteraction();
       break;
     }
-    case AssistantSource::kStylus:
+    case AssistantEntryPoint::kStylus:
       model_.SetInputModality(InputModality::kStylus);
       break;
-    case AssistantSource::kUnspecified:
-    case AssistantSource::kDeepLink:
-    case AssistantSource::kHotword:
-    case AssistantSource::kSetup:
+    case AssistantEntryPoint::kUnspecified:
+    case AssistantEntryPoint::kDeepLink:
+    case AssistantEntryPoint::kHotword:
+    case AssistantEntryPoint::kSetup:
       // No action necessary.
       break;
   }

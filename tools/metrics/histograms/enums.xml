@@ -1917,6 +1917,28 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="[80 to 100) (warmest)"/>
 </enum>
 
+<enum name="AssistantEntryPoint">
+  <int value="0" label="kUnspecified"/>
+  <int value="1" label="kDeepLink"/>
+  <int value="2" label="kHotkey"/>
+  <int value="3" label="kHotword"/>
+  <int value="4" label="kLauncherSearchBox"/>
+  <int value="5" label="kLongPressLauncher"/>
+  <int value="6" label="kSetup"/>
+  <int value="7" label="kStylus"/>
+</enum>
+
+<enum name="AssistantExitPoint">
+  <int value="0" label="kUnspecified"/>
+  <int value="1" label="kCloseButton"/>
+  <int value="2" label="kHotkey"/>
+  <int value="3" label="kNewBrowserTabFromServer"/>
+  <int value="4" label="kNewBrowserTabFromUser"/>
+  <int value="5" label="kOutsidePress"/>
+  <int value="6" label="kSetup"/>
+  <int value="7" label="kStylus"/>
+</enum>
+
 <enum name="AssistantGestureType">
   <int value="0" label="Not recognized"/>
   <int value="1" label="Horizontal stroke"/>
@@ -1936,17 +1958,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="GET_MORE_CONTINUED"/>
   <int value="10" label="READY_SCREEN_SHOWN"/>
   <int value="11" label="READY_SCREEN_CONTINUED"/>
-</enum>
-
-<enum name="AssistantSource">
-  <int value="0" label="kUnspecified"/>
-  <int value="1" label="kDeepLink"/>
-  <int value="2" label="kHotkey"/>
-  <int value="3" label="kHotword"/>
-  <int value="4" label="kLauncherSearchBox"/>
-  <int value="5" label="kLongPressLauncher"/>
-  <int value="6" label="kSetup"/>
-  <int value="7" label="kStylus"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">

@@ -145,7 +145,8 @@ void AssistantMiniView::OnResponseChanged(
 void AssistantMiniView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   if (!assistant::util::IsFinishingSession(new_visibility))
     return;
 

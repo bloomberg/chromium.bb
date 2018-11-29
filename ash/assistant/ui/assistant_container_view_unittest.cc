@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/assistant_container_view.h"
 
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/shell.h"
@@ -94,7 +96,7 @@ TEST_F(AssistantContainerViewTest, InitialAnchoring) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Show Assistant UI and grab a reference to our view under test.
-  ui_controller()->ShowUi(AssistantSource::kUnspecified);
+  ui_controller()->ShowUi(AssistantEntryPoint::kUnspecified);
   AssistantContainerView* view = ui_controller()->GetViewForTest();
 
   // We expect the view to appear in the work area where new windows will open.

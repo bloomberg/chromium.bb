@@ -57,7 +57,7 @@ void AssistantSetupController::StartOnboarding(bool relaunch) {
         [](AssistantController* assistant_controller, bool completed) {
           if (completed) {
             assistant_controller->ui_controller()->ShowUi(
-                AssistantSource::kSetup);
+                AssistantEntryPoint::kSetup);
           }
         },
         // AssistantController owns |assistant_setup_| so a raw pointer is safe.
@@ -67,7 +67,7 @@ void AssistantSetupController::StartOnboarding(bool relaunch) {
   }
 
   // Assistant UI should be hidden while the user onboards.
-  assistant_controller_->ui_controller()->HideUi(AssistantSource::kSetup);
+  assistant_controller_->ui_controller()->HideUi(AssistantExitPoint::kSetup);
 }
 
 }  // namespace ash

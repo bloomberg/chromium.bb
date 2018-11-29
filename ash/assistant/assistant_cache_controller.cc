@@ -95,7 +95,8 @@ void AssistantCacheController::OnAssistantControllerDestroying() {
 void AssistantCacheController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // When Assistant is finishing a session, we update our cache of conversation
   // starters so that they're fresh for the next launch.
   if (assistant::util::IsFinishingSession(new_visibility))

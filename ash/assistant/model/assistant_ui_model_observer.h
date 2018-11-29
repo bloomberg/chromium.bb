@@ -7,11 +7,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
-enum class AssistantSource;
+enum class AssistantEntryPoint;
+enum class AssistantExitPoint;
 enum class AssistantUiMode;
 enum class AssistantVisibility;
 
@@ -25,9 +27,11 @@ class AssistantUiModelObserver : public base::CheckedObserver {
   // Invoked when the UI visibility is changed from |old_visibility| to
   // |new_visibility|. The |source| of the visibility change event is provided
   // for interested observers.
-  virtual void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                                     AssistantVisibility old_visibility,
-                                     AssistantSource source) {}
+  virtual void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) {}
 
   // Invoked when the usable display work area is changed. Observers should
   // respond to this event by ensuring they are sized/positioned within the

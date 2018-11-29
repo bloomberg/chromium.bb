@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_ASSISTANT_UI_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -19,6 +20,7 @@
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_observer.h"
@@ -106,9 +108,11 @@ class ASH_EXPORT AssistantUiController
   void OnUrlOpened(const GURL& url, bool from_server) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                             AssistantVisibility old_visibility,
-                             AssistantSource source) override;
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardWorkspaceOccludedBoundsChanged(
@@ -121,10 +125,11 @@ class ASH_EXPORT AssistantUiController
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override;
 
-  void ShowUi(AssistantSource source);
-  void HideUi(AssistantSource source);
-  void CloseUi(AssistantSource source);
-  void ToggleUi(AssistantSource source);
+  void ShowUi(AssistantEntryPoint entry_point);
+  void HideUi(AssistantExitPoint exit_point);
+  void CloseUi(AssistantExitPoint exit_point);
+  void ToggleUi(base::Optional<AssistantEntryPoint> entry_point,
+                base::Optional<AssistantExitPoint> exit_point);
 
   AssistantContainerView* GetViewForTest();
 

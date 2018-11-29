@@ -7,16 +7,20 @@
 
 namespace ash {
 
-enum class AssistantSource;
+enum class AssistantEntryPoint;
+enum class AssistantExitPoint;
 
 namespace assistant {
 namespace util {
 
 // Increment number of queries fired for each entry point.
-void IncrementAssistantQueryCountForEntryPoint(AssistantSource entry_point);
+void IncrementAssistantQueryCountForEntryPoint(AssistantEntryPoint entry_point);
 
 // Record the entry point where Assistant UI becomes visible.
-void RecordAssistantEntryPoint(AssistantSource entry_point);
+void RecordAssistantEntryPoint(AssistantEntryPoint entry_point);
+
+// Record the exit point where Assistant UI becomes invisible.
+void RecordAssistantExitPoint(AssistantExitPoint exit_point);
 
 }  // namespace util
 }  // namespace assistant

@@ -707,7 +707,8 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
     Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
   } else {
     Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
-        AssistantSource::kHotkey);
+        /*entry_point=*/AssistantEntryPoint::kHotkey,
+        /*exit_point=*/AssistantExitPoint::kHotkey);
   }
 }
 
