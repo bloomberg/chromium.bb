@@ -832,4 +832,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestNoUserCodeFocus) {
   RunTest("testFocus", "web_view/no_internal_calls_to_user_code", false);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestClosedShadowRoot) {
+  RunTest("testClosedShadowRoot", "web_view/apitest");
+}
+
 }  // namespace extensions
