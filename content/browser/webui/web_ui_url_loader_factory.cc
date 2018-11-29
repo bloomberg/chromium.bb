@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -58,12 +57,9 @@ void CallOnError(network::mojom::URLLoaderClientPtrInfo client_info,
 void ReadData(scoped_refptr<network::ResourceResponse> headers,
               const ui::TemplateReplacements* replacements,
               bool gzipped,
-              const GURL& url,
               scoped_refptr<URLDataSourceImpl> data_source,
               network::mojom::URLLoaderClientPtrInfo client_info,
               scoped_refptr<base::RefCountedMemory> bytes) {
-  // TODO(jam): remove after https://crbug.com/891074 is fixed.
-  DEBUG_ALIAS_FOR_GURL(url_buf, url);
   if (!bytes) {
     CallOnError(std::move(client_info), net::ERR_FAILED);
     return;
@@ -131,7 +127,6 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
 void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
                    const ui::TemplateReplacements* replacements,
                    bool gzipped,
-                   const GURL& url,
                    scoped_refptr<URLDataSourceImpl> source,
                    network::mojom::URLLoaderClientPtrInfo client_info,
                    scoped_refptr<base::RefCountedMemory> bytes) {
@@ -142,7 +137,7 @@ void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
       {base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
       ->PostTask(FROM_HERE,
-                 base::BindOnce(ReadData, headers, replacements, gzipped, url,
+                 base::BindOnce(ReadData, headers, replacements, gzipped,
                                 source, std::move(client_info), bytes));
 }
 
@@ -198,7 +193,6 @@ void StartURLLoader(const network::ResourceRequest& request,
   // |replacements| is owned by |source| keep a reference to it in the callback.
   auto data_available_callback =
       base::Bind(DataAvailable, resource_response, replacements, gzipped,
-                 request.url,
                  base::RetainedRef(source), base::Passed(&client_info));
 
   // TODO(jam): once we only have this code path for WebUI, and not the
