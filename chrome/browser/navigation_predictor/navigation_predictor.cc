@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace {
 
@@ -112,9 +111,14 @@ NavigationPredictor::NavigationPredictor(
       prefetch_url_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kRecordAnchorMetricsVisible,
           "prefetch_url_score_threshold",
+          0)),
+      preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kRecordAnchorMetricsVisible,
+          "preconnect_origin_score_threshold",
           0)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_LE(0, preconnect_origin_score_threshold_);
   DCHECK_LE(0, prefetch_url_score_threshold_);
 
   if (render_frame_host != GetMainFrame(render_frame_host))
@@ -182,7 +186,7 @@ void NavigationPredictor::RecordActionAccuracyOnClick(
   static constexpr char histogram_name_non_dse[] =
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken";
 
-  if (!prefetch_url_) {
+  if (!prefetch_url_ && !preconnect_origin_) {
     base::UmaHistogramEnumeration(source_is_default_search_engine_page_
                                       ? histogram_name_dse
                                       : histogram_name_non_dse,
@@ -190,6 +194,26 @@ void NavigationPredictor::RecordActionAccuracyOnClick(
     return;
   }
 
+  // Exactly one action must have been taken.
+  DCHECK(prefetch_url_.has_value() != preconnect_origin_.has_value());
+
+  if (preconnect_origin_) {
+    if (url::Origin::Create(target_url) == preconnect_origin_) {
+      base::UmaHistogramEnumeration(
+          source_is_default_search_engine_page_ ? histogram_name_dse
+                                                : histogram_name_non_dse,
+          ActionAccuracy::kPreconnectActionClickToSameOrigin);
+      return;
+    }
+
+    base::UmaHistogramEnumeration(
+        source_is_default_search_engine_page_ ? histogram_name_dse
+                                              : histogram_name_non_dse,
+        ActionAccuracy::kPreconnectActionClickToDifferentOrigin);
+    return;
+  }
+
+  DCHECK(prefetch_url_);
   if (target_url == prefetch_url_.value()) {
     base::UmaHistogramEnumeration(
         source_is_default_search_engine_page_ ? histogram_name_dse
@@ -680,12 +704,23 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
           ? "NavigationPredictor.OnDSE.ActionTaken"
           : "NavigationPredictor.OnNonDSE.ActionTaken";
 
+  DCHECK(!preconnect_origin_.has_value());
   DCHECK(!prefetch_url_.has_value());
 
+  // Try prefetch first.
   prefetch_url_ = GetUrlToPrefetch(document_origin, sorted_navigation_scores);
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_origin.host(), prefetch_url_->host());
     base::UmaHistogramEnumeration(action_histogram_name, Action::kPrefetch);
+    return;
+  }
+
+  // Compute preconnect origin only if there is no valid prefetch URL.
+  preconnect_origin_ =
+      GetOriginToPreconnect(document_origin, sorted_navigation_scores);
+  if (preconnect_origin_.has_value()) {
+    DCHECK_EQ(document_origin.host(), preconnect_origin_->host());
+    base::UmaHistogramEnumeration(action_histogram_name, Action::kPreconnect);
     return;
   }
 
@@ -723,6 +758,84 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   if (sorted_navigation_scores[0]->score < prefetch_url_score_threshold_)
     return base::nullopt;
   return sorted_navigation_scores[0]->url;
+}
+
+base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
+    const url::Origin& document_origin,
+    const std::vector<std::unique_ptr<NavigationScore>>&
+        sorted_navigation_scores) const {
+  // On search engine results page, next navigation is likely to be a different
+  // origin. Currently, the preconnect is only allowed for same origins. Hence,
+  // preconnect is currently disabled on search engine results page.
+  if (source_is_default_search_engine_page_)
+    return base::nullopt;
+
+  // Compute preconnect score for each origins: Multiple anchor elements on
+  // the webpage may point to the same origin. The preconnect score for an
+  // origin is computed by taking sum of score of all anchor elements that
+  // point to that origin.
+  std::map<url::Origin, double> preconnect_score_by_origin_map;
+  for (const auto& navigation_score : sorted_navigation_scores) {
+    const url::Origin origin = url::Origin::Create(navigation_score->url);
+
+    auto iter = preconnect_score_by_origin_map.find(origin);
+    if (iter == preconnect_score_by_origin_map.end()) {
+      preconnect_score_by_origin_map[origin] = navigation_score->score;
+    } else {
+      double& existing_metric = iter->second;
+      existing_metric += navigation_score->score;
+    }
+  }
+
+  struct ScoreByOrigin {
+    url::Origin origin;
+    double score;
+
+    ScoreByOrigin(const url::Origin& origin, double score)
+        : origin(origin), score(score) {}
+  };
+
+  // |sorted_preconnect_scores| would contain preconnect scores of different
+  // origins sorted in descending order of the preconnect score.
+  std::vector<ScoreByOrigin> sorted_preconnect_scores;
+
+  // First copy all entries from |preconnect_score_by_origin_map| to
+  // |sorted_preconnect_scores|.
+  for (const auto& score_by_origin_map_entry : preconnect_score_by_origin_map) {
+    ScoreByOrigin entry(score_by_origin_map_entry.first,
+                        score_by_origin_map_entry.second);
+    sorted_preconnect_scores.push_back(entry);
+  }
+
+  if (sorted_preconnect_scores.empty())
+    return base::nullopt;
+
+  // Sort scores by the calculated preconnect score in descending order.
+  std::sort(sorted_preconnect_scores.begin(), sorted_preconnect_scores.end(),
+            [](const auto& a, const auto& b) { return a.score > b.score; });
+
+#if DCHECK_IS_ON()
+  // |sum_of_scores| must be close to the total score of 100.
+  double sum_of_scores = 0.0;
+  for (const auto& score_by_origin : sorted_preconnect_scores)
+    sum_of_scores += score_by_origin.score;
+  // Allow an error of 2.0. i.e., |sum_of_scores| is expected to be between 98
+  // and 102.
+  DCHECK_GE(2.0, std::abs(sum_of_scores - 100));
+#endif
+
+  // Connect to the origin with highest score provided the origin is same
+  // as the document origin.
+  if (sorted_preconnect_scores[0].origin != document_origin)
+    return base::nullopt;
+
+  // If the prediction score of the highest scoring origin is less than the
+  // threshold, then return.
+  if (sorted_preconnect_scores[0].score < preconnect_origin_score_threshold_) {
+    return base::nullopt;
+  }
+
+  return sorted_preconnect_scores[0].origin;
 }
 
 void NavigationPredictor::RecordMetricsOnLoad(
