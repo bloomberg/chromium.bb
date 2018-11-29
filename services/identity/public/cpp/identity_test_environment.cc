@@ -24,7 +24,8 @@ namespace identity {
 class IdentityManagerDependenciesOwner {
  public:
   IdentityManagerDependenciesOwner(
-      bool use_fake_url_loader_for_gaia_cookie_manager);
+      bool use_fake_url_loader_for_gaia_cookie_manager,
+      sync_preferences::TestingPrefServiceSyncable* pref_service);
   ~IdentityManagerDependenciesOwner();
 
   AccountTrackerService* account_tracker_service();
@@ -35,8 +36,15 @@ class IdentityManagerDependenciesOwner {
 
   FakeGaiaCookieManagerService* gaia_cookie_manager_service();
 
+  sync_preferences::TestingPrefServiceSyncable* pref_service();
+
  private:
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  // Depending on whether a |pref_service| instance is passed in
+  // the constructor, exactly one of these will be non-null.
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      owned_pref_service_;
+  sync_preferences::TestingPrefServiceSyncable* raw_pref_service_ = nullptr;
+
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
@@ -47,9 +55,16 @@ class IdentityManagerDependenciesOwner {
 };
 
 IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
-    bool use_fake_url_loader_for_gaia_cookie_manager)
-    : signin_client_(&pref_service_),
-      token_service_(&pref_service_),
+    bool use_fake_url_loader_for_gaia_cookie_manager,
+    sync_preferences::TestingPrefServiceSyncable* pref_service_param)
+    : owned_pref_service_(
+          pref_service_param
+              ? nullptr
+              : std::make_unique<
+                    sync_preferences::TestingPrefServiceSyncable>()),
+      raw_pref_service_(pref_service_param),
+      signin_client_(pref_service()),
+      token_service_(pref_service()),
 #if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_, &account_tracker_),
 #else
@@ -71,13 +86,13 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
           &token_service_,
           &signin_client_,
           use_fake_url_loader_for_gaia_cookie_manager) {
-  AccountTrackerService::RegisterPrefs(pref_service_.registry());
-  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
-  SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-  SigninManagerBase::RegisterPrefs(pref_service_.registry());
+  AccountTrackerService::RegisterPrefs(pref_service()->registry());
+  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service()->registry());
+  SigninManagerBase::RegisterProfilePrefs(pref_service()->registry());
+  SigninManagerBase::RegisterPrefs(pref_service()->registry());
 
-  account_tracker_.Initialize(&pref_service_, base::FilePath());
-  signin_manager_.Initialize(&pref_service_);
+  account_tracker_.Initialize(pref_service(), base::FilePath());
+  signin_manager_.Initialize(pref_service());
 }
 
 IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {}
@@ -101,15 +116,25 @@ IdentityManagerDependenciesOwner::gaia_cookie_manager_service() {
   return &gaia_cookie_manager_service_;
 }
 
+sync_preferences::TestingPrefServiceSyncable*
+IdentityManagerDependenciesOwner::pref_service() {
+  DCHECK(raw_pref_service_ || owned_pref_service_);
+  DCHECK(!(raw_pref_service_ && owned_pref_service_));
+
+  return raw_pref_service_ ? raw_pref_service_ : owned_pref_service_.get();
+}
+
 IdentityTestEnvironment::IdentityTestEnvironment(
-    bool use_fake_url_loader_for_gaia_cookie_manager)
+    bool use_fake_url_loader_for_gaia_cookie_manager,
+    sync_preferences::TestingPrefServiceSyncable* pref_service)
     : IdentityTestEnvironment(
           /*account_tracker_service=*/nullptr,
           /*token_service=*/nullptr,
           /*signin_manager=*/nullptr,
           /*gaia_cookie_manager_service=*/nullptr,
           std::make_unique<IdentityManagerDependenciesOwner>(
-              use_fake_url_loader_for_gaia_cookie_manager),
+              use_fake_url_loader_for_gaia_cookie_manager,
+              pref_service),
           /*identity_manager=*/nullptr) {}
 
 IdentityTestEnvironment::IdentityTestEnvironment(

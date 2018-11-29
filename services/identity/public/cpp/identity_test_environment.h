@@ -16,6 +16,10 @@
 class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 
+namespace sync_preferences {
+class TestingPrefServiceSyncable;
+}
+
 namespace identity {
 
 namespace {
@@ -46,8 +50,15 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // IdentityTestEnvironment is being introduced to incrementally convert
   // a test). In that case, use the below constructor and switch to this
   // constructor once the conversion is complete.
+  //
+  // Additionally, this constructor also takes an optional PrefService
+  // instance as parameter, which allows tests to move away from referencing
+  // IdentityManager's dependencies directly (namely AccountTrackerService,
+  // PO2TS, SigninManager and GaiaCookieManagerService), but still be able
+  // to tweak preferences on demand.
   IdentityTestEnvironment(
-      bool use_fake_url_loader_for_gaia_cookie_manager = false);
+      bool use_fake_url_loader_for_gaia_cookie_manager = false,
+      sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr);
 
   // Constructor that takes in instances of the dependencies of
   // IdentityManager and constructs an IdentityManager instance from those
