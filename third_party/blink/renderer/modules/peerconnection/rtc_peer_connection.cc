@@ -996,18 +996,49 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
   return nullptr;
 }
 
-bool RTCPeerConnection::ShouldShowComplexPlanBSdpWarning(
+base::Optional<ComplexSdpCategory> RTCPeerConnection::CheckForComplexSdp(
     const RTCSessionDescriptionInit* session_description_init) const {
-  if (sdp_semantics_specified_)
-    return false;
   if (!session_description_init->hasType() ||
       !session_description_init->hasSdp())
-    return false;
-  auto sdp_format = DeduceSdpFormat(session_description_init->type(),
-                                    session_description_init->sdp());
-  if (!sdp_format)
-    return false;
-  return *sdp_format == SdpFormat::kComplexPlanB;
+    return base::nullopt;
+
+  base::Optional<SdpFormat> sdp_format = DeduceSdpFormat(
+      session_description_init->type(), session_description_init->sdp());
+  if (!sdp_format) {
+    return sdp_semantics_specified_
+               ? ComplexSdpCategory::kErrorExplicitSemantics
+               : ComplexSdpCategory::kErrorImplicitSemantics;
+  }
+
+  if (*sdp_format == SdpFormat::kComplexPlanB) {
+    return sdp_semantics_specified_
+               ? ComplexSdpCategory::kPlanBExplicitSemantics
+               : ComplexSdpCategory::kPlanBImplicitSemantics;
+  } else if (*sdp_format == SdpFormat::kComplexUnifiedPlan) {
+    return sdp_semantics_specified_
+               ? ComplexSdpCategory::kUnifiedPlanExplicitSemantics
+               : ComplexSdpCategory::kUnifiedPlanImplicitSemantics;
+  }
+
+  return base::nullopt;
+}
+
+void RTCPeerConnection::MaybeWarnAboutUnsafeSdp(
+    const RTCSessionDescriptionInit* session_description_init) const {
+  base::Optional<ComplexSdpCategory> complex_sdp_category =
+      CheckForComplexSdp(session_description_init);
+  if (!complex_sdp_category)
+    return;
+
+  Document* document = To<Document>(GetExecutionContext());
+  RTCPeerConnectionController::From(*document).MaybeReportComplexSdp(
+      *complex_sdp_category);
+
+  if (*complex_sdp_category == ComplexSdpCategory::kPlanBImplicitSemantics) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
 }
 
 const CallSetupStateTracker& RTCPeerConnection::call_setup_state_tracker()
@@ -1137,11 +1168,7 @@ void RTCPeerConnection::ReportSetSdpUsage(
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init) {
-  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
-    Deprecation::CountDeprecation(
-        GetExecutionContext(),
-        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
-  }
+  MaybeWarnAboutUnsafeSdp(session_description_init);
   ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
                     session_description_init);
   String sdp;
@@ -1168,11 +1195,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
-    Deprecation::CountDeprecation(
-        GetExecutionContext(),
-        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
-  }
+  MaybeWarnAboutUnsafeSdp(session_description_init);
   ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
                     session_description_init);
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -1245,11 +1268,7 @@ RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init) {
-  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
-    Deprecation::CountDeprecation(
-        GetExecutionContext(),
-        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
-  }
+  MaybeWarnAboutUnsafeSdp(session_description_init);
   ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
                     session_description_init);
   if (signaling_state_ ==
@@ -1278,11 +1297,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
-    Deprecation::CountDeprecation(
-        GetExecutionContext(),
-        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
-  }
+  MaybeWarnAboutUnsafeSdp(session_description_init);
   ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
                     session_description_init);
   ExecutionContext* context = ExecutionContext::From(script_state);

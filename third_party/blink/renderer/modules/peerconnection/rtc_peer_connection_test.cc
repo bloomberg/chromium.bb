@@ -591,78 +591,76 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
   EXPECT_FALSE(pc->GetTrack(track_component));
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenPlanBSpecified) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "plan-b");
   RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
   sdp->setType("offer");
-  // It doesn't matter the SDP, never show a warning if sdpSemantics was
-  // specified at construction.
-  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
   sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanExplicitSemantics);
   sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBExplicitSemantics);
+  sdp->setSdp("invalid sdp");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorExplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenUnifiedPlanSpecified) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnifiedPlan) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "unified-plan");
   RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
   sdp->setType("offer");
-  // It doesn't matter the SDP, never show a warning if sdpSemantics was
-  // specified at construction.
-  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
   sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanExplicitSemantics);
   sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-}
-
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenInvalidSdp) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
-  sdp->setType("offer");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBExplicitSemantics);
   sdp->setSdp("invalid sdp");
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-}
-
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForSingleTracks) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
-  sdp->setType("offer");
-  // Neither Unified Plan or Plan B SDP should result in a warning if only a
-  // single track per m= section is used.
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorExplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
   sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
   sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningShownForComplexPlanB) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnspecified) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
   RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
   sdp->setType("offer");
   sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_TRUE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-}
-
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForComplexUnifiedPlan) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
-  sdp->setType("offer");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBImplicitSemantics);
   sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanImplicitSemantics);
+  sdp->setSdp("invalid sdp");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorImplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
 enum class AsyncOperationAction {

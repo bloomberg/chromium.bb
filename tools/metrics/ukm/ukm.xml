@@ -5634,6 +5634,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="WebRTC.ComplexSdp">
+  <owner>hbos@chromium.org</owner>
+  <owner>guidou@chromium.org</owner>
+  <summary>
+    Logged when an application uses complex SDP in a WebRTC PeerConnection or
+    experiences an error attempting to parse SDP. Such cases will result in
+    errors if the application assumes the wrong default SDP format. This is an
+    important concern during the transition of the default SDP format from Plan
+    B to Unified Plan.
+  </summary>
+  <metric name="Category">
+    <summary>
+      A value that represents how complex/unparsable SDP is used. The categories
+      are defined in blink::ComplexSdpCategory.
+    </summary>
+  </metric>
+</event>
+
 <event name="IOS.FindInPageSearchMatches">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
