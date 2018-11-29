@@ -21,7 +21,7 @@ PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
     Node* styled_node,
     const Vector<CSSPropertyID>& native_properties,
     const Vector<AtomicString>& custom_properties)
-    : StylePropertyMapReadOnly(), styled_node_(styled_node) {
+    : StylePropertyMapReadOnlyMainThread(), styled_node_(styled_node) {
   // NOTE: This may over-reserve as shorthand properties will get dropped from
   // being in the map.
   native_values_.ReserveCapacityForSize(native_properties.size());
@@ -128,7 +128,7 @@ void PrepopulatedComputedStylePropertyMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(styled_node_);
   visitor->Trace(native_values_);
   visitor->Trace(custom_values_);
-  StylePropertyMapReadOnly::Trace(visitor);
+  StylePropertyMapReadOnlyMainThread::Trace(visitor);
 }
 
 }  // namespace blink
