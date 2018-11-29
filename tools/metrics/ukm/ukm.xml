@@ -5677,6 +5677,13 @@ be describing additional metrics about the same event.
     <summary>
       True if there was a mismatch.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
