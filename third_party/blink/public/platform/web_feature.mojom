@@ -2092,6 +2092,8 @@ enum WebFeature {
   kWebKitUserModifyPlainTextEffective = 2640,
   kCSSAtRuleFontFeatureValues = 2641,
   kFlexboxSingleLineAlignContent = 2642,
+  kSignedExchangeInnerResponseInMainFrame = 2643,
+  kSignedExchangeInnerResponseInSubFrame = 2644,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
