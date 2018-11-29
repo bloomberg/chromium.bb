@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_LINUX_FONT_DELEGATE_H_
-#define UI_GFX_LINUX_FONT_DELEGATE_H_
+#ifndef UI_GFX_SKIA_FONT_DELEGATE_H_
+#define UI_GFX_SKIA_FONT_DELEGATE_H_
 
 #include <memory>
 #include <string>
@@ -14,21 +14,21 @@
 namespace gfx {
 
 // Allows a Linux platform-specific overriding of font preferences.
-class GFX_EXPORT LinuxFontDelegate {
+class GFX_EXPORT SkiaFontDelegate {
  public:
-  virtual ~LinuxFontDelegate() {}
+  virtual ~SkiaFontDelegate() {}
 
   // Sets the dynamically loaded singleton that provides font preferences.
   // This pointer is not owned, and if this method is called a second time,
   // the first instance is not deleted.
-  static void SetInstance(LinuxFontDelegate* instance);
+  static void SetInstance(SkiaFontDelegate* instance);
 
-  // Returns a LinuxFontDelegate instance for the toolkit used in
+  // Returns a SkiaFontDelegate instance for the toolkit used in
   // the user's desktop environment.
   //
   // Can return NULL, in case no toolkit has been set. (For example, if we're
   // running with the "--ash" flag.)
-  static const LinuxFontDelegate* instance();
+  static const SkiaFontDelegate* instance();
 
   // Returns the default font rendering settings.
   virtual FontRenderParams GetDefaultFontRenderParams() const = 0;
@@ -45,4 +45,4 @@ class GFX_EXPORT LinuxFontDelegate {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_LINUX_FONT_DELEGATE_H_
+#endif  // UI_GFX_SKIA_FONT_DELEGATE_H_
