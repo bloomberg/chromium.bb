@@ -17,11 +17,15 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kEnableGpuRasterizationViewportRestriction;
 BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
+BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
+BLINK_COMMON_EXPORT extern const base::Feature kJankTracking;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
+BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
-BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
+BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
+BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsVisible;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -31,12 +35,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerServicification;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
-BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
-BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
-BLINK_COMMON_EXPORT extern const base::Feature kJankTracking;
-BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
-BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
+BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentBgColorParameterName[];
