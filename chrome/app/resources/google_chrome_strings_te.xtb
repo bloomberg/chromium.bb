@@ -97,7 +97,7 @@
 <translation id="3282568296779691940">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
 <translation id="3395323229510056640">Chrome OSతో సహాయాన్ని పొందండి</translation>
-<translation id="3396977131400919238">ఇన్‌స్టాలేషన్ సమయంలో ఒక ఆపరేటింగ్ సిస్టమ్ లోపం ఏర్పడింది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
+<translation id="3396977131400919238">ఇన్‌స్టాలేషన్ సమయంలో ఒక ఆపరేటింగ్ సిస్టమ్ ఎర్ర‌ర్‌ ఏర్పడింది. దయచేసి Google Chromeను మ‌ళ్లీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="3398288718845740432">Chrome మెనులో దాచండి</translation>
 <translation id="3451115285585441894">Chromeకు జోడిస్తోంది...</translation>
 <translation id="345171907106878721">Chromeకు మిమ్మల్ని జోడించుకోండి</translation>
@@ -143,7 +143,7 @@
 <translation id="4664415150087723341">ఇప్పుడే Google Chrome కోసం ప్రత్యేక భద్రతా నవీకరణ వర్తింపజేయబడింది; అది అమలు కావడం కోసం మీరు దీన్ని ఇప్పుడు పునఃప్రారంభించాలి (మేము మీ ట్యాబ్‌లను పునరుద్ధరిస్తాము).</translation>
 <translation id="4700157086864140907">Google Chrome మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపించడం ద్వారా, Google శోధనలో ఉపయోగించబడేలాంటి పదనిర్మాణ-తనిఖీ సాంకేతిక పరిజ్ఞానాన్ని మీరు ఉపయోగించడానికి అనుమతించడం ద్వారా మరింత చురుకైన పదనిర్మాణ-తనిఖీని అందిస్తుంది.</translation>
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
-<translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ని ప్రారంభించడానికి Chromeని పునఃప్రారంభించండి</translation>
+<translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ని ప్రారంభించడానికి Chromeను పునఃప్రారంభించండి</translation>
 <translation id="4754614261631455953">Google Chrome కెనరీ (mDNS-In)</translation>
 <translation id="4771048833395599659">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="4794050651896644714">వివరాలను Chromeలో సేవ్ చేయి</translation>
