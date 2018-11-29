@@ -37,10 +37,10 @@ HashTableStats& HashTableStats::instance() {
 }
 
 void HashTableStats::copy(const HashTableStats* other) {
-  numAccesses = other->numAccesses;
-  numRehashes = other->numRehashes;
-  numRemoves = other->numRemoves;
-  numReinserts = other->numReinserts;
+  numAccesses = other->numAccesses.load(std::memory_order_relaxed);
+  numRehashes = other->numRehashes.load(std::memory_order_relaxed);
+  numRemoves = other->numRemoves.load(std::memory_order_relaxed);
+  numReinserts = other->numReinserts.load(std::memory_order_relaxed);
 
   maxCollisions = other->maxCollisions;
   numCollisions = other->numCollisions;
