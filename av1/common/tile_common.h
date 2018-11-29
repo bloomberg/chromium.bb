@@ -61,6 +61,7 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info,
 #define MAX_TILE_WIDTH (4096)        // Max Tile width in pixels
 #define MAX_TILE_AREA (4096 * 2304)  // Maximum tile area in pixels
 
+void av1_get_uniform_tile_size(const struct AV1Common *cm, int *w, int *h);
 void av1_get_tile_limits(struct AV1Common *const cm);
 void av1_calculate_tile_cols(struct AV1Common *const cm);
 void av1_calculate_tile_rows(struct AV1Common *const cm);

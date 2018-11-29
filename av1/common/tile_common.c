@@ -205,3 +205,26 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
 
   return r;
 }
+
+void av1_get_uniform_tile_size(const AV1_COMMON *cm, int *w, int *h) {
+  if (cm->uniform_tile_spacing_flag) {
+    *w = cm->tile_width;
+    *h = cm->tile_height;
+  } else {
+    for (int i = 0; i < cm->tile_cols; ++i) {
+      const int tile_width_sb =
+          cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
+      const int tile_w = tile_width_sb * cm->seq_params.mib_size;
+      assert(i == 0 || tile_w == *w);  // ensure all tiles have same dimension
+      *w = tile_w;
+    }
+
+    for (int i = 0; i < cm->tile_rows; ++i) {
+      const int tile_height_sb =
+          cm->tile_row_start_sb[i + 1] - cm->tile_row_start_sb[i];
+      const int tile_h = tile_height_sb * cm->seq_params.mib_size;
+      assert(i == 0 || tile_h == *h);  // ensure all tiles have same dimension
+      *h = tile_h;
+    }
+  }
+}

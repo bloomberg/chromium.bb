@@ -364,8 +364,10 @@ static void alloc_tile_list_buffer(AV1Decoder *pbi) {
   // image format 4:2:0, the output frame of U plane and V plane is 1/4 of the
   // output frame.
   AV1_COMMON *const cm = &pbi->common;
-  const int tile_width_in_pixels = cm->tile_width * MI_SIZE;
-  const int tile_height_in_pixels = cm->tile_height * MI_SIZE;
+  int tile_width, tile_height;
+  av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
+  const int tile_width_in_pixels = tile_width * MI_SIZE;
+  const int tile_height_in_pixels = tile_height * MI_SIZE;
   const int output_frame_width =
       (pbi->output_frame_width_in_tiles_minus_1 + 1) * tile_width_in_pixels;
   const int output_frame_height =
@@ -415,8 +417,10 @@ static void yv12_tile_copy(const YV12_BUFFER_CONFIG *src, int hstart1,
 static void copy_decoded_tile_to_tile_list_buffer(AV1Decoder *pbi,
                                                   int tile_idx) {
   AV1_COMMON *const cm = &pbi->common;
-  const int tile_width_in_pixels = cm->tile_width * MI_SIZE;
-  const int tile_height_in_pixels = cm->tile_height * MI_SIZE;
+  int tile_width, tile_height;
+  av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
+  const int tile_width_in_pixels = tile_width * MI_SIZE;
+  const int tile_height_in_pixels = tile_height * MI_SIZE;
   const int ssy = cm->seq_params.subsampling_y;
   const int ssx = cm->seq_params.subsampling_x;
   const int num_planes = av1_num_planes(cm);

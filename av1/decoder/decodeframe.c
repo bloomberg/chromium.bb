@@ -2716,9 +2716,10 @@ static const uint8_t *get_ls_tile_buffers(
 
     const int tile_col_size_bytes = pbi->tile_col_size_bytes;
     const int tile_size_bytes = pbi->tile_size_bytes;
+    int tile_width, tile_height;
+    av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
     const int tile_copy_mode =
-        ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256) ? 1
-                                                                           : 0;
+        ((AOMMAX(tile_width, tile_height) << MI_SIZE_LOG2) <= 256) ? 1 : 0;
     // Read tile column sizes for all columns (we need the last tile buffer)
     for (int c = 0; c < tile_cols; ++c) {
       const int is_last = c == tile_cols - 1;

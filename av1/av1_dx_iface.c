@@ -725,8 +725,10 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           const int num_planes = av1_num_planes(cm);
           if (pbi->ext_tile_debug && cm->single_tile_decoding &&
               pbi->dec_tile_row >= 0) {
+            int tile_width, tile_height;
+            av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
             const int tile_row = AOMMIN(pbi->dec_tile_row, cm->tile_rows - 1);
-            const int mi_row = tile_row * cm->tile_height;
+            const int mi_row = tile_row * tile_height;
             const int ssy = ctx->img.y_chroma_shift;
             int plane;
             ctx->img.planes[0] += mi_row * MI_SIZE * ctx->img.stride[0];
@@ -736,14 +738,15 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                     mi_row * (MI_SIZE >> ssy) * ctx->img.stride[plane];
               }
             }
-            ctx->img.d_h =
-                AOMMIN(cm->tile_height, cm->mi_rows - mi_row) * MI_SIZE;
+            ctx->img.d_h = AOMMIN(tile_height, cm->mi_rows - mi_row) * MI_SIZE;
           }
 
           if (pbi->ext_tile_debug && cm->single_tile_decoding &&
               pbi->dec_tile_col >= 0) {
+            int tile_width, tile_height;
+            av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
             const int tile_col = AOMMIN(pbi->dec_tile_col, cm->tile_cols - 1);
-            const int mi_col = tile_col * cm->tile_width;
+            const int mi_col = tile_col * tile_width;
             const int ssx = ctx->img.x_chroma_shift;
             const int is_hbd =
                 (ctx->img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 1 : 0;
@@ -755,8 +758,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                     mi_col * (MI_SIZE >> ssx) * (1 + is_hbd);
               }
             }
-            ctx->img.d_w =
-                AOMMIN(cm->tile_width, cm->mi_cols - mi_col) * MI_SIZE;
+            ctx->img.d_w = AOMMIN(tile_width, cm->mi_cols - mi_col) * MI_SIZE;
           }
 
           ctx->img.fb_priv = frame_bufs[buf_idx].raw_frame_buffer.priv;
@@ -1124,8 +1126,9 @@ static aom_codec_err_t ctrl_get_tile_size(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
-      *tile_size =
-          ((cm->tile_width * MI_SIZE) << 16) + cm->tile_height * MI_SIZE;
+      int tile_width, tile_height;
+      av1_get_uniform_tile_size(cm, &tile_width, &tile_height);
+      *tile_size = ((tile_width * MI_SIZE) << 16) + tile_height * MI_SIZE;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;
