@@ -198,7 +198,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
   // service tickets are keyed on hosname.
   const base::FilePath mount_path =
       use_chromad_kerberos
-          ? share_path
+          ? base::FilePath(parsed_url.ToString())
           : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
 
   GetSmbProviderClient()->Mount(
