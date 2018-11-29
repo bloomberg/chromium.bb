@@ -370,28 +370,36 @@ bool V4L2JpegEncodeAccelerator::EncodedInstance::SetInputBufferFormat(
   DCHECK(!input_streamon_);
   DCHECK(input_job_queue_.empty());
 
+  constexpr uint32_t input_pix_fmt_candidates[] = {
+      V4L2_PIX_FMT_YUV420M,
+      V4L2_PIX_FMT_YUV420,
+  };
+
   struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.num_planes = kMaxI420Plane;
-  format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420M;
-  format.fmt.pix_mp.field = V4L2_FIELD_ANY;
-  format.fmt.pix_mp.width = coded_size.width();
-  format.fmt.pix_mp.height = coded_size.height();
+  input_buffer_pixelformat_ = 0;
+  for (const auto input_pix_fmt : input_pix_fmt_candidates) {
+    DCHECK_EQ(V4L2Device::V4L2PixFmtToVideoPixelFormat(input_pix_fmt),
+              PIXEL_FORMAT_I420);
+    memset(&format, 0, sizeof(format));
+    format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    format.fmt.pix_mp.num_planes = kMaxI420Plane;
+    format.fmt.pix_mp.pixelformat = input_pix_fmt;
+    format.fmt.pix_mp.field = V4L2_FIELD_ANY;
+    format.fmt.pix_mp.width = coded_size.width();
+    format.fmt.pix_mp.height = coded_size.height();
 
-  // TODO(crbug.com/908357): Execute S_FMT with YUV420 and YUV420M separately
-  // and check format.fmt.pix_mp.pixelformat value.
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+    if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0 &&
+        format.fmt.pix_mp.pixelformat == input_pix_fmt) {
+      // Save V4L2 returned values.
+      input_buffer_pixelformat_ = format.fmt.pix_mp.pixelformat;
+      input_buffer_num_planes_ = format.fmt.pix_mp.num_planes;
+      input_buffer_height_ = format.fmt.pix_mp.height;
+      break;
+    }
+  }
 
-  // Save V4L2 returned values.
-  input_buffer_pixelformat_ = format.fmt.pix_mp.pixelformat;
-  input_buffer_num_planes_ = format.fmt.pix_mp.num_planes;
-  input_buffer_height_ = format.fmt.pix_mp.height;
-
-  if (input_buffer_pixelformat_ != V4L2_PIX_FMT_YUV420 &&
-      input_buffer_pixelformat_ != V4L2_PIX_FMT_YUV420M) {
-    VLOGF(1) << "unsupported input V4L2 pixel format: "
-             << input_buffer_pixelformat_;
+  if (input_buffer_pixelformat_ == 0) {
+    VLOGF(1) << "Neither YUV420 nor YUV420M is supported.";
     return false;
   }
 
