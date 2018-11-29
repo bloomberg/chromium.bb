@@ -13,8 +13,7 @@ namespace {
 constexpr size_t kDefaultBudget = 1024u;
 
 sk_sp<SkTextBlob> CreateBlob() {
-  SkPaint font;
-  font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  SkFont font;
   font.setTypeface(SkTypeface::MakeDefault());
 
   SkTextBlobBuilder builder;
