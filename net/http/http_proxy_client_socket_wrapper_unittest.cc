@@ -162,13 +162,14 @@ class HttpProxyClientSocketWrapperTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectRequestPacket(
-      quic::QuicPacketNumber packet_number) {
+      quic::QuicPacketNumber packet_number,
+      RequestPriority priority) {
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
-        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
-        std::move(block), 0, nullptr, &header_stream_offset_);
+        ConvertRequestPriorityToQuicPriority(priority), std::move(block), 0,
+        nullptr, &header_stream_offset_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerConnectReplyPacket(
@@ -258,7 +259,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
-  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructConnectRequestPacket(2));
+  mock_quic_data_.AddWrite(SYNCHRONOUS,
+                           ConstructConnectRequestPacket(2, HIGHEST));
   mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddWrite(
@@ -283,7 +285,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
       /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
       /*socket_tag=*/SocketTag(),
-      /*respect_limits=*/ClientSocketPool::RespectLimits::DISABLED,
+      /*respect_limits=*/ClientSocketPool::RespectLimits::ENABLED,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,
@@ -295,7 +297,11 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_.request_priority(1));
 
+  client_socket_wrapper_->SetPriority(HIGHEST);
+
+  // Expect connect request packet with HIGHEST priority, not DEFAULT_PRIORITY.
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   client_socket_wrapper_.reset();
@@ -311,7 +317,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
-  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructConnectRequestPacket(2));
+  mock_quic_data_.AddWrite(SYNCHRONOUS,
+                           ConstructConnectRequestPacket(2, DEFAULT_PRIORITY));
   mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddWrite(
@@ -337,7 +344,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   client_socket_wrapper_.reset(new HttpProxyClientSocketWrapper(
       /*group_name=*/std::string(), /*requiest_priority=*/DEFAULT_PRIORITY,
       /*socket_tag=*/tag,
-      /*respect_limits=*/ClientSocketPool::RespectLimits::DISABLED,
+      /*respect_limits=*/ClientSocketPool::RespectLimits::ENABLED,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*transport_pool=*/nullptr, /*ssl_pool=*/nullptr,

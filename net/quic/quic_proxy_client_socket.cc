@@ -86,6 +86,10 @@ NextProto QuicProxyClientSocket::GetProxyNegotiatedProtocol() const {
   return kProtoQUIC;
 }
 
+void QuicProxyClientSocket::SetStreamPriority(RequestPriority priority) {
+  stream_->SetPriority(ConvertRequestPriorityToSpdyPriority(priority));
+}
+
 // Sends a HEADERS frame to the proxy with a CONNECT request
 // for the specified endpoint.  Waits for the server to send back
 // a HEADERS frame.  OK will be returned if the status is 200.

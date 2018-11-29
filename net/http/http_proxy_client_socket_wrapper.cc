@@ -73,7 +73,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       tunnel_(tunnel),
       using_spdy_(false),
       is_trusted_proxy_(is_trusted_proxy),
-      quic_stream_request_(quic_stream_factory),
+      quic_stream_factory_(quic_stream_factory),
       http_auth_controller_(
           tunnel ? new HttpAuthController(
                        HttpAuth::AUTH_PROXY,
@@ -134,6 +134,27 @@ LoadState HttpProxyClientSocketWrapper::GetConnectLoadState() const {
 std::unique_ptr<HttpResponseInfo>
 HttpProxyClientSocketWrapper::GetAdditionalErrorState() {
   return std::move(error_response_info_);
+}
+
+void HttpProxyClientSocketWrapper::SetPriority(RequestPriority priority) {
+  if (respect_limits_ == ClientSocketPool::RespectLimits::DISABLED) {
+    DCHECK_EQ(MAXIMUM_PRIORITY, priority_);
+    return;
+  }
+
+  priority_ = priority;
+
+  if (transport_socket_handle_)
+    transport_socket_handle_->SetPriority(priority);
+
+  if (spdy_stream_request_)
+    spdy_stream_request_->SetPriority(priority);
+
+  if (quic_stream_request_)
+    quic_stream_request_->SetPriority(priority);
+
+  if (transport_socket_)
+    transport_socket_->SetStreamPriority(priority);
 }
 
 const HttpResponseInfo* HttpProxyClientSocketWrapper::GetConnectResponseInfo()
@@ -203,7 +224,8 @@ void HttpProxyClientSocketWrapper::Disconnect() {
   connect_callback_.Reset();
   connect_timer_.Stop();
   next_state_ = STATE_NONE;
-  spdy_stream_request_.CancelRequest();
+  spdy_stream_request_.reset();
+  quic_stream_request_.reset();
   if (transport_socket_handle_) {
     if (transport_socket_handle_->socket())
       transport_socket_handle_->socket()->Disconnect();
@@ -615,7 +637,8 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  return spdy_stream_request_.StartRequest(
+  spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
+  return spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
       GURL("https://" + endpoint_.ToString()), priority_, initial_socket_tag_,
       spdy_session->net_log(),
@@ -625,11 +648,14 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
 }
 
 int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStreamComplete(int result) {
-  if (result < 0)
+  if (result < 0) {
+    spdy_stream_request_.reset();
     return result;
+  }
 
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
-  base::WeakPtr<SpdyStream> stream = spdy_stream_request_.ReleaseStream();
+  base::WeakPtr<SpdyStream> stream = spdy_stream_request_->ReleaseStream();
+  spdy_stream_request_.reset();
   DCHECK(stream.get());
   // |transport_socket_| will set itself as |stream|'s delegate.
   transport_socket_.reset(new SpdyProxyClientSocket(
@@ -644,7 +670,9 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateSession() {
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM;
   const HostPortPair& proxy_server =
       ssl_params_->GetDirectConnectionParams()->destination().host_port_pair();
-  return quic_stream_request_.Request(
+  quic_stream_request_ =
+      std::make_unique<QuicStreamRequest>(quic_stream_factory_);
+  return quic_stream_request_->Request(
       proxy_server, quic_version_, ssl_params_->privacy_mode(), priority_,
       initial_socket_tag_, ssl_params_->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log_,
@@ -655,11 +683,15 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateSession() {
 }
 
 int HttpProxyClientSocketWrapper::DoQuicProxyCreateStream(int result) {
-  if (result < 0)
+  if (result < 0) {
+    quic_stream_request_.reset();
     return result;
+  }
 
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM_COMPLETE;
-  quic_session_ = quic_stream_request_.ReleaseSessionHandle();
+  quic_session_ = quic_stream_request_->ReleaseSessionHandle();
+  quic_stream_request_.reset();
+
   return quic_session_->RequestStream(
       false,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,

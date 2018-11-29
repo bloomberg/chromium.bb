@@ -87,6 +87,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   std::unique_ptr<HttpResponseInfo> GetAdditionalErrorState();
 
+  void SetPriority(RequestPriority priority);
+
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
   std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
@@ -218,9 +220,10 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   // if necessary.
   CompletionOnceCallback connect_callback_;
 
-  SpdyStreamRequest spdy_stream_request_;
+  std::unique_ptr<SpdyStreamRequest> spdy_stream_request_;
 
-  QuicStreamRequest quic_stream_request_;
+  QuicStreamFactory* const quic_stream_factory_;
+  std::unique_ptr<QuicStreamRequest> quic_stream_request_;
   std::unique_ptr<QuicChromiumClientSession::Handle> quic_session_;
 
   scoped_refptr<HttpAuthController> http_auth_controller_;

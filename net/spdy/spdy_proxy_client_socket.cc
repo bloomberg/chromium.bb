@@ -93,6 +93,10 @@ NextProto SpdyProxyClientSocket::GetProxyNegotiatedProtocol() const {
   return spdy_stream_->GetNegotiatedProtocol();
 }
 
+void SpdyProxyClientSocket::SetStreamPriority(RequestPriority priority) {
+  spdy_stream_->SetPriority(priority);
+}
+
 std::unique_ptr<HttpStream>
 SpdyProxyClientSocket::CreateConnectResponseStream() {
   return std::make_unique<ProxyConnectRedirectHttpStream>(

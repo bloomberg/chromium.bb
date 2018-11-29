@@ -227,6 +227,10 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // set a delegate for the returned stream (except for test code).
   base::WeakPtr<SpdyStream> ReleaseStream();
 
+  // Changes the priority of the stream, or changes the priority of the queued
+  // request in the session.
+  void SetPriority(RequestPriority priority);
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -606,8 +610,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                    base::WeakPtr<SpdyStream>* stream);
 
   // Called by SpdyStreamRequest to remove |request| from the stream
-  // creation queue.
-  void CancelStreamRequest(const base::WeakPtr<SpdyStreamRequest>& request);
+  // creation queue. Returns whether a request was removed from the queue.
+  bool CancelStreamRequest(const base::WeakPtr<SpdyStreamRequest>& request);
+
+  // Removes |request| from the stream creation queue and reinserts it into the
+  // queue at the new |priority|.
+  void ChangeStreamRequestPriority(
+      const base::WeakPtr<SpdyStreamRequest>& request,
+      RequestPriority priority);
 
   // Returns the next pending stream request to process, or NULL if
   // there is none.

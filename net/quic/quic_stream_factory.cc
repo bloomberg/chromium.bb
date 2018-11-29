@@ -372,9 +372,23 @@ class QuicStreamFactory::Job {
     stream_requests_.erase(request_iter);
   }
 
+  void SetPriority(RequestPriority priority) {
+    if (priority_ == priority)
+      return;
+
+    priority_ = priority;
+    if (io_state_ == STATE_RESOLVE_HOST_COMPLETE &&
+        !host_resolution_finished_) {
+      DCHECK(request_);
+      request_->ChangeRequestPriority(priority);
+    }
+  }
+
   const std::set<QuicStreamRequest*>& stream_requests() {
     return stream_requests_;
   }
+
+  RequestPriority priority() const { return priority_; }
 
   bool IsHostResolutionComplete() const { return host_resolution_finished_; }
 
@@ -418,7 +432,7 @@ class QuicStreamFactory::Job {
   HostResolver* host_resolver_;
   std::unique_ptr<HostResolver::Request> request_;
   const QuicSessionAliasKey key_;
-  const RequestPriority priority_;
+  RequestPriority priority_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
   const bool retry_on_alternate_network_before_handshake_;
@@ -924,6 +938,11 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   return factory_->GetTimeDelayForWaitingJob(session_key_.server_id());
 }
 
+void QuicStreamRequest::SetPriority(RequestPriority priority) {
+  if (factory_)
+    factory_->SetRequestPriority(this, priority);
+}
+
 std::unique_ptr<QuicChromiumClientSession::Handle>
 QuicStreamRequest::ReleaseSessionHandle() {
   if (!session_ || !session_->IsConnected())
@@ -1415,6 +1434,14 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   auto job_iter = active_jobs_.find(request->session_key());
   CHECK(job_iter != active_jobs_.end());
   job_iter->second->RemoveRequest(request);
+}
+
+void QuicStreamFactory::SetRequestPriority(QuicStreamRequest* request,
+                                           RequestPriority priority) {
+  auto job_iter = active_jobs_.find(request->session_key());
+  if (job_iter == active_jobs_.end())
+    return;
+  job_iter->second->SetPriority(priority);
 }
 
 void QuicStreamFactory::CloseAllSessions(int error,

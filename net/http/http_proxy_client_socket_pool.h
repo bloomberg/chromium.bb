@@ -139,6 +139,8 @@ class HttpProxyConnectJob : public ConnectJob {
   // a standard net error code will be returned.
   int ConnectInternal() override;
 
+  void ChangePriorityInternal(RequestPriority priority) override;
+
   void OnConnectComplete(int result);
 
   int HandleConnectResult(int result);
