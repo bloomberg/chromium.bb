@@ -186,6 +186,20 @@ int GetAppListIconDimensionForScaleFactor(ui::ScaleFactor scale_factor) {
   }
 }
 
+ArcAppListPrefs::AppInfo GetAppInfoExpectation(const arc::mojom::AppInfo& app,
+                                               bool launchable) {
+  return ArcAppListPrefs::AppInfo(
+      app.name, app.package_name, app.activity, std::string() /* intent_uri */,
+      std::string() /* icon_resource_id */, base::Time() /* last_launch_time */,
+      base::Time() /* install_time */, app.sticky, app.notifications_enabled,
+      true /* ready */, false /* suspended */, launchable /* show_in_launcher*/,
+      false /* shortcut */, launchable);
+}
+
+MATCHER_P(ArcPackageInfoIs, package, "") {
+  return arg.Equals(package);
+}
+
 }  // namespace
 
 class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
@@ -1235,12 +1249,8 @@ TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnOptOut) {
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   ArcAppListPrefs::AppInfo::SetIgnoreCompareInstallTimeForTesting(true);
-  const ArcAppListPrefs::AppInfo expected_app_info_registered(
-      app.name, app.package_name, app.activity, std::string() /* intent_uri */,
-      std::string() /* icon_resource_id */, base::Time() /* last_launch_time */,
-      base::Time() /* install_time */, app.sticky, app.notifications_enabled,
-      true /* ready */, false /* suspended */, true /* show_in_launcher*/,
-      false /* shortcut */, true /* launchable */);
+  const ArcAppListPrefs::AppInfo expected_app_info_registered =
+      GetAppInfoExpectation(app, true /* launchable */);
 
   ArcAppListPrefs::AppInfo expected_app_info_disabled(
       expected_app_info_registered);
@@ -2144,6 +2154,76 @@ TEST_P(ArcAppModelBuilderTest, ArcAppsAndShortcutsOnPackageChange) {
   RemovePackage(test_package_name);
   ValidateHaveAppsAndShortcuts(std::vector<arc::mojom::AppInfo>(),
                                std::vector<arc::mojom::ShortcutInfo>());
+}
+
+// This validates that runtime apps are not removed on package change event.
+TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
+  ArcAppListPrefs::AppInfo::SetIgnoreCompareInstallTimeForTesting(true);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::MockArcAppListPrefsObserver observer;
+
+  ASSERT_GE(fake_apps().size(), 2U);
+
+  // Second app should be preserved after the package update.
+  std::vector<arc::mojom::AppInfo> apps(fake_apps().begin(),
+                                        fake_apps().begin() + 2);
+  apps[0].package_name = apps[1].package_name;
+
+  const std::string app_id1 = ArcAppTest::GetAppId(apps[0]);
+  const std::string app_id2 = ArcAppTest::GetAppId(apps[1]);
+
+  arc::mojom::ArcPackageInfoPtr package = CreatePackage(apps[0].package_name);
+
+  prefs->AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnPackageInstalled(ArcPackageInfoIs(*package)))
+      .Times(1);
+  EXPECT_CALL(observer,
+              OnAppRegistered(app_id1, GetAppInfoExpectation(
+                                           apps[0], true /* launchable */)))
+      .Times(1);
+  EXPECT_CALL(observer,
+              OnAppRegistered(app_id2, GetAppInfoExpectation(
+                                           apps[1], true /* launchable */)))
+      .Times(1);
+
+  AddPackage(package);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(apps);
+
+  // Send a task for non-existing lauchable app. That would register new runtime
+  // app.
+  arc::mojom::AppInfo app_runtime = apps[0];
+  app_runtime.activity += "_runtime";
+  // Runtime apps have notifications_enabled and sticky false.
+  app_runtime.notifications_enabled = false;
+  app_runtime.sticky = false;
+  const std::string app_id3 = ArcAppTest::GetAppId(app_runtime);
+
+  EXPECT_CALL(observer, OnAppRegistered(
+                            app_id3, GetAppInfoExpectation(
+                                         app_runtime, false /* launchable */)))
+      .Times(1);
+  EXPECT_CALL(observer,
+              OnTaskCreated(1 /* task_id */, app_runtime.package_name,
+                            app_runtime.activity, std::string() /* name */))
+      .Times(1);
+
+  app_instance()->SendTaskCreated(1, app_runtime, std::string());
+
+  // Simulate package update when first launchable app is removed. This should
+  // trigger app removing for it but not for the runtime app.
+  EXPECT_CALL(observer, OnAppRemoved(app_id1)).Times(1);
+  EXPECT_CALL(observer, OnAppRemoved(app_id2)).Times(0);
+  EXPECT_CALL(observer, OnAppRemoved(app_id3)).Times(0);
+
+  apps.erase(apps.begin());
+  app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
+
+  prefs->RemoveObserver(&observer);
 }
 
 TEST_P(ArcDefaulAppTest, DefaultApps) {
