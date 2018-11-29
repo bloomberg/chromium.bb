@@ -30,54 +30,41 @@ namespace {
 // be deleted. When network service is disabled, this should always be null.
 ChromeDataUseMeasurement* g_chrome_data_use_measurement = nullptr;
 
-void UpdateMetricsUsagePrefs(int64_t total_bytes,
-                             bool is_cellular,
-                             bool is_metrics_service_usage) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  metrics::DataUseTracker::UpdateMetricsUsagePrefs(
-      base::saturated_cast<int>(total_bytes), is_cellular,
-      is_metrics_service_usage, g_browser_process->local_state());
-}
-
-// This function is for forwarding metrics usage pref changes to the metrics
-// service on the appropriate thread.
-// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
-void UpdateMetricsUsagePrefsOnUIThread(int64_t total_bytes,
-                                       bool is_cellular,
-                                       bool is_metrics_service_usage) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, content::BrowserThread::UI,
-      base::BindOnce(UpdateMetricsUsagePrefs, total_bytes, is_cellular,
-                     is_metrics_service_usage));
-}
 }  // namespace
+
+// static
+void ChromeDataUseMeasurement::CreateInstance(PrefService* local_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
+  DCHECK(!g_chrome_data_use_measurement);
+
+  // Do not create when NetworkService is disabled, since data use of URLLoader
+  // is reported via the network delegate callbacks.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
+      nullptr, nullptr, content::GetNetworkConnectionTracker(), local_state);
+}
 
 // static
 ChromeDataUseMeasurement* ChromeDataUseMeasurement::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
-  // Do not create when NetworkService is disabled, since data use of URLLoader
-  // is reported via the network delegate callbacks.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
-  if (!g_chrome_data_use_measurement) {
-    g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
-        nullptr, nullptr, content::GetNetworkConnectionTracker());
-  }
   return g_chrome_data_use_measurement;
 }
 
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
     DataUseAscriber* ascriber,
-    network::NetworkConnectionTracker* network_connection_tracker)
+    network::NetworkConnectionTracker* network_connection_tracker,
+    PrefService* local_state)
     : DataUseMeasurement(std::move(url_request_classifier),
                          ascriber,
-                         network_connection_tracker) {
+                         network_connection_tracker),
+      local_state_(local_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
@@ -129,6 +116,41 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
   bytes_transferred_since_last_traffic_stats_query_ += recv_bytes + sent_bytes;
   MaybeRecordNetworkBytesOS();
 #endif
+}
+
+void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
+    int64_t total_bytes,
+    bool is_cellular,
+    bool is_metrics_service_usage) {
+  PrefService* local_state;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    local_state = local_state_;
+  } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    local_state = g_browser_process->local_state();
+  }
+  DCHECK(local_state);
+
+  metrics::DataUseTracker::UpdateMetricsUsagePrefs(
+      base::saturated_cast<int>(total_bytes), is_cellular,
+      is_metrics_service_usage, local_state);
+}
+
+// This function is for forwarding metrics usage pref changes to the metrics
+// service on the appropriate thread.
+// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
+void ChromeDataUseMeasurement::UpdateMetricsUsagePrefsOnUIThread(
+    int64_t total_bytes,
+    bool is_cellular,
+    bool is_metrics_service_usage) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, content::BrowserThread::UI,
+      base::BindOnce(&ChromeDataUseMeasurement::UpdateMetricsUsagePrefs,
+                     base::Unretained(this), total_bytes, is_cellular,
+                     is_metrics_service_usage));
 }
 
 }  // namespace data_use_measurement

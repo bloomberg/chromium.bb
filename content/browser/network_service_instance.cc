@@ -199,7 +199,8 @@ void FlushNetworkServiceInstanceForTesting() {
 }
 
 network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   if (!g_network_connection_tracker) {
     g_network_connection_tracker = new network::NetworkConnectionTracker(
         base::BindRepeating(&BindNetworkChangeManagerRequest));
