@@ -26,14 +26,14 @@ const String& TestEnumOrTestEnumOrNullSequence::GetAsTestEnum() const {
 
 void TestEnumOrTestEnumOrNullSequence::SetTestEnum(const String& value) {
   DCHECK(IsNull());
-  NonThrowableExceptionState exceptionState;
-  const char* validValues[] = {
+  NonThrowableExceptionState exception_state;
+  const char* kValidValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(value, validValues, base::size(validValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(value, kValidValues, base::size(kValidValues), "TestEnum", exception_state)) {
     NOTREACHED();
     return;
   }
@@ -54,15 +54,15 @@ const Vector<String>& TestEnumOrTestEnumOrNullSequence::GetAsTestEnumOrNullSeque
 
 void TestEnumOrTestEnumOrNullSequence::SetTestEnumOrNullSequence(const Vector<String>& value) {
   DCHECK(IsNull());
-  NonThrowableExceptionState exceptionState;
-  const char* validValues[] = {
+  NonThrowableExceptionState exception_state;
+  const char* kValidValues[] = {
       nullptr,
       "",
       "EnumValue1",
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(value, validValues, base::size(validValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(value, kValidValues, base::size(kValidValues), "TestEnum", exception_state)) {
     NOTREACHED();
     return;
   }
@@ -83,43 +83,48 @@ TestEnumOrTestEnumOrNullSequence& TestEnumOrTestEnumOrNullSequence::operator=(co
 void TestEnumOrTestEnumOrNullSequence::Trace(blink::Visitor* visitor) {
 }
 
-void V8TestEnumOrTestEnumOrNullSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrTestEnumOrNullSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8TestEnumOrTestEnumOrNullSequence::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    TestEnumOrTestEnumOrNullSequence& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    const char* validValues[] = {
+    const char* kValidValues[] = {
         nullptr,
         "",
         "EnumValue1",
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(cppValue, validValues, base::size(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues), "TestEnum", exception_state))
       return;
-    impl.SetTestEnumOrNullSequence(cppValue);
+    impl.SetTestEnumOrNullSequence(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    const char* validValues[] = {
+    const char* kValidValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(cppValue, validValues, base::size(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues), "TestEnum", exception_state))
       return;
-    impl.SetTestEnum(cppValue);
+    impl.SetTestEnum(cpp_value);
     return;
   }
 }
@@ -138,9 +143,10 @@ v8::Local<v8::Value> ToV8(const TestEnumOrTestEnumOrNullSequence& impl, v8::Loca
   return v8::Local<v8::Value>();
 }
 
-TestEnumOrTestEnumOrNullSequence NativeValueTraits<TestEnumOrTestEnumOrNullSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestEnumOrTestEnumOrNullSequence NativeValueTraits<TestEnumOrTestEnumOrNullSequence>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   TestEnumOrTestEnumOrNullSequence impl;
-  V8TestEnumOrTestEnumOrNullSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8TestEnumOrTestEnumOrNullSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

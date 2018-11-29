@@ -18,8 +18,8 @@ class {{v8_class}}Constructor {
   STATIC_ONLY({{v8_class}}Constructor);
  public:
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static const WrapperTypeInfo wrapperTypeInfo;
+  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> property_name, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static const WrapperTypeInfo wrapper_type_info;
 };
 
 {% endif %}
@@ -41,9 +41,9 @@ class {{v8_class}} {
   {% endif %}
   {{exported}}static {{cpp_class}}* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   {% if has_partial_interface %}
-  {{exported}}static WrapperTypeInfo wrapperTypeInfo;
+  {{exported}}static WrapperTypeInfo wrapper_type_info;
   {% else %}
-  {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
+  {{exported}}static const WrapperTypeInfo wrapper_type_info;
   {% endif %}
   {% for method in methods %}
   {% if method.is_custom %}
@@ -110,25 +110,25 @@ class {{v8_class}} {
      FIXME: Remove this internal field, and share one field for either:
      * a persistent handle (if the object is in oilpan) or
      * a C++ pointer to the DOM object (if the object is not in oilpan) #}
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
   {# End custom internal fields #}
 
   {% if install_conditional_features_func %}
   {{exported}}static void InstallConditionalFeatures(
       v8::Local<v8::Context>,
       const DOMWrapperWorld&,
-      v8::Local<v8::Object> instanceObject,
-      v8::Local<v8::Object> prototypeObject,
-      v8::Local<v8::Function> interfaceObject,
-      v8::Local<v8::FunctionTemplate> interfaceTemplate);
+      v8::Local<v8::Object> instance_object,
+      v8::Local<v8::Object> prototype_object,
+      v8::Local<v8::Function> interface_object,
+      v8::Local<v8::FunctionTemplate> interface_template);
   {% elif has_partial_interface %}
   {{exported}}static void InstallConditionalFeatures(
       v8::Local<v8::Context>,
       const DOMWrapperWorld&,
-      v8::Local<v8::Object> instanceObject,
-      v8::Local<v8::Object> prototypeObject,
-      v8::Local<v8::Function> interfaceObject,
-      v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
+      v8::Local<v8::Object> instance_object,
+      v8::Local<v8::Object> prototype_object,
+      v8::Local<v8::Function> interface_object,
+      v8::Local<v8::FunctionTemplate> interface_template) {}
   {% endif %}
 
   {% if has_partial_interface %}
@@ -137,7 +137,7 @@ class {{v8_class}} {
       InstallRuntimeEnabledFeaturesFunction,
       InstallRuntimeEnabledFeaturesOnTemplateFunction,
       InstallConditionalFeaturesFunction);
-  {{exported}}static void Install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  {{exported}}static void Install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interface_template);
   {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
   {{exported}}static void Register{{method.camel_case_name}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
   {% endfor %}
@@ -286,7 +286,7 @@ class {{v8_class}} {
       v8::Local<v8::Function> interface);
   {% endif %}{# needs_runtime_enabled_installer #}
   {% if has_partial_interface %}
-  static InstallTemplateFunction install{{v8_class}}TemplateFunction;
+  static InstallTemplateFunction install_{{snake_case_v8_class}}_template_function_;
   {% if needs_runtime_enabled_installer %}
   static InstallRuntimeEnabledFeaturesFunction
   install_runtime_enabled_features_function_;

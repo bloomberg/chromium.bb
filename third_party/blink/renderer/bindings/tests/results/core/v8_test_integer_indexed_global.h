@@ -35,7 +35,7 @@ class V8TestIntegerIndexedGlobal {
     return ToScriptWrappable(object)->ToImpl<TestIntegerIndexedGlobal>();
   }
   CORE_EXPORT static TestIntegerIndexedGlobal* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
   static void IndexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void IndexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   static void IndexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
@@ -44,7 +44,7 @@ class V8TestIntegerIndexedGlobal {
   static void NamedPropertyQueryCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Integer>&);
   static void NamedPropertyDeleterCustom(const AtomicString&, const v8::PropertyCallbackInfo<v8::Boolean>&);
   static void NamedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

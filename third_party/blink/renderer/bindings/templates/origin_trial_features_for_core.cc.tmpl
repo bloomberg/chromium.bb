@@ -31,7 +31,7 @@ void InstallOriginTrialFeaturesForCore(
   const DOMWrapperWorld& world = script_state->World();
   // TODO(iclelland): Unify ContextFeatureSettings with the rest of the
   // conditional features.
-  if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8Window::wrapper_type_info) {
     auto* settings = ContextFeatureSettings::From(
         execution_context,
         ContextFeatureSettings::CreationMode::kDontCreateIfNotExists);
@@ -45,7 +45,7 @@ void InstallOriginTrialFeaturesForCore(
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
   {% for interface in installers_by_interface %}
-  if (wrapper_type_info == &{{interface.v8_class}}::wrapperTypeInfo) {
+  if (wrapper_type_info == &{{interface.v8_class}}::wrapper_type_info) {
     {% if interface.is_global %}
     v8::Local<v8::Object> instance_object =
         script_state->GetContext()->Global();
@@ -81,7 +81,7 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
         v8::Local<v8::Object>(), v8::Local<v8::Function>());
     {% else %}
     if (context_data->GetExistingConstructorAndPrototypeForType(
-            &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
+            &{{installer.v8_class}}::wrapper_type_info, &prototype_object, &interface_object)) {
       {{installer.v8_class_or_partial}}::{{installer.install_method}}(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }

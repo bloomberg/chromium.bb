@@ -34,9 +34,9 @@ class V8TestInterfaceCustomConstructor {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceCustomConstructor>();
   }
   CORE_EXPORT static TestInterfaceCustomConstructor* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
   static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

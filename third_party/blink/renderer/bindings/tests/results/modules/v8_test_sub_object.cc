@@ -29,12 +29,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestSubObject::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestSubObject::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestSubObject::DomTemplate,
     nullptr,
     "TestSubObject",
-    &V8TestObject::wrapperTypeInfo,
+    &V8TestObject::wrapper_type_info,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -46,7 +46,7 @@ const WrapperTypeInfo V8TestSubObject::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestSubObject.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestSubObject::wrapper_type_info_ = V8TestSubObject::wrapperTypeInfo;
+const WrapperTypeInfo& TestSubObject::wrapper_type_info_ = V8TestSubObject::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -71,7 +71,8 @@ static void UnforgeableStringAttributeAttributeGetter(const v8::FunctionCallback
   V8SetReturnValueString(info, impl->unforgeableStringAttribute(), info.GetIsolate());
 }
 
-static void UnforgeableStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void UnforgeableStringAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -81,11 +82,11 @@ static void UnforgeableStringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  V8StringResource<> cpp_value = v8_value;
+  if (!cpp_value.Prepare())
     return;
 
-  impl->setUnforgeableStringAttribute(cppValue);
+  impl->setUnforgeableStringAttribute(cpp_value);
 }
 
 static void UnforgeableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -96,7 +97,8 @@ static void UnforgeableLongAttributeAttributeGetter(const v8::FunctionCallbackIn
   V8SetReturnValueInt(info, impl->unforgeableLongAttribute());
 }
 
-static void UnforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void UnforgeableLongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -105,14 +107,14 @@ static void UnforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
 
   TestSubObject* impl = V8TestSubObject::ToImpl(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestSubObject", "unforgeableLongAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestSubObject", "unforgeableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  if (exception_state.HadException())
     return;
 
-  impl->setUnforgeableLongAttribute(cppValue);
+  impl->setUnforgeableLongAttribute(cpp_value);
 }
 
 }  // namespace test_sub_object_v8_internal
@@ -123,12 +125,13 @@ void V8TestSubObject::UnforgeableStringAttributeAttributeGetterCallback(const v8
   test_sub_object_v8_internal::UnforgeableStringAttributeAttributeGetter(info);
 }
 
-void V8TestSubObject::UnforgeableStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestSubObject::UnforgeableStringAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableStringAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_sub_object_v8_internal::UnforgeableStringAttributeAttributeSetter(v8Value, info);
+  test_sub_object_v8_internal::UnforgeableStringAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestSubObject::UnforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -137,15 +140,16 @@ void V8TestSubObject::UnforgeableLongAttributeAttributeGetterCallback(const v8::
   test_sub_object_v8_internal::UnforgeableLongAttributeAttributeGetter(info);
 }
 
-void V8TestSubObject::UnforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestSubObject::UnforgeableLongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableLongAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_sub_object_v8_internal::UnforgeableLongAttributeAttributeSetter(v8Value, info);
+  test_sub_object_v8_internal::UnforgeableLongAttributeAttributeSetter(v8_value, info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestSubObjectAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestSubObjectAccessors[] = {
     { "unforgeableStringAttribute", V8TestSubObject::UnforgeableStringAttributeAttributeGetterCallback, V8TestSubObject::UnforgeableStringAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "unforgeableLongAttribute", V8TestSubObject::UnforgeableLongAttributeAttributeGetterCallback, V8TestSubObject::UnforgeableLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
@@ -153,26 +157,26 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestSubObjectAccessors[
 static void InstallV8TestSubObjectTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestSubObject::wrapperTypeInfo.interface_name, V8TestObject::DomTemplate(isolate, world), V8TestSubObject::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestSubObject::wrapper_type_info.interface_name, V8TestObject::DomTemplate(isolate, world), V8TestSubObject::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestSubObjectAccessors, base::size(V8TestSubObjectAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestSubObjectAccessors, base::size(kV8TestSubObjectAccessors));
 
   // Custom signature
 
   V8TestSubObject::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestSubObject::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -191,29 +195,36 @@ void V8TestSubObject::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestSubObject::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestSubObjectTemplate);
+v8::Local<v8::FunctionTemplate> V8TestSubObject::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestSubObjectTemplate);
 }
 
-bool V8TestSubObject::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestSubObject::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestSubObject::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestSubObject::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestSubObject* V8TestSubObject::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestSubObject* V8TestSubObject::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestSubObject* NativeValueTraits<TestSubObject>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestSubObject* nativeValue = V8TestSubObject::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestSubObject* NativeValueTraits<TestSubObject>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestSubObject* native_value = V8TestSubObject::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestSubObject"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

@@ -29,8 +29,8 @@ class V8TestInterfaceConstructorConstructor {
   STATIC_ONLY(V8TestInterfaceConstructorConstructor);
  public:
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static const WrapperTypeInfo wrapperTypeInfo;
+  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> property_name, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static const WrapperTypeInfo wrapper_type_info;
 };
 
 class V8TestInterfaceConstructor {
@@ -43,8 +43,8 @@ class V8TestInterfaceConstructor {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceConstructor>();
   }
   CORE_EXPORT static TestInterfaceConstructor* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

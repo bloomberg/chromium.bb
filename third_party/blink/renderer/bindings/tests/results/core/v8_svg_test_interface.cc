@@ -31,7 +31,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = {
+const WrapperTypeInfo V8SVGTestInterface::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8SVGTestInterface::DomTemplate,
     nullptr,
@@ -48,7 +48,7 @@ const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in SVGTestInterface.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& SVGTestInterface::wrapper_type_info_ = V8SVGTestInterface::wrapperTypeInfo;
+const WrapperTypeInfo& SVGTestInterface::wrapper_type_info_ = V8SVGTestInterface::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -73,7 +73,8 @@ static void TypeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
   V8SetReturnValueString(info, impl->FastGetAttribute(svg_names::kTypeAttr), info.GetIsolate());
 }
 
-static void TypeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void TypeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -82,14 +83,14 @@ static void TypeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
 
   SVGTestInterface* impl = V8SVGTestInterface::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.Prepare())
+  V8StringResource<> cpp_value = v8_value;
+  if (!cpp_value.Prepare())
     return;
 
-  impl->setAttribute(svg_names::kTypeAttr, cppValue);
+  impl->setAttribute(svg_names::kTypeAttr, cpp_value);
 }
 
 }  // namespace svg_test_interface_v8_internal
@@ -100,41 +101,42 @@ void V8SVGTestInterface::TypeAttributeGetterCallback(const v8::FunctionCallbackI
   svg_test_interface_v8_internal::TypeAttributeGetter(info);
 }
 
-void V8SVGTestInterface::TypeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8SVGTestInterface::TypeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_SVGTestInterface_type_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  svg_test_interface_v8_internal::TypeAttributeSetter(v8Value, info);
+  svg_test_interface_v8_internal::TypeAttributeSetter(v8_value, info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8SVGTestInterfaceAccessors[] = {
     { "type", V8SVGTestInterface::TypeAttributeGetterCallback, V8SVGTestInterface::TypeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static void InstallV8SVGTestInterfaceTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8SVGTestInterface::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8SVGTestInterface::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8SVGTestInterface::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8SVGTestInterface::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8SVGTestInterfaceAccessors, base::size(V8SVGTestInterfaceAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8SVGTestInterfaceAccessors, base::size(kV8SVGTestInterfaceAccessors));
 
   // Custom signature
 
   V8SVGTestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8SVGTestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -153,29 +155,36 @@ void V8SVGTestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8SVGTestInterface::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8SVGTestInterfaceTemplate);
+v8::Local<v8::FunctionTemplate> V8SVGTestInterface::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8SVGTestInterfaceTemplate);
 }
 
-bool V8SVGTestInterface::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8SVGTestInterface::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8SVGTestInterface::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8SVGTestInterface::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-SVGTestInterface* V8SVGTestInterface::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+SVGTestInterface* V8SVGTestInterface::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-SVGTestInterface* NativeValueTraits<SVGTestInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  SVGTestInterface* nativeValue = V8SVGTestInterface::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+SVGTestInterface* NativeValueTraits<SVGTestInterface>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  SVGTestInterface* native_value = V8SVGTestInterface::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "SVGTestInterface"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

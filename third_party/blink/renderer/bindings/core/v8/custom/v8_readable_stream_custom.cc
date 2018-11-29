@@ -33,7 +33,7 @@ void V8ReadableStream::ConstructorCustom(
   auto* impl = MakeGarbageCollected<ReadableStream>();
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
-      info.GetIsolate(), &V8ReadableStream::wrapperTypeInfo, wrapper);
+      info.GetIsolate(), &V8ReadableStream::wrapper_type_info, wrapper);
 
   if (num_args >= 1) {
     underlying_source =

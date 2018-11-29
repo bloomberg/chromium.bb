@@ -660,11 +660,11 @@ ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
     return nullptr;
 
   const WrapperTypeInfo* wrapper_type_info = ToWrapperTypeInfo(global_proxy);
-  if (wrapper_type_info->Equals(&V8Window::wrapperTypeInfo))
+  if (wrapper_type_info->Equals(&V8Window::wrapper_type_info))
     return V8Window::ToImpl(global_proxy)->GetExecutionContext();
-  if (wrapper_type_info->IsSubclass(&V8WorkerGlobalScope::wrapperTypeInfo))
+  if (wrapper_type_info->IsSubclass(&V8WorkerGlobalScope::wrapper_type_info))
     return V8WorkerGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
-  if (wrapper_type_info->IsSubclass(&V8WorkletGlobalScope::wrapperTypeInfo))
+  if (wrapper_type_info->IsSubclass(&V8WorkletGlobalScope::wrapper_type_info))
     return V8WorkletGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
 
   NOTREACHED();

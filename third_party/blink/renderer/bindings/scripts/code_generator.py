@@ -55,7 +55,7 @@ def generate_indented_conditional(code, conditional):
 def exposed_if(code, exposed_test):
     if not exposed_test:
         return code
-    return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
+    return generate_indented_conditional(code, 'execution_context && (%s)' % exposed_test)
 
 
 # [SecureContext]

@@ -141,52 +141,57 @@ void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeLi
   visitor->Trace(xml_http_request_);
 }
 
-void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8Event::HasInstance(v8Value, isolate)) {
-    Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetEvent(cppValue);
-    return;
-  }
-
-  if (V8Node::HasInstance(v8Value, isolate)) {
-    Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetNode(cppValue);
-    return;
-  }
-
-  if (V8XMLHttpRequest::HasInstance(v8Value, isolate)) {
-    XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetXMLHttpRequest(cppValue);
+  if (V8Event::HasInstance(v8_value, isolate)) {
+    Event* cpp_value = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetEvent(cpp_value);
     return;
   }
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<int32_t> cppValue = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (V8Node::HasInstance(v8_value, isolate)) {
+    Node* cpp_value = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetNode(cpp_value);
+    return;
+  }
+
+  if (V8XMLHttpRequest::HasInstance(v8_value, isolate)) {
+    XMLHttpRequest* cpp_value = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetXMLHttpRequest(cpp_value);
+    return;
+  }
+
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLongSequence(cppValue);
+    impl.SetLongSequence(cpp_value);
     return;
   }
 
-  if (v8Value->IsObject()) {
-    HeapVector<std::pair<String, ByteStringOrNodeList>> cppValue = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsObject()) {
+    HeapVector<std::pair<String, ByteStringOrNodeList>> cpp_value = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetStringByteStringOrNodeListRecord(cppValue);
+    impl.SetStringByteStringOrNodeListRecord(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -213,9 +218,10 @@ v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStrin
   return v8::Local<v8::Value>();
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NativeValueTraits<NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NativeValueTraits<NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord impl;
-  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

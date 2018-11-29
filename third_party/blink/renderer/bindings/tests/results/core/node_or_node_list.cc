@@ -66,26 +66,31 @@ void NodeOrNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_list_);
 }
 
-void V8NodeOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8NodeOrNodeList::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    NodeOrNodeList& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8Node::HasInstance(v8Value, isolate)) {
-    Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetNode(cppValue);
+  if (V8Node::HasInstance(v8_value, isolate)) {
+    Node* cpp_value = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetNode(cpp_value);
     return;
   }
 
-  if (V8NodeList::HasInstance(v8Value, isolate)) {
-    NodeList* cppValue = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetNodeList(cppValue);
+  if (V8NodeList::HasInstance(v8_value, isolate)) {
+    NodeList* cpp_value = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetNodeList(cpp_value);
     return;
   }
 
-  exceptionState.ThrowTypeError("The provided value is not of type '(Node or NodeList)'");
+  exception_state.ThrowTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
 v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -102,9 +107,10 @@ v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> crea
   return v8::Local<v8::Value>();
 }
 
-NodeOrNodeList NativeValueTraits<NodeOrNodeList>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+NodeOrNodeList NativeValueTraits<NodeOrNodeList>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   NodeOrNodeList impl;
-  V8NodeOrNodeList::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8NodeOrNodeList::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

@@ -79,34 +79,39 @@ void DoubleOrStringOrDoubleOrStringSequence::Trace(blink::Visitor* visitor) {
   visitor->Trace(double_or_string_sequence_);
 }
 
-void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrStringOrDoubleOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    DoubleOrStringOrDoubleOrStringSequence& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    HeapVector<DoubleOrString> cppValue = NativeValueTraits<IDLSequence<DoubleOrString>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    HeapVector<DoubleOrString> cpp_value = NativeValueTraits<IDLSequence<DoubleOrString>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDoubleOrStringSequence(cppValue);
+    impl.SetDoubleOrStringSequence(cpp_value);
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDouble(cppValue);
+    impl.SetDouble(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -127,9 +132,10 @@ v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence& impl, v8
   return v8::Local<v8::Value>();
 }
 
-DoubleOrStringOrDoubleOrStringSequence NativeValueTraits<DoubleOrStringOrDoubleOrStringSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrStringOrDoubleOrStringSequence NativeValueTraits<DoubleOrStringOrDoubleOrStringSequence>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   DoubleOrStringOrDoubleOrStringSequence impl;
-  V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

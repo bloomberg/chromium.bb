@@ -60,26 +60,31 @@ DoubleOrString& DoubleOrString::operator=(const DoubleOrString&) = default;
 void DoubleOrString::Trace(blink::Visitor* visitor) {
 }
 
-void V8DoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8DoubleOrString::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    DoubleOrString& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDouble(cppValue);
+    impl.SetDouble(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -98,9 +103,10 @@ v8::Local<v8::Value> ToV8(const DoubleOrString& impl, v8::Local<v8::Object> crea
   return v8::Local<v8::Value>();
 }
 
-DoubleOrString NativeValueTraits<DoubleOrString>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrString NativeValueTraits<DoubleOrString>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   DoubleOrString impl;
-  V8DoubleOrString::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrString::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

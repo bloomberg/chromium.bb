@@ -44,7 +44,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = {
+const WrapperTypeInfo V8ArrayBufferView::wrapper_type_info = {
     gin::kEmbedderBlink,
     nullptr,
     nullptr,
@@ -61,7 +61,7 @@ const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestArrayBufferView.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestArrayBufferView::wrapper_type_info_ = V8ArrayBufferView::wrapperTypeInfo;
+const WrapperTypeInfo& TestArrayBufferView::wrapper_type_info_ = V8ArrayBufferView::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -78,9 +78,9 @@ static_assert(
 
 TestArrayBufferView* V8ArrayBufferView::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsArrayBufferView());
-  ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
-  if (scriptWrappable)
-    return scriptWrappable->ToImpl<TestArrayBufferView>();
+  ScriptWrappable* script_wrappable = ToScriptWrappable(object);
+  if (script_wrappable)
+    return script_wrappable->ToImpl<TestArrayBufferView>();
 
   if (object->IsInt8Array())
     return V8Int8Array::ToImpl(object);
@@ -108,20 +108,22 @@ TestArrayBufferView* V8ArrayBufferView::ToImpl(v8::Local<v8::Object> object) {
     return V8DataView::ToImpl(object);
 
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
-TestArrayBufferView* V8ArrayBufferView::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestArrayBufferView* V8ArrayBufferView::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsArrayBufferView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestArrayBufferView* nativeValue = V8ArrayBufferView::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestArrayBufferView* native_value = V8ArrayBufferView::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "ArrayBufferView"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

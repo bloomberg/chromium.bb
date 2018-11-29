@@ -66,24 +66,29 @@ void ByteStringOrNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_list_);
 }
 
-void V8ByteStringOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8ByteStringOrNodeList::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    ByteStringOrNodeList& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8NodeList::HasInstance(v8Value, isolate)) {
-    NodeList* cppValue = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetNodeList(cppValue);
+  if (V8NodeList::HasInstance(v8_value, isolate)) {
+    NodeList* cpp_value = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetNodeList(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+    V8StringResource<> cpp_value = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetByteString(cppValue);
+    impl.SetByteString(cpp_value);
     return;
   }
 }
@@ -102,9 +107,10 @@ v8::Local<v8::Value> ToV8(const ByteStringOrNodeList& impl, v8::Local<v8::Object
   return v8::Local<v8::Value>();
 }
 
-ByteStringOrNodeList NativeValueTraits<ByteStringOrNodeList>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+ByteStringOrNodeList NativeValueTraits<ByteStringOrNodeList>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   ByteStringOrNodeList impl;
-  V8ByteStringOrNodeList::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8ByteStringOrNodeList::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

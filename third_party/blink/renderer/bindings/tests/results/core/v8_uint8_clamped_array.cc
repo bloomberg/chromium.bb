@@ -28,12 +28,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = {
+const WrapperTypeInfo V8Uint8ClampedArray::wrapper_type_info = {
     gin::kEmbedderBlink,
     nullptr,
     nullptr,
     "Uint8ClampedArray",
-    &V8ArrayBufferView::wrapperTypeInfo,
+    &V8ArrayBufferView::wrapper_type_info,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -57,37 +57,47 @@ static_assert(
 
 TestUint8ClampedArray* V8Uint8ClampedArray::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsUint8ClampedArray());
-  ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
-  if (scriptWrappable)
-    return scriptWrappable->ToImpl<TestUint8ClampedArray>();
+  ScriptWrappable* script_wrappable = ToScriptWrappable(object);
+  if (script_wrappable)
+    return script_wrappable->ToImpl<TestUint8ClampedArray>();
 
-  v8::Local<v8::Uint8ClampedArray> v8View = object.As<v8::Uint8ClampedArray>();
-  v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
-  TestUint8ClampedArray* typedArray = nullptr;
-  if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::Create(V8ArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
-  } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestUint8ClampedArray::Create(V8SharedArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->Length());
+  v8::Local<v8::Uint8ClampedArray> v8_view = object.As<v8::Uint8ClampedArray>();
+  v8::Local<v8::Object> array_buffer = v8_view->Buffer();
+  TestUint8ClampedArray* typed_array = nullptr;
+  if (array_buffer->IsArrayBuffer()) {
+    typed_array = TestUint8ClampedArray::Create(
+        V8ArrayBuffer::ToImpl(array_buffer),
+        v8_view->ByteOffset(),
+        v8_view->Length());
+  } else if (array_buffer->IsSharedArrayBuffer()) {
+    typed_array = TestUint8ClampedArray::Create(
+        V8SharedArrayBuffer::ToImpl(array_buffer),
+        v8_view->ByteOffset(),
+        v8_view->Length());
   } else {
     NOTREACHED();
   }
-  v8::Local<v8::Object> associatedWrapper = typedArray->AssociateWithWrapper(v8::Isolate::GetCurrent(), typedArray->GetWrapperTypeInfo(), object);
-  DCHECK(associatedWrapper == object);
+  v8::Local<v8::Object> associated_wrapper =
+        typed_array->AssociateWithWrapper(
+            v8::Isolate::GetCurrent(), typed_array->GetWrapperTypeInfo(), object);
+  DCHECK(associated_wrapper == object);
 
-  return typedArray->ToImpl<TestUint8ClampedArray>();
+  return typed_array->ToImpl<TestUint8ClampedArray>();
 }
 
-TestUint8ClampedArray* V8Uint8ClampedArray::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestUint8ClampedArray* V8Uint8ClampedArray::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsUint8ClampedArray() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestUint8ClampedArray* nativeValue = V8Uint8ClampedArray::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestUint8ClampedArray* native_value = V8Uint8ClampedArray::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "Uint8ClampedArray"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

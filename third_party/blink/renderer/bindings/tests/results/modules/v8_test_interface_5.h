@@ -37,17 +37,17 @@ class V8TestInterface5 {
     return ToScriptWrappable(object)->ToImpl<TestInterface5Implementation>();
   }
   MODULES_EXPORT static TestInterface5Implementation* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  MODULES_EXPORT static const WrapperTypeInfo wrapper_type_info;
   static void LegacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   MODULES_EXPORT static void InstallConditionalFeatures(
       v8::Local<v8::Context>,
       const DOMWrapperWorld&,
-      v8::Local<v8::Object> instanceObject,
-      v8::Local<v8::Object> prototypeObject,
-      v8::Local<v8::Function> interfaceObject,
-      v8::Local<v8::FunctionTemplate> interfaceTemplate);
+      v8::Local<v8::Object> instance_object,
+      v8::Local<v8::Object> prototype_object,
+      v8::Local<v8::Function> interface_object,
+      v8::Local<v8::FunctionTemplate> interface_template);
 
   // Callback functions
 

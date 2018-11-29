@@ -162,6 +162,6 @@ def member_context(member, info_provider):
         'specific_type_enum': 'k' + member.name,
         'type_name': type_name,
         'v8_value_to_local_cpp_value': member.v8_value_to_local_cpp_value(
-            {}, 'v8Value', 'cppValue', isolate='isolate',
+            {}, 'v8_value', 'cpp_value', isolate='isolate',
             use_exception_state=True)
     }

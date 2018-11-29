@@ -32,12 +32,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestInterfaceDocument::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceDocument::DomTemplate,
     nullptr,
     "TestInterfaceDocument",
-    &V8Document::wrapperTypeInfo,
+    &V8Document::wrapper_type_info,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kNodeClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -49,7 +49,7 @@ const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceDocument.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceDocument::wrapper_type_info_ = V8TestInterfaceDocument::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceDocument::wrapper_type_info_ = V8TestInterfaceDocument::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -74,7 +74,8 @@ static void LocationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& i
   V8SetReturnValueFast(info, WTF::GetPtr(impl->location()), impl);
 }
 
-static void LocationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LocationAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -82,17 +83,23 @@ static void LocationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   ALLOW_UNUSED_LOCAL(holder);
 
   // [PutForwards] => location.href
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterfaceDocument", "location");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterfaceDocument", "location");
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "location")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "location"))
+      .ToLocal(&target)) {
     return;
+  }
   if (!target->IsObject()) {
-    exceptionState.ThrowTypeError("The attribute value is not an object");
+    exception_state.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "href"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(
+          isolate->GetCurrentContext(),
+          V8AtomicString(isolate, "href"),
+          v8_value).To(&result)) {
     return;
+  }
   if (!result)
     return;
 }
@@ -105,41 +112,42 @@ void V8TestInterfaceDocument::LocationAttributeGetterCallback(const v8::Function
   test_interface_document_v8_internal::LocationAttributeGetter(info);
 }
 
-void V8TestInterfaceDocument::LocationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfaceDocument::LocationAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceDocument_location_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_interface_document_v8_internal::LocationAttributeSetter(v8Value, info);
+  test_interface_document_v8_internal::LocationAttributeSetter(v8_value, info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestInterfaceDocumentAccessors[] = {
     { "location", V8TestInterfaceDocument::LocationAttributeGetterCallback, V8TestInterfaceDocument::LocationAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasNoSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
 static void InstallV8TestInterfaceDocumentTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interface_name, V8Document::DomTemplate(isolate, world), V8TestInterfaceDocument::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceDocument::wrapper_type_info.interface_name, V8Document::DomTemplate(isolate, world), V8TestInterfaceDocument::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceDocumentAccessors, base::size(V8TestInterfaceDocumentAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestInterfaceDocumentAccessors, base::size(kV8TestInterfaceDocumentAccessors));
 
   // Custom signature
 
   V8TestInterfaceDocument::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestInterfaceDocument::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -158,29 +166,36 @@ void V8TestInterfaceDocument::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceDocumentTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestInterfaceDocumentTemplate);
 }
 
-bool V8TestInterfaceDocument::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestInterfaceDocument::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceDocument::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestInterfaceDocument::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestInterfaceDocument* V8TestInterfaceDocument::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestInterfaceDocument* V8TestInterfaceDocument::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceDocument* nativeValue = V8TestInterfaceDocument::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestInterfaceDocument* native_value = V8TestInterfaceDocument::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceDocument"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

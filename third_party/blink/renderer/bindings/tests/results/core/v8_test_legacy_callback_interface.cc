@@ -30,7 +30,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestLegacyCallbackInterface::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestLegacyCallbackInterface::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestLegacyCallbackInterface::DomTemplate,
     nullptr,
@@ -51,21 +51,22 @@ static void InstallV8TestLegacyCallbackInterfaceTemplate(v8::Isolate* isolate, c
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(
       isolate, interface_template,
-      V8TestLegacyCallbackInterface::wrapperTypeInfo.interface_name,
+      V8TestLegacyCallbackInterface::wrapper_type_info.interface_name,
       v8::Local<v8::FunctionTemplate>(),
       kV8DefaultWrapperInternalFieldCount);
   interface_template->SetLength(0);
 
   // Register IDL constants.
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = interface_template;
-  v8::Local<v8::ObjectTemplate> prototypeTemplate =
+  v8::Local<v8::ObjectTemplate> prototype_template =
       interface_template->PrototypeTemplate();
-  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestLegacyCallbackInterfaceConstants[] = {
-      {"CONST_VALUE_USHORT_42", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(42)},
-  };
-  V8DOMConfiguration::InstallConstants(
-      isolate, interfaceTemplate, prototypeTemplate,
-      V8TestLegacyCallbackInterfaceConstants, base::size(V8TestLegacyCallbackInterfaceConstants));
+  {
+    static constexpr V8DOMConfiguration::ConstantConfiguration kConstants[] = {
+        {"CONST_VALUE_USHORT_42", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(42)},
+    };
+    V8DOMConfiguration::InstallConstants(
+        isolate, interface_template, prototype_template,
+        kConstants, base::size(kConstants));
+  }
   static_assert(42 == TestLegacyCallbackInterface::kConstValueUshort42, "the value of TestLegacyCallbackInterface_kConstValueUshort42 does not match with implementation");
 }
 
@@ -74,7 +75,7 @@ v8::Local<v8::FunctionTemplate> V8TestLegacyCallbackInterface::DomTemplate(v8::I
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
       world,
-      const_cast<WrapperTypeInfo*>(&wrapperTypeInfo),
+      const_cast<WrapperTypeInfo*>(&wrapper_type_info),
       InstallV8TestLegacyCallbackInterfaceTemplate);
 }
 

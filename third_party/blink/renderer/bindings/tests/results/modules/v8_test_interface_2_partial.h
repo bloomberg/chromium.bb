@@ -39,7 +39,7 @@ class V8TestInterface2Partial {
   static void VoidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
 
  private:
-  static void InstallV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  static void InstallV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interface_template);
 };
 
 }  // namespace blink

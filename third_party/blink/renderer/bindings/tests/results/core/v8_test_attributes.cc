@@ -30,7 +30,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestAttributes::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestAttributes::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestAttributes::DomTemplate,
     nullptr,
@@ -47,7 +47,7 @@ const WrapperTypeInfo V8TestAttributes::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestAttributes.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestAttributes::wrapper_type_info_ = V8TestAttributes::wrapperTypeInfo;
+const WrapperTypeInfo& TestAttributes::wrapper_type_info_ = V8TestAttributes::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -81,14 +81,16 @@ static void StringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "stringPromiseAttribute");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionState exception_state(
+      info.GetIsolate(), ExceptionState::kGetterContext,
+      "TestAttributes", "stringPromiseAttribute");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
   if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate())) {
-    exceptionState.ThrowTypeError("Illegal invocation");
+    exception_state.ThrowTypeError("Illegal invocation");
     return;
   }
 
@@ -116,14 +118,16 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "raisesExceptionShortPromiseAttribute");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionState exception_state(
+      info.GetIsolate(), ExceptionState::kGetterContext,
+      "TestAttributes", "raisesExceptionShortPromiseAttribute");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
   if (!V8TestAttributes::HasInstance(info.Holder(), info.GetIsolate())) {
-    exceptionState.ThrowTypeError("Illegal invocation");
+    exception_state.ThrowTypeError("Illegal invocation");
     return;
   }
 
@@ -131,12 +135,15 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
 
   TestAttributes* impl = V8TestAttributes::ToImpl(holder);
 
-  ScriptPromise cppValue(impl->raisesExceptionShortPromiseAttribute(exceptionState));
+      info.GetIsolate(), ExceptionState::kGetterContext,
+      "TestAttributes", "raisesExceptionShortPromiseAttribute");
 
-  if (UNLIKELY(exceptionState.HadException()))
+  ScriptPromise cpp_value(impl->raisesExceptionShortPromiseAttribute(exception_state));
+
+  if (UNLIKELY(exception_state.HadException()))
     return;
 
-  V8SetReturnValue(info, cppValue.V8Value());
+  V8SetReturnValue(info, cpp_value.V8Value());
 }
 
 static void LenientSetterBoolAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -187,7 +194,8 @@ void V8TestAttributes::LenientSetterBoolAttributeAttributeGetterCallback(const v
   test_attributes_v8_internal::LenientSetterBoolAttributeAttributeGetter(info);
 }
 
-void V8TestAttributes::LenientSetterBoolAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestAttributes::LenientSetterBoolAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   // Setter for lenientSetterBoolAttribute is no-op because [LenientSetter] is specified.
 }
 
@@ -197,7 +205,7 @@ void V8TestAttributes::FloatAttributeAttributeGetterCallback(const v8::FunctionC
   test_attributes_v8_internal::FloatAttributeAttributeGetter(info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestAttributesAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestAttributesAccessors[] = {
     { "lenientThisLongAttribute", V8TestAttributes::LenientThisLongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "stringPromiseAttribute", V8TestAttributes::StringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "lenientThisStringPromiseAttribute", V8TestAttributes::LenientThisStringPromiseAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
@@ -209,26 +217,26 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestAttributesAccessors
 static void InstallV8TestAttributesTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestAttributes::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestAttributes::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestAttributes::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestAttributes::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestAttributesAccessors, base::size(V8TestAttributesAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestAttributesAccessors, base::size(kV8TestAttributesAccessors));
 
   // Custom signature
 
   V8TestAttributes::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestAttributes::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -247,29 +255,36 @@ void V8TestAttributes::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestAttributes::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestAttributesTemplate);
+v8::Local<v8::FunctionTemplate> V8TestAttributes::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestAttributesTemplate);
 }
 
-bool V8TestAttributes::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestAttributes::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestAttributes::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestAttributes::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestAttributes* V8TestAttributes::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestAttributes* V8TestAttributes::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestAttributes* NativeValueTraits<TestAttributes>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestAttributes* nativeValue = V8TestAttributes::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestAttributes* NativeValueTraits<TestAttributes>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestAttributes* native_value = V8TestAttributes::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestAttributes"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

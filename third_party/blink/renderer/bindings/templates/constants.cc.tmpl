@@ -25,19 +25,21 @@ void {{v8_class_or_partial}}::{{constant.camel_case_name}}ConstantGetterCallback
 {% macro install_constants() %}
 {% if constants | has_constant_configuration %}
 {# Normal constants #}
-static constexpr V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
-    {% for constant in constants | has_constant_configuration %}
-    {{constant_configuration(constant)}},
-    {% endfor %}
-};
-V8DOMConfiguration::InstallConstants(
-    isolate, interfaceTemplate, prototypeTemplate,
-    {{v8_class}}Constants, base::size({{v8_class}}Constants));
+{
+  static constexpr V8DOMConfiguration::ConstantConfiguration kConstants[] = {
+      {% for constant in constants | has_constant_configuration %}
+      {{constant_configuration(constant)}},
+      {% endfor %}
+  };
+  V8DOMConfiguration::InstallConstants(
+      isolate, interface_template, prototype_template,
+      kConstants, base::size(kConstants));
+}
 {% endif %}
 {# Constants with [DeprecateAs] or [MeasureAs] #}
 {% for constant in constants | has_special_getter %}
 V8DOMConfiguration::InstallConstantWithGetter(
-    isolate, interfaceTemplate, prototypeTemplate,
+    isolate, interface_template, prototype_template,
     "{{constant.name}}", {{v8_class_or_partial}}::{{constant.camel_case_name}}ConstantGetterCallback);
 {% endfor %}
 {# Check constants #}

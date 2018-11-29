@@ -664,14 +664,14 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         raise ValueError('Unrecognized base type for extended attribute "AllowShared": %s' % (idl_type.base_type))
 
     if idl_type.is_integer_type:
-        arguments = ', '.join([v8_value, 'exceptionState'])
+        arguments = ', '.join([v8_value, 'exception_state'])
     elif base_idl_type == 'SerializedScriptValue':
         arguments = ', '.join([
             v8_value,
             'SerializedScriptValue::SerializeOptions(SerializedScriptValue::kNotForStorage)',
-            'exceptionState'])
+            'exception_state'])
     elif idl_type.v8_conversion_needs_exception_state:
-        arguments = ', '.join([v8_value, 'exceptionState'])
+        arguments = ', '.join([v8_value, 'exception_state'])
     else:
         arguments = v8_value
 
@@ -684,9 +684,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.is_array_buffer_view_or_typed_array:
         this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes)
         if 'AllowShared' in extended_attributes:
-            cpp_expression_format = ('ToMaybeShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
+            cpp_expression_format = ('ToMaybeShared<%s>({isolate}, {v8_value}, exception_state)' % this_cpp_type)
         else:
-            cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
+            cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exception_state)' % this_cpp_type)
 
     elif idl_type.is_union_type:
         nullable = 'UnionTypeConversionMode::kNullable' if idl_type.includes_nullable_type \
@@ -694,10 +694,10 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         # We need to consider the moving of the null through the union in order
         # to generate the correct V8* class name.
         this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes)
-        cpp_expression_format = '%s::ToImpl({isolate}, {v8_value}, {variable_name}, %s, exceptionState)' % \
+        cpp_expression_format = '%s::ToImpl({isolate}, {v8_value}, {variable_name}, %s, exception_state)' % \
             (v8_type(this_cpp_type), nullable)
     elif idl_type.use_output_parameter_for_result:
-        cpp_expression_format = 'V8{idl_type}::ToImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
+        cpp_expression_format = 'V8{idl_type}::ToImpl({isolate}, {v8_value}, {variable_name}, exception_state)'
     elif idl_type.is_callback_function:
         cpp_expression_format = 'V8{idl_type}::Create({v8_value}.As<v8::Function>())'
     elif idl_type.v8_conversion_needs_exception_state:
@@ -740,7 +740,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     elif idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types for which conversion can fail and that need error handling.
 
-        check_expression = 'exceptionState.HadException()'
+        check_expression = 'exception_state.HadException()'
 
         if idl_type.is_union_type:
             set_expression = cpp_value
@@ -752,7 +752,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
             # as the condition here would be wrong.
             if not idl_type.v8_conversion_needs_exception_state:
                 if use_exception_state:
-                    check_expression = '!%s.Prepare(exceptionState)' % variable_name
+                    check_expression = '!%s.Prepare(exception_state)' % variable_name
                 else:
                     check_expression = '!%s.Prepare()' % variable_name
     elif not idl_type.v8_conversion_is_trivial and not idl_type.is_callback_function:

@@ -144,10 +144,10 @@ bool CanAccessWindow(const LocalDOMWindow* accessing_window,
 DOMWindow* FindWindow(v8::Isolate* isolate,
                       const WrapperTypeInfo* type,
                       v8::Local<v8::Object> holder) {
-  if (V8Window::wrapperTypeInfo.Equals(type))
+  if (V8Window::wrapper_type_info.Equals(type))
     return V8Window::ToImpl(holder);
 
-  if (V8Location::wrapperTypeInfo.Equals(type))
+  if (V8Location::wrapper_type_info.Equals(type))
     return V8Location::ToImpl(holder)->DomWindow();
 
   // This function can handle only those types listed above.
@@ -388,7 +388,7 @@ bool BindingSecurity::ShouldAllowWrapperCreationOrThrowException(
   // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
   // cross-origin script access to a few properties of Location is allowed.
   // Location already implements the necessary security checks.
-  if (wrapper_type_info->Equals(&V8Location::wrapperTypeInfo))
+  if (wrapper_type_info->Equals(&V8Location::wrapper_type_info))
     return true;
 
   ExceptionState exception_state(accessing_context->GetIsolate(),

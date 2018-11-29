@@ -307,6 +307,7 @@ def interface_context(interface, interfaces):
         'pass_cpp_type': cpp_name(interface) + '*',
         'runtime_call_stats': runtime_call_stats_context(interface),
         'runtime_enabled_feature_name': runtime_enabled_feature_name(interface),  # [RuntimeEnabled]
+        'snake_case_v8_class': NameStyleConverter(v8_class_name).to_snake_case(),
         'v8_class': v8_class_name,
         'v8_class_or_partial': v8_class_name_or_partial,
         'wrapper_class_id': wrapper_class_id,
@@ -1247,7 +1248,7 @@ def resolution_tests_methods(effective_overloads):
         # Either condition should be fulfilled to call this |method|.
         test = '%s->IsArray()' % cpp_value
         yield test, method
-        test = 'HasCallableIteratorSymbol(info.GetIsolate(), %s, exceptionState)' % cpp_value
+        test = 'HasCallableIteratorSymbol(info.GetIsolate(), %s, exception_state)' % cpp_value
         yield test, method
     except StopIteration:
         pass
@@ -1475,9 +1476,9 @@ def property_getter(getter, cpp_arguments):
     cpp_method_name = 'impl->%s' % cpp_name(getter)
 
     if is_call_with_script_state:
-        cpp_arguments.insert(0, 'scriptState')
+        cpp_arguments.insert(0, 'script_state')
     if is_raises_exception:
-        cpp_arguments.append('exceptionState')
+        cpp_arguments.append('exception_state')
     if use_output_parameter_for_result:
         cpp_arguments.append('result')
 
@@ -1536,7 +1537,7 @@ def property_setter(setter, interface):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'v8Value', 'propertyValue'),
+            extended_attributes, 'v8_value', 'property_value'),
     }
 
 

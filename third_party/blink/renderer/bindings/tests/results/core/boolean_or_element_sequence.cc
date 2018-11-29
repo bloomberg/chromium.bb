@@ -68,28 +68,33 @@ void BooleanOrElementSequence::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_sequence_);
 }
 
-void V8BooleanOrElementSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrElementSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8BooleanOrElementSequence::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    BooleanOrElementSequence& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    HeapVector<Member<Element>> cppValue = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    HeapVector<Member<Element>> cpp_value = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetElementSequence(cppValue);
+    impl.SetElementSequence(cpp_value);
     return;
   }
 
-  if (v8Value->IsBoolean()) {
-    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
+  if (v8_value->IsBoolean()) {
+    impl.SetBoolean(v8_value.As<v8::Boolean>()->Value());
     return;
   }
 
   {
-    impl.SetBoolean(v8Value->BooleanValue(isolate));
+    impl.SetBoolean(v8_value->BooleanValue(isolate));
     return;
   }
 }
@@ -108,9 +113,10 @@ v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Ob
   return v8::Local<v8::Value>();
 }
 
-BooleanOrElementSequence NativeValueTraits<BooleanOrElementSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+BooleanOrElementSequence NativeValueTraits<BooleanOrElementSequence>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   BooleanOrElementSequence impl;
-  V8BooleanOrElementSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrElementSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

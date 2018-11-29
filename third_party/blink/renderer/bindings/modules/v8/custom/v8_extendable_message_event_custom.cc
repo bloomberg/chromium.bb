@@ -43,7 +43,7 @@ void V8ExtendableMessageEvent::ConstructorCustom(
       ExtendableMessageEvent::Create(type, event_init_dict);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
-      isolate, &V8ExtendableMessageEvent::wrapperTypeInfo, wrapper);
+      isolate, &V8ExtendableMessageEvent::wrapper_type_info, wrapper);
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |data| as a private value to avoid cyclic references.

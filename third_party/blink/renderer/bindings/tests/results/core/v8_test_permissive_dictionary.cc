@@ -25,15 +25,15 @@ static const v8::Eternal<v8::Name>* eternalV8TestPermissiveDictionaryKeys(v8::Is
       kKeys, kKeys, base::size(kKeys));
 }
 
-void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary* impl, ExceptionState& exceptionState) {
-  if (IsUndefinedOrNull(v8Value)) {
+void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, TestPermissiveDictionary* impl, ExceptionState& exception_state) {
+  if (IsUndefinedOrNull(v8_value)) {
     return;
   }
-  if (!v8Value->IsObject()) {
+  if (!v8_value->IsObject()) {
     // Do nothing.
     return;
   }
-  v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
+  v8::Local<v8::Object> v8Object = v8_value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
   const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
@@ -41,14 +41,14 @@ void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> boolean_member_value;
   if (!v8Object->Get(context, keys[0].Get(isolate)).ToLocal(&boolean_member_value)) {
-    exceptionState.RethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return;
   }
   if (boolean_member_value.IsEmpty() || boolean_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool boolean_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exceptionState);
-    if (exceptionState.HadException())
+    bool boolean_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exception_state);
+    if (exception_state.HadException())
       return;
     impl->setBooleanMember(boolean_member_cpp_value);
   }
@@ -90,9 +90,9 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary* impl, v8::Loca
   return true;
 }
 
-TestPermissiveDictionary* NativeValueTraits<TestPermissiveDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestPermissiveDictionary* NativeValueTraits<TestPermissiveDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   TestPermissiveDictionary* impl = TestPermissiveDictionary::Create();
-  V8TestPermissiveDictionary::ToImpl(isolate, value, impl, exceptionState);
+  V8TestPermissiveDictionary::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }
 

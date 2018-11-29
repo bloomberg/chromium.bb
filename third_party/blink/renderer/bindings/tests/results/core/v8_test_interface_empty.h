@@ -34,8 +34,8 @@ class V8TestInterfaceEmpty {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceEmpty>();
   }
   CORE_EXPORT static TestInterfaceEmpty* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

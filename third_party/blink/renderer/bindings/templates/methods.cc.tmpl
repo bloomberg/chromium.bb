@@ -12,19 +12,19 @@ RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "{{counter}}");
 {% macro generate_method(method, world_suffix) %}
 static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% filter format_remove_duplicates([
-      'ExceptionState exceptionState',
-      'ScriptState* scriptState = ']) %}
+      'ExceptionState exception_state',
+      'ScriptState* script_state = ']) %}
   {% set define_exception_state -%}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
-  {% if 'exceptionState' in function_call or
+  {% if 'exception_state' in function_call or
         (method.returns_promise and not method.is_static) %}
   {{define_exception_state}}
   {% if method.returns_promise %}
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
   {% endif %}
   {% endif %}
   {% if method.is_ce_reactions %}
@@ -53,7 +53,9 @@ static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suf
   {# Security checks #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, BindingSecurity::ErrorReportOption::kDoNotReport)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(
+          CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}},
+          BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kCrossOrigin{{interface_name}}{{method.camel_case_name}});
     V8SetReturnValueNull(info);
@@ -61,16 +63,16 @@ static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suf
   }
   {% endif %}
 
-  {% if 'scriptState' in function_call %}
+  {% if 'script_state' in function_call %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
   {% if method.is_custom_element_callbacks %}
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   {% endif %}
 
   {{function_call | trim | indent(2)}}
@@ -105,17 +107,17 @@ if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
 {% endif %}
 
 {% for argument in method.arguments %}
-{{argument.cpp_type}} {{argument.name}};
+{{argument.cpp_type}} {{argument.local_cpp_variable}};
 {% endfor %}
 {% if method.has_optional_argument_without_default_value %}
 {# Count the effective number of arguments.  (arg1, arg2, undefined) is
    interpreted as two arguments are passed and (arg1, undefined, arg3) is
    interpreted as three arguments are passed. #}
-int numArgsPassed = info.Length();
-while (numArgsPassed > 0) {
-  if (!info[numArgsPassed - 1]->IsUndefined())
+int num_args_passed = info.Length();
+while (num_args_passed > 0) {
+  if (!info[num_args_passed - 1]->IsUndefined())
     break;
-  --numArgsPassed;
+  --num_args_passed;
 }
 {% endif %}
 {% for argument in method.arguments %}
@@ -140,7 +142,7 @@ if (!info[{{argument.index}}]->IsUndefined()) {
 {# Optional arguments without a default value generate an early call with
    fewer arguments if they are omitted.
    Optional Dictionary arguments default to empty dictionary. #}
-if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
+if (UNLIKELY(num_args_passed <= {{argument.index}})) {
   {% if world_suffix %}
   {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | trim | indent(2)}}
   {% else %}
@@ -158,7 +160,7 @@ if (info[{{argument.index}}]->IsNullOrUndefined()) {
   // TODO(crbug.com/886588): Remove the following special casing.
   if (info[{{argument.index}}].As<v8::Object>()->CreationContext().IsEmpty()) {
     {{define_exception_state}}
-    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    exception_state.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
     return;
   }
 } else {
@@ -166,24 +168,24 @@ if (info[{{argument.index}}]->IsNullOrUndefined()) {
   return;
 }
 {% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOnly);
+{{argument.local_cpp_variable}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOnly);
 {% else %}{# method.name == 'AddEventListener' #}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOrCreate);
+{{argument.local_cpp_variable}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
-  {{argument.name}} = V8{{argument.idl_type}}::CreateOrNull(info[{{argument.index}}].As<v8::Object>());
-  if (!{{argument.name}}) {
+  {{argument.local_cpp_variable}} = V8{{argument.idl_type}}::CreateOrNull(info[{{argument.index}}].As<v8::Object>());
+  if (!{{argument.local_cpp_variable}}) {
     {{define_exception_state}}
-    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    exception_state.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
     return;
   }
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{argument.name}} = nullptr;
+  {{argument.local_cpp_variable}} = nullptr;
 {% elif argument.is_optional %}
 } else if (info[{{argument.index}}]->IsUndefined()) {
-  {{argument.name}} = nullptr;
+  {{argument.local_cpp_variable}} = nullptr;
 {% endif %}
 } else {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
@@ -195,10 +197,10 @@ if (info[{{argument.index}}]->IsFunction()) {
   {{v8_value_to_local_cpp_value(argument)}}
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{argument.name}} = nullptr;
+  {{argument.local_cpp_variable}} = nullptr;
 {% elif argument.is_optional %}
 } else if (info[{{argument.index}}]->IsUndefined()) {
-  {{argument.name}} = nullptr;
+  {{argument.local_cpp_variable}} = nullptr;
 {% endif %}
 } else {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
@@ -210,7 +212,7 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
     {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
     return;
   }
-  {{argument.name}}.push_back(V8{{argument.idl_type}}::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
+  {{argument.local_cpp_variable}}.push_back(V8{{argument.idl_type}}::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
 }
 {% elif argument.is_dictionary %}
 {% if not argument.use_permissive_dictionary_conversion %}
@@ -231,10 +233,10 @@ if (info[{{argument.index}}]->IsObject()) {
   {{v8_value_to_local_cpp_value(argument)}}
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{argument.name}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
+  {{argument.local_cpp_variable}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
 {% elif argument.is_optional %}
 } else if (info[{{argument.index}}]->IsUndefined()) {
-  {{argument.name}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
+  {{argument.local_cpp_variable}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
 {% endif %}
 } else {
   {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}
@@ -250,21 +252,21 @@ if (info[{{argument.index}}]->IsObject()) {
    throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface
    Note: for variadic arguments, the type checking is done for each matched
    argument instead; see argument.is_variadic_wrapper_type code-path above. #}
-if (!{{argument.name}}{% if argument.is_nullable %} && !IsUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
+if (!{{argument.local_cpp_variable}}{% if argument.is_nullable %} && !IsUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
   {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
   return;
 }
 {% elif argument.enum_values %}
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
-{% set enum_variable = 'valid' + argument.name[0].upper() + argument.name[1:] + 'Values' %}
+{% set enum_variable = 'kValid' + argument.name[0].upper() + argument.name[1:] + 'Values' %}
 {{declare_enum_validation_variable(argument.enum_values, enum_variable)}}
-if (!IsValidEnum({{argument.name}}, {{enum_variable}}, base::size({{enum_variable}}), "{{argument.enum_type}}", exceptionState)) {
+if (!IsValidEnum({{argument.local_cpp_variable}}, {{enum_variable}}, base::size({{enum_variable}}), "{{argument.enum_type}}", exception_state)) {
   return;
 }
 {% elif argument.idl_type == 'Promise' %}
 {# We require this for our implementation of promises, though not in spec:
 http://heycam.github.io/webidl/#es-promise #}
-if (!{{argument.name}}.IsUndefinedOrNull() && !{{argument.name}}.IsObject()) {
+if (!{{argument.local_cpp_variable}}.IsUndefinedOrNull() && !{{argument.local_cpp_variable}}.IsObject()) {
   {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}
   return;
 }
@@ -281,17 +283,17 @@ if (!{{argument.name}}.IsUndefinedOrNull() && !{{argument.name}}.IsObject()) {
 {% if method.is_call_with_execution_context %}
 {# [ConstructorCallWith=ExecutionContext] or [CallWith=ExecutionContext] #}
 {% if method.is_constructor %}
-ExecutionContext* executionContext = ToExecutionContext(
+ExecutionContext* execution_context = ToExecutionContext(
     info.NewTarget().As<v8::Object>()->CreationContext());
 {% elif method.is_static %}
-ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
 {% else %}
-ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
+ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 {% endif %}
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 {# [CallWith=ScriptArguments] #}
-ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, {{method.number_of_arguments}}));
+ScriptArguments* scriptArguments(ScriptArguments::Create(script_state, info, {{method.number_of_arguments}}));
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
@@ -311,7 +313,7 @@ Document& document = *To<Document>(ToExecutionContext(
 {% endif %}
 {# Post-call #}
 {% if method.is_raises_exception %}
-if (exceptionState.HadException()) {
+if (exception_state.HadException()) {
   return;
 }
 {% endif %}
@@ -347,7 +349,7 @@ else
 {##############################################################################}
 {% macro throw_type_error(method, error_message) %}
 {% if method.has_exception_state or method.returns_promise %}
-exceptionState.ThrowTypeError({{error_message}});
+exception_state.ThrowTypeError({{error_message}});
 {%- elif method.is_constructor %}
 V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("{{interface_name}}", {{error_message}}));
 {%- else %}
@@ -405,7 +407,7 @@ static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::Functi
 
   {# First resolve by length #}
   {% if not fall_through_to_partial_overloads %}
-  bool isArityError = false;
+  bool is_arity_error = false;
   {% endif %}
 
   {# This follows the overload resolution algorithm. #}
@@ -420,19 +422,19 @@ static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::Functi
       {% for test, method in tests_methods %}
       {% if method.visible %}
       {% filter runtime_enabled(not overloads.runtime_enabled_all and method.runtime_enabled_feature_name) %}
-      {% if "exceptionState" in test %}
+      {% if "exception_state" in test %}
       {
-        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext,
+        ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext,
                                       "{{interface_name}}", "{{overloads.name}}");
         {{ test_and_call_overloaded_method(test, method, overloads, world_suffix) | trim | indent(8) }}
-        if (exceptionState.HadException()) {
-          exceptionState.RethrowV8Exception(exceptionState.GetException());
+        if (exception_state.HadException()) {
+          exception_state.RethrowV8Exception(exception_state.GetException());
           return;
         }
       }
-      {% else %}{# exceptionState #}
+      {% else %}{# exception_state #}
       {{ test_and_call_overloaded_method(test, method, overloads, world_suffix) | trim | indent(6) }}
-      {% endif %}{# exceptionState #}
+      {% endif %}{# exception_state #}
       {% endfilter %}
       {% endif %}
       {% endfor %}
@@ -441,7 +443,7 @@ static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::Functi
     {% if not fall_through_to_partial_overloads %}
     default:
       {# 12.19. Otherwise: throw a TypeError. #}
-      isArityError = true;
+      is_arity_error = true;
     {% endif %}
   }
 
@@ -449,25 +451,25 @@ static void {{overloads.camel_case_name}}Method{{world_suffix}}(const v8::Functi
   DCHECK({{overloads.name}}MethodForPartialInterface);
   ({{overloads.name}}MethodForPartialInterface)(info);
   {% else %}{# fall_through_to_partial_overloads #}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{overloads.name}}");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{overloads.name}}");
   {% if overloads.returns_promise_all %}
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
   {% endif %}
-  if (isArityError) {
+  if (is_arity_error) {
     {% if overloads.length != 0 %}
     if (info.Length() < {{overloads.length}}) {
-      exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments({{overloads.length}}, info.Length()));
+      exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments({{overloads.length}}, info.Length()));
       return;
     }
     {% endif %}
     {% if overloads.valid_arities %}
     if (info.Length() >= {{overloads.length}}) {
-      exceptionState.ThrowTypeError(ExceptionMessages::InvalidArity("{{overloads.valid_arities}}", info.Length()));
+      exception_state.ThrowTypeError(ExceptionMessages::InvalidArity("{{overloads.valid_arities}}", info.Length()));
       return;
     }
     {% endif %}
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
   {% endif %}{# fall_through_to_partial_overloads #}
 }
 {% endmacro %}
@@ -505,13 +507,13 @@ void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_su
   {% endif %}{# not method.overloads #}
   {% if world_suffix in method.activity_logging_world_list %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
-  V8PerContextData* contextData = scriptState->PerContextData();
-  if (contextData && contextData->ActivityLogger()) {
-    contextData->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info);
+  V8PerContextData* context_data = script_state->PerContextData();
+  if (context_data && context_data->ActivityLogger()) {
+    context_data->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info);
   }
   {% endif %}
   {% if method.is_custom %}
@@ -529,18 +531,29 @@ void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_su
    realm as a hack to support the incumbent realm. Clean this up when Blink
    properly supports the incumbent realm. #}
 static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
-  static int domTemplateKey; // This address is used for a key to look up the dom template.
+  static int dom_template_key; // This address is used for a key to look up the dom template.
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = data->FindInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
+  v8::Local<v8::FunctionTemplate> interface_template =
+      data->FindInterfaceTemplate(world, &{{v8_class}}::wrapper_type_info);
+  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
-  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}}, v8::Local<v8::Value>(), signature, {{method.length}});
+  v8::Local<v8::FunctionTemplate> method_template =
+      data->FindOrCreateOperationTemplate(
+          world,
+          &dom_template_key,
+          {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}},
+          v8::Local<v8::Value>(),
+          signature,
+          {{method.length}});
   // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
+  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
+                   .ToLocalChecked());
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl, BindingSecurity::ErrorReportOption::kDoNotReport)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(
+          CurrentDOMWindow(info.GetIsolate()), impl,
+          BindingSecurity::ErrorReportOption::kDoNotReport)) {
     return;
   }
 
@@ -548,11 +561,11 @@ static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(con
   // {{method.name}} must be same with |methodName| (=name) in
   // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   {% endraw %}
-  V8PrivateProperty::Symbol propertySymbol =
+  V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "{{method.name}}");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
-  if (propertySymbol.HasValue(holder)) {
-    V8SetReturnValue(info, propertySymbol.GetOrUndefined(holder));
+  if (property_symbol.HasValue(holder)) {
+    V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
   }
 }
 {% endmacro %}
@@ -586,11 +599,11 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   {% endif %}
 
-  {% if 'exceptionState' in function_call %}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "{{interface_name}}");
+  {% if 'exception_state' in function_call %}
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "{{interface_name}}");
   {% endif %}
-  {% if 'scriptState' in function_call %}
-  ScriptState* scriptState = ScriptState::From(
+  {% if 'script_state' in function_call %}
+  ScriptState* script_state = ScriptState::From(
       info.NewTarget().As<v8::Object>()->CreationContext());
   {% endif %}
 
@@ -605,7 +618,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Local<v8::Object> wrapper = info.Holder();
-wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapperTypeInfo, wrapper);
+wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapper_type_info, wrapper);
 V8SetReturnValue(info, wrapper);
 {% endmacro %}
 
@@ -638,11 +651,17 @@ V8SetReturnValue(info, wrapper);
 
 {######################################}
 {% macro install_custom_signature(method, instance_template, prototype_template, interface_template, signature) %}
-const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
-  {{method_configuration(method) | trim | indent(2)}}
-};
-for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::InstallMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, methodConfig);
+{
+  // Install {{method.name}} configuration
+  constexpr V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+      {{method_configuration(method) | trim | indent(4)}}
+  };
+  for (const auto& config : kConfigurations) {
+    V8DOMConfiguration::InstallMethod(
+        isolate, world, {{instance_template}}, {{prototype_template}},
+        {{interface_template}}, {{signature}}, config);
+  }
+}
 {%- endmacro %}
 
 
@@ -658,11 +677,17 @@ for (const auto& methodConfig : {{method.name}}MethodConfiguration)
 {% filter runtime_enabled(method.overloads.runtime_enabled_all
                           if method.overloads else
                           method.runtime_enabled_feature_name) %}
-const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
-  {{method_configuration(method) | trim | indent(2)}}
-};
-for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
+{
+  // Install {{method.name}} configuration
+  const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
+      {{method_configuration(method) | trim | indent(4)}}
+  };
+  for (const auto& config : kConfigurations) {
+    V8DOMConfiguration::InstallMethod(
+        isolate, world, instance_object, prototype_object,
+        interface_object, signature, config);
+  }
+}
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfilter %}{# secure_context() #}
