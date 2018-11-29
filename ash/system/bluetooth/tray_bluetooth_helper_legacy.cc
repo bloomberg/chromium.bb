@@ -114,27 +114,15 @@ void TrayBluetoothHelperLegacy::InitializeOnAdapterReady(
   adapter_ = adapter;
   CHECK(adapter_);
   adapter_->AddObserver(this);
+
   last_state_ = GetBluetoothState();
+  StartOrStopRefreshingDeviceList();
 }
 
 void TrayBluetoothHelperLegacy::Initialize() {
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&TrayBluetoothHelperLegacy::InitializeOnAdapterReady,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-BluetoothDeviceList TrayBluetoothHelperLegacy::GetAvailableBluetoothDevices()
-    const {
-  device::BluetoothAdapter::DeviceList devices =
-      device::FilterBluetoothDeviceList(adapter_->GetDevices(),
-                                        device::BluetoothFilterType::KNOWN,
-                                        kMaximumDevicesShown);
-
-  BluetoothDeviceList device_list;
-  for (device::BluetoothDevice* device : devices)
-    device_list.push_back(GetBluetoothDeviceInfo(device));
-
-  return device_list;
 }
 
 void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
@@ -210,6 +198,20 @@ bool TrayBluetoothHelperLegacy::HasBluetoothDiscoverySession() {
   return discovery_session_ && discovery_session_->IsActive();
 }
 
+void TrayBluetoothHelperLegacy::GetBluetoothDevices(
+    GetBluetoothDevicesCallback callback) const {
+  BluetoothDeviceList device_list;
+  device::BluetoothAdapter::DeviceList devices =
+      device::FilterBluetoothDeviceList(adapter_->GetDevices(),
+                                        device::BluetoothFilterType::KNOWN,
+                                        kMaximumDevicesShown);
+  for (device::BluetoothDevice* device : devices)
+    device_list.push_back(GetBluetoothDeviceInfo(device));
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(device_list)));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BluetoothAdapter::Observer:
 
@@ -221,6 +223,7 @@ void TrayBluetoothHelperLegacy::AdapterPresentChanged(
 
   last_state_ = GetBluetoothState();
   NotifyBluetoothSystemStateChanged();
+  StartOrStopRefreshingDeviceList();
 }
 
 void TrayBluetoothHelperLegacy::AdapterPoweredChanged(
@@ -231,27 +234,13 @@ void TrayBluetoothHelperLegacy::AdapterPoweredChanged(
 
   last_state_ = GetBluetoothState();
   NotifyBluetoothSystemStateChanged();
+  StartOrStopRefreshingDeviceList();
 }
 
 void TrayBluetoothHelperLegacy::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter,
     bool discovering) {
   NotifyBluetoothScanStateChanged();
-}
-
-void TrayBluetoothHelperLegacy::DeviceAdded(device::BluetoothAdapter* adapter,
-                                            device::BluetoothDevice* device) {
-  NotifyBluetoothDeviceListChanged();
-}
-
-void TrayBluetoothHelperLegacy::DeviceChanged(device::BluetoothAdapter* adapter,
-                                              device::BluetoothDevice* device) {
-  NotifyBluetoothDeviceListChanged();
-}
-
-void TrayBluetoothHelperLegacy::DeviceRemoved(device::BluetoothAdapter* adapter,
-                                              device::BluetoothDevice* device) {
-  NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::OnStartDiscoverySession(

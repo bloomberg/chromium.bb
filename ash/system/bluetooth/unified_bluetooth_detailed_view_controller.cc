@@ -22,8 +22,6 @@ using device::mojom::BluetoothDeviceInfoPtr;
 
 namespace ash {
 
-const int kUpdateFrequencyMs = 1000;
-
 namespace {
 
 // Updates bluetooth device |device| in the |list|. If it is new, append to the
@@ -91,27 +89,17 @@ void UnifiedBluetoothDetailedViewController::OnBluetoothSystemStateChanged() {
   if (bluetooth_state == BluetoothSystem::State::kPoweredOn) {
     // If Bluetooth was just turned on, start discovering.
     Shell::Get()->tray_bluetooth_helper()->StartBluetoothDiscovering();
-  } else {
-    // Otherwise stop updating the list of devices.
-    timer_.Stop();
   }
 
   UpdateDeviceListAndUI();
 }
 
 void UnifiedBluetoothDetailedViewController::OnBluetoothScanStateChanged() {
-  // To avoid delaying showing devices, update the device list and UI
-  // immediately.
   UpdateDeviceListAndUI();
+}
 
-  if (Shell::Get()->tray_bluetooth_helper()->HasBluetoothDiscoverySession()) {
-    // Update the device list and UI every |kUpdateFrequencyMs|.
-    timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs), this,
-        &UnifiedBluetoothDetailedViewController::UpdateDeviceListAndUI);
-    return;
-  }
-  timer_.Stop();
+void UnifiedBluetoothDetailedViewController::OnBluetoothDeviceListChanged() {
+  UpdateDeviceListAndUI();
 }
 
 void UnifiedBluetoothDetailedViewController::UpdateDeviceListAndUI() {
@@ -151,25 +139,28 @@ void UnifiedBluetoothDetailedViewController::UpdateBluetoothDeviceList() {
   std::set<std::string> new_paired_not_connected_devices;
   std::set<std::string> new_discovered_not_paired_devices;
 
-  for (auto& device :
+  for (const auto& device :
        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices()) {
+    auto device_clone = device->Clone();
     if (device->connection_state ==
         BluetoothDeviceInfo::ConnectionState::kConnecting) {
       new_connecting_devices.insert(device->address);
-      UpdateBluetoothDeviceListHelper(&connecting_devices_, std::move(device));
+      UpdateBluetoothDeviceListHelper(&connecting_devices_,
+                                      std::move(device_clone));
     } else if (device->connection_state ==
                    BluetoothDeviceInfo::ConnectionState::kConnected &&
                device->is_paired) {
       new_connected_devices.insert(device->address);
-      UpdateBluetoothDeviceListHelper(&connected_devices_, std::move(device));
+      UpdateBluetoothDeviceListHelper(&connected_devices_,
+                                      std::move(device_clone));
     } else if (device->is_paired) {
       new_paired_not_connected_devices.insert(device->address);
       UpdateBluetoothDeviceListHelper(&paired_not_connected_devices_,
-                                      std::move(device));
+                                      std::move(device_clone));
     } else {
       new_discovered_not_paired_devices.insert(device->address);
       UpdateBluetoothDeviceListHelper(&discovered_not_paired_devices_,
-                                      std::move(device));
+                                      std::move(device_clone));
     }
   }
   RemoveObsoleteBluetoothDevicesFromList(&connecting_devices_,

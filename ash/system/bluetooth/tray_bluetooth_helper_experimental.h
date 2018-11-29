@@ -31,13 +31,13 @@ class TrayBluetoothHelperExperimental
 
   // TrayBluetoothHelper:
   void Initialize() override;
-  BluetoothDeviceList GetAvailableBluetoothDevices() const override;
   void StartBluetoothDiscovering() override;
   void StopBluetoothDiscovering() override;
   void ConnectToBluetoothDevice(const std::string& address) override;
   device::mojom::BluetoothSystem::State GetBluetoothState() override;
   void SetBluetoothEnabled(bool enabled) override;
   bool HasBluetoothDiscoverySession() override;
+  void GetBluetoothDevices(GetBluetoothDevicesCallback callback) const override;
 
   // device::mojom::BluetoothSystemClient
   void OnStateChanged(device::mojom::BluetoothSystem::State state) override;
