@@ -107,10 +107,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                               size_t num_surfaces,
                               std::vector<VASurfaceID>* va_surfaces);
 
-  // Creates a VA Context associated with the set of |va_surfaces| of |size|.
-  bool CreateContext(unsigned int va_format,
-                     const gfx::Size& size,
-                     const std::vector<VASurfaceID>& va_surfaces);
+  // Creates a VA Context associated with |format| and |size|.
+  bool CreateContext(unsigned int va_format, const gfx::Size& size);
 
   // Frees all memory allocated in CreateSurfaces.
   virtual void DestroySurfaces();

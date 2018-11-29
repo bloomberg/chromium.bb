@@ -639,8 +639,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   // |vaapi_wrapper_| to allocate them for us.
   if (decode_using_client_picture_buffers_) {
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateContext(va_format, requested_pic_size_,
-                                      va_surface_ids),
+        vaapi_wrapper_->CreateContext(va_format, requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
   } else {
     va_surface_ids.clear();
