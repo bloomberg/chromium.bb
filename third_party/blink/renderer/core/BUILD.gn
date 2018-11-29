@@ -1382,7 +1382,7 @@ action("make_minimized_css") {
   script = "../build/scripts/minimize_css.py"
 
   inputs = [
-    "css/html.css",
+    "html/resources/html.css",
   ]
   outputs = [
     "$blink_core_output_dir/html.css",

@@ -42,8 +42,8 @@ LayoutThemeMobile::~LayoutThemeMobile() = default;
 
 String LayoutThemeMobile::ExtraDefaultStyleSheet() {
   return LayoutThemeDefault::ExtraDefaultStyleSheet() +
-         GetDataResourceAsASCIIString("themeChromiumLinux.css") +
-         GetDataResourceAsASCIIString("themeChromiumAndroid.css");
+         GetDataResourceAsASCIIString("linux.css") +
+         GetDataResourceAsASCIIString("android.css");
 }
 
 String LayoutThemeMobile::ExtraFullscreenStyleSheet() {

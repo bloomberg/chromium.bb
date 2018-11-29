@@ -29,13 +29,13 @@
  */
 
 /* These styles override the default styling for HTML elements as defined in
-   WebCore/css/html.css. So far we have used this file exclusively for
-   making our form elements match Firefox's. */
+   core/html/resources/tml.css. So far we have used this file exclusively
+   for making our form elements match Firefox's. */
 
 /*
  * Update padding for all text-like types including unknown types.
  * Non-text types have input[type="foo" i] with padding properties in
- * html.css or themeInputMultipleFields.css.
+ * html.css or input_multiple_fields.css.
  */
 input {
     padding:1px 0;

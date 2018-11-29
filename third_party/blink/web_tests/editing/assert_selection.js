@@ -61,7 +61,7 @@ const DumpAs = {
 };
 
 // border-size of IFRAME which hosts sample HTML. This value comes from
-// "core/css/html.css".
+// "core/html/resources/html.css".
 const kIFrameBorderSize = 2;
 
 /** @const @type {string} */

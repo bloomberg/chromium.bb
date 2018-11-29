@@ -29,8 +29,8 @@
  */
 
 /* These styles override the default styling for HTML elements in quirks-mode
-   as defined in WebCore/css/quirks.css. So far we have used this file exclusively for
-   making our form elements match Firefox's. */
+   as defined in core/html/resources/quirks.css. So far we have used this
+   file exclusively for making our form elements match Firefox's. */
 
 textarea {
   /* Matches IE's text offsets in quirksmode (causes text to wrap the same as IE). */
