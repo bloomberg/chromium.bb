@@ -78,13 +78,11 @@ class BaseSetOperators {
                   "U ptr must implicitly convert to T ptr");
   }
 
-  explicit BaseSetOperators(const T& set) { this->operator=(set); }
+  explicit BaseSetOperators(const BaseSetOperators<T>& other) { Assign(other); }
 
   ~BaseSetOperators() {}
 
-  T& operator=(const T& rhs) {
-    return Assign(rhs);
-  }
+  T& operator=(const BaseSetOperators<T>& rhs) { return Assign(rhs); }
 
   bool operator==(const T& rhs) const {
     return Equal(rhs);
@@ -94,7 +92,8 @@ class BaseSetOperators {
     return !operator==(rhs);
   }
 
-  T& Assign(const T& rhs) {
+  T& Assign(const BaseSetOperators<T>& rhs) {
+    map_.clear();
     const_iterator it = rhs.begin();
     const const_iterator end = rhs.end();
     while (it != end) {

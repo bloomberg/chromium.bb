@@ -424,6 +424,7 @@ if (enable_extensions) {
       "one_shot_event_unittest.cc",
       "permissions/api_permission_set_unittest.cc",
       "permissions/api_permission_unittest.cc",
+      "permissions/base_set_operators_unittest.cc",
       "permissions/manifest_permission_set_unittest.cc",
       "permissions/socket_permission_unittest.cc",
       "permissions/usb_device_permission_unittest.cc",
