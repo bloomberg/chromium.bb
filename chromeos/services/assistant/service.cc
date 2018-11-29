@@ -53,7 +53,8 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 }  // namespace
 
 Service::Service(service_manager::mojom::ServiceRequest request,
-                 network::NetworkConnectionTracker* network_connection_tracker)
+                 network::NetworkConnectionTracker* network_connection_tracker,
+                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : service_binding_(this, std::move(request)),
       platform_binding_(this),
       session_observer_binding_(this),
@@ -61,6 +62,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       network_connection_tracker_(network_connection_tracker),
+      io_task_runner_(std::move(io_task_runner)),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));

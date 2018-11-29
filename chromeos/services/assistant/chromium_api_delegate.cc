@@ -4,15 +4,17 @@
 
 #include "chromeos/services/assistant/chromium_api_delegate.h"
 
+#include "base/single_thread_task_runner.h"
 #include "chromeos/services/assistant/default_url_request_context_getter.h"
 
 namespace chromeos {
 namespace assistant {
 
-ChromiumApiDelegate::ChromiumApiDelegate()
+ChromiumApiDelegate::ChromiumApiDelegate(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : http_connection_factory_(
           base::MakeRefCounted<DefaultURLRequestContextGetter>(
-              "chromium_http_connection")) {}
+              io_task_runner)) {}
 
 ChromiumApiDelegate::~ChromiumApiDelegate() = default;
 

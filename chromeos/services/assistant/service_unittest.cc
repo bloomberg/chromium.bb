@@ -17,7 +17,6 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#include "chromeos/services/assistant/service.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -168,7 +167,7 @@ class AssistantServiceTest : public testing::Test {
 
     service_ = std::make_unique<Service>(
         test_connector_factory_.RegisterInstance(mojom::kServiceName),
-        nullptr /* network_connection_tracker */);
+        nullptr /* network_connection_tracker */, nullptr /* io_task_runner */);
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());

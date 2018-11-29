@@ -19,7 +19,8 @@ class ChromiumHttpConnectionFactory;
 
 class ChromiumApiDelegate : public assistant_client::FuchsiaApiDelegate {
  public:
-  ChromiumApiDelegate();
+  ChromiumApiDelegate(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~ChromiumApiDelegate() override;
   // assistant_client::FuchsiaApiDelegate overrides:
   assistant_client::HttpConnectionFactory* GetHttpConnectionFactory() override;
