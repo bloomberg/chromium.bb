@@ -407,6 +407,94 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   }));
 }
 
+// Verifies that calling WebState::Stop() does not stop the session restoration.
+// Session restoration should be opaque to the user and embedder, so calling
+// Stop() is no-op.
+TEST_P(WebStateTest, CallStopDuringSessionRestore) {
+  // Create session storage with large number of items.
+  const int kItemCount = 10;
+  NSMutableArray<CRWNavigationItemStorage*>* item_storages =
+      [NSMutableArray arrayWithCapacity:kItemCount];
+  for (unsigned int i = 0; i < kItemCount; i++) {
+    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    [item_storages addObject:item];
+  }
+
+  // Restore the session.
+  WebState::CreateParams params(GetBrowserState());
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.itemStorages = item_storages;
+  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  WebState* web_state_ptr = web_state.get();
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and remove extra call.
+  navigation_manager->LoadIfNecessary();
+
+  // Verify that session was fully restored.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    bool restored = navigation_manager->GetItemCount() == kItemCount &&
+                    navigation_manager->CanGoForward();
+    if (!restored) {
+      web_state_ptr->Stop();  // Attempt to interrupt the session restoration.
+    }
+    return restored;
+  }));
+  EXPECT_EQ(kItemCount, navigation_manager->GetItemCount());
+  EXPECT_TRUE(navigation_manager->CanGoForward());
+
+  // Now wait until the last committed item is fully loaded.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
+  }));
+}
+
+// Verifies that calling NavigationManager::Reload() does not stop the session
+// restoration. Session restoration should be opaque to the user and embedder,
+// so calling Reload() is no-op.
+TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
+  // Create session storage with large number of items.
+  const int kItemCount = 10;
+  NSMutableArray<CRWNavigationItemStorage*>* item_storages =
+      [NSMutableArray arrayWithCapacity:kItemCount];
+  for (unsigned int i = 0; i < kItemCount; i++) {
+    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+    item.virtualURL = GURL(base::StringPrintf("http://www.%u.com", i));
+    [item_storages addObject:item];
+  }
+
+  // Restore the session.
+  WebState::CreateParams params(GetBrowserState());
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.itemStorages = item_storages;
+  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  WebState* web_state_ptr = web_state.get();
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and remove extra call.
+  navigation_manager->LoadIfNecessary();
+
+  // Verify that session was fully restored.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    bool restored = navigation_manager->GetItemCount() == kItemCount &&
+                    navigation_manager->CanGoForward();
+    if (!restored) {
+      // Attempt to interrupt the session restoration.
+      navigation_manager->Reload(web::ReloadType::NORMAL,
+                                 /*check_for_repost=*/false);
+    }
+    return restored;
+  }));
+  EXPECT_EQ(kItemCount, navigation_manager->GetItemCount());
+  EXPECT_TRUE(navigation_manager->CanGoForward());
+
+  // Now wait until the last committed item is fully loaded.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !navigation_manager->GetPendingItem() && !web_state_ptr->IsLoading();
+  }));
+}
+
 // Tests that if a saved session is provided when creating a new WebState, it is
 // restored after the first NavigationManager::LoadIfNecessary() call.
 TEST_P(WebStateTest, RestoredFromHistory) {
