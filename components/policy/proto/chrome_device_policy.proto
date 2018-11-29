@@ -822,7 +822,7 @@ message LoginVideoCaptureAllowedUrlsProto {
 // Settings that control whether a device can connect to a 802.11r enabled
 // WiFi network.
 message DeviceWiFiFastTransitionEnabledProto {
-  optional bool enabled = 1 [default = false];
+  optional bool device_wifi_fast_transition_enabled = 1;
 }
 
 message NetworkThrottlingEnabledProto {

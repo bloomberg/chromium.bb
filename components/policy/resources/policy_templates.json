@@ -10414,26 +10414,16 @@
       In order for Fast Transition to be used, both this setting and the per-network ONC property need to be enabled.
       Once set, Fast Transition persists until the policy is changed to disable it.
 
-      If policy is not set, Fast Transition is not used.
-      If set to false, Fast Transition is not used.
+      If this policy is not set or set to false, Fast Transition is not used.
       If set to true, Fast Transition is used when the wireless access point supports it.''',
-      'type': 'dict',
-      'schema': {
-        'type': 'object',
-        'properties': {
-          'enabled': {
-            'description': 'A boolean flag indicating if Fast Transition is enabled.',
-            'type': 'boolean'
-          }
-        },
-        'required': ['enabled']
-      },
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:72-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': {'enabled': True},
+      'example_value': True,
       'tags': [],
       'id': 501,
     },

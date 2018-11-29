@@ -25,8 +25,8 @@ class FastTransitionObserverTest : public ::testing::Test {
     network_state_handler_ = NetworkStateHandler::InitializeForTest();
     NetworkHandler::Initialize();
     local_state_ = std::make_unique<TestingPrefServiceSimple>();
-    local_state_->registry()->RegisterDictionaryPref(
-        prefs::kDeviceWiFiFastTransitionEnabled);
+    local_state_->registry()->RegisterBooleanPref(
+        prefs::kDeviceWiFiFastTransitionEnabled, false);
     observer_ = std::make_unique<FastTransitionObserver>(local_state_.get());
   }
 
@@ -60,16 +60,12 @@ class FastTransitionObserverTest : public ::testing::Test {
 TEST_F(FastTransitionObserverTest, FastTransitionChangeCallsShill) {
   // Test that a change in the Fast Transition policy value leads to
   // shill_manager_client being called.
-  base::DictionaryValue updated_fast_transition_policy;
-  constexpr bool enabled = true;
-  updated_fast_transition_policy.SetBoolean("enabled", enabled);
 
   // Make sure Fast Transition is disabled just before setting preference.
   EXPECT_FALSE(GetFastTransitionStatus());
 
   // Setting the preference should update the Fast Transition policy.
-  local_state()->Set(prefs::kDeviceWiFiFastTransitionEnabled,
-                     updated_fast_transition_policy);
+  local_state()->SetBoolean(prefs::kDeviceWiFiFastTransitionEnabled, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetFastTransitionStatus());
 
