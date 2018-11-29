@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -170,6 +172,10 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
       serialized_script_value_->TransferReadableStreams(
           script_state_, transferables_->readable_streams, exception_state);
+      if (exception_state.HadException())
+        return;
+      serialized_script_value_->TransferWritableStreams(
+          script_state_, transferables_->writable_streams, exception_state);
       if (exception_state.HadException())
         return;
     }
@@ -484,6 +490,35 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     WriteTag(kReadableStreamTransferTag);
     WriteUint32(static_cast<uint32_t>(index));
+    return true;
+  }
+  if (wrapper_type_info == &V8WritableStream::wrapper_type_info &&
+      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    WritableStream* stream = wrappable->ToImpl<WritableStream>();
+    size_t index = kNotFound;
+    if (transferables_)
+      index = transferables_->writable_streams.Find(stream);
+    if (index == kNotFound) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "A WritableStream could not be cloned "
+                                        "because it was not transferred.");
+      return false;
+    }
+    if (stream->IsLocked(script_state_, exception_state).value_or(true)) {
+      if (exception_state.HadException())
+        return false;
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A WritableStream could not be cloned because it was locked");
+      return false;
+    }
+    WriteTag(kWritableStreamTransferTag);
+    DCHECK(transferables_);
+    // The index calculation depends on the order that TransferReadableStreams
+    // and TransferWritableStreams are called in
+    // V8ScriptValueSerializer::FinalizeTransfer.
+    WriteUint32(
+        static_cast<uint32_t>(index + transferables_->readable_streams.size()));
     return true;
   }
   return false;
