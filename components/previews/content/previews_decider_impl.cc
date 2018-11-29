@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -30,6 +31,8 @@ namespace {
 
 void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
                                   PreviewsType type) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.EligibilityReason", status,
+                            PreviewsEligibilityReason::LAST);
   int32_t max_limit = static_cast<int32_t>(PreviewsEligibilityReason::LAST);
   base::LinearHistogram::FactoryGet(
       base::StringPrintf("Previews.EligibilityReason.%s",

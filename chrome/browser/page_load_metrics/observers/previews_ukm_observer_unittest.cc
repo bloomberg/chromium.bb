@@ -873,6 +873,9 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
     NavigateToUntrackedUrl();
 
     tester.ExpectUniqueSample(
+        "Previews.PageEndReason",
+        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+    tester.ExpectUniqueSample(
         "Previews.PageEndReason." + GetStringNameForType(type),
         page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
   }

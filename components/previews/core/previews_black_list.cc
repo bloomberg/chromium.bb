@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
@@ -95,7 +96,7 @@ base::Time PreviewsBlackList::AddPreviewNavigation(const GURL& url,
                                                    bool opt_out,
                                                    PreviewsType type) {
   DCHECK(url.has_host());
-
+  UMA_HISTOGRAM_BOOLEAN("Previews.OptOut.UserOptedOut", opt_out);
   base::BooleanHistogram::FactoryGet(
       base::StringPrintf("Previews.OptOut.UserOptedOut.%s",
                          GetStringNameForType(type).c_str()),
