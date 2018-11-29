@@ -152,6 +152,29 @@ const FeatureEntry::FeatureVariation kIconForSearchButtonVariations[] = {
     {"Magnifying glass", kIconForSearchButtonMagnifying,
      base::size(kIconForSearchButtonMagnifying), nullptr}};
 
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout3s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter3s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout5s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter5s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout7s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter7s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout9s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter9s}};
+
+const FeatureEntry::FeatureVariation kDetectMainThreadFreezeVariations[] = {
+    {"3s", kDetectMainThreadFreezeTimeout3s,
+     base::size(kDetectMainThreadFreezeTimeout3s), nullptr},
+    {"5s", kDetectMainThreadFreezeTimeout5s,
+     base::size(kDetectMainThreadFreezeTimeout5s), nullptr},
+    {"7s", kDetectMainThreadFreezeTimeout7s,
+     base::size(kDetectMainThreadFreezeTimeout7s), nullptr},
+    {"9s", kDetectMainThreadFreezeTimeout9s,
+     base::size(kDetectMainThreadFreezeTimeout9s), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -458,6 +481,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncPseudoUSSSupervisedUsersDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSSupervisedUsers)},
+    {"detect-main-thread-freeze",
+     flag_descriptions::kDetectMainThreadFreezeName,
+     flag_descriptions::kDetectMainThreadFreezeDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(crash_report::kDetectMainThreadFreeze,
+                                    kDetectMainThreadFreezeVariations,
+                                    "DetectMainThreadFreeze")},
 };
 
 // Add all switches from experimental flags to |command_line|.
