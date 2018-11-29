@@ -10,11 +10,6 @@ namespace leveldb_proto {
 
 namespace {
 
-void RunInitCallback(typename ProtoLevelDBWrapper::InitCallback callback,
-                     const leveldb::Status* status) {
-  std::move(callback).Run(status->ok());
-}
-
 inline void InitFromTaskRunner(LevelDB* database,
                                const base::FilePath& database_dir,
                                const leveldb_env::Options& options,
@@ -66,18 +61,25 @@ inline void LoadKeysFromTaskRunner(LevelDB* database,
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : task_runner_(task_runner) {
+    : task_runner_(task_runner), weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     LevelDB* db)
-    : task_runner_(task_runner), db_(db) {
+    : task_runner_(task_runner), db_(db), weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::~ProtoLevelDBWrapper() = default;
+
+void ProtoLevelDBWrapper::RunInitCallback(
+    typename ProtoLevelDBWrapper::InitCallback callback,
+    const leveldb::Status* status) {
+  is_corrupt_ = status->IsCorruption();
+  std::move(callback).Run(status->ok());
+}
 
 void ProtoLevelDBWrapper::InitWithDatabase(
     LevelDB* database,
@@ -94,7 +96,8 @@ void ProtoLevelDBWrapper::InitWithDatabase(
       FROM_HERE,
       base::BindOnce(InitFromTaskRunner, base::Unretained(db_), database_dir,
                      options, destroy_on_corruption, status, metrics_id_),
-      base::BindOnce(RunInitCallback, std::move(callback),
+      base::BindOnce(&ProtoLevelDBWrapper::RunInitCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      base::Owned(status)));
 }
 
@@ -139,7 +142,14 @@ void ProtoLevelDBWrapper::SetMetricsId(const std::string& id) {
 }
 
 bool ProtoLevelDBWrapper::GetApproximateMemoryUse(uint64_t* approx_mem_use) {
+  if (db_ == nullptr)
+    return 0;
+
   return db_->GetApproximateMemoryUse(approx_mem_use);
+}
+
+bool ProtoLevelDBWrapper::IsCorrupt() {
+  return is_corrupt_;
 }
 
 const scoped_refptr<base::SequencedTaskRunner>&

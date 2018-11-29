@@ -96,6 +96,8 @@ class UniqueProtoDatabase : public ProtoDatabase<T> {
 
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
 
+  bool IsCorrupt() override;
+
   // Sets the identifier used by the underlying LevelDB wrapper to record
   // metrics.
   void SetMetricsId(const std::string& id);
@@ -286,6 +288,11 @@ bool UniqueProtoDatabase<T>::GetApproximateMemoryUse(uint64_t* approx_mem_use) {
 template <typename T>
 void UniqueProtoDatabase<T>::SetMetricsId(const std::string& id) {
   db_wrapper_->SetMetricsId(id);
+}
+
+template <typename T>
+bool UniqueProtoDatabase<T>::IsCorrupt() {
+  return db_wrapper_->IsCorrupt();
 }
 
 }  // namespace leveldb_proto

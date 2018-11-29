@@ -41,14 +41,14 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
  public:
   virtual ~SharedProtoDatabaseClient();
 
-  virtual void Init(const std::string& client_name,
-                    typename ProtoDatabase<T>::InitCallback callback) override;
+  void Init(const std::string& client_name,
+            typename ProtoDatabase<T>::InitCallback callback) override;
 
-  virtual void Init(const char* client_name,
-                    const base::FilePath& database_dir,
-                    const leveldb_env::Options& options,
-                    typename ProtoDatabase<T>::InitCallback callback) override;
-  virtual void InitWithDatabase(
+  void Init(const char* client_name,
+            const base::FilePath& database_dir,
+            const leveldb_env::Options& options,
+            typename ProtoDatabase<T>::InitCallback callback) override;
+  void InitWithDatabase(
       LevelDB* database,
       const base::FilePath& database_dir,
       const leveldb_env::Options& options,
@@ -56,59 +56,57 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
 
   // Overrides for prepending namespace and type prefix to all operations on the
   // shared database.
-  virtual void UpdateEntries(
+  void UpdateEntries(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       std::unique_ptr<std::vector<std::string>> keys_to_remove,
       typename ProtoDatabase<T>::UpdateCallback callback) override;
-  virtual void UpdateEntriesWithRemoveFilter(
+  void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
       typename ProtoDatabase<T>::UpdateCallback callback) override;
-  virtual void UpdateEntriesWithRemoveFilter(
+  void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
       const std::string& target_prefix,
       typename ProtoDatabase<T>::UpdateCallback callback) override;
 
-  virtual void LoadEntries(
-      typename ProtoDatabase<T>::LoadCallback callback) override;
-  virtual void LoadEntriesWithFilter(
+  void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       typename ProtoDatabase<T>::LoadCallback callback) override;
-  virtual void LoadEntriesWithFilter(
+  void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename ProtoDatabase<T>::LoadCallback callback) override;
 
-  virtual void LoadKeys(
-      typename ProtoDatabase<T>::LoadKeysCallback callback) override;
-  virtual void LoadKeys(
-      const std::string& target_prefix,
-      typename ProtoDatabase<T>::LoadKeysCallback callback) override;
+  void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
+  void LoadKeys(const std::string& target_prefix,
+                typename ProtoDatabase<T>::LoadKeysCallback callback) override;
 
-  virtual void LoadKeysAndEntries(
+  void LoadKeysAndEntries(
       typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
-  virtual void LoadKeysAndEntriesWithFilter(
+  void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
-  virtual void LoadKeysAndEntriesWithFilter(
+  void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
 
-  virtual void GetEntry(
-      const std::string& key,
-      typename ProtoDatabase<T>::GetCallback callback) override;
+  void GetEntry(const std::string& key,
+                typename ProtoDatabase<T>::GetCallback callback) override;
 
-  virtual void Destroy(
-      typename ProtoDatabase<T>::DestroyCallback callback) override;
+  void Destroy(typename ProtoDatabase<T>::DestroyCallback callback) override;
 
   typename ProtoLevelDBWrapper::InitCallback GetInitCallback() const;
+
+  bool IsCorrupt() override;
+  void SetIsCorrupt(bool is_corrupt);
 
  private:
   friend class SharedProtoDatabase;
@@ -142,6 +140,10 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // |is_corrupt_| should be set by the SharedProtoDatabase that creates this
+  // when a client is created that doesn't know about a previous shared
+  // database corruption.
+  bool is_corrupt_ = false;
   std::string prefix_;
 
   scoped_refptr<SharedProtoDatabase> parent_db_;
@@ -324,6 +326,16 @@ void SharedProtoDatabaseClient<T>::Destroy(
       base::BindOnce([](typename ProtoDatabase<T>::DestroyCallback callback,
                         bool success) { std::move(callback).Run(success); },
                      std::move(callback)));
+}
+
+template <typename T>
+void SharedProtoDatabaseClient<T>::SetIsCorrupt(bool is_corrupt) {
+  is_corrupt_ = is_corrupt;
+}
+
+template <typename T>
+bool SharedProtoDatabaseClient<T>::IsCorrupt() {
+  return is_corrupt_;
 }
 
 // static

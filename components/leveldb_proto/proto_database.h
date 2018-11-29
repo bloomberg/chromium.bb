@@ -115,6 +115,8 @@ class ProtoDatabase {
   // Asynchronously destroys the database.
   virtual void Destroy(DestroyCallback callback) = 0;
 
+  virtual bool IsCorrupt() = 0;
+
  protected:
   ProtoDatabase() = default;
 };

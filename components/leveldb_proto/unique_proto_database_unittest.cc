@@ -660,9 +660,16 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
+  base::RunLoop init_loop;
   db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(&MockDatabaseCaller::InitCallback,
-                          base::Unretained(&caller)));
+           base::BindOnce(
+               [](MockDatabaseCaller* caller, base::OnceClosure closure,
+                  bool success) {
+                 caller->InitCallback(success);
+                 std::move(closure).Run();
+               },
+               &caller, init_loop.QuitClosure()));
+  init_loop.Run();
 
   db.reset();
 
@@ -688,9 +695,16 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
+  base::RunLoop init_loop;
   db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(&MockDatabaseCaller::InitCallback,
-                          base::Unretained(&caller)));
+           base::BindOnce(
+               [](MockDatabaseCaller* caller, base::OnceClosure closure,
+                  bool success) {
+                 caller->InitCallback(success);
+                 std::move(closure).Run();
+               },
+               &caller, init_loop.QuitClosure()));
+  init_loop.Run();
 
   EXPECT_CALL(caller, DestroyCallback(_));
   db->Destroy(base::BindOnce(&MockDatabaseCaller::DestroyCallback,

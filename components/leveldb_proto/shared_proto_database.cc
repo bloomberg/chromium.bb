@@ -84,6 +84,10 @@ void SharedProtoDatabase::OnDatabaseInit(
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
   init_state_ = success ? InitState::kSuccess : InitState::kFailure;
+
+  // TODO(thildebr): Check the db_wrapper_->IsCorrupt() and store corruption
+  // information to inform clients they may have lost data.
+
   callback_task_runner->PostTask(FROM_HERE,
                                  base::BindOnce(std::move(callback), success));
 }
