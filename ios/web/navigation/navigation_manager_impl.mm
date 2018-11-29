@@ -308,6 +308,12 @@ void NavigationManagerImpl::AddTransientURLRewriter(
 
 void NavigationManagerImpl::Reload(ReloadType reload_type,
                                    bool check_for_reposts) {
+  if (IsRestoreSessionInProgress()) {
+    // Do not interrupt session restoration process. Last committed item will
+    // eventually reload once the session is restored.
+    return;
+  }
+
   if (!GetTransientItem() && !GetPendingItem() && !GetLastCommittedItem())
     return;
 

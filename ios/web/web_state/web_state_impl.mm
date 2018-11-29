@@ -600,6 +600,11 @@ void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
 }
 
 void WebStateImpl::Stop() {
+  if (navigation_manager_->IsRestoreSessionInProgress()) {
+    // Do not interrupt session restoration process. For embedder session
+    // restoration is opaque and WebState acts like ut's idle.
+    return;
+  }
   [web_controller_ stopLoading];
 }
 
