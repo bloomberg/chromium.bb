@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -61,6 +61,6 @@ class TestMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   DISALLOW_COPY_AND_ASSIGN(TestMediaStreamVideoRenderer);
 };
 
-} // namespace content
+}  // namespace content
 
-#endif // CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_TEST_MEDIA_STREAM_VIDEO_RENDERER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
+#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 
 #include <string>
 #include <utility>
@@ -20,13 +20,13 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
-#include "content/shell/renderer/layout_test/blink_test_runner.h"
-#include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
-#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
-#include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
-#include "content/shell/renderer/layout_test/test_websocket_handshake_throttle_provider.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
+#include "content/shell/renderer/web_test/test_media_stream_renderer_factory.h"
+#include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
+#include "content/shell/renderer/web_test/web_test_render_frame_observer.h"
+#include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
@@ -50,9 +50,9 @@
 using blink::WebAudioDevice;
 using blink::WebFrame;
 using blink::WebLocalFrame;
+using blink::WebMediaStreamCenter;
 using blink::WebMIDIAccessor;
 using blink::WebMIDIAccessorClient;
-using blink::WebMediaStreamCenter;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebRTCPeerConnectionHandler;
@@ -61,29 +61,27 @@ using blink::WebThemeEngine;
 
 namespace content {
 
-LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
+WebTestContentRendererClient::WebTestContentRendererClient() {
   EnableWebTestProxyCreation();
   SetWorkerRewriteURLFunction(RewriteLayoutTestsURL);
 }
 
-LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
-}
+WebTestContentRendererClient::~WebTestContentRendererClient() {}
 
-void LayoutTestContentRendererClient::RenderThreadStarted() {
+void WebTestContentRendererClient::RenderThreadStarted() {
   ShellContentRendererClient::RenderThreadStarted();
-  shell_observer_.reset(new LayoutTestRenderThreadObserver());
+  shell_observer_.reset(new WebTestRenderThreadObserver());
 }
 
-void LayoutTestContentRendererClient::RenderFrameCreated(
+void WebTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
   test_runner::WebFrameTestProxyBase* frame_proxy =
       GetWebFrameTestProxyBase(render_frame);
   frame_proxy->set_web_frame(render_frame->GetWebFrame());
-  new LayoutTestRenderFrameObserver(render_frame);
+  new WebTestRenderFrameObserver(render_frame);
 }
 
-void LayoutTestContentRendererClient::RenderViewCreated(
-    RenderView* render_view) {
+void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
 
   test_runner::WebViewTestProxyBase* proxy =
@@ -101,36 +99,36 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 }
 
 std::unique_ptr<WebMIDIAccessor>
-LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
+WebTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMIDIAccessor(client);
 }
 
-WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
-  return LayoutTestRenderThreadObserver::GetInstance()
+WebThemeEngine* WebTestContentRendererClient::OverrideThemeEngine() {
+  return WebTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->ThemeEngine();
 }
 
 std::unique_ptr<MediaStreamRendererFactory>
-LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
+WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
   return std::unique_ptr<MediaStreamRendererFactory>(
       new TestMediaStreamRendererFactory());
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
-LayoutTestContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
+WebTestContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<TestWebSocketHandshakeThrottleProvider>();
 }
 
-void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
+void WebTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
   blink::WebTestingSupport::InjectInternalsObject(context);
 }
 
-void LayoutTestContentRendererClient::
+void WebTestContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
   // We always expose GC to layout tests.
   std::string flags("--expose-gc");
@@ -145,13 +143,13 @@ void LayoutTestContentRendererClient::
   }
 }
 
-bool LayoutTestContentRendererClient::IsIdleMediaSuspendEnabled() {
+bool WebTestContentRendererClient::IsIdleMediaSuspendEnabled() {
   // Disable idle media suspend to avoid layout tests getting into accidentally
   // bad states if they take too long to run.
   return false;
 }
 
-bool LayoutTestContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
+bool WebTestContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Blink uses an outdated test server on Windows and older versions of macOS.
   // Until those are fixed, suppress the warning. See https://crbug.com/747666

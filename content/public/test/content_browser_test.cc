@@ -18,7 +18,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
+#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/test/test_content_client.h"
 
 #if defined(OS_ANDROID)
@@ -70,7 +70,7 @@ void ContentBrowserTest::SetUp() {
     // destroyed.
     ContentRendererClient* old_client =
         switches::IsRunWebTestsSwitchPresent()
-            ? SetRendererClientForTesting(new LayoutTestContentRendererClient)
+            ? SetRendererClientForTesting(new WebTestContentRendererClient)
             : SetRendererClientForTesting(new ShellContentRendererClient);
     // No-one should have set this value before we did.
     DCHECK(!old_client);

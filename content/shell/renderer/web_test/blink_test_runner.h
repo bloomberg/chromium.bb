@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_RUNNER_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_RUNNER_H_
 
 #include <memory>
 #include <vector>
@@ -32,7 +32,7 @@ class DictionaryValue;
 namespace blink {
 class WebURLRequest;
 class WebView;
-}
+}  // namespace blink
 
 namespace test_runner {
 class AppBannerService;
@@ -141,10 +141,9 @@ class BlinkTestRunner : public RenderViewObserver,
   void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
       base::OnceCallback<void(bool)> callback) override;
-  void ResolveBeforeInstallPromptPromise(
-      const std::string& platform) override;
+  void ResolveBeforeInstallPromptPromise(const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
-    const blink::WebPluginParams& params) override;
+      const blink::WebPluginParams& params) override;
   float GetDeviceScaleFactor() const override;
   void RunIdleTasks(base::OnceClosure callback) override;
   void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
@@ -189,8 +188,7 @@ class BlinkTestRunner : public RenderViewObserver,
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
-  mojom::LayoutTestBluetoothFakeAdapterSetter&
-  GetBluetoothFakeAdapterSetter();
+  mojom::LayoutTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
   mojom::LayoutTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
 
   test_runner::TestPreferences prefs_;
@@ -217,4 +215,4 @@ class BlinkTestRunner : public RenderViewObserver,
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_RUNNER_H_

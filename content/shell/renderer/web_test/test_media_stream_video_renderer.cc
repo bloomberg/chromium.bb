@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
+#include "content/shell/renderer/web_test/test_media_stream_video_renderer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -67,8 +67,8 @@ void TestMediaStreamVideoRenderer::GenerateFrame() {
   if (state_ == kStarted) {
     // Always allocate a new frame filled with white color.
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::CreateColorFrame(
-            size_, 255, 128, 128, current_time_);
+        media::VideoFrame::CreateColorFrame(size_, 255, 128, 128,
+                                            current_time_);
 
     // TODO(wjia): set pixel data to pre-defined patterns if it's desired to
     // verify frame content.

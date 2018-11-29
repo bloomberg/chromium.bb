@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_CONTENT_RENDERER_CLIENT_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_CONTENT_RENDERER_CLIENT_H_
 
 #include <memory>
 
@@ -11,12 +11,12 @@
 
 namespace content {
 
-class LayoutTestRenderThreadObserver;
+class WebTestRenderThreadObserver;
 
-class LayoutTestContentRendererClient : public ShellContentRendererClient {
+class WebTestContentRendererClient : public ShellContentRendererClient {
  public:
-  LayoutTestContentRendererClient();
-  ~LayoutTestContentRendererClient() override;
+  WebTestContentRendererClient();
+  ~WebTestContentRendererClient() override;
 
   // ShellContentRendererClient implementation.
   void RenderThreadStarted() override;
@@ -36,9 +36,9 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   bool SuppressLegacyTLSVersionConsoleMessage() override;
 
  private:
-  std::unique_ptr<LayoutTestRenderThreadObserver> shell_observer_;
+  std::unique_ptr<WebTestRenderThreadObserver> shell_observer_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_CONTENT_RENDERER_CLIENT_H_
