@@ -6,7 +6,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/web/public/navigation_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,4 +28,15 @@ BOOL IsSwipingForward(UISwipeGestureRecognizerDirection direction) {
     return direction == UISwipeGestureRecognizerDirectionRight;
   else
     return direction == UISwipeGestureRecognizerDirectionLeft;
+}
+
+BOOL UseNativeSwipe(web::NavigationItem* item) {
+  if (IsURLNewTabPage(item->GetVirtualURL()))
+    return YES;
+
+  GURL url(item->GetURL());
+  if (UrlHasChromeScheme(url) && url.host_piece() == kChromeUICrashHost)
+    return YES;
+
+  return NO;
 }
