@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/css_style_value_or_string.h"
-#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only_main_thread.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
@@ -15,7 +15,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnly {
+class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnlyMainThread {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

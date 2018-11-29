@@ -1,8 +1,8 @@
-// Copyright 2016 the chromium authors. All rights reserved.
+// Copyright 2018 the chromium authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only_main_thread.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -26,7 +26,8 @@ class StylePropertyMapIterationSource final
     : public PairIterable<String, CSSStyleValueVector>::IterationSource {
  public:
   explicit StylePropertyMapIterationSource(
-      HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values)
+      HeapVector<StylePropertyMapReadOnlyMainThread::StylePropertyMapEntry>
+          values)
       : index_(0), values_(values) {}
 
   bool Next(ScriptState*,
@@ -36,7 +37,7 @@ class StylePropertyMapIterationSource final
     if (index_ >= values_.size())
       return false;
 
-    const StylePropertyMapReadOnly::StylePropertyMapEntry& pair =
+    const StylePropertyMapReadOnlyMainThread::StylePropertyMapEntry& pair =
         values_.at(index_++);
     key = pair.first;
     value = pair.second;
@@ -50,12 +51,13 @@ class StylePropertyMapIterationSource final
 
  private:
   wtf_size_t index_;
-  const HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values_;
+  const HeapVector<StylePropertyMapReadOnlyMainThread::StylePropertyMapEntry>
+      values_;
 };
 
 }  // namespace
 
-CSSStyleValue* StylePropertyMapReadOnly::get(
+CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) {
@@ -93,7 +95,7 @@ CSSStyleValue* StylePropertyMapReadOnly::get(
                                                  custom_property_name, *value);
 }
 
-CSSStyleValueVector StylePropertyMapReadOnly::getAll(
+CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) {
@@ -127,13 +129,14 @@ CSSStyleValueVector StylePropertyMapReadOnly::getAll(
       property_id, custom_property_name, *value);
 }
 
-bool StylePropertyMapReadOnly::has(const ExecutionContext* execution_context,
-                                   const String& property_name,
-                                   ExceptionState& exception_state) {
+bool StylePropertyMapReadOnlyMainThread::has(
+    const ExecutionContext* execution_context,
+    const String& property_name,
+    ExceptionState& exception_state) {
   return !getAll(execution_context, property_name, exception_state).IsEmpty();
 }
 
-const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
+const CSSValue* StylePropertyMapReadOnlyMainThread::GetCustomProperty(
     const ExecutionContext& execution_context,
     const AtomicString& property_name) {
   const CSSValue* value = GetCustomProperty(property_name);
@@ -145,10 +148,10 @@ const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
   return PropertyRegistry::ParseIfRegistered(*document, property_name, value);
 }
 
-StylePropertyMapReadOnly::IterationSource*
-StylePropertyMapReadOnly::StartIteration(ScriptState* script_state,
-                                         ExceptionState&) {
-  HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> result;
+StylePropertyMapReadOnlyMainThread::IterationSource*
+StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
+                                                   ExceptionState&) {
+  HeapVector<StylePropertyMapReadOnlyMainThread::StylePropertyMapEntry> result;
 
   const ExecutionContext& execution_context =
       *ExecutionContext::From(script_state);
@@ -178,7 +181,7 @@ StylePropertyMapReadOnly::StartIteration(ScriptState* script_state,
   return new StylePropertyMapIterationSource(result);
 }
 
-CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
+CSSStyleValue* StylePropertyMapReadOnlyMainThread::GetShorthandProperty(
     const CSSProperty& property) {
   DCHECK(property.IsShorthand());
   const auto serialization = SerializationForShorthand(property);
