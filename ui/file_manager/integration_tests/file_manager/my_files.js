@@ -1,13 +1,10 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 /**
  * Tests if MyFiles is displayed when flag is true.
  */
-testcase.showMyFiles = function() {
-  let appId;
-
+testcase.showMyFiles = async function() {
   const expectedElementLabels = [
     'Recent: FakeItem',
     'My files: EntryListItem',
@@ -20,113 +17,74 @@ testcase.showMyFiles = function() {
     'Offline: SubDirectoryItem',
   ];
 
-  StepsRunner.run([
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
-    },
-    // Get the directory tree elements.
-    function(results) {
-      appId = results.windowId;
-      const dirTreeQuery = ['#directory-tree [dir-type]'];
-      remoteCall.callRemoteTestUtil('queryAllElements', appId, dirTreeQuery)
-          .then(this.next);
-    },
-    // Check tree elements for the correct order and label/element type.
-    function(elements) {
-      var visibleElements = [];
-      for (let element of elements) {
-        if (!element.hidden) {  // Ignore hidden elements.
-          visibleElements.push(
-              element.attributes['entry-label'] + ': ' +
-              element.attributes['dir-type']);
-        }
-      }
-      chrome.test.assertEq(expectedElementLabels, visibleElements);
-      this.next();
-    },
-    // Select Downloads folder.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'selectVolume', appId, ['downloads'], this.next);
-    },
-    // Get the breadcrumbs elements.
-    function() {
-      const breadcrumbsQuery = ['#location-breadcrumbs .breadcrumb-path'];
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, breadcrumbsQuery, this.next);
-    },
-    // Check that My Files is displayed on breadcrumbs.
-    function(breadcrumbs) {
-      const expectedBreadcrumbs = 'My files > Downloads';
-      const resultBreadscrubms =
-          breadcrumbs.map(crumb => crumb.text).join(' > ');
-      chrome.test.assertEq(expectedBreadcrumbs, resultBreadscrubms);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+
+  // Get the directory tree elements.
+  const dirTreeQuery = ['#directory-tree [dir-type]'];
+  const elements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, dirTreeQuery);
+
+  // Check tree elements for the correct order and label/element type.
+  var visibleElements = [];
+  for (let element of elements) {
+    if (!element.hidden) {  // Ignore hidden elements.
+      visibleElements.push(
+          element.attributes['entry-label'] + ': ' +
+          element.attributes['dir-type']);
+    }
+  }
+  chrome.test.assertEq(expectedElementLabels, visibleElements);
+
+  // Select Downloads folder.
+  await remoteCall.callRemoteTestUtil('selectVolume', appId, ['downloads']);
+
+  // Get the breadcrumbs elements.
+  const breadcrumbsQuery = ['#location-breadcrumbs .breadcrumb-path'];
+  const breadcrumbs = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, breadcrumbsQuery);
+
+  // Check that My Files is displayed on breadcrumbs.
+  const expectedBreadcrumbs = 'My files > Downloads';
+  const resultBreadscrubms = breadcrumbs.map(crumb => crumb.text).join(' > ');
+  chrome.test.assertEq(expectedBreadcrumbs, resultBreadscrubms);
 };
 
 /**
  * Tests search button hidden when selected My Files.
  */
-testcase.hideSearchButton = function() {
-  let appId;
+testcase.hideSearchButton = async function() {
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
 
-  StepsRunner.run([
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
-    },
-    // Select Downloads folder.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'selectVolume', appId, ['downloads'], this.next);
-    },
-    // Get the search button element.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const buttonQuery = ['#search-button'];
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, buttonQuery, this.next);
-    },
-    // Check that search button is visible on Downloads.
-    function(buttonElements) {
-      chrome.test.assertEq(1, buttonElements.length);
-      chrome.test.assertFalse(buttonElements[0].hidden);
-      this.next();
-    },
-    // Select My Files folder.
-    function() {
-      const myFilesQuery = '#directory-tree [entry-label="My files"]';
-      const isDriveQuery = false;
-      remoteCall.callRemoteTestUtil(
-          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
-          this.next);
-    },
-    // Get the search button element.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const buttonQuery = ['#search-button'];
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, buttonQuery, this.next);
-    },
-    // Check that search button is hidden on My Files.
-    function(buttonElements) {
-      chrome.test.assertEq(1, buttonElements.length);
-      chrome.test.assertTrue(buttonElements[0].hidden);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Select Downloads folder.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectVolume', appId, ['downloads']));
+
+  // Get the search button element.
+  const buttonQuery = ['#search-button'];
+  let buttonElements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, buttonQuery);
+
+  // Check that search button is visible on Downloads.
+  chrome.test.assertEq(1, buttonElements.length);
+  chrome.test.assertFalse(buttonElements[0].hidden);
+
+  // Select My Files folder.
+  const myFilesQuery = '#directory-tree [entry-label="My files"]';
+  const isDriveQuery = false;
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]));
+
+  // Get the search button element.
+  buttonElements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, buttonQuery);
+
+  // Check that search button is hidden on My Files.
+  chrome.test.assertEq(1, buttonElements.length);
+  chrome.test.assertTrue(buttonElements[0].hidden);
 };
 
 /**
@@ -137,99 +95,61 @@ testcase.hideSearchButton = function() {
  * DirectoryTree expects NavigationModelItem to be the same instance through
  * updates.
  */
-testcase.directoryTreeRefresh = function() {
-  let appId;
+testcase.directoryTreeRefresh = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
-  StepsRunner.run([
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
-    },
-    // Mount a USB volume.
-    function(results) {
-      appId = results.windowId;
-      sendTestMessage({name: 'mountFakeUsb'}).then(this.next);
-    },
-    // Wait for the USB volume to mount.
-    function() {
-      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
-    },
-    // Select Downloads folder.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'selectVolume', appId, ['downloads'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+
+  // Mount a USB volume.
+  await sendTestMessage({name: 'mountFakeUsb'});
+
+  // Wait for the USB volume to mount.
+  await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
+
+  // Select Downloads folder.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectVolume', appId, ['downloads']));
 };
 
 /**
  * Tests My Files displaying Downloads on file list (RHS) and opening Downloads
  * from file list.
  */
-testcase.myFilesDisplaysAndOpensEntries = function() {
-  let appId;
-  StepsRunner.run([
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
-    },
-    // Select My Files folder.
-    function(results) {
-      appId = results.windowId;
-      const myFilesQuery = '#directory-tree [entry-label="My files"]';
-      const isDriveQuery = false;
-      remoteCall.callRemoteTestUtil(
-          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
-          this.next);
-    },
-    // Wait for file list to display Downloads and Crostini.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const downloadsRow = ['Downloads', '--', 'Folder'];
-      const playFilesRow = ['Play files', '--', 'Folder'];
-      const crostiniRow = ['Linux files', '--', 'Folder'];
-      remoteCall
-          .waitForFiles(
-              appId, [downloadsRow, playFilesRow, crostiniRow],
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    // Double click on Download on file list.
-    function() {
-      const downloadsFileListQuery = '#file-list [file-name="Downloads"]';
-      remoteCall
-          .callRemoteTestUtil(
-              'fakeMouseDoubleClick', appId, [downloadsFileListQuery])
-          .then(this.next);
-    },
-    // Wait for file list to Downloads' content.
-    function() {
-      remoteCall
-          .waitForFiles(
-              appId, [ENTRIES.beautiful.getExpectedRow()],
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    // Get the selected navigation tree item.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'getSelectedTreeItem', appId, [], this.next);
-    },
-    // Get the selected navigation tree item.
-    function(result) {
-      chrome.test.assertEq('Downloads', result);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+testcase.myFilesDisplaysAndOpensEntries = async function() {
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+
+  // Select My Files folder.
+  const myFilesQuery = '#directory-tree [entry-label="My files"]';
+  const isDriveQuery = false;
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]));
+
+  // Wait for file list to display Downloads and Crostini.
+  const downloadsRow = ['Downloads', '--', 'Folder'];
+  const playFilesRow = ['Play files', '--', 'Folder'];
+  const crostiniRow = ['Linux files', '--', 'Folder'];
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, playFilesRow, crostiniRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Double click on Download on file list.
+  const downloadsFileListQuery = '#file-list [file-name="Downloads"]';
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseDoubleClick', appId, [downloadsFileListQuery]);
+
+  // Wait for file list to Downloads' content.
+  await remoteCall.waitForFiles(
+      appId, [ENTRIES.beautiful.getExpectedRow()],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Get the selected navigation tree item.
+  chrome.test.assertEq(
+      'Downloads',
+      await remoteCall.callRemoteTestUtil('getSelectedTreeItem', appId, []));
 };
 
 /**
@@ -238,8 +158,7 @@ testcase.myFilesDisplaysAndOpensEntries = function() {
  * If it doesn't update its children recursively it can cause directory tree to
  * not show or hide sub-folders crbug.com/864453.
  */
-testcase.myFilesUpdatesChildren = function() {
-  let appId;
+testcase.myFilesUpdatesChildren = async function() {
   const downloadsQuery = '#directory-tree [entry-label="Downloads"]';
   const hiddenFolder = new TestEntryInfo({
     type: EntryType.DIRECTORY,
@@ -249,183 +168,129 @@ testcase.myFilesUpdatesChildren = function() {
     sizeText: '--',
     typeText: 'Folder'
   });
-  StepsRunner.run([
-    // Add a hidden folder.
-    function() {
-      // It can't be added via setupAndWaitUntilReady, because it isn't
-      // displayed and that function waits all entries to be displayed.
-      addEntries(['local'], [hiddenFolder], this.next);
-    },
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
-    },
-    // Select Downloads folder.
-    function(results) {
-      appId = results.windowId;
-      const isDriveQuery = false;
-      remoteCall.callRemoteTestUtil(
-          'selectInDirectoryTree', appId, [downloadsQuery, isDriveQuery],
-          this.next);
-    },
-    // Wait for gear menu to be displayed.
-    function() {
-      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
-    },
-    // Open the gear menu by clicking the gear button.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-button'], this.next);
-    },
-    // Wait for menu to not be hidden.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
-          .then(this.next);
-    },
-    // Wait for menu item to appear.
-    function(result) {
-      remoteCall
-          .waitForElement(
-              appId, '#gear-menu-toggle-hidden-files:not([disabled])')
-          .then(this.next);
-    },
-    // Wait for menu item to appear.
-    function(result) {
-      remoteCall
-          .waitForElement(
-              appId, '#gear-menu-toggle-hidden-files:not([checked])')
-          .then(this.next);
-    },
-    // Click the menu item.
-    function(results) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files'],
-          this.next);
-    },
-    // Check the hidden folder to be displayed in RHS.
-    function(result) {
-      remoteCall
-          .waitForFiles(
-              appId,
-              TestEntryInfo.getExpectedRows([hiddenFolder, ENTRIES.beautiful]),
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    // Check the hidden folder to be displayed in LHS.
-    function() {
-      // Children of Downloads and named ".hidden-folder".
-      const hiddenFolderTreeQuery = downloadsQuery +
-          ' .tree-children .tree-item[entry-label=".hidden-folder"]';
-      remoteCall.waitForElement(appId, hiddenFolderTreeQuery).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+
+  // Add a hidden folder.
+  // It can't be added via setupAndWaitUntilReady, because it isn't
+  // displayed and that function waits all entries to be displayed.
+  await addEntries(['local'], [hiddenFolder]);
+
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+
+  // Select Downloads folder.
+  const isDriveQuery = false;
+  await remoteCall.callRemoteTestUtil(
+      'selectInDirectoryTree', appId, [downloadsQuery, isDriveQuery]);
+
+  // Wait for gear menu to be displayed.
+  await remoteCall.waitForElement(appId, '#gear-button');
+
+  // Open the gear menu by clicking the gear button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Wait for menu to not be hidden.
+  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
+
+  // Wait for menu item to appear.
+  await remoteCall.waitForElement(
+      appId, '#gear-menu-toggle-hidden-files:not([disabled])');
+
+  // Wait for menu item to appear.
+  await remoteCall.waitForElement(
+      appId, '#gear-menu-toggle-hidden-files:not([checked])');
+
+  // Click the menu item.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files']);
+
+  // Check the hidden folder to be displayed in RHS.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([hiddenFolder, ENTRIES.beautiful]),
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Check the hidden folder to be displayed in LHS.
+  // Children of Downloads and named ".hidden-folder".
+  const hiddenFolderTreeQuery = downloadsQuery +
+      ' .tree-children .tree-item[entry-label=".hidden-folder"]';
+  await remoteCall.waitForElement(appId, hiddenFolderTreeQuery);
 };
 
 /**
  * Check naming a folder after navigating inside MyFiles using file list (RHS).
  * crbug.com/889636.
  */
-testcase.myFilesFolderRename = function() {
-  let appId;
+testcase.myFilesFolderRename = async function() {
   const textInput = '#file-list .table-row[renaming] input.rename';
-  StepsRunner.run([
-    // Open Files app on local Downloads.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.photos], []);
-    },
-    // Select "My files" folder via directory tree.
-    function(result) {
-      appId = result.windowId;
-      const myFilesQuery = '#directory-tree [entry-label="My files"]';
-      const isDriveQuery = false;
-      remoteCall.callRemoteTestUtil(
-          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
-          this.next);
-    },
-    // Wait for Downloads to load.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'selectInDirectoryTree failed');
-      const expectedRows = [
-        ['Downloads', '--', 'Folder'],
-        ['Play files', '--', 'Folder'],
-        ['Linux files', '--', 'Folder'],
-      ];
-      remoteCall
-          .waitForFiles(
-              appId, expectedRows,
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    // Select Downloads via file list.
-    function() {
-      const downloads = ['Downloads'];
-      remoteCall.callRemoteTestUtil('selectFile', appId, downloads)
-          .then(result => {
-            chrome.test.assertTrue(!!result, 'selectFile failed');
-            this.next();
-          });
-    },
-    // Open Downloads via file list.
-    function() {
-      const fileListItem = '#file-list .table-row';
-      const key = [fileListItem, 'Enter', false, false, false];
-      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
-    },
-    // Wait for Downloads to load.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
-      remoteCall.waitForFiles(appId, [ENTRIES.photos.getExpectedRow()])
-          .then(this.next);
-    },
-    // Select photos via file list.
-    function() {
-      const folder = ['photos'];
-      remoteCall.callRemoteTestUtil('selectFile', appId, folder)
-          .then(result => {
-            chrome.test.assertTrue(!!result, 'selectFile failed');
-            this.next();
-          });
-    },
-    // Press Ctrl+Enter for start renaming.
-    function() {
-      const fileListItem = '#file-list .table-row';
-      const key = [fileListItem, 'Enter', true, false, false];
-      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
-    },
-    // Wait for input for renaming to appear.
-    function(result) {
-      chrome.test.assertTrue(result, 'fakeKeyDown ctrl+Enter failed');
-      // Check: the renaming text input should be shown in the file list.
-      remoteCall.waitForElement(appId, textInput).then(this.next);
-    },
-    // Type new name.
-    function() {
-      remoteCall.callRemoteTestUtil('inputText', appId, [textInput, 'new name'])
-          .then(this.next);
-    },
-    // Send Enter key to the text input.
-    function() {
-      const key = [textInput, 'Enter', false, false, false];
-      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
-    },
-    // Wait for new name to appear on the file list.
-    function(result) {
-      chrome.test.assertTrue(result, 'fakeKeyDown failed');
-      const expectedRows = [['new name', '--', 'Folder', '']];
-      remoteCall
-          .waitForFiles(
-              appId, expectedRows,
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+
+  // Open Files app on local Downloads.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+
+  // Select "My files" folder via directory tree.
+  const myFilesQuery = '#directory-tree [entry-label="My files"]';
+  const isDriveQuery = false;
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery]),
+      'selectInDirectoryTree failed');
+
+  // Wait for Downloads to load.
+  const expectedRows = [
+    ['Downloads', '--', 'Folder'],
+    ['Play files', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
+  await remoteCall.waitForFiles(
+      appId, expectedRows,
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Select Downloads via file list.
+  const downloads = ['Downloads'];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, downloads),
+      'selectFile failed');
+
+  // Open Downloads via file list.
+  const fileListItem = '#file-list .table-row';
+  const key = [fileListItem, 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown failed');
+
+  // Wait for Downloads to load.
+  await remoteCall.waitForFiles(appId, [ENTRIES.photos.getExpectedRow()]);
+
+  // Select photos via file list.
+  const folder = ['photos'];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, folder),
+      'selectFile failed');
+
+  // Press Ctrl+Enter for start renaming.
+  const key2 = [fileListItem, 'Enter', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key2),
+      'fakeKeyDown ctrl+Enter failed');
+
+  // Wait for input for renaming to appear.
+  // Check: the renaming text input should be shown in the file list.
+  await remoteCall.waitForElement(appId, textInput);
+
+  // Type new name.
+  await remoteCall.callRemoteTestUtil(
+      'inputText', appId, [textInput, 'new name']);
+
+  // Send Enter key to the text input.
+  const key3 = [textInput, 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key3),
+      'fakeKeyDown failed');
+
+  // Wait for new name to appear on the file list.
+  const expectedRows2 = [['new name', '--', 'Folder', '']];
+  await remoteCall.waitForFiles(
+      appId, expectedRows2,
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
 };
