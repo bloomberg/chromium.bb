@@ -200,7 +200,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     if (is_showing_) {
       local_surface_id_allocator_.GenerateId();
       delegated_frame_host_->WasShown(
-          local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+          local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+              .local_surface_id(),
           GetCompositorViewportPixelSize());
     }
 
@@ -274,7 +275,8 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
   }
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(
-        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         GetCompositorViewportPixelSize(), deadline_policy);
 
     // TODO(ericrk): This can be removed once surface synchronization is
@@ -1387,7 +1389,8 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   if (delegated_frame_host_) {
     delegated_frame_host_->WasShown(
-        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         GetCompositorViewportPixelSize());
   }
 

@@ -267,17 +267,19 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
                            sw_viewport_for_current_draw_.bottom());
     display_->Resize(display_size);
 
-    if (!root_local_surface_id_.is_valid() || display_size_ != display_size ||
+    if (!root_local_surface_id_allocation_.IsValid() ||
+        display_size_ != display_size ||
         device_scale_factor_ != frame.metadata.device_scale_factor) {
       root_local_surface_id_allocator_.GenerateId();
-      root_local_surface_id_ =
-          root_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+      root_local_surface_id_allocation_ =
+          root_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
       display_size_ = display_size;
       device_scale_factor_ = frame.metadata.device_scale_factor;
     }
 
-    display_->SetLocalSurfaceId(root_local_surface_id_,
-                                frame.metadata.device_scale_factor);
+    display_->SetLocalSurfaceId(
+        root_local_surface_id_allocation_.local_surface_id(),
+        frame.metadata.device_scale_factor);
 
     // The offset for the child frame relative to the origin of the canvas being
     // drawn into.
@@ -326,8 +328,9 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     child_support_->SubmitCompositorFrame(
         child_local_surface_id_allocation_.local_surface_id(),
         std::move(frame));
-    root_support_->SubmitCompositorFrame(root_local_surface_id_,
-                                         std::move(embed_frame));
+    root_support_->SubmitCompositorFrame(
+        root_local_surface_id_allocation_.local_surface_id(),
+        std::move(embed_frame));
     display_->DrawAndSwap();
   } else {
     // For hardware draws we send the whole frame to the client so it can draw

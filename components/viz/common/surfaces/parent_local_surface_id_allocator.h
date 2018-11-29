@@ -50,20 +50,15 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   void GenerateId();
 
-  const LocalSurfaceId& GetCurrentLocalSurfaceId() const;
-
   const LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation() const;
 
   bool HasValidLocalSurfaceIdAllocation() const;
-
-  static const LocalSurfaceId& InvalidLocalSurfaceId();
 
   static const LocalSurfaceIdAllocation& InvalidLocalSurfaceIdAllocation();
 
   bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
 
  private:
-  static const LocalSurfaceId invalid_local_surface_id_;
   LocalSurfaceIdAllocation current_local_surface_id_allocation_;
 
   // When true, the last known LocalSurfaceId is an invalid LocalSurfaceId.

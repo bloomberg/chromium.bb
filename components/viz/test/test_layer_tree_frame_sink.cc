@@ -166,13 +166,15 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame,
   gfx::Size frame_size = frame.size_in_pixels();
   float device_scale_factor = frame.device_scale_factor();
   LocalSurfaceId local_surface_id =
-      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
 
   if (frame_size != display_size_ ||
       device_scale_factor != device_scale_factor_) {
     parent_local_surface_id_allocator_->GenerateId();
     local_surface_id =
-        parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+        parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id();
     display_->SetLocalSurfaceId(local_surface_id, device_scale_factor);
     display_->Resize(frame_size);
     display_size_ = frame_size;

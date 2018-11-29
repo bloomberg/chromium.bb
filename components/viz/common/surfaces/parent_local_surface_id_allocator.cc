@@ -109,13 +109,6 @@ void ParentLocalSurfaceIdAllocator::GenerateId() {
       current_local_surface_id_allocation_.local_surface_id_.ToString());
 }
 
-const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceId()
-    const {
-  if (is_invalid_)
-    return g_invalid_local_surface_id_allocation.local_surface_id();
-  return current_local_surface_id_allocation_.local_surface_id_;
-}
-
 const LocalSurfaceIdAllocation&
 ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceIdAllocation() const {
   if (is_invalid_)
@@ -125,11 +118,6 @@ ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceIdAllocation() const {
 
 bool ParentLocalSurfaceIdAllocator::HasValidLocalSurfaceIdAllocation() const {
   return !is_invalid_ && current_local_surface_id_allocation_.IsValid();
-}
-
-// static
-const LocalSurfaceId& ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId() {
-  return g_invalid_local_surface_id_allocation.local_surface_id();
 }
 
 // static

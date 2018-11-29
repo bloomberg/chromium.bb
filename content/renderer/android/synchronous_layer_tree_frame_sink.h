@@ -183,7 +183,7 @@ class SynchronousLayerTreeFrameSink
   viz::ParentLocalSurfaceIdAllocator root_local_surface_id_allocator_;
   viz::ParentLocalSurfaceIdAllocator child_local_surface_id_allocator_;
   viz::LocalSurfaceIdAllocation child_local_surface_id_allocation_;
-  viz::LocalSurfaceId root_local_surface_id_;
+  viz::LocalSurfaceIdAllocation root_local_surface_id_allocation_;
   gfx::Size child_size_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;

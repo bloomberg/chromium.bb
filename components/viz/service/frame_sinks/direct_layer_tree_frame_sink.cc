@@ -180,7 +180,8 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     last_swap_frame_size_ = frame.size_in_pixels();
     device_scale_factor_ = frame.device_scale_factor();
     display_->SetLocalSurfaceId(
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         device_scale_factor_);
   }
 
@@ -192,7 +193,8 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
 
   HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
   support_->SubmitCompositorFrame(
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
       std::move(frame), std::move(hit_test_region_list));
 }
 

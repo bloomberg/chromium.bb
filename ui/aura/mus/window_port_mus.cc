@@ -441,7 +441,8 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   }
 
   const viz::LocalSurfaceId& current_local_surface_id =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
 
   // If the FrameSinkId is available, then immediately embed the SurfaceId.
   // The newly generated frame by the embedder will block in the display
@@ -600,7 +601,8 @@ void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
       local_layer_tree_frame_sink_) {
     parent_local_surface_id_allocator_.GenerateId();
     local_layer_tree_frame_sink_->SetLocalSurfaceId(
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
   }
 
   if (window_->delegate()) {

@@ -108,8 +108,9 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
             .AddRenderPass(gfx::Rect(frame_size), gfx::Rect(frame_size))
             .Build();
     allocator_.GenerateId();
-    frame_host_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
-                                       std::move(frame), base::nullopt);
+    frame_host_->SubmitCompositorFrame(
+        allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+        std::move(frame), base::nullopt);
   }
 
   void SetUpValidFrame(const gfx::Size& frame_size) {
@@ -315,7 +316,8 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest, EmbedWhileHidden) {
   }
   EXPECT_FALSE(frame_host_->HasSavedFrame());
   allocator_.GenerateId();
-  viz::LocalSurfaceId id = allocator_.GetCurrentLocalSurfaceId();
+  viz::LocalSurfaceId id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   gfx::Size size(100, 100);
   frame_host_->WasHidden();
   frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
@@ -331,7 +333,8 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest,
        FullSurfaceCapture) {
   // First embed a surface to make sure we have something to copy from.
   allocator_.GenerateId();
-  viz::LocalSurfaceId id = allocator_.GetCurrentLocalSurfaceId();
+  viz::LocalSurfaceId id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   gfx::Size size(100, 100);
   frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
 
