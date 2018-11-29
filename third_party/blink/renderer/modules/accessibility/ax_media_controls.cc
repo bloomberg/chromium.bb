@@ -58,6 +58,10 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaSlider:
       return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
+    case kMediaVolumeSlider:
+      return AccessibilityMediaVolumeSlider::Create(layout_object,
+                                                    ax_object_cache);
+
     case kMediaCurrentTimeDisplay:
     case kMediaTimeRemainingDisplay:
       return AccessibilityMediaTimeDisplay::Create(layout_object,
@@ -92,10 +96,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaExitPictureInPictureButton:
     case kMediaDisplayCutoutFullscreenButton:
     case kMediaAnimatedArrowContainer:
-      return new AccessibilityMediaControl(layout_object, ax_object_cache);
-    // Removed as a part of the a11y tree rewrite https://crbug/836549.
-    case kMediaVolumeSlider:
-      NOTREACHED();
       return new AccessibilityMediaControl(layout_object, ax_object_cache);
   }
 
@@ -366,6 +366,37 @@ String AccessibilityMediaTimeline::Description(
   return QueryString(IsControllingVideoElement()
                          ? WebLocalizedString::kAXMediaVideoSliderHelp
                          : WebLocalizedString::kAXMediaAudioSliderHelp);
+}
+
+//
+// AccessibilityMediaVolumeSlider
+
+AccessibilityMediaVolumeSlider::AccessibilityMediaVolumeSlider(
+    LayoutObject* layout_object,
+    AXObjectCacheImpl& ax_object_cache)
+    : AXSlider(layout_object, ax_object_cache) {}
+
+AXObject* AccessibilityMediaVolumeSlider::Create(
+    LayoutObject* layout_object,
+    AXObjectCacheImpl& ax_object_cache) {
+  return new AccessibilityMediaVolumeSlider(layout_object, ax_object_cache);
+}
+
+String AccessibilityMediaVolumeSlider::Description(
+    ax::mojom::NameFrom name_from,
+    ax::mojom::DescriptionFrom& description_from,
+    AXObjectVector* description_objects) const {
+  return QueryString(WebLocalizedString::kAXMediaVolumeSliderHelp);
+}
+
+bool AccessibilityMediaVolumeSlider::InternalSetAccessibilityFocusAction() {
+  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
+  return AXSlider::InternalSetAccessibilityFocusAction();
+}
+
+bool AccessibilityMediaVolumeSlider::InternalClearAccessibilityFocusAction() {
+  MediaControlElementsHelper::NotifyMediaControlAccessibleBlur(GetElement());
+  return AXSlider::InternalClearAccessibilityFocusAction();
 }
 
 //
