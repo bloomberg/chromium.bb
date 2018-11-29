@@ -51,8 +51,6 @@ security_state::SSLStatusInputEventData* GetOrCreateSSLStatusInputEventData(
 
 }  // namespace
 
-DEFINE_WEB_STATE_USER_DATA_KEY(InsecureInputTabHelper);
-
 InsecureInputTabHelper::~InsecureInputTabHelper() = default;
 
 // static
