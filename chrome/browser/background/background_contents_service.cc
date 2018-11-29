@@ -336,7 +336,6 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 }
 
 void BackgroundContentsService::OnExtensionSystemReady(Profile* profile) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BackgroundContentsServiceStartupTime");
   LoadBackgroundContentsFromManifests(profile);
   LoadBackgroundContentsFromPrefs(profile);
   SendChangeNotification(profile);
