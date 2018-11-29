@@ -18,7 +18,8 @@ extern CGFloat const kInputAccessoryHeight;
 
 // Creates and manages a custom input accessory view while the user is
 // interacting with a form. Also handles hiding and showing the default
-// accessory view elements.
+// accessory view elements. Defaults in paused state and needs to be started by
+// calling |continueCustomKeyboardView|.
 @interface FormInputAccessoryViewController
     : NSObject<FormInputAccessoryConsumer>
 
