@@ -99,7 +99,6 @@ if (!is_ios) {
     testonly = true
 
     catalog_deps = [
-      "//services/preferences:tests_catalog",
       "//services/video_capture:tests_catalog",
       "//services/viz:tests_catalog",
     ]

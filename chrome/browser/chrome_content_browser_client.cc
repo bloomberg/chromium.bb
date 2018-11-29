@@ -1005,17 +1005,6 @@ void LaunchURL(
   }
 }
 
-std::unique_ptr<service_manager::Service> CreatePrefService(
-    base::RepeatingCallback<prefs::InProcessPrefServiceFactory*()>
-        factory_callback) {
-  auto* factory = factory_callback.Run();
-
-  if (!factory)
-    return std::make_unique<service_manager::Service>();
-
-  return factory->CreatePrefService();
-}
-
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
@@ -3726,19 +3715,6 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
       chrome::mojom::kServiceName,
       ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
 
-  if (!g_browser_process || g_browser_process->pref_service_factory()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::BindRepeating(
-        &CreatePrefService,
-        base::BindRepeating([]() -> prefs::InProcessPrefServiceFactory* {
-          return g_browser_process ? g_browser_process->pref_service_factory()
-                                   : nullptr;
-        }));
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(
-        std::make_pair(prefs::mojom::kLocalStateServiceName, info));
-  }
-
 #if defined(OS_ANDROID)
   {
     service_manager::EmbeddedServiceInfo info;
@@ -3894,6 +3870,15 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 void ChromeContentBrowserClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
+  if (service_name == prefs::mojom::kLocalStateServiceName) {
+    if (!g_browser_process || !g_browser_process->pref_service_factory())
+      return;
+
+    service_manager::Service::RunUntilTermination(
+        g_browser_process->pref_service_factory()->CreatePrefService(
+            std::move(request)));
+  }
+
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunUntilTermination(

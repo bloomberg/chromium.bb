@@ -6,8 +6,10 @@
 
 #include "base/barrier_closure.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -23,75 +25,84 @@
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
+#include "services/preferences/tests_catalog_source.h"
 #include "services/preferences/unittest_common.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace prefs {
 namespace {
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory {
+const char kTestServiceName[] = "prefs_unittests";
+const char kTestHelperServiceName[] = "prefs_unittest_helper";
+
+class TestService : public service_manager::Service,
+                    public service_manager::mojom::ServiceFactory {
  public:
-  ServiceTestClient(
-      service_manager::test::ServiceTest* test,
-      base::Callback<std::unique_ptr<service_manager::Service>()>
-          service_factory,
+  TestService(
+      service_manager::mojom::ServiceRequest test_service_request,
+      InProcessPrefServiceFactory* service_factory,
       base::OnceCallback<void(service_manager::Connector*)> connector_callback)
-      : service_manager::test::ServiceTestClient(test),
-        service_factory_(std::move(service_factory)),
-        connector_callback_(std::move(connector_callback)) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&ServiceTestClient::Create,
-                            base::Unretained(this)));
+      : test_service_binding_(this, std::move(test_service_request)),
+        service_factory_(service_factory),
+        connector_callback_(std::move(connector_callback)),
+        helper_service_binding_(&helper_service_) {}
+
+  service_manager::Connector* connector() {
+    return test_service_binding_.GetConnector();
   }
 
  protected:
+  // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
+    CHECK_EQ(interface_name, service_manager::mojom::ServiceFactory::Name_);
+    service_factory_bindings_.AddBinding(
+        this, service_manager::mojom::ServiceFactoryRequest(
+                  std::move(interface_pipe)));
   }
 
+  // service_manager::mojom::ServiceFactory:
   void CreateService(
       service_manager::mojom::ServiceRequest request,
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     if (name == prefs::mojom::kServiceName) {
-      pref_service_context_ = std::make_unique<service_manager::ServiceContext>(
-          service_factory_.Run(), std::move(request));
-    } else if (name == "prefs_unittest_helper") {
-      test_helper_service_context_ =
-          std::make_unique<service_manager::ServiceContext>(
-              std::make_unique<service_manager::Service>(), std::move(request));
+      pref_service_impl_ =
+          service_factory_->CreatePrefService(std::move(request));
+    } else if (name == kTestHelperServiceName) {
+      helper_service_binding_.Bind(std::move(request));
       std::move(connector_callback_)
-          .Run(test_helper_service_context_->connector());
+          .Run(helper_service_binding_.GetConnector());
     }
   }
 
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
  private:
-  service_manager::BinderRegistry registry_;
+  service_manager::ServiceBinding test_service_binding_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
-  base::Callback<std::unique_ptr<service_manager::Service>()> service_factory_;
-  std::unique_ptr<service_manager::ServiceContext> pref_service_context_;
-  std::unique_ptr<service_manager::ServiceContext> test_helper_service_context_;
+  InProcessPrefServiceFactory* const service_factory_;
   base::OnceCallback<void(service_manager::Connector*)> connector_callback_;
+
+  std::unique_ptr<service_manager::Service> pref_service_impl_;
+
+  service_manager::Service helper_service_;
+  service_manager::ServiceBinding helper_service_binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestService);
 };
 
 constexpr char kInitialKey[] = "initial_key";
 constexpr char kOtherInitialKey[] = "other_initial_key";
 constexpr int kUpdatedValue = 2;
 
-class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
+class PrefServiceFactoryTest : public testing::Test {
  public:
-  PrefServiceFactoryTest() : ServiceTest("prefs_unittests") {}
+  PrefServiceFactoryTest()
+      : test_service_manager_(CreateServiceTestCatalog()) {}
 
  protected:
   void SetUp() override {
@@ -109,16 +120,18 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
     CustomizePrefDelegateAndFactory(delegate.get(), &factory);
     pref_service_ = factory.Create(pref_registry.get(), std::move(delegate));
 
-    base::RunLoop run_loop;
-    connector_callback_ =
-        base::BindOnce(&PrefServiceFactoryTest::SetOtherClientConnector,
-                       base::Unretained(this), run_loop.QuitClosure());
-    ServiceTest::SetUp();
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+
+    base::RunLoop run_loop;
+    test_service_ = std::make_unique<TestService>(
+        test_service_manager_.RegisterTestInstance(kTestServiceName),
+        service_factory_.get(),
+        base::BindOnce(&PrefServiceFactoryTest::SetOtherClientConnector,
+                       base::Unretained(this), run_loop.QuitClosure()));
 
     // TODO(https://crbug.com/904148): This should not use |WarmService()|.
     connector()->WarmService(
-        service_manager::ServiceFilter::ByName("prefs_unittest_helper"));
+        service_manager::ServiceFilter::ByName(kTestHelperServiceName));
     run_loop.Run();
   }
 
@@ -126,15 +139,10 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
       PrefValueStore::Delegate* delegate,
       PrefServiceFactory* factory) {}
 
+  service_manager::Connector* connector() { return test_service_->connector(); }
+
   service_manager::Connector* other_client_connector() {
     return other_client_connector_;
-  }
-
-  // service_manager::test::ServiceTest:
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClient>(
-        this, service_factory_->CreatePrefServiceFactory(),
-        std::move(connector_callback_));
   }
 
   // Create a fully initialized PrefService synchronously.
@@ -239,6 +247,8 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
       quit_closure.Run();
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
   base::ScopedTempDir profile_dir_;
   scoped_refptr<WriteablePrefStore> above_user_prefs_pref_store_;
   scoped_refptr<WriteablePrefStore> below_user_prefs_pref_store_;
@@ -247,6 +257,7 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
   service_manager::Connector* other_client_connector_ = nullptr;
   base::OnceCallback<void(service_manager::Connector*)> connector_callback_;
   std::unique_ptr<InProcessPrefServiceFactory> service_factory_;
+  std::unique_ptr<TestService> test_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceFactoryTest);
 };

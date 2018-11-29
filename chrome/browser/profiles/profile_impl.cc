@@ -1159,16 +1159,6 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
 }
 
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
-            ->CreatePrefServiceFactory();
-    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
-    services->insert(std::make_pair(prefs::mojom::kServiceName, info));
-  }
-
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     service_manager::EmbeddedServiceInfo info;
@@ -1212,6 +1202,11 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         SigninManagerFactory::GetForProfile(this),
         ProfileOAuth2TokenServiceFactory::GetForProfile(this),
         std::move(request));
+  }
+
+  if (service_name == prefs::mojom::kServiceName) {
+    return InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+        ->CreatePrefService(std::move(request));
   }
 
 #if defined(OS_CHROMEOS)

@@ -372,17 +372,16 @@ OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
       .get();
 }
 
-void OffTheRecordProfileImpl::RegisterInProcessServices(
-    StaticServiceMap* services) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
-            ->CreatePrefServiceFactory();
-    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
-    services->insert(std::make_pair(prefs::mojom::kServiceName, info));
+std::unique_ptr<service_manager::Service>
+OffTheRecordProfileImpl::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == prefs::mojom::kServiceName) {
+    return InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
+        ->CreatePrefService(std::move(request));
   }
+
+  return nullptr;
 }
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
