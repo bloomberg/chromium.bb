@@ -172,11 +172,6 @@ namespace content {
 
 namespace {
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-const char kAllowStartingServiceManagerOnly[] =
-    "allow-start-service-manager-only";
-#endif
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
 #define kV8SnapshotDataDescriptor kV8Snapshot64DataDescriptor
@@ -932,8 +927,8 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 #endif
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kAllowStartingServiceManagerOnly) &&
+  if (base::FeatureList::IsEnabled(
+          features::kAllowStartingServiceManagerOnly) &&
       start_service_manager_only) {
     return -1;
   }
