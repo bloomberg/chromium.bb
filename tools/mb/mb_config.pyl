@@ -492,10 +492,10 @@
     },
 
     'chromium.webrtc': {
-      'Android Builder': 'android_debug_static_bot_arm64',
+      'WebRTC Chromium Android Builder': 'android_debug_static_bot_arm64',
       'WebRTC Chromium Linux Builder': 'gpu_tests_release_bot',
-      'Mac Builder': 'gpu_tests_release_bot',
-      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
+      'WebRTC Chromium Mac Builder': 'gpu_tests_release_bot',
+      'WebRTC Chromium Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
     },
 
     'chromium.webrtc.fyi': {
