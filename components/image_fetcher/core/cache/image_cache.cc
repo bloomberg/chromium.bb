@@ -211,7 +211,7 @@ void ImageCache::RunEvictionWhenFull() {
   // Update the time we did LRU eviction so it can used for reporting.
   pref_service_->SetTime(kPrefLastLRUEviction, clock_->Now());
 
-  RunEviction(kCacheResizeWhenFull, base::OnceClosure());
+  RunEviction(kCacheResizeWhenFull, base::DoNothing());
 }
 
 void ImageCache::RunEviction(size_t bytes_left,
