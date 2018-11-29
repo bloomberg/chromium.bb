@@ -1067,6 +1067,13 @@ void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   viewport_layers_.outer_viewport_scroll = layers.outer_viewport_scroll;
 }
 
+void LayerTreeHost::RegisterViewportPropertyIds(
+    const ViewportPropertyIds& ids) {
+  DCHECK(!viewport_layers_.inner_viewport_scroll);
+  DCHECK(IsUsingLayerLists());
+  viewport_property_ids_ = ids;
+}
+
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
   if (selection_ == selection)
     return;
@@ -1488,6 +1495,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   } else {
     tree_impl->ClearViewportLayers();
   }
+
+  tree_impl->set_viewport_property_ids(viewport_property_ids_);
 
   tree_impl->RegisterSelection(selection_);
 

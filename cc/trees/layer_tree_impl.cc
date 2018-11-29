@@ -842,8 +842,12 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
 
 TransformNode* LayerTreeImpl::PageScaleTransformNode() {
   auto* page_scale = PageScaleLayer();
-  if (!page_scale)
-    return nullptr;
+  if (!page_scale) {
+    // TODO(crbug.com/909750): Check all other callers of PageScaleLayer() and
+    // switch to viewport_property_ids_.page_scale_transform if needed.
+    return property_trees()->transform_tree.Node(
+        viewport_property_ids_.page_scale_transform);
+  }
 
   return property_trees()->transform_tree.Node(
       page_scale->transform_tree_index());
@@ -858,8 +862,8 @@ void LayerTreeImpl::UpdatePageScaleNode() {
   // When the page scale layer is also the root layer (this happens in the UI
   // compositor), the node should also store the combined scale factor and not
   // just the page scale factor.
-  // TODO(bokan): Need to implement this behavior for
-  // BlinkGeneratedPropertyTrees. i.e. (no page scale layer).
+  // TODO(crbug.com/909750): Implement this behavior without PageScaleLayer,
+  // e.g. when we switch the UI compositor to create property trees.
   float device_scale_factor_for_page_scale_layer = 1.f;
   gfx::Transform device_transform_for_page_scale_layer;
   if (IsRootLayer(PageScaleLayer())) {
