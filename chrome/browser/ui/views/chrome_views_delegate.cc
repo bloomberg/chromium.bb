@@ -20,10 +20,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/touch_selection_menu_runner_chromeos.h"
 #endif
@@ -134,14 +130,6 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   AdjustSavedWindowPlacementChromeOS(widget, bounds);
 #endif
   return true;
-}
-
-void ChromeViewsDelegate::NotifyAccessibilityEvent(
-    views::View* view,
-    ax::mojom::Event event_type) {
-#if defined(USE_AURA)
-  AutomationManagerAura::GetInstance()->HandleEvent(view, event_type);
-#endif
 }
 
 void ChromeViewsDelegate::AddRef() {

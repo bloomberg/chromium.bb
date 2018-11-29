@@ -115,8 +115,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
   aura::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
-  AXRemoteHost* ax_remote_host() { return ax_remote_host_.get(); }
-
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
   // set as the factory function used for creating NativeWidgets when a
   //  NativeWidget has not been explicitly set.

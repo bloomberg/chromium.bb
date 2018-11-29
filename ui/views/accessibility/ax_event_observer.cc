@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/mus_views_delegate.h"
-
-#include "ui/views/mus/mus_client.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 
 namespace views {
 
-MusViewsDelegate::MusViewsDelegate() = default;
+AXEventObserver::AXEventObserver() = default;
 
-MusViewsDelegate::~MusViewsDelegate() = default;
+AXEventObserver::~AXEventObserver() = default;
 
 }  // namespace views

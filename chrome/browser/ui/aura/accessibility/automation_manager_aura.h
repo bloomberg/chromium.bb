@@ -18,6 +18,7 @@
 #include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 
 namespace base {
 template <typename T>
@@ -36,7 +37,8 @@ struct ExtensionMsg_AccessibilityEventBundleParams;
 
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public ui::AXHostDelegate,
-                              public views::AXAuraObjCache::Delegate {
+                              public views::AXAuraObjCache::Delegate,
+                              public views::AXEventObserver {
  public:
   // Get the single instance of this class.
   static AutomationManagerAura* GetInstance();
@@ -46,9 +48,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   // Disable automation support for views.
   void Disable();
-
-  // Handle an event fired upon a |View|.
-  void HandleEvent(views::View* view, ax::mojom::Event event_type);
 
   // Handle an event fired upon the root view.
   void HandleEvent(ax::mojom::Event event_type);
@@ -62,6 +61,9 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;
   void OnEvent(views::AXAuraObjWrapper* aura_obj,
                ax::mojom::Event event_type) override;
+
+  // views::AXEventObserver:
+  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override;
 
   void set_event_bundle_callback_for_testing(
       base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>

@@ -117,8 +117,9 @@ AXRemoteHost* CreateRemote(TestAXHostService* service) {
   remote->InitForTesting(service->CreateInterfacePtr());
   remote->FlushForTesting();
   // Install the AXRemoteHost on MusClient so it monitors Widget creation.
+  AXRemoteHost* remote_raw = remote.get();
   MusClientTestApi::SetAXRemoteHost(std::move(remote));
-  return MusClient::Get()->ax_remote_host();
+  return remote_raw;
 }
 
 std::unique_ptr<Widget> CreateTestWidget() {
@@ -193,7 +194,7 @@ TEST_F(AXRemoteHostTest, SendEventOnViewWithNoWidget) {
 
   // Create a view that is not yet associated with the widget.
   views::View view;
-  remote->HandleEvent(&view, ax::mojom::Event::kLocationChanged);
+  remote->OnViewEvent(&view, ax::mojom::Event::kLocationChanged);
   // No crash.
 }
 

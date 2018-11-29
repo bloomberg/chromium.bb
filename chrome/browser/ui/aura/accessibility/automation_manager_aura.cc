@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,6 +44,8 @@ void AutomationManagerAura::Enable() {
   Reset(false);
 
   SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
+  // Intentionally not reset at shutdown since we cannot rely on the shutdown
+  // ordering of two base::Singletons.
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
@@ -70,7 +73,7 @@ void AutomationManagerAura::Disable() {
 #endif
 }
 
-void AutomationManagerAura::HandleEvent(views::View* view,
+void AutomationManagerAura::OnViewEvent(views::View* view,
                                         ax::mojom::Event event_type) {
   CHECK(view);
 
@@ -161,9 +164,12 @@ AutomationManagerAura::AutomationManagerAura()
     : AXHostDelegate(ui::DesktopAXTreeID()),
       enabled_(false),
       processing_events_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  views::AXEventManager::Get()->AddObserver(this);
+}
 
 AutomationManagerAura::~AutomationManagerAura() {
+  views::AXEventManager::Get()->RemoveObserver(this);
 }
 
 void AutomationManagerAura::Reset(bool reset_serializer) {

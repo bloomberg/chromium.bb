@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
@@ -37,7 +36,6 @@ namespace views {
 
 class NativeWidget;
 class NonClientFrameView;
-class View;
 class Widget;
 
 #if defined(USE_AURA)
@@ -124,10 +122,6 @@ class VIEWS_EXPORT ViewsDelegate {
                                        const std::string& window_name,
                                        gfx::Rect* bounds,
                                        ui::WindowShowState* show_state) const;
-
-  // Handles an event on a |view|. The |view| must not be null.
-  virtual void NotifyAccessibilityEvent(View* view,
-                                        ax::mojom::Event event_type);
 
   // For accessibility, notify the delegate that a menu item was focused
   // so that alternate feedback (speech / magnified text) can be provided.
