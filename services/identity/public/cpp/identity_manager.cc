@@ -247,10 +247,8 @@ void IdentityManager::SetPrimaryAccountSynchronously(
   }
 }
 
-// Populates and returns an AccountInfo object corresponding to |account_id|,
-// which must be an account with a refresh token.
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
-    std::string account_id) const {
+    const std::string& account_id) const {
   DCHECK(HasAccountWithRefreshToken(account_id));
 
   AccountInfo account_info =
