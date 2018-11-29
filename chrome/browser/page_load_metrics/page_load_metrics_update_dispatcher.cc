@@ -261,34 +261,15 @@ class PageLoadTimingMerger {
       : target_(target) {}
 
   // Merge timing values from |new_page_load_timing| into the target
-  // PageLoadTiming, applying the |navigation_start_offset| to applicable
-  // metrics with respect to |is_main_frame|.
-  void MergeAndApplyOffset(base::TimeDelta navigation_start_offset,
-                           const mojom::PageLoadTiming& new_page_load_timing,
-                           bool is_main_frame) {
-    // TODO(crbug.com/906718): This approach is hard to maintain and likely to
-    // get stale over time.
+  // PageLoadTiming;
+  void Merge(base::TimeDelta navigation_start_offset,
+             const mojom::PageLoadTiming& new_page_load_timing,
+             bool is_main_frame) {
     MergePaintTiming(navigation_start_offset,
                      *new_page_load_timing.paint_timing, is_main_frame);
     MergeInteractiveTiming(navigation_start_offset,
                            *new_page_load_timing.interactive_timing,
                            is_main_frame);
-    // Don't need to merge these main-frame only metrics: merely apply the
-    // offset.
-    if (is_main_frame) {
-      target_->navigation_start =
-          new_page_load_timing.navigation_start + navigation_start_offset;
-      MaybeUpdateTimeDelta(&target_->response_start, navigation_start_offset,
-                           new_page_load_timing.response_start);
-      MaybeUpdateTimeDelta(&target_->input_to_navigation_start,
-                           navigation_start_offset,
-                           new_page_load_timing.input_to_navigation_start);
-
-      ApplyDocumentTimingOffset(navigation_start_offset,
-                                *new_page_load_timing.document_timing);
-      ApplyParseTimingOffset(navigation_start_offset,
-                             *new_page_load_timing.parse_timing);
-    }
   }
 
   // Whether we merged a new value.
@@ -362,25 +343,10 @@ class PageLoadTimingMerger {
     MaybeUpdateTimeDelta(&target_paint_timing->first_contentful_paint,
                          navigation_start_offset,
                          new_paint_timing.first_contentful_paint);
-    // These are currently a no-op on main frames.
-    MaybeUpdateTimeDelta(&target_paint_timing->largest_image_paint,
-                         navigation_start_offset,
-                         new_paint_timing.largest_image_paint);
-    MaybeUpdateTimeDelta(&target_paint_timing->last_image_paint,
-                         navigation_start_offset,
-                         new_paint_timing.last_image_paint);
-    MaybeUpdateTimeDelta(&target_paint_timing->largest_text_paint,
-                         navigation_start_offset,
-                         new_paint_timing.largest_text_paint);
-    MaybeUpdateTimeDelta(&target_paint_timing->last_text_paint,
-                         navigation_start_offset,
-                         new_paint_timing.last_text_paint);
-
     if (is_main_frame) {
       // First meaningful paint is only tracked in the main frame.
-      MaybeUpdateTimeDelta(&target_paint_timing->first_meaningful_paint,
-                           navigation_start_offset,
-                           new_paint_timing.first_meaningful_paint);
+      target_paint_timing->first_meaningful_paint =
+          new_paint_timing.first_meaningful_paint;
     }
   }
 
@@ -423,32 +389,6 @@ class PageLoadTimingMerger {
             new_longest_input_timestamp;
       }
     }
-  }
-
-  void ApplyDocumentTimingOffset(
-      base::TimeDelta navigation_start_offset,
-      const mojom::DocumentTiming& new_document_timing) {
-    mojom::DocumentTiming* target_document_timing =
-        target_->document_timing.get();
-    MaybeUpdateTimeDelta(
-        &target_document_timing->dom_content_loaded_event_start,
-        navigation_start_offset,
-        new_document_timing.dom_content_loaded_event_start);
-    MaybeUpdateTimeDelta(&target_document_timing->load_event_start,
-                         navigation_start_offset,
-                         new_document_timing.load_event_start);
-    MaybeUpdateTimeDelta(&target_document_timing->first_layout,
-                         navigation_start_offset,
-                         new_document_timing.first_layout);
-  }
-
-  void ApplyParseTimingOffset(base::TimeDelta navigation_start_offset,
-                              const mojom::ParseTiming& new_parse_timing) {
-    mojom::ParseTiming* target_parse_timing = target_->parse_timing.get();
-    MaybeUpdateTimeDelta(&target_parse_timing->parse_start,
-                         navigation_start_offset, new_parse_timing.parse_start);
-    MaybeUpdateTimeDelta(&target_parse_timing->parse_stop,
-                         navigation_start_offset, new_parse_timing.parse_stop);
   }
 
   // The target PageLoadTiming we are merging values into.
@@ -520,11 +460,6 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
   if (should_dispatch) {
     DispatchTimingUpdates();
   }
-}
-
-void PageLoadMetricsUpdateDispatcher::ReportMainFrameNavigationRestartPenalty(
-    base::TimeDelta penalty) {
-  total_main_frame_navigation_restart_penalty_ += penalty;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
@@ -600,13 +535,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
 
   client_->OnSubFrameTimingChanged(render_frame_host, *new_timing);
 
-  // |total_main_frame_navigation_restart_penalty_| should also be applied to
-  // subframes since this penalty is associated with the main frame.
-  base::TimeDelta navigation_start_offset =
-      it->second - total_main_frame_navigation_restart_penalty_;
+  base::TimeDelta navigation_start_offset = it->second;
   PageLoadTimingMerger merger(pending_merged_page_timing_.get());
-  merger.MergeAndApplyOffset(navigation_start_offset, *new_timing,
-                             false /* is_main_frame */);
+  merger.Merge(navigation_start_offset, *new_timing, false /* is_main_frame */);
 
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
@@ -654,33 +585,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   mojom::InteractiveTimingPtr last_interactive_timing =
       std::move(pending_merged_page_timing_->interactive_timing);
 
-  base::TimeDelta navigation_start_offset =
-      -total_main_frame_navigation_restart_penalty_;
   // Update the latest candidate to the corresponding buffers. We will dispatch
   // the last candidate at the page load end. Because we don't want to dispatch
   // the non-last candidate here, we clear it from |new_timing|.
-  // Since this also means that these timings won't get
-  // |navigation_start_offset| applied in the merger, apply it here.
-  if (new_timing->paint_timing->largest_image_paint.has_value()) {
-    new_timing->paint_timing->largest_image_paint =
-        new_timing->paint_timing->largest_image_paint.value() +
-        navigation_start_offset;
-  }
-  if (new_timing->paint_timing->last_image_paint.has_value()) {
-    new_timing->paint_timing->last_image_paint =
-        new_timing->paint_timing->last_image_paint.value() +
-        navigation_start_offset;
-  }
-  if (new_timing->paint_timing->largest_text_paint.has_value()) {
-    new_timing->paint_timing->largest_text_paint =
-        new_timing->paint_timing->largest_text_paint.value() +
-        navigation_start_offset;
-  }
-  if (new_timing->paint_timing->last_text_paint.has_value()) {
-    new_timing->paint_timing->last_text_paint =
-        new_timing->paint_timing->last_text_paint.value() +
-        navigation_start_offset;
-  }
   largest_image_paint_.swap(new_timing->paint_timing->largest_image_paint);
   new_timing->paint_timing->largest_image_paint.reset();
   last_image_paint_.swap(new_timing->paint_timing->last_image_paint);
@@ -699,8 +606,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
       std::move(last_interactive_timing);
 
   PageLoadTimingMerger merger(pending_merged_page_timing_.get());
-  merger.MergeAndApplyOffset(navigation_start_offset, *new_timing,
-                             true /* is_main_frame */);
+  merger.Merge(base::TimeDelta(), *new_timing, true /* is_main_frame */);
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 

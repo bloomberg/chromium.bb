@@ -459,35 +459,6 @@ TEST_F(MetricsWebContentsObserverTest, SubFrame) {
   CheckNoErrorEvents();
 }
 
-TEST_F(MetricsWebContentsObserverTest, ReportNavigationRestartPenalty) {
-  mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.response_start = base::TimeDelta::FromMilliseconds(10);
-
-  std::unique_ptr<content::NavigationSimulator> navigation_simulator =
-      content::NavigationSimulator::CreateRendererInitiated(
-          GURL(kDefaultTestUrl), main_rfh());
-  navigation_simulator->Start();
-
-  const base::TimeDelta penalty = base::TimeDelta::FromMilliseconds(5);
-  observer()->ReportNavigationRestartPenalty(
-      navigation_simulator->GetNavigationHandle(), penalty);
-
-  navigation_simulator->Commit();
-  SimulateTimingUpdate(timing);
-
-  NavigateToUntrackedUrl();
-  CheckNoErrorEvents();
-
-  ASSERT_EQ(1, CountCompleteTimingReported());
-  mojom::PageLoadTimingPtr got_timing = complete_timings()[0].Clone();
-  // TODO(crbug.com/906718): Test all updated metrics.
-  EXPECT_EQ(got_timing->navigation_start, timing.navigation_start - penalty);
-  EXPECT_EQ(got_timing->response_start.value(),
-            timing.response_start.value() - penalty);
-}
-
 TEST_F(MetricsWebContentsObserverTest, SameDocumentNoTrigger) {
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
