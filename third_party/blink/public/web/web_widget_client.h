@@ -179,6 +179,10 @@ class WebWidgetClient {
                              WebDragOperationsMask,
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}
+
+  // Double tap zooms a rect in the main-frame renderer.
+  virtual void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+                                               const blink::WebRect& bounds) {}
 };
 
 }  // namespace blink

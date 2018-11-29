@@ -1091,15 +1091,15 @@ void WebViewImpl::EnableTapHighlights(
   UpdateAllLifecyclePhases(LifecycleUpdateReason::kOther);
 }
 
-void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
-                                       const WebRect& block_bounds) {
+void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
+                                       const WebRect& rect_to_zoom) {
   DCHECK(MainFrameImpl());
 
   float scale;
   IntPoint scroll;
 
   ComputeScaleAndScrollForBlockRect(
-      point_in_root_frame, block_bounds, touchPointPadding,
+      point_in_root_frame, rect_to_zoom, touchPointPadding,
       MinimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale,
       scroll);
 
@@ -1109,7 +1109,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
       double_tap_zoom_pending_;
 
   bool scale_unchanged = fabs(PageScaleFactor() - scale) < minScaleDifference;
-  bool should_zoom_out = block_bounds.IsEmpty() || scale_unchanged ||
+  bool should_zoom_out = rect_to_zoom.IsEmpty() || scale_unchanged ||
                          still_at_previous_double_tap_scale;
 
   bool is_animating;
@@ -1118,7 +1118,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
     scale = MinimumPageScaleFactor();
     IntPoint target_position =
         MainFrameImpl()->GetFrameView()->RootFrameToDocument(
-            point_in_root_frame);
+            IntPoint(point_in_root_frame.x(), point_in_root_frame.y()));
     is_animating = StartPageScaleAnimation(
         target_position, true, scale, doubleTapZoomAnimationDurationInSeconds);
   } else {

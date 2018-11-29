@@ -336,4 +336,10 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidCommitAndDrawCompositorFrame)
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)
 
+// Sent by a widget to the browser to request a page scale animation in the
+// main-frame's widget.
+IPC_MESSAGE_ROUTED2(WidgetHostMsg_AnimateDoubleTapZoomInMainFrame,
+                    gfx::Point /* tap point */,
+                    gfx::Rect /* rect_to_zoom */)
+
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

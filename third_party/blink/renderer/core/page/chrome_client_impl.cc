@@ -467,6 +467,10 @@ void ChromeClientImpl::ContentsSizeChanged(LocalFrame* frame,
   webframe->DidChangeContentsSize(size);
 }
 
+bool ChromeClientImpl::DoubleTapToZoomEnabled() const {
+  return web_view_->SettingsImpl()->DoubleTapToZoomEnabled();
+}
+
 void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }

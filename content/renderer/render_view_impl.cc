@@ -1268,6 +1268,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
+    IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
+                        OnAnimateDoubleTapZoomInMainFrame)
 
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
@@ -2153,6 +2155,12 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
     OnSetFocus(false);
     SetActiveForWidget(false);
   }
+}
+
+void RenderViewImpl::OnAnimateDoubleTapZoomInMainFrame(
+    const blink::WebPoint& point,
+    const blink::WebRect& bound) {
+  webview()->AnimateDoubleTapZoom(point, bound);
 }
 
 }  // namespace content

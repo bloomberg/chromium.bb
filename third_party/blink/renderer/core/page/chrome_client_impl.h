@@ -113,6 +113,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   WebScreenInfo GetScreenInfo() const override;
   base::Optional<IntRect> VisibleContentRectForPainting() const override;
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
+  bool DoubleTapToZoomEnabled() const override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
   void MainFrameScrollOffsetChanged() const override;

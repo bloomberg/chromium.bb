@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -903,11 +904,23 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
     case WebInputEvent::kGestureShowPress:
       break;
     case WebInputEvent::kGestureDoubleTap:
-      // Until https://crbug.com/734209 is resolved and OOPIFs learn how to
-      // handle AnimateDoubleTap, we shouldn't pass this event to the event
-      // handler as it will just result in (at best) hitting NOTREACHED() in
-      // debug builds.
-      LOG(INFO) << "DoubleTap zoom animations not yet implemented for OOPIF.";
+      if (GetPage()->GetChromeClient().DoubleTapToZoomEnabled() &&
+          view_impl->MinimumPageScaleFactor() !=
+              view_impl->MaximumPageScaleFactor()) {
+        LocalFrame* frame = LocalRootImpl()->GetFrame();
+        WebGestureEvent scaled_event =
+            TransformWebGestureEvent(frame->View(), event);
+        IntPoint pos_in_local_frame_root =
+            FlooredIntPoint(scaled_event.PositionInRootFrame());
+        WebRect block_bounds =
+            ComputeBlockBound(pos_in_local_frame_root, false);
+
+        // This sends the tap point and bounds to the main frame renderer via
+        // the browser, where their coordinates will be transformed into the
+        // main frame's coordinate space.
+        Client()->AnimateDoubleTapZoomInMainFrame(pos_in_local_frame_root,
+                                                  block_bounds);
+      }
       event_result = WebInputEventResult::kHandledSystem;
       Client()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;

@@ -46,6 +46,7 @@
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/viz/common/features.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
@@ -59,6 +60,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
@@ -69,6 +71,8 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input/actions_parser.h"
+#include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
@@ -13821,6 +13825,122 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(original_frame_url,
             child->current_frame_host()->GetLastCommittedURL());
 }
+
+// Touchscreen DoubleTapZoom is only supported on Android & ChromeOS at present.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+namespace {
+
+class SitePerProcessDoubleTapZoomBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessDoubleTapZoomBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+void EnableDoubleTapZoomInRenderView(FrameTreeNode* node) {
+  content::RenderViewHost* rvh =
+      node->current_frame_host()->GetRenderViewHost();
+  content::WebPreferences web_prefs = rvh->GetWebkitPreferences();
+  if (web_prefs.double_tap_to_zoom_enabled)
+    return;
+  web_prefs.double_tap_to_zoom_enabled = true;
+  rvh->UpdateWebkitPreferences(web_prefs);
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
+                       TouchscreenAnimateDoubleTapZoomInOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child_b = root->child_at(0);
+  ASSERT_TRUE(child_b);
+
+  // Enable double-tap zoom. This must be done separately for the main frame and
+  // for the oopif frame since RenderViewHost::UpdateWebkitPreferences() only
+  // sends the IPC to its own RenderView.
+  EnableDoubleTapZoomInRenderView(root);
+  EnableDoubleTapZoomInRenderView(child_b);
+
+  RenderFrameSubmissionObserver observer_a(root);
+  // We need to observe a root frame submission to pick up the initial page
+  // scale factor.
+  observer_a.WaitForAnyFrameSubmission();
+  float original_page_scale =
+      observer_a.LastRenderFrameMetadata().page_scale_factor;
+
+  // Must do this before it's safe to use the coordinate transform functions.
+  WaitForHitTestDataOrChildSurfaceReady(child_b->current_frame_host());
+
+  // Select a tap point inside the OOPIF.
+  gfx::PointF tap_position =
+      child_b->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView()
+          ->TransformPointToRootCoordSpaceF(gfx::PointF(10, 10));
+
+  // Generate a double-tap.
+  std::string actions_template = R"HTML(
+      [{
+        "source" : "touch",
+        "actions" : [
+          { "name": "pointerDown", "x": %f, "y": %f},
+          { "name": "pointerUp"},
+          { "name": "pause", "duration": 0.05 },
+          { "name": "pointerDown", "x": %f, "y": %f},
+          { "name": "pointerUp"}
+        ]
+      }]
+  )HTML";
+  std::string double_tap_actions_json =
+      base::StringPrintf(actions_template.c_str(), tap_position.x(),
+                         tap_position.y(), tap_position.x(), tap_position.y());
+  base::JSONReader json_reader;
+  std::unique_ptr<base::Value> params =
+      json_reader.ReadToValue(double_tap_actions_json);
+  ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(params.get());
+
+  ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
+  auto synthetic_gesture_doubletap =
+      SyntheticGesture::Create(actions_parser.gesture_params());
+
+  // Queue the event and wait for it to be acked.
+  InputEventAckWaiter ack_waiter(
+      child_b->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureDoubleTap);
+  auto* host = static_cast<RenderWidgetHostImpl*>(
+      root->current_frame_host()->GetRenderWidgetHost());
+  host->QueueSyntheticGesture(
+      std::move(synthetic_gesture_doubletap),
+      base::BindOnce([](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+      }));
+  // Waiting for the ack on the child frame ensures the event actually routed
+  // through the oopif.
+  ack_waiter.Wait();
+
+  // Wait for page scale to change. We'll assume the OOPIF is scaled up by
+  // at least 10%.
+  float target_scale = 1.1f * original_page_scale;
+  float new_page_scale = original_page_scale;
+  do {
+    observer_a.WaitForAnyFrameSubmission();
+    new_page_scale = observer_a.LastRenderFrameMetadata().page_scale_factor;
+  } while (new_page_scale < target_scale);
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 class CrossProcessNavigationObjectElementTest
     : public SitePerProcessBrowserTest,

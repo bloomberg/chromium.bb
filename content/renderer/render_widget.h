@@ -374,6 +374,8 @@ class CONTENT_EXPORT RenderWidget
   void HasPointerRawMoveEventHandlers(bool has_handlers) override;
   void HasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
+  void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+                                       const blink::WebRect& bounds) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
