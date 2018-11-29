@@ -3331,6 +3331,11 @@ void WebViewImpl::SetVisibilityState(
       visibility_state == mojom::PageVisibilityState::kVisible);
 }
 
+mojom::PageVisibilityState WebViewImpl::VisibilityState() {
+  DCHECK(GetPage());
+  return GetPage()->VisibilityState();
+}
+
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {
   CoreInitializer::GetInstance().ForceNextWebGLContextCreationToFail();
 }

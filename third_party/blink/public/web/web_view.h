@@ -373,6 +373,7 @@ class WebView {
   // Sets the visibility of the WebView.
   virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state,
                                   bool is_initial_state) {}
+  virtual mojom::PageVisibilityState VisibilityState() = 0;
 
   // PageOverlay ----------------------------------------------------------
 

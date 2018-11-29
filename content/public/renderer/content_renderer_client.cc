@@ -150,9 +150,8 @@ ContentRendererClient::GetPrescientNetworking() {
   return nullptr;
 }
 
-bool ContentRendererClient::ShouldOverridePageVisibilityState(
-    const RenderFrame* render_frame,
-    blink::mojom::PageVisibilityState* override_state) {
+bool ContentRendererClient::ShouldOverrideVisibilityAsPrerender(
+    const RenderFrame* render_frame) {
   return false;
 }
 

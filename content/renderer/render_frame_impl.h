@@ -501,7 +501,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;
-  blink::mojom::PageVisibilityState GetVisibilityState() const override;
+  bool ShouldOverrideVisibilityAsPrerender() const override;
   bool IsBrowserSideNavigationPending() override;
   void LoadHTMLString(const std::string& html,
                       const GURL& base_url,
@@ -765,7 +765,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) override;
-  blink::mojom::PageVisibilityState VisibilityState() const override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;
   // |rect_to_scroll| is with respect to this frame's origin. |rect_to_scroll|

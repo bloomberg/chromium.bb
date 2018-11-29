@@ -86,6 +86,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebFrameWidget.
   virtual blink::WebFrameWidget* GetWebFrameWidget() = 0;
 
+  // Because visibility state can be overridden in the renderer process, this
+  // informs the RenderView to re-check those overrides or fall back to the
+  // browser specified visibility.
+  virtual void ResetVisibilityState() = 0;
+
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.

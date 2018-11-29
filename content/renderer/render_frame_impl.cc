@@ -4901,7 +4901,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());
   auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-  extra_data->set_visibility_state(VisibilityState());
+  extra_data->set_visibility_state(
+      render_view_->GetWebView()->VisibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
@@ -7042,19 +7043,6 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
                .device_status());
 }
 
-blink::mojom::PageVisibilityState RenderFrameImpl::VisibilityState() const {
-  const RenderFrameImpl* local_root = GetLocalRoot();
-  blink::mojom::PageVisibilityState current_state =
-      local_root->render_widget_->is_hidden()
-          ? blink::mojom::PageVisibilityState::kHidden
-          : blink::mojom::PageVisibilityState::kVisible;
-  blink::mojom::PageVisibilityState override_state = current_state;
-  if (GetContentClient()->renderer()->ShouldOverridePageVisibilityState(
-          this, &override_state))
-    return override_state;
-  return current_state;
-}
-
 std::unique_ptr<blink::WebURLLoaderFactory>
 RenderFrameImpl::CreateURLLoaderFactory() {
   if (!RenderThreadImpl::current()) {
@@ -7087,8 +7075,9 @@ void RenderFrameImpl::BubbleLogicalScrollInParentFrame(
                                                          granularity));
 }
 
-blink::mojom::PageVisibilityState RenderFrameImpl::GetVisibilityState() const {
-  return VisibilityState();
+bool RenderFrameImpl::ShouldOverrideVisibilityAsPrerender() const {
+  return GetContentClient()->renderer()->ShouldOverrideVisibilityAsPrerender(
+      this);
 }
 
 bool RenderFrameImpl::IsBrowserSideNavigationPending() {

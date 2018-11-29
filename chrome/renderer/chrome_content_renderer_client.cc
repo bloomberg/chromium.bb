@@ -1365,14 +1365,9 @@ ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
 }
 
-bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
-    const content::RenderFrame* render_frame,
-    blink::mojom::PageVisibilityState* override_state) {
-  if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
-    return false;
-
-  *override_state = blink::mojom::PageVisibilityState::kPrerender;
-  return true;
+bool ChromeContentRendererClient::ShouldOverrideVisibilityAsPrerender(
+    const content::RenderFrame* render_frame) {
+  return prerender::PrerenderHelper::IsPrerendering(render_frame);
 }
 
 bool ChromeContentRendererClient::IsExternalPepperPlugin(
