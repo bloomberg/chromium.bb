@@ -145,8 +145,10 @@ bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
   }
 
   std::vector<VASurfaceID> va_surfaces;
-  if (!wrapper_->CreateSurfaces(va_surface_format, size, 1, &va_surfaces))
+  if (!wrapper_->CreateContextAndSurfaces(va_surface_format, size, 1,
+                                          &va_surfaces)) {
     return false;
+  }
 
   EXPECT_EQ(va_surfaces.size(), 1u);
   if (va_surfaces.size() == 0 ||
@@ -201,8 +203,8 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
                  parse_result.frame_header.coded_height);
 
   std::vector<VASurfaceID> va_surfaces;
-  ASSERT_TRUE(
-      wrapper_->CreateSurfaces(GetVASurfaceFormat(), size, 1, &va_surfaces));
+  ASSERT_TRUE(wrapper_->CreateContextAndSurfaces(GetVASurfaceFormat(), size, 1,
+                                                 &va_surfaces));
 
   EXPECT_FALSE(Decode(wrapper_.get(), parse_result, va_surfaces[0]));
 }
@@ -211,8 +213,8 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
 TEST_F(VaapiJpegDecodeAcceleratorTest, ScopedVAImage) {
   std::vector<VASurfaceID> va_surfaces;
   const gfx::Size coded_size(64, 64);
-  ASSERT_TRUE(wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, coded_size, 1,
-                                       &va_surfaces));
+  ASSERT_TRUE(wrapper_->CreateContextAndSurfaces(VA_RT_FORMAT_YUV420,
+                                                 coded_size, 1, &va_surfaces));
   ASSERT_EQ(va_surfaces.size(), 1u);
 
   std::unique_ptr<ScopedVAImage> scoped_image;

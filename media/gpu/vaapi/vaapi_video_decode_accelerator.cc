@@ -530,7 +530,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
   available_va_surfaces_.clear();
-  vaapi_wrapper_->DestroySurfaces();
+  vaapi_wrapper_->DestroyContextAndSurfaces();
 
   for (auto iter = pictures_.begin(); iter != pictures_.end(); ++iter) {
     VLOGF(2) << "Dismissing picture id: " << iter->first;
@@ -644,8 +644,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   } else {
     va_surface_ids.clear();
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateSurfaces(va_format, requested_pic_size_,
-                                       buffers.size(), &va_surface_ids),
+        vaapi_wrapper_->CreateContextAndSurfaces(
+            va_format, requested_pic_size_, buffers.size(), &va_surface_ids),
         "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
   DCHECK_EQ(va_surface_ids.size(), buffers.size());

@@ -345,7 +345,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       kNumSurfacesForOutputPicture +
       (native_input_mode_ ? 0 : kNumSurfacesPerInputVideoFrame);
 
-  if (!vaapi_wrapper_->CreateSurfaces(
+  if (!vaapi_wrapper_->CreateContextAndSurfaces(
           VA_RT_FORMAT_YUV420, coded_size_,
           (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
