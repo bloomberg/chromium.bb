@@ -3,11 +3,9 @@
 # found in the LICENSE file.
 
 """Generates a data collection of IDL information per component.
-In this data collection, we use identifier strings to point IDL definitions
-(i.e. interface, dictionary, namespace, etc.) instead of references, because
-some referred definitions can be in other components.
+This scripts parses IDL files and stores the result ASTs in a pickle file.
+The output file may contain information about component, too.
 """
-
 
 import blink_idl_parser
 import optparse
@@ -15,17 +13,24 @@ import utilities
 from web_idl.collector import Collector
 
 
+_VALID_COMPONENTS = ("core", "modules")
+
 def parse_options():
     parser = optparse.OptionParser()
-    parser.add_option('--idl-list-file', help='a file path which lists IDL file paths to process')
-    parser.add_option('--component', help='decide which component to collect IDLs', default=None)
-    parser.add_option('--output', help='pickle file of IDL definition')
+    parser.add_option('--idl-list-file', type='string',
+                      help='a file path which lists IDL file paths to process')
+    parser.add_option('--component', type='choice', choices=_VALID_COMPONENTS,
+                      help='specify a component name where IDLs belong')
+    parser.add_option('--output', type='string',
+                      help='pickle file to write down')
     options, args = parser.parse_args()
 
     if options.idl_list_file is None:
-        parser.error('Must specify a file listing IDL files using --idl-files-list.')
+        parser.error('Must specify a file listing IDL files using --idl-list-file.')
     if options.output is None:
         parser.error('Must specify a pickle file to output using --output.')
+    if options.component is None:
+        parser.error('Must specify a component using --component.')
 
     return options, args
 
