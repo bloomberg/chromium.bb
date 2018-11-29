@@ -396,8 +396,10 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
 void TabIcon::PaintFaviconPlaceholder(gfx::Canvas* canvas,
                                       const gfx::Rect& bounds) {
   cc::PaintFlags flags;
-  flags.setColor(SkColorSetA(
-      color_utils::IsDark(bg_color_) ? SK_ColorWHITE : SK_ColorBLACK, 32));
+  const SkColor placeholder_color = color_utils::IsDark(bg_color_)
+                                        ? SkColorSetA(SK_ColorWHITE, 32)
+                                        : SkColorSetA(SK_ColorBLACK, 16);
+  flags.setColor(placeholder_color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
