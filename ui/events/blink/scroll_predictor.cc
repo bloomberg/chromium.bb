@@ -175,6 +175,20 @@ void ScrollPredictor::ComputeAccuracy(const WebScopedInputEvent& event) {
     base::UmaHistogramCounts1000(
         "Event.InputEventPrediction.Accuracy.Scroll." + suffix,
         static_cast<int>(distance));
+
+    // If the distance from predicted position to actual position is in same
+    // direction as the delta_y, the result is under predicted, otherwise over
+    // predict.
+    float dist_y = temporary_accumulated_delta_.y() - predict_result.pos.y();
+    if (gesture_event.data.scroll_update.delta_y * dist_y < 0) {
+      base::UmaHistogramCounts1000(
+          "Event.InputEventPrediction.Accuracy.Scroll.OverPredict." + suffix,
+          static_cast<int>(std::abs(dist_y)));
+    } else {
+      base::UmaHistogramCounts1000(
+          "Event.InputEventPrediction.Accuracy.Scroll.UnderPredict." + suffix,
+          static_cast<int>(std::abs(dist_y)));
+    }
   }
 }
 
