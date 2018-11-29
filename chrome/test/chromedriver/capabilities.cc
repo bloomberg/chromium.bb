@@ -271,14 +271,17 @@ Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
-Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
+Status ParseProxy(bool w3c_compliant,
+                  const base::Value& option,
+                  Capabilities* capabilities) {
   const base::DictionaryValue* proxy_dict;
   if (!option.GetAsDictionary(&proxy_dict))
     return Status(kInvalidArgument, "must be a dictionary");
   std::string proxy_type;
   if (!proxy_dict->GetString("proxyType", &proxy_type))
     return Status(kInvalidArgument, "'proxyType' must be a string");
-  proxy_type = base::ToLowerASCII(proxy_type);
+  if (!w3c_compliant)
+    proxy_type = base::ToLowerASCII(proxy_type);
   if (proxy_type == "direct") {
     capabilities->switches.SetSwitch("no-proxy-server");
   } else if (proxy_type == "system") {
@@ -726,7 +729,7 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   parser_map["platformName"] =
       base::BindRepeating(&ParseString, &platform_name);
   parser_map["pageLoadStrategy"] = base::BindRepeating(&ParsePageLoadStrategy);
-  parser_map["proxy"] = base::BindRepeating(&ParseProxy);
+  parser_map["proxy"] = base::BindRepeating(&ParseProxy, w3c_compliant);
   parser_map["timeouts"] = base::BindRepeating(&ParseTimeouts);
   if (!w3c_compliant) {
     // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
