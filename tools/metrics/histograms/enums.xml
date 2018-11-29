@@ -11792,6 +11792,26 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="UNDETERMINED"/>
 </enum>
 
+<enum name="DownloadARModelState">
+  <int value="0" label="Created">
+    AR model download was created but not yet started.
+  </int>
+  <int value="1" label="Started">AR model download was started.</int>
+  <int value="2" label="Successful">AR model download was successful.</int>
+  <int value="3" label="Unauthorized Failure">
+    AR model download failed due to either a 401 or 403 HTTP response.
+  </int>
+  <int value="4" label="Wrong MIME Type Failure">
+    AR model download did not download the correct MIME type. This can happen in
+    the case of web server redirects.
+  </int>
+  <int value="5" label="Other Failure">
+    AR model download failed for a reason other than 401/403 HTTP response or
+    incorrect MIME type. Does not include items already counted in the more
+    specific buckets, e.g., UnauthorizedFailure and WrongMimeTypeFailure.
+  </int>
+</enum>
+
 <enum name="DownloadAudioType">
   <int value="0" label="UNRECOGNIZED"/>
   <int value="1" label="AAC"/>
@@ -41673,7 +41693,7 @@ Called by update_net_trust_anchors.py.-->
     presented.
   </summary>
   <int value="0" label="Successful">
-    The dialog was sucessesfully presented.
+
   </int>
   <int value="1" label="Another Add Passes View Controller Is Presented">
     The dialog cannot be presented, because another PKAddPassesViewController is
