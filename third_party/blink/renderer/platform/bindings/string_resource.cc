@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
 
+#include <type_traits>
+
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
@@ -92,11 +94,28 @@ StringType ToBlinkString(v8::Local<v8::String> v8_string,
     v8::String::ExternalStringResourceBase* resource =
         v8_string->GetExternalStringResourceBase(&encoding);
     if (LIKELY(!!resource)) {
+      // Inheritance:
+      // - V8 side: v8::String::ExternalStringResourceBase
+      //   -> v8::External{One,}ByteStringResource
+      // - Both: StringResource{8,16}Base inherits from the matching v8 class.
+      static_assert(std::is_base_of<v8::String::ExternalOneByteStringResource,
+                                    StringResource8Base>::value,
+                    "");
+      static_assert(std::is_base_of<v8::String::ExternalStringResource,
+                                    StringResource16Base>::value,
+                    "");
+      static_assert(
+          std::is_base_of<StringResourceBase, StringResource8Base>::value, "");
+      static_assert(
+          std::is_base_of<StringResourceBase, StringResource16Base>::value, "");
+      // Then StringResource{8,16}Base allows to go from one ancestry path to
+      // the other one. Even though it's empty, removing it causes UB, see
+      // crbug.com/909796.
       StringResourceBase* base;
       if (encoding == v8::String::ONE_BYTE_ENCODING)
-        base = static_cast<StringResource8*>(resource);
+        base = static_cast<StringResource8Base*>(resource);
       else
-        base = static_cast<StringResource16*>(resource);
+        base = static_cast<StringResource16Base*>(resource);
       return StringTraits<StringType>::FromStringResource(base);
     }
   }
