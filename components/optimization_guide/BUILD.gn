@@ -4,9 +4,6 @@
 
 static_library("optimization_guide") {
   sources = [
-    "hints_component_info.h",
-    "hints_component_util.cc",
-    "hints_component_util.h",
     "optimization_guide_constants.cc",
     "optimization_guide_constants.h",
     "optimization_guide_service.cc",
@@ -25,8 +22,8 @@ static_library("optimization_guide") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "test_hints_component_creator.cc",
-    "test_hints_component_creator.h",
+    "test_component_creator.cc",
+    "test_component_creator.h",
   ]
   deps = [
     ":optimization_guide",
@@ -39,7 +36,6 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "hints_component_util_unittest.cc",
     "optimization_guide_service_unittest.cc",
     "url_pattern_with_wildcards_unittest.cc",
   ]

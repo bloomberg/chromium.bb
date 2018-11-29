@@ -20,13 +20,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,6 +35,33 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
+
+// A test observer which can be configured to wait until the server hints are
+// processed.
+class TestOptimizationGuideServiceObserver
+    : public optimization_guide::OptimizationGuideServiceObserver {
+ public:
+  TestOptimizationGuideServiceObserver()
+      : run_loop_(std::make_unique<base::RunLoop>()) {}
+
+  ~TestOptimizationGuideServiceObserver() override {}
+
+  void WaitForNotification() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
+
+ private:
+  void OnHintsProcessed(
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override {
+    run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideServiceObserver);
+};
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
@@ -54,9 +80,6 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
     SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::RunLoop().RunUntilIdle();
   }
-  // If this is reached, then automatically fail the test.
-  FAIL() << histogram_name << " did not reach expected sample count of "
-         << count << ".";
 }
 
 }  // namespace
@@ -117,19 +140,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
-  void ProcessHintsComponent(
-      const optimization_guide::HintsComponentInfo& component_info) {
-    base::HistogramTester histogram_tester;
-
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
-
-    RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-        1);
-  }
-
   void SetDefaultOnlyResourceLoadingHints(
       const std::vector<std::string>& hints_sites) {
     std::vector<std::string> resource_patterns;
@@ -137,10 +147,16 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     resource_patterns.push_back("png");
     resource_patterns.push_back("woff2");
 
-    ProcessHintsComponent(
-        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+    const optimization_guide::ComponentInfo& component_info =
+        test_component_creator_.CreateComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING, hints_sites,
-            resource_patterns));
+            resource_patterns);
+
+    g_browser_process->optimization_guide_service()->ProcessHints(
+        component_info);
+
+    // Wait for hints to be processed by PreviewsOptimizationGuide.
+    base::RunLoop().RunUntilIdle();
   }
 
   // Sets the resource loading hints in optimization guide service. The hints
@@ -152,11 +168,16 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     resource_patterns.push_back("png");
     resource_patterns.push_back("woff2");
 
-    ProcessHintsComponent(
-        test_hints_component_creator_
-            .CreateHintsComponentInfoWithExperimentalPageHints(
-                optimization_guide::proto::RESOURCE_LOADING, hints_sites,
-                resource_patterns));
+    const optimization_guide::ComponentInfo& component_info =
+        test_component_creator_.CreateComponentInfoWithExperimentalPageHints(
+            optimization_guide::proto::RESOURCE_LOADING, hints_sites,
+            resource_patterns);
+
+    g_browser_process->optimization_guide_service()->ProcessHints(
+        component_info);
+
+    // Wait for hints to be processed by PreviewsOptimizationGuide.
+    base::RunLoop().RunUntilIdle();
   }
 
   // Sets the resource loading hints in optimization guide service. Some hints
@@ -171,10 +192,21 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     default_resource_patterns.push_back("bar.jpg");
     default_resource_patterns.push_back("woff2");
 
-    ProcessHintsComponent(
-        test_hints_component_creator_.CreateHintsComponentInfoWithMixPageHints(
+    const optimization_guide::ComponentInfo& component_info =
+        test_component_creator_.CreateComponentInfoWithMixPageHints(
             optimization_guide::proto::RESOURCE_LOADING, hints_sites,
-            experimental_resource_patterns, default_resource_patterns));
+            experimental_resource_patterns, default_resource_patterns);
+
+    g_browser_process->optimization_guide_service()->ProcessHints(
+        component_info);
+
+    // Wait for hints to be processed by PreviewsOptimizationGuide.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void AddTestOptimizationGuideServiceObserver(
+      TestOptimizationGuideServiceObserver* observer) {
+    g_browser_process->optimization_guide_service()->AddObserver(observer);
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -254,8 +286,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  optimization_guide::testing::TestHintsComponentCreator
-      test_hints_component_creator_;
+  optimization_guide::testing::TestComponentCreator test_component_creator_;
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
@@ -315,8 +346,13 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -374,8 +410,13 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetExperimentOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -404,8 +445,13 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetExperimentOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -443,9 +489,14 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints. Set both experimental and
   // non-experimental hints.
   SetMixResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -483,8 +534,13 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(false);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetMixResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -509,7 +565,12 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -540,7 +601,12 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   SetDefaultOnlyResourceLoadingHints({});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -565,8 +631,13 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test HTTP URL for resource loading hints.
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 
@@ -589,8 +660,13 @@ IN_PROC_BROWSER_TEST_F(
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetDefaultOnlyResourceLoadingHints({https_url().host()});
+  observer.WaitForNotification();
 
   base::HistogramTester histogram_tester;
 

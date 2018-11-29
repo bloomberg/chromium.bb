@@ -15,8 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
-#include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
@@ -40,7 +39,7 @@ const base::FilePath::CharType kSentinelFileName[] =
 // Returns false if the processing should not continue because the
 // file exists with the same version (indicating that processing that version
 // failed previously (possibly crash or shutdown). Should be run in the
-// background (e.g., same task as PreviewsHints::CreateFromHintsComponent()).
+// background (e.g., same task as Hints.CreateFromConfig).
 bool CreateSentinelFile(const base::FilePath& sentinel_path,
                         const base::Version& version) {
   DCHECK(version.IsValid());
@@ -298,16 +297,12 @@ PreviewsHints::~PreviewsHints() {
 }
 
 // static
-std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
-    const optimization_guide::HintsComponentInfo& info) {
-  std::unique_ptr<optimization_guide::proto::Configuration> config =
-      ProcessHintsComponent(info);
-  if (!config) {
-    return nullptr;
-  }
-
-  base::FilePath sentinel_path(info.path.DirName().Append(kSentinelFileName));
-  if (!CreateSentinelFile(sentinel_path, info.version)) {
+std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
+    const optimization_guide::proto::Configuration& config,
+    const optimization_guide::ComponentInfo& info) {
+  base::FilePath sentinel_path(
+      info.hints_path.DirName().Append(kSentinelFileName));
+  if (!CreateSentinelFile(sentinel_path, info.hints_version)) {
     std::unique_ptr<PreviewsHints> no_hints;
     RecordProcessHintsResult(
         PreviewsProcessHintsResult::kFailedFinishProcessing);
@@ -328,7 +323,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   size_t total_page_patterns_with_resource_loading_hints_received = 0;
   size_t total_resource_loading_hints_received = 0;
   // Process hint configuration.
-  for (const auto& hint : config->hints()) {
+  for (const auto& hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
     if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX)
@@ -405,7 +400,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   }
 
   // Extract any supported large scale blacklists from the configuration.
-  hints->ParseOptimizationFilters(*config);
+  hints->ParseOptimizationFilters(config);
 
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);

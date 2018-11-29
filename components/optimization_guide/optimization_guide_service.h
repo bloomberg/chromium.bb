@@ -5,47 +5,69 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_SERVICE_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_SERVICE_H_
 
+#include <memory>
+
+#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "components/optimization_guide/hints_component_info.h"
+#include "base/version.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
 
-// Tracks the info for the current Optimization Hints component and notifies
-// observers of newly available hints components downloaded from the Component
-// Updater.
+// Processes the hints downloaded from the Component Updater as part of the
+// Optimization Hints component.
 class OptimizationGuideService {
  public:
+  // Enumerates the possible outcomes of processing hints. Used in UMA
+  // histograms, so the order of enumerators should not be changed.
+  //
+  // Keep in sync with OptimizationGuideProcessHintsResult in
+  // tools/metrics/histograms/enums.xml.
+  enum class ProcessHintsResult {
+    SUCCESS,
+    FAILED_INVALID_PARAMETERS,
+    FAILED_READING_FILE,
+    FAILED_INVALID_CONFIGURATION,
+
+    // Insert new values before this line.
+    MAX,
+  };
+
   explicit OptimizationGuideService(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_task_runner);
 
   virtual ~OptimizationGuideService();
 
-  // Adds the observer and synchronously dispatches the current
-  // HintsComponentInfo to it if one is already available.
   void AddObserver(OptimizationGuideServiceObserver* observer);
   // Virtual so it can be mocked out in tests.
   virtual void RemoveObserver(OptimizationGuideServiceObserver* observer);
 
-  // Forwards the update hints component request on to the UI thread, where the
-  // actual work occurs.
+  // Processes hints from the given unindexed hints, unless its |hints_version|
+  // matches that of the most recently parsed version, in which case it does
+  // nothing.
   //
   // Virtual so it can be mocked out in tests.
-  virtual void MaybeUpdateHintsComponent(const HintsComponentInfo& info);
+  virtual void ProcessHints(const ComponentInfo& component_info);
+
+  // Sets the latest processed version for testing.
+  void SetLatestProcessedVersionForTesting(const base::Version& version);
 
  private:
-  // If the hints component version in |info| is greater than that in
-  // |hints_component_info_|, updates |hints_component_info_| and dispatches it
-  // to all observers. In the case where the version is not greater, it does
-  // nothing.
-  void MaybeUpdateHintsComponentOnUIThread(const HintsComponentInfo& info);
+  // Always called as part of a BEST_EFFORT priority task.
+  void ProcessHintsInBackground(const ComponentInfo& component_info);
+
+  // Dispatches hints to listeners on UI thread.
+  void DispatchHintsOnUIThread(const proto::Configuration& config,
+                               const ComponentInfo& component_info);
 
   // Runner for indexing tasks.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Runner for UI Thread tasks.
@@ -54,12 +76,7 @@ class OptimizationGuideService {
   // Observers receiving notifications on hints being processed.
   base::ObserverList<OptimizationGuideServiceObserver>::Unchecked observers_;
 
-  // The current HintsComponentInfo available to observers. This is unset until
-  // the first time MaybeUpdateHintsComponent() is called.
-  base::Optional<HintsComponentInfo> hints_component_info_;
-
-  // Used to get |weak_ptr_| to self.
-  base::WeakPtrFactory<OptimizationGuideService> weak_ptr_factory_;
+  base::Version latest_processed_version_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideService);
 };
