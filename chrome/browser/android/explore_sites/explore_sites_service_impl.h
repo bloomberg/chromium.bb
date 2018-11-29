@@ -92,11 +92,6 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
                             int pixel_size,
                             EncodedImageList images);
 
-  // True when Chrome starts up, this is reset after the catalog is requested
-  // the first time in Chrome. This prevents the ESP from changing out from
-  // under a viewer.
-  bool check_for_new_catalog_ = true;
-
   ImageHelper image_helper_;
 
   // Used to control access to the ExploreSitesStore.
