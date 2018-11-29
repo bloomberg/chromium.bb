@@ -2090,6 +2090,9 @@ extern const char kImeServiceDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
+extern const char kMashOopVizName[];
+extern const char kMashOopVizDescription[];
+
 extern const char kMaterialDesignInkDropAnimationSpeedName[];
 extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
 extern const char kMaterialDesignInkDropAnimationFast[];
