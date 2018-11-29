@@ -127,11 +127,6 @@ class CORE_EXPORT ScriptController final
   scoped_refptr<DOMWrapperWorld> CreateNewInspectorIsolatedWorld(
       const String& world_name);
 
-  // Returns true if the current world is isolated, and has its own Content
-  // Security Policy. In this case, the policy of the main world should be
-  // ignored when evaluating resources injected into the DOM.
-  bool ShouldBypassMainWorldCSP();
-
   void DisableEval(const String& error_message);
 
   TextPosition EventHandlerPosition() const;
