@@ -26,6 +26,14 @@ using Result = StaleEntryFinalizerTask::Result;
 
 namespace {
 
+// Maximum amount of time into the future an item can has its freshness time set
+// to after which it will be finalized (or deleted if in the zombie state).
+constexpr base::TimeDelta kFutureItemTimeLimit = base::TimeDelta::FromDays(1);
+
+// Expiration time delay for items entering the zombie state, after which they
+// are permanently deleted.
+constexpr base::TimeDelta kZombieItemLifetime = base::TimeDelta::FromDays(7);
+
 // If this time changes, we need to update the desciption in histograms.xml
 // for OfflinePages.Prefetching.StuckItemState.
 const int kStuckTimeLimitInDays = 7;
@@ -125,7 +133,7 @@ bool FinalizeFutureItems(PrefetchItemState state,
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE state = ? AND freshness_time > ?";
   const int64_t future_fresh_db_time_limit =
-      store_utils::ToDatabaseTime(now + base::TimeDelta::FromDays(1));
+      store_utils::ToDatabaseTime(now + kFutureItemTimeLimit);
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
   statement.BindInt(
@@ -134,6 +142,22 @@ bool FinalizeFutureItems(PrefetchItemState state,
   statement.BindInt(2, static_cast<int>(state));
   statement.BindInt64(3, future_fresh_db_time_limit);
 
+  return statement.Run();
+}
+
+bool DeleteExpiredAndFutureZombies(base::Time now, sql::Database* db) {
+  static const char kSql[] =
+      "DELETE FROM prefetch_items"
+      " WHERE state = ? "
+      " AND (freshness_time < ? OR freshness_time > ?)";
+  const int64_t earliest_zombie_db_time =
+      store_utils::ToDatabaseTime(now - kZombieItemLifetime);
+  const int64_t future_zombie_db_time =
+      store_utils::ToDatabaseTime(now + kFutureItemTimeLimit);
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt(0, static_cast<int>(PrefetchItemState::ZOMBIE));
+  statement.BindInt64(1, earliest_zombie_db_time);
+  statement.BindInt64(2, future_zombie_db_time);
   return statement.Run();
 }
 
@@ -200,8 +224,12 @@ Result FinalizeStaleEntriesSync(sql::Database* db) {
       return Result::NO_MORE_WORK;
   }
 
+  if (!DeleteExpiredAndFutureZombies(now, db))
+    return Result::NO_MORE_WORK;
+
   // Items could also be stuck in a non-expirable state due to a bug, report
-  // them.
+  // them. This should always be the last step, coming after the regular
+  // freshness maintenance steps above are done.
   ReportAndFinalizeStuckItems(now, db);
 
   Result result = Result::MORE_WORK_NEEDED;

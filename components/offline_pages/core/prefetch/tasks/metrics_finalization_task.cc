@@ -77,8 +77,7 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
                           statement.ColumnInt64(5)),  // creation_time
                       static_cast<PrefetchItemErrorCode>(
                           statement.ColumnInt(6)),  // error_code
-                      statement.ColumnInt64(7)      // file_size
-                      );
+                      statement.ColumnInt64(7));    // file_size
   }
 
   return urls;
@@ -92,7 +91,7 @@ bool MarkUrlAsZombie(sql::Database* db,
       "offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::ZOMBIE));
-  statement.BindInt(1, store_utils::ToDatabaseTime(freshness_time));
+  statement.BindInt64(1, store_utils::ToDatabaseTime(freshness_time));
   statement.BindInt64(2, offline_id);
   return statement.Run();
 }

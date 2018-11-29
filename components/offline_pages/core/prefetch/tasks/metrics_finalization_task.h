@@ -12,10 +12,9 @@
 namespace offline_pages {
 class PrefetchStore;
 
-// Prefetching task that takes finished PrefetchItems, records interesting
-// metrics about the final status, and marks them as zombies.  Zombies are
-// cleaned up when suggestions are updated and there are no more
-// suggestions at the |requested_url|.
+// Prefetching task that takes finished prefetch items, records interesting
+// metrics about their final status, and marks them as zombies. Zombies are
+// cleaned after a set period of time by the |StaleEntryFinalizerTask|.
 // NOTE: this task is run periodically as reconciliation task or from some
 // event handlers. It should not cause 'progress' in pipeline on which other
 // tasks would depend. It should only move entries to ZOMBIE state.

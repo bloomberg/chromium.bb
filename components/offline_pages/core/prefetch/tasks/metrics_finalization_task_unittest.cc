@@ -6,13 +6,16 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -78,28 +81,42 @@ TEST_F(MetricsFinalizationTaskTest, LeavesOtherStatesAlone) {
 }
 
 TEST_F(MetricsFinalizationTaskTest, FinalizesMultipleItems) {
+  base::Time before_insert_time = base::Time::Now();
   std::set<PrefetchItem> finished_items = {
       item_generator()->CreateItem(PrefetchItemState::FINISHED),
       item_generator()->CreateItem(PrefetchItemState::FINISHED),
       item_generator()->CreateItem(PrefetchItemState::FINISHED)};
+  for (auto& item : finished_items) {
+    ASSERT_TRUE(store_util()->InsertPrefetchItem(item));
+    // Confirms that ItemGenerator did set |freshness_time| with Time::Now().
+    ASSERT_LE(before_insert_time, item.freshness_time);
+  }
 
   PrefetchItem unfinished_item =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
-
-  for (auto& item : finished_items) {
-    ASSERT_TRUE(store_util()->InsertPrefetchItem(item));
-  }
   ASSERT_TRUE(store_util()->InsertPrefetchItem(unfinished_item));
+
+  // Overrides the offline clock and set a current time in the future.
+  TestScopedOfflineClock clock;
+  clock.SetNow(before_insert_time + base::TimeDelta::FromHours(1));
 
   // Execute the metrics task.
   RunTask(metrics_finalization_task_.get());
 
+  // The finished ones should all have become zombies and the new request should
+  // be untouched.
   std::set<PrefetchItem> all_items;
-  // The finished ones should be zombies and the new request should be
-  // untouched.
   EXPECT_EQ(4U, store_util()->GetAllItems(&all_items));
   EXPECT_EQ(0U, FilterByState(all_items, PrefetchItemState::FINISHED).size());
-  EXPECT_EQ(3U, FilterByState(all_items, PrefetchItemState::ZOMBIE).size());
+
+  std::set<PrefetchItem> zombie_items =
+      FilterByState(all_items, PrefetchItemState::ZOMBIE);
+  EXPECT_EQ(3U, zombie_items.size());
+  for (const PrefetchItem& zombie_item : zombie_items) {
+    EXPECT_EQ(clock.Now(), zombie_item.freshness_time)
+        << "Incorrect freshness_time (not updated?) for item "
+        << zombie_item.client_id;
+  }
 
   std::set<PrefetchItem> items_in_new_request_state =
       FilterByState(all_items, PrefetchItemState::NEW_REQUEST);
