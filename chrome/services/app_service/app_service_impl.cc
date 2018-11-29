@@ -77,6 +77,16 @@ void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,
                          size_hint_in_dip, std::move(callback));
 }
 
+void AppServiceImpl::Launch(apps::mojom::AppType app_type,
+                            const std::string& app_id,
+                            int32_t event_flags) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->Launch(app_id, event_flags);
+}
+
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
   publishers_.erase(app_type);
 }

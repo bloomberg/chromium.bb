@@ -25,6 +25,9 @@ interface AppService {
       IconKey icon_key,
       IconCompression icon_compression,
       int32 size_hint_in_dip) => (IconValue icon_value);
+
+  // App Runner methods.
+  Launch(AppType app_type, string app_id, int32 event_flags);
 };
 
 interface Publisher {
@@ -37,6 +40,9 @@ interface Publisher {
       IconKey icon_key,
       IconCompression icon_compression,
       int32 size_hint_in_dip) => (IconValue icon_value);
+
+  // App Runner methods.
+  Launch(string app_id, int32 event_flags);
 };
 
 interface Subscriber {

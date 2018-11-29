@@ -54,6 +54,8 @@ class FakePublisher : public apps::mojom::Publisher {
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
 
+  void Launch(const std::string& app_id, int32_t event_flags) override {}
+
   void CallOnApps(apps::mojom::Subscriber* subscriber,
                   std::vector<std::string>& app_ids) {
     std::vector<apps::mojom::AppPtr> apps;
