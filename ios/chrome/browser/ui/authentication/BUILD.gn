@@ -63,7 +63,8 @@ source_set("authentication") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
-    "//services/identity/public/cpp:cpp",
+    "//services/identity/public/cpp",
+    "//services/identity/public/objc",
     "//ui/base",
     "//ui/gfx",
     "//url",
@@ -200,6 +201,6 @@ source_set("eg_test_support") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
-    "//services/identity/public/cpp:cpp",
+    "//services/identity/public/cpp",
   ]
 }

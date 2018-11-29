@@ -28,10 +28,26 @@ void IdentityManagerObserverBridge::OnPrimaryAccountSet(
   }
 }
 
+void IdentityManagerObserverBridge::OnPrimaryAccountSetWithPassword(
+    const AccountInfo& primary_account_info,
+    const std::string& password) {
+  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSet:
+                                                     withPassword:)]) {
+    [delegate_ onPrimaryAccountSet:primary_account_info withPassword:password];
+  }
+}
+
 void IdentityManagerObserverBridge::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountCleared:)]) {
     [delegate_ onPrimaryAccountCleared:previous_primary_account_info];
+  }
+}
+
+void IdentityManagerObserverBridge::OnPrimaryAccountSigninFailed(
+    const GoogleServiceAuthError& error) {
+  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSigninFailed:)]) {
+    [delegate_ onPrimaryAccountSigninFailed:error];
   }
 }
 
