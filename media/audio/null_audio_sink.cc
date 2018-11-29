@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/audio_hash.h"
 #include "media/base/fake_audio_worker.h"
 
@@ -77,6 +78,11 @@ bool NullAudioSink::SetVolume(double volume) {
 
 OutputDeviceInfo NullAudioSink::GetOutputDeviceInfo() {
   return OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK);
+}
+
+void NullAudioSink::GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(info_cb), GetOutputDeviceInfo()));
 }
 
 bool NullAudioSink::IsOptimizedForHardwareParameters() {

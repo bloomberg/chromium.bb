@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -264,6 +265,20 @@ OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
   base::AutoLock auto_lock(sink_lock_);
   return sink_ ? sink_->GetOutputDeviceInfo()
                : OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND);
+}
+
+void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (sink_) {
+    sink_->GetOutputDeviceInfoAsync(std::move(info_cb));
+    return;
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(info_cb),
+                     OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND)));
 }
 
 bool WebAudioSourceProviderImpl::IsOptimizedForHardwareParameters() {

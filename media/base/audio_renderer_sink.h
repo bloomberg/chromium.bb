@@ -66,11 +66,28 @@ class AudioRendererSink
   virtual bool SetVolume(double volume) = 0;
 
   // Returns current output device information. If the information is not
-  // available yet, this method may block until it becomes available.
-  // If the sink is not associated with any output device, |device_status| of
-  // OutputDeviceInfo should be set to OUTPUT_DEVICE_STATUS_ERROR_INTERNAL.
-  // Must never be called on the IO thread.
+  // available yet, this method may block until it becomes available. If the
+  // sink is not associated with any output device, |device_status| of
+  // OutputDeviceInfo should be set to OUTPUT_DEVICE_STATUS_ERROR_INTERNAL. Must
+  // never be called on the IO thread.
+  //
+  // Note: Prefer to use GetOutputDeviceInfoAsync instead if possible.
   virtual OutputDeviceInfo GetOutputDeviceInfo() = 0;
+
+  // Same as the above, but does not block and will execute |info_cb| when the
+  // OutputDeviceInfo is available. Callback will be executed on the calling
+  // thread. Prefer this function to the synchronous version, it does not have a
+  // timeout so will result in less spurious timeout errors.
+  //
+  // |info_cb| will always be posted (I.e., executed after this function
+  // returns), even if OutputDeviceInfo is already available.
+  //
+  // Upon destruction if OutputDeviceInfo is still not available, |info_cb| will
+  // be posted with OUTPUT_DEVICE_STATUS_ERROR_INTERNAL. Note: Because |info_cb|
+  // is posted it will execute after destruction, so clients must handle
+  // cancellation of the callback if needed.
+  using OutputDeviceInfoCB = base::OnceCallback<void(OutputDeviceInfo)>;
+  virtual void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) = 0;
 
   // Returns |true| if a source with hardware parameters is preferable.
   virtual bool IsOptimizedForHardwareParameters() = 0;

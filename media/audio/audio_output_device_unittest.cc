@@ -99,9 +99,11 @@ class AudioOutputDeviceTest : public testing::Test {
   void StartAudioDevice();
   void CallOnStreamCreated();
   void StopAudioDevice();
-  void CreateDevice(const std::string& device_id);
+  void CreateDevice(const std::string& device_id,
+                    base::TimeDelta timeout = kAuthTimeout);
   void SetDevice(const std::string& device_id);
-  void CheckDeviceStatus(OutputDeviceStatus device_status);
+
+  MOCK_METHOD1(OnDeviceInfoReceived, void(OutputDeviceInfo));
 
  protected:
   base::test::ScopedTaskEnvironment task_env_{
@@ -134,7 +136,8 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
   audio_device_ = nullptr;
 }
 
-void AudioOutputDeviceTest::CreateDevice(const std::string& device_id) {
+void AudioOutputDeviceTest::CreateDevice(const std::string& device_id,
+                                         base::TimeDelta timeout) {
   // Make sure the previous device is properly cleaned up.
   if (audio_device_)
     StopAudioDevice();
@@ -142,7 +145,7 @@ void AudioOutputDeviceTest::CreateDevice(const std::string& device_id) {
   audio_output_ipc_ = new NiceMock<MockAudioOutputIPC>();
   audio_device_ = new AudioOutputDevice(
       base::WrapUnique(audio_output_ipc_), task_env_.GetMainThreadTaskRunner(),
-      AudioSinkParameters(0, device_id), kAuthTimeout);
+      AudioSinkParameters(0, device_id), timeout);
 }
 
 void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
@@ -161,11 +164,6 @@ void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
 
   audio_device_->Initialize(default_audio_parameters_,
                             &callback_);
-}
-
-void AudioOutputDeviceTest::CheckDeviceStatus(OutputDeviceStatus status) {
-  DCHECK(!task_env_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
-  EXPECT_EQ(status, audio_device_->GetOutputDeviceInfo().device_status());
 }
 
 void AudioOutputDeviceTest::ReceiveAuthorization(OutputDeviceStatus status) {
@@ -328,6 +326,57 @@ TEST_F(AudioOutputDeviceTest, AuthorizationTimedOut) {
 
   // Advance time until we hit the timeout.
   task_env_.FastForwardUntilNoTasksRemain();
+
+  audio_device_->Stop();
+  task_env_.FastForwardBy(base::TimeDelta());
+}
+
+TEST_F(AudioOutputDeviceTest, GetOutputDeviceInfoAsync_Error) {
+  CreateDevice(kUnauthorizedDeviceId, base::TimeDelta());
+  EXPECT_CALL(*audio_output_ipc_,
+              RequestDeviceAuthorization(audio_device_.get(), 0,
+                                         kUnauthorizedDeviceId));
+  audio_device_->RequestDeviceAuthorization();
+  audio_device_->GetOutputDeviceInfoAsync(base::BindOnce(
+      &AudioOutputDeviceTest::OnDeviceInfoReceived, base::Unretained(this)));
+  task_env_.FastForwardBy(base::TimeDelta());
+
+  OutputDeviceInfo info;
+  constexpr auto kExpectedStatus = OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED;
+  EXPECT_CALL(*this, OnDeviceInfoReceived(_))
+      .WillOnce(testing::SaveArg<0>(&info));
+  ReceiveAuthorization(kExpectedStatus);
+
+  task_env_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(kExpectedStatus, info.device_status());
+  EXPECT_EQ(kUnauthorizedDeviceId, info.device_id());
+  EXPECT_TRUE(
+      AudioParameters::UnavailableDeviceParams().Equals(info.output_params()));
+
+  audio_device_->Stop();
+  task_env_.FastForwardBy(base::TimeDelta());
+}
+
+TEST_F(AudioOutputDeviceTest, GetOutputDeviceInfoAsync_Okay) {
+  CreateDevice(kDefaultDeviceId, base::TimeDelta());
+  EXPECT_CALL(
+      *audio_output_ipc_,
+      RequestDeviceAuthorization(audio_device_.get(), 0, kDefaultDeviceId));
+  audio_device_->RequestDeviceAuthorization();
+  audio_device_->GetOutputDeviceInfoAsync(base::BindOnce(
+      &AudioOutputDeviceTest::OnDeviceInfoReceived, base::Unretained(this)));
+  task_env_.FastForwardBy(base::TimeDelta());
+
+  OutputDeviceInfo info;
+  constexpr auto kExpectedStatus = OUTPUT_DEVICE_STATUS_OK;
+  EXPECT_CALL(*this, OnDeviceInfoReceived(_))
+      .WillOnce(testing::SaveArg<0>(&info));
+  ReceiveAuthorization(kExpectedStatus);
+
+  task_env_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(kExpectedStatus, info.device_status());
+  EXPECT_EQ(kDefaultDeviceId, info.device_id());
+  EXPECT_TRUE(default_audio_parameters_.Equals(info.output_params()));
 
   audio_device_->Stop();
   task_env_.FastForwardBy(base::TimeDelta());

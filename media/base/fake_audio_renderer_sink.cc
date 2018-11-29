@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace media {
 
@@ -67,6 +68,12 @@ bool FakeAudioRendererSink::SetVolume(double volume) {
 
 OutputDeviceInfo FakeAudioRendererSink::GetOutputDeviceInfo() {
   return output_device_info_;
+}
+
+void FakeAudioRendererSink::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(info_cb), output_device_info_));
 }
 
 bool FakeAudioRendererSink::IsOptimizedForHardwareParameters() {
