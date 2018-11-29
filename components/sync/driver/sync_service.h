@@ -216,14 +216,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // independent of first-setup state.
   bool IsFirstSetupInProgress() const;
 
-  // Whether the user has completed the initial Sync setup. This does not mean
-  // that sync is currently running (due to delayed startup, unrecoverable
-  // errors, or shutdown). If you want to know whether Sync is actually running,
-  // use GetTransportState or IsSyncFeatureActive instead.
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  virtual bool IsFirstSetupComplete() const = 0;
-
   //////////////////////////////////////////////////////////////////////////////
   // SETUP-IN-PROGRESS HANDLING
   //////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/sync_service.h"
 
+#include "components/sync/driver/sync_user_settings.h"
+
 namespace syncer {
 
 SyncSetupInProgressHandle::SyncSetupInProgressHandle(base::Closure on_destroy)
@@ -17,7 +19,7 @@ bool SyncService::IsSyncFeatureEnabled() const {
   // Note: IsFirstSetupComplete() shouldn't usually be true if we don't have a
   // primary account, but it could happen if the account changes from primary to
   // secondary.
-  return CanSyncFeatureStart() && IsFirstSetupComplete();
+  return CanSyncFeatureStart() && GetUserSettings()->IsFirstSetupComplete();
 }
 
 bool SyncService::CanSyncFeatureStart() const {
@@ -61,7 +63,7 @@ bool SyncService::IsSyncFeatureActive() const {
 }
 
 bool SyncService::IsFirstSetupInProgress() const {
-  return !IsFirstSetupComplete() && IsSetupInProgress();
+  return !GetUserSettings()->IsFirstSetupComplete() && IsSetupInProgress();
 }
 
 bool SyncService::HasUnrecoverableError() const {
