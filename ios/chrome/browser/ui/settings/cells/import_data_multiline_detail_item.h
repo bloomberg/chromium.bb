@@ -7,15 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // ImportDataMultilineDetailItem is a model class that uses
 // ImportDataMultilineDetailCell.
-@interface ImportDataMultilineDetailItem : CollectionViewItem
+@interface ImportDataMultilineDetailItem : TableViewItem
 
 // The accessory type to display on the trailing edge of the cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+@property(nonatomic) UITableViewCellAccessoryType accessoryType;
 
 // The main text string.
 @property(nonatomic, copy) NSString* text;
@@ -25,12 +24,12 @@
 
 @end
 
-// ImportDataMultilineDetailCell implements an MDCCollectionViewCell
+// ImportDataMultilineDetailCell implements an UITableViewCell
 // subclass containing two text labels: a "main" label and a "detail" label.
 // The two labels are laid out on top of each other. The detail text can span
 // multiple lines.
 // This is to be used with a ImportDataMultilineDetailItem.
-@interface ImportDataMultilineDetailCell : MDCCollectionViewCell
+@interface ImportDataMultilineDetailCell : UITableViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

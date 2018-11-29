@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -21,7 +21,7 @@
 #endif
 
 @interface ImportDataControllerTestDelegate
-    : NSObject<ImportDataControllerDelegate>
+    : NSObject <ImportDataControllerDelegate>
 @property(nonatomic, readonly) BOOL didChooseClearDataPolicyCalled;
 @property(nonatomic, readonly) ShouldClearData shouldClearData;
 @end
@@ -31,7 +31,7 @@
 @synthesize didChooseClearDataPolicyCalled = _didChooseClearDataPolicyCalled;
 @synthesize shouldClearData = _shouldClearData;
 
-- (void)didChooseClearDataPolicy:(ImportDataCollectionViewController*)controller
+- (void)didChooseClearDataPolicy:(ImportDataTableViewController*)controller
                  shouldClearData:(ShouldClearData)shouldClearData {
   _didChooseClearDataPolicyCalled = YES;
   _shouldClearData = shouldClearData;
@@ -41,20 +41,19 @@
 
 namespace {
 
-class ImportDataCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class ImportDataTableViewControllerTest : public ChromeTableViewControllerTest {
  public:
   ImportDataControllerTestDelegate* delegate() { return delegate_; }
 
  protected:
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     is_signed_in_ = true;
   }
 
-  CollectionViewController* InstantiateController() override {
+  ChromeTableViewController* InstantiateController() override {
     delegate_ = [[ImportDataControllerTestDelegate alloc] init];
-    return [[ImportDataCollectionViewController alloc]
+    return [[ImportDataTableViewController alloc]
         initWithDelegate:delegate_
                fromEmail:@"fromEmail@gmail.com"
                  toEmail:@"toEmail@gmail.com"
@@ -67,91 +66,89 @@ class ImportDataCollectionViewControllerTest
   ImportDataControllerTestDelegate* delegate_;
 };
 
-TEST_F(ImportDataCollectionViewControllerTest, TestModelSignedIn) {
+TEST_F(ImportDataTableViewControllerTest, TestModelSignedIn) {
   CreateController();
   CheckController();
   ASSERT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  CardMultilineItem* item = GetCollectionViewItem(0, 0);
+  CardMultilineItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
       item.text);
   EXPECT_EQ(2, NumberOfItemsInSection(1));
-  CheckTextCellTitleAndSubtitle(
+  CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE),
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SWITCH,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
       1, 0);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 1, 0);
-  CheckTextCellTitleAndSubtitle(
+  CheckAccessoryType(UITableViewCellAccessoryCheckmark, 1, 0);
+  CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE),
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
                               base::SysNSStringToUTF16(@"toEmail@gmail.com")),
       1, 1);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 1, 1);
+  CheckAccessoryType(UITableViewCellAccessoryNone, 1, 1);
 }
 
-TEST_F(ImportDataCollectionViewControllerTest, TestModelSignedOut) {
+TEST_F(ImportDataTableViewControllerTest, TestModelSignedOut) {
   set_is_signed_in(false);
   CreateController();
   CheckController();
   ASSERT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  CardMultilineItem* item = GetCollectionViewItem(0, 0);
+  CardMultilineItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
       item.text);
   EXPECT_EQ(2, NumberOfItemsInSection(1));
-  CheckTextCellTitleAndSubtitle(
+  CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE),
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
                               base::SysNSStringToUTF16(@"toEmail@gmail.com")),
       1, 0);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 1, 0);
-  CheckTextCellTitleAndSubtitle(
+  CheckAccessoryType(UITableViewCellAccessoryCheckmark, 1, 0);
+  CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE),
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SIGNIN),
       1, 1);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 1, 1);
+  CheckAccessoryType(UITableViewCellAccessoryNone, 1, 1);
 }
 
 // Tests that checking a checkbox correctly uncheck the other one.
-TEST_F(ImportDataCollectionViewControllerTest, TestUniqueBoxChecked) {
+TEST_F(ImportDataTableViewControllerTest, TestUniqueBoxChecked) {
   CreateController();
 
-  ImportDataCollectionViewController* import_data_controller =
-      base::mac::ObjCCastStrict<ImportDataCollectionViewController>(
-          controller());
+  ImportDataTableViewController* import_data_controller =
+      base::mac::ObjCCastStrict<ImportDataTableViewController>(controller());
   NSIndexPath* importIndexPath = [NSIndexPath indexPathForItem:0 inSection:1];
-  NSIndexPath* keepSeparateIndexPath =
-      [NSIndexPath indexPathForItem:1 inSection:1];
+  NSIndexPath* keepSeparateIndexPath = [NSIndexPath indexPathForItem:1
+                                                           inSection:1];
   ImportDataMultilineDetailItem* importItem =
       base::mac::ObjCCastStrict<ImportDataMultilineDetailItem>(
-          [import_data_controller.collectionViewModel
+          [import_data_controller.tableViewModel
               itemAtIndexPath:importIndexPath]);
   ImportDataMultilineDetailItem* keepSeparateItem =
       base::mac::ObjCCastStrict<ImportDataMultilineDetailItem>(
-          [import_data_controller.collectionViewModel
+          [import_data_controller.tableViewModel
               itemAtIndexPath:keepSeparateIndexPath]);
 
-  [import_data_controller collectionView:[import_data_controller collectionView]
-                didSelectItemAtIndexPath:importIndexPath];
-  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, importItem.accessoryType);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, keepSeparateItem.accessoryType);
+  [import_data_controller tableView:[import_data_controller tableView]
+            didSelectRowAtIndexPath:importIndexPath];
+  EXPECT_EQ(UITableViewCellAccessoryCheckmark, importItem.accessoryType);
+  EXPECT_EQ(UITableViewCellAccessoryNone, keepSeparateItem.accessoryType);
 
-  [import_data_controller collectionView:[import_data_controller collectionView]
-                didSelectItemAtIndexPath:keepSeparateIndexPath];
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, importItem.accessoryType);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark,
-            keepSeparateItem.accessoryType);
+  [import_data_controller tableView:[import_data_controller tableView]
+            didSelectRowAtIndexPath:keepSeparateIndexPath];
+  EXPECT_EQ(UITableViewCellAccessoryNone, importItem.accessoryType);
+  EXPECT_EQ(UITableViewCellAccessoryCheckmark, keepSeparateItem.accessoryType);
 }
 
 // Tests that the default choice when the user is signed in is Clear Data and
 // that tapping continue will correctly select it. Regression test for
 // crbug.com/649533
-TEST_F(ImportDataCollectionViewControllerTest, TestDefaultChoiceSignedIn) {
+TEST_F(ImportDataTableViewControllerTest, TestDefaultChoiceSignedIn) {
   CreateController();
 
   EXPECT_FALSE(delegate().didChooseClearDataPolicyCalled);
@@ -169,7 +166,7 @@ TEST_F(ImportDataCollectionViewControllerTest, TestDefaultChoiceSignedIn) {
 // Tests that the default choice when the user is signed out is Merge Data and
 // that tapping continue will correctly select it. Regression test for
 // crbug.com/649533
-TEST_F(ImportDataCollectionViewControllerTest, TestDefaultChoiceSignedOut) {
+TEST_F(ImportDataTableViewControllerTest, TestDefaultChoiceSignedOut) {
   set_is_signed_in(false);
   CreateController();
 
