@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 group("tests") {
@@ -15,9 +14,7 @@ group("tests") {
   ]
 }
 
-service_test("service_manager_unittests") {
-  catalog = ":service_manager_unittests_catalog"
-
+test("service_manager_unittests") {
   sources = [
     "test_support_unittest.cc",
   ]
@@ -26,6 +23,7 @@ service_test("service_manager_unittests") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
+    "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/catalog:lib",
@@ -70,7 +68,8 @@ source_set("util") {
   ]
 }
 
-catalog("service_manager_unittests_catalog") {
+catalog("catalog") {
+  testonly = true
   catalog_deps = [
     "//services/service_manager/background/tests:catalog",
     "//services/service_manager/tests/connect:catalog",
@@ -78,4 +77,10 @@ catalog("service_manager_unittests_catalog") {
     "//services/service_manager/tests/service_manager:catalog",
     "//services/service_manager/tests/shutdown:catalog",
   ]
+}
+
+catalog_cpp_source("catalog_source") {
+  testonly = true
+  catalog = ":catalog"
+  generated_function_name = "service_manager::test::CreateTestCatalog"
 }

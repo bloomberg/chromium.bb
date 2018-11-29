@@ -12,15 +12,20 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/service_manager/tests/util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 
@@ -127,20 +132,27 @@ class InstanceState : public mojom::ServiceManagerListener {
 
 }  // namespace
 
-class LifecycleTest : public test::ServiceTest {
+class LifecycleTest : public testing::Test {
  public:
-  LifecycleTest() : ServiceTest(kTestName) {}
+  LifecycleTest()
+      : test_service_manager_(test::CreateTestCatalog()),
+        test_service_binding_(
+            &test_service_,
+            test_service_manager_.RegisterInstance(
+                Identity{kTestName, kSystemInstanceGroup, base::Token{},
+                         base::Token::CreateRandom()})) {}
+
   ~LifecycleTest() override {}
 
+  Connector* connector() { return test_service_binding_.GetConnector(); }
+
  protected:
-  // test::ServiceTest:
   void SetUp() override {
-    test::ServiceTest::SetUp();
     instances_ = TrackInstances();
   }
+
   void TearDown() override {
     instances_.reset();
-    test::ServiceTest::TearDown();
   }
 
   bool CanRunCrashTest() {
@@ -190,6 +202,10 @@ class LifecycleTest : public test::ServiceTest {
     return base::WrapUnique(state);
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
+  TestServiceManager test_service_manager_;
+  Service test_service_;
+  ServiceBinding test_service_binding_;
   std::unique_ptr<InstanceState> instances_;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleTest);

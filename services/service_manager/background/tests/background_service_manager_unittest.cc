@@ -13,7 +13,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -25,10 +26,15 @@ const char kAppName[] = "background_service_manager_test_service";
 // The parent unit test suite service, not the underlying test service.
 class ServiceImpl : public Service {
  public:
-  ServiceImpl() {}
-  ~ServiceImpl() override {}
+  explicit ServiceImpl(mojom::ServiceRequest request)
+      : binding_(this, std::move(request)) {}
+  ~ServiceImpl() override = default;
+
+  Connector* connector() { return binding_.GetConnector(); }
 
  private:
+  ServiceBinding binding_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
@@ -49,18 +55,18 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  BackgroundServiceManager background_service_manager(nullptr, nullptr);
+  BackgroundServiceManager background_service_manager(
+      nullptr, test::CreateTestCatalog());
   mojom::ServicePtr service;
-  ServiceContext service_context(std::make_unique<ServiceImpl>(),
-                                 mojo::MakeRequest(&service));
+  ServiceImpl service_impl(mojo::MakeRequest(&service));
   background_service_manager.RegisterService(
       Identity(kTestName, kSystemInstanceGroup, base::Token{},
                base::Token::CreateRandom()),
       std::move(service), nullptr);
 
   mojom::TestServicePtr test_service;
-  service_context.connector()->BindInterface(ServiceFilter::ByName(kAppName),
-                                             &test_service);
+  service_impl.connector()->BindInterface(ServiceFilter::ByName(kAppName),
+                                          &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test(
