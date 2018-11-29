@@ -167,6 +167,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/zip_archiver/broker:common",
     "//chrome/chrome_cleaner/zip_archiver/target:common",
     "//components/chrome_cleaner/public/constants:constants",
+    "//components/chrome_cleaner/test:test_name_helper",
     "//sandbox/win:sandbox",
     "//testing/gmock",
     "//testing/gtest",

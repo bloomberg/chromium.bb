@@ -27,6 +27,7 @@ static_library("safe_browsing") {
     sources += [
       "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
       "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
+      "chrome_cleaner/chrome_cleaner_controller_win.cc",
       "chrome_cleaner/chrome_cleaner_controller_win.h",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.cc",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h",

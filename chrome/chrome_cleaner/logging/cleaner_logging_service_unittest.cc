@@ -37,10 +37,10 @@
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 

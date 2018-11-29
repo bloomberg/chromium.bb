@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
-#define CHROME_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
+#ifndef COMPONENTS_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
+#define COMPONENTS_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
 
 #include <string>
 
@@ -45,4 +45,4 @@ struct GetParamNameForTest {
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_
+#endif  // COMPONENTS_CHROME_CLEANER_TEST_TEST_NAME_HELPER_H_

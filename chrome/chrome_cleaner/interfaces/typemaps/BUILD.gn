@@ -18,6 +18,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/strings",
     "//chrome/chrome_cleaner/strings:string_test_helpers",
     "//chrome/chrome_cleaner/test:test_util",
+    "//components/chrome_cleaner/test:test_name_helper",
     "//mojo/core/embedder:embedder",
     "//testing/gtest",
   ]
