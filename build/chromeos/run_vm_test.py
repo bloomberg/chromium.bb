@@ -169,9 +169,9 @@ class TastTest(RemoteTest):
               '--gtest_repeat')]
 
     if self._additional_args:
-      raise TestFormatError(
-          'Tast tests should not have additional args: %s' % (
-              self._additional_args))
+      logging.error(
+          'Tast tests should not have additional args. These will be '
+          'ignored: %s', self._additional_args)
 
     self._vm_test_cmd += [
         '--deploy',
