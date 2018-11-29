@@ -143,6 +143,9 @@ used when committed.
 *   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
     What to do (and not to do) around branch dates when scheduling your project
     work.
+*   [WebUI Explainer](webui_explainer.md) - An explanation of C++ and JavaScript
+    infrastructural code for Chrome UIs implemented with web technologies (i.e.
+    chrome:// URLs).
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)
@@ -274,6 +277,10 @@ used when committed.
 
 ### Misc Chrome-OS-Specific Docs
 *   [Chrome Logging on Chrome OS](chrome_os_logging.md)
+
+### Misc WebUI-Specific Docs
+*   [Creating WebUI Interfaces in components/](webui_in_components.md) How to
+    create a new WebUI component in the `components/` directory.
 
 ### Media
 *   [Audio Focus Handling](media/audio_focus.md) - How multiple MediaSession
