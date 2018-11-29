@@ -226,6 +226,11 @@
         signaled when all operations by the compositor on that buffer for that
         commit have finished.
 
+        Once the fence has signaled, and assuming the associated buffer is not
+        pending release from other wl_surface.commit requests, no additional
+        explicit or implicit synchronization is required to safely reuse or
+        destroy the buffer.
+
         This event destroys the zwp_linux_buffer_release_v1 object.
       </description>
       <arg name="fence" type="fd" summary="fence for last operation on buffer"/>
@@ -237,6 +242,11 @@
         buffer for the relevant commit, and either performed no operations
         using it, or has a guarantee that all its operations on that buffer for
         that commit have finished.
+
+        Once this event is received, and assuming the associated buffer is not
+        pending release from other wl_surface.commit requests, no additional
+        explicit or implicit synchronization is required to safely reuse or
+        destroy the buffer.
 
         This event destroys the zwp_linux_buffer_release_v1 object.
       </description>
