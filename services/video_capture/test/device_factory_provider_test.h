@@ -5,16 +5,22 @@
 #ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_TEST_DEVICE_FACTORY_PROVIDER_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_TEST_DEVICE_FACTORY_PROVIDER_TEST_H_
 
+#include "base/macros.h"
 #include "base/test/mock_callback.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "base/test/scoped_task_environment.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace video_capture {
 
 class MockProducer;
 
 // Basic test fixture that sets up a connection to the fake device factory.
-class DeviceFactoryProviderTest : public service_manager::test::ServiceTest {
+class DeviceFactoryProviderTest : public testing::Test {
  public:
   DeviceFactoryProviderTest();
   ~DeviceFactoryProviderTest() override;
@@ -36,10 +42,21 @@ class DeviceFactoryProviderTest : public service_manager::test::ServiceTest {
   mojom::TextureVirtualDevicePtr AddTextureVirtualDevice(
       const std::string& device_id);
 
+  service_manager::Connector* connector() {
+    return test_service_binding_.GetConnector();
+  }
+
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::Service test_service_;
+  service_manager::ServiceBinding test_service_binding_;
+
   mojom::DeviceFactoryProviderPtr factory_provider_;
   mojom::DeviceFactoryPtr factory_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
       device_info_receiver_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderTest);
 };
 
 }  // namespace video_capture

@@ -98,10 +98,7 @@ if (!is_ios) {
   catalog("services_unittests_catalog") {
     testonly = true
 
-    catalog_deps = [
-      "//services/video_capture:tests_catalog",
-      "//services/viz:tests_catalog",
-    ]
+    catalog_deps = [ "//services/viz:tests_catalog" ]
 
     if (use_aura) {
       catalog_deps += [

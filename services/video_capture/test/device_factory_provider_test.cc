@@ -10,6 +10,7 @@
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/tests_catalog_source.h"
 
 namespace video_capture {
 
@@ -22,7 +23,10 @@ DeviceFactoryProviderTest::SharedMemoryVirtualDeviceContext::
     ~SharedMemoryVirtualDeviceContext() = default;
 
 DeviceFactoryProviderTest::DeviceFactoryProviderTest()
-    : service_manager::test::ServiceTest("video_capture_unittests") {}
+    : test_service_manager_(CreateTestCatalog()),
+      test_service_binding_(&test_service_,
+                            test_service_manager_.RegisterTestInstance(
+                                "video_capture_unittests")) {}
 
 DeviceFactoryProviderTest::~DeviceFactoryProviderTest() = default;
 
@@ -31,8 +35,6 @@ void DeviceFactoryProviderTest::SetUp() {
       switches::kUseFakeJpegDecodeAccelerator);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseFakeDeviceForMediaStream, "device-count=3");
-
-  service_manager::test::ServiceTest::SetUp();
 
   connector()->BindInterface(mojom::kServiceName, &factory_provider_);
   // Note, that we explicitly do *not* call
