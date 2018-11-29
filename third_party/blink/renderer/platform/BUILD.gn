@@ -262,6 +262,7 @@ jumbo_component("platform") {
   visibility = [
     "//components/pdf/common:interfaces_blink",
     "//services/device/public/mojom:mojom_blink",
+    "//services/media_session/public/mojom:mojom_blink",
     "//third_party/blink/*",
     "//url/mojom:url_mojom_origin_blink",
     "//url/mojom:url_mojom_gurl_blink",
