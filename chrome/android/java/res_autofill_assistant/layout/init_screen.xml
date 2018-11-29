@@ -38,10 +38,13 @@
         <ImageView
             tools:ignore="contentDescription"
             android:layout_width="250dp"
-            android:layout_height="170dp"
+            android:layout_height="141dp"
             android:scaleType="centerCrop"
             android:src="@drawable/onboarding_background"
-            android:paddingStart="50dp"/>
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="15dp"/>
 
         <TextView
             android:layout_height="wrap_content"
