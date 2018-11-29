@@ -40,6 +40,11 @@ class RoboConfiguration:
     self._patches_commit_title = "Chromium patches file"
     self.EnsureHostInfo()
     self.EnsureChromeSrc()
+
+    # Directory where llvm lives.
+    self._llvm_path = os.path.join(self.chrome_src(), "third_party",
+            "llvm-build", "Release+Asserts", "bin")
+
     self.EnsurePathContainsLLVM()
     log("Using chrome src: %s" % self.chrome_src())
     self.EnsureFFmpegHome()
@@ -98,6 +103,9 @@ class RoboConfiguration:
   def patches_commit_title(self):
     return self._patches_commit_title
 
+  def nasm_path(self):
+    return self._nasm_path
+
   def EnsureHostInfo(self):
     """Ensure that the host architecture and platform are set."""
     # TODO(liberato): autodetect
@@ -135,10 +143,12 @@ class RoboConfiguration:
 
     llvm_path = os.path.join(self.chrome_src(), "third_party",
             "llvm-build", "Release+Asserts", "bin")
-    if llvm_path not in os.environ["PATH"]:
+    if self.llvm_path() not in os.environ["PATH"]:
       raise UserInstructions(
                           "Please add:\n%s\nto the beginning of $PATH" %
-                          llvm_path)
+                          self.llvm_path())
+  def llvm_path(self):
+    return self._llvm_path
 
   def ComputeBranchName(self):
     """Get the current branch name and set it."""

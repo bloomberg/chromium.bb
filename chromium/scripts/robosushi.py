@@ -35,6 +35,7 @@ def main(argv):
       robo_setup.InstallPrereqs(robo_configuration)
       robo_setup.EnsureToolchains(robo_configuration)
       robo_setup.EnsureASANDirWorks(robo_configuration)
+      robo_setup.EnsureChromiumNasm(robo_configuration)
     elif opt == "--test":
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
       robo_build.RunTests(robo_configuration)
