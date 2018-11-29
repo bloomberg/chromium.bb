@@ -211,9 +211,10 @@ void IconImage::LoadImageForScaleAsync(float scale) {
 
     extensions::ImageLoader* loader =
         extensions::ImageLoader::Get(browser_context_);
-    loader->LoadImagesAsync(extension_.get(), info_list,
-                            base::Bind(&IconImage::OnImageLoaded,
-                                       weak_ptr_factory_.GetWeakPtr(), scale));
+    loader->LoadImagesAsync(
+        extension_.get(), info_list,
+        base::BindOnce(&IconImage::OnImageLoaded,
+                       weak_ptr_factory_.GetWeakPtr(), scale));
   } else {
     // If there is no resource found, update from the default icon.
     const gfx::ImageSkiaRep& rep = default_icon_.GetRepresentation(scale);

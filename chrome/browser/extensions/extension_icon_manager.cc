@@ -39,8 +39,8 @@ void ExtensionIconManager::LoadIcon(content::BrowserContext* context,
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(context);
   loader->LoadImageAtEveryScaleFactorAsync(
       extension, gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
-      base::Bind(&ExtensionIconManager::OnImageLoaded,
-                 weak_ptr_factory_.GetWeakPtr(), extension->id()));
+      base::BindOnce(&ExtensionIconManager::OnImageLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), extension->id()));
 }
 
 gfx::Image ExtensionIconManager::GetIcon(const std::string& extension_id) {

@@ -634,11 +634,9 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
       extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
       gfx::Size(),
       ui::SCALE_FACTOR_100P));
-  loader->LoadImagesAsync(
-      extension_,
-      images_list,
-      base::Bind(&ExtensionInstallPrompt::OnImageLoaded,
-                 weak_factory_.GetWeakPtr()));
+  loader->LoadImagesAsync(extension_, images_list,
+                          base::BindOnce(&ExtensionInstallPrompt::OnImageLoaded,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
