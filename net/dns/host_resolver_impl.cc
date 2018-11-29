@@ -2146,8 +2146,7 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
   OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
   {
-    DnsConfig dns_config = GetBaseDnsConfig();
-    received_dns_config_ = dns_config.IsValid();
+    DnsConfig dns_config = GetBaseDnsConfig(false);
     // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
     use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
     UpdateModeForHistogram(dns_config);
@@ -2175,19 +2174,19 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   dns_client_ = std::move(dns_client);
   if (dns_client_ && !dns_client_->GetConfig() &&
       num_dns_failures_ < kMaximumDnsFailures) {
-    DnsConfig dns_config;
-    // Skip retrieving the base config if all values will be overridden.
-    if (!dns_config_overrides_.OverridesEverything())
-      dns_config = GetBaseDnsConfig();
-    DnsConfig overridden_config =
-        dns_config_overrides_.ApplyOverrides(dns_config);
-    dns_client_->SetConfig(overridden_config);
+    dns_client_->SetConfig(GetBaseDnsConfig(false));
     num_dns_failures_ = 0;
     if (dns_client_->GetConfig())
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
 
   AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
+  DnsConfig dns_config;
+  if (!HaveDnsConfig())
+    // UpdateModeForHistogram() needs to know the DnsConfig when
+    // !HaveDnsConfig()
+    dns_config = GetBaseDnsConfig(false);
+  UpdateModeForHistogram(dns_config);
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
@@ -2934,23 +2933,18 @@ void HostResolverImpl::OnDNSChanged() {
   UpdateDNSConfig(true);
 }
 
-DnsConfig HostResolverImpl::GetBaseDnsConfig() const {
-  DnsConfig dns_config;
-  if (test_base_config_)
-    dns_config = test_base_config_.value();
-  else
-    NetworkChangeNotifier::GetDnsConfig(&dns_config);
-  return dns_config;
-}
-
-void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
+DnsConfig HostResolverImpl::GetBaseDnsConfig(bool log_to_net_log) {
   DnsConfig dns_config;
 
   // Skip retrieving the base config if all values will be overridden.
   if (!dns_config_overrides_.OverridesEverything()) {
-    dns_config = GetBaseDnsConfig();
+    if (test_base_config_) {
+      dns_config = test_base_config_.value();
+    } else {
+      NetworkChangeNotifier::GetDnsConfig(&dns_config);
+    }
 
-    if (net_log_) {
+    if (log_to_net_log && net_log_) {
       net_log_->AddGlobalEntry(
           NetLogEventType::DNS_CONFIG_CHANGED,
           base::BindRepeating(&NetLogDnsConfigCallback, &dns_config));
@@ -2960,7 +2954,11 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     received_dns_config_ = dns_config.IsValid();
   }
 
-  dns_config = dns_config_overrides_.ApplyOverrides(dns_config);
+  return dns_config_overrides_.ApplyOverrides(dns_config);
+}
+
+void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
+  DnsConfig dns_config = GetBaseDnsConfig(true);
 
   // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
   use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
