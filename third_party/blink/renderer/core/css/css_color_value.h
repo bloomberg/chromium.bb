@@ -21,6 +21,8 @@ class CSSColorValue : public CSSValue {
   // TODO(sashab): Make this create() method take a Color instead.
   static CSSColorValue* Create(RGBA32 color);
 
+  CSSColorValue(Color color) : CSSValue(kColorClass), color_(color) {}
+
   String CustomCSSText() const { return SerializeAsCSSComponentValue(color_); }
 
   Color Value() const { return color_; }
@@ -39,8 +41,6 @@ class CSSColorValue : public CSSValue {
 
  private:
   friend class ::blink::CSSValuePool;
-
-  CSSColorValue(Color color) : CSSValue(kColorClass), color_(color) {}
 
   Color color_;
 };

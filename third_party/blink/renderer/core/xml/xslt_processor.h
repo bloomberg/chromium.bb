@@ -45,8 +45,10 @@ class XSLTProcessor final : public ScriptWrappable {
  public:
   static XSLTProcessor* Create(Document& document) {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return new XSLTProcessor(document);
+    return MakeGarbageCollected<XSLTProcessor>(document);
   }
+
+  XSLTProcessor(Document& document) : document_(&document) {}
   ~XSLTProcessor() override;
 
   void SetXSLStyleSheet(XSLStyleSheet* style_sheet) {
@@ -88,8 +90,6 @@ class XSLTProcessor final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  XSLTProcessor(Document& document) : document_(&document) {}
-
   Member<XSLStyleSheet> stylesheet_;
   Member<Node> stylesheet_root_node_;
   Member<Document> document_;

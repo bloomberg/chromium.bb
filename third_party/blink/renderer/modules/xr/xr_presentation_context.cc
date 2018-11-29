@@ -26,7 +26,7 @@ CanvasRenderingContext* XRPresentationContext::Factory::Create(
     const CanvasContextCreationAttributesCore& attrs) {
   if (!origin_trials::WebXREnabled(host->GetTopExecutionContext()))
     return nullptr;
-  return new XRPresentationContext(host, attrs);
+  return MakeGarbageCollected<XRPresentationContext>(host, attrs);
 }
 
 }  // namespace blink

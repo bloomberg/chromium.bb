@@ -97,7 +97,7 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
     return;
 
   if (!input_source_) {
-    input_source_ = new XRInputSource(session_, 0);
+    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 0);
     input_source_->SetTargetRayMode(XRInputSource::kScreen);
   }
 

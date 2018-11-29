@@ -48,9 +48,10 @@ CSSValuePool::CSSValuePool()
       initial_value_(MakeGarbageCollected<CSSInitialValue>()),
       unset_value_(new CSSUnsetValue),
       invalid_variable_value_(new CSSInvalidVariableValue),
-      color_transparent_(new CSSColorValue(Color::kTransparent)),
-      color_white_(new CSSColorValue(Color::kWhite)),
-      color_black_(new CSSColorValue(Color::kBlack)) {
+      color_transparent_(
+          MakeGarbageCollected<CSSColorValue>(Color::kTransparent)),
+      color_white_(MakeGarbageCollected<CSSColorValue>(Color::kWhite)),
+      color_black_(MakeGarbageCollected<CSSColorValue>(Color::kBlack)) {
   identifier_value_cache_.resize(numCSSValueKeywords);
   pixel_value_cache_.resize(kMaximumCacheableIntegerValue + 1);
   percent_value_cache_.resize(kMaximumCacheableIntegerValue + 1);

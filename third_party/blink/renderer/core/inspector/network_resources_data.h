@@ -56,6 +56,11 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                                bool async,
                                bool include_credentials);
 
+  XHRReplayData(const AtomicString& method,
+                const KURL&,
+                bool async,
+                bool include_credentials);
+
   void AddHeader(const AtomicString& key, const AtomicString& value);
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
@@ -66,11 +71,6 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   virtual void Trace(blink::Visitor*) {}
 
  private:
-  XHRReplayData(const AtomicString& method,
-                const KURL&,
-                bool async,
-                bool include_credentials);
-
   AtomicString method_;
   KURL url_;
   bool async_;

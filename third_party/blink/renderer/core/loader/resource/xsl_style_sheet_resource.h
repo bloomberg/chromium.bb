@@ -42,6 +42,10 @@ class XSLStyleSheetResource final : public TextResource {
                                       ResourceFetcher*,
                                       ResourceClient*);
 
+  XSLStyleSheetResource(const ResourceRequest&,
+                        const ResourceLoaderOptions&,
+                        const TextResourceDecoderOptions&);
+
   const String& Sheet() const { return sheet_; }
 
  private:
@@ -55,12 +59,10 @@ class XSLStyleSheetResource final : public TextResource {
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return new XSLStyleSheetResource(request, options, decoder_options);
+      return MakeGarbageCollected<XSLStyleSheetResource>(request, options,
+                                                         decoder_options);
     }
   };
-  XSLStyleSheetResource(const ResourceRequest&,
-                        const ResourceLoaderOptions&,
-                        const TextResourceDecoderOptions&);
 
   void NotifyFinished() override;
 

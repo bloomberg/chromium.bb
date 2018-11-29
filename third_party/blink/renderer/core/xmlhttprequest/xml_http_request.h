@@ -80,6 +80,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
  public:
   static XMLHttpRequest* Create(ScriptState*);
   static XMLHttpRequest* Create(ExecutionContext*);
+
+  XMLHttpRequest(ExecutionContext*,
+                 v8::Isolate*,
+                 bool is_isolated_world,
+                 scoped_refptr<SecurityOrigin>);
   ~XMLHttpRequest() override;
 
   // These exact numeric values are important because JS expects them.
@@ -169,10 +174,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
  private:
   class BlobLoader;
-  XMLHttpRequest(ExecutionContext*,
-                 v8::Isolate*,
-                 bool is_isolated_world,
-                 scoped_refptr<SecurityOrigin>);
 
   Document* GetDocument() const;
 

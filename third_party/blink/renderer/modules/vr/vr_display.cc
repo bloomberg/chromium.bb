@@ -560,7 +560,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
 
-    frame_transport_ = new XRFrameTransport();
+    frame_transport_ = MakeGarbageCollected<XRFrameTransport>();
     frame_transport_->BindSubmitFrameClient(
         std::move(session->submit_frame_sink->client_request));
     frame_transport_->SetTransportOptions(

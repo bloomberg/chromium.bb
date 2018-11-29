@@ -38,11 +38,9 @@ class MODULES_EXPORT XRPresentationContext final
   }
   void SetCanvasGetContextResult(RenderingContext&) final;
 
-  ~XRPresentationContext() override;
-
- private:
   XRPresentationContext(CanvasRenderingContextHost*,
                         const CanvasContextCreationAttributesCore&);
+  ~XRPresentationContext() override;
 };
 
 DEFINE_TYPE_CASTS(XRPresentationContext,

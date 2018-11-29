@@ -47,9 +47,13 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   static CSSCrossfadeValue* Create(CSSValue* from_value,
                                    CSSValue* to_value,
                                    CSSPrimitiveValue* percentage_value) {
-    return new CSSCrossfadeValue(from_value, to_value, percentage_value);
+    return MakeGarbageCollected<CSSCrossfadeValue>(from_value, to_value,
+                                                   percentage_value);
   }
 
+  CSSCrossfadeValue(CSSValue* from_value,
+                    CSSValue* to_value,
+                    CSSPrimitiveValue* percentage_value);
   ~CSSCrossfadeValue();
 
   String CustomCSSText() const;
@@ -75,10 +79,6 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSCrossfadeValue(CSSValue* from_value,
-                    CSSValue* to_value,
-                    CSSPrimitiveValue* percentage_value);
-
   void Dispose();
 
   class CrossfadeSubimageObserverProxy final : public ImageResourceObserver {

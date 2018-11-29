@@ -46,7 +46,8 @@ XHRReplayData* XHRReplayData::Create(const AtomicString& method,
                                      const KURL& url,
                                      bool async,
                                      bool include_credentials) {
-  return new XHRReplayData(method, url, async, include_credentials);
+  return MakeGarbageCollected<XHRReplayData>(method, url, async,
+                                             include_credentials);
 }
 
 void XHRReplayData::AddHeader(const AtomicString& key,

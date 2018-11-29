@@ -36,13 +36,25 @@ class CSSFontStyleRangeValue final : public CSSValue {
  public:
   static CSSFontStyleRangeValue* Create(
       const CSSIdentifierValue& font_style_value) {
-    return new CSSFontStyleRangeValue(font_style_value);
+    return MakeGarbageCollected<CSSFontStyleRangeValue>(font_style_value);
   }
   static CSSFontStyleRangeValue* Create(
       const CSSIdentifierValue& font_style_value,
       const CSSValueList& oblique_values) {
-    return new CSSFontStyleRangeValue(font_style_value, oblique_values);
+    return MakeGarbageCollected<CSSFontStyleRangeValue>(font_style_value,
+                                                        oblique_values);
   }
+
+  CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value,
+                         const CSSValueList& oblique_values)
+      : CSSValue(kFontStyleRangeClass),
+        font_style_value_(&font_style_value),
+        oblique_values_(&oblique_values) {}
+
+  CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value)
+      : CSSValue(kFontStyleRangeClass),
+        font_style_value_(&font_style_value),
+        oblique_values_(nullptr) {}
 
   const CSSIdentifierValue* GetFontStyleValue() const {
     return font_style_value_.Get();
@@ -56,17 +68,6 @@ class CSSFontStyleRangeValue final : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value,
-                         const CSSValueList& oblique_values)
-      : CSSValue(kFontStyleRangeClass),
-        font_style_value_(&font_style_value),
-        oblique_values_(&oblique_values) {}
-
-  CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value)
-      : CSSValue(kFontStyleRangeClass),
-        font_style_value_(&font_style_value),
-        oblique_values_(nullptr) {}
-
   Member<const CSSIdentifierValue> font_style_value_;
   Member<const CSSValueList> oblique_values_;
 };

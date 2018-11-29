@@ -41,7 +41,7 @@ XRDevicePose* XRFrame::getDevicePose(
     return nullptr;
   }
 
-  return new XRDevicePose(session(), std::move(pose));
+  return MakeGarbageCollected<XRDevicePose>(session(), std::move(pose));
 }
 
 XRInputPose* XRFrame::getInputPose(
@@ -71,7 +71,8 @@ XRInputPose* XRFrame::getInputPose(
           coordinate_system->TransformBasePose(*base_pose_matrix_);
       pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
 
-      return new XRInputPose(std::move(pointer_pose), nullptr);
+      return MakeGarbageCollected<XRInputPose>(std::move(pointer_pose),
+                                               nullptr);
     }
     case XRInputSource::kGaze: {
       // If the pointer origin is the users head, this is a gaze cursor and the
@@ -85,8 +86,8 @@ XRInputPose* XRFrame::getInputPose(
       std::unique_ptr<TransformationMatrix> pointer_pose =
           coordinate_system->TransformBasePose(*base_pose_matrix_);
 
-      return new XRInputPose(std::move(pointer_pose), nullptr,
-                             input_source->emulatedPosition());
+      return MakeGarbageCollected<XRInputPose>(
+          std::move(pointer_pose), nullptr, input_source->emulatedPosition());
     }
     case XRInputSource::kTrackedPointer: {
       // If the input source doesn't have a base pose return null;
@@ -109,8 +110,9 @@ XRInputPose* XRFrame::getInputPose(
         pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
       }
 
-      return new XRInputPose(std::move(pointer_pose), std::move(grip_pose),
-                             input_source->emulatedPosition());
+      return MakeGarbageCollected<XRInputPose>(
+          std::move(pointer_pose), std::move(grip_pose),
+          input_source->emulatedPosition());
     }
   }
 

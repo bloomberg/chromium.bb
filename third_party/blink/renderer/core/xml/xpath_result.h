@@ -61,8 +61,10 @@ class XPathResult final : public ScriptWrappable {
 
   static XPathResult* Create(xpath::EvaluationContext& context,
                              const xpath::Value& value) {
-    return new XPathResult(context, value);
+    return MakeGarbageCollected<XPathResult>(context, value);
   }
+
+  XPathResult(xpath::EvaluationContext&, const xpath::Value&);
 
   void ConvertTo(unsigned short type, ExceptionState&);
 
@@ -83,7 +85,6 @@ class XPathResult final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  XPathResult(xpath::EvaluationContext&, const xpath::Value&);
   xpath::NodeSet& GetNodeSet() { return *node_set_; }
 
   xpath::Value value_;

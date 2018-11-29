@@ -131,7 +131,7 @@ void XR::OnDeviceChanged() {
 void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
   pending_sync_ = false;
   if (device) {
-    device_ = new XRDevice(this, std::move(device));
+    device_ = MakeGarbageCollected<XRDevice>(this, std::move(device));
   }
   ResolveRequestDevice();
 }

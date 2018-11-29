@@ -25,8 +25,10 @@ class XMLParserScriptRunner final
 
  public:
   static XMLParserScriptRunner* Create(XMLParserScriptRunnerHost* host) {
-    return new XMLParserScriptRunner(host);
+    return MakeGarbageCollected<XMLParserScriptRunner>(host);
   }
+
+  explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
   ~XMLParserScriptRunner() override;
 
   bool HasParserBlockingScript() const { return parser_blocking_script_; }
@@ -37,8 +39,6 @@ class XMLParserScriptRunner final
   void Trace(Visitor*) override;
 
  private:
-  explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
-
   // from PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
 

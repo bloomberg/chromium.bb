@@ -15,16 +15,21 @@ class XRSessionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XRSessionEvent* Create() { return new XRSessionEvent; }
+  static XRSessionEvent* Create() {
+    return MakeGarbageCollected<XRSessionEvent>();
+  }
   static XRSessionEvent* Create(const AtomicString& type, XRSession* session) {
-    return new XRSessionEvent(type, session);
+    return MakeGarbageCollected<XRSessionEvent>(type, session);
   }
 
   static XRSessionEvent* Create(const AtomicString& type,
                                 const XRSessionEventInit* initializer) {
-    return new XRSessionEvent(type, initializer);
+    return MakeGarbageCollected<XRSessionEvent>(type, initializer);
   }
 
+  XRSessionEvent();
+  XRSessionEvent(const AtomicString& type, XRSession*);
+  XRSessionEvent(const AtomicString& type, const XRSessionEventInit*);
   ~XRSessionEvent() override;
 
   XRSession* session() const { return session_.Get(); }
@@ -34,10 +39,6 @@ class XRSessionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  XRSessionEvent();
-  XRSessionEvent(const AtomicString& type, XRSession*);
-  XRSessionEvent(const AtomicString& type, const XRSessionEventInit*);
-
   Member<XRSession> session_;
 };
 

@@ -29,8 +29,10 @@ class XR final : public EventTargetWithInlineData,
 
  public:
   static XR* Create(LocalFrame& frame, int64_t source_id) {
-    return new XR(frame, source_id);
+    return MakeGarbageCollected<XR>(frame, source_id);
   }
+
+  explicit XR(LocalFrame& frame, int64_t ukm_source_id_);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange);
 
@@ -54,8 +56,6 @@ class XR final : public EventTargetWithInlineData,
   int64_t GetSourceId() const { return ukm_source_id_; }
 
  private:
-  explicit XR(LocalFrame& frame, int64_t ukm_source_id_);
-
   void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device);
   void ResolveRequestDevice();
   void ReportImmersiveSupported(bool supported);

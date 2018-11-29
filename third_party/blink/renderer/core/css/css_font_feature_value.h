@@ -34,8 +34,10 @@ namespace cssvalue {
 class CSSFontFeatureValue : public CSSValue {
  public:
   static CSSFontFeatureValue* Create(const AtomicString& tag, int value) {
-    return new CSSFontFeatureValue(tag, value);
+    return MakeGarbageCollected<CSSFontFeatureValue>(tag, value);
   }
+
+  CSSFontFeatureValue(const AtomicString& tag, int value);
 
   const AtomicString& Tag() const { return tag_; }
   int Value() const { return value_; }
@@ -48,8 +50,6 @@ class CSSFontFeatureValue : public CSSValue {
   }
 
  private:
-  CSSFontFeatureValue(const AtomicString& tag, int value);
-
   AtomicString tag_;
   const int value_;
 };

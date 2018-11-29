@@ -27,6 +27,8 @@ class CSSPathValue : public CSSValue {
 
   static CSSPathValue& EmptyPathValue();
 
+  CSSPathValue(scoped_refptr<StylePath>, PathSerializationFormat);
+
   StylePath* GetStylePath() const { return style_path_.get(); }
   String CustomCSSText() const;
 
@@ -39,8 +41,6 @@ class CSSPathValue : public CSSValue {
   }
 
  private:
-  CSSPathValue(scoped_refptr<StylePath>, PathSerializationFormat);
-
   scoped_refptr<StylePath> style_path_;
   const PathSerializationFormat serialization_format_;
 };
