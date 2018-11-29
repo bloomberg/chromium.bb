@@ -756,8 +756,6 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
     parser_map["networkConnectionEnabled"] =
         base::BindRepeating(&ParseBoolean, &network_emulation_enabled);
   }
-  // goog:testName is set by some tests to help debugging, and is ignored.
-  parser_map["goog:testName"] = base::BindRepeating(&IgnoreCapability);
 
   for (base::DictionaryValue::Iterator it(desired_caps); !it.IsAtEnd();
        it.Advance()) {
@@ -765,9 +763,10 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
       continue;
     if (parser_map.find(it.key()) == parser_map.end()) {
       // The specified capability is unrecognized. W3C spec requires us to
-      // return an error. In legacy mode, for backward compatibility reasons,
+      // return an error if capability does not contain ":".
+      // In legacy mode, for backward compatibility reasons,
       // we ignore unrecognized capabilities.
-      if (w3c_compliant)
+      if (w3c_compliant && it.key().find(':') == std::string::npos)
         return Status(kInvalidArgument, "unrecognized capability: " + it.key());
       else
         continue;
