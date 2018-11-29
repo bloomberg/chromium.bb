@@ -303,7 +303,8 @@ void PixelTest::SetUpSkiaRendererDDL() {
   // Set up the skia renderer.
   output_surface_ = std::make_unique<viz::SkiaOutputSurfaceImpl>(
       gpu_service_.get(), gpu::kNullSurfaceHandle,
-      nullptr /* synthetic_begin_frame_source */);
+      nullptr /* synthetic_begin_frame_source */,
+      renderer_settings_.show_overdraw_feedback);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,

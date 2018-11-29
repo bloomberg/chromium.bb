@@ -432,7 +432,9 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   current_canvas_ = root_canvas_;
   current_surface_ = root_surface_.get();
 
-  if (settings_->show_overdraw_feedback) {
+  // For DDL mode, if overdraw feedback is enabled, the root canvas is the nway
+  // canvas.
+  if (settings_->show_overdraw_feedback && draw_mode_ != DrawMode::DDL) {
     const auto& size = current_frame()->device_viewport_size;
     overdraw_surface_ = root_canvas_->makeSurface(
         SkImageInfo::MakeA8(size.width(), size.height()));
@@ -1104,16 +1106,11 @@ void SkiaRenderer::CopyDrawnRenderPass(
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      if (settings_->show_overdraw_feedback) {
-        // TODO(crbug.com/889122): Overdraw currently requires calling flush on
-        // canvas on SkiaRenderer's thread.
-        return;
-      }
       // Root framebuffer uses id 0 in SkiaOutputSurface.
       RenderPassId render_pass_id = 0;
       // If we are in child render pass and we don't have overdraw, copy the
       // current render pass.
-      if (root_canvas_ != current_canvas_)
+      if (root_canvas_ != current_canvas_ && !settings_->show_overdraw_feedback)
         render_pass_id = current_frame()->current_render_pass->id;
       skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
                                        std::move(request));
@@ -1172,13 +1169,8 @@ void SkiaRenderer::FinishDrawingQuadList() {
            current_frame()->root_render_pass)) {
         sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
         SkPaint paint;
-        // TODO(xing.xu) : handle this in CPU mode, the R and B should be
-        // switched in CPU mode. (http://crbug.com/896969)
-        static const SkPMColor colors[SkOverdrawColorFilter::kNumColors] = {
-            0x00000000, 0x00000000, 0x2fff0000,
-            0x2f00ff00, 0x3f0000ff, 0x7f0000ff,
-        };
-        sk_sp<SkColorFilter> color_filter = SkOverdrawColorFilter::Make(colors);
+        sk_sp<SkColorFilter> color_filter =
+            SkiaHelper::MakeOverdrawColorFilter();
         paint.setColorFilter(color_filter);
         current_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
       }

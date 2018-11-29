@@ -4038,15 +4038,32 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
-class SkiaRendererPixelTestWithOverdrawFeedback : public SkiaRendererPixelTest {
+using SkiaRendererTypes = ::testing::Types<SkiaRenderer, cc::SkiaRendererDDL>;
+TYPED_TEST_CASE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);
+
+template <typename RendererType>
+class SkiaRendererPixelTestWithOverdrawFeedback
+    : public cc::RendererPixelTest<RendererType> {
  protected:
-  void SetUp() override {
-    renderer_settings_.show_overdraw_feedback = true;
-    SkiaRendererPixelTest::SetUp();
-  }
+  void SetUp() override;
+  bool is_ddl_ = false;
 };
 
-TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
+template <>
+inline void SkiaRendererPixelTestWithOverdrawFeedback<SkiaRenderer>::SetUp() {
+  renderer_settings_.show_overdraw_feedback = true;
+  SkiaRendererPixelTest::SetUp();
+}
+
+template <>
+inline void
+SkiaRendererPixelTestWithOverdrawFeedback<cc::SkiaRendererDDL>::SetUp() {
+  renderer_settings_.show_overdraw_feedback = true;
+  is_ddl_ = true;
+  cc::SkiaRendererDDLPixelTest::SetUp();
+}
+
+TYPED_TEST(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -4083,11 +4100,18 @@ TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
-
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("skia_translucent_rectangles.png")),
-      cc::ExactPixelComparator(true)));
+  const auto reference_file =
+      base::FilePath(FILE_PATH_LITERAL("skia_translucent_rectangles.png"));
+  if (this->is_ddl_) {
+    // TODO(xing.xu): investigate why overdraw feedback has small difference
+    // between Skia DDL and Skia. (http://crbug.com/909971)
+    EXPECT_TRUE(this->RunPixelTest(
+        &pass_list, reference_file,
+        cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f)));
+  } else {
+    EXPECT_TRUE(this->RunPixelTest(&pass_list, reference_file,
+                                   cc::ExactPixelComparator(true)));
+  }
 }
 
 using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace, bool>;

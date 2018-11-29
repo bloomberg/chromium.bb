@@ -211,10 +211,12 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    bool show_overdraw_feedback)
     : gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      show_overdraw_feedback_(show_overdraw_feedback),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
@@ -371,7 +373,22 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
 
   DCHECK(characterization_.isValid());
   recorder_.emplace(characterization_);
-  return recorder_->getCanvas();
+  if (!show_overdraw_feedback_)
+    return recorder_->getCanvas();
+
+  DCHECK(!overdraw_surface_recorder_);
+  DCHECK(show_overdraw_feedback_);
+
+  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
+      gfx::Size(characterization_.width(), characterization_.height()),
+      BGRA_8888, false);
+  overdraw_surface_recorder_.emplace(characterization);
+  overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
+
+  nway_canvas_.emplace(characterization_.width(), characterization_.height());
+  nway_canvas_->addCanvas(recorder_->getCanvas());
+  nway_canvas_->addCanvas(&overdraw_canvas_.value());
+  return &nway_canvas_.value();
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
@@ -444,39 +461,8 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 
   current_render_pass_id_ = id;
 
-  auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
-  constexpr uint32_t flags = 0;
-  // LegacyFontHost will get LCD text and skia figures out what type to use.
-  SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-  int msaa_sample_count = 0;
-  SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-  SkImageInfo image_info =
-      SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
-                        kPremul_SkAlphaType, nullptr /* color_space */);
-
-  // TODO(penghuang): Figure out how to choose the right size.
-  constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
-
-  GrBackendFormat backend_format;
-  if (!gpu_service_->is_using_vulkan()) {
-    const auto* version_info = impl_on_gpu_->gl_version_info();
-    unsigned int texture_storage_format = TextureStorageFormat(format);
-    backend_format = GrBackendFormat::MakeGL(
-        gl::GetInternalFormat(version_info, texture_storage_format),
-        GL_TEXTURE_2D);
-  } else {
-#if BUILDFLAG(ENABLE_VULKAN)
-    backend_format =
-        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
-#else
-    NOTREACHED();
-#endif
-  }
-  auto characterization = gr_context_thread_safe->createCharacterization(
-      kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
-      kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
-  DCHECK(characterization.isValid());
+  SkSurfaceCharacterization characterization =
+      CreateSkSurfaceCharacterization(surface_size, format, mipmap);
   recorder_.emplace(characterization);
   return recorder_->getCanvas();
 }
@@ -497,6 +483,15 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
   auto ddl = recorder_->detach();
   DCHECK(ddl);
   recorder_.reset();
+  std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
+  if (show_overdraw_feedback_ && !painting_render_pass) {
+    overdraw_ddl = overdraw_surface_recorder_->detach();
+    DCHECK(overdraw_ddl);
+    overdraw_canvas_.reset();
+    nway_canvas_.reset();
+    overdraw_surface_recorder_.reset();
+  }
+
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -510,7 +505,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
     callback =
         base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
                        base::Unretained(impl_on_gpu_.get()), std::move(ddl),
-                       sync_fence_release_);
+                       std::move(overdraw_ddl), sync_fence_release_);
   }
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
@@ -606,6 +601,47 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
       CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback),
       CreateSafeCallback(client_thread_task_runner_, context_lost_callback));
   capabilities_ = impl_on_gpu_->capabilities();
+}
+
+SkSurfaceCharacterization
+SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
+    const gfx::Size& surface_size,
+    ResourceFormat format,
+    bool mipmap) {
+  auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
+  constexpr uint32_t flags = 0;
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
+  int msaa_sample_count = 0;
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
+  SkImageInfo image_info =
+      SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
+                        kPremul_SkAlphaType, nullptr /* color_space */);
+
+  // TODO(penghuang): Figure out how to choose the right size.
+  constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
+
+  GrBackendFormat backend_format;
+  if (!gpu_service_->is_using_vulkan()) {
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    unsigned int texture_storage_format = TextureStorageFormat(format);
+    backend_format = GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info, texture_storage_format),
+        GL_TEXTURE_2D);
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    backend_format =
+        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
+#else
+    NOTREACHED();
+#endif
+  }
+  auto characterization = gr_context_thread_safe->createCharacterization(
+      kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
+      kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
+  DCHECK(characterization.isValid());
+  return characterization;
 }
 
 void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
