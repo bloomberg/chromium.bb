@@ -107,7 +107,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     network::NetworkConnectionTracker* network_connection_tracker)
     : action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      chromium_api_delegate_(),
+      chromium_api_delegate_(service->io_task_runner()),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),

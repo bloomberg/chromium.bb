@@ -13,10 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace base {
-class Thread;
-}  // namespace base
-
 namespace chromeos {
 namespace assistant {
 
@@ -54,8 +50,6 @@ class DefaultURLRequestContextGetter : public ::net::URLRequestContextGetter {
   void SetProxyConfigurationInternal(const std::string& proxy_server,
                                      const std::string& bypass_list);
 
-  // |thread_| is non-null if created by this class.
-  std::unique_ptr<base::Thread> thread_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   std::unique_ptr<::net::URLRequestContext> request_context_;
 

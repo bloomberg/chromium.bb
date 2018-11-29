@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -54,7 +55,8 @@ class Service : public service_manager::Service,
                 public ash::DefaultVoiceInteractionObserver {
  public:
   Service(service_manager::mojom::ServiceRequest request,
-          network::NetworkConnectionTracker* network_connection_tracker);
+          network::NetworkConnectionTracker* network_connection_tracker,
+          scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
@@ -71,6 +73,9 @@ class Service : public service_manager::Service,
   }
 
   ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
+    return io_task_runner_;
+  }
 
   void RequestAccessToken();
 
@@ -168,6 +173,7 @@ class Service : public service_manager::Service,
   ash::AssistantStateProxy assistant_state_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

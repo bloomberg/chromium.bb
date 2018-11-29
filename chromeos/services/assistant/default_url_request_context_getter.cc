@@ -38,28 +38,12 @@ namespace chromeos {
 namespace assistant {
 
 DefaultURLRequestContextGetter::DefaultURLRequestContextGetter(
-    const std::string& network_thread_name)
-    : thread_(new base::Thread(network_thread_name)) {
-  thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  network_task_runner_ = thread_->task_runner();
-  DCHECK(network_task_runner_);
-}
-
-DefaultURLRequestContextGetter::DefaultURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-    : network_task_runner_(network_task_runner) {
+    : network_task_runner_(std::move(network_task_runner)) {
   DCHECK(network_task_runner_);
 }
 
-DefaultURLRequestContextGetter::~DefaultURLRequestContextGetter() {
-  if (request_context_) {
-    // The context should be destroyed on the network thread.
-    network_task_runner_->DeleteSoon(FROM_HERE, request_context_.release());
-  }
-  if (thread_)
-    thread_->Stop();
-}
+DefaultURLRequestContextGetter::~DefaultURLRequestContextGetter() = default;
 
 void DefaultURLRequestContextGetter::CreateContext() {
   // Context must be created on network thread since its internal objects
