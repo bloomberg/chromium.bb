@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -53,9 +52,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
     : LabelableElement(tag_name, document),
       autofill_state_(WebAutofillState::kNotFilled),
-      ancestor_disabled_state_(kAncestorDisabledStateUnknown),
       data_list_ancestor_state_(kUnknown),
-      may_have_field_set_ancestor_(true),
       has_validation_message_(false),
       will_validate_initialized_(false),
       will_validate_(true),
@@ -112,40 +109,6 @@ bool HTMLFormControlElement::FormNoValidate() const {
   return FastHasAttribute(kFormnovalidateAttr);
 }
 
-void HTMLFormControlElement::UpdateAncestorDisabledState() const {
-  if (!may_have_field_set_ancestor_) {
-    ancestor_disabled_state_ = kAncestorDisabledStateEnabled;
-    return;
-  }
-  may_have_field_set_ancestor_ = false;
-  // <fieldset> element of which |disabled| attribute affects |this| element.
-  HTMLFieldSetElement* disabled_fieldset_ancestor = nullptr;
-  ContainerNode* last_legend_ancestor = nullptr;
-  for (HTMLElement* ancestor = Traversal<HTMLElement>::FirstAncestor(*this);
-       ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
-    if (IsHTMLLegendElement(*ancestor))
-      last_legend_ancestor = ancestor;
-    if (IsHTMLFieldSetElement(*ancestor)) {
-      may_have_field_set_ancestor_ = true;
-      if (ancestor->IsDisabledFormControl()) {
-        auto* fieldset = ToHTMLFieldSetElement(ancestor);
-        if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
-          continue;
-        disabled_fieldset_ancestor = fieldset;
-        break;
-      }
-    }
-  }
-  ancestor_disabled_state_ = disabled_fieldset_ancestor
-                                 ? kAncestorDisabledStateDisabled
-                                 : kAncestorDisabledStateEnabled;
-}
-
-void HTMLFormControlElement::AncestorDisabledStateWasChanged() {
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
-  DisabledAttributeChanged();
-}
-
 void HTMLFormControlElement::Reset() {
   SetAutofillState(WebAutofillState::kNotFilled);
   ResetImpl();
@@ -195,8 +158,7 @@ void HTMLFormControlElement::DisabledAttributeChanged() {
   EventDispatchForbiddenScope event_forbidden;
 
   SetNeedsWillValidateCheck();
-  PseudoStateChanged(CSSSelector::kPseudoDisabled);
-  PseudoStateChanged(CSSSelector::kPseudoEnabled);
+  ListedElement::DisabledAttributeChanged();
   if (LayoutObject* o = GetLayoutObject())
     o->InvalidateIfControlStateChanged(kEnabledControlState);
 
@@ -299,13 +261,10 @@ void HTMLFormControlElement::DidMoveToNewDocument(Document& old_document) {
 
 Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
     ContainerNode& insertion_point) {
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
-  // Force traversal to find ancestor
-  may_have_field_set_ancestor_ = true;
   data_list_ancestor_state_ = kUnknown;
-  SetNeedsWillValidateCheck();
   HTMLElement::InsertedInto(insertion_point);
   ListedElement::InsertedInto(insertion_point);
+  SetNeedsWillValidateCheck();
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
 
   // Trigger for elements outside of forms.
@@ -319,11 +278,10 @@ void HTMLFormControlElement::RemovedFrom(ContainerNode& insertion_point) {
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
   HideVisibleValidationMessage();
   has_validation_message_ = false;
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
   data_list_ancestor_state_ = kUnknown;
-  SetNeedsWillValidateCheck();
   HTMLElement::RemovedFrom(insertion_point);
   ListedElement::RemovedFrom(insertion_point);
+  SetNeedsWillValidateCheck();
 }
 
 void HTMLFormControlElement::WillChangeForm() {
@@ -371,18 +329,13 @@ HTMLFormElement* HTMLFormControlElement::formOwner() const {
 }
 
 bool HTMLFormControlElement::IsDisabledFormControl() const {
-  if (FastHasAttribute(kDisabledAttr))
-    return true;
-
   // Since the MHTML is loaded in sandboxing mode with form submission and
   // script execution disabled, we should gray out all form control elements
   // to indicate that the form cannot be worked on.
   if (GetDocument().Fetcher()->Archive())
     return true;
 
-  if (ancestor_disabled_state_ == kAncestorDisabledStateUnknown)
-    UpdateAncestorDisabledState();
-  return ancestor_disabled_state_ == kAncestorDisabledStateDisabled;
+  return IsActuallyDisabled();
 }
 
 bool HTMLFormControlElement::MatchesEnabledPseudoClass() const {
