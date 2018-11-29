@@ -23,8 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(IOSSecurityStateTabHelper);
-
 IOSSecurityStateTabHelper::IOSSecurityStateTabHelper(web::WebState* web_state)
     : web_state_(web_state) {}
 
