@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
