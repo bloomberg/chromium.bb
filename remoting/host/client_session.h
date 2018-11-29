@@ -131,6 +131,8 @@ class ClientSession : public protocol::HostStub,
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
+  void OnDesktopDisplayChanged(
+      std::unique_ptr<protocol::VideoLayout> layout) override;
 
   // ClientSessionDetails interface.
   uint32_t desktop_session_id() const override;

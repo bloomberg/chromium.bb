@@ -71,6 +71,8 @@ class MockClientSessionControl : public ClientSessionControl {
   MOCK_METHOD1(OnLocalMouseMoved, void(const webrtc::DesktopVector&));
   MOCK_METHOD1(SetDisableInputs, void(bool));
   MOCK_METHOD0(ResetVideoPipeline, void());
+  MOCK_METHOD1(OnDesktopDisplayChanged,
+               void(std::unique_ptr<protocol::VideoLayout>));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);

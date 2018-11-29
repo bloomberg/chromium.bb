@@ -183,6 +183,10 @@ IPC_MESSAGE_CONTROL2(ChromotingDesktopNetworkMsg_CaptureResult,
                      webrtc::DesktopCapturer::Result /* result */,
                      SerializedDesktopFrame /* frame */)
 
+// Notifies the network process that the host display layout has changed.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_DisplayChanged,
+                     remoting::protocol::VideoLayout /* layout */)
+
 // Carries a cursor share update from the desktop session agent to the client.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_MouseCursor,
                      webrtc::MouseCursor /* cursor */ )

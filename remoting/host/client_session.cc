@@ -507,6 +507,51 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
   }
 }
 
+void ClientSession::OnDesktopDisplayChanged(
+    std::unique_ptr<protocol::VideoLayout> displays) {
+  // Scan display list to calculate the full desktop size.
+  int min_x = 0;
+  int max_x = 0;
+  int min_y = 0;
+  int max_y = 0;
+  int dpi_x = 0;
+  int dpi_y = 0;
+  for (int display_id = 0; display_id < displays->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = displays->video_track(display_id);
+    int x = track.position_x();
+    int y = track.position_y();
+    min_x = std::min(x, min_x);
+    min_y = std::min(y, min_y);
+    max_x = std::max(x + track.width(), max_x);
+    max_y = std::max(y + track.height(), max_y);
+
+    if (dpi_x == 0)
+      dpi_x = track.x_dpi();
+    if (dpi_y == 0)
+      dpi_y = track.y_dpi();
+  }
+
+  // Generate and send VideoLayout message.
+  protocol::VideoLayout layout;
+  protocol::VideoTrackLayout* video_track = layout.add_video_track();
+  video_track->set_position_x(0);
+  video_track->set_position_y(0);
+  video_track->set_width(max_x - min_x);
+  video_track->set_height(max_y - min_y);
+  video_track->set_x_dpi(dpi_x);
+  video_track->set_y_dpi(dpi_y);
+
+  // Add a VideoTrackLayout entry for each separate display.
+  for (int display_id = 0; display_id < displays->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout* video_track = layout.add_video_track();
+    video_track->CopyFrom(displays->video_track(display_id));
+  }
+
+  connection_->client_stub()->SetVideoLayout(layout);
+}
+
 void ClientSession::CreateFileTransferMessageHandler(
     const std::string& channel_name,
     std::unique_ptr<protocol::MessagePipe> pipe) {
