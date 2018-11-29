@@ -35,6 +35,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -57,6 +58,10 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_plugin_registry.h"
+#endif
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+#include "mojo/public/cpp/bindings/lib/test_random_mojo_delays.h"
 #endif
 
 namespace content {
@@ -207,6 +212,10 @@ int RendererMain(const MainFunctionParams& parameters) {
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+    mojo::BeginRandomMojoDelays();
+#endif
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 

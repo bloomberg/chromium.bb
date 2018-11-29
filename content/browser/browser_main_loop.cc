@@ -124,6 +124,7 @@
 #include "media/mojo/buildflags.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
@@ -242,6 +243,10 @@
 
 #if defined(ENABLE_IPC_FUZZER) && defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
+#endif
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+#include "mojo/public/cpp/bindings/lib/test_random_mojo_delays.h"
 #endif
 
 // One of the linux specific headers defines this as a macro.
@@ -1595,6 +1600,10 @@ void BrowserMainLoop::InitializeMojo() {
     parts_->ServiceManagerConnectionStarted(
         ServiceManagerConnection::GetForProcess());
   }
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+  mojo::BeginRandomMojoDelays();
+#endif
 }
 
 base::FilePath BrowserMainLoop::GetStartupTraceFileName() const {

@@ -45,8 +45,7 @@ namespace internal {
 // single message pipe.
 //
 // It is created on the sequence where the master interface of the message pipe
-// lives. Although it is ref-counted, it is guarateed to be destructed on the
-// same sequence.
+// lives.
 // Some public methods are only allowed to be called on the creating sequence;
 // while the others are safe to call from any sequence. Please see the method
 // comments for more details.
