@@ -7,23 +7,18 @@
 #include <iterator>
 #include <utility>
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/file_helper.h"
-#include "components/exo/input_method_surface.h"
 #include "components/exo/input_method_surface_manager.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/shared_memory.h"
-#include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
-#include "components/exo/xdg_shell_surface.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -37,26 +32,36 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/shell_window_ids.h"
+#include "components/exo/client_controlled_shell_surface.h"
+#include "components/exo/input_method_surface.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/xdg_shell_surface.h"
+#endif
+
 namespace exo {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() : Display(nullptr, nullptr, std::unique_ptr<FileHelper>()) {}
+Display::Display() : file_helper_(std::unique_ptr<FileHelper>()) {}
 
+#if defined(OS_CHROMEOS)
 Display::Display(NotificationSurfaceManager* notification_surface_manager,
                  InputMethodSurfaceManager* input_method_surface_manager,
                  std::unique_ptr<FileHelper> file_helper)
-    : notification_surface_manager_(notification_surface_manager),
-      input_method_surface_manager_(input_method_surface_manager),
-      file_helper_(std::move(file_helper))
+    : file_helper_(std::move(file_helper))
 #if defined(USE_OZONE)
       ,
       client_native_pixmap_factory_(
           gfx::CreateClientNativePixmapFactoryDmabuf())
-#endif
+#endif  // defined(USE_OZONE)
 {
+  notification_surface_manager_ = notification_surface_manager;
+  input_method_surface_manager_ = input_method_surface_manager;
 }
+#endif  // defined(OS_CHROMEOS)
 
 Display::~Display() {}
 
@@ -118,8 +123,9 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
       GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate,
       y_invert);
 }
-#endif
+#endif  // defined(USE_OZONE)
 
+#if defined(OS_CHROMEOS)
 std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
   TRACE_EVENT1("exo", "Display::CreateShellSurface", "surface",
                surface->AsTracedValue());
@@ -171,24 +177,6 @@ Display::CreateClientControlledShellSurface(
   return shell_surface;
 }
 
-std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
-                                                      Surface* parent) {
-  TRACE_EVENT2("exo", "Display::CreateSubSurface", "surface",
-               surface->AsTracedValue(), "parent", parent->AsTracedValue());
-
-  if (surface->window()->Contains(parent->window())) {
-    DLOG(ERROR) << "Parent is contained within surface's hierarchy";
-    return nullptr;
-  }
-
-  if (surface->HasSurfaceDelegate()) {
-    DLOG(ERROR) << "Surface has already been assigned a role";
-    return nullptr;
-  }
-
-  return std::make_unique<SubSurface>(surface, parent);
-}
-
 std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
     Surface* surface,
     const std::string& notification_key) {
@@ -203,11 +191,6 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
 
   return std::make_unique<NotificationSurface>(notification_surface_manager_,
                                                surface, notification_key);
-}
-
-std::unique_ptr<DataDevice> Display::CreateDataDevice(
-    DataDeviceDelegate* delegate) {
-  return std::make_unique<DataDevice>(delegate, &seat_, file_helper_.get());
 }
 
 std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
@@ -228,6 +211,30 @@ std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
 
   return std::make_unique<InputMethodSurface>(
       input_method_surface_manager_, surface, default_device_scale_factor);
+}
+#endif  // defined(OS_CHROMEOS)
+
+std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
+                                                      Surface* parent) {
+  TRACE_EVENT2("exo", "Display::CreateSubSurface", "surface",
+               surface->AsTracedValue(), "parent", parent->AsTracedValue());
+
+  if (surface->window()->Contains(parent->window())) {
+    DLOG(ERROR) << "Parent is contained within surface's hierarchy";
+    return nullptr;
+  }
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return std::make_unique<SubSurface>(surface, parent);
+}
+
+std::unique_ptr<DataDevice> Display::CreateDataDevice(
+    DataDeviceDelegate* delegate) {
+  return std::make_unique<DataDevice>(delegate, &seat_, file_helper_.get());
 }
 
 }  // namespace exo

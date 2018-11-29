@@ -30,15 +30,18 @@ class ClientControlledShellSurface;
 class DataDevice;
 class DataDeviceDelegate;
 class FileHelper;
-class InputMethodSurface;
 class InputMethodSurfaceManager;
 class NotificationSurface;
 class NotificationSurfaceManager;
 class SharedMemory;
-class ShellSurface;
 class SubSurface;
 class Surface;
+
+#if defined(OS_CHROMEOS)
+class InputMethodSurface;
+class ShellSurface;
 class XdgShellSurface;
+#endif
 
 #if defined(USE_OZONE)
 class Buffer;
@@ -50,9 +53,13 @@ class Buffer;
 class Display {
  public:
   Display();
+
+#if defined(OS_CHROMEOS)
   Display(NotificationSurfaceManager* notification_surface_manager,
           InputMethodSurfaceManager* input_method_surface_manager,
           std::unique_ptr<FileHelper> file_helper);
+#endif  // defined(OS_CHROMEOS)
+
   ~Display();
 
   // Creates a new surface.
@@ -71,8 +78,9 @@ class Display {
       const std::vector<gfx::NativePixmapPlane>& planes,
       bool y_invert,
       std::vector<base::ScopedFD>&& fds);
-#endif
+#endif  // defined(USE_OZONE)
 
+#if defined(OS_CHROMEOS)
   // Creates a shell surface for an existing surface.
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface);
 
@@ -86,36 +94,40 @@ class Display {
                                      int container,
                                      double default_device_scale_factor);
 
-  // Creates a sub-surface for an existing surface. The sub-surface will be
-  // a child of |parent|.
-  std::unique_ptr<SubSurface> CreateSubSurface(Surface* surface,
-                                               Surface* parent);
-
   // Creates a notification surface for a surface and notification id.
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
       Surface* surface,
       const std::string& notification_key);
 
-  // Creates a data device for a |delegate|.
-  std::unique_ptr<DataDevice> CreateDataDevice(DataDeviceDelegate* delegate);
-
   // Creates a input method surface for a surface.
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
       double default_device_scale_factor);
+#endif  // defined(OS_CHROMEOS)
+
+  // Creates a sub-surface for an existing surface. The sub-surface will be
+  // a child of |parent|.
+  std::unique_ptr<SubSurface> CreateSubSurface(Surface* surface,
+                                               Surface* parent);
+
+  // Creates a data device for a |delegate|.
+  std::unique_ptr<DataDevice> CreateDataDevice(DataDeviceDelegate* delegate);
 
   // Obtains seat instance.
   Seat* seat() { return &seat_; }
 
  private:
-  NotificationSurfaceManager* const notification_surface_manager_;
-  InputMethodSurfaceManager* const input_method_surface_manager_;
+#if defined(OS_CHROMEOS)
+  NotificationSurfaceManager* notification_surface_manager_ = nullptr;
+  InputMethodSurfaceManager* input_method_surface_manager_ = nullptr;
+#endif  // defined(OS_CHROMEOS)
+
   std::unique_ptr<FileHelper> file_helper_;
   Seat seat_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
-#endif
+#endif  // defined(USE_OZONE)
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
