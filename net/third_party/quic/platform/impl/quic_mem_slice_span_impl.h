@@ -36,6 +36,10 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
     return QuicStringPiece(buffers_[index]->data(), lengths_[index]);
   }
 
+  QuicByteCount total_length();
+
+  size_t NumSlices() { return num_buffers_; }
+
   bool empty() const { return num_buffers_ == 0; }
 
  private:
