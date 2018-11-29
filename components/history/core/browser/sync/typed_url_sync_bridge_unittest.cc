@@ -8,8 +8,8 @@
 
 #include "base/big_endian.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -502,7 +502,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
   RecordingModelTypeChangeProcessor& processor() { return *processor_; }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir test_dir_;
   scoped_refptr<TestHistoryBackend> fake_history_backend_;
   TypedURLSyncBridge* typed_url_sync_bridge_;
