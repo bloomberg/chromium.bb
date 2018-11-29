@@ -101,8 +101,10 @@ ports::ScopedEvent DeserializeEventMessage(
   auto message = UserMessageImpl::CreateFromChannelMessage(
       message_event.get(), std::move(channel_message),
       static_cast<uint8_t*>(data) + event_size, size - event_size);
-  message->set_source_node(from_node);
+  if (!message)
+    return nullptr;
 
+  message->set_source_node(from_node);
   message_event->AttachMessage(std::move(message));
   return std::move(message_event);
 }
@@ -316,6 +318,22 @@ void NodeController::NotifyBadMessageFrom(const ports::NodeName& source_node,
   scoped_refptr<NodeChannel> peer = GetPeerChannel(source_node);
   if (peer)
     peer->NotifyBadMessage(error);
+}
+
+// static
+void NodeController::DeserializeRawBytesAsEventForFuzzer(
+    base::span<const unsigned char> data) {
+  void* payload;
+  auto message = NodeChannel::CreateEventMessage(0, data.size(), &payload, 0);
+  DCHECK(message);
+  std::copy(data.begin(), data.end(), static_cast<unsigned char*>(payload));
+  DeserializeEventMessage(ports::NodeName(), std::move(message));
+}
+
+// static
+void NodeController::DeserializeMessageAsEventForFuzzer(
+    Channel::MessagePtr message) {
+  DeserializeEventMessage(ports::NodeName(), std::move(message));
 }
 
 void NodeController::SendBrokerClientInvitationOnIOThread(
