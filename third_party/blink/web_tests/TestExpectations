@@ -460,13 +460,6 @@ crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter
 crbug.com/722825 virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/876050 virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Pass Failure ]
 
-crbug.com/909694 [ Mac ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
-crbug.com/909694 [ Mac ] fast/forms/select/select-popup-pagekeys.html  [ Failure Pass ]
-crbug.com/909694 [ Mac ] fast/forms/textarea/textarea-metrics.html  [ Failure Pass ]
-crbug.com/909694 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml  [ Failure Pass ]
-crbug.com/909694 [ Mac ] virtual/mouseevent_fractional/fast/events/hit-test-clip-path-reference.html  [ Failure Pass ]
-crbug.com/909694 [ Mac ] virtual/user-activation-v2/fast/events/hit-test-clip-path-reference.html [ Failure Pass ]
-
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
