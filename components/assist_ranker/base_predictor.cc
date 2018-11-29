@@ -124,6 +124,10 @@ GURL BasePredictor::GetModelUrl() const {
   return GURL(config_.field_trial_url_param->Get());
 }
 
+float BasePredictor::GetPredictThresholdReplacement() const {
+  return config_.field_trial_threshold_replacement_param;
+}
+
 RankerExample BasePredictor::PreprocessExample(const RankerExample& example) {
   if (ranker_model_->proto().has_metadata() &&
       ranker_model_->proto().metadata().input_features_names_are_hex_hashes()) {

@@ -23,7 +23,7 @@ class GenericLogisticRegressionInference {
   // Returns a boolean decision given a RankerExample. Uses the same logic as
   // PredictScore, and then applies the model decision threshold.
   bool Predict(const RankerExample& example);
-  // Returns a score between 0 and 1 give a RankerExample.
+  // Returns a score between 0 and 1 given a RankerExample.
   float PredictScore(const RankerExample& example);
 
  private:
