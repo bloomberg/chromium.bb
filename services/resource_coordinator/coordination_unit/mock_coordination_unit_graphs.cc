@@ -14,10 +14,6 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
-namespace service_manager {
-class ServiceContextRef;
-}
-
 namespace resource_coordinator {
 
 MockSinglePageInSingleProcessCoordinationUnitGraph::

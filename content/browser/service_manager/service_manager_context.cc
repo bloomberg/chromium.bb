@@ -631,11 +631,13 @@ ServiceManagerContext::ServiceManagerContext(
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  service_manager::EmbeddedServiceInfo resource_coordinator_info;
-  resource_coordinator_info.factory =
-      base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
-  packaged_services_connection_->AddEmbeddedService(
-      resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  packaged_services_connection_->AddServiceRequestHandler(
+      resource_coordinator::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        service_manager::Service::RunUntilTermination(
+            std::make_unique<resource_coordinator::ResourceCoordinatorService>(
+                std::move(request)));
+      }));
 
   if (media_session::IsMediaSessionEnabled()) {
     service_manager::EmbeddedServiceInfo media_session_info;

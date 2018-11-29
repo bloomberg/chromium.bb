@@ -13,8 +13,8 @@ namespace resource_coordinator {
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, graph, std::move(service_ref)) {}
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
+    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() {
   // Make as if we're transitioning to the null PID before we die to clear this

@@ -13,7 +13,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -60,7 +60,7 @@ class CoordinationUnitTestHarness : public testing::Test {
       CoordinationUnitID cu_id) {
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
         CoordinationUnitClass::Create(cu_id, coordination_unit_graph(),
-                                      service_ref_factory_.CreateRef()));
+                                      service_keepalive_.CreateRef()));
   }
 
   template <class CoordinationUnitClass>
@@ -74,7 +74,7 @@ class CoordinationUnitTestHarness : public testing::Test {
   GetSystemCoordinationUnit() {
     return TestCoordinationUnitWrapper<SystemCoordinationUnitImpl>(
         coordination_unit_graph()->FindOrCreateSystemCoordinationUnit(
-            service_ref_factory_.CreateRef()));
+            service_keepalive_.CreateRef()));
   }
 
   // testing::Test:
@@ -84,9 +84,6 @@ class CoordinationUnitTestHarness : public testing::Test {
   base::test::ScopedTaskEnvironment& task_env() {
     return task_env_;
   }
-  service_manager::ServiceContextRefFactory* service_context_ref_factory() {
-    return &service_ref_factory_;
-  }
   CoordinationUnitGraph* coordination_unit_graph() {
     return &coordination_unit_graph_;
   }
@@ -94,7 +91,7 @@ class CoordinationUnitTestHarness : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
-  service_manager::ServiceContextRefFactory service_ref_factory_;
+  service_manager::ServiceKeepalive service_keepalive_;
   CoordinationUnitGraph coordination_unit_graph_;
   CoordinationUnitProviderImpl provider_;
 };
