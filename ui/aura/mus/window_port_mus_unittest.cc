@@ -125,7 +125,7 @@ TEST_F(WindowPortMusTest,
   parent_allocator->Reset(current_id);
   parent_allocator->GenerateId();
   const viz::LocalSurfaceId& updated_id =
-      parent_allocator->GetCurrentLocalSurfaceId();
+      parent_allocator->GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   ASSERT_TRUE(updated_id.is_valid());
   EXPECT_NE(updated_id, current_id);
   window.UpdateLocalSurfaceIdFromEmbeddedClient(

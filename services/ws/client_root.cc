@@ -92,7 +92,8 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
       last_device_scale_factor_ != window_->layer()->device_scale_factor()) {
     parent_local_surface_id_allocator_.GenerateId();
     server_window->set_local_surface_id(
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
     last_surface_size_in_pixels_ = size_in_pixels;
     last_device_scale_factor_ = window_->layer()->device_scale_factor();
   }

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -94,7 +95,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
       parent_local_surface_id_allocator_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
 
-  viz::LocalSurfaceId root_id_;
+  viz::LocalSurfaceIdAllocation root_id_allocation_;
   float device_scale_factor_ = 1.0f;
   std::vector<viz::SurfaceId> child_ids_;
 

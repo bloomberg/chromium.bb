@@ -157,7 +157,8 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   parent_local_surface_id_allocator_.GenerateId();
   current_surface_id_ = viz::SurfaceId(
       frame_sink_id_,
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id());
 
   surface_layer_->SetSurfaceId(current_surface_id_,
                                cc::DeadlinePolicy::UseDefaultDeadline());

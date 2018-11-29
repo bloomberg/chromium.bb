@@ -87,8 +87,9 @@ DelegatedFrameHost* BrowserCompositorMac::GetDelegatedFrameHost() {
 bool BrowserCompositorMac::ForceNewSurfaceId() {
   dfh_local_surface_id_allocator_.GenerateId();
   delegated_frame_host_->EmbedSurface(
-      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
-      cc::DeadlinePolicy::UseExistingDeadline());
+      dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
+      dfh_size_dip_, cc::DeadlinePolicy::UseExistingDeadline());
   return client_->OnBrowserCompositorSurfaceIdChanged();
 }
 
@@ -144,7 +145,8 @@ bool BrowserCompositorMac::UpdateSurfaceFromNSView(
   if (needs_new_surface_id) {
     dfh_local_surface_id_allocator_.GenerateId();
     delegated_frame_host_->EmbedSurface(
-        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         dfh_size_dip_, GetDeadlinePolicy(is_resize));
   }
 
@@ -174,7 +176,8 @@ void BrowserCompositorMac::UpdateSurfaceFromChild(
                                             dfh_display_.device_scale_factor());
     }
     delegated_frame_host_->EmbedSurface(
-        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         dfh_size_dip_, GetDeadlinePolicy(true /* is_resize */));
   }
   client_->OnBrowserCompositorSurfaceIdChanged();
@@ -368,7 +371,8 @@ void BrowserCompositorMac::DidNavigate() {
       dfh_local_surface_id_allocator_.GenerateId();
     }
     delegated_frame_host_->EmbedSurface(
-        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         dfh_size_dip_, cc::DeadlinePolicy::UseExistingDeadline());
     client_->OnBrowserCompositorSurfaceIdChanged();
   }

@@ -97,7 +97,8 @@ class VideoDetectorTest : public testing::Test {
     root_frame_sink_ = CreateFrameSink();
     parent_local_surface_id_allocator_.GenerateId();
     root_frame_sink_->SubmitCompositorFrame(
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
         MakeDefaultCompositorFrame());
   }
 
@@ -149,8 +150,9 @@ class VideoDetectorTest : public testing::Test {
         frame_sink->last_activated_local_surface_id();
     if (!local_surface_id.is_valid()) {
       parent_local_surface_id_allocator_.GenerateId();
-      local_surface_id =
-          parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+      local_surface_id = parent_local_surface_id_allocator_
+                             .GetCurrentLocalSurfaceIdAllocation()
+                             .local_surface_id();
     }
     frame_sink->SubmitCompositorFrame(local_surface_id,
                                       MakeDamagedCompositorFrame(damage));
