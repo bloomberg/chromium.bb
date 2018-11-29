@@ -24,7 +24,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -91,43 +90,6 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   url_params.user_gesture = handle->HasUserGesture();
   url_params.started_from_context_menu = handle->WasStartedFromContextMenu();
   return url_params;
-}
-
-// This is called on |WillStartRequest| to check whether the given |handle| is
-// for a navigation that was started by this preview. If it was, the penalty
-// (time between the original navigation start and the navigation start of
-// |handle|) is reported to PLM.
-void MaybeReportNavigationRestartPenalty(content::NavigationHandle* handle) {
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(handle->GetWebContents());
-  if (!ui_tab_helper)
-    return;
-
-  previews::PreviewsUserData* previews_data =
-      ui_tab_helper->GetPreviewsUserData(handle);
-  if (!previews_data)
-    return;
-
-  previews::PreviewsUserData::ServerLitePageInfo* info =
-      previews_data->server_lite_page_info();
-  if (!info)
-    return;
-
-  DCHECK_GT(info->original_navigation_start, base::TimeTicks());
-  base::TimeDelta penalty =
-      handle->NavigationStart() - info->original_navigation_start;
-
-  bool updated = page_load_metrics::MetricsWebContentsObserver::FromWebContents(
-                     handle->GetWebContents())
-                     ->ReportNavigationRestartPenalty(handle, penalty);
-  DCHECK(updated);
-  if (updated) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", penalty);
-  } else {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", penalty);
-  }
 }
 
 // Gets the ServerLitePageInfo struct from an existing attempted lite page
@@ -581,7 +543,6 @@ PreviewsLitePageNavigationThrottle::WillStartRequest() {
     return content::NavigationThrottle::CANCEL;
   }
 
-  MaybeReportNavigationRestartPenalty(navigation_handle());
   return MaybeNavigateToPreview();
 }
 
