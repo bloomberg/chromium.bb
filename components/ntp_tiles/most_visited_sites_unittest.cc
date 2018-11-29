@@ -17,11 +17,11 @@
 #include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
@@ -535,7 +535,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
       suggestions_service_callbacks_;
   TopSitesCallbackList top_sites_callbacks_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   PopularSitesFactoryForTest popular_sites_factory_;
   scoped_refptr<StrictMock<MockTopSites>> mock_top_sites_;
