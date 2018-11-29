@@ -133,6 +133,7 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     if (consumer)
       return static_cast<Window*>(consumer);
 
+#if defined(OS_CHROMEOS)
     // If the initial touch is outside the window's display, target the root.
     // This is used for bezel gesture events (eg. swiping in from screen edge).
     display::Display display =
@@ -145,6 +146,12 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     }
     if (!display.bounds().Contains(screen_location))
       return root_window;
+#else
+    // If the initial touch is outside the root window, target the root.
+    // TODO: this code is likely not necessarily and will be removed.
+    if (!root_window->bounds().Contains(event.location()))
+      return root_window;
+#endif
   }
 
   return nullptr;
