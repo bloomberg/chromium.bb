@@ -76,7 +76,6 @@
 <translation id="209018056901015185">డెస్క్‌టాప్ సైట్‌ను అభ్యర్థించు</translation>
 <translation id="2103075008456228677">history.google.com తెరువు</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తరలించబడ్డాయి</translation>
-<translation id="2120297377148151361">కార్యకలాపం మరియు పరస్పర చర్యలు</translation>
 <translation id="213900355088104901">ప్రైవేట్‌గా బ్రౌజ్ చేయాలంటే, అజ్ఞాత ట్యాబ్‌ని తెరవండి</translation>
 <translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
 <translation id="2207590065820824892">చదవాల్సిన జాబితాలో <ph name="UNREAD_COUNT" /> కథనాలు ఉన్నాయి.</translation>
@@ -200,10 +199,10 @@
 <translation id="4121993058175073134">నికర ఎగుమతి డేటాను పంపడానికి, దయచేసి సెట్టింగ్‌ల అనువర్తనంలో మీ ఇమెయిల్ ఖాతాను కాన్ఫిగర్ చేయండి.</translation>
 <translation id="4124987746317609294">సమయ పరిధి</translation>
 <translation id="4172051516777682613">ఎల్లప్పుడూ చూపు</translation>
-<translation id="418156467088430727">కొత్త ట్యాబ్‌లో ఆఫ్‌లైన్ సంస్కరణను వీక్షించండి</translation>
+<translation id="418156467088430727">కొత్త ట్యాబ్‌లో ఆఫ్‌లైన్ వెర్ష‌న్‌ను వీక్షించండి</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome సమకాలీకరణ మరియు వ్యక్తిగతీకరణను నిర్వహించండి</translation>
 <translation id="424315890655130736">రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
-<translation id="4272631900155121838">QR కోడ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌లలో కెమెరాను ప్రారంభించండి</translation>
+<translation id="4272631900155121838">QR కోడ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌ల్లో కెమెరాను ప్రారంభించండి</translation>
 <translation id="4281844954008187215">సేవా నిబంధనలు</translation>
 <translation id="430793432425771671">ప్రతి ఒక్కటీ సమకాలీకరించండి</translation>
 <translation id="4342284590510997375">కొత్తది</translation>
@@ -301,7 +300,7 @@
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
 <translation id="5938160824633642847">మీ పరికరం దాదాపు నిండింది. స్థలాన్ని ఖాళీ చేసిన తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="5948291296578561264">ఇది మీ ఫోటో లైబ్రరీకి ఫోటోలను సేవ్ చేయడానికి మీకు వీలు కల్పిస్తుంది.</translation>
-<translation id="5955891643922670672">ఆఫ్‌లైన్ సంస్కరణను వీక్షిస్తున్నారు</translation>
+<translation id="5955891643922670672">ఆఫ్‌లైన్ వెర్ష‌న్‌ను వీక్షిస్తున్నారు</translation>
 <translation id="5964480694698977962">కొత్త అజ్ఞాత ట్యాబ్‌ను సృష్టించండి.</translation>
 <translation id="5965679971710331625">మీరు సైన్ ఇన్ చేసారు</translation>
 <translation id="5979837087407522202">పాస్‌వర్డ్‌లను వెతుకు</translation>
@@ -372,7 +371,6 @@
 <translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="7004499039102548441">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="7006788746334555276">కంటెంట్ సెట్టింగ్‌లు</translation>
-<translation id="7017968314960951695">వ్యక్తిగతీకరణ కోసం మీరు సందర్శించే సైట్‌లలోని కంటెంట్ మరియు బ్రౌజర్ కార్యకలాపం మరియు పరస్పర చర్యలను ఉపయోగిస్తుంది.</translation>
 <translation id="7029809446516969842">పాస్‌వర్డ్‌లు</translation>
 <translation id="7031882061095297553">వీటికి సమకాలీకరించండి</translation>
 <translation id="7053983685419859001">నిరోధించు</translation>

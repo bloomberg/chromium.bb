@@ -19,7 +19,6 @@
 <translation id="1026822031284433028">بارگیری تصویر</translation>
 <translation id="1029317248976101138">بزرگ‌نمایی</translation>
 <translation id="1030706264415084469"><ph name="URL" /> می‌خواهد داده‌های بزرگ را برای همیشه در دستگاهتان ذخیره کند</translation>
-<translation id="1030889518049751641">مشاهده گزارش فعالیت</translation>
 <translation id="1031362278801463162">بارگیری پیش‌نمایش</translation>
 <translation id="103279545524624934">‏برای راه‌اندازی برنامه‌های Android فضای دیسک را خالی کنید.</translation>
 <translation id="1033780634303702874">دسترسی به دستگاه‌های سریال خودتان</translation>
@@ -429,7 +428,6 @@
 <translation id="1616206807336925449">این برنامه افزودنی به مجوز خاصی نیاز ندارد.</translation>
 <translation id="1616298854599875024">نمی‌توان افزونه «<ph name="IMPORT_NAME" />» را وارد کرد زیرا مدول هم‌رسانی‌شده‌ای نیست.</translation>
 <translation id="1618268899808219593">مرکز را&amp;هنمایی</translation>
-<translation id="162035744160882748">‏روشن کردن همگام‌سازی، شخصی‌سازی و سرویس‌های دیگر Google</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623132449929929218">درحال‌حاضر تصاویر دردسترس نیستند. برای دیدن مجموعه‌های کاغذدیواری دوباره به اینترنت متصل شوید.</translation>
 <translation id="1624026626836496796">این اطلاعات تنها یک‌بار از شما درخواست می‌شود و اطلاعات کاربری شما ذخیره نمی‌شوند.</translation>
@@ -616,7 +614,6 @@
 <translation id="1875312262568496299">شروع</translation>
 <translation id="1875387611427697908">این مورد را فقط می‌توان از <ph name="CHROME_WEB_STORE" /> اضافه کرد</translation>
 <translation id="1877520246462554164">کد احراز هویت دریافت نشد. لطفاً از سیستم خارج شوید و برای امتحان مجدد دوباره به سیستم وارد شوید.</translation>
-<translation id="1878302395768190018">‏هرزمان بخواهید می‌توانید این گزینه را در «تنظیمات Chrome» سفارشی کنید</translation>
 <translation id="1879000426787380528">ورود به سیستم به‌عنوان</translation>
 <translation id="1880905663253319515">مجوز "<ph name="CERTIFICATE_NAME" />" حذف شود؟</translation>
 <translation id="1886996562706621347">به سایت‌ها اجازه داده شود درخواست کنند که کنترل‌کننده پیش‌فرض برای پروتکل‌ها شوند (توصیه می‌شود)</translation>
@@ -1642,7 +1639,6 @@
 <translation id="3487007233252413104">تابع ناشناس</translation>
 <translation id="348780365869651045">‏در حال انتظار برای AppCache...</translation>
 <translation id="3488065109653206955">به‌طور نسبی فعال شده است</translation>
-<translation id="348999362308956431">بارگیری کامل شد: <ph name="FILE_NAME" /></translation>
 <translation id="3492788708641132712">همگام‌سازی کار نمی‌کند. دوباره به سیستم وارد شوید.</translation>
 <translation id="3493881266323043047">اعتبار</translation>
 <translation id="3494769164076977169">وقتی سایتی تلاش می‌کند بعد از اولین فایل، فایل‌ها را به‌طور خودکار بارگیری کند سؤال شود (توصیه می‌شود)</translation>
@@ -2110,7 +2106,6 @@
 <translation id="4181602000363099176">۲۰ برابر</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
 <translation id="4184885522552335684">کشیدن برای انتقال نمایشگر</translation>
-<translation id="4192273449750167573">تنظیماتتان را در صفحه بعد مرور کنید</translation>
 <translation id="4193154014135846272">‏سند Google </translation>
 <translation id="4194570336751258953">فعال کردن ضربه بجای کلیک</translation>
 <translation id="4195249722193633765">‏نصب برنامه با Linux (بتا)</translation>
@@ -2237,7 +2232,6 @@
 <translation id="4415748029120993980">‏منحنی بیضوی SECG مدل secp384r1 (به‌ نام NIST P-384)</translation>
 <translation id="4416582610654027550">نشانی وب معتبری تایپ کنید</translation>
 <translation id="4419409365248380979">همیشه به <ph name="HOST" /> اجازه دهید کوکی‌ها را تنظیم کند</translation>
-<translation id="4419556793104466535">کنترل همگام‌سازی، شخصی‌سازی و موارد دیگر</translation>
 <translation id="4421932782753506458">پشمالو</translation>
 <translation id="4422347585044846479">ویرایش نشانک برای این صفحه</translation>
 <translation id="4423376891418188461">بازیابی تنظیمات</translation>
@@ -2376,7 +2370,6 @@
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> برای کاربران مهمان دردسترس نیست.</translation>
 <translation id="4641539339823703554">‏Chrome نمی‌تواند زمان سیستم را تنظیم کند. لطفاً زمان را در زیر بررسی کرده و در صورت لزوم آن را درست کنید.</translation>
 <translation id="4643612240819915418">&amp;باز کردن فایل ویدئویی در برگهٔ جدید</translation>
-<translation id="4644818355646995778">درحال بارگیری، <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">&amp;حفظ</translation>
 <translation id="4647090755847581616">&amp;بستن برگه </translation>
 <translation id="4647697156028544508">لطفاً پین را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
@@ -2750,7 +2743,6 @@
 <translation id="5235750401727657667">جایگزین کردن صفحه‌ای که هنگام باز کردن برگه جدید می‌بینید</translation>
 <translation id="5238278114306905396">برنامه «<ph name="EXTENSION_NAME" />» به‌طور خودکار حذف شد.</translation>
 <translation id="5238369540257804368">حوزه‌ها</translation>
-<translation id="5240817131241497236">‏تنظیماتی که همگام‌سازی، شخصی‌سازی و سرویس‌های دیگر Google در Chrome را کنترل می‌کند تغییر کرده است. این تغییر ممکن است روی تنظیمات فعلی تأثیر گذارد.</translation>
 <translation id="5241128660650683457">خواندن همه داده‌هایتان در وب‌سایت‌هایی که بازدید می‌کنید</translation>
 <translation id="5242724311594467048">«<ph name="EXTENSION_NAME" />» فعال شود؟</translation>
 <translation id="5243522832766285132">چند لحظه دیگر دوباره امتحان کنید</translation>
@@ -2906,7 +2898,6 @@
 <translation id="5449551289610225147">گذرواژه نامعتبر است</translation>
 <translation id="5449588825071916739">نشانک‌گذاری همه برگه‌ها...</translation>
 <translation id="5449716055534515760">بستن &amp;پنجره</translation>
-<translation id="5451285724299252438">کادر متنی محدوده صفحه</translation>
 <translation id="5453029940327926427">بستن برگه‌ها</translation>
 <translation id="5454166040603940656">با <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">نامعتبر</translation>
@@ -2999,7 +2990,6 @@
 <translation id="5575528586625653441">مشکلی در رابطه با درخواست ثبت حالت نمایشی پیش آمد.</translation>
 <translation id="557722062034137776">‏بازنشانی دستگاهتان بر حساب‌های Google شما یا هر گونه داده همگام‌سازی شده با این حساب‌ها تأثیری نمی‌گذارد. اگرچه، همه فایل‌هایی که به‌صورت محلی در دستگاهتان ذخیره شده‌اند، حذف خواهند شد.</translation>
 <translation id="5578059481725149024">ورود به سیستم خودکار</translation>
-<translation id="5581700288664681403">بارگیری <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">‏تأیید درایور سخت‌افزار Microsoft Windows</translation>
 <translation id="5582839680698949063">منوی اصلی</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -3838,7 +3828,6 @@
 <translation id="6841186874966388268">خطاها</translation>
 <translation id="6843423766595476978">‏Ok Google کاملاً آماده است</translation>
 <translation id="6845038076637626672">باز کردن در حداکثر اندازه</translation>
-<translation id="685040365210406336">تغییری ایجاد نشود</translation>
 <translation id="6851497530878285708">برنامه فعال شد</translation>
 <translation id="6853388645642883916">به‌روزرسان در حالت خواب</translation>
 <translation id="68541483639528434">بستن برگه‌های دیگر</translation>
@@ -3999,7 +3988,6 @@
 <translation id="7093434536568905704">GTK+‎</translation>
 <translation id="7093866338626856921">تبادل داده با دستگاه‌هایی با نام‌های: <ph name="HOSTNAMES" /></translation>
 <translation id="7094583680070770403">لطفاً فایل‌های محلی‌تان را ذخیره کنید و حساب جدیدی راه‌اندازی کنید.</translation>
-<translation id="7096857570999173890">وقتی از سیستم خارج شدید، می‌توانید از پین برای باز کردن قفل دستگاه استفاده کنید.</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="7098447629416471489">سایر موتورهای جستجوی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
 <translation id="7099337801055912064">‏فایل PPD بزرگ است و بار نمی‌شود. حداکثر اندازه ۲۵۰ کیلوبایت است.</translation>
@@ -4490,7 +4478,6 @@
 <translation id="7831491651892296503">خطا در پیکربندی شبکه</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">زمان پایان</translation>
-<translation id="7832327313660264358">‏داده‌هایی که با Google همگام‌سازی می‌کنید و قابلیت‌هایی که استفاده می‌کنید تغییر نخواهد کرد.</translation>
 <translation id="7833720883933317473">کلمات سفارشی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
 <translation id="7835178595033117206">نشانک حذف شد</translation>
 <translation id="7837307963048806839">•  $1</translation>
@@ -4600,7 +4587,6 @@
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="7984068253310542383">نمایش <ph name="DISPLAY_NAME" /> روی دستگاه دیگر</translation>
 <translation id="7986295104073916105">خواندن و تغییر تنظیمات گذرواژه ذخیره شده</translation>
-<translation id="7987764905897278458">‏دریافت هوشمندی‌های بیشتری از Google</translation>
 <translation id="7987814697832569482">‏همیشه ازطریق این VPN اتصال برقرار شود</translation>
 <translation id="798835209536175951">‏ارسال و دریافت پیامک از Chromebook. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">فعالسازی ویژگی‌های دسترسی</translation>
@@ -5016,7 +5002,6 @@
 <translation id="8650543407998814195">هرچند دیگر نمی‌توانید به نمایه قدیمی‌تان دسترسی داشته باشید اما همچنان می‌توانید آن را حذف کنید.</translation>
 <translation id="8651585100578802546">تازه سازی اجباری این صفحه</translation>
 <translation id="8652400352452647993">خطا در بسته‌بندی افزونه</translation>
-<translation id="8652487083013326477">دکمه رادیویی محدوده صفحه</translation>
 <translation id="8654151524613148204">فایل برای استفاده در رایانهٔ شما خیلی بزرگ است. متأسفیم.</translation>
 <translation id="8655295600908251630">کانال</translation>
 <translation id="8655319619291175901">اوه...مشکلی پیش آمده است.</translation>

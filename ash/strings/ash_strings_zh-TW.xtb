@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">收合選單</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1419738280318246476">解鎖裝置即可執行通知動作</translation>
+<translation id="1455242230282523554">顯示語言設定</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{顯示通知設定。已關閉一個應用程式的通知}other{顯示通知設定。已關閉 # 個應用程式的通知}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">目前還沒有任何通知</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3454224730401036106">已切換至更安全的網路連線</translation>
+<translation id="3465223694362104965">這個裝置自你上次登入後接上了另外一組鍵盤。使用前請確認你信任該組鍵盤。</translation>
 <translation id="3477079411857374384">Ctrl + Shift + 空格鍵</translation>
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
 <translation id="3510503721818156981">Chromebook 已連上新手機</translation>

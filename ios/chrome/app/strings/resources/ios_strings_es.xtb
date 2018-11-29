@@ -76,7 +76,6 @@
 <translation id="209018056901015185">Ver como ordenador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
-<translation id="2120297377148151361">Actividad e interacciones</translation>
 <translation id="213900355088104901">Para navegar en privado, abre una pestaña de incógnito</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos de la lista de lectura no leídos.</translation>
@@ -318,6 +317,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="6127379762771434464">Elemento quitado</translation>
 <translation id="6136914049981179737">Hace segundos</translation>
 <translation id="616831107264507309">Leer más adelante</translation>
+<translation id="6177442314419606057">Buscar en Chrome</translation>
 <translation id="6184086493125982861">Mostrar pestañas</translation>
 <translation id="6187302354554850004">Última sincronización: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">No leídas</translation>
@@ -372,7 +372,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
-<translation id="7017968314960951695">Utiliza el contenido de los sitios web que visitas, así como las interacciones y la actividad del navegador, para ofrecer una experiencia personalizada</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -417,6 +416,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7769602470925380267">Aceptar y cerrar sesión</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
 <translation id="7781829728241885113">Ayer</translation>
+<translation id="778855399387580014">Inicia una búsqueda en una nueva pestaña de Chrome.</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7840771868269352570">Se eliminarán los elementos que hayas seleccionado.</translation>
 <translation id="7856733331829174190">No se ha podido descargar</translation>

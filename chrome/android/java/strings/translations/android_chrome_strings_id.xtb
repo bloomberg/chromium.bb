@@ -72,7 +72,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1445680696957526815">Komponen Chrome tidak kompatibel dengan satu sama lain. Chrome mungkin ditingkatkan versinya, coba lagi dalam beberapa menit. Jika masalah terus berlanjut, coba uninstal dan instal ulang.</translation>
 <translation id="1446450296470737166">Izinkan kontrol penuh perangkat MIDI</translation>
 <translation id="145097072038377568">Dinonaktifkan di Setelan Android</translation>
-<translation id="1469898724493126466">Menemukan yang terbaik dari web.</translation>
 <translation id="1477626028522505441">Download <ph name="FILE_NAME" /> gagal karena masalah server.</translation>
 <translation id="1501480321619201731">Hapus grup</translation>
 <translation id="1506061864768559482">Mesin telusur</translation>
@@ -87,7 +86,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1571304935088121812">Salin nama pengguna</translation>
 <translation id="1576370611341449972">Download hanya dapat dilakukan di Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk memindai perangkat. Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Aktifkan sinkronisasi, personalisasi, dan layanan Google lainnya</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari halaman ini.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hapus 1 item yang dipilih}other{Hapus # item yang dipilih}}</translation>
@@ -117,7 +115,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="1868024384445905608">Chrome sekarang mendownload file lebih cepat</translation>
 <translation id="187628348035757895">Opsi developer</translation>
-<translation id="1878302395768190018">Anda dapat menyesuaikan ini kapan saja di Setelan Chrome</translation>
 <translation id="1880072593381090678">Halaman populer dari Chrome</translation>
 <translation id="1883903952484604915">File Saya</translation>
 <translation id="1887786770086287077">Akses lokasi dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -360,7 +357,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download dihapus</translation>
 <translation id="3819562311292413223">Mendownload artikel untuk Anda</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
-<translation id="385051799172605136">Mundur</translation>
 <translation id="3859306556332390985">Cari maju</translation>
 <translation id="3868004864571585162">Cookie, lisensi media, dan data situs</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -407,7 +403,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> digunakan</translation>
 <translation id="4181841719683918333">Bahasa</translation>
-<translation id="4192273449750167573">Lihat setelan Anda di layar berikutnya</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198423547019359126">Tidak tersedia lokasi download</translation>
 <translation id="4209895695669353772">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, aktifkan sinkronisasi</translation>
@@ -431,7 +426,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4398088515904522762">Untuk menggunakan fitur ini, aktifkan <ph name="BEGIN_LINK" />Aktivitas dan interaksi<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Tidak ada bookmark</translation>
 <translation id="4409723563706114196">Gunakan prediksi halaman</translation>
-<translation id="4419556793104466535">Mengontrol sinkronisasi, personalisasi, dan lainnya</translation>
 <translation id="4432792777822557199">Mulai sekarang, halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">Halaman ringan yang ditampilkan oleh Google.</translation>
 <translation id="4434045419905280838">Pop-up dan pengalihan</translation>
@@ -546,7 +540,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5222676887888702881">Logout</translation>
 <translation id="5224771365102442243">Dengan video</translation>
 <translation id="5233638681132016545">Tab baru</translation>
-<translation id="5240817131241497236">Setelan yang mengontrol sinkronisasi, personalisasi, dan layanan Google lainnya di Chrome telah berubah. Ini dapat memengaruhi setelan saat ini.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan kapan saja. Google dapat menggunakan konten di situs yang Anda buka, serta interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan.</translation>
 <translation id="5271967389191913893">Perangkat tidak dapat membuka konten untuk didownload.</translation>
 <translation id="5274381992091475657">Asisten IsiOtomatis</translation>
@@ -586,7 +579,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5512137114520586844">Akun ini dikelola oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dinonaktifkan oleh administrator perangkat</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat sandi Anda</translation>
-<translation id="5515716148775388141">Ikon telah dipindahkan ke bagian bawah layar</translation>
 <translation id="5517095782334947753">Anda memiliki bookmark, histori, sandi, dan setelan lain dari <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Pengalihan diblokir.</translation>
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK1" />Perbarui izin<ph name="END_LINK1" />. Akses lokasi juga <ph name="BEGIN_LINK2" />dinonaktifkan untuk perangkat ini<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6112702117600201073">Menyegarkan halaman</translation>
 <translation id="6127379762771434464">Item dihapus</translation>
 <translation id="6140912465461743537">Negara/Wilayah</translation>
+<translation id="614940544461990577">Coba:</translation>
 <translation id="6154478581116148741">Aktifkan kunci layar di Setelan untuk mengekspor sandi dari perangkat ini</translation>
 <translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -773,7 +766,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6846298663435243399">Memuat…</translation>
-<translation id="685040365210406336">Jangan lakukan perubahan</translation>
 <translation id="6850409657436465440">Download sedang berlangsung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tab ditutup</translation>
 <translation id="6864459304226931083">Download gambar</translation>
@@ -827,6 +819,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
 <translation id="7189598951263744875">Bagikan...</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
+<translation id="7221869452894271364">Muat ulang halaman ini</translation>
 <translation id="723171743924126238">Pilih gambar</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
@@ -902,7 +895,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penghematan data Anda akan terlihat di sini</translation>
-<translation id="7832327313660264358">Data yang Anda sinkronkan ke Google dan fitur yang Anda gunakan tidak akan berubah</translation>
 <translation id="7837721118676387834">Izinkan pemutaran otomatis video yang dibisukan untuk situs tertentu.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
@@ -921,7 +913,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="79859296434321399">Untuk melihat konten augmented reality, instal ARCore</translation>
 <translation id="7986741934819883144">Pilih kontak</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
-<translation id="7987764905897278458">Dapatkan kecanggihan Google lainnya</translation>
 <translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
 <translation id="7999064672810608036">Yakin ingin menghapus semua data lokal, termasuk cookie, dan menyetel ulang semua izin untuk situs web ini?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -998,7 +989,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="851751545965956758">Blokir situs agar tidak terhubung ke perangkat</translation>
 <translation id="8523928698583292556">Hapus sandi tersimpan</translation>
 <translation id="854522910157234410">Buka halaman ini</translation>
-<translation id="8555322348396635979">Maaf, terjadi masalah. Harap periksa koneksi Anda.</translation>
 <translation id="8558485628462305855">Untuk melihat konten augmented reality, update ARCore</translation>
 <translation id="8559990750235505898">Tawarkan penerjemahan halaman ke dalam bahasa lain</translation>
 <translation id="8562452229998620586">Sandi yang disimpan akan muncul di sini.</translation>

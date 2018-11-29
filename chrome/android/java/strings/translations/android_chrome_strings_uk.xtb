@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">Компоненти Chrome несумісні одне з одним. Веб-переглядач може оновлюватися, спробуйте через декілька хвилин. Якщо проблема не зникне, видаліть Chrome і встановіть його знову.</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
 <translation id="145097072038377568">Вимкнено в налаштуваннях Android</translation>
-<translation id="1469898724493126466">Шукаємо вміст в Інтернеті.</translation>
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1501480321619201731">Видалити групу</translation>
 <translation id="1506061864768559482">Пошукова система</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">Копіювати ім’я користувача</translation>
 <translation id="1576370611341449972">Завантаження відбувається лише через Wi-Fi</translation>
 <translation id="1612196535745283361">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Увімкнути синхронізацію, персоналізацію й інші служби Google</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Вилучити 1 вибраний елемент}one{Вилучити # вибраний елемент}few{Вилучити # вибрані елементи}many{Вилучити # вибраних елементів}other{Вилучити # вибраного елемента}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
 <translation id="187628348035757895">Параметри розробника</translation>
-<translation id="1878302395768190018">Це можна будь-коли змінити в налаштуваннях Chrome</translation>
 <translation id="1880072593381090678">Популярні сторінки з Chrome</translation>
 <translation id="1883903952484604915">Мої файли</translation>
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Завантажувати статті для вас</translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
-<translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Далі</translation>
 <translation id="3868004864571585162">Файли сookie, ліцензії медіа-вмісту й дані із сайтів</translation>
 <translation id="3894427358181296146">Додати папку</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4179980317383591987">Використано <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Мови</translation>
-<translation id="4192273449750167573">Перегляньте налаштування на наступному екрані</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4198423547019359126">Немає доступних місць для завантаження</translation>
 <translation id="4209895695669353772">Щоб отримувати персоналізовані пропозиції від Google, увімкніть синхронізацію</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">Щоб користуватися цією функцією, увімкніть опцію <ph name="BEGIN_LINK" />Активність і взаємодії<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Немає закладок</translation>
 <translation id="4409723563706114196">Використання передбачень сторінки</translation>
-<translation id="4419556793104466535">Керування синхронізацією, персоналізацією тощо</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">Спрощену сторінку надає Google</translation>
 <translation id="4434045419905280838">Спливаючі вікна й переадресація</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5224771365102442243">З відео</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
-<translation id="5240817131241497236">Змінилися налаштування, які керують синхронізацією, персоналізацією й іншими службами Google у Chrome. Це може вплинути на поточні налаштування.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Налаштування<ph name="END_LINK1" /> можна будь-коли змінити. Google може використовувати вміст відвіданих сайтів, дані веб-перегляду й інші дії, щоб персоналізувати Chrome та інші сервіси Google, як-от Перекладач, Пошук і оголошення.</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="5274381992091475657">Асистент автозаповнення</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">Цим обліковим записом керує <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Вимкнено адміністратором пристрою</translation>
 <translation id="5515439363601853141">Розблокуйте, щоб переглянути пароль</translation>
-<translation id="5515716148775388141">Значки переміщено вниз екрана</translation>
 <translation id="5517095782334947753">У вас є закладки, історія, паролі й інші налаштування з облікового запису <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Переспрямування заблоковано.</translation>
 <translation id="5527082711130173040">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. <ph name="BEGIN_LINK1" />Оновити дозволи<ph name="END_LINK1" />. Доступ до геоданих також <ph name="BEGIN_LINK2" />вимкнено на цьому пристрої<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">Оновлення сторінки</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6140912465461743537">Країна або регіон</translation>
+<translation id="614940544461990577">Спробуйте:</translation>
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Докладніше</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6846298663435243399">Завантаження…</translation>
-<translation id="685040365210406336">Не вносити зміни</translation>
 <translation id="6850409657436465440">Завантаження ще триває</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">Сервіси Google Play оновлюються</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
+<translation id="7221869452894271364">Перезавантажити цю сторінку</translation>
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
-<translation id="7832327313660264358">Синхронізовані з Google дані та функції, що використовуються, не зміняться.</translation>
 <translation id="7837721118676387834">Дозволити автоматичне відтворення відео з вимкненим звуком для певних сайтів.</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="784934925303690534">Період часу</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">Щоб переглядати вміст у режимі доповненої реальності, установіть ARCore</translation>
 <translation id="7986741934819883144">Виберіть контакт</translation>
 <translation id="7987073022710626672">Умови використання Google Chrome</translation>
-<translation id="7987764905897278458">Отримайте більше розумних функцій Google</translation>
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
 <translation id="8004582292198964060">Переглядач</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">Заборонити сайтам підключатися до пристроїв</translation>
 <translation id="8523928698583292556">Видалити збережений пароль</translation>
 <translation id="854522910157234410">Відкрити цю сторінку</translation>
-<translation id="8555322348396635979">На жаль, сталася помилка. Перевірте з’єднання.</translation>
 <translation id="8558485628462305855">Щоб переглядати вміст у режимі доповненої реальності, оновіть ARCore</translation>
 <translation id="8559990750235505898">Пропозиція перекладати сторінки іншими мовами</translation>
 <translation id="8562452229998620586">Тут відображатимуться збережені паролі.</translation>

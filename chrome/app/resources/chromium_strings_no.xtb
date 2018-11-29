@@ -32,6 +32,7 @@
 <translation id="2008474315282236005">Dette sletter 1 element fra denne enheten. For å hente dataene dine igjen senere må du logge på Chromium som <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Administratoren din ber deg om å starte Chromium på nytt for at denne oppdateringen skal tas i bruk</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
+<translation id="2178765360243863853">Du bør starte Chromium på nytt nå</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="2265088490657775772">få Chromium på iPhone</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
@@ -108,6 +109,7 @@
 <translation id="4708774505295300557">Noen har tidligere logget på Chromium på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chromium-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="4714956846925717402">Kom deg raskere til Chromium</translation>
 <translation id="4746050847053251315">Vil du avslutte Chromium likevel?</translation>
+<translation id="4748217263233248895">En spesiell sikkerhetsoppdatering for Chromium ble nettopp installert. Start på nytt nå, så gjenoppretter vi fanene dine.</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="4943838377383847465">Chromium er i bakgrunnsmodus.</translation>
 <translation id="4987820182225656817">Gjester kan bruke Chromium uten å etterlate seg spor.</translation>

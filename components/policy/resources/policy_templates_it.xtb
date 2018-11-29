@@ -273,6 +273,9 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
 <translation id="1810261428246410396">Consenti l'uso del tethering istantaneo.</translation>
+<translation id="1817685358399181673">Questa norma consente di specificare l'immagine <ph name="PLUGIN_VM_NAME" /> per un utente. Per impostare la norma, devi specificare l'URL da cui scaricare l'immagine e specificare l'hash SHA-256 utilizzato per verificare l'integrità del download.
+
+      La norma deve essere specificata sotto forma di stringa contenente l'URL e l'hash in formato JSON.</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
 <translation id="1843117931376765605">Frequenza di aggiornamento per norma utente</translation>
 <translation id="1844620919405873871">Consente di configurare le norme relative allo sblocco rapido.</translation>
@@ -429,6 +432,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="214901426630414675">Limita la modalità di stampa fronte/retro</translation>
 <translation id="2149330464730004005">Attiva la stampa a colori</translation>
 <translation id="2156132677421487971">Consente di configurare le norme per <ph name="PRODUCT_NAME" />, una funzione che permette agli utenti di inviare i contenuti di schede, siti o del desktop dal browser a schermi remoti e sistemi audio.</translation>
+<translation id="2163878108829382394">
+        Se questa norma viene impostata su true, la registrazione alla gestione della cloud è obbligatoria e, in caso di esito negativo, viene bloccato il processo di avvio di Chrome.
+
+        Se questa norma non viene impostata o viene impostata su false, la registrazione alla gestione della cloud è facoltativa e, in caso di esito negativo, non viene bloccato il processo di avvio di Chrome.</translation>
 <translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
@@ -644,6 +651,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
+<translation id="2696531058295423290">Consente ai dispositivi di utilizzare <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="2742843273354638707">Consente di nascondere l'app Chrome Web Store e il link nel piè di pagina nella pagina Nuova scheda e in Avvio applicazioni di <ph name="PRODUCT_OS_NAME" />.
 
@@ -1324,6 +1332,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4483649828988077221">Disattiva l'aggiornamento automatico</translation>
 <translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
+<translation id="449423975179525290">Imposta le norme relative a <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file multimediali memorizzati nella cache.
 
 Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--media-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.
@@ -2568,6 +2577,9 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       È importante tenere presente che tali limitazioni vengono applicate ai download attivati dai contenuti delle pagine web, nonché all'opzione del menu contestuale "scarica link...". Tali limitazioni non vengono applicate al salvataggio o al download della pagina visualizzata né all'opzione di stampa relativa al salvataggio in PDF.
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
+<translation id="7642803091923523695">Consente al dispositivo di eseguire PluginVm.
+
+      Se la norma viene impostata su false o non viene impostata, <ph name="PLUGIN_VM_NAME" /> non è attivato per il dispositivo. Se viene impostata su true, <ph name="PLUGIN_VM_NAME" /> è attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere impostato su true e <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> deve essere impostato per <ph name="PLUGIN_VM_NAME" /> per poter essere eseguito.</translation>
 <translation id="7643883929273267746">Limita gli account visibili in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">È possibile stabilire se attivare o meno il roaming dei dati per il dispositivo. Se la norma viene impostata su true, il roaming dei dati sarà consentito. Se non viene configurata o viene impostata su false, il roaming dei dati non sarà disponibile.</translation>
 <translation id="7673194325208122247">Periodo di tempo (millisecondi)</translation>
@@ -3006,6 +3018,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa impostazione è attivata o non è impostata, la cronologia di navigazione e la cronologia dei download possono essere eliminate.
 
       Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
+<translation id="8758831693895931466">Attiva la registrazione alla gestione della cloud obbligatoria</translation>
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8782750230688364867">Consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando il dispositivo è in modalità di presentazione.

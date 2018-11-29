@@ -76,7 +76,6 @@
 <translation id="209018056901015185">Bruk skrivebordsversjon</translation>
 <translation id="2103075008456228677">Åpne history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer er flyttet</translation>
-<translation id="2120297377148151361">Aktivitet og interaksjoner</translation>
 <translation id="213900355088104901">Åpne en inkognitofane for å besøke nettsteder anonymt</translation>
 <translation id="2149973817440762519">Rediger bokmerke</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> uleste leselisteartikler.</translation>
@@ -117,6 +116,7 @@
 <translation id="2830972654601096923">Administrer adresser</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tilbakestill innstillingene for Oversetter</translation>
+<translation id="2858204748079866344">For å beskytte personvernet ditt legger ikke Chrome passordet ditt automatisk inn i dette feltet.</translation>
 <translation id="285960592395650245">Prøv å laste ned på nytt</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
@@ -128,6 +128,7 @@
 <translation id="2923448633003185837">Lim inn og gå til</translation>
 <translation id="292639812446257861">Merk som ulest</translation>
 <translation id="2933759065870693102">Lommelykt</translation>
+<translation id="2958718410589002129">Passord</translation>
 <translation id="2969979262385602596">Kunne ikke logge på. Prøv igjen senere.</translation>
 <translation id="2989805286512600854">Åpne i ny fane</translation>
 <translation id="3024255823539804759">Det siste døgnet</translation>
@@ -162,6 +163,7 @@
 <translation id="3494788280727468875">Bekreft at du vil slette nettleserdataene</translation>
 <translation id="3519193562722059437">Åpne en fane for å surfe på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
+<translation id="3529024052484145543">Ikke sikker</translation>
 <translation id="3533202363250687977">Lukk alle inkognitofaner</translation>
 <translation id="3533436815740441613">Ny fane</translation>
 <translation id="3551320343578183772">Lukk fanen</translation>
@@ -179,6 +181,8 @@
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3915450441834151894">Opplysninger om nettstedet</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
+<translation id="3929457972718048006">Adresser</translation>
+<translation id="3943492037546055397">Passord</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="3989635538409502728">Logg av</translation>
@@ -215,6 +219,7 @@
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv å logge på igjen.</translation>
 <translation id="457386861538956877">Mer</translation>
+<translation id="4592368184551360546">Tastatur</translation>
 <translation id="461440297010471931">Søker med Google</translation>
 <translation id="4619615317237390068">Faner fra andre enheter</translation>
 <translation id="4620246317052452550">Sider du har lest</translation>
@@ -247,6 +252,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5010803260590204777">Åpne en inkognitofane for å surfe privat på nettet.</translation>
 <translation id="5011684439661633295">Hei, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Tillat</translation>
+<translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Disk</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelsen.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
@@ -264,6 +270,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5409365236829784218">Ingen av de installerte appene kan åpne denne filen.</translation>
 <translation id="5433691172869980887">Brukernavnet er kopiert</translation>
 <translation id="54401264925851789">Sikkerhetsinformasjon for siden</translation>
+<translation id="5443952882982198570">Kredittkort</translation>
 <translation id="5525269841082836315">Opprett en passordfrase</translation>
 <translation id="5548760955356983418">Med Handoff kan du begynne å se gjennom en nettside på denne enheten og deretter fortsette på Mac-en din uten problemer. Den åpne nettsiden vises i dokken til Mac-en din.
 
@@ -364,7 +371,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="7004499039102548441">Nylige faner</translation>
 <translation id="7006788746334555276">Innholdsinnstillinger</translation>
-<translation id="7017968314960951695">Bruker innhold fra nettsteder du besøker, nettleseraktivitet og andre interaksjoner for å gi ting et personlig preg.</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7053983685419859001">Blokkér</translation>
@@ -413,6 +419,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7840771868269352570">De valgte elementene blir fjernet.</translation>
 <translation id="7856733331829174190">Kunne ikke laste ned</translation>
 <translation id="7859704718976024901">Nettleserlogg</translation>
+<translation id="7887198238286927132">For å beskytte personvernet ditt fyller ikke Chrome automatisk ut dette feltet.</translation>
 <translation id="7918293828610777738">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" /> og deretter <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér passord</translation>

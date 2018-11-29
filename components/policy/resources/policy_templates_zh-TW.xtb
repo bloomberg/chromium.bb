@@ -215,6 +215,14 @@
 <translation id="1523774894176285446">要啟動的替代瀏覽器 (適用於已設定的網站)。</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中顯示以下網址模式</translation>
+<translation id="1532965933165453786">允許啟用/停用「快速轉換」功能。
+      這項政策適用於所有使用者，也適用於裝置上的所有介面。
+      如要使用「快速轉換」，必須同時啟用這項設定和個別網路 ONC 屬性。
+      啟用設定後，「快速轉換」會持續運作，直到這項政策改為停用該功能。
+
+      如果不設定這項政策，系統不會使用「快速轉換」。
+      如果設為 False，系統不會使用「快速轉換」。
+      如果設為 True，只要無線存取點支援「快速轉換」，系統便會使用該功能。</translation>
 <translation id="1541170838458414064">限制列印頁面大小</translation>
 <translation id="1553684822621013552">如果將這項政策設為 true，系統會為使用者啟用 ARC
       (需經過額外政策設定檢查 - 如果目前的
@@ -914,6 +922,13 @@
       這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
       </translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
+<translation id="3388153794103186066">允許設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才具效力。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如有省略的 ID，系統將視作萬用字元處理，但如未指定廠商 ID，將無法指定產品 ID。在其他情況下，這項政策一律不具效力，系統會予以忽略。
+
+        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「內嵌網址」)，將 USB 裝置存取權限授予要求網址。當網站在 iframe 中載入時，要求網址可能與內嵌網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以依序指定要求網址和內嵌網址。如果只指定一個網址，只要要求網站的網址與指定的網址相符，不論其是否為內嵌網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
+
+        如果不設定這項政策，所有網站將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
+
+        這項政策中的網址模式與透過 WebUsbAskForUrls 所設定的網址模式應保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
 
       這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
@@ -1156,6 +1171,7 @@
 <translation id="3925020515212192040">指定預先設定的網路檔案共用清單。
 
       這項政策的每個清單項目都是一個物件，由「share_url」和「mode」組成。「share_url」是共用檔案的網址，「mode」則應設為「drop_down」，表示「share_url」將新增至共用項目搜尋下拉式選單中。</translation>
+<translation id="3925377537407648234">設定螢幕解析度和縮放比例</translation>
 <translation id="3939893074578116847">將監控線上狀態所需的網路封包傳送到管理伺服器，
       讓伺服器偵測裝置是否處於離線狀態。
 
@@ -1951,6 +1967,17 @@
       想要套用這項政策，電腦必須先註冊使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />。
 
       這項政策會強制安裝「<ph name="CHROME_REPORTING_EXTENSION_NAME" />」來回報資訊，並且會覆寫所有與該擴充功能相關的擴充功能政策。</translation>
+<translation id="6155247658847899816">如果設定這項政策，每台螢幕的解析度和縮放比例都會設定為指定值。所有連線的外部螢幕則會套用外部螢幕設定。
+
+      
+「external_width」和「external_height」的值應指定為像素值；「external_scale_percentage」和「internal_scale_percentage」的值應指定為百分比值。
+
+      如果將「external_use_native」設為 True，這項政策會忽略「external_height」和「external_width」的值，並將外部螢幕的解析度設定成原生解析度。
+
+      如果將「external_use_native」設為 False 或未提供任何值，同時也未指定「external_height」或「external_width」，則這項政策不會影響外部螢幕設定。如有螢幕不支援指定的解析度或縮放比例，系統不會為該螢幕套用這項政策。
+
+      如果將「recommended」標記設為 True，使用者登入後將可透過設定頁面修改螢幕的解析度和縮放比例，但他們的設定值在下次重新開機時即會遭到政策值覆寫。
+      如果將「recommended」標記設為 False 或不設定，使用者將無法修改螢幕設定。</translation>
 <translation id="6155936611791017817">設定大型游標在登入畫面的預設狀態</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="6158324314836466367">企業線上應用程式商店名稱 (已不適用)</translation>
@@ -2058,6 +2085,7 @@
 <translation id="6553143066970470539">螢幕亮度百分比</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示協助工具選項</translation>
+<translation id="6563458316362153786">啟用 802.11r 快速轉換</translation>
 <translation id="6565312346072273043">設定螢幕小鍵盤這項協助工具功能在登入畫面中的預設狀態。
 
           如果將這項政策設為 True，登入畫面顯示時將會啟用螢幕小鍵盤。
@@ -2697,6 +2725,10 @@
       如果未在受管理裝置上設定這項政策，該裝置便無法執行虛擬機器。
       不受管理的裝置則可執行虛擬機器。</translation>
 <translation id="8001701200415781021">限制哪些 Google 帳戶可以設定為 <ph name="PRODUCT_NAME" /> 中的瀏覽器主要帳戶</translation>
+<translation id="8009554972280451023">如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 一併寫入漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置。啟用這項政策時，系統會停用雲端同步處理功能。
+      如果停用或不設定這項政策，系統只會使用一般本機設定檔。
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />。</translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
 <translation id="8033913082323846868">這項政策自 M70 起已淘汰，請改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 
@@ -2818,6 +2850,7 @@
 <translation id="8274603902181597201">清除使用者的 eCryptfs 主目錄，改用全新的 Ext4 加密主目錄。</translation>
 <translation id="8285435910062771358">已啟用全螢幕放大鏡</translation>
 <translation id="8288199156259560552">啟用 Android Google 定位服務</translation>
+<translation id="8290453559005611000">PluginVm 圖片</translation>
 <translation id="8294750666104911727">無論「ChromeFrameRendererSettings」政策為何，一般而言，X-UA-Compatible 設為 chrome=1 的網頁將會在 <ph name="PRODUCT_FRAME_NAME" /> 中開啟。
 
           如果你啟用這項設定，系統將不會掃描網頁的中繼標記。
@@ -2889,6 +2922,7 @@
           如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。
 
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用儲存瀏覽記錄功能</translation>
 <translation id="8498293625012059298">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。一旦使用者在瀏覽器中看到警告訊息，密碼保護服務便會將其傳送到這個網址來變更密碼。
       為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合以下網址所述的規範：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。

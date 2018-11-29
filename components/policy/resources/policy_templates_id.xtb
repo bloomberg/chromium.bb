@@ -277,6 +277,9 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1803646570632580723">Daftar aplikasi tersemat untuk ditampilkan pada peluncur</translation>
 <translation id="1808715480127969042">Cekal cookie di situs ini</translation>
 <translation id="1810261428246410396">Izinkan Tethering Instan untuk digunakan.</translation>
+<translation id="1817685358399181673">Kebijakan ini menetapkan gambar <ph name="PLUGIN_VM_NAME" /> untuk pengguna. Kebijakan disetel dengan menentukan URL tempat perangkat dapat mendownload gambar dan hash SHA-256 digunakan untuk memverifikasi integritas download.
+
+      Kebijakan harus ditetapkan sebagai string yang menunjukkan URL dan hash dalam format JSON.</translation>
 <translation id="1827523283178827583">Gunakan server proxy tetap</translation>
 <translation id="1843117931376765605">Segarkan peringkat untuk kebijakan pengguna</translation>
 <translation id="1844620919405873871">Mengonfigurasi kebijakan terkait buka kunci cepat.</translation>
@@ -439,6 +442,10 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="214901426630414675">Batasi mode dupleks pencetakan</translation>
 <translation id="2149330464730004005">Aktifkan pencetakan warna</translation>
 <translation id="2156132677421487971">Mengonfigurasi kebijakan untuk <ph name="PRODUCT_NAME" />, fitur yang memungkinkan pengguna mengirim konten tab, situs, atau desktop dari browser ke sistem suara dan layar jarak jauh.</translation>
+<translation id="2163878108829382394">
+        Jika kebijakan ini disetel ke True, pendaftaran pengelolaan cloud bersifat wajib dan akan memblokir proses peluncuran Chrome jika gagal.
+
+        Jika kebijakan ini tidak disetel atau disetel ke False, pendaftaran pengelolaan cloud bersifat opsional dan tidak akan memblokir proses peluncuran Chrome jika gagal.</translation>
 <translation id="2166472654199325139">Jangan filter konten khusus dewasa dari situs</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
@@ -654,6 +661,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
 <translation id="2693108589792503178">Mengonfigurasi URL ubah sandi.</translation>
+<translation id="2696531058295423290">Izinkan perangkat menggunakan <ph name="PLUGIN_VM_NAME" /> di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Menonaktifkan penggunaan sertifikat <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="2742843273354638707">Menyembunyikan aplikasi Chrome Webstore serta link footer dari Halaman Tab Baru dan peluncur aplikasi <ph name="PRODUCT_OS_NAME" />.
 
@@ -1341,6 +1349,7 @@ Setiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_
 <translation id="4483649828988077221">Nonaktifkan Update Otomatis</translation>
 <translation id="4485425108474077672">Mengonfigurasi URL halaman Tab Baru</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan screenshot</translation>
+<translation id="449423975179525290">Konfigurasikan kebijakan terkait <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file media di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--media-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
@@ -2582,6 +2591,9 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
       Perlu diketahui bahwa batasan ini akan diterapkan untuk download yang dipicu dari konten halaman, serta opsi menu konteks 'download link...'. Batasan ini tidak akan diterapkan untuk penyimpanan/proses download dari halaman yang sedang ditampilkan, atau tidak akan diterapkan untuk penyimpanan sebagai PDF dari opsi pencetakan.
 
       Lihat https://developers.google.com/safe-browsing untuk info selengkapnya terkait Safe Browsing.</translation>
+<translation id="7642803091923523695">Aktifkan perangkat ini untuk menjalankan PluginVm.
+
+      Jika kebijakan disetel ke false atau tidak disetel, <ph name="PLUGIN_VM_NAME" /> tidak diaktifkan untuk perangkat tersebut. Jika disetel ke true, <ph name="PLUGIN_VM_NAME" /> diaktifkan untuk perangkat tersebut selama setelan lain mengizinkannya. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> harus disetel ke true dan <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> harus disetel untuk <ph name="PLUGIN_VM_NAME" /> agar dapat berjalan.</translation>
 <translation id="7643883929273267746">Batasi akun yang terlihat di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Menentukan apakah roaming data harus diaktifkan untuk perangkat. Jika disetel ke true, roaming data akan diizinkan. Jika dibiarkan tanpa konfigurasi atau disetel ke false, roaming data tidak akan tersedia.</translation>
 <translation id="7673194325208122247">Periode waktu (milidetik)</translation>
@@ -3016,6 +3028,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika setelan ini diaktifkan atau tidak disetel, histori penjelajahan atau download dapat dihapus.
 
       Jika setelan ini dinonaktifkan, histori penjelajahan dan download tidak dapat dihapus.</translation>
+<translation id="8758831693895931466">Aktifkan pendaftaran pengelolaan cloud wajib</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
 <translation id="8782750230688364867">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat perangkat dalam mode presentasi.

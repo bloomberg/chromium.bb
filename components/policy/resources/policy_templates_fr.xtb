@@ -300,6 +300,9 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
 <translation id="1810261428246410396">Autoriser le partage de connexion instantané</translation>
+<translation id="1817685358399181673">Cette règle définit l'image de <ph name="PLUGIN_VM_NAME" /> pour un utilisateur. Pour configurer cette règle, indiquez l'URL depuis laquelle l'appareil peut télécharger l'image et le hachage SHA-256 utilisé pour vérifier l'intégrité du téléchargement.
+
+      La règle doit être une chaîne exprimant l'URL et le hachage au format JSON.</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
@@ -470,6 +473,10 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="214901426630414675">Limiter l'impression en mode recto verso</translation>
 <translation id="2149330464730004005">Activer l'impression couleur</translation>
 <translation id="2156132677421487971">Configurer les règles pour <ph name="PRODUCT_NAME" />, une fonctionnalité permettant aux utilisateurs de caster le contenu des onglets, des sites ou de leur bureau depuis leur navigateur sur des écrans ou systèmes audio distants.</translation>
+<translation id="2163878108829382394">
+        Si cette règle est définie sur "True", il est indispensable d'activer la gestion cloud. Le cas échéant, le processus de lancement de Chrome s'interrompt.
+
+        Si cette règle n'est pas configurée ou est définie sur "False", il n'est pas obligatoire d'activer la gestion cloud et cela n'aura aucune incidence sur le processus de lancement de Chrome.</translation>
 <translation id="2166472654199325139">Ne pas filtrer les sites de contenus réservés aux adultes</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
@@ -705,6 +712,7 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
+<translation id="2696531058295423290">Autoriser l'appareil à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 
@@ -1416,6 +1424,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4483649828988077221">Désactiver les mises à jour automatiques</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
+<translation id="449423975179525290">Configurer les règles liées à <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--media-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
@@ -2736,6 +2745,9 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
       Notez que ces restrictions s'appliquent aux téléchargements déclenchés par le contenu d'une page Web, ainsi qu'à l'option de menu contextuel "Télécharger le lien". Ces restrictions ne s'appliquent pas à l'enregistrement ou au téléchargement de la page actuellement affichée, ni à l'enregistrement au format PDF depuis les options d'impression.
 
       Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Autoriser cet appareil à exécuter PluginVm.
+
+      Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas activé pour cet appareil. Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil dans la mesure où les autres paramètres l'y autorisent aussi. La règle <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> doit être définie sur "True" et <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> doit être configurée pour permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="7643883929273267746">Limiter les comptes visibles dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Détermine si l'itinérance des données doit être activée pour l'appareil. Si cette règle est définie sur "true", l'itinérance des données est autorisée. Si cette règle n'est pas configurée ou si elle est définie sur "false", l'itinérance des données n'est pas possible.</translation>
 <translation id="7673194325208122247">Période (millisecondes)</translation>
@@ -3191,6 +3203,7 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
       Si ce paramètre est activé ou s'il n'est pas défini, la suppression de l'historique du navigateur et de l'historique des téléchargements est possible.
 
       Si ce paramètre est désactivé, la suppression de l'historique du navigateur et de l'historique des téléchargements n'est pas possible.</translation>
+<translation id="8758831693895931466">Activer l'inscription obligatoire à la gestion cloud</translation>
 <translation id="8759829385824155666">Types de chiffrement Kerberos autorisés</translation>
 <translation id="8764119899999036911">Indique si le SPN Kerberos généré est basé sur le nom DNS canonique ou sur le nom d'origine saisi. 
 

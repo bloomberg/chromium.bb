@@ -183,6 +183,7 @@
 <translation id="2108755909498034140">Start datamaskinen på nytt.</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME" />.</translation>
+<translation id="2129308444951592399">Vilkår</translation>
 <translation id="213826338245044447">Bokmerker for mobil</translation>
 <translation id="214556005048008348">Avbryt betalingen</translation>
 <translation id="2147827593068025794">Bakgrunnssynkronisering</translation>
@@ -383,6 +384,7 @@
 <translation id="3427092606871434483">Tillat (standard)</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="342781501876943858">Chromium anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
+<translation id="3430691998045392297">Dette er en annen filmfremvisning. Vil du fortsette?</translation>
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
 <translation id="3447661539832366887">Eieren av denne enheten har slått av dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis sertifikat (utstedt av <ph name="ISSUER" />)</translation>
@@ -400,6 +402,7 @@
 <translation id="3566021033012934673">Tilkoblingen din er ikke privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">På en innebygd side på <ph name="SITE" /> står det</translation>
+<translation id="3581089476000296252">Chrome gir deg beskjed når denne siden er klar. &lt;a&gt;Avbryt&lt;/a&gt;</translation>
 <translation id="358285529439630156">Kredittkort og forhåndsbetalte kort godtas.</translation>
 <translation id="3582930987043644930">Legg til navn</translation>
 <translation id="3583757800736429874">&amp;Flytt likevel</translation>
@@ -431,6 +434,7 @@
 <translation id="3736520371357197498">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="3739623965217189342">En link du kopierte</translation>
 <translation id="3744899669254331632">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet sendte kryptert legitimasjon som Chromium ikke kan behandle. Nettverksfeil og -angrep er vanligvis forbigående, så siden kommer sikkert til å virke senere.</translation>
+<translation id="3745099705178523657">Etter at du har bekreftet, deles kortopplysningene fra Google-kontoen din med dette nettstedet.</translation>
 <translation id="3748148204939282805">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan lure deg til å gjøre farlige ting, deriblant å installere programvare eller oppgi personopplysninger (for eksempel passord, telefonnumre og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
 <translation id="3759461132968374835">Du har ingen nylig rapportert programstopp. Programstopp som inntraff når rapportering om programstopp var deaktivert, blir ikke vist her.</translation>
@@ -452,6 +456,7 @@
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">ID-en for den opplastede programstopprapporten: <ph name="CRASH_ID" /> (lokal kræsj-ID: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3946209740501886391">Spør alltid på dette nettstedet</translation>
+<translation id="3947577358805392297">Lagre siden for senere bruk</translation>
 <translation id="3949571496842715403">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Det er ikke angitt noen alternative emnenavn i tjenerens sikkerhetssertifikat. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="3949601375789751990">Nettleserloggen din vises her</translation>
 <translation id="3950820424414687140">Logg på</translation>
@@ -570,6 +575,7 @@
 <translation id="4771973620359291008">Det har oppstått en ukjent feil.</translation>
 <translation id="4785689107224900852">Bytt til denne fanen</translation>
 <translation id="4792143361752574037">Fikk ikke tilgang til øktfilene. Lagring til disk er for øyeblikket deaktivert. Last inn siden på nytt for å prøve igjen.</translation>
+<translation id="4798078619018708837">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /> for å oppdatere kortopplysningene dine. Etter at du har bekreftet, deles kortopplysningene fra Google-kontoen din med dette nettstedet.</translation>
 <translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet sendte kryptert legitimasjon som Google Chrome ikke kan behandle. Nettverksfeil og -angrep er vanligvis forbigående, så siden kommer sikkert til å virke senere.</translation>
@@ -621,6 +627,7 @@
 <translation id="5141240743006678641">Kryptér synkroniserte passord med Google-legitimasjonen din</translation>
 <translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
 <translation id="5159010409087891077">Åpne siden i et nytt inkognitovindu (⇧ + ⌘ + N)</translation>
+<translation id="516920405563544094">Skriv inn verifiseringskoden for <ph name="CREDIT_CARD" />. Etter at du har bekreftet, deles kortopplysningene fra Google-kontoen din med dette nettstedet.</translation>
 <translation id="5169827969064885044">Du kan miste tilgangen til organisasjonskontoen din eller bli utsatt for identitetstyveri. Chrome anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="5171045022955879922">Søk, eller skriv inn en nettadresse</translation>
 <translation id="5172758083709347301">Datamaskin</translation>
@@ -719,6 +726,7 @@
 <translation id="5810442152076338065">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en foreldet chifferserie.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
+<translation id="5844286946362376359">Jeg er klar over vilkårene, personvernreglene og angreretten for <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (ikke merk av hvis du vil lese).</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
@@ -727,6 +735,7 @@
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
+<translation id="5921639886840618607">Vil du lagre kortet i Google-kontoen?</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5932224571077948991">Nettstedet viser forstyrrende eller villedende annonser</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>

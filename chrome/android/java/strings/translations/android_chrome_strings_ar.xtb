@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">‏مكونات Chrome غير متوافقة مع بعضها البعض. قد تتم ترقية Chrome؛ لذا يُرجى إعادة المحاولة بعد دقائق قليلة. وإذا استمرت المشكلة، فحاول إلغاء تثبيت Chrome وإعادة تثبيته.</translation>
 <translation id="1446450296470737166">‏السماح بالتحكم الكامل لأجهزة MIDI</translation>
 <translation id="145097072038377568">‏تم إيقافه في إعدادات Android.</translation>
-<translation id="1469898724493126466">العثور على أفضل نتيجة من الويب</translation>
 <translation id="1477626028522505441">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب مشاكل بالخادم.</translation>
 <translation id="1501480321619201731">حذف مجموعة</translation>
 <translation id="1506061864768559482">محرك البحث</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">نسخ اسم المستخدم</translation>
 <translation id="1576370611341449972">‏لا يتم التنزيل إلا عند الاتصال بشبكة Wi-Fi.</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />غير مفعّل لهذا الجهاز<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">‏تفعيل المزامنة والتخصيص وخدمات Google الأخرى</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{إزالة عنصر واحد محدد}zero{إزالة # عنصر محدد}two{إزالة عنصرين (#) محددين}few{إزالة # عناصر محددة}many{إزالة # عنصرًا محددًا}other{إزالة # عنصر محدد}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="1868024384445905608">‏يُنزِّل Chrome الآن الملفات بشكلٍ أسرع.</translation>
 <translation id="187628348035757895">خيارات المطوِّرين</translation>
-<translation id="1878302395768190018">‏يمكنك تخصيص هذا في أي وقت في إعدادات Chrome.</translation>
 <translation id="1880072593381090678">‏الصفحات الشائعة من Chrome</translation>
 <translation id="1883903952484604915">ملفاتي</translation>
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
 <translation id="3819562311292413223">تنزيل مقالات لك</translation>
 <translation id="3822502789641063741">أتمحو مساحة تخزين الموقع؟</translation>
-<translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
 <translation id="3868004864571585162">ملفات تعريف الارتباط وتراخيص الوسائط وبيانات الموقع الإلكتروني</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4179980317383591987">تم استخدام <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">اللغات</translation>
-<translation id="4192273449750167573">مراجعة الإعدادات في الشاشة التالية</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
 <translation id="4209895695669353772">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تفعيل المزامنة.</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">لاستخدام هذه الميزة، يمكنك تفعيل <ph name="BEGIN_LINK" />النشاط والتفاعلات<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">ليست هناك إشارات مرجعية</translation>
 <translation id="4409723563706114196">استخدام توقعات الصفحة</translation>
-<translation id="4419556793104466535">التحكُّم في المزامنة والتخصيص والمزيد</translation>
 <translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
 <translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5224771365102442243">يتضمن فيديو</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
-<translation id="5240817131241497236">‏تم تغيير الإعدادات التي تتحكَّم في المزامنة والتخصيص وخدمات Google الأخرى في Chrome. قد تطال هذه التغييرات إعداداتك الحالية.</translation>
 <translation id="5264003212305142034">‏يمكن تخصيص <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" /> في أي وقت. قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها ونشاط المتصفّح والتفاعلات لتخصيص Chrome وخدمات Google، مثل "ترجمة Google" و"بحث Google" والإعلانات.</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="5274381992091475657">‏"مساعد Google" للملء التلقائي</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم الإيقاف من قبل مشرف هذا الجهاز</translation>
 <translation id="5515439363601853141">إلغاء القفل لعرض كلمة المرور</translation>
-<translation id="5515716148775388141">انتقلت الرموز إلى أسفل الشاشة.</translation>
 <translation id="5517095782334947753">تتوفر لديك الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى من <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">تم حظر إعادة التوجيه.</translation>
 <translation id="5527082711130173040">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. <ph name="BEGIN_LINK1" />تحديث الأذونات<ph name="END_LINK1" />. الوصول إلى الموقع <ph name="BEGIN_LINK2" />غير مفعّل لهذا الجهاز<ph name="END_LINK2" /> أيضًا.</translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
+<translation id="614940544461990577">جرّب:</translation>
 <translation id="6154478581116148741">تشغيل قفل الشاشة في الإعدادات لتصدير كلمات المرور من هذا الجهاز</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6846298663435243399">جارٍ التحميل…</translation>
-<translation id="685040365210406336">عدم إجراء أي تغييرات</translation>
 <translation id="6850409657436465440">لا يزال التنزيل قيد التقدُّم</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> من علامات التبويب المغلقة</translation>
 <translation id="6864459304226931083">تنزيل الصورة</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
+<translation id="7221869452894271364">إعادة تحميل هذه الصفحة</translation>
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
-<translation id="7832327313660264358">‏لن تتغيّر الميزات التي تستخدمها والبيانات التي تزامنها مع Google.</translation>
 <translation id="7837721118676387834">السماح بالتشغيل التلقائي للفيديوهات المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
-<translation id="7987764905897278458">‏الحصول على مزيد من ميزات Google الذكية</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="7999064672810608036">هل أنت متأكد أنك تريد مسح كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لموقع الويب هذا؟</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">حظر المواقع من الاتصال بأجهزة</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
-<translation id="8555322348396635979">عفوًا، حدث خطأ. يُرجى التحقُّق من الاتصال بالإنترنت.</translation>
 <translation id="8558485628462305855">‏لعرض محتوى الواقع المُعزَّز، يُرجى تحديث ARCore</translation>
 <translation id="8559990750235505898">عرض ترجمة للصفحات بلغات أخرى</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>

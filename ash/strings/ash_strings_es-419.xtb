@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Contraer menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1419738280318246476">Desbloquea el dispositivo para llevar a cabo una acción con las notificaciones</translation>
+<translation id="1455242230282523554">Mostrar la configuración de idioma</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar la configuración de las notificaciones: Están desactivadas para una app}other{Mostrar la configuración de las notificaciones: Están desactivadas para # apps}}</translation>
@@ -155,6 +156,7 @@
 <translation id="3413817803639110246">No hay nada para ver</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">Tu conexión se cambió a una red más segura</translation>
+<translation id="3465223694362104965">Se conectó otro teclado a este dispositivo desde tu último acceso. Asegúrate de que este teclado sea de confianza antes de usarlo.</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
 <translation id="3510503721818156981">La Chromebook se conectó a un teléfono nuevo</translation>

@@ -285,6 +285,9 @@
 <translation id="1803646570632580723">በአስጀማሪው ላይ የሚያዩ የተሰኩ መተግበሪያዎች ዝርዝር</translation>
 <translation id="1808715480127969042">በእነዚህ ጣቢያዎች ላይ ኩኪዎችን አግድ</translation>
 <translation id="1810261428246410396">ቅጽበታዊ እንደ ሞደም መሰካትን ይፍቀዱ።</translation>
+<translation id="1817685358399181673">ይህ መመሪያ ለተጠቃሚው የ<ph name="PLUGIN_VM_NAME" /> ምስልን ይጠቅሳል። ይህ መመሪያ መሣሪያው ምስሉን ከየትኛው ዩአርኤል እንደሚያወርድ እና የማውረዱን ቀናነት ለማረጋገጥ ጥቅም ላይ የሚውለውን SHA-256 ሃሽ በመጥቀስ ይቀናበራል።
+
+      መመሪያው ዩአርኤሉን በሚጠቅስ ኅብረቁምፊ መገለጽ እና በJSON ቅርጸት መጠቀስ አለበት።</translation>
 <translation id="1827523283178827583">ቋሚ ተኪ አገልጋዮችን ይጠቀሙ</translation>
 <translation id="1843117931376765605">የተጠቃሚ መመሪያ እድሳት ፍጥነት</translation>
 <translation id="1844620919405873871">ከፈጣን አከፋፈት ጋር የተያያዙ መመሪያዎችን ያዋቅራል።</translation>
@@ -453,6 +456,10 @@
 <translation id="214901426630414675">የህትመት ዱፕሌክስ ሁነታን ይገድቡ</translation>
 <translation id="2149330464730004005">የቀለም ህትመትን ያንቁ</translation>
 <translation id="2156132677421487971">ተጠቃሚዎች የትሮች፣ ጣቢያዎች ወይም ዴስክቶፕ ይዘት ከአሳሹ ወደ የርቀት ማሳያዎች እና የድምጽ ስርዓቶች እንዲልኩ የሚያስችል ባህሪ የሆነው የ<ph name="PRODUCT_NAME" /> መመሪያዎችን ያዋቅሩ።</translation>
+<translation id="2163878108829382394">
+        ይህ መመሪያ ወደ እውነት ከተቀናበረ፣ የደመና አስተዳደር ምዝገባ ግዴታ ነው እና ካልተሳካ የChrome ማስጀመር ሂደትን ያግዳል።
+
+        ይህ መመሪያ ሳይቀናበር ከተተወ ወይም ወደ ሀሰት ከተቀናበረ፣ የደመና አስተዳደር ምዝገባ በምርጫ የሚደረግ ነው እና ካልተሳካ የChrome ማስጀመር ሂደትን አያግድም።</translation>
 <translation id="2166472654199325139">ለዐዋቂ ይዘት ጣቢያዎችን አታጣራ</translation>
 <translation id="2168397434410358693">በሶኬት ኃይል ላይ ሲሆን የስራ ፈትቶ መዘግየት</translation>
 <translation id="2170233653554726857">የWPAD ማመቻቸትን ያንቁ</translation>
@@ -685,6 +692,7 @@
           ይህ መመሪያ የ«DefaultSearchProviderEnabled» መመሪያ ከነቃ ብቻ ነው የሚከበረው።</translation>
 <translation id="268577405881275241">የውሂብ መጭመቂያ ተኪ ባህሪን ያንቁ</translation>
 <translation id="2693108589792503178">የይለፍ ቃል ለውጥ ዩአርኤልን ያዋቅሩ።</translation>
+<translation id="2696531058295423290">መሣሪያዎች <ph name="PLUGIN_VM_NAME" />ን በ <ph name="PRODUCT_OS_NAME" /> ላይ እንዲጠቀሙ ፍቀድ።</translation>
 <translation id="2731627323327011390">በኤአርሲ መተግበሪያዎች ላይ የ<ph name="PRODUCT_OS_NAME" /> እውቅና ማረጋገጫዎችን መጠቀም አሰናክል</translation>
 <translation id="2742843273354638707">የChrome የድር መደብሩንና ግርጌ አገናኙን ከአዲስ ትር ገጹ እና የ<ph name="PRODUCT_OS_NAME" /> መተግበሪያ አስጀማሪ ይደብቁ።
 
@@ -1393,6 +1401,7 @@
 <translation id="4483649828988077221">ራስ-አዘምንን ያሰናክሉ</translation>
 <translation id="4485425108474077672">የአዲሱ ትር ገጽን ዩአርኤል ያዋቅሩ</translation>
 <translation id="4492287494009043413">ቅጽበታዊ ገጽ እይታዎችን ማንሳት ያሰናክሉ</translation>
+<translation id="449423975179525290">ተዛማጅ መመሪያዎችን <ph name="PLUGIN_VM_NAME" /> አዋቅር።</translation>
 <translation id="450537894712826981"><ph name="PRODUCT_NAME" /> በዲስኩ ላይ የተሸጎጡ ፋይሎች ለማከማቸት የሚጠቀምበትን የሚዲያ መሸጎጫ መጠን ያዋቅራል።
 
       ይህን መመሪያ ካዋቀሩት ተጠቃሚው «--media-cache-size» ጠቋሚውን ቢገልጽም ባይገልጽም <ph name="PRODUCT_NAME" /> የቀረበለትን የመሸጎጫ መጠን ይጠቀማል። በዚህ መመሪያ ውስጥ የተጠቀሰው እሴት ከባድ ድንበር አይደለም፣ ይልቁንስ ለመሸጎጫ ስርዓቱ የቀረበ ሃሳብ ነው፣ ማንኛውም ከጥቂት ሜጋባይቶች በታች የሆነ እሴት ከልክ በላይ ትንሽ የሚሆን ሆኖ ወደ ጤናማ ዝቅተኛ እንዲጠጋጋ ይደረጋል።
@@ -2708,6 +2717,9 @@
       እነዚህ ገደቦች ከድረ-ገጽ ይዘትና እንዲሁም ከ«አገናኝ አውርድ...» የአውድ ምናሌ አማራጩ በተቀሰቀሱ ውርዶች ላይ እንደሚተገበሩ ልብ ይበሉ። እነዚህ ገደቦች አሁን በሚታየው የገጽ ማስቀመጥ / ማውረድ ሆነ ከህትመት አማራጮች ውስጥ እንደ ፒዲኤፍ ማስቀመጥ ላይ አይተገበሩም።
 
       የጥንቃቄ አሰሳ ላይ ተጨማሪ መረጃ ለማግኘት https://developers.google.com/safe-browsingን ይመልከቱ።</translation>
+<translation id="7642803091923523695">ይህ መሣሪያ PluginVmን እንዲያስኬድ አንቃ።
+
+      ይህ መመሪያ ወደ ሀሰት ከተቀናበረ ወይም ሳይቀናበር ከተተወ፣ <ph name="PLUGIN_VM_NAME" /> ለመሣሪያው አይነቃም። ወደ እውነት ከተቀናበረ፣ <ph name="PLUGIN_VM_NAME" /> ለመሣሪያው ሌሎች ቅንብሮች እስከፈቀዱ ድረስ የሚነቃ ይሆናል። <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> እውነት መሆን ያስፈልገዋል እና <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> እንዲሠራ እንዲፈቀድለት ለ <ph name="PLUGIN_VM_NAME" /> መቀናበር ያስፈልገዋል።</translation>
 <translation id="7643883929273267746">በ<ph name="PRODUCT_NAME" /> ውስጥ የሚታዩ መለያዎችን ይገድቡ</translation>
 <translation id="7651739109954974365">የውሂብ ዝውውር ለዚህ መሣሪያ መንቃት ካለበት ይወስናል። ወደ እውነት ከተዋቀረ የውሂብ ዝውውር ይፈቀዳል። እንዳልተዋቀረ ከተተወ ወይም ወደ ሐሰት ከተዋቀረ የውሂብ ዝውውር አይገኝም።</translation>
 <translation id="7673194325208122247">የጊዜ ክፍለ ጊዜ (ሚሊሰከንዶች)</translation>
@@ -3150,6 +3162,7 @@
       ይህ ቅንብር ከነቃ ወይም ካልተዋቀረ የአሰሳ እና የአውርድ ታሪክ ሊሰረዝ ይችላል።
 
       ይህ ቅንብር ከተሰናከለ የአሰሳ እና የአውርድ ታሪክ ሊሰረዝ አይችልም።</translation>
+<translation id="8758831693895931466">አስገዳጅ የደመና አስተዳደር ምዝገባን አንቃ</translation>
 <translation id="8759829385824155666">የተፈቀዱ Kerberos ምሥጠራ ዓይነቶች</translation>
 <translation id="8764119899999036911">የመነጨው Kerberos SPN በcanonical ዲ ኤን ኤስ ስሙ ወይም የገባው የመጀመሪያ ስሙ ላይ የተመሠረተ ይሁን ይገልጻል።
 

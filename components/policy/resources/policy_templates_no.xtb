@@ -216,6 +216,14 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1523774894176285446">Alternativ nettleser som skal åpnes for konfigurerte nettsteder.</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
+<translation id="1532965933165453786">Lar deg slå av eller på Fast Transition.
+      Dette gjelder for alle brukere og grensesnitt på enheten.
+      For at Fast Transition skal kunne brukes, må både denne innstillingen og ONC-området (for hvert nettverk) være slått på.
+      Når Fast Transition er på, forblir den på inntil regelen endres for å slå den av.
+
+      Hvis regelen ikke er angitt, brukes ikke Fast Transition.
+      Hvis regelen er angitt som «false» (usant), brukes ikke Fast Transition.
+      Hvis regelen er angitt som «true» (sant), brukes Fast Transition når det støttes av det trådløse tilgangspunktet.</translation>
 <translation id="1541170838458414064">Begrens sidestørrelse for utskrift</translation>
 <translation id="1553684822621013552">Når denne regelen er satt til true (sann), er ARC slått på for brukeren
       (avhengig av andre regelinnstillinger – ARC er likevel
@@ -923,6 +931,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen kan bare angis som en anbefaling. Du kan bruke den til å flytte sett med anbefalte lokaliteter til toppen av listen, men brukerne kan alltid velge blant alle lokalitetene som er støttet i <ph name="PRODUCT_OS_NAME" />, i øktene sine.
       </translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
+<translation id="3388153794103186066">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
+
+        USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
+
+        Hvis denne regelen ikke er angitt, brukes den globale standardverdien for alle nettsteder fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller brukerens personlige konfigurasjon hvis den ikke er angitt.
+
+        Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen prioritet over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er TLS 1.0.
 
       Ellers kan den angis som en av de følgende verdiene: «tls1», «tls1.1» eller «tls1.2». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> lavere SSL/TLS-versjoner enn den angitte versjonen. Ukjente verdier blir ignorert.</translation>
@@ -1170,6 +1185,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3925020515212192040">Spesifiserer en liste over forhåndskonfigurert deling av nettverksfiler.
 
       Hvert listeelement i regelen er et element med to deler: «share_url» og «mode». «share_url» skal være nettadressen for delingen, og «mode» skal være «drop_down», som indikerer at «share_url» blir lagt til i rullegardinmenyen for delingsoppdagelsen.</translation>
+<translation id="3925377537407648234">Angi skjermoppløsning og skaleringsfaktor</translation>
 <translation id="3939893074578116847">Send nettverkspakker til administreringstjeneren for å overvåke nettstatusen, slik at
       tjeneren kan oppdage om enheten er uten nett.
 
@@ -2004,6 +2020,29 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen gjelder bare når maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Denne regelen fører til administratorinstallering av <ph name="CHROME_REPORTING_EXTENSION_NAME" /> for rapporteringen, og den overstyrer eventuelle andre utvidelsesregler som er knyttet til utvidelsen.</translation>
+<translation id="6155247658847899816">Når denne regelen er angitt, blir oppløsning og skaleringsfaktor for hver
+      skjerm satt til spesifikke verdier. Innstillinger for eksterne skjermer
+      gjelder for alle tilkoblede eksterne skjermer.
+
+      Verdiene for «external_width» og «external_height» må oppgis i
+      piksler. Verdiene for «external_scale_percentage» og
+      «internal_scale_percentage» må oppgis i prosent.
+
+      Hvis «external_use_native» er angitt som «true» (sant), ignorerer regelen verdiene for
+      «external_height» og «external_width» og setter oppløsningen for de eksterne
+      skjermene til standardoppløsningen.
+
+      Hvis «external_use_native» ikke er angitt eller er angitt som «false» (usant), og hvis
+      «external_height» eller «external_width» ikke er oppgitt, påvirker ikke regelen
+      innstillingene for de eksterne skjermene. Hvis den oppgitte oppløsningen eller
+      skaleringsfaktoren ikke støttes av enkelte skjermer, gjelder ikke regelen for
+      disse skjermene.
+
+      Hvis flagget «recommended» (anbefalt) er angitt som «true» (sant), kan brukere endre oppløsning og
+      skaleringsfaktor for skjermer via innstillingssiden etter pålogging, men
+      innstillingene deres blir overstyrt av regelverdien ved neste omstart.
+      Hvis flagget «recommended» (anbefalt) ikke er angitt eller er angitt som «false» (usant), kan ikke brukere endre
+      skjerminnstillingene.</translation>
 <translation id="6155936611791017817">Angi standard tilstand for stor musepeker på påloggingssiden</translation>
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
@@ -2115,6 +2154,7 @@ Hvis denne regelen er deaktivert eller ikke angitt, kan Flash-innhold av annen o
 <translation id="6553143066970470539">Lysstyrkeprosent for skjermen</translation>
 <translation id="6559057113164934677">Forby nettsteder fra å bruke kameraet og mikrofonen min</translation>
 <translation id="6561396069801924653">Vis tilgjengelighetsalternativer i systemmenyen</translation>
+<translation id="6563458316362153786">Slå på 802.11r Fast Transition</translation>
 <translation id="6565312346072273043">Angi standardtilstanden til skjermtastaturets tilgjengelighetsfunksjon på påloggingsskjermen.
 
           Hvis denne innstillingen er angitt som sann, aktiveres skjermtastaturet når påloggingsskjermen vises.
@@ -2770,6 +2810,11 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
       Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
       Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
 <translation id="8001701200415781021">Begrens hvilke Google-kontoer som kan angis som hovedkonto for nettlesere i <ph name="PRODUCT_NAME" /></translation>
+<translation id="8009554972280451023">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord og så videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-regelen. Når du slår på denne regelen, blir skysynkronisering slått av.
+
+      Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8033913082323846868">Denne regelen er avviklet i M70. Bruk AutofillAddressEnabled og AutofillCreditCardEnabled i stedet.
 
@@ -2898,6 +2943,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8274603902181597201">Visk ut brukerens ecryptfs-hjemmekatalog, og begynn med en ny ext4-kryptert hjemmekatalog.</translation>
 <translation id="8285435910062771358">Fullskjermsforstørrelse aktivert</translation>
 <translation id="8288199156259560552">Slå på Googles posisjonstjeneste for Android</translation>
+<translation id="8290453559005611000">PluginVm-bilde</translation>
 <translation id="8294750666104911727">Vanligvis blir sider angitt med X-UA-Compatible til chrome=1 gjengitt i <ph name="PRODUCT_FRAME_NAME" /> uavhengig av innstillingen «ChromeFrameRendererSettings».
 
           Hvis du aktiverer denne innstillingen, skannes ikke sider for metatagger.
@@ -2976,6 +3022,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, slik den er angitt i regelen «ChromeFrameRendererSettings».
 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
 <translation id="8498293625012059298">Konfigurer nettadressen for endring av passord (kun HTTP og HTTPS). Beskyttelsestjenesten for passord sender brukere til denne nettadressen for å endrer passordene etter at de har sett en advarsel i nettleseren.
        For at <ph name="PRODUCT_NAME" /> skal ha mulighet til å fange opp fingeravtrykket til det nye passordet på denne nettsiden for bytte av passord, må du passe på at siden for endring av passord følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

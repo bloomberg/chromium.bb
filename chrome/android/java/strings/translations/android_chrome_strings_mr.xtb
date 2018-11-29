@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">Chrome चे घटक एकमेकांशी विसंगत आहेत. Chrome श्रेणीसुधारित होत असावे, कृपया काही मिनिटांमध्ये पुन्हा प्रयत्न करा. समस्या सुरु राहिल्यास, Chrome अनइंस्टॉल करून पहा आणि पुन्हा इंस्टॉल करून पहा.</translation>
 <translation id="1446450296470737166">MIDI डिव्हाइसेसच्या पूर्ण नियंत्रणास अनुमती द्या</translation>
 <translation id="145097072038377568">Android सेटिंग्ज मध्‍ये बंद करा</translation>
-<translation id="1469898724493126466">वेबवरील सर्वोत्तम शोधत आहे.</translation>
 <translation id="1477626028522505441">सर्व्हर समस्यांमुळे <ph name="FILE_NAME" /> डाउनलोड अयशस्वी झाले.</translation>
 <translation id="1501480321619201731">गट हटवा</translation>
 <translation id="1506061864768559482">शोध इंजिन</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">वापरकर्तानाव कॉपी करा</translation>
 <translation id="1576370611341449972">फक्त वाय-फायशी कनेक्ट केल्यावर डाउनलोड होते</translation>
 <translation id="1612196535745283361">डिव्हाइसेस स्कॅन करण्‍यासाठी Chrome ला स्थान प्रवेशाची आवश्यकता असते. स्थान प्रवेश <ph name="BEGIN_LINK" />या डिव्हाइससाठी बंद केला आहे<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">सिंक, पर्सनलायझेशन आणि इतर Google सेवा सुरू करा</translation>
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1623104350909869708">या पृष्ठास अतिरिक्त संवाद तयार करण्यापासून प्रतिबंधित करा</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम काढून टाका}one{# निवडलेला आयटम काढून टाका}other{# निवडलेले आयटम काढून टाका}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">नवीन गुप्त टॅब</translation>
 <translation id="1868024384445905608">Chrome आता फायली वेगाने डाउनलोड करते</translation>
 <translation id="187628348035757895">डेव्‍हलपर पर्याय</translation>
-<translation id="1878302395768190018">तुम्ही Chrome सेटिंग्जमध्ये हे कधीही कस्टमाइझ करू शकता</translation>
 <translation id="1880072593381090678">Chrome ची लोकप्रिय पेज</translation>
 <translation id="1883903952484604915">माझ्या फायली</translation>
 <translation id="1887786770086287077">या डिव्हाइससाठी स्थान अ‍ॅक्सेस बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटविले</translation>
 <translation id="3819562311292413223">तुमच्यासाठी लेख डाउनलोड करा</translation>
 <translation id="3822502789641063741">साइट स्टोरेज साफ करायचा?</translation>
-<translation id="385051799172605136">मागील</translation>
 <translation id="3859306556332390985">पुढे शोधा</translation>
 <translation id="3868004864571585162">कुकीज, मीडिया परवाने आणि साइट डेटा</translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">सेवा उपलब्ध नाही; नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> वापरला</translation>
 <translation id="4181841719683918333">भाषा</translation>
-<translation id="4192273449750167573">पुढील स्क्रीनवरील तुमच्या सेटिंग्जचे पुनरावलोकन करा</translation>
 <translation id="4195643157523330669">नवीन विंडोमध्ये उघडा</translation>
 <translation id="4198423547019359126">कोणतीही डाउनलोड स्थाने उपलब्ध नाहीत</translation>
 <translation id="4209895695669353772">Google ने सुचवलेला पर्सनलाइझ केलेला आशय मिळवण्यासाठी, सिंक सुरू करा</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">हे वैशिष्ट्य वापरण्यासाठी, <ph name="BEGIN_LINK" />अॅक्टिव्हिटी आणि संवाद<ph name="END_LINK" /> सुरू करा.</translation>
 <translation id="4404568932422911380">कोणतेही बुकमार्क नाहीत</translation>
 <translation id="4409723563706114196">पेज पूर्वानुमान वापरा</translation>
-<translation id="4419556793104466535">सिंक, पर्सनलायझेशन आणि बरेच काही नियंत्रित करा</translation>
 <translation id="4432792777822557199">आतापासून पेज <ph name="SOURCE_LANGUAGE" />मधून <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील</translation>
 <translation id="4433925000917964731">Google द्वारे पुरवलेले लाइट पेज</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="5224771365102442243">व्हिडिओसह</translation>
 <translation id="5233638681132016545">नवीन टॅब</translation>
-<translation id="5240817131241497236">Chrome मध्ये सिंक, पर्सनलायझेशन आणि इतर Google सेवा नियंत्रित करणारी सेटिंग्ज बदलली आहेत. याचा तुमच्या सद्य सेटिंग्जवर परिणाम होऊ शकतो.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> कधीही कस्टमाइझ केले जाऊ शकतात. Chrome आणि भाषांतर, शोध व जाहिराती यांसारख्या Google सेवा पर्सनलाइझ करण्यासाठी तुम्ही भेट दिलेल्या साइटवरील आशय, तसेच ब्राउझरवरील अॅक्टिव्हिटी आणि संवाद Google वापरू शकते.</translation>
 <translation id="5271967389191913893">डाउनलोड केली जाण्यासाठी डिव्हाइस सामग्री उघडू शकत नाही.</translation>
 <translation id="5274381992091475657">ऑटोफिल असिस्टंट</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">हे खाते <ph name="PARENT_NAME" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="5514904542973294328">या डीव्हाइसच्या प्रशासकाने बंद केले आहे.</translation>
 <translation id="5515439363601853141">तुमचा पासवर्ड पाहण्यासाठी अनलॉक करा</translation>
-<translation id="5515716148775388141">तुमचे आयकन स्क्रीनच्या खालच्या बाजूला हलवले गेले आहेत</translation>
 <translation id="5517095782334947753">आपल्याकडे <ph name="FROM_ACCOUNT" /> मधील बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज आहेत.</translation>
 <translation id="5524843473235508879">रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="5527082711130173040">डिव्हाइसेस स्कॅन करण्‍यासाठी Chrome ला स्थान प्रवेशाची आवश्यकता असते. <ph name="BEGIN_LINK1" />परवानग्या अपडेट करा<ph name="END_LINK1" />. स्थान प्रवेश देखील <ph name="BEGIN_LINK2" />या डिव्हाइससाठी बंद केला आहे<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">पृष्ठ रिफ्रेश करीत आहे</translation>
 <translation id="6127379762771434464">आयटम काढला</translation>
 <translation id="6140912465461743537">देश/प्रदेश</translation>
+<translation id="614940544461990577">हे करून पहा:</translation>
 <translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून निर्यात करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन चालू करा</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">भाषांतर करा</translation>
 <translation id="6846298663435243399">लोड करीत आहे...</translation>
-<translation id="685040365210406336">कोणतेही बदल करू नका</translation>
 <translation id="6850409657436465440">तुमचे डाउनलोड अजून प्रगतीपथावर आहे</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टॅब बंद केले</translation>
 <translation id="6864459304226931083">इमेज डाउनलोड करा</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">Google Play सेवांंनी अपडेट करणे समाप्त करण्याची प्रतीक्षा करीत आहे</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7191430249889272776">पार्श्वभूमीवर उघडा असलेला टॅब.</translation>
+<translation id="7221869452894271364">हे पृष्ठ रीलोड करा</translation>
 <translation id="723171743924126238">इमेज निवडा</translation>
 <translation id="7243308994586599757">स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> निवडले</translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7810647596859435254">यासह उघडा...</translation>
 <translation id="7821588508402923572">तुमची डेटा बचत येथे दिसेल</translation>
-<translation id="7832327313660264358">तुम्ही Google वर सिंक केलेला डेटा आणि तुम्ही वापरत असलेली वैशिष्ट्ये बदलणार नाहीत</translation>
 <translation id="7837721118676387834">एका विशिष्ट साइटकरिता नि:शब्द केलेल्या व्हिडिओंच्या ऑटोप्ले ला अनुमती द्या.</translation>
 <translation id="7846076177841592234">निवड रद्द करा</translation>
 <translation id="784934925303690534">वेळ वर्गवारी</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">ऑगमेंटेड रीअ‍ॅलिटी आशय पाहण्यासाठी, ARCore इंस्टॉल करा</translation>
 <translation id="7986741934819883144">संपर्क निवडा</translation>
 <translation id="7987073022710626672">Chrome सेवा अटी</translation>
-<translation id="7987764905897278458">Google स्मार्टकडून बरेच काही मिळवा</translation>
 <translation id="7998918019931843664">बंद केलेले टॅब पुन्हा उघडा</translation>
 <translation id="7999064672810608036">तुम्ही कुकीजसह, सर्व स्थानिक डेटा साफ करू इच्छिता आणि या वेबसाइटसाठी सर्व परवानग्या रीसेट करू इच्छिता?</translation>
 <translation id="8004582292198964060">ब्राउझर</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="8523928698583292556">संचयित केलेला पासवर्ड हटवा</translation>
 <translation id="854522910157234410">हे पृष्ठ उघडा</translation>
-<translation id="8555322348396635979">अरेरे! काहीतरी चूक झाली. कृपया तुमचे कनेक्शन तपासा.</translation>
 <translation id="8558485628462305855">ऑगमेंटेड रीअ‍ॅलिटी आशय पाहण्यासाठी, ARCore अपडेट करा</translation>
 <translation id="8559990750235505898">पेज अन्य भाषांमध्ये भाषांतरित करण्यास ऑफर करा</translation>
 <translation id="8562452229998620586">सेव्ह केलेले पासवर्ड येथे दिसून येतील.</translation>

@@ -19,7 +19,6 @@
 <translation id="1026822031284433028">Carregar Imagem</translation>
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469">O URL <ph name="URL" /> quer armazenar permanentemente um grande volume de dados no seu dispositivo</translation>
-<translation id="1030889518049751641">Ver registro de atividades</translation>
 <translation id="1031362278801463162">Carregando visualização</translation>
 <translation id="103279545524624934">Libere espaço em disco para iniciar apps Android.</translation>
 <translation id="1033780634303702874">Acessar seus dispositivos de série</translation>
@@ -144,6 +143,7 @@
 <translation id="1189418886587279221">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo.</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acessar um arquivo armazenado no seu computador}one{Acessar # arquivos armazenados no seu computador.}other{Acessar # arquivos armazenados no seu computador}}</translation>
+<translation id="1190660338026981543">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta do Google, <ph name="BEGIN_LINK" />saia da sua conta<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, digite sua senha. Na próxima vez, você poderá usar seu smartphone para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
@@ -244,7 +244,7 @@
 <translation id="1340527397989195812">Fazer backup de mídia do dispositivo usando o aplicativo Arquivos.</translation>
 <translation id="1341988552785875222">O plano de fundo atual está definido por "<ph name="APP_NAME" />". Talvez seja necessário desinstalar "<ph name="APP_NAME" />" antes de selecionar um plano de fundo diferente.</translation>
 <translation id="1346748346194534595">Para a direita</translation>
-<translation id="1347256498747320987">Instalar atualizações e apps. Ao continuar, você aceita que este dispositivo também pode fazer automaticamente o download e a instalação de atualizações e apps do Google, da operadora e do fabricante do dispositivo, possivelmente usando dados da rede celular. Alguns desses apps podem oferecer compras no aplicativo. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
+<translation id="1347256498747320987">Instalar atualizações e apps. Ao continuar, você aceita que este dispositivo também pode fazer automaticamente o download e a instalação de atualizações e apps do Google, da operadora e do fabricante do dispositivo, possivelmente usando dados da rede celular. Alguns desses apps podem oferecer compras dentro deles. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">A atualização é iniciada quando a bateria chega a <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT" /> arquivos...</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -432,7 +432,6 @@
 <translation id="1616206807336925449">Esta extensão não requer permissões especiais.</translation>
 <translation id="1616298854599875024">Não foi possível importar a extensão "<ph name="IMPORT_NAME" />", porque ela não é um módulo compartilhado</translation>
 <translation id="1618268899808219593">Central de ajuda</translation>
-<translation id="162035744160882748">Ativar sincronização, personalização e outros serviços do Google</translation>
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1623132449929929218">As imagens estão indisponíveis no momento. Reconecte-se à Internet para ver as coleções de plano de fundo.</translation>
 <translation id="1624026626836496796">Isso só acontecerá uma vez e suas credenciais não serão armazenadas.</translation>
@@ -619,7 +618,6 @@
 <translation id="1875312262568496299">Começar</translation>
 <translation id="1875387611427697908">Esse item só por ser adicionado a partir da <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Falha ao receber o token de autenticação. Saia e faça login novamente para tentar mais uma vez.</translation>
-<translation id="1878302395768190018">Você pode alterar isso a qualquer momento nas configurações do Chrome</translation>
 <translation id="1879000426787380528">Fazer login como</translation>
 <translation id="1880905663253319515">Tem certeza que deseja excluir o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permitir que os sites peçam para se tornar manipuladores padrão de protocolos (recomendado)</translation>
@@ -1646,7 +1644,6 @@
 <translation id="3487007233252413104">função anônima</translation>
 <translation id="348780365869651045">Aguardando AppCache...</translation>
 <translation id="3488065109653206955">Ativado parcialmente</translation>
-<translation id="348999362308956431">Download concluído: <ph name="FILE_NAME" /></translation>
 <translation id="3492788708641132712">A sincronização não está funcionando. Tente fazer login novamente.</translation>
 <translation id="3493881266323043047">Validade</translation>
 <translation id="3494769164076977169">Perguntar quando um site tenta fazer o download de arquivos automaticamente após o primeiro arquivo (recomendado)</translation>
@@ -1675,6 +1672,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> quer usar seu microfone</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - Áudio desativado</translation>
 <translation id="3534879087479077042">O que é um usuário supervisionado?</translation>
+<translation id="353547388688256996">Abrindo <ph name="NUMBER_FILES" /></translation>
 <translation id="3538066758857505094">Erro ao instalar o Linux. Tente novamente.</translation>
 <translation id="354060433403403521">Carregador</translation>
 <translation id="354068948465830244">Pode ler e alterar os dados do site</translation>
@@ -2114,7 +2112,6 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arraste para mover uma tela</translation>
-<translation id="4192273449750167573">Revisar as configurações na próxima tela</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4194570336751258953">Ativar toque para clicar</translation>
 <translation id="4195249722193633765">Instalar aplicativo com o Linux (Beta)</translation>
@@ -2241,7 +2238,6 @@
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (também conhecida como NIST P-384)</translation>
 <translation id="4416582610654027550">Digite um URL válido</translation>
 <translation id="4419409365248380979">Sempre permitir que <ph name="HOST" /> configure cookies</translation>
-<translation id="4419556793104466535">Controle a sincronização, personalização e muito mais</translation>
 <translation id="4421932782753506458">Pelúcia</translation>
 <translation id="4422347585044846479">Editar favorito para esta página</translation>
 <translation id="4423376891418188461">Restaurar configurações</translation>
@@ -2380,7 +2376,6 @@
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> não está disponível para usuários visitantes.</translation>
 <translation id="4641539339823703554">Não foi possível para o Google Chrome configurar a hora do sistema. Verifique a hora abaixo e corrija-a, se necessário.</translation>
 <translation id="4643612240819915418">&amp;Abrir vídeo em uma nova guia</translation>
-<translation id="4644818355646995778">Fazendo o download, <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">&amp;Manter</translation>
 <translation id="4647090755847581616">&amp;Fechar guia</translation>
 <translation id="4647697156028544508">Insira o PIN para "<ph name="DEVICE_NAME" />":</translation>
@@ -2728,6 +2723,7 @@
 <translation id="5185386675596372454">A versão mais recente de "<ph name="EXTENSION_NAME" />" foi desativada porque requer mais permissões.</translation>
 <translation id="5187295959347858724">Você está conectado a <ph name="SHORT_PRODUCT_NAME" />. Seus favoritos, o histórico e outras configurações estão sendo sincronizados com sua Conta do Google.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="51918995459521422">Solicitação do download de vários arquivos feita por <ph name="ORIGIN" /></translation>
 <translation id="5204673965307125349">Execute o Powerwash do dispositivo e tente novamente.</translation>
 <translation id="5204967432542742771">Insira a senha</translation>
 <translation id="5206215183583316675">Quer excluir "<ph name="CERTIFICATE_NAME" />"?</translation>
@@ -2754,7 +2750,6 @@
 <translation id="5235750401727657667">Substituir a página que você vê ao abrir uma nova guia</translation>
 <translation id="5238278114306905396">O aplicativo "<ph name="EXTENSION_NAME" />" foi removido automaticamente.</translation>
 <translation id="5238369540257804368">Escopos</translation>
-<translation id="5240817131241497236">As configurações que controlam sincronização, personalização e outros serviços do Google no Chrome foram alteradas. Isso pode afetar suas configurações atuais.</translation>
 <translation id="5241128660650683457">Ler todos os dados sobre os websites que você visita</translation>
 <translation id="5242724311594467048">Ativar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Tente novamente em alguns instantes</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5449551289610225147">Senha inválida</translation>
 <translation id="5449588825071916739">Adicionar todas as guias aos favoritos</translation>
 <translation id="5449716055534515760">Fechar jan&amp;ela</translation>
-<translation id="5451285724299252438">caixa de texto do intervalo de páginas</translation>
 <translation id="5453029940327926427">Fechar guias</translation>
 <translation id="5454166040603940656">com <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Inválidos</translation>
@@ -3003,15 +2997,14 @@
 <translation id="5575528586625653441">Ocorreu um problema com a solicitação de registro de demonstração.</translation>
 <translation id="557722062034137776">Redefinir o dispositivo não afetará suas Contas do Google ou quaisquer dados sincronizados com essas contas. No entanto, todos os arquivos salvos localmente em seu dispositivo serão excluídos.</translation>
 <translation id="5578059481725149024">Login automático</translation>
-<translation id="5581700288664681403">Carregando <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="558170650521898289">Verificação de driver de hardware do Windows da Microsoft</translation>
 <translation id="5582839680698949063">Menu principal</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Salvar nome de usuário?</translation>
-<translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Essas são informações gerais sobre seu dispositivo e como você o utiliza (como nível da bateria, atividade do sistema e de apps e erros). Os dados serão usados para melhorar o Android, e algumas informações agregadas também ajudarão parceiros e apps do Google, como desenvolvedores do Android, a melhorar os apps e produtos deles.<ph name="END_PARAGRAPH1" />
+<translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Essas são informações gerais sobre seu dispositivo e como você o utiliza (como nível da bateria, atividade do sistema e de apps e erros). Os dados serão usados para melhorar o Android, e algumas informações agregadas também ajudarão apps e parceiros do Google, como desenvolvedores do Android, que poderão melhorar os apps e produtos deles.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />A desativação desse recurso não afeta a capacidade do dispositivo de enviar as informações necessárias para serviços básicos, como atualizações do sistema e segurança.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />O proprietário pode controlar esse recurso em "Configurações" &gt; "Avançado" &gt; "Enviar automaticamente dados de uso e diagnóstico ao Google".<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Se a configuração Atividade na Web e de apps adicional estiver ativada, esses dados poderão ser salvos na sua Conta do Google. Você pode ver seus dados, excluí-los e alterar as configurações da sua conta em account.google.com.<ph name="END_PARAGRAPH4" /></translation>
+    <ph name="BEGIN_PARAGRAPH4" />Se a configuração "Atividade na Web e de apps" adicional estiver ativada, esses dados poderão ser salvos na sua Conta do Google. Você pode ver seus dados, excluí-los e alterar as configurações da sua conta em account.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5585118885427931890">Não foi possível criar uma pasta de favoritos.</translation>
 <translation id="558563010977877295">Abrir uma página específica ou um conjunto de páginas.</translation>
 <translation id="5585912436068747822">Falha na formatação</translation>
@@ -3049,6 +3042,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5627086634964711283">Controla também qual página deve ser exibida quando você clica no botão "Página inicial".</translation>
 <translation id="5627676517703583263">Navegue com inteligência com o Chrome</translation>
 <translation id="562935524653278697">Seu administrador desativou a sincronização dos seus favoritos, histórico, senhas e outras configurações.</translation>
+<translation id="5632566673632479864">Não é mais permitido usar sua conta <ph name="EMAIL" /> como a principal. Como essa conta é gerenciada por <ph name="DOMAIN" />, seus favoritos, histórico, senhas e outras configurações serão excluídos deste dispositivo.</translation>
 <translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID" />, talvez seja necessário primeiro <ph name="LINK_START" />visitar a página de login da rede<ph name="LINK_END" />, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="5637476008227280525">Ativar dados móveis</translation>
@@ -3337,6 +3331,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6057381398996433816">Este site foi impedido de usar sensores de luz e movimento.</translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="60628369828239652">Abrindo arquivo <ph name="FILE_NAME" /></translation>
 <translation id="6064217302520318294">Bloqueio de tela</translation>
 <translation id="6065289257230303064">Atributos do diretório do requerente do certificado</translation>
 <translation id="6068338049763724728">Ativar registro remoto</translation>
@@ -3445,6 +3440,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6220413761270491930">Erro ao carregar extensão</translation>
 <translation id="6223447490656896591">Imagem personalizada:</translation>
 <translation id="6224481128663248237">A formatação foi concluída.</translation>
+<translation id="622537739776246443">O perfil será excluído</translation>
 <translation id="6225475702458870625">Conexão de dados disponível a partir do seu <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Arquivo de chaves particulares (opcional)</translation>
 <translation id="6227235786875481728">Não foi possível reproduzir este arquivo.</translation>
@@ -3545,6 +3541,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6380143666419481200">Aceitar e continuar</translation>
 <translation id="6384275966486438344">Alterar suas configurações de pesquisa para: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Os sites podem salvar e ler os dados dos cookies</translation>
+<translation id="6386099547750337629">Se isso for inesperado, entre em contato com o suporte.</translation>
 <translation id="6388429472088318283">Idiomas de pesquisa</translation>
 <translation id="6390799748543157332">As páginas que você visualiza nesta janela não aparecem no histórico do navegador e não deixam outros rastros, como cookies, no computador depois que todas as janelas abertas no modo de visitante são fechadas. No entanto, todos os arquivos baixados serão preservados.</translation>
 <translation id="6390994422085833176">Revise os recursos de sincronização e personalização após a configuração</translation>
@@ -3844,7 +3841,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6841186874966388268">Erros</translation>
 <translation id="6843423766595476978">Ok Google configurado</translation>
 <translation id="6845038076637626672">Abrir maximizado</translation>
-<translation id="685040365210406336">Não fazer alterações</translation>
 <translation id="6851497530878285708">App ativado</translation>
 <translation id="6853388645642883916">Atualizador em modo de espera</translation>
 <translation id="68541483639528434">Fechar outras guias</translation>
@@ -4005,7 +4001,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Trocar dados com os dispositivos chamados: <ph name="HOSTNAMES" /></translation>
 <translation id="7094583680070770403">Salve seus arquivos locais e configure uma nova conta.</translation>
-<translation id="7096857570999173890">Você pode usar o PIN para desbloquear o dispositivo quando sua conta estiver desconectada.</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="7098447629416471489">Outros mecanismos de pesquisa salvos serão exibidos aqui</translation>
 <translation id="7099337801055912064">Não é possível carregar um PPD grande. O tamanho máximo é 250 KB.</translation>
@@ -4496,7 +4491,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7831491651892296503">Erro ao configurar a rede</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Horário de término</translation>
-<translation id="7832327313660264358">Os dados sincronizados com o Google e os recursos usados não serão alterados</translation>
 <translation id="7833720883933317473">As palavras personalizadas salvas serão exibidas aqui</translation>
 <translation id="7835178595033117206">Favorito removido</translation>
 <translation id="7837307963048806839">•  $1</translation>
@@ -4606,7 +4600,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7984068253310542383">Espelhar <ph name="DISPLAY_NAME" /></translation>
 <translation id="7986295104073916105">Ler e alterar as configurações de senhas salvas</translation>
-<translation id="7987764905897278458">Aproveite mais a tecnologia do Google</translation>
 <translation id="7987814697832569482">Sempre se conectar usando esta VPN</translation>
 <translation id="798835209536175951">Envie e receba mensagens de texto no seu Chromebook.<ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">Permitir recursos de acessibilidade</translation>
@@ -4673,7 +4666,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8072988827236813198">Fixar guias</translation>
-<translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Os dados de apps podem ser quaisquer dados que um app tenha salvo (com base nas configurações de desenvolvedores), incluindo dados como contatos, mensagens e fotos.<ph name="END_PARAGRAPH1" />
+<translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Os dados de apps podem ser quaisquer dados que um app tenha salvado (com base nas configurações de desenvolvedores), incluindo dados como contatos, mensagens e fotos.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Os dados de backup não serão contabilizados na cota de armazenamento do Drive do seu filho.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />É possível desativar esse serviço nas configurações.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="8074127646604999664">Permitir que sites fechados recentemente concluam o envio e o recebimento de dados</translation>
@@ -4688,7 +4681,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8093359998839330381">O plug-in <ph name="PLUGIN_NAME" /> não está respondendo</translation>
 <translation id="8095105960962832018"><ph name="BEGIN_PARAGRAPH1" />Fazer backup no Google Drive. Restaure seus dados com facilidade ou troque de dispositivo a qualquer momento. O backup inclui dados de apps.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Os backups são enviados ao Google e criptografados usando a senha da sua Conta do Google.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />Os dados de apps podem ser quaisquer dados que um app tenha salvo (com base nas configurações de desenvolvedores), incluindo dados como contatos, mensagens e fotos.<ph name="END_PARAGRAPH3" />
+    <ph name="BEGIN_PARAGRAPH3" />Os dados de apps podem ser quaisquer dados que um app tenha salvado (com base nas configurações de desenvolvedores), incluindo dados como contatos, mensagens e fotos.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Os dados de backup não serão contabilizados na sua cota de armazenamento do Drive.<ph name="END_PARAGRAPH4" />
     <ph name="BEGIN_PARAGRAPH5" />É possível desativar esse serviço nas configurações.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Os PINs não correspondem</translation>
@@ -4800,10 +4793,10 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> desativou o cursor do mouse.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ativou a tela cheia.</translation>
-<translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Essas são informações gerais sobre esse dispositivo e como ele é utilizado (como nível da bateria, atividade do sistema e de apps e erros). Os dados serão usados para melhorar o Android, e algumas informações agregadas também ajudarão parceiros e apps do Google, como desenvolvedores do Android, a melhorar os apps e produtos deles.<ph name="END_PARAGRAPH1" />
+<translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Essas são informações gerais sobre esse dispositivo e como ele é utilizado (como nível da bateria, atividade do sistema e de apps e erros). Os dados serão usados para melhorar o Android, e algumas informações agregadas também ajudarão apps e parceiros do Google, como desenvolvedores do Android, que poderão melhorar os apps e produtos deles.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />A desativação desse recurso não afeta a capacidade do dispositivo de enviar as informações necessárias para serviços básicos como atualizações do sistema e segurança.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />O proprietário pode controlar esse recurso em "Configurações" &gt; "Avançado" &gt; "Enviar automaticamente dados de uso e diagnóstico ao Google".<ph name="END_PARAGRAPH3" />
-    <ph name="BEGIN_PARAGRAPH4" />Se a configuração Atividade na Web e de apps adicional estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. Saiba mais sobre essas configurações e como ajustá-las em families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+    <ph name="BEGIN_PARAGRAPH4" />Se a configuração "Atividade na Web e de apps" adicional estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. Saiba mais sobre essas configurações e como ajustá-las em families.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="8270242299912238708">Documentos em PDF</translation>
 <translation id="827097179112817503">Mostrar botão "Página inicial"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ favorito excluído}one{# favorito excluído}other{# favoritos excluídos}}</translation>
@@ -5023,7 +5016,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8650543407998814195">Embora você não possa mais acessar seu perfil antigo, ainda é possível removê-lo.</translation>
 <translation id="8651585100578802546">Forçar carregamento desta página</translation>
 <translation id="8652400352452647993">Erro de extensão de pacote</translation>
-<translation id="8652487083013326477">botão de opção do intervalo de páginas</translation>
 <translation id="8654151524613148204">O arquivo é muito grande para seu computador administrar.</translation>
 <translation id="8655295600908251630">Canal</translation>
 <translation id="8655319619291175901">Ops... Algo deu errado.</translation>
@@ -5435,6 +5427,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="981121421437150478">Off-line</translation>
 <translation id="983511809958454316">Esse recurso não é compatível com RV</translation>
 <translation id="984275831282074731">Formas de pagamento</translation>
+<translation id="984401732412731005">$1 pastas compartilhadas com o Linux</translation>
 <translation id="98515147261107953">Paisagem</translation>
 <translation id="987897973846887088">Não há imagens disponíveis</translation>
 <translation id="988978206646512040">A senha longa não pode ficar em branco</translation>

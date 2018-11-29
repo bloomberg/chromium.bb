@@ -279,6 +279,9 @@
 <translation id="1803646570632580723">Llista d'aplicacions fixades perquè es mostrin a la barra d'execució ràpida</translation>
 <translation id="1808715480127969042">Bloqueja les galetes en aquests llocs</translation>
 <translation id="1810261428246410396">Permet utilitzar Compartició de xarxa instantània</translation>
+<translation id="1817685358399181673">Aquesta política especifica la imatge del connector <ph name="PLUGIN_VM_NAME" /> per a un usuari. Per establir aquesta política, s'especifica l'URL des del qual el dispositiu pot baixar la imatge i un hash SHA-256 per verificar la integritat de la baixada.
+
+      La política s'ha d'especificar com una cadena en què s'indiquen l'URL i el hash en format JSON.</translation>
 <translation id="1827523283178827583">Fes servir servidors intermediaris fixos</translation>
 <translation id="1843117931376765605">Freqüència d'actualització de la política d'usuari</translation>
 <translation id="1844620919405873871">Configura polítiques relacionades amb el desbloqueig ràpid.</translation>
@@ -442,6 +445,10 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="214901426630414675">Restringeix el mode d'impressió a doble cara</translation>
 <translation id="2149330464730004005">Permet la impressió en color</translation>
 <translation id="2156132677421487971">Configura les polítiques per a <ph name="PRODUCT_NAME" />, una funció que permet als usuaris enviar el contingut de les pestanyes, dels llocs web o de l'escriptori des del navegador a pantalles remotes i sistemes de so.</translation>
+<translation id="2163878108829382394">
+        Si aquesta política s'estableix en "true", la inscripció a la gestió al núvol és obligatòria i bloqueja el procés per obrir Chrome si falla.
+
+        Si aquesta política es deixa sense establir, la inscripció a la gestió al núvol és opcional i bloqueja el procés per obrir Chrome si falla.</translation>
 <translation id="2166472654199325139">No filtris llocs web amb contingut per a adults</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
@@ -657,6 +664,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
 <translation id="2693108589792503178">Configura l'URL per canviar la contrasenya.</translation>
+<translation id="2696531058295423290">Permet que els dispositius utilitzin un <ph name="PLUGIN_VM_NAME" /> a <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
 
@@ -1345,6 +1353,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4483649828988077221">Desactiva l'actualització automàtica</translation>
 <translation id="4485425108474077672">Configura l'URL de la pàgina Pestanya nova</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
+<translation id="449423975179525290">Configura les polítiques relacionades amb <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers multimèdia de la memòria cau al disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà la mida de memòria cau proporcionada, tant si l'usuari ha marcat "--disk-cache-size" com si no. El valor que s'especifica en aquesta política no és un límit estricte, és més aviat un suggeriment per al sistema de memòria cau; qualsevol valor per sota d'uns quants megabytes és massa petit i s'arrodonirà a l'alça per arribar a un mínim acceptable.
@@ -2586,6 +2595,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Tingues en compte que aquestes restriccions s'apliquen a baixades activades des del contingut de la pàgina web, així com des de l'opció de menú contextual Baixa l'enllaç. Aquestes restriccions no s'apliquen a l'opció de desar o baixar la pàgina mostrada actualment ni a l'opció de desar com a PDF que s'inclou a les opcions d'impressió.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Permet que aquest dispositiu executi PluginVm.
+
+      Si la política s'estableix en "false" o es deixa sense establir, no s'activa <ph name="PLUGIN_VM_NAME" /> per al dispositiu. Si s'estableix en "true", s'activa <ph name="PLUGIN_VM_NAME" /> per al dispositiu sempre que ho permetin altres opcions de configuració. Perquè es permeti executar <ph name="PLUGIN_VM_NAME" />, la política <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> ha de ser "true" i <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> ha d'estar establerta.</translation>
 <translation id="7643883929273267746">Restringeix els comptes que es poden veure a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
 <translation id="7673194325208122247">Període de temps (mil·lisegons)</translation>
@@ -3028,6 +3040,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si s'activa o no es defineix aquesta configuració, l'historial de navegació i de baixades es pot suprimir.
 
       Si es desactiva aquesta configuració, l'historial de navegació i de baixades no es pot suprimir.</translation>
+<translation id="8758831693895931466">Activa la inscripció obligatòria a la gestió al núvol</translation>
 <translation id="8759829385824155666">Tipus d'encriptació Kerberos permesos</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
 <translation id="8782750230688364867">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan el dispositiu estigui en mode de presentació.

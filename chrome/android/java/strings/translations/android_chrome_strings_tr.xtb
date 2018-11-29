@@ -72,7 +72,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1445680696957526815">Chrome bileşenleri birbirleriyle uyumlu değil. Chrome yeni sürüme geçiyor olabilir, lütfen birkaç dakika sonra tekrar deneyin. Sorun devam ederse Chrome'u kaldırıp yeniden yüklemeyi deneyin.</translation>
 <translation id="1446450296470737166">MIDI cihazlarının tam denetimine izin verme</translation>
 <translation id="145097072038377568">Android Ayarları'ndan kapatıldı</translation>
-<translation id="1469898724493126466">Web'in en iyilerini buluyoruz.</translation>
 <translation id="1477626028522505441">Sunucu sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="1501480321619201731">Grubu sil</translation>
 <translation id="1506061864768559482">Arama motoru</translation>
@@ -87,7 +86,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1571304935088121812">Kullanıcı adını kopyala</translation>
 <translation id="1576370611341449972">İndirme işlemleri sadece kablosuz bağlantı olduğunda yapılır</translation>
 <translation id="1612196535745283361">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. Konum bilgilerine erişim <ph name="BEGIN_LINK" />bu cihaz için kapalı<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Senkronizasyon, kişiselleştirme ve diğer Google hizmetlerini aç</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 seçili öğeyi kaldır}other{# seçili öğeyi kaldır}}</translation>
@@ -117,7 +115,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="1868024384445905608">Chrome artık dosyaları daha hızlı indiriyor</translation>
 <translation id="187628348035757895">Geliştirici seçenekleri</translation>
-<translation id="1878302395768190018">Bunu istediğiniz zaman Chrome Ayarlarından özelleştirebilirsiniz</translation>
 <translation id="1880072593381090678">Chrome'dan popüler sayfalar</translation>
 <translation id="1883903952484604915">Dosyalarım</translation>
 <translation id="1887786770086287077">Konum erişimi bu cihaz için kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
@@ -360,7 +357,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3819562311292413223">Sizin için seçilmiş makaleleri indirin</translation>
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
-<translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
 <translation id="3868004864571585162">Çerezler, medya lisansları ve site verileri</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
@@ -407,7 +403,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> miktar</translation>
 <translation id="4181841719683918333">Diller</translation>
-<translation id="4192273449750167573">Bir sonraki ekranda ayarları gözden geçir</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4198423547019359126">Kullanılabilir indirme yeri yok</translation>
 <translation id="4209895695669353772">Google tarafından önerilen kişiselleştirilmiş içeriği almak için senkronizasyonu açın</translation>
@@ -431,7 +426,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4398088515904522762">Bu özelliği kullanmak için <ph name="BEGIN_LINK" />Etkinlik ve etkileşimler<ph name="END_LINK" />'i açın.</translation>
 <translation id="4404568932422911380">Yer işareti yok</translation>
 <translation id="4409723563706114196">Sayfa tahminlerini kullan</translation>
-<translation id="4419556793104466535">Senkronizasyon, kişiselleştirme ve daha fazla özelliği kontrol edin</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfalar artık <ph name="TARGET_LANGUAGE" /> diline çevrilecek</translation>
 <translation id="4433925000917964731">Google tarafından sağlanan basit sayfa</translation>
 <translation id="4434045419905280838">Pop-up'lar ve yönlendirmeler</translation>
@@ -546,7 +540,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5224771365102442243">Videolu</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
-<translation id="5240817131241497236">Chrome'da senkronizasyon, kişiselleştirme ve diğer Google hizmetlerini kontrol eden ayarlar değişti. Bu durum geçerli ayarlarınızı etkileyebilir.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" />'ı istediğiniz zaman özelleştirebilirsiniz. Google; Chrome'un yanı sıra Çeviri, Arama ve reklamlar gibi diğer Google hizmetlerini kişiselleştirmek için, ziyaret ettiğiniz sitelerdeki içeriği, tarayıcı etkinliğini ve etkileşimleri kullanabilir.</translation>
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
 <translation id="5274381992091475657">Otomatik Doldurma Asistanı</translation>
@@ -586,7 +579,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5514904542973294328">Bu cihazın yöneticisi tarafından devre dışı bırakıldı</translation>
 <translation id="5515439363601853141">Şifrenizi görüntülemek için kilidi açın</translation>
-<translation id="5515716148775388141">Simgeleriniz ekranın altına taşındı</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> hesabından yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız var.</translation>
 <translation id="5524843473235508879">Yönlendirme engellendi.</translation>
 <translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum bilgilerine erişim <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
 <translation id="6140912465461743537">Ülke/Bölge</translation>
+<translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6154478581116148741">Bu cihazdaki şifrelerinizi dışarı aktarmak için Ayarlar'da ekran kilidini açın</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
@@ -773,7 +766,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6846298663435243399">Yükleniyor…</translation>
-<translation id="685040365210406336">Herhangi bir değişiklik yapma</translation>
 <translation id="6850409657436465440">İndirme işleminiz hâlâ devam ediyor</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> sekme kapatıldı</translation>
 <translation id="6864459304226931083">Resmi indir</translation>
@@ -827,6 +819,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7189372733857464326">Güncellemenin tamamlanması için Google Play Hizmetleri bekleniyor</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
+<translation id="7221869452894271364">Bu sayfayı yeniden yükle</translation>
 <translation id="723171743924126238">Resim seç</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
@@ -902,7 +895,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
-<translation id="7832327313660264358">Google ile senkronize ettiğiniz veriler ve kullandığınız özellikler değişmez</translation>
 <translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
@@ -921,7 +913,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="79859296434321399">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u yükleyin</translation>
 <translation id="7986741934819883144">Kişi seçin</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
-<translation id="7987764905897278458">Google zekasından daha fazla yararlanın</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="7999064672810608036">Bu web sitesine ilişkin çerezler dahil tüm yerel verileri temizlemek ve bu sitenin tüm izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
 <translation id="8004582292198964060">Tarayıcı</translation>
@@ -998,7 +989,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
-<translation id="8555322348396635979">Hay aksi! Bir sorun oluştu. Lütfen bağlantınızı kontrol edin.</translation>
 <translation id="8558485628462305855">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u güncelleyin</translation>
 <translation id="8559990750235505898">Diğer dillerdeki sayfaları çevirmeyi öner</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>

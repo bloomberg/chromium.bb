@@ -72,7 +72,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1445680696957526815">Chromes komponenter är inte inbördes kompatibla. Kanske håller Chrome på att uppgraderas. Försök igen om några minuter. Om problemet kvarstår testar du att avinstallera och sedan installera om Chrome.</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
 <translation id="145097072038377568">Inaktiverad i Android-inställningarna</translation>
-<translation id="1469898724493126466">Letar efter det bästa på webben.</translation>
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
 <translation id="1501480321619201731">Ta bort grupp</translation>
 <translation id="1506061864768559482">Sökmotor</translation>
@@ -87,7 +86,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1571304935088121812">Kopiera användarnamn</translation>
 <translation id="1576370611341449972">Nedladdningar görs endast via Wi-Fi</translation>
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Aktivera synkronisering, anpassning och andra tjänster från Google</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ta bort 1 markerat objekt}other{Ta bort # markerade objekt}}</translation>
@@ -117,7 +115,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
 <translation id="187628348035757895">Utvecklaralternativ</translation>
-<translation id="1878302395768190018">Du kan när som helst ändra detta i Chrome-inställningarna</translation>
 <translation id="1880072593381090678">Populära sidor från Chrome</translation>
 <translation id="1883903952484604915">Mina filer</translation>
 <translation id="1887786770086287077">Platsåtkomst har inaktiverats på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -360,7 +357,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3819562311292413223">Ladda ned artiklar för dig</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
-<translation id="385051799172605136">Bakåt</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="3868004864571585162">Cookies, medielicenser och webbplatsdata</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -407,7 +403,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> har använts</translation>
 <translation id="4181841719683918333">Språk</translation>
-<translation id="4192273449750167573">Granska inställningarna på nästa skärm</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
 <translation id="4209895695669353772">Aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
@@ -431,7 +426,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4398088515904522762">Aktivera <ph name="BEGIN_LINK" />Aktivitet och interaktion<ph name="END_LINK" /> om du vill använda den här funktionen.</translation>
 <translation id="4404568932422911380">Inga bokmärken</translation>
 <translation id="4409723563706114196">Använd sidförslag</translation>
-<translation id="4419556793104466535">Styr synkronisering, anpassning med mera</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4433925000917964731">Lite-sida tillhandahållen av Google</translation>
 <translation id="4434045419905280838">Popup-fönster och omdirigeringar</translation>
@@ -546,7 +540,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5233638681132016545">Ny flik</translation>
-<translation id="5240817131241497236">Inställningarna som styr synkronisering, anpassning och andra tjänster från Google i Chrome har ändrats. Detta kan påverka dina nuvarande inställningar.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Inställningarna<ph name="END_LINK1" /> kan anpassas när som helst. Google kan anpassa Chrome och andra tjänster från Google som Översätt, Sök och annonser utifrån innehållet på webbplatser du besöker samt aktivitet i och interaktion med webbläsaren.</translation>
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
 <translation id="5274381992091475657">Autofyll för assistenten</translation>
@@ -586,7 +579,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Har inaktiverats av enhetens administratör</translation>
 <translation id="5515439363601853141">Lås upp om du vill visa lösenordet</translation>
-<translation id="5515716148775388141">Ikonerna har flyttats längst ned på skärmen</translation>
 <translation id="5517095782334947753">Du har bokmärken, historik, lösenord och andra inställningar från <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Omdirigeringen blockerades.</translation>
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
 <translation id="6140912465461743537">Land/region</translation>
+<translation id="614940544461990577">Testa att</translation>
 <translation id="6154478581116148741">Aktivera ett skärmlås i inställningarna om du vill exportera lösenord från den här enheten.</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
@@ -773,7 +766,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6846298663435243399">Läser in…</translation>
-<translation id="685040365210406336">Ändra ingenting</translation>
 <translation id="6850409657436465440">Nedladdningen pågår fortfarande</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
@@ -827,6 +819,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
+<translation id="7221869452894271364">Hämta sidan igen</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
@@ -902,7 +895,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
-<translation id="7832327313660264358">Ingenting ändras i fråga om vilken data som synkroniseras med Google eller vilka funktioner du använder</translation>
 <translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
@@ -921,7 +913,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="79859296434321399">Installera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="7986741934819883144">Välj en kontakt</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
-<translation id="7987764905897278458">Få mer Google-teknik</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
 <translation id="8004582292198964060">Webbläsare</translation>
@@ -998,7 +989,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
-<translation id="8555322348396635979">Hoppsan! Något gick fel. Kontrollera anslutningen.</translation>
 <translation id="8558485628462305855">Uppdatera ARCore om du vill visa innehåll med förstärkt verklighet</translation>
 <translation id="8559990750235505898">Erbjud översättning av sidor till andra språk</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>

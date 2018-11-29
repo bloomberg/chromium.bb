@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">คอมโพเนนต์ของ Chrome ไม่สามารถทำงานร่วมกันได้ Chrome อาจกำลังอัปเกรด โปรดรอสักครู่แล้วลองอีกครั้ง หากยังมีปัญหาอยู่ ให้ลองถอนการติดตั้งและติดตั้ง Chrome ใหม่อีกครั้ง</translation>
 <translation id="1446450296470737166">ควบคุมอุปกรณ์ MIDI ได้สมบูรณ์</translation>
 <translation id="145097072038377568">ปิดในการตั้งค่า Android</translation>
-<translation id="1469898724493126466">กำลังหาข้อมูลที่ดีที่สุดจากเว็บ</translation>
 <translation id="1477626028522505441">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเซิร์ฟเวอร์มีปัญหา</translation>
 <translation id="1501480321619201731">ลบกลุ่ม</translation>
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
 <translation id="1576370611341449972">การดาวน์โหลดจะเกิดขึ้นเมื่อเชื่อมต่อ Wi-Fi เท่านั้น</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
-<translation id="162035744160882748">เปิดการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{นำ 1 รายการที่เลือกออก}other{นำ # รายการที่เลือกออก}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="1868024384445905608">ตอนนี้ Chrome ดาวน์โหลดไฟล์ได้เร็วขึ้นแล้ว</translation>
 <translation id="187628348035757895">ตัวเลือกสำหรับนักพัฒนาซอฟต์แวร์</translation>
-<translation id="1878302395768190018">ปรับแต่งการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="1880072593381090678">หน้ายอดนิยมจาก Chrome</translation>
 <translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3819562311292413223">ดาวน์โหลดบทความสำหรับคุณ</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
-<translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3868004864571585162">คุกกี้ ใบอนุญาตสื่อ และข้อมูลเว็บไซต์</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4179980317383591987">ใช้ไปแล้ว <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">ภาษา</translation>
-<translation id="4192273449750167573">ตรวจสอบการตั้งค่าในหน้าจอถัดไป</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">หากต้องการใช้ฟีเจอร์นี้ ให้เปิด<ph name="BEGIN_LINK" />กิจกรรมและการโต้ตอบ<ph name="END_LINK" /></translation>
 <translation id="4404568932422911380">ไม่มีบุ๊กมาร์ก</translation>
 <translation id="4409723563706114196">ใช้การคาดคะเนหน้า</translation>
-<translation id="4419556793104466535">ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และอื่นๆ</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">หน้าเวอร์ชัน Lite ให้บริการโดย Google</translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5224771365102442243">มีวิดีโอ</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
-<translation id="5240817131241497236">การตั้งค่าที่ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google ใน Chrome มีการเปลี่ยนแปลง ซึ่งอาจส่งผลต่อการตั้งค่าปัจจุบันของคุณ</translation>
 <translation id="5264003212305142034">คุณปรับแต่ง<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" />ได้ทุกเมื่อ Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงการโต้ตอบและกิจกรรมในเบราว์เซอร์เพื่อปรับ Chrome และบริการอื่นๆ ของ Google อย่างเช่น แปลภาษา, Search และโฆษณาให้เหมาะกับคุณ</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="5274381992091475657">Assistant ป้อนข้อความอัตโนมัติ</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
 <translation id="5514904542973294328">ปิดใช้โดยผู้ดูแลระบบของอุปกรณ์นี้</translation>
 <translation id="5515439363601853141">ปลดล็อกเพื่อดูรหัสผ่าน</translation>
-<translation id="5515716148775388141">ไอคอนต่างๆ ย้ายไปที่ด้านล่างของหน้าจอแล้ว</translation>
 <translation id="5517095782334947753">คุณมีบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จาก <ph name="FROM_ACCOUNT" /></translation>
 <translation id="5524843473235508879">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="5527082711130173040">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK1" />อัปเดตสิทธิ์<ph name="END_LINK1" /> การเข้าถึงตำแหน่ง<ph name="BEGIN_LINK2" />สำหรับอุปกรณ์เครื่องนี้ยังปิดอยู่<ph name="END_LINK2" /></translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
+<translation id="614940544461990577">ลอง:</translation>
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
-<translation id="685040365210406336">ไม่เปลี่ยนแปลง</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
+<translation id="7221869452894271364">โหลดหน้านี้ใหม่</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7250468141469952378">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ</translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
-<translation id="7832327313660264358">ข้อมูลที่คุณซิงค์กับ Google และฟีเจอร์ที่ใช้จะไม่เปลี่ยนแปลง</translation>
 <translation id="7837721118676387834">อนุญาตให้เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติสำหรับบางเว็บไซต์</translation>
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="784934925303690534">ช่วงเวลา</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">ติดตั้ง ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
 <translation id="7986741934819883144">เลือกรายชื่อติดต่อ</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
-<translation id="7987764905897278458">ใช้ฟีเจอร์เจ๋งๆ จาก Google มากขึ้น</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="7999064672810608036">คุณแน่ใจไหมว่าต้องการล้างข้อมูลในเครื่องทั้งหมด รวมถึงคุกกี้ และรีเซ็ตสิทธิ์ทั้งหมดสำหรับเว็บไซต์นี้</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">บล็อกเว็บไซต์ไม่ให้เชื่อมต่อกับอุปกรณ์</translation>
 <translation id="8523928698583292556">ลบรหัสผ่านที่เก็บไว้</translation>
 <translation id="854522910157234410">เปิดหน้านี้</translation>
-<translation id="8555322348396635979">อ๊ะ! เกิดข้อผิดพลาดบางอย่าง โปรดตรวจสอบการเชื่อมต่อ</translation>
 <translation id="8558485628462305855">อัปเดต ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
 <translation id="8559990750235505898">เสนอที่จะแปลหน้าในภาษาอื่นๆ</translation>
 <translation id="8562452229998620586">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>

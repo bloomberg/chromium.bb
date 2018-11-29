@@ -72,7 +72,6 @@
 <translation id="1445680696957526815">‏הרכיבים של Chrome אינם תואמים זה לזה. ייתכן ש-Chrome מבצע שדרוג, נסה שוב בעוד כמה דקות. אם הבעיה נמשכת, נסה להסיר את Chrome ולהתקין אותו מחדש.</translation>
 <translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
 <translation id="145097072038377568">‏כבוי בהגדרות Android</translation>
-<translation id="1469898724493126466">התוכן האיכותי ביותר נטען מהאינטרנט.</translation>
 <translation id="1477626028522505441">הורדת <ph name="FILE_NAME" /> נכשלה עקב בעיות בשרת.</translation>
 <translation id="1501480321619201731">מחיקת קבוצה</translation>
 <translation id="1506061864768559482">מנוע חיפוש</translation>
@@ -87,7 +86,6 @@
 <translation id="1571304935088121812">העתק שם משתמש</translation>
 <translation id="1576370611341449972">‏הורדה רק בחיבור Wi-Fi</translation>
 <translation id="1612196535745283361">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. הגישה למיקום <ph name="BEGIN_LINK" />כבויה במכשיר הזה<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">‏הפעלת סינכרון, התאמה אישית ושירותים אחרים של Google</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{הסר פריט אחד שנבחר}two{הסר # פריטים שנבחרו}many{הסר # פריטים שנבחרו}other{הסר # פריטים שנבחרו}}</translation>
@@ -117,7 +115,6 @@
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1868024384445905608">‏הורדת קבצים ב-Chrome מתבצעת עכשיו מהר יותר</translation>
 <translation id="187628348035757895">אפשרויות למפתחים</translation>
-<translation id="1878302395768190018">‏אפשר תמיד להתאים אישית דרך הגדרות Chrome</translation>
 <translation id="1880072593381090678">‏דפים פופולריים מ-Chrome</translation>
 <translation id="1883903952484604915">הקבצים שלי</translation>
 <translation id="1887786770086287077">‏הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -360,7 +357,6 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> הורדות נמחקו</translation>
 <translation id="3819562311292413223">הורדת מאמרים שעשויים לעניין אותך</translation>
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
-<translation id="385051799172605136">חזור</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
 <translation id="3868004864571585162">‏קובצי Cookie, רישיונות מדיה ונתוני אתרים</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
@@ -407,7 +403,6 @@
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4179980317383591987">נעשה שימוש ב-<ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">שפות</translation>
-<translation id="4192273449750167573">אפשר לבדוק את ההגדרות במסך הבא</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
@@ -431,7 +426,6 @@
 <translation id="4398088515904522762">כדי להשתמש בתכונה צריך להפעיל את <ph name="BEGIN_LINK" />פעילות ואינטראקציות<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">ללא סימניות</translation>
 <translation id="4409723563706114196">שימוש בחיזויי דפים</translation>
-<translation id="4419556793104466535">שליטה בסינכרון, התאמה אישית ועוד</translation>
 <translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
 <translation id="4433925000917964731">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
@@ -546,7 +540,6 @@
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5224771365102442243">כולל סרטון</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
-<translation id="5240817131241497236">‏ההגדרות ששולטות בסינכרון, בהתאמה אישית ובשירותים אחרים של Google ב-Chrome השתנו. השינוי עשוי להשפיע על ההגדרות הנוכחיות שלך.</translation>
 <translation id="5264003212305142034">‏בכל שלב ניתן להתאים אישית את <ph name="BEGIN_LINK1" />ההגדרות<ph name="END_LINK1" />. Google עשויה להשתמש בתוכן באתרים שביקרת בהם, וגם בפעילות בדפדפן ובאינטראקציות, כדי להתאים אישית את Chrome ושירותי Google אחרים כמו Translate, חיפוש ומודעות.</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="5274381992091475657">‏Assistant למילוי אוטומטי</translation>
@@ -586,7 +579,6 @@
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5515439363601853141">ביטול הנעילה יציג את הסיסמה</translation>
-<translation id="5515716148775388141">הסמלים הועברו אל החלק התחתון של המסך</translation>
 <translation id="5517095782334947753">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
@@ -674,6 +666,7 @@
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6140912465461743537">ארץ/אזור</translation>
+<translation id="614940544461990577">נסה:</translation>
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -773,7 +766,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">תרגום</translation>
 <translation id="6846298663435243399">טוען…</translation>
-<translation id="685040365210406336">לא לבצע שינויים</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
@@ -827,6 +819,7 @@
 <translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
+<translation id="7221869452894271364">רענן את הדף</translation>
 <translation id="723171743924126238">בחר תמונות</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
@@ -902,7 +895,6 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
-<translation id="7832327313660264358">‏הנתונים המסונכרנים עם Google והתכונות שבהן בחרת להשתמש לא ישתנו</translation>
 <translation id="7837721118676387834">אפשר הפעלה אוטומטית של סרטונים מושתקים באתר ספציפי.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="784934925303690534">טווח זמן</translation>
@@ -921,7 +913,6 @@
 <translation id="79859296434321399">‏כדי להציג תוכן של מציאות רבודה, צריך להתקין את ARCore</translation>
 <translation id="7986741934819883144">בחירת איש קשר</translation>
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
-<translation id="7987764905897278458">‏גישה אל עוד יכולות חכמות של Google</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
 <translation id="8004582292198964060">דפדפן</translation>
@@ -998,7 +989,6 @@
 <translation id="851751545965956758">חסימת התחברות של אתרים אל התקנים</translation>
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
-<translation id="8555322348396635979">אופס! משהו השתבש. צריך לבדוק את החיבור.</translation>
 <translation id="8558485628462305855">‏כדי להציג תוכן של מציאות רבודה, צריך לעדכן את ARCore</translation>
 <translation id="8559990750235505898">הצעה לתרגם דפים בשפות אחרות</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
