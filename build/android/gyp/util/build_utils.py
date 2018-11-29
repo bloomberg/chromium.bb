@@ -354,7 +354,7 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
 
   Args:
     inputs: A list of paths to zip, or a list of (zip_path, fs_path) tuples.
-    output: Destination .zip file.
+    output: Path, fileobj, or ZipFile instance to add files to.
     base_dir: Prefix to strip from inputs.
     compress_fn: Applied to each input to determine whether or not to compress.
         By default, items will be |zipfile.ZIP_STORED|.
@@ -368,12 +368,20 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
 
   # Sort by zip path to ensure stable zip ordering.
   input_tuples.sort(key=lambda tup: tup[0])
-  with zipfile.ZipFile(output, 'w') as outfile:
+
+  out_zip = output
+  if not isinstance(output, zipfile.ZipFile):
+    out_zip = zipfile.ZipFile(output, 'w')
+
+  try:
     for zip_path, fs_path in input_tuples:
       if zip_prefix_path:
         zip_path = os.path.join(zip_prefix_path, zip_path)
       compress = compress_fn(zip_path) if compress_fn else None
-      AddToZipHermetic(outfile, zip_path, src_path=fs_path, compress=compress)
+      AddToZipHermetic(out_zip, zip_path, src_path=fs_path, compress=compress)
+  finally:
+    if output is not out_zip:
+      out_zip.close()
 
 
 def ZipDir(output, base_dir, compress_fn=None, zip_prefix_path=None):
@@ -393,23 +401,21 @@ def MatchesGlob(path, filters):
   return filters and any(fnmatch.fnmatch(path, f) for f in filters)
 
 
-def MergeZips(output, input_zips, path_transform=None):
+def MergeZips(output, input_zips, path_transform=None, compress=None):
   """Combines all files from |input_zips| into |output|.
 
   Args:
-    output: Path or ZipFile instance to add files to.
+    output: Path, fileobj, or ZipFile instance to add files to.
     input_zips: Iterable of paths to zip files to merge.
     path_transform: Called for each entry path. Returns a new path, or None to
         skip the file.
+    compress: Overrides compression setting from origin zip entries.
   """
   path_transform = path_transform or (lambda p: p)
   added_names = set()
 
-  output_is_already_open = not isinstance(output, basestring)
-  if output_is_already_open:
-    assert isinstance(output, zipfile.ZipFile)
-    out_zip = output
-  else:
+  out_zip = output
+  if not isinstance(output, zipfile.ZipFile):
     out_zip = zipfile.ZipFile(output, 'w')
 
   try:
@@ -426,11 +432,18 @@ def MergeZips(output, input_zips, path_transform=None):
             continue
           already_added = dst_name in added_names
           if not already_added:
-            AddToZipHermetic(out_zip, dst_name, data=in_zip.read(info),
-                             compress=info.compress_type != zipfile.ZIP_STORED)
+            if compress is not None:
+              compress_entry = compress
+            else:
+              compress_entry = info.compress_type != zipfile.ZIP_STORED
+            AddToZipHermetic(
+                out_zip,
+                dst_name,
+                data=in_zip.read(info),
+                compress=compress_entry)
             added_names.add(dst_name)
   finally:
-    if not output_is_already_open:
+    if output is not out_zip:
       out_zip.close()
 
 
@@ -561,7 +574,7 @@ def ExpandFileArgs(args):
     for k in lookup_path[1:]:
       expansion = expansion[k]
 
-    # This should match ParseGNList. The output is either a GN-formatted list
+    # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).
     if isinstance(expansion, list):
       new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)
