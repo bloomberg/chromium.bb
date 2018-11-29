@@ -54079,6 +54079,13 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Desktop Aura"/>
 </enum>
 
+<enum name="WindowOcclusionState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Visible"/>
+  <int value="2" label="Occluded"/>
+  <int value="3" label="Hidden"/>
+</enum>
+
 <enum name="WindowOpenDisposition">
   <int value="0" label="Unknown"/>
   <int value="1" label="Current Tab"/>

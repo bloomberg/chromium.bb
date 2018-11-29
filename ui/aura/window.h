@@ -96,20 +96,23 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     STACK_ABOVE,
     STACK_BELOW
   };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class OcclusionState {
     // The window's occlusion state isn't tracked (Window::TrackOcclusionState)
     // or hasn't been computed yet.
-    UNKNOWN,
+    UNKNOWN = 0,
     // The window or one of its descendants IsVisible() [1] and:
     // - Its bounds aren't completely covered by fully opaque windows [2], or,
     // - Its transform, bounds or opacity is animated.
-    VISIBLE,
+    VISIBLE = 1,
     // The window or one of its descendants IsVisible() [1], but they all:
     // - Have bounds completely covered by fully opaque windows [2], and,
     // - Have no transform, bounds or opacity animation.
-    OCCLUDED,
+    OCCLUDED = 2,
     // The window is not IsVisible() [1].
-    HIDDEN,
+    HIDDEN = 3,
     // [1] A window can only be IsVisible() if all its parent are IsVisible().
     // [2] A window is "fully opaque" if:
     // - It's visible (IsVisible()).
@@ -122,6 +125,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     //
     // TODO(fdoray): A window that clips its children shouldn't be VISIBLE just
     // because it has an animated child.
+    kMaxValue = HIDDEN,
   };
 
   typedef std::vector<Window*> Windows;
