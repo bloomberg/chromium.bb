@@ -67,6 +67,10 @@ bool IsTextureResource(DisplayResourceProvider* resource_provider,
   return !resource_provider->IsResourceSoftwareBacked(resource_id);
 }
 
+bool ApplyTransformAndScissorToTileRect(const gfx::Transform& transform) {
+  return transform.IsPositiveScaleOrTranslation();
+}
+
 }  // namespace
 
 // Scoped helper class for building SkImage from resource id.
@@ -540,8 +544,8 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
   const gfx::Rect* scissor_rect =
       is_scissor_enabled_ ? &scissor_rect_ : nullptr;
-  PrepareCanvasForDrawQuads(quad->shared_quad_state, draw_region, scissor_rect,
-                            &auto_canvas_restore);
+  PrepareCanvasForDrawQuads(quad->shared_quad_state->quad_to_target_transform,
+                            draw_region, scissor_rect, &auto_canvas_restore);
 
   SkPaint paint;
   if (settings_->force_antialiasing ||
@@ -605,30 +609,40 @@ bool SkiaRenderer::MustDrawBatchedTileQuadsBeforeQuad(
     return false;
 
   bool has_draw_region = draw_region != nullptr;
-  if (batched_tile_state_.shared_quad_state != new_quad->shared_quad_state ||
-      batched_tile_state_.has_scissor_rect != is_scissor_enabled_ ||
-      (is_scissor_enabled_ &&
-       batched_tile_state_.scissor_rect != scissor_rect_) ||
-      batched_tile_state_.has_draw_region != has_draw_region ||
+
+  if (new_quad->material != DrawQuad::TILED_CONTENT)
+    return true;
+
+  if (ApplyTransformAndScissorToTileRect(
+          new_quad->shared_quad_state->quad_to_target_transform)) {
+    if (!batched_tile_state_.transform.IsIdentity())
+      return true;
+    DCHECK(!batched_tile_state_.has_scissor_rect);
+  } else {
+    if (batched_tile_state_.transform !=
+            new_quad->shared_quad_state->quad_to_target_transform ||
+        batched_tile_state_.has_scissor_rect != is_scissor_enabled_ ||
+        (is_scissor_enabled_ &&
+         batched_tile_state_.scissor_rect != scissor_rect_))
+      return true;
+  }
+
+  if (batched_tile_state_.blend_mode != new_quad->shared_quad_state->blend_mode)
+    return true;
+
+  if (batched_tile_state_.has_draw_region != has_draw_region ||
       (has_draw_region && batched_tile_state_.draw_region != *draw_region))
     return true;
 
-  switch (new_quad->material) {
-    case DrawQuad::TILED_CONTENT:
-      // TODO(bsalomon): Check whether we can simply assume all tiles with the
-      // same SharedQuadState agree about filtering.
-      return TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
-             batched_tile_state_.is_nearest_neighbor;
-    case DrawQuad::SOLID_COLOR:
-      // Solid tiles from the same layer should not overlap tile quads.
-      return false;
-    default:
-      return true;
-  }
+  if (TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
+      batched_tile_state_.is_nearest_neighbor)
+    return true;
+
+  return false;
 }
 
 void SkiaRenderer::PrepareCanvasForDrawQuads(
-    const SharedQuadState* shared_quad_state,
+    const gfx::Transform& quad_to_target_transform,
     const gfx::QuadF* draw_region,
     const gfx::Rect* scissor_rect,
     base::Optional<SkAutoCanvasRestore>* auto_canvas_restore) {
@@ -640,7 +654,7 @@ void SkiaRenderer::PrepareCanvasForDrawQuads(
 
   gfx::Transform contents_device_transform =
       current_frame()->window_matrix * current_frame()->projection_matrix *
-      shared_quad_state->quad_to_target_transform;
+      quad_to_target_transform;
   contents_device_transform.FlattenTo2d();
   SkMatrix sk_device_matrix;
   gfx::TransformToFlattenedSkMatrix(contents_device_transform,
@@ -772,15 +786,24 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
                                       const gfx::QuadF* draw_region) {
   DCHECK(!MustDrawBatchedTileQuadsBeforeQuad(quad, draw_region));
+  bool applyTransformAndScissor = ApplyTransformAndScissorToTileRect(
+      quad->shared_quad_state->quad_to_target_transform);
   if (batched_tiles_.empty()) {
-    batched_tile_state_.shared_quad_state = quad->shared_quad_state;
-    batched_tile_state_.scissor_rect = scissor_rect_;
     if (draw_region) {
       batched_tile_state_.draw_region = *draw_region;
     }
+    batched_tile_state_.blend_mode = quad->shared_quad_state->blend_mode;
     batched_tile_state_.is_nearest_neighbor = quad->nearest_neighbor;
-    batched_tile_state_.has_scissor_rect = is_scissor_enabled_;
     batched_tile_state_.has_draw_region = (draw_region != nullptr);
+    if (applyTransformAndScissor) {
+      batched_tile_state_.transform = gfx::Transform();
+      batched_tile_state_.has_scissor_rect = false;
+    } else {
+      batched_tile_state_.transform =
+          quad->shared_quad_state->quad_to_target_transform;
+      batched_tile_state_.has_scissor_rect = is_scissor_enabled_;
+      batched_tile_state_.scissor_rect = scissor_rect_;
+    }
   }
 
   // |resource_provider_| can be NULL in resourceless software draws, which
@@ -793,7 +816,7 @@ void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
   gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect),
       gfx::RectF(quad->visible_rect));
-  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
+
   unsigned aa_flags = SkCanvas::kNone_QuadAAFlags;
   if (settings_->allow_antialiasing || settings_->force_antialiasing) {
     if (quad->IsLeftEdge())
@@ -805,8 +828,42 @@ void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
     if (quad->IsBottomEdge())
       aa_flags |= SkCanvas::kBottom_QuadAAFlag;
   }
+  gfx::RectF quad_rect = gfx::RectF(quad->visible_rect);
+  if (applyTransformAndScissor) {
+    quad->shared_quad_state->quad_to_target_transform.TransformRect(&quad_rect);
+    if (is_scissor_enabled_) {
+      float left_inset = scissor_rect_.x() - quad_rect.x();
+      float top_inset = scissor_rect_.y() - quad_rect.y();
+      float right_inset = quad_rect.right() - scissor_rect_.right();
+      float bottom_inset = quad_rect.bottom() - scissor_rect_.bottom();
+      if (left_inset > 0) {
+        aa_flags &= ~SkCanvas::kLeft_QuadAAFlag;
+      } else {
+        left_inset = 0;
+      }
+      if (top_inset > 0)
+        aa_flags &= ~SkCanvas::kTop_QuadAAFlag;
+      else
+        top_inset = 0;
+      if (right_inset > 0)
+        aa_flags &= ~SkCanvas::kRight_QuadAAFlag;
+      else
+        right_inset = 0;
+      if (bottom_inset > 0)
+        aa_flags &= ~SkCanvas::kBottom_QuadAAFlag;
+      else
+        bottom_inset = 0;
+      float scale_x = visible_tex_coord_rect.width() / quad_rect.width();
+      float scale_y = visible_tex_coord_rect.height() / quad_rect.height();
+      quad_rect.Inset(left_inset, top_inset, right_inset, bottom_inset);
+      visible_tex_coord_rect.Inset(left_inset * scale_x, top_inset * scale_y,
+                                   right_inset * scale_x,
+                                   bottom_inset * scale_y);
+    }
+  }
+  SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
   batched_tiles_.push_back(SkCanvas::ImageSetEntry{
-      sk_ref_sp(image), uv_rect, gfx::RectToSkRect(quad->visible_rect),
+      sk_ref_sp(image), uv_rect, gfx::RectFToSkRect(quad_rect),
       quad->shared_quad_state->opacity, aa_flags});
 }
 
@@ -819,7 +876,7 @@ void SkiaRenderer::DrawBatchedTileQuads() {
                                       ? &batched_tile_state_.scissor_rect
                                       : nullptr;
   base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  PrepareCanvasForDrawQuads(batched_tile_state_.shared_quad_state, draw_region,
+  PrepareCanvasForDrawQuads(batched_tile_state_.transform, draw_region,
                             scissor_rect, &auto_canvas_restore);
 
   SkFilterQuality filter_quality = batched_tile_state_.is_nearest_neighbor
@@ -827,7 +884,7 @@ void SkiaRenderer::DrawBatchedTileQuads() {
                                        : kLow_SkFilterQuality;
   current_canvas_->experimental_DrawImageSetV1(
       &batched_tiles_.front(), batched_tiles_.size(), filter_quality,
-      batched_tile_state_.shared_quad_state->blend_mode);
+      batched_tile_state_.blend_mode);
   current_canvas_->resetMatrix();
   batched_tiles_.clear();
 }
