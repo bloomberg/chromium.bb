@@ -36,13 +36,6 @@ cryptauth::RemoteDeviceRefList RemoveDuplicatesFromVector(
 
 }  // namespace
 
-// static
-const uint32_t MessageTransferOperation::kMaxEmptyScansPerDevice = 3;
-
-// static
-const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
-    6;
-
 MessageTransferOperation::ConnectionAttemptDelegate::ConnectionAttemptDelegate(
     MessageTransferOperation* operation,
     cryptauth::RemoteDeviceRef remote_device,

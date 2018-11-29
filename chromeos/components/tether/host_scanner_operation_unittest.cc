@@ -428,8 +428,7 @@ TEST_F(HostScannerOperationTest, DISABLED_TestMultipleDevices) {
 
   // Simulate device 1 failing to connect.
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[1].GetDeviceId(),
-      MessageTransferOperation::kMaxEmptyScansPerDevice);
+      test_devices_[1].GetDeviceId(), 0 /* num_attempts */);
 
   // The scan should still not be over, and no new scan results should have
   // come in.
@@ -438,8 +437,7 @@ TEST_F(HostScannerOperationTest, DISABLED_TestMultipleDevices) {
 
   // Simulate device 3 failing to connect.
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[3].GetDeviceId(),
-      MessageTransferOperation::kMaxEmptyScansPerDevice);
+      test_devices_[3].GetDeviceId(), 0 /* num_attempts */);
 
   // The scan should still not be over, and no new scan results should have
   // come in.

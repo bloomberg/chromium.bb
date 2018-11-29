@@ -155,8 +155,7 @@ TEST_F(KeepAliveOperationTest,
 TEST_F(KeepAliveOperationTest, DISABLED_TestCannotConnect) {
   // Simulate the device failing to connect.
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_device_.GetDeviceId(),
-      MessageTransferOperation::kMaxEmptyScansPerDevice);
+      test_device_.GetDeviceId(), 0 /* num_attempts */);
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_run_callback());
