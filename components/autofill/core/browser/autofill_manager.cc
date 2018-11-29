@@ -172,6 +172,13 @@ void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
 }
 
 std::string GetAPIKeyForUrl(version_info::Channel channel) {
+  // First look if we can get API key from command line flag.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAutofillAPIKey))
+    return command_line.GetSwitchValueASCII(switches::kAutofillAPIKey);
+
+  // Get the API key from Chrome baked keys.
   if (channel == version_info::Channel::STABLE)
     return google_apis::GetAPIKey();
   return google_apis::GetNonStableAPIKey();

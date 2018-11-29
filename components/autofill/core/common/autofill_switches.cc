@@ -8,6 +8,11 @@
 namespace autofill {
 namespace switches {
 
+// Sets the API key that will be used when calling Autofill API instead of
+// using Chrome's baked key by default. You can use this to test new versions
+// of the API that are not linked to the Chrome baked key yet.
+const char kAutofillAPIKey[] = "autofill-api-key";
+
 // Override the default autofill server URL with "scheme://host[:port]/prefix/".
 const char kAutofillServerURL[] = "autofill-server-url";
 
