@@ -10,16 +10,15 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -52,7 +51,7 @@ class StaleEntryFinalizerTaskTest : public PrefetchTaskTestBase {
  protected:
   TestPrefetchDispatcher dispatcher_;
   std::unique_ptr<StaleEntryFinalizerTask> stale_finalizer_task_;
-  base::SimpleTestClock simple_test_clock_;
+  TestScopedOfflineClock simple_test_clock_;
 };
 
 void StaleEntryFinalizerTaskTest::SetUp() {
@@ -60,7 +59,6 @@ void StaleEntryFinalizerTaskTest::SetUp() {
   stale_finalizer_task_ =
       std::make_unique<StaleEntryFinalizerTask>(dispatcher(), store());
   simple_test_clock_.SetNow(base::Time() + base::TimeDelta::FromDays(100));
-  SetOfflineClockForTesting(&simple_test_clock_);
 }
 
 void StaleEntryFinalizerTaskTest::TearDown() {

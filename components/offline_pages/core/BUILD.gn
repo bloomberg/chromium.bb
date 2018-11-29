@@ -123,6 +123,8 @@ static_library("test_support") {
     "stub_offline_page_model.h",
     "stub_system_download_manager.cc",
     "stub_system_download_manager.h",
+    "test_scoped_offline_clock.cc",
+    "test_scoped_offline_clock.h",
   ]
 
   deps = [

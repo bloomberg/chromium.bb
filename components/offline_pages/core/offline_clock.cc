@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/offline_clock.h"
 
+#include "base/logging.h"
 #include "base/time/default_clock.h"
 
 namespace offline_pages {
@@ -19,6 +20,9 @@ base::Clock* OfflineClock() {
 }
 
 void SetOfflineClockForTesting(base::Clock* clock) {
+  DCHECK(clock == nullptr || custom_clock_ == nullptr)
+      << "Offline clock is being overridden a second time, which might "
+         "indicate a bug.";
   custom_clock_ = clock;
 }
 

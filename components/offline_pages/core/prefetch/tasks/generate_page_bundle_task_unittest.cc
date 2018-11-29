@@ -8,9 +8,7 @@
 
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
-#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -19,6 +17,7 @@
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "components/offline_pages/task/task.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,7 +71,7 @@ TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
 TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   base::MockCallback<PrefetchRequestFinishedCallback> request_callback;
 
-  base::SimpleTestClock clock;
+  TestScopedOfflineClock clock;
 
   // This item will be sent with the bundle request.
   PrefetchItem item1 =
@@ -107,7 +106,6 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   GeneratePageBundleTask task(dispatcher(), store(), gcm_handler(),
                               prefetch_request_factory(),
                               request_callback.Get());
-  SetOfflineClockForTesting(&clock);
   RunTask(&task);
 
   // Note: even though the requested URLs checked further below are in undefined
