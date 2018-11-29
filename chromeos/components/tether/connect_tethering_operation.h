@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_CONNECT_TETHERING_OPERATION_H_
 #define CHROMEOS_COMPONENTS_TETHER_CONNECT_TETHERING_OPERATION_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 #include "components/cryptauth/remote_device_ref.h"
 
@@ -115,7 +118,17 @@ class ConnectTetheringOperation : public MessageTransferOperation {
  private:
   friend class ConnectTetheringOperationTest;
   FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
-                           TestOperation_SetupRequired);
+                           SuccessWithValidResponse);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
+                           SuccessButInvalidResponse);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest, UnknownError);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest, ProvisioningFailed);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
+                           NotifyConnectTetheringRequest);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
+                           GetMessageTimeoutSeconds);
+  FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
+                           MessageSentOnceAuthenticated);
 
   HostResponseErrorCode ConnectTetheringResponseCodeToHostResponseErrorCode(
       ConnectTetheringResponse_ResponseCode error_code);
@@ -128,8 +141,6 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   static const uint32_t kSetupRequiredResponseTimeoutSeconds;
 
   cryptauth::RemoteDeviceRef remote_device_;
-  device_sync::DeviceSyncClient* device_sync_client_;
-  secure_channel::SecureChannelClient* secure_channel_client_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
   base::Clock* clock_;
   int connect_message_sequence_number_ = -1;
