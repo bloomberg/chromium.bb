@@ -177,9 +177,11 @@ TEST_F(PreviewsBlackListTest, AddPreviewUMA) {
   black_list_->AddPreviewNavigation(url, false, PreviewsType::OFFLINE);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.Offline", 0,
                                       1);
+  histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut", 0, 1);
   black_list_->AddPreviewNavigation(url, true, PreviewsType::OFFLINE);
   histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.Offline", 1,
                                      1);
+  histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut", 1, 1);
 }
 
 TEST_F(PreviewsBlackListTest, SessionParams) {

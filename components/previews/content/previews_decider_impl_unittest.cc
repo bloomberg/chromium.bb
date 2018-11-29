@@ -445,6 +445,10 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
       &user_data, GURL("https://www.google.com"), false,
       PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason",
+      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
+      1);
+  histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
       1);
@@ -463,6 +467,10 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowPreviewBecauseOfBlackListState) {
       PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
+      static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
+      2);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
       2);
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
@@ -505,6 +513,10 @@ TEST_F(PreviewsDeciderImplTest,
       PreviewsType::OFFLINE));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
+      static_cast<int>(PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
       1);
 }
@@ -556,6 +568,9 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReload) {
   base::HistogramTester histogram_tester;
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), true, PreviewsType::OFFLINE));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason",
+      static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
@@ -901,6 +916,9 @@ TEST_F(PreviewsDeciderImplTest,
       PreviewsType::LITE_PAGE_REDIRECT));
 
   histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LitePageRedirect",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
@@ -930,6 +948,10 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
       &user_data, GURL("https://blacklisted.example.com"), false,
       PreviewsType::LITE_PAGE_REDIRECT));
 
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason",
+      static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
+      1);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.LitePageRedirect",
       static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
@@ -962,6 +984,11 @@ TEST_F(PreviewsDeciderImplTest,
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::RESOURCE_LOADING_HINTS));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(
