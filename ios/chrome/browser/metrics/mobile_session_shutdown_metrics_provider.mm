@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/metrics/metrics_service.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -65,6 +66,13 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
     return;
   }
 
+  // If the last app lifetime ended with main thread not responding, log it as
+  // main thread frozen shutdown.
+  if (LastSessionEndedFrozen()) {
+    LogShutdownType(SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN);
+    return;
+  }
+
   // If the last app lifetime ended in a crash, log the type of crash.
   MobileSessionShutdownType shutdown_type;
   if (ReceivedMemoryWarningBeforeLastShutdown()) {
@@ -89,6 +97,10 @@ bool MobileSessionShutdownMetricsProvider::IsFirstLaunchAfterUpgrade() {
 
 bool MobileSessionShutdownMetricsProvider::HasCrashLogs() {
   return breakpad_helper::HasReportToUpload();
+}
+
+bool MobileSessionShutdownMetricsProvider::LastSessionEndedFrozen() {
+  return [MainThreadFreezeDetector sharedInstance].lastSessionEndedFrozen;
 }
 
 bool MobileSessionShutdownMetricsProvider::

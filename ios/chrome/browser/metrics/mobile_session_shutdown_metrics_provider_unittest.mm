@@ -41,6 +41,9 @@ class MobileSessionShutdownMetricsProviderForTesting
   void set_received_memory_warning_before_last_shutdown(bool value) {
     received_memory_warning_before_last_shutdown_ = value;
   }
+  void set_was_last_shutdown_frozen(bool value) {
+    was_last_shutdown_frozen_ = value;
+  }
 
  protected:
   // MobileSessionShutdownMetricsProvider:
@@ -51,11 +54,13 @@ class MobileSessionShutdownMetricsProviderForTesting
   bool ReceivedMemoryWarningBeforeLastShutdown() override {
     return received_memory_warning_before_last_shutdown_;
   }
+  bool LastSessionEndedFrozen() override { return was_last_shutdown_frozen_; }
 
  private:
   bool is_first_launch_after_upgrade_;
   bool has_crash_logs_;
   bool received_memory_warning_before_last_shutdown_;
+  bool was_last_shutdown_frozen_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderForTesting);
 };
@@ -94,8 +99,9 @@ class MobileSessionShutdownMetricsProviderTest
 TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   const bool received_memory_warning = GetParam() % 2;
   const bool has_crash_logs = (GetParam() >> 1) % 2;
-  const bool was_last_shutdown_clean = (GetParam() >> 2) % 2;
-  const bool is_first_launch_after_upgrade = (GetParam() >> 3) % 2;
+  const bool was_last_shutdown_frozen = (GetParam() >> 2) % 2;
+  const bool was_last_shutdown_clean = (GetParam() >> 3) % 2;
+  const bool is_first_launch_after_upgrade = (GetParam() >> 4) % 2;
 
   // Expected bucket for each possible value of GetParam().
   const MobileSessionShutdownType expected_buckets[] = {
@@ -103,13 +109,29 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
       SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
       // If wasLastShutdownClean is true, the memory warning and crash log don't
       // matter.
       SHUTDOWN_IN_BACKGROUND,
       SHUTDOWN_IN_BACKGROUND,
       SHUTDOWN_IN_BACKGROUND,
       SHUTDOWN_IN_BACKGROUND,
+      SHUTDOWN_IN_BACKGROUND,
+      SHUTDOWN_IN_BACKGROUND,
+      SHUTDOWN_IN_BACKGROUND,
+      SHUTDOWN_IN_BACKGROUND,
       // If firstLaunchAfterUpgrade is true, the other flags don't matter.
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
+      FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
       FIRST_LAUNCH_AFTER_UPGRADE,
@@ -140,6 +162,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   metrics_provider_->set_received_memory_warning_before_last_shutdown(
       received_memory_warning);
   metrics_provider_->set_has_crash_logs(has_crash_logs);
+  metrics_provider_->set_was_last_shutdown_frozen(was_last_shutdown_frozen);
 
   // Create a histogram tester for verifying samples written to the shutdown
   // type histogram.
@@ -154,4 +177,4 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
 
 INSTANTIATE_TEST_CASE_P(/* No InstantiationName */,
                         MobileSessionShutdownMetricsProviderTest,
-                        testing::Range(0, 16));
+                        testing::Range(0, 32));
