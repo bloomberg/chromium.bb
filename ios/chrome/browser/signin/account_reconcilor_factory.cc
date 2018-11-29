@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
@@ -15,6 +16,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
+#include "ios/web/public/features.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace ios {
@@ -57,6 +59,10 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           identity_manager)));
+#if defined(OS_IOS)
+  reconcilor->SetIsWKHTTPSystemCookieStoreEnabled(
+      base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore));
+#endif  // defined(OS_IOS)
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
