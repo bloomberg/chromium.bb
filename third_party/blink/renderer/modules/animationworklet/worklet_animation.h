@@ -145,6 +145,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void SetPlayState(const Animation::AnimationPlayState& state) {
     play_state_ = state;
   }
+  base::Optional<double> CurrentTime() const;
 
   unsigned sequence_number_;
 
