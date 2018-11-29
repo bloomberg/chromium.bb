@@ -29,6 +29,7 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = nullptr;
 
 namespace {
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Due to driver deadlock issues on Windows (http://crbug/422522) there is a
@@ -36,21 +37,25 @@ namespace {
 // In this case we will time out, to avoid renderer hang forever waiting for
 // device authorization (http://crbug/615589). This will result in "no audio".
 // There are also cases when authorization takes too long on Mac and Linux.
-const int64_t kMaxAuthorizationTimeoutMs = 10000;
+constexpr int64_t kMaxAuthorizationTimeoutMs = 10000;
 #else
-const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+constexpr int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
 #endif
+
+base::TimeDelta GetDefaultAuthTimeout() {
+  // Set authorization request timeout at 80% of renderer hung timeout,
+  // but no more than kMaxAuthorizationTimeout.
+  return base::TimeDelta::FromMilliseconds(
+      std::min(kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs));
+}
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
-    const media::AudioSinkParameters& params) {
+    const media::AudioSinkParameters& params,
+    base::TimeDelta auth_timeout) {
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id),
-      AudioOutputIPCFactory::get()->io_task_runner(), params,
-      // Set authorization request timeout at 80% of renderer hung timeout,
-      // but no more than kMaxAuthorizationTimeout.
-      base::TimeDelta::FromMilliseconds(
-          std::min(kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs)));
+      AudioOutputIPCFactory::get()->io_task_runner(), params, auth_timeout);
   device->RequestDeviceAuthorization();
   return device;
 }
@@ -102,7 +107,8 @@ scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererMixerSink(
     int render_frame_id,
     const media::AudioSinkParameters& params) {
-  return NewFinalAudioRendererSink(render_frame_id, params);
+  return NewFinalAudioRendererSink(render_frame_id, params,
+                                   GetDefaultAuthTimeout());
 }
 
 // static
@@ -127,7 +133,8 @@ AudioDeviceFactory::NewAudioRendererSink(
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
                         false);
-  return NewFinalAudioRendererSink(render_frame_id, params);
+  return NewFinalAudioRendererSink(render_frame_id, params,
+                                   GetDefaultAuthTimeout());
 }
 
 // static
@@ -195,15 +202,17 @@ AudioDeviceFactory::~AudioDeviceFactory() {
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewFinalAudioRendererSink(
     int render_frame_id,
-    const media::AudioSinkParameters& params) {
+    const media::AudioSinkParameters& params,
+    base::TimeDelta auth_timeout) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> sink =
-        factory_->CreateFinalAudioRendererSink(render_frame_id, params);
+        factory_->CreateFinalAudioRendererSink(render_frame_id, params,
+                                               auth_timeout);
     if (sink)
       return sink;
   }
 
-  return NewOutputDevice(render_frame_id, params);
+  return NewOutputDevice(render_frame_id, params, auth_timeout);
 }
 
 }  // namespace content

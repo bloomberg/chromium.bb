@@ -88,10 +88,11 @@ class RendererWebAudioDeviceImplTest
                scoped_refptr<media::AudioCapturerSource>(
                    int,
                    const media::AudioSourceParameters&));
-  MOCK_METHOD2(CreateFinalAudioRendererSink,
-               scoped_refptr<media::AudioRendererSink>(
-                   int,
-                   const media::AudioSinkParameters&));
+  MOCK_METHOD3(
+      CreateFinalAudioRendererSink,
+      scoped_refptr<media::AudioRendererSink>(int,
+                                              const media::AudioSinkParameters&,
+                                              base::TimeDelta));
   MOCK_METHOD3(CreateSwitchableAudioRendererSink,
                scoped_refptr<media::SwitchableAudioRendererSink>(
                    SourceType,

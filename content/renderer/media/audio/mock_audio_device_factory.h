@@ -46,10 +46,11 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
 
   // These methods are just mocked because tests currently don't need them to be
   // implemented.
-  MOCK_METHOD2(CreateFinalAudioRendererSink,
+  MOCK_METHOD3(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
                    int render_frame_id,
-                   const media::AudioSinkParameters& params));
+                   const media::AudioSinkParameters& params,
+                   base::TimeDelta auth_timeout));
   MOCK_METHOD3(CreateAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
                    SourceType source_type,
