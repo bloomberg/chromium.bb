@@ -10,6 +10,7 @@
 #if defined(OS_CHROMEOS)
 #include <libdrm/drm_fourcc.h>
 
+#include "base/logging.h"
 #include "media/gpu/format_utils.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
@@ -51,7 +52,9 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   LOG_ASSERT(texture_ref);
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  LOG_ASSERT(platform);
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  LOG_ASSERT(factory);
   gfx::BufferFormat buffer_format =
       VideoPixelFormatToGfxBufferFormat(pixel_format);
   texture_ref->pixmap_ = factory->CreateNativePixmap(
