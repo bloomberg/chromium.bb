@@ -142,8 +142,6 @@ TestChromeBrowserState::TestChromeBrowserState(
       testing_prefs_(nullptr),
       otr_browser_state_(nullptr),
       original_browser_state_(nullptr) {
-  Init();
-
   for (const auto& pair : testing_factories) {
     pair.first->SetTestingFactory(this, std::move(pair.second));
   }
@@ -151,6 +149,8 @@ TestChromeBrowserState::TestChromeBrowserState(
   for (const auto& pair : refcounted_testing_factories) {
     pair.first->SetTestingFactory(this, std::move(pair.second));
   }
+
+  Init();
 }
 
 TestChromeBrowserState::~TestChromeBrowserState() {
