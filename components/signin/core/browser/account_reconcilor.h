@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -108,6 +109,11 @@ class AccountReconcilor : public KeyedService,
   // Initializes the account reconcilor. Should be called once after
   // construction.
   void Initialize(bool start_reconcile_if_tokens_available);
+
+#if defined(OS_IOS)
+  // Sets the WKHTTPSystemCookieStore flag value.
+  void SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled);
+#endif  // defined(OS_IOS)
 
   // Enables and disables the reconciliation.
   void EnableReconcile();
@@ -303,6 +309,9 @@ class AccountReconcilor : public KeyedService,
 
   void HandleReconcileTimeout();
 
+  // Returns true is multilogin endpoint can be enabled.
+  bool IsMultiloginEndpointEnabled() const;
+
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
   // The ProfileOAuth2TokenService associated with this reconcilor.
@@ -370,6 +379,11 @@ class AccountReconcilor : public KeyedService,
   // Greater than 0 when synced data is being deleted, and it is important to
   // not invalidate the primary token while this is happening.
   int synced_data_deletion_in_progress_count_ = 0;
+
+#if defined(OS_IOS)
+  // Stores the WKHTTPSystemCookieStore flag value.
+  bool is_wkhttp_system_cookie_store_enabled_ = false;
+#endif  // defined(OS_IOS)
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_;
 

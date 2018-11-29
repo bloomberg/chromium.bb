@@ -226,6 +226,12 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   }
 }
 
+#if defined(OS_IOS)
+void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
+  is_wkhttp_system_cookie_store_enabled_ = is_enabled;
+}
+#endif  // defined(OS_IOS)
+
 void AccountReconcilor::EnableReconcile() {
   DCHECK(delegate_->IsReconcileEnabled());
   RegisterWithCookieManagerService();
@@ -568,7 +574,7 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kUseMultiloginEndpoint)) {
+  if (IsMultiloginEndpointEnabled()) {
     FinishReconcileWithMultiloginEndpoint(primary_account,
                                           LoadValidAccountsFromTokenService(),
                                           std::move(verified_gaia_accounts));
@@ -904,4 +910,15 @@ void AccountReconcilor::HandleReconcileTimeout() {
   // |error_during_last_reconcile_|, through |CalculateIfReconcileIsDone|.
   AbortReconcile();
   DCHECK(!timer_->IsRunning());
+}
+
+bool AccountReconcilor::IsMultiloginEndpointEnabled() const {
+#if defined(OS_IOS)
+  // kUseMultiloginEndpoint feature should not be used if
+  // kWKHTTPSystemCookieStore feature is disabbled.
+  // See http://crbug.com/902584.
+  if (!is_wkhttp_system_cookie_store_enabled_)
+    return false;
+#endif  // defined(OS_IOS)
+  return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
 }
