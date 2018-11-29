@@ -79,29 +79,35 @@ bool ProtocolUtils::ParseScripts(
 
   scripts->clear();
   for (const auto& script_proto : response_proto.scripts()) {
-    auto script = std::make_unique<Script>();
-    script->handle.path = script_proto.path();
-
-    const auto& presentation = script_proto.presentation();
-    script->handle.name = presentation.name();
-    script->handle.autostart = presentation.autostart();
-    script->handle.interrupt = presentation.interrupt();
-    script->handle.initial_prompt = presentation.initial_prompt();
-    script->handle.highlight = presentation.highlight();
-    script->precondition = ScriptPrecondition::FromProto(
-        script_proto.path(), presentation.precondition());
-    script->priority = presentation.priority();
-
-    if (script->handle.path.empty() || !script->precondition ||
-        (script->handle.name.empty() && !script->handle.interrupt)) {
-      LOG(ERROR) << "Ignored invalid or incomplete script '"
-                 << script->handle.path << "'";
-      continue;
-    }
-    scripts->emplace_back(std::move(script));
+    ProtocolUtils::AddScript(script_proto, scripts);
   }
 
   return true;
+}
+
+// static
+void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
+                              std::vector<std::unique_ptr<Script>>* scripts) {
+  auto script = std::make_unique<Script>();
+  script->handle.path = script_proto.path();
+
+  const auto& presentation = script_proto.presentation();
+  script->handle.name = presentation.name();
+  script->handle.autostart = presentation.autostart();
+  script->handle.interrupt = presentation.interrupt();
+  script->handle.initial_prompt = presentation.initial_prompt();
+  script->handle.highlight = presentation.highlight();
+  script->precondition = ScriptPrecondition::FromProto(
+      script_proto.path(), presentation.precondition());
+  script->priority = presentation.priority();
+
+  if (script->handle.path.empty() || !script->precondition ||
+      (script->handle.name.empty() && !script->handle.interrupt)) {
+    LOG(ERROR) << "Ignored invalid or incomplete script '"
+               << script->handle.path << "'";
+    return;
+  }
+  scripts->emplace_back(std::move(script));
 }
 
 // static
@@ -160,12 +166,14 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-bool ProtocolUtils::ParseActions(
-    const std::string& response,
-    std::string* return_global_payload,
-    std::string* return_script_payload,
-    std::vector<std::unique_ptr<Action>>* actions) {
+bool ProtocolUtils::ParseActions(const std::string& response,
+                                 std::string* return_global_payload,
+                                 std::string* return_script_payload,
+                                 std::vector<std::unique_ptr<Action>>* actions,
+                                 std::vector<std::unique_ptr<Script>>* scripts,
+                                 bool* should_update_scripts) {
   DCHECK(actions);
+  DCHECK(scripts);
 
   ActionsResponseProto response_proto;
   if (!response_proto.ParseFromString(response)) {
@@ -261,6 +269,12 @@ bool ProtocolUtils::ParseActions(
         break;
       }
     }
+  }
+
+  *should_update_scripts = response_proto.has_update_script_list();
+  for (const auto& script_proto :
+       response_proto.update_script_list().scripts()) {
+    ProtocolUtils::AddScript(script_proto, scripts);
   }
 
   return true;

@@ -183,7 +183,15 @@ void ScriptTracker::OnScriptRun(
     ScriptExecutor::RunScriptCallback original_callback,
     const ScriptExecutor::Result& result) {
   executor_.reset();
+  MaybeSwapInScripts();
   std::move(original_callback).Run(result);
+}
+
+void ScriptTracker::MaybeSwapInScripts() {
+  if (scripts_update_) {
+    SetScripts(std::move(*scripts_update_));
+    scripts_update_.reset();
+  }
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
@@ -238,6 +246,12 @@ void ScriptTracker::OnServerPayloadChanged(const std::string& global_payload,
                                            const std::string& script_payload) {
   last_global_payload_ = global_payload;
   last_script_payload_ = script_payload;
+}
+
+void ScriptTracker::OnScriptListChanged(
+    std::vector<std::unique_ptr<Script>> scripts) {
+  scripts_update_.reset(
+      new std::vector<std::unique_ptr<Script>>(std::move(scripts)));
 }
 
 }  // namespace autofill_assistant

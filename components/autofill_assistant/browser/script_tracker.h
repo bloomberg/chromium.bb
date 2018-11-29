@@ -113,9 +113,15 @@ class ScriptTracker : public ScriptExecutor::Listener {
   void UpdateRunnableScriptsIfNecessary();
   void OnCheckDone();
 
+  // Updates the list of available scripts if there is a pending update from
+  // when a script was still being executed.
+  void MaybeSwapInScripts();
+
   // Overrides ScriptExecutor::Listener.
   void OnServerPayloadChanged(const std::string& global_payload,
                               const std::string& script_payload) override;
+  void OnScriptListChanged(
+      std::vector<std::unique_ptr<Script>> scripts) override;
 
   // Stops running pending checks and cleans up any state used by pending
   // checks. This can safely be called at any time, including when no checks are
@@ -166,6 +172,10 @@ class ScriptTracker : public ScriptExecutor::Listener {
 
   std::string last_global_payload_;
   std::string last_script_payload_;
+
+  // List of scripts to replace the currently available scripts. The replacement
+  // only occurse when |scripts_update| is not nullptr.
+  std::unique_ptr<std::vector<std::unique_ptr<Script>>> scripts_update_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
 
