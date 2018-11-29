@@ -110,6 +110,13 @@ class UnifiedMessageListView::MessageViewContainer
     return message_view_->GetMode() == MessageView::Mode::PINNED;
   }
 
+  // Returns the direction that the notification is swiped out. If swiped to the
+  // left, it returns -1 and if sipwed to the right, it returns 1. By default
+  // (i.e. the notification is removed but not by touch gesture), it returns 1.
+  int GetSlideDirection() const {
+    return message_view_->GetSlideAmount() < 0 ? -1 : 1;
+  }
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
@@ -397,10 +404,11 @@ void UnifiedMessageListView::UpdateBounds() {
   for (int i = 0; i < child_count(); ++i) {
     auto* view = GetContainer(i);
     const int height = view->GetHeightForWidth(kTrayMenuWidth);
+    const int direction = view->GetSlideDirection();
     view->set_start_bounds(view->ideal_bounds());
     view->set_ideal_bounds(
         view->is_removed()
-            ? gfx::Rect(kTrayMenuWidth, y, kTrayMenuWidth, height)
+            ? gfx::Rect(kTrayMenuWidth * direction, y, kTrayMenuWidth, height)
             : gfx::Rect(0, y, kTrayMenuWidth, height));
     y += height;
   }
