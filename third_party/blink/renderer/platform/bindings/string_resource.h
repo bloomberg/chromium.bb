@@ -114,17 +114,39 @@ class StringResourceBase {
   DISALLOW_COPY_AND_ASSIGN(StringResourceBase);
 };
 
-class StringResource16 final : public StringResourceBase,
-                               public v8::String::ExternalStringResource {
+// Even though StringResource{8,16}Base are effectively empty in release mode,
+// they are needed as they serve as a common ancestor to Parkable and regular
+// strings.
+//
+// See the comment in |ToBlinkString()|'s implementation for the rationale.
+class StringResource16Base : public StringResourceBase,
+                             public v8::String::ExternalStringResource {
  public:
-  explicit StringResource16(const String& string) : StringResourceBase(string) {
-    DCHECK(!string.Is8Bit());
-  }
-
-  explicit StringResource16(const AtomicString& string)
+  explicit StringResource16Base(const String& string)
       : StringResourceBase(string) {
     DCHECK(!string.Is8Bit());
   }
+
+  explicit StringResource16Base(const AtomicString& string)
+      : StringResourceBase(string) {
+    DCHECK(!string.Is8Bit());
+  }
+
+  explicit StringResource16Base(const ParkableString& parkable_string)
+      : StringResourceBase(parkable_string) {
+    DCHECK(!parkable_string.Is8Bit());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StringResource16Base);
+};
+
+class StringResource16 final : public StringResource16Base {
+ public:
+  explicit StringResource16(const String& string)
+      : StringResource16Base(string) {}
+
+  explicit StringResource16(const AtomicString& string)
+      : StringResource16Base(string) {}
 
   size_t length() const override { return plain_string_.Impl()->length(); }
   const uint16_t* data() const override {
@@ -135,34 +157,10 @@ class StringResource16 final : public StringResourceBase,
   DISALLOW_COPY_AND_ASSIGN(StringResource16);
 };
 
-class StringResource8 final : public StringResourceBase,
-                              public v8::String::ExternalOneByteStringResource {
- public:
-  explicit StringResource8(const String& string) : StringResourceBase(string) {
-    DCHECK(string.Is8Bit());
-  }
-
-  explicit StringResource8(const AtomicString& string)
-      : StringResourceBase(string) {
-    DCHECK(string.Is8Bit());
-  }
-
-  size_t length() const override { return plain_string_.Impl()->length(); }
-  const char* data() const override {
-    return reinterpret_cast<const char*>(plain_string_.Impl()->Characters8());
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(StringResource8);
-};
-
-class ParkableStringResource16 final
-    : public StringResourceBase,
-      public v8::String::ExternalStringResource {
+class ParkableStringResource16 final : public StringResource16Base {
  public:
   explicit ParkableStringResource16(const ParkableString& string)
-      : StringResourceBase(string) {
-    DCHECK(!parkable_string_.Is8Bit());
-  }
+      : StringResource16Base(string) {}
 
   bool IsCacheable() const override {
     return !parkable_string_.may_be_parked();
@@ -181,14 +179,47 @@ class ParkableStringResource16 final
   DISALLOW_COPY_AND_ASSIGN(ParkableStringResource16);
 };
 
-class ParkableStringResource8 final
-    : public StringResourceBase,
-      public v8::String::ExternalOneByteStringResource {
+class StringResource8Base : public StringResourceBase,
+                            public v8::String::ExternalOneByteStringResource {
+ public:
+  explicit StringResource8Base(const String& string)
+      : StringResourceBase(string) {
+    DCHECK(string.Is8Bit());
+  }
+
+  explicit StringResource8Base(const AtomicString& string)
+      : StringResourceBase(string) {
+    DCHECK(string.Is8Bit());
+  }
+
+  explicit StringResource8Base(const ParkableString& parkable_string)
+      : StringResourceBase(parkable_string) {
+    DCHECK(parkable_string.Is8Bit());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StringResource8Base);
+};
+
+class StringResource8 final : public StringResource8Base {
+ public:
+  explicit StringResource8(const String& string)
+      : StringResource8Base(string) {}
+
+  explicit StringResource8(const AtomicString& string)
+      : StringResource8Base(string) {}
+
+  size_t length() const override { return plain_string_.Impl()->length(); }
+  const char* data() const override {
+    return reinterpret_cast<const char*>(plain_string_.Impl()->Characters8());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StringResource8);
+};
+
+class ParkableStringResource8 final : public StringResource8Base {
  public:
   explicit ParkableStringResource8(const ParkableString& string)
-      : StringResourceBase(string) {
-    DCHECK(parkable_string_.Is8Bit());
-  }
+      : StringResource8Base(string) {}
 
   bool IsCacheable() const override {
     return !parkable_string_.may_be_parked();
