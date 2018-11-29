@@ -92,6 +92,7 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
+// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   if (g_locale_paks_in_apk) {
     return !GetPathForAndroidLocalePakWithinApk(locale).empty();

@@ -83,6 +83,11 @@ void ChromeFeatureListCreator::CreateFeatureList() {
   SetupFieldTrials();
 }
 
+void ChromeFeatureListCreator::SetApplicationLocale(const std::string& locale) {
+  actual_locale_ = locale;
+  metrics_services_manager_->GetVariationsService()->EnsureLocaleEquals(locale);
+}
+
 metrics_services_manager::MetricsServicesManagerClient*
 ChromeFeatureListCreator::GetMetricsServicesManagerClient() {
   return metrics_services_manager_client_;

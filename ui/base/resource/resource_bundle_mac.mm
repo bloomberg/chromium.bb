@@ -59,6 +59,7 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
+// static
 base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
                                                  bool test_file_exists) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
@@ -74,9 +75,9 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   base::FilePath locale_file_path =
       GetResourcesPakFilePath(@"locale", mac_locale);
 
-  if (delegate_) {
-    locale_file_path =
-        delegate_->GetPathForLocalePack(locale_file_path, app_locale);
+  if (HasSharedInstance() && GetSharedInstance().delegate_) {
+    locale_file_path = GetSharedInstance().delegate_->GetPathForLocalePack(
+        locale_file_path, app_locale);
   }
 
   // Don't try to load empty values or values that are not absolute paths.
