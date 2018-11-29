@@ -1293,12 +1293,18 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
   base::Optional<int> action_index;
   base::Optional<base::string16> reply;
 
-  args->GetNext(&title);
+  if (!args->GetNext(&title)) {
+    args->ThrowError();
+    return;
+  }
 
   // Optional |action_index| argument.
   if (args->Length() >= 2) {
     int action_index_int;
-    args->GetNext(&action_index_int);
+    if (!args->GetNext(&action_index_int)) {
+      args->ThrowError();
+      return;
+    }
 
     action_index = action_index_int;
   }
@@ -1306,7 +1312,10 @@ void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
   // Optional |reply| argument.
   if (args->Length() >= 3) {
     std::string reply_string;
-    args->GetNext(&reply_string);
+    if (!args->GetNext(&reply_string)) {
+      args->ThrowError();
+      return;
+    }
 
     reply = base::UTF8ToUTF16(reply_string);
   }
