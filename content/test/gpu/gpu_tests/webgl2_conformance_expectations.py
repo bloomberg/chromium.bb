@@ -366,7 +366,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/textures/video/' +
         'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['passthrough', 'opengl', 'intel'], bug=602688)
+        ['win', 'linux', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/misc/uninitialized-test.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/textures/image_bitmap_from_video/' +
@@ -1280,6 +1280,68 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/buffers/get-buffer-sub-data-validity.html',
         ['linux', ('amd', 0x6613)], bug=851159)
+
+    ####################
+    # Android failures #
+    ####################
+
+    # Skip these, rather than expect them to fail, to speed up test
+    # execution. The browser is restarted even after expected test
+    # failures.
+    self.Skip('WebglExtension_WEBGL_compressed_texture_pvrtc',
+        ['android'])
+    self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc',
+        ['android', 'qualcomm'])
+    self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
+        ['android', 'qualcomm'])
+
+    # Basic failures that need to be investigated on multiple devices
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['android'], bug=809233)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
+        ['android'], bug=709351)
+    # Video uploads to some texture formats new in WebGL 2.0 are
+    # failing.
+    self.Fail('conformance2/textures/video/' +
+        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+        ['android'], bug=906735)
+    self.Fail('conformance2/textures/video/' +
+        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+        ['android'], bug=906735)
+
+    # Qualcomm (Pixel 2) failures
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+        ['android', 'qualcomm'], bug=906737)
+    self.Fail('conformance2/extensions/webgl_multiview.html',
+        ['android', 'qualcomm'], bug=906739)
+    self.Fail('conformance2/glsl3/compare-structs-containing-arrays.html',
+        ['android', 'qualcomm'], bug=906742)
+    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
+        ['android', 'qualcomm'], bug=906743)
+    self.Fail('conformance2/textures/video/' +
+        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
+        ['android', 'qualcomm'], bug=906735)
+    self.Fail('conformance2/textures/misc/tex-new-formats.html',
+        ['android', 'qualcomm'], bug=906740)
+    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
+        ['android', 'qualcomm'], bug=906740)
+    self.Fail('deqp/functional/gles3/textureformat/unsized_2d_array.html',
+        ['android', 'qualcomm'], bug=906740)
+    self.Fail('deqp/functional/gles3/textureformat/unsized_3d.html',
+        ['android', 'qualcomm'], bug=906740)
+    self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
+        ['android', 'qualcomm'], bug=906745)
+
+    # Nvidia (Shield TV) failures
+    self.Fail('conformance2/glsl3/array-complex-indexing.html',
+        ['android', 'nvidia'], bug=906752)
+    self.Fail('conformance2/glsl3/' +
+        'const-struct-from-array-as-function-parameter.html',
+        ['android', 'nvidia'], bug=874620)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
+        ['android', 'nvidia'], bug=905006)
+    self.Fail('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['android', 'nvidia'], bug=830046)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
