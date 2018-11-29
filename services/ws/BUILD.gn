@@ -5,9 +5,7 @@
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 component("lib") {
@@ -234,7 +232,6 @@ source_set("tests") {
     "//components/viz/common",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//services/ws/common:task_runner_test_base",

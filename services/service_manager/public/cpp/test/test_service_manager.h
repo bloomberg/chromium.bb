@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
@@ -42,6 +43,10 @@ class TestServiceManager {
   // object directly rather than supplying a service name and consulting a
   // global catalog.
   mojom::ServiceRequest RegisterTestInstance(const std::string& service_name);
+
+  // Registers a service instance with a specific given Identity, returning a
+  // ServiceRequest which can be bound by some ServiceBinding.
+  mojom::ServiceRequest RegisterInstance(const Identity& identity);
 
  private:
   const std::unique_ptr<BackgroundServiceManager> background_service_manager_;

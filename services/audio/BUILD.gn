@@ -7,7 +7,6 @@ import("//media/webrtc/audio_processing.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 # Currently standalone service binaries are not supported on Android or iOS.

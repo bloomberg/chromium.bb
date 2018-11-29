@@ -18,6 +18,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_manager.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -106,7 +107,8 @@ class TestTargetService : public Service {
 
 class ServiceManagerListenerTest : public testing::Test, public Service {
  public:
-  ServiceManagerListenerTest() : service_manager_(nullptr, nullptr, nullptr) {}
+  ServiceManagerListenerTest()
+      : service_manager_(nullptr, test::CreateTestCatalog(), nullptr) {}
   ~ServiceManagerListenerTest() override = default;
 
   Connector* connector() { return service_binding_.GetConnector(); }

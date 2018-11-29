@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 
 static_library("pdf_compositor") {
   sources = [

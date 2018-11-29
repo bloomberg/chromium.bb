@@ -20,6 +20,7 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -29,11 +30,13 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 
@@ -65,15 +68,14 @@ void OnServicePIDReceivedCallback(std::string* service_name,
   continuation.Run();
 }
 
-class ServiceManagerTestClient : public test::ServiceTestClient,
-                                 public test::mojom::CreateInstanceTest {
+class TestService : public Service, public test::mojom::CreateInstanceTest {
  public:
-  explicit ServiceManagerTestClient(test::ServiceTest* test)
-      : test::ServiceTestClient(test), binding_(this) {
+  explicit TestService(mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface<test::mojom::CreateInstanceTest>(
-        base::Bind(&ServiceManagerTestClient::Create, base::Unretained(this)));
+        base::BindRepeating(&TestService::Create, base::Unretained(this)));
   }
-  ~ServiceManagerTestClient() override {}
+  ~TestService() override = default;
 
   const Identity& target_identity() const { return target_identity_; }
 
@@ -82,8 +84,10 @@ class ServiceManagerTestClient : public test::ServiceTestClient,
     wait_for_target_identity_loop_->Run();
   }
 
+  Connector* connector() { return service_binding_.GetConnector(); }
+
  private:
-  // test::ServiceTestClient:
+  // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
@@ -103,22 +107,23 @@ class ServiceManagerTestClient : public test::ServiceTestClient,
       wait_for_target_identity_loop_->Quit();
   }
 
-  service_manager::Identity target_identity_;
+  ServiceBinding service_binding_;
+  Identity target_identity_;
   std::unique_ptr<base::RunLoop> wait_for_target_identity_loop_;
 
   BinderRegistry registry_;
-  mojo::Binding<test::mojom::CreateInstanceTest> binding_;
+  mojo::Binding<test::mojom::CreateInstanceTest> binding_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceManagerTestClient);
+  DISALLOW_COPY_AND_ASSIGN(TestService);
 };
 
-class SimpleService {
+class SimpleService : public Service {
  public:
   explicit SimpleService(mojom::ServiceRequest request)
-      : context_(std::make_unique<ServiceImpl>(this), std::move(request)) {}
-  ~SimpleService() {}
+      : binding_(this, std::move(request)) {}
+  ~SimpleService() override {}
 
-  Connector* connector() { return context_.connector(); }
+  Connector* connector() { return binding_.GetConnector(); }
 
   void WaitForDisconnect() {
     base::RunLoop loop;
@@ -127,24 +132,14 @@ class SimpleService {
   }
 
  private:
-  class ServiceImpl : public Service {
-   public:
-    explicit ServiceImpl(SimpleService* service) : service_(service) {}
-    ~ServiceImpl() override {}
+  // Service:
+  void OnDisconnected() override {
+    if (connection_lost_closure_)
+      std::move(connection_lost_closure_).Run();
+    Terminate();
+  }
 
-    bool OnServiceManagerConnectionLost() override {
-      if (service_->connection_lost_closure_)
-        std::move(service_->connection_lost_closure_).Run();
-      return true;
-    }
-
-   private:
-    SimpleService* service_;
-
-    DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
-  };
-
-  ServiceContext context_;
+  ServiceBinding binding_;
   base::OnceClosure connection_lost_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleService);
@@ -152,14 +147,14 @@ class SimpleService {
 
 }  // namespace
 
-class ServiceManagerTest : public test::ServiceTest,
+class ServiceManagerTest : public testing::Test,
                            public mojom::ServiceManagerListener {
  public:
   ServiceManagerTest()
-      : test::ServiceTest("service_manager_unittest"),
-        service_(nullptr),
-        binding_(this) {}
-  ~ServiceManagerTest() override {}
+      : test_service_manager_(test::CreateTestCatalog()),
+        test_service_(test_service_manager_.RegisterTestInstance(
+            "service_manager_unittest")) {}
+  ~ServiceManagerTest() override = default;
 
  protected:
   struct InstanceInfo {
@@ -169,6 +164,8 @@ class ServiceManagerTest : public test::ServiceTest,
     Identity identity;
     base::ProcessId pid;
   };
+
+  Connector* connector() { return test_service_.connector(); }
 
   void AddListenerAndWaitForApplications() {
     mojom::ServiceManagerPtr service_manager;
@@ -196,18 +193,17 @@ class ServiceManagerTest : public test::ServiceTest,
   }
 
   void WaitForTargetIdentityCall() {
-    service_->WaitForTargetIdentityCall();
+    test_service_.WaitForTargetIdentityCall();
   }
 
   const Identity& target_identity() const {
-    DCHECK(service_);
-    return service_->target_identity();
+    return test_service_.target_identity();
   }
 
   const std::vector<InstanceInfo>& instances() const { return instances_; }
 
   using ServiceStartedCallback =
-      base::Callback<void(const service_manager::Identity&)>;
+      base::RepeatingCallback<void(const service_manager::Identity&)>;
   void set_service_started_callback(const ServiceStartedCallback& callback) {
     service_started_callback_ = callback;
   }
@@ -228,7 +224,7 @@ class ServiceManagerTest : public test::ServiceTest,
 
   void WaitForInstanceToStart(const Identity& identity) {
     base::RunLoop loop;
-    set_service_started_callback(base::Bind(
+    set_service_started_callback(base::BindRepeating(
         [](base::RunLoop* loop, const Identity* expected_identity,
            const Identity& identity) {
           EXPECT_EQ(expected_identity->name(), identity.name());
@@ -341,11 +337,7 @@ class ServiceManagerTest : public test::ServiceTest,
   }
 
  private:
-  // test::ServiceTest:
-  std::unique_ptr<Service> CreateService() override {
-    service_ = new ServiceManagerTestClient(this);
-    return base::WrapUnique(service_);
-  }
+  // Service:
 
   // mojom::ServiceManagerListener:
   void OnInit(std::vector<mojom::RunningServiceInfoPtr> instances) override {
@@ -389,8 +381,11 @@ class ServiceManagerTest : public test::ServiceTest,
       service_pid_received_callback_.Run(identity, pid);
   }
 
-  ServiceManagerTestClient* service_;
-  mojo::Binding<mojom::ServiceManagerListener> binding_;
+  base::test::ScopedTaskEnvironment task_environment_;
+  TestServiceManager test_service_manager_;
+  TestService test_service_;
+
+  mojo::Binding<mojom::ServiceManagerListener> binding_{this};
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;

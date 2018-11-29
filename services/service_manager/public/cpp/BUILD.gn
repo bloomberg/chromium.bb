@@ -107,31 +107,6 @@ component("mojom_traits") {
   defines = [ "IS_SERVICE_MANAGER_MOJOM_TRAITS_IMPL" ]
 }
 
-static_library("service_test_support") {
-  testonly = true
-  sources = [
-    "service_test.cc",
-    "service_test.h",
-  ]
-
-  public_deps = [
-    ":cpp",
-    "//testing/gtest",
-  ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//mojo/core/embedder",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//services/service_manager/background:lib",
-    "//services/service_manager/public/mojom",
-  ]
-
-  data_deps = []
-}
-
 source_set("tests") {
   testonly = true
   sources = [

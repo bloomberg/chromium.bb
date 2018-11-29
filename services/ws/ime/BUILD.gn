@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 

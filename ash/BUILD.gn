@@ -1953,7 +1953,6 @@ test("ash_unittests") {
     "//services/catalog:lib",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/ws:test_support",
     "//services/ws/public/cpp/input_devices:test_support",
     "//services/ws/public/mojom",

@@ -1918,7 +1918,6 @@ test("content_unittests") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/proxy_resolver/:lib",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom",

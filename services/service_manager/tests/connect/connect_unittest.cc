@@ -20,12 +20,13 @@
 #include "base/test/test_suite.h"
 #include "base/token.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 #include "services/service_manager/tests/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,7 +151,7 @@ class ConnectTest : public testing::Test,
                     public Service,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : service_manager_(nullptr, nullptr) {}
+  ConnectTest() : test_service_manager_(test::CreateTestCatalog()) {}
   ~ConnectTest() override = default;
 
   Connector* connector() { return service_binding_.GetConnector(); }
@@ -173,21 +174,16 @@ class ConnectTest : public testing::Test,
 
   mojom::ServiceRequest RegisterServiceInstance(
       const std::string& service_name) {
-    mojom::ServicePtr proxy;
-    mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
-    mojom::PIDReceiverPtr pid_receiver;
-    service_manager_.RegisterService(
-        Identity(service_name, kSystemInstanceGroup, base::Token{},
-                 base::Token::CreateRandom()),
-        std::move(proxy), mojo::MakeRequest(&pid_receiver));
-    pid_receiver->SetPID(1);
-    return request;
+    return test_service_manager_.RegisterInstance(
+        Identity{service_name, service_binding_.identity().instance_group(),
+                 base::Token{}, base::Token::CreateRandom()});
   }
 
  private:
   // testing::Test:
   void SetUp() override {
-    service_binding_.Bind(RegisterServiceInstance(kTestServiceName));
+    service_binding_.Bind(
+        test_service_manager_.RegisterTestInstance(kTestServiceName));
 
     test::mojom::ConnectTestServicePtr root_service;
     connector()->BindInterface(kTestPackageName, &root_service);
@@ -214,7 +210,7 @@ class ConnectTest : public testing::Test,
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  BackgroundServiceManager service_manager_;
+  TestServiceManager test_service_manager_;
   ServiceBinding service_binding_{this};
   mojo::BindingSet<test::mojom::ExposedInterface> bindings_;
   test::mojom::ConnectionStatePtr connection_state_;

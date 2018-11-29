@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# There should be only one media session service. It is currently in the
-# browser process. So, only //content/browser should link to this target.
-# Others modules should only need the public targets.
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
+# There should be only one media session service. It is currently in the
+# browser process. So, only //content/browser should link to this target.
+# Others modules should only need the public targets.
 source_set("lib") {
   sources = [
     "audio_focus_manager.cc",

@@ -3,19 +3,35 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "base/test/scoped_task_environment.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/service_manager/tests/catalog_source.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 namespace {
 
-class ShutdownTest : public test::ServiceTest {
+class ShutdownTest : public testing::Test {
  public:
-  ShutdownTest() : test::ServiceTest("shutdown_unittest") {}
-  ~ShutdownTest() override {}
+  ShutdownTest()
+      : test_service_manager_(test::CreateTestCatalog()),
+        test_service_binding_(
+            &test_service_,
+            test_service_manager_.RegisterTestInstance("shutdown_unittest")) {}
+  ~ShutdownTest() override = default;
+
+  Connector* connector() { return test_service_binding_.GetConnector(); }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  TestServiceManager test_service_manager_;
+  Service test_service_;
+  ServiceBinding test_service_binding_;
+
   DISALLOW_COPY_AND_ASSIGN(ShutdownTest);
 };
 
