@@ -73,19 +73,19 @@ bool GpuServiceFactory::HandleServiceRequest(
         gpu_workarounds_, gpu_feature_info_, task_runner_,
         media_gpu_channel_manager_, android_overlay_factory_cb_,
         std::move(cdm_proxy_factory_cb));
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(
-                              [](FactoryCallback factory) {
-                                service_manager::Service::RunUntilTermination(
-                                    std::move(factory).Run());
-                              },
-                              std::move(factory)));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](FactoryCallback factory) {
+                         service_manager::Service::RunAsyncUntilTermination(
+                             std::move(factory).Run());
+                       },
+                       std::move(factory)));
     return true;
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
   if (service_name == shape_detection::mojom::kServiceName) {
-    service_manager::Service::RunUntilTermination(
+    service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<shape_detection::ShapeDetectionService>(
             std::move(request)));
     return true;

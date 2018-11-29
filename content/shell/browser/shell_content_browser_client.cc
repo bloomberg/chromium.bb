@@ -231,7 +231,7 @@ void ShellContentBrowserClient::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
-    service_manager::Service::RunUntilTermination(
+    service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaServiceForTesting(std::move(request)));
   }
 #endif

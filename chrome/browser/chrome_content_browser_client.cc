@@ -3874,14 +3874,14 @@ void ChromeContentBrowserClient::HandleServiceRequest(
     if (!g_browser_process || !g_browser_process->pref_service_factory())
       return;
 
-    service_manager::Service::RunUntilTermination(
+    service_manager::Service::RunAsyncUntilTermination(
         g_browser_process->pref_service_factory()->CreatePrefService(
             std::move(request)));
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
-    service_manager::Service::RunUntilTermination(
+    service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaService(std::move(request)));
   }
 #endif
