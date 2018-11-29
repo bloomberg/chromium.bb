@@ -31,15 +31,6 @@ imageset("reading_list_empty_state_new") {
   ]
 }
 
-imageset("reading_list_side_swipe") {
-  sources = [
-    "reading_list_side_swipe.imageset/Contents.json",
-    "reading_list_side_swipe.imageset/reading_list_side_swipe.png",
-    "reading_list_side_swipe.imageset/reading_list_side_swipe@2x.png",
-    "reading_list_side_swipe.imageset/reading_list_side_swipe@3x.png",
-  ]
-}
-
 imageset("reading_list_tools_icon") {
   sources = [
     "reading_list_tools_icon.imageset/Contents.json",
