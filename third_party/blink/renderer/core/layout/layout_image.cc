@@ -53,7 +53,6 @@ namespace {
 constexpr float kmax_oversize_ratio = 2.0f;
 
 bool CheckForOptimizedImagePolicy(const Document& document,
-                                  LayoutImage* layout_image,
                                   ImageResourceContent* new_image) {
   // Render the image as a placeholder image if the document does not have the
   // 'legacy-image-formats' feature enabled, and the image is not one of the
@@ -273,12 +272,8 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
   InvalidateBackgroundObscurationStatus();
 
   // Check for optimized image policies.
-  is_legacy_format_or_unoptimized_image_ =
-      CheckForOptimizedImagePolicy(GetDocument(), this, new_image);
-  if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
-    is_oversized_image_ =
-        CheckForOversizedImagesPolicy(GetDocument(), new_image, this);
-  }
+  if (IsHTMLImageElement(GetNode()))
+    ValidateImagePolicies();
 
   if (new_image == image_resource_->CachedImage()) {
     // tell any potential compositing layers
@@ -491,15 +486,22 @@ bool LayoutImage::IsImagePolicyViolated() const {
   return is_oversized_image_ || is_legacy_format_or_unoptimized_image_;
 }
 
+void LayoutImage::ValidateImagePolicies() {
+  if (image_resource_ && image_resource_->CachedImage()) {
+    is_oversized_image_ = CheckForOversizedImagesPolicy(
+        GetDocument(), image_resource_->CachedImage(), this);
+    is_legacy_format_or_unoptimized_image_ = CheckForOptimizedImagePolicy(
+        GetDocument(), image_resource_->CachedImage());
+  }
+}
+
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
+
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    if (image_resource_ && image_resource_->CachedImage()) {
-      // Check for optimized image policies.
-      is_oversized_image_ = CheckForOversizedImagesPolicy(
-          GetDocument(), image_resource_->CachedImage(), this);
-    }
+    // Check for optimized image policies.
+    ValidateImagePolicies();
 
     // Report violation of unsized-media policy.
     if (image_element->IsDefaultIntrinsicSize())
