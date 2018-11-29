@@ -11,15 +11,17 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/test_component_creator.h"
+#include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -30,32 +32,27 @@
 
 namespace {
 
-// A test observer which can be configured to wait until the server hints are
-// processed.
-class TestOptimizationGuideServiceObserver
-    : public optimization_guide::OptimizationGuideServiceObserver {
- public:
-  TestOptimizationGuideServiceObserver()
-      : run_loop_(std::make_unique<base::RunLoop>()) {}
-
-  ~TestOptimizationGuideServiceObserver() override {}
-
-  void WaitForNotification() {
-    run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
+// Retries fetching |histogram_name| until it contains at least |count| samples.
+void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
+                                        const std::string& histogram_name,
+                                        size_t count) {
+  base::RunLoop().RunUntilIdle();
+  for (size_t attempt = 0; attempt < 3; ++attempt) {
+    const std::vector<base::Bucket> buckets =
+        histogram_tester->GetAllSamples(histogram_name);
+    size_t total_count = 0;
+    for (const auto& bucket : buckets)
+      total_count += bucket.count;
+    if (total_count >= count)
+      return;
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::RunLoop().RunUntilIdle();
   }
-
- private:
-  void OnHintsProcessed(
-      const optimization_guide::proto::Configuration& config,
-      const optimization_guide::ComponentInfo& component_info) override {
-    run_loop_->Quit();
-  }
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideServiceObserver);
-};
+  // If this is reached, then automatically fail the test.
+  FAIL() << histogram_name << " did not reach expected sample count of "
+         << count << ".";
+}
 
 }  // namespace
 
@@ -213,25 +210,26 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
   void SetUpNoScriptWhitelist(
       std::vector<std::string> whitelisted_noscript_sites) {
-    TestOptimizationGuideServiceObserver observer;
-    g_browser_process->optimization_guide_service()->AddObserver(&observer);
-    base::RunLoop().RunUntilIdle();
-
-    const optimization_guide::ComponentInfo& component_info =
-        test_component_creator_.CreateComponentInfoWithPageHints(
+    const optimization_guide::HintsComponentInfo& component_info =
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites,
             {});
-    g_browser_process->optimization_guide_service()->ProcessHints(
+
+    base::HistogramTester histogram_tester;
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
 
-    // Wait for hints to be processed by PreviewsOptimizationGuide.
-    observer.WaitForNotification();
-    base::RunLoop().RunUntilIdle();
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
+        1);
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  optimization_guide::testing::TestComponentCreator test_component_creator_;
+  optimization_guide::testing::TestHintsComponentCreator
+      test_hints_component_creator_;
 };
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.

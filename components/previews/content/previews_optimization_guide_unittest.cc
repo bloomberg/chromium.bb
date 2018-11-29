@@ -19,8 +19,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/bloom_filter.h"
@@ -80,11 +80,12 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   }
 
   void ProcessHints(const optimization_guide::proto::Configuration& config,
-                    std::string version) {
-    optimization_guide::ComponentInfo info(
+                    const std::string& version) {
+    optimization_guide::HintsComponentInfo info(
         base::Version(version),
         temp_dir().Append(FILE_PATH_LITERAL("somefile.pb")));
-    guide_->OnHintsProcessed(config, info);
+    ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
+    guide_->OnHintsComponentAvailable(info);
   }
 
   void MaybeLoadOptimizationHintsCallback(
@@ -137,6 +138,15 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void InitializeWithLitePageRedirectBlacklist();
 
  private:
+  void WriteConfigToFile(const optimization_guide::proto::Configuration& config,
+                         const base::FilePath& filePath) {
+    std::string serialized_config;
+    ASSERT_TRUE(config.SerializeToString(&serialized_config));
+    ASSERT_EQ(static_cast<int32_t>(serialized_config.length()),
+              base::WriteFile(filePath, serialized_config.data(),
+                              serialized_config.length()));
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
 

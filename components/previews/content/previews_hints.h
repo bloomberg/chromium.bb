@@ -24,7 +24,7 @@
 class GURL;
 
 namespace optimization_guide {
-struct ComponentInfo;
+struct HintsComponentInfo;
 }
 
 namespace previews {
@@ -34,10 +34,11 @@ class PreviewsHints {
  public:
   ~PreviewsHints();
 
-  // Creates a Hints instance from the provided configuration.
-  static std::unique_ptr<PreviewsHints> CreateFromConfig(
-      const optimization_guide::proto::Configuration& config,
-      const optimization_guide::ComponentInfo& info);
+  // Creates a Hints instance from the provided hints component. This must be
+  // called using a background task runner as it requires a significant amount
+  // of processing.
+  static std::unique_ptr<PreviewsHints> CreateFromHintsComponent(
+      const optimization_guide::HintsComponentInfo& info);
 
   static std::unique_ptr<PreviewsHints> CreateForTesting(
       std::unique_ptr<HostFilter> lite_page_redirect_blacklist);
