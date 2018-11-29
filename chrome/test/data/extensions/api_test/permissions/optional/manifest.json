@@ -7,6 +7,10 @@
    "background": {
      "scripts": ["background.js"]
    },
+   "content_scripts": [{
+     "matches": ["http://contentscript.com/*"],
+     "js": ["content_script.js"]
+   }],
    "permissions": [
      "management",
      "http://a.com/*"
