@@ -2,49 +2,54 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("python.gni")
-
 # Creates a zip archive of the inputs.
 #
-# output (required)
-#     Path to output zip.
 # inputs (required)
-#     List of input files to zip.
+#     List of input files relative to the current directory.
+#
+# output (required)
+#     File name to write.
+#
 # base_dir (optional)
 #     If provided, the archive paths will be relative to this directory.
-#     Applies only to |inputs|.
 #
-# deps, public_deps, data, data_deps, testonly, visibility
+# deps, public_deps, data_deps, testonly, visibility (optional)
 #     Normal meaning.
 template("zip") {
-  action_with_pydeps(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "data",
-                             "data_deps",
-                             "deps",
-                             "public_deps",
-                             "testonly",
-                             "visibility",
-                           ])
-    script = "//build/android/gyp/zip.py"
+  action(target_name) {
+    script = "//build/android/gn/zip.py"
+    depfile = "$target_gen_dir/$target_name.d"
     inputs = invoker.inputs
     outputs = [
       invoker.output,
     ]
 
-    args = [
-      "--output",
-      rebase_path(invoker.output, root_build_dir),
-    ]
+    assert(defined(invoker.inputs))
+    rebase_inputs = rebase_path(invoker.inputs, root_build_dir)
 
-    _rebased_inputs = rebase_path(invoker.inputs, root_build_dir)
-    args += [ "--input-files=$_rebased_inputs" ]
+    assert(defined(invoker.output))
+    rebase_output = rebase_path(invoker.output, root_build_dir)
+
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--inputs=$rebase_inputs",
+      "--output=$rebase_output",
+    ]
     if (defined(invoker.base_dir)) {
       args += [
-        "--input-files-base-dir",
+        "--base-dir",
         rebase_path(invoker.base_dir, root_build_dir),
       ]
     }
+
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "deps",
+                             "public_deps",
+                             "data_deps",
+                             "visibility",
+                           ])
   }
 }
