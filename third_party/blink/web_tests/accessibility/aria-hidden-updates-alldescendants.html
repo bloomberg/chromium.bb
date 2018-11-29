@@ -31,6 +31,10 @@
 
     if (window.accessibilityController) {
           var main = axElementById("main");
+
+          // Access the element so the children cache is generated.
+          main.childAtIndex(0);
+          main.childAtIndex(1);
           shouldBe("main.childrenCount", "1");
 
           var group = document.getElementsByTagName('main')[0];

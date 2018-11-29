@@ -1638,7 +1638,6 @@ String AXObject::TextFromElements(
 
       String result = RecursiveTextAlternative(
           *ax_element, in_aria_labelledby_traversal, visited);
-      visited.insert(ax_element);
       local_related_objects.push_back(
           MakeGarbageCollected<NameSourceRelatedObject>(ax_element, result));
       if (!result.IsEmpty()) {
