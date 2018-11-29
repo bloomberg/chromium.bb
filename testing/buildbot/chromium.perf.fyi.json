@@ -113,7 +113,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 25,
@@ -204,7 +204,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 7,
@@ -250,7 +250,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 7,

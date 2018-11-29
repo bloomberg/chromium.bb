@@ -121,7 +121,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 1
@@ -171,7 +171,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26
@@ -220,7 +220,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26

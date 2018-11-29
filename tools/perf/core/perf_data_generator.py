@@ -956,7 +956,10 @@ def generate_performance_test(tester_config, test):
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
     'expiration': 2 * 60 * 60, # 2 hours pending max
-    'hard_timeout': 7 * 60 * 60, # 7 hours timeout for full suite
+    # TODO(crbug.com/865538): once we have plenty of windows hardwares,
+    # to shards perf benchmarks on Win builders, reduce this hard timeout limit
+    # to ~2 hrs.
+    'hard_timeout': 10 * 60 * 60, # 10 hours timeout for full suite
     'ignore_task_failure': False,
     'io_timeout': 30 * 60, # 30 minutes
     'dimension_sets': [
