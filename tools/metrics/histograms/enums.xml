@@ -53227,6 +53227,17 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Unknown"/>
 </enum>
 
+<enum name="WebRequestEventListenerFlag">
+  <int value="0" label="Total"/>
+  <int value="1" label="None"/>
+  <int value="2" label="requestHeaders"/>
+  <int value="3" label="responseHeaders"/>
+  <int value="4" label="blocking"/>
+  <int value="5" label="asyncBlocking"/>
+  <int value="6" label="requestBody"/>
+  <int value="7" label="extraHeaders"/>
+</enum>
+
 <enum name="WebRequestEventResponse">
   <int value="0" label="Ignored"/>
   <int value="1" label="Observed"/>
