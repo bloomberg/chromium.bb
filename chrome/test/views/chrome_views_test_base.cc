@@ -11,11 +11,6 @@ ChromeViewsTestBase::ChromeViewsTestBase() {}
 ChromeViewsTestBase::~ChromeViewsTestBase() {}
 
 void ChromeViewsTestBase::SetUp() {
-  set_views_delegate(CreateTestViewsDelegate());
+  set_views_delegate(std::make_unique<ChromeTestViewsDelegate>());
   views::ViewsTestBase::SetUp();
-}
-
-std::unique_ptr<views::TestViewsDelegate>
-ChromeViewsTestBase::CreateTestViewsDelegate() {
-  return std::make_unique<ChromeTestViewsDelegate>();
 }

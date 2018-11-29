@@ -12,14 +12,11 @@
 
 namespace views {
 
+// TODO(jamescook): Move the LayoutProvider and delete this class.
 class VIEWS_MUS_EXPORT MusViewsDelegate : public ViewsDelegate {
  public:
   MusViewsDelegate();
   ~MusViewsDelegate() override;
-
-  // ViewsDelegate:
-  void NotifyAccessibilityEvent(View* view,
-                                ax::mojom::Event event_type) override;
 
  private:
   LayoutProvider layout_provider_;

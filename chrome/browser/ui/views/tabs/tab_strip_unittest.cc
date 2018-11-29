@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -27,6 +26,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
@@ -44,12 +45,16 @@ views::View* FindTabView(views::View* view) {
   return current;
 }
 
-class TabStripTestViewsDelegate : public ChromeTestViewsDelegate {
+class TestAXEventObserver : public views::AXEventObserver {
  public:
-  TabStripTestViewsDelegate() = default;
-  ~TabStripTestViewsDelegate() override = default;
-  void NotifyAccessibilityEvent(views::View* view,
-                                ax::mojom::Event event_type) override {
+  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
+
+  ~TestAXEventObserver() override {
+    views::AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // views::AXEventObserver:
+  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
     if (event_type == ax::mojom::Event::kSelectionRemove) {
       remove_count_++;
     }
@@ -64,7 +69,8 @@ class TabStripTestViewsDelegate : public ChromeTestViewsDelegate {
  private:
   int add_count_ = 0;
   int remove_count_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(TabStripTestViewsDelegate);
+
+  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 class AnimationWaiter {
@@ -170,13 +176,6 @@ class TabStripTest : public ChromeViewsTestBase,
   }
 
  protected:
-  std::unique_ptr<views::TestViewsDelegate> CreateTestViewsDelegate() override {
-    std::unique_ptr<TabStripTestViewsDelegate> delegate =
-        std::make_unique<TabStripTestViewsDelegate>();
-    test_views_delegate_ = delegate.get();
-    return delegate;
-  }
-
   bool IsShowingAttentionIndicator(Tab* tab) {
     return tab->icon_->ShowingAttentionIndicator();
   }
@@ -222,7 +221,6 @@ class TabStripTest : public ChromeViewsTestBase,
   // Owns |tab_strip_|.
   views::View parent_;
   TabStrip* tab_strip_ = nullptr;
-  TabStripTestViewsDelegate* test_views_delegate_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:
@@ -236,6 +234,8 @@ TEST_P(TabStripTest, GetModelCount) {
 }
 
 TEST_P(TabStripTest, AccessibilityEvents) {
+  TestAXEventObserver observer;
+
   // When adding tabs, SetSelection() is called after AddTabAt(), as
   // otherwise the index would not be meaningful.
   tab_strip_->AddTabAt(0, TabRendererData(), false);
@@ -243,16 +243,16 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   ui::ListSelectionModel selection;
   selection.SetSelectedIndex(1);
   tab_strip_->SetSelection(selection);
-  EXPECT_EQ(1, test_views_delegate_->add_count());
-  EXPECT_EQ(0, test_views_delegate_->remove_count());
+  EXPECT_EQ(1, observer.add_count());
+  EXPECT_EQ(0, observer.remove_count());
 
   // When removing tabs, SetSelection() is called before RemoveTabAt(), as
   // otherwise the index would not be meaningful.
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
   tab_strip_->RemoveTabAt(nullptr, 1, true);
-  EXPECT_EQ(2, test_views_delegate_->add_count());
-  EXPECT_EQ(1, test_views_delegate_->remove_count());
+  EXPECT_EQ(2, observer.add_count());
+  EXPECT_EQ(1, observer.remove_count());
 }
 
 TEST_P(TabStripTest, IsValidModelIndex) {

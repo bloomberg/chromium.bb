@@ -59,6 +59,8 @@ jumbo_component("views") {
     "../views_bridge_mac/bridged_native_widget_impl.h",
     "../views_bridge_mac/native_widget_mac_nswindow.h",
     "../views_bridge_mac/window_touch_bar_delegate.h",
+    "accessibility/ax_event_manager.h",
+    "accessibility/ax_event_observer.h",
     "accessibility/ax_virtual_view.h",
     "accessibility/view_accessibility.h",
     "accessibility/view_accessibility_utils.h",
@@ -266,6 +268,8 @@ jumbo_component("views") {
     # TODO(ccameron): Move these sources to the views_bridge_mac component
     "../views_bridge_mac/bridged_native_widget_impl.mm",
     "../views_bridge_mac/native_widget_mac_nswindow.mm",
+    "accessibility/ax_event_manager.cc",
+    "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
     "accessibility/view_accessibility.cc",
     "accessibility/view_accessibility_utils.cc",

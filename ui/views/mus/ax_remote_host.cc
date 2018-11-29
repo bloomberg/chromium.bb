@@ -18,6 +18,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/mus/ax_tree_source_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/view.h"
@@ -30,6 +31,7 @@ using display::Screen;
 namespace views {
 
 AXRemoteHost::AXRemoteHost() {
+  AXEventManager::Get()->AddObserver(this);
   AXAuraObjCache::GetInstance()->SetDelegate(this);
 }
 
@@ -37,6 +39,7 @@ AXRemoteHost::~AXRemoteHost() {
   if (widget_)
     StopMonitoringWidget();
   AXAuraObjCache::GetInstance()->SetDelegate(nullptr);
+  AXEventManager::Get()->RemoveObserver(this);
 }
 
 void AXRemoteHost::Init(service_manager::Connector* connector) {
@@ -98,19 +101,6 @@ void AXRemoteHost::StopMonitoringWidget() {
   tree_source_.reset();
 }
 
-void AXRemoteHost::HandleEvent(View* view, ax::mojom::Event event_type) {
-  CHECK(view);
-
-  if (!enabled_)
-    return;
-
-  // Can return null for views without a widget.
-  AXAuraObjWrapper* aura_obj = AXAuraObjCache::GetInstance()->GetOrCreate(view);
-  if (!aura_obj)
-    return;
-  SendEvent(aura_obj, event_type);
-}
-
 void AXRemoteHost::OnAutomationEnabled(bool enabled) {
   if (enabled)
     Enable();
@@ -167,6 +157,19 @@ void AXRemoteHost::OnChildWindowRemoved(AXAuraObjWrapper* parent) {
 
 void AXRemoteHost::OnEvent(AXAuraObjWrapper* aura_obj,
                            ax::mojom::Event event_type) {
+  SendEvent(aura_obj, event_type);
+}
+
+void AXRemoteHost::OnViewEvent(View* view, ax::mojom::Event event_type) {
+  CHECK(view);
+
+  if (!enabled_)
+    return;
+
+  // Can return null for views without a widget.
+  AXAuraObjWrapper* aura_obj = AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  if (!aura_obj)
+    return;
   SendEvent(aura_obj, event_type);
 }
 
