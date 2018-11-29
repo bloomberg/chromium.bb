@@ -100,7 +100,7 @@ void ScriptExecutor::WaitForElementVisible(
   wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
       this, max_wait_time, kVisibilityCheck, selector,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisible,
-                     base::Unretained(this), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   wait_with_interrupts_->Run();
 }
 
@@ -479,7 +479,8 @@ ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
       check_type_(check_type),
       selector_(selector),
       callback_(std::move(callback)),
-      element_found_(false) {}
+      element_found_(false),
+      weak_ptr_factory_(this) {}
 
 ScriptExecutor::WaitWithInterrupts::~WaitWithInterrupts() = default;
 
@@ -500,17 +501,18 @@ void ScriptExecutor::WaitWithInterrupts::Run() {
         batch_element_checker_.get(), main_script_->delegate_->GetParameters(),
         *main_script_->scripts_state_,
         base::BindOnce(&WaitWithInterrupts::OnPreconditionCheckDone,
-                       base::Unretained(this), base::Unretained(interrupt)));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Unretained(interrupt)));
   }
+  // The base::Unretained(this) above are safe, since the pointers belong to the
+  // main script, which own this instance.
 
   batch_element_checker_->Run(
       max_wait_time_,
       base::BindRepeating(&WaitWithInterrupts::OnTryDone,
-                          base::Unretained(this)),
-      base::BindOnce(&WaitWithInterrupts::OnAllDone, base::Unretained(this)));
-
-  // base::Unretained(this) above is safe because batch_element_checker_ belongs
-  // to this.
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&WaitWithInterrupts::OnAllDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(

@@ -230,6 +230,8 @@ class ScriptExecutor : public ActionDelegate {
     // The status message that was displayed when the interrupt started.
     std::string pre_interrupt_status_;
 
+    base::WeakPtrFactory<WaitWithInterrupts> weak_ptr_factory_;
+
     DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
   };
   friend class WaitWithInterrupts;
