@@ -49,12 +49,15 @@ function wait(time) {
  * asserting the count returned by the app.getErrorCount remote call.
  * @param {!RemoteCall} app RemoteCall interface to the app window.
  * @param {function()} callback Completion callback.
+ * @return {Promise} Promise to be fulfilled on completion.
  */
 function checkIfNoErrorsOccuredOnApp(app, callback) {
   var countPromise = app.callRemoteTestUtil('getErrorCount', null, []);
-  countPromise.then(function(count) {
+  return countPromise.then(function(count) {
     chrome.test.assertEq(0, count, 'The error count is not 0.');
-    callback();
+    if (callback) {
+      callback();
+    }
   });
 }
 
