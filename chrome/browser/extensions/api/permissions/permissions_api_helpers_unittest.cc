@@ -29,28 +29,23 @@ using extensions::permissions_test_util::GetPatternsAsStrings;
 
 namespace extensions {
 
-namespace {
-
-static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_ALL;
-  extent->AddPattern(URLPattern(schemes, pattern));
-}
-
-}  // namespace
-
 // Tests that we can convert PermissionSets to the generated types.
 TEST(ExtensionPermissionsAPIHelpers, Pack) {
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kFileBrowserHandler);
   // Note: kFileBrowserHandler implies kFileBrowserHandlerInternal.
-  URLPatternSet hosts;
-  AddPattern(&hosts, "http://a.com/*");
-  AddPattern(&hosts, "http://b.com/*");
+
+  URLPatternSet explicit_hosts(
+      {URLPattern(Extension::kValidHostPermissionSchemes, "http://a.com/*"),
+       URLPattern(Extension::kValidHostPermissionSchemes, "http://b.com/*")});
+  URLPatternSet scriptable_hosts(
+      {URLPattern(UserScript::ValidUserScriptSchemes(), "http://c.com/*"),
+       URLPattern(UserScript::ValidUserScriptSchemes(), "http://d.com/*")});
 
   // Pack the permission set to value and verify its contents.
-  std::unique_ptr<Permissions> pack_result(PackPermissionSet(
-      PermissionSet(apis, ManifestPermissionSet(), hosts, URLPatternSet())));
+  std::unique_ptr<Permissions> pack_result(PackPermissionSet(PermissionSet(
+      apis, ManifestPermissionSet(), explicit_hosts, scriptable_hosts)));
   ASSERT_TRUE(pack_result);
   ASSERT_TRUE(pack_result->permissions);
   EXPECT_THAT(*pack_result->permissions,
@@ -59,7 +54,8 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
   ASSERT_TRUE(pack_result->origins);
   EXPECT_THAT(*pack_result->origins, testing::UnorderedElementsAre(
-                                         "http://a.com/*", "http://b.com/*"));
+                                         "http://a.com/*", "http://b.com/*",
+                                         "http://c.com/*", "http://d.com/*"));
 }
 
 // Tests various error conditions and edge cases when unpacking values

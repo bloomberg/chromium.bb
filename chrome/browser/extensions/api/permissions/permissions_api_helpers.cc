@@ -211,10 +211,8 @@ std::unique_ptr<Permissions> PackPermissionSet(const PermissionSet& set) {
   // to apps/extensions via the permissions API.
 
   permissions->origins.reset(new std::vector<std::string>());
-  for (const URLPattern& pattern : set.explicit_hosts())
+  for (const URLPattern& pattern : set.effective_hosts())
     permissions->origins->push_back(pattern.GetAsString());
-
-  // TODO(devlin): Add scriptable hosts.
 
   return permissions;
 }

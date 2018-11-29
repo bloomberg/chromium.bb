@@ -244,7 +244,8 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   // contentscript.com (since permissions are not withheld).
   EXPECT_TRUE(contains_origin(kExampleCom));
   EXPECT_TRUE(contains_origin(kContentScriptCom));
-  EXPECT_THAT(get_all(), testing::ElementsAre(kExampleCom));
+  EXPECT_THAT(get_all(),
+              testing::UnorderedElementsAre(kExampleCom, kContentScriptCom));
 
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.SetWithholdHostPermissions(true);

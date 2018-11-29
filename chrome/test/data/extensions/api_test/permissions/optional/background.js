@@ -26,17 +26,17 @@ var emptyPermissions = {permissions: [], origins: []};
 
 var initialPermissions = {
   permissions: ['management'],
-  origins: ['http://a.com/*']
+  origins: ['http://a.com/*', "http://contentscript.com/*"]
 };
 
 var permissionsWithBookmarks = {
   permissions: ['management', 'bookmarks'],
-  origins: ['http://a.com/*']
+  origins: ['http://a.com/*', "http://contentscript.com/*"]
 }
 
 var permissionsWithOrigin = {
   permissions: ['management'],
-  origins: ['http://a.com/*', 'http://*.c.com/*']
+  origins: ['http://a.com/*', 'http://*.c.com/*', "http://contentscript.com/*"]
 }
 
 function checkEqualSets(set1, set2) {

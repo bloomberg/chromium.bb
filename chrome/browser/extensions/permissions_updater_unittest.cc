@@ -120,17 +120,6 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
 class PermissionsUpdaterTest : public ExtensionServiceTestBase {
 };
 
-scoped_refptr<Extension> LoadOurManifest() {
-  base::FilePath path;
-  path = path.AppendASCII("api_test")
-      .AppendASCII("permissions")
-      .AppendASCII("optional");
-  return LoadManifest(path.AsUTF8Unsafe(),
-                      "manifest.json",
-                      Manifest::INTERNAL,
-                      Extension::NO_FLAGS);
-}
-
 void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
@@ -166,8 +155,12 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
   InitializeEmptyExtensionService();
 
   // Load the test extension.
-  scoped_refptr<Extension> extension = LoadOurManifest();
-  ASSERT_TRUE(extension.get());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("permissions")
+          .AddPermissions({"management", "http://a.com/*"})
+          .SetManifestKey("optional_permissions",
+                          ListBuilder().Append("http://*.c.com/*").Build())
+          .Build();
 
   APIPermissionSet default_apis;
   default_apis.insert(APIPermission::kManagement);
