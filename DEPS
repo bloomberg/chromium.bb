@@ -168,7 +168,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
-  'harfbuzz_revision': '574d888c8a409295a952361a39c8e83a52a0fc3d',
+  'harfbuzz_revision': 'e0307de818ad1f70ef96938642bda61d7a62532a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
