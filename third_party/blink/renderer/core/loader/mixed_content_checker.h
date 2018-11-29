@@ -123,6 +123,14 @@ class CORE_EXPORT MixedContentChecker final {
                                 bool had_redirect,
                                 std::unique_ptr<SourceLocation>);
 
+  static ConsoleMessage* CreateConsoleMessageAboutFetchAutoupgrade(
+      const KURL& main_resource_url,
+      const KURL& mixed_content_url);
+
+  static ConsoleMessage* CreateConsoleMessageAboutWebSocketAutoupgrade(
+      const KURL& main_resource_url,
+      const KURL& mixed_content_url);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
 

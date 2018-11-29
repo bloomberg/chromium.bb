@@ -768,6 +768,40 @@ void MixedContentChecker::MixedContentFound(
   }
 }
 
+// static
+ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
+    const KURL& main_resource_url,
+    const KURL& mixed_content_url) {
+  String message = String::Format(
+      "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
+      "insecure element '%s'. As part of an experiment this request was "
+      "automatically upgraded to HTTPS, For more information see "
+      "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
+      "autougprade-mixed.md",
+      main_resource_url.ElidedString().Utf8().data(),
+      mixed_content_url.ElidedString().Utf8().data());
+  return ConsoleMessage::Create(kSecurityMessageSource, kWarningMessageLevel,
+                                message);
+}
+
+// static
+ConsoleMessage*
+MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
+    const KURL& main_resource_url,
+    const KURL& mixed_content_url) {
+  String message = String::Format(
+      "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted "
+      "to connect to the insecure WebSocket endpoint '%s'. As part of an "
+      "experiment this request was automatically upgraded to HTTPS, For more "
+      "information see "
+      "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
+      "autougprade-mixed.md",
+      main_resource_url.ElidedString().Utf8().data(),
+      mixed_content_url.ElidedString().Utf8().data());
+  return ConsoleMessage::Create(kSecurityMessageSource, kWarningMessageLevel,
+                                message);
+}
+
 WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
     LocalFrame* frame,
     const ResourceRequest& request) {
