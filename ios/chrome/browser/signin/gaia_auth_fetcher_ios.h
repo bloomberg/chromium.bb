@@ -17,15 +17,15 @@ class GURL;
 
 namespace net {
 class URLRequestStatus;
-}
+}  // namespace net
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace web {
 class BrowserState;
-}
+}  // namespace web
 
 // Specialization of GaiaAuthFetcher on iOS.
 //
