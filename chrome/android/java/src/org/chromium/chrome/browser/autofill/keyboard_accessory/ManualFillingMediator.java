@@ -45,7 +45,7 @@ import java.util.Map;
 class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
     static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
-    static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 300; // in DP.
+    static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
 
     private WindowAndroid mWindowAndroid;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;

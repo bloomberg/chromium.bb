@@ -493,7 +493,7 @@ public class ManualFillingControllerTest {
         assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
 
         // Use a width that is too small (e.g. on tiny phones).
-        simulateOrientationChange(mediator, 2.0f, 200, 80);
+        simulateOrientationChange(mediator, 2.0f, 170, 80);
         assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
 
         // Use a height that is too small but with a valid width (e.g. rotated to landscape).
@@ -501,12 +501,12 @@ public class ManualFillingControllerTest {
         assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
 
         // Use valid dimension at another density.
-        simulateOrientationChange(mediator, 1.5f, 300, 80);
+        simulateOrientationChange(mediator, 1.5f, 180, 80);
         assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
 
         // Now that the accessory is shown, the content area is already smaller due to the bar.
-        setContentAreaDimensions(3.f, 300, (80 - /* bar height = */ 48));
-        mediator.onLayoutChange(mMockContentView, 0, 0, 900, 96, 0, 0, 450, 120);
+        setContentAreaDimensions(3.f, 180, (80 - /* bar height = */ 48));
+        mediator.onLayoutChange(mMockContentView, 0, 0, 540, 96, 0, 0, 270, 120);
         assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
     }
 
