@@ -36,9 +36,15 @@ AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
   if (key_handle.empty())
     return base::nullopt;
 
-  auto flags = u2f_data.subspan<kFlagIndex, kFlagLength>();
+  auto flags = u2f_data.subspan<kFlagIndex, kFlagLength>()[0];
+  if (flags &
+      (static_cast<uint8_t>(AuthenticatorData::Flag::kExtensionDataIncluded) |
+       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation))) {
+    // U2F responses cannot assert CTAP2 features.
+    return base::nullopt;
+  }
   auto counter = u2f_data.subspan<kCounterIndex, kCounterLength>();
-  AuthenticatorData authenticator_data(relying_party_id_hash, flags[0], counter,
+  AuthenticatorData authenticator_data(relying_party_id_hash, flags, counter,
                                        base::nullopt);
 
   auto signature =

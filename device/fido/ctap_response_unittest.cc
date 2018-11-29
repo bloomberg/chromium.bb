@@ -530,6 +530,21 @@ TEST(CTAPResponseTest, TestParseU2fSignWithNullResponse) {
   EXPECT_FALSE(response);
 }
 
+TEST(CTAPResponseTest, TestParseU2fSignWithCTAP2Flags) {
+  std::vector<uint8_t> sign_response = GetTestSignResponse();
+  // Set two flags that should only be set in CTAP2 responses and expect parsing
+  // to fail.
+  sign_response[0] |=
+      static_cast<uint8_t>(AuthenticatorData::Flag::kExtensionDataIncluded);
+  sign_response[0] |=
+      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
+
+  auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
+      test_data::kApplicationParameter, sign_response,
+      GetTestCredentialRawIdBytes());
+  EXPECT_FALSE(response);
+}
+
 TEST(CTAPResponseTest, TestParseU2fSignWithNullCorruptedCounter) {
   // A sign response of less than 5 bytes.
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
