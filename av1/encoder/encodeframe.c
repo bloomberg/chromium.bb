@@ -3538,6 +3538,7 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
 static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                               TileDataEnc *tile_data, TOKENEXTRA **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
+                              BLOCK_SIZE max_bsize, BLOCK_SIZE min_bsize,
                               RD_STATS *rd_cost, int64_t best_rd,
                               PC_TREE *pc_tree, int64_t *none_rd) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -3570,6 +3571,15 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   int horz_ctx_is_ready = 0;
   int vert_ctx_is_ready = 0;
   BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
+
+  // If max and min partition sizes (squares only) are enforced,
+  // only PARTITION_NONE is allowed if the current node equals min_bsize,
+  // only PARTITION_SPLIT is allowed if the current node exceeds max_bsize.
+  assert(block_size_wide[min_bsize] == block_size_high[min_bsize]);
+  assert(block_size_wide[max_bsize] == block_size_high[max_bsize]);
+  assert(min_bsize <= max_bsize);
+  int is_eq_min_bsize = bsize == min_bsize;
+  int is_gt_max_bsize = bsize > max_bsize;
 
   if (best_rd < 0) {
     pc_tree->none.rdcost = INT64_MAX;
@@ -3861,7 +3871,7 @@ BEGIN_PARTITION_SEARCH:
 #endif
 
   // PARTITION_NONE
-  if (partition_none_allowed) {
+  if ((partition_none_allowed && !is_gt_max_bsize) || is_eq_min_bsize) {
     int pt_cost = 0;
     if (bsize_at_least_8x8) {
       pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
@@ -4001,7 +4011,7 @@ BEGIN_PARTITION_SEARCH:
   if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
   // PARTITION_SPLIT
-  if (do_square_split) {
+  if ((do_square_split && !is_eq_min_bsize) || is_gt_max_bsize) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     sum_rdc.rate = partition_cost[PARTITION_SPLIT];
@@ -4025,8 +4035,8 @@ BEGIN_PARTITION_SEARCH:
       if (cpi->sf.prune_ref_frame_for_rect_partitions)
         pc_tree->split[idx]->none.rate = INT_MAX;
       rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx,
-                        subsize, &this_rdc, best_remain_rdcost,
-                        pc_tree->split[idx], p_split_rd);
+                        subsize, max_bsize, min_bsize, &this_rdc,
+                        best_remain_rdcost, pc_tree->split[idx], p_split_rd);
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -4176,7 +4186,8 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_HORZ
   if (partition_horz_allowed && !prune_horz &&
-      (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step))) {
+      (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step)) &&
+      !is_eq_min_bsize && !is_gt_max_bsize) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_HORZ);
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
@@ -4249,7 +4260,8 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_VERT
   if (partition_vert_allowed && !prune_vert &&
-      (do_rectangular_split || active_v_edge(cpi, mi_col, mi_step))) {
+      (do_rectangular_split || active_v_edge(cpi, mi_col, mi_step)) &&
+      !is_eq_min_bsize && !is_gt_max_bsize) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_VERT);
 
@@ -4425,7 +4437,8 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_HORZ_A
-  if (partition_horz_allowed && horza_partition_allowed) {
+  if (partition_horz_allowed && horza_partition_allowed && !is_eq_min_bsize &&
+      !is_gt_max_bsize) {
     subsize = get_partition_subsize(bsize, PARTITION_HORZ_A);
     pc_tree->horizontala[0].rd_mode_is_ready = 0;
     pc_tree->horizontala[1].rd_mode_is_ready = 0;
@@ -4490,7 +4503,8 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
   // PARTITION_HORZ_B
-  if (partition_horz_allowed && horzb_partition_allowed) {
+  if (partition_horz_allowed && horzb_partition_allowed && !is_eq_min_bsize &&
+      !is_gt_max_bsize) {
     subsize = get_partition_subsize(bsize, PARTITION_HORZ_B);
     pc_tree->horizontalb[0].rd_mode_is_ready = 0;
     pc_tree->horizontalb[1].rd_mode_is_ready = 0;
@@ -4550,7 +4564,8 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_VERT_A
-  if (partition_vert_allowed && verta_partition_allowed) {
+  if (partition_vert_allowed && verta_partition_allowed && !is_eq_min_bsize &&
+      !is_gt_max_bsize) {
     subsize = get_partition_subsize(bsize, PARTITION_VERT_A);
     pc_tree->verticala[0].rd_mode_is_ready = 0;
     pc_tree->verticala[1].rd_mode_is_ready = 0;
@@ -4606,7 +4621,8 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
   // PARTITION_VERT_B
-  if (partition_vert_allowed && vertb_partition_allowed) {
+  if (partition_vert_allowed && vertb_partition_allowed && !is_eq_min_bsize &&
+      !is_gt_max_bsize) {
     subsize = get_partition_subsize(bsize, PARTITION_VERT_B);
     pc_tree->verticalb[0].rd_mode_is_ready = 0;
     pc_tree->verticalb[1].rd_mode_is_ready = 0;
@@ -4701,7 +4717,8 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_HORZ_4
   if (partition_horz4_allowed && has_rows &&
-      (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step))) {
+      (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step)) &&
+      !is_eq_min_bsize && !is_gt_max_bsize) {
     av1_init_rd_stats(&sum_rdc);
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
@@ -4745,7 +4762,8 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_VERT_4
   if (partition_vert4_allowed && has_cols &&
-      (do_rectangular_split || active_v_edge(cpi, mi_row, mi_step))) {
+      (do_rectangular_split || active_v_edge(cpi, mi_row, mi_step)) &&
+      !is_eq_min_bsize && !is_gt_max_bsize) {
     av1_init_rd_stats(&sum_rdc);
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
@@ -5144,7 +5162,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       }
 
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
-                        &dummy_rdc, INT64_MAX, pc_root, NULL);
+                        sb_size, BLOCK_4X4, &dummy_rdc, INT64_MAX, pc_root,
+                        NULL);
     }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
