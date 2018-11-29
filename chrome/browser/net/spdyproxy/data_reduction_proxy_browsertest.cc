@@ -731,4 +731,6 @@ INSTANTIATE_TEST_CASE_P(
                                        ProxyServer_ProxyScheme_HTTPS),
                        ::testing::Bool()));
 
+// TODO(eroman): Test that config changes are observed by the DRP throttles.
+
 }  // namespace data_reduction_proxy

@@ -4426,7 +4426,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
                                             request_options->GeneratePageId());
     result.push_back(std::make_unique<
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-        headers, io_data->data_reduction_proxy_io_data()));
+        headers,
+        io_data->data_reduction_proxy_io_data()->GetThrottleManager()));
   }
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

@@ -29,6 +29,8 @@ template("common_tmpl") {
       "data_reduction_proxy_server.h",
       "data_reduction_proxy_switches.cc",
       "data_reduction_proxy_switches.h",
+      "data_reduction_proxy_throttle_manager.cc",
+      "data_reduction_proxy_throttle_manager.h",
       "data_reduction_proxy_type_info.h",
       "lofi_decider.h",
       "lofi_ui_service.h",
@@ -129,5 +131,6 @@ mojom("interfaces") {
   deps = [
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
+    "//services/proxy_resolver/public/mojom",
   ]
 }
