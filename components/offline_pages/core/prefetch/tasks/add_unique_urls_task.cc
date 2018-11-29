@@ -31,22 +31,26 @@ namespace offline_pages {
 using Result = AddUniqueUrlsTask::Result;
 
 namespace {
+struct ItemInfo {
+  int64_t offline_id;
+  PrefetchItemState state;
+};
 
-std::map<std::string, std::pair<int64_t, PrefetchItemState>>
-FindExistingPrefetchItemsInNamespaceSync(sql::Database* db,
-                                         const std::string& name_space) {
+std::map<std::string, ItemInfo> FindExistingPrefetchItemsInNamespaceSync(
+    sql::Database* db,
+    const std::string& name_space) {
   static const char kSql[] =
       "SELECT offline_id, state, requested_url FROM prefetch_items"
       " WHERE client_namespace = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, name_space);
 
-  std::map<std::string, std::pair<int64_t, PrefetchItemState>> result;
+  std::map<std::string, ItemInfo> result;
   while (statement.Step()) {
-    result.emplace(
-        statement.ColumnString(2),
-        std::make_pair(statement.ColumnInt64(0),
-                       static_cast<PrefetchItemState>(statement.ColumnInt(1))));
+    result.emplace(statement.ColumnString(2),
+                   ItemInfo{.offline_id = statement.ColumnInt64(0),
+                            .state = static_cast<PrefetchItemState>(
+                                statement.ColumnInt(1))});
   }
 
   return result;
@@ -75,6 +79,22 @@ bool CreatePrefetchItemSync(sql::Database* db,
   return statement.Run();
 }
 
+bool UpdateItemTimeSync(sql::Database* db,
+                        int64_t offline_id,
+                        base::Time now_db_time) {
+  static const char kSql[] =
+      "UPDATE prefetch_items SET"
+      " freshness_time=?,creation_time=?"
+      " WHERE offline_id=?";
+
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, store_utils::ToDatabaseTime(now_db_time));
+  statement.BindInt64(1, store_utils::ToDatabaseTime(now_db_time));
+  statement.BindInt64(2, offline_id);
+
+  return statement.Run();
+}
+
 // Adds new prefetch item entries to the store using the URLs and client IDs
 // from |candidate_prefetch_urls| and the client's |name_space|. Also cleans up
 // entries in the Zombie state from the client's |name_space| except for the
@@ -88,7 +108,7 @@ Result AddUrlsAndCleanupZombiesSync(
   if (!transaction.Begin())
     return Result::STORE_ERROR;
 
-  std::map<std::string, std::pair<int64_t, PrefetchItemState>> existing_items =
+  std::map<std::string, ItemInfo> existing_items =
       FindExistingPrefetchItemsInNamespaceSync(db, name_space);
 
   int added_row_count = 0;
@@ -104,23 +124,26 @@ Result AddUrlsAndCleanupZombiesSync(
                                   store_utils::ToDatabaseTime(now)))
         return Result::STORE_ERROR;  // Transaction rollback.
       added_row_count++;
-
-      // We artificially add a microsecond to ensure that the timestamp is
-      // different (and guarantee a particular order when sorting by timestamp).
-      now += base::TimeDelta::FromMicroseconds(1);
     } else {
+      // The existing item is still being suggested, update its timestamp (and
+      // therefore priority).
+      if (!UpdateItemTimeSync(db, iter->second.offline_id, now))
+        return Result::STORE_ERROR;  // Transaction rollback.
       // Removing from the list of existing items if it was requested again, to
       // prevent it from being removed in the next step.
       existing_items.erase(iter);
     }
+    // We artificially add a microsecond to ensure that the timestamp is
+    // different (and guarantee a particular order when sorting by timestamp).
+    now += base::TimeDelta::FromMicroseconds(1);
   }
 
   // Purge remaining zombie IDs.
   for (const auto& existing_item : existing_items) {
-    if (existing_item.second.second != PrefetchItemState::ZOMBIE)
+    if (existing_item.second.state != PrefetchItemState::ZOMBIE)
       continue;
     if (!PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(
-            db, existing_item.second.first)) {
+            db, existing_item.second.offline_id)) {
       return Result::STORE_ERROR;  // Transaction rollback.
     }
   }
