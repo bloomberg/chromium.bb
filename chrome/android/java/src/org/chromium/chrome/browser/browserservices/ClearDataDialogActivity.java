@@ -7,13 +7,14 @@ package org.chromium.chrome.browser.browserservices;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 
@@ -29,16 +30,18 @@ import java.util.List;
 public class ClearDataDialogActivity extends AppCompatActivity {
     private static final String EXTRA_DOMAINS = "org.chromium.chrome.extra.domains";
     private static final String EXTRA_ORIGINS = "org.chromium.chrome.extra.origins";
+    private static final String EXTRA_APP_UNINSTALLED = "org.chromium.chrome.extra.app_uninstalled";
 
     /**
      * Creates an intent for launching this activity for the TWA client app that was uninstalled or
      * had its data cleared.
      */
     public static Intent createIntent(Context context, Collection<String> linkedDomains,
-            Collection<String> linkedOrigins) {
+            Collection<String> linkedOrigins, boolean appUninstalled) {
         Intent intent = new Intent(context, ClearDataDialogActivity.class);
         intent.putExtra(EXTRA_DOMAINS, new ArrayList<>(linkedDomains));
         intent.putExtra(EXTRA_ORIGINS, new ArrayList<>(linkedOrigins));
+        intent.putExtra(EXTRA_APP_UNINSTALLED, appUninstalled);
         return intent;
     }
 
@@ -51,15 +54,19 @@ public class ClearDataDialogActivity extends AppCompatActivity {
                 .setTitle(R.string.twa_clear_data_dialog_title)
                 .setMessage(R.string.twa_clear_data_dialog_message)
                 .setPositiveButton(R.string.preferences, (ignored1, ignored2) -> {
+                    recordDecision(true);
                     openSettings();
                     finish();
                 })
                 .setNegativeButton(R.string.twa_clear_data_dialog_keep_data,
-                        (ignored1, ignored2) -> finish());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            builder.setOnDismissListener(ignored -> finish());
-        }
+                        (ignored1, ignored2) -> {
+                    recordDecision(false);
+                    finish();
+                })
+                .setOnCancelListener((ignored) -> {
+                    recordDecision(false);
+                    finish();
+                });
 
         builder.create().show();
     }
@@ -86,7 +93,8 @@ public class ClearDataDialogActivity extends AppCompatActivity {
     }
 
     private void openSingleWebsitePrefs(String origin) {
-        startActivity(PreferencesLauncher.createIntentForSingleWebsitePreferences(this, origin));
+        startActivity(PreferencesLauncher.createIntentForSingleWebsitePreferences(
+                this, origin, SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG));
     }
 
     private void openFilteredAllSiteSettings(Collection<String> domains) {
@@ -97,7 +105,15 @@ public class ClearDataDialogActivity extends AppCompatActivity {
                 getString(R.string.twa_clear_data_site_selection_title));
         extras.putStringArrayList(
                 SingleCategoryPreferences.EXTRA_SELECTED_DOMAINS, new ArrayList<>(domains));
+        extras.putInt(SettingsNavigationSource.EXTRA_KEY,
+                SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
         PreferencesLauncher.launchSettingsPage(this, SingleCategoryPreferences.class, extras);
+    }
+
+    private void recordDecision(boolean accepted) {
+        final boolean appUninstalled = getIntent().getBooleanExtra(EXTRA_APP_UNINSTALLED, false);
+        ChromeApplication.getComponent().resolveTwaClearDataDialogRecorder()
+                .handleDialogResult(accepted, appUninstalled);
     }
 }

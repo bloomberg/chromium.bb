@@ -20230,6 +20230,36 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TrustedWebActivity.DisclosureAccepted">
+  <owner>peconn@chromium.org</owner>
+  <owner>pshmakov@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a user accepts the &quot;Running in Chrome&quot; disclosure
+    seen in a Trusted Web Activity.
+  </description>
+</action>
+
+<action name="TrustedWebActivity.DisclosureShown">
+  <owner>peconn@chromium.org</owner>
+  <owner>pshmakov@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when a user sees the &quot;Running in Chrome&quot; disclosure in a
+    Trusted Web Activity.
+  </description>
+</action>
+
+<action name="TrustedWebActivity.OpenedSettingsViaManageSpace">
+  <owner>peconn@chromium.org</owner>
+  <owner>pshmakov@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when site settings are opened via &quot;Manage Space&quot; button
+    in TWA client app's settings.
+  </description>
+</action>
+
 <action name="UI_DevTools_Connect">
   <owner>weili@chromium.org</owner>
   <description>

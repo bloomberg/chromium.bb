@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeCall;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -14,9 +15,9 @@ import org.chromium.content_public.browser.WebContents;
  */
 public interface UkmRecorder {
     /**
-     * Records a TWA has been opened.
+     * Records a TWA has been opened in given tab.
      */
-    void recordTwaOpened(WebContents webContents);
+    void recordTwaOpened(Tab tab);
 
     /**
      * The actual recorder.
@@ -24,8 +25,8 @@ public interface UkmRecorder {
     @JNINamespace("browserservices")
     class Bridge implements UkmRecorder {
         @Override
-        public void recordTwaOpened(WebContents webContents) {
-            nativeRecordOpen(webContents);
+        public void recordTwaOpened(Tab tab) {
+            nativeRecordOpen(tab.getWebContents());
         }
 
         @NativeCall("Bridge")

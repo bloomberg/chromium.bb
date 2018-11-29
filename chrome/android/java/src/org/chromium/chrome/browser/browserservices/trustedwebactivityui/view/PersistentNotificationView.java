@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -164,7 +165,7 @@ public class PersistentNotificationView implements Destroyable, PropertyObserver
 
         private PendingIntent makeManageDataIntent() {
             Intent settingsIntent = PreferencesLauncher.createIntentForSingleWebsitePreferences(
-                    mAppContext, mOrigin.toString());
+                    mAppContext, mOrigin.toString(), SettingsNavigationSource.OTHER);
             return PendingIntent.getActivity(mAppContext, 0, settingsIntent, FLAG_UPDATE_CURRENT);
         }
 

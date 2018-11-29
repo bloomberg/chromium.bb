@@ -46022,6 +46022,12 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SettingsNavigationSources">
+  <int value="0" label="Other"/>
+  <int value="1" label="From TWA clear data dialog"/>
+  <int value="2" label="From TWA manage space activity"/>
+</enum>
+
 <enum name="SettingsResetPromptConfigError">
   <int value="1" label="Config Ok"/>
   <int value="2" label="Missing domain_hashes param"/>
@@ -49499,6 +49505,7 @@ would be helpful to identify which type is being sent.
   <int value="10" label="Browser Actions"/>
   <int value="11" label="Webapp Actions"/>
   <int value="12" label="Offline Content Suggestion"/>
+  <int value="13" label="Sites shown in Trusted Web Activities"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
@@ -50724,6 +50731,13 @@ Full version information for the fingerprint enum values:
   <int value="40" label="TRIM_MEMORY_BACKGROUND"/>
   <int value="60" label="TRIM_MEMORY_MODERATE"/>
   <int value="80" label="TRIM_MEMORY_COMPLETE"/>
+</enum>
+
+<enum name="TrustedWebActivityDelegatedNotificationSmallIconFallback">
+  <int value="0" label="No fallback"/>
+  <int value="1" label="Fallback icon mot provided"/>
+  <int value="2" label="Fallback for Status Bar"/>
+  <int value="3" label="Fallback for Status Bar and content"/>
 </enum>
 
 <enum name="UIEventType">

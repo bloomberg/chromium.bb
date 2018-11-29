@@ -382,6 +382,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
             } else {
                 website.putSiteAddressIntoExtras(SingleWebsitePreferences.EXTRA_SITE_ADDRESS);
             }
+            int navigationSource = getArguments().getInt(
+                    SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
+            website.getExtras().putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
         }
 
         return super.onPreferenceTreeClick(screen, preference);

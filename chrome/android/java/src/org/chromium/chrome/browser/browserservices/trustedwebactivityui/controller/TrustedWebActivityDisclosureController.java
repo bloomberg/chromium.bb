@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_FAILURE;
 
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
@@ -28,16 +29,19 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     private final ChromePreferenceManager mPreferenceManager;
     private final TrustedWebActivityModel mModel;
     private final TrustedWebActivityVerifier mVerifier;
+    private final TrustedWebActivityUmaRecorder mRecorder;
 
     @Inject
     TrustedWebActivityDisclosureController(
             ChromePreferenceManager preferenceManager,
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TrustedWebActivityVerifier verifier) {
+            TrustedWebActivityVerifier verifier,
+            TrustedWebActivityUmaRecorder recorder) {
         mVerifier = verifier;
         mPreferenceManager = preferenceManager;
         mModel = model;
+        mRecorder = recorder;
         model.set(DISCLOSURE_EVENTS_CALLBACK, this);
         verifier.addVerificationObserver(this::onVerificationStatusChanged);
         lifecycleDispatcher.register(this);
@@ -53,6 +57,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
 
     @Override
     public void onDisclosureAccepted() {
+        mRecorder.recordDisclosureAccepted();
         mPreferenceManager.setUserAcceptedTwaDisclosureForPackage(mVerifier.getClientPackageName());
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_DISMISSED_BY_USER);
     }
@@ -60,6 +65,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     /** Shows the disclosure if it is not already showing and hasn't been accepted. */
     private void showIfNeeded() {
         if (!isShowing() && !wasDismissed()) {
+            mRecorder.recordDisclosureShown();
             mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
         }
     }

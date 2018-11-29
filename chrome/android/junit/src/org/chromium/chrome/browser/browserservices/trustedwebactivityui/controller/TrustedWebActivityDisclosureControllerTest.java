@@ -29,6 +29,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
@@ -46,6 +47,8 @@ public class TrustedWebActivityDisclosureControllerTest {
     @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock public TrustedWebActivityVerifier mVerifier;
+    @Mock public TrustedWebActivityUmaRecorder mRecorder;
+
     @Captor public ArgumentCaptor<Runnable> mVerificationObserverCaptor;
 
     public TrustedWebActivityModel mModel = new TrustedWebActivityModel();
@@ -61,7 +64,7 @@ public class TrustedWebActivityDisclosureControllerTest {
         doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
         mDisclosureController = new TrustedWebActivityDisclosureController(
-                mPreferences, mModel, mLifecycleDispatcher, mVerifier);
+                mPreferences, mModel, mLifecycleDispatcher, mVerifier, mRecorder);
     }
 
     @Test
