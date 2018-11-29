@@ -367,7 +367,12 @@ PasswordManager::PasswordManager(PasswordManagerClient* client)
       is_new_form_parsing_for_saving_enabled_(
           base::FeatureList::IsEnabled(
               features::kNewPasswordFormParsingForSaving) &&
-          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
+          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)),
+      is_only_new_parser_enabled_(
+          base::FeatureList::IsEnabled(
+              features::kNewPasswordFormParsingForSaving) &&
+          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing) &&
+          base::FeatureList::IsEnabled(features::kOnlyNewParser)) {
   DCHECK(client_);
 }
 
@@ -768,7 +773,7 @@ void PasswordManager::CreatePendingLoginManagers(
                       pending_login_managers_.size());
   }
 
-  if (skip_old_form_managers_in_tests_)
+  if (is_only_new_parser_enabled_)
     return;
 
   for (const PasswordForm& form : forms) {

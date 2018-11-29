@@ -177,10 +177,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
     return GetSubmittedManager();
   }
 
-  void set_skip_old_form_managers_in_tests(bool value) {
-    skip_old_form_managers_in_tests_ = value;
-  }
-
 #endif
 
   NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
@@ -363,10 +359,8 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   const bool is_new_form_parsing_for_saving_enabled_;
 
-  // If true, it turns off using PasswordFormManager in PasswordManager. Now it
-  // is used only in tests and later the old PasswordFormManager will disappear
-  // and with it also this flag.
-  bool skip_old_form_managers_in_tests_ = false;
+  // If true, it turns off using PasswordFormManager in PasswordManager.
+  const bool is_only_new_parser_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

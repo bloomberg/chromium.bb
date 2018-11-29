@@ -74,9 +74,7 @@ class MockStoreResultFilter : public StubCredentialsFilter {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MockPasswordManagerClient() {
-    EXPECT_CALL(*this, GetStoreResultFilter())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(&filter_));
+    ON_CALL(*this, GetStoreResultFilter()).WillByDefault(Return(&filter_));
     ON_CALL(filter_, ShouldSave(_)).WillByDefault(Return(true));
     ON_CALL(filter_, ShouldSaveGaiaPasswordHash(_))
         .WillByDefault(Return(false));
@@ -214,10 +212,9 @@ class PasswordManagerTest : public testing::Test {
         .Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
 
-    EXPECT_CALL(client_, GetPasswordStore())
-        .WillRepeatedly(Return(store_.get()));
+    ON_CALL(client_, GetPasswordStore()).WillByDefault(Return(store_.get()));
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
-    EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
+    ON_CALL(client_, GetDriver()).WillByDefault(Return(&driver_));
 
     manager_.reset(new PasswordManager(&client_));
     password_autofill_manager_.reset(
@@ -227,7 +224,7 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(manager_.get()));
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
-    EXPECT_CALL(client_, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
+    ON_CALL(client_, GetMainFrameCertStatus()).WillByDefault(Return(0));
 
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
 
@@ -378,6 +375,15 @@ class PasswordManagerTest : public testing::Test {
     scoped_feature_list->InitWithFeatures(
         {features::kNewPasswordFormParsing,
          features::kNewPasswordFormParsingForSaving},
+        {});
+    manager_.reset(new PasswordManager(&client_));
+  }
+
+  void TurnOnOnlyNewPassword(
+      base::test::ScopedFeatureList* scoped_feature_list) {
+    scoped_feature_list->InitWithFeatures(
+        {features::kNewPasswordFormParsing,
+         features::kNewPasswordFormParsingForSaving, features::kOnlyNewParser},
         {});
     manager_.reset(new PasswordManager(&client_));
   }
@@ -2679,15 +2685,16 @@ TEST_F(PasswordManagerTest,
 // new parsing. For details see scheme 1 in comments before
 // |form_managers_| in password_manager.h.
 TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
-  for (bool skip_old_form_managers_in_tests : {false, true}) {
+  for (bool only_new_parser : {false, true}) {
     for (bool successful_submission : {false, true}) {
-      SCOPED_TRACE(testing::Message("skip_old_form_managers_in_tests = ")
-                   << skip_old_form_managers_in_tests
+      SCOPED_TRACE(testing::Message("only_new_parser = ")
+                   << only_new_parser
                    << "  successful_submission = " << successful_submission);
       base::test::ScopedFeatureList scoped_feature_list;
-      TurnOnNewParsingForSaving(&scoped_feature_list);
-      manager()->set_skip_old_form_managers_in_tests(
-          skip_old_form_managers_in_tests);
+      if (only_new_parser)
+        TurnOnOnlyNewPassword(&scoped_feature_list);
+      else
+        TurnOnNewParsingForSaving(&scoped_feature_list);
 
       EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
           .WillRepeatedly(Return(true));
@@ -2701,10 +2708,12 @@ TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
       manager()->OnPasswordFormsParsed(&driver_, observed);
       manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
+      if (only_new_parser)
+        EXPECT_TRUE(manager()->pending_login_managers().empty());
+
       auto submitted_form = form;
       submitted_form.form_data.fields[0].value = ASCIIToUTF16("username");
-      submitted_form.form_data.fields[1].value =
-          ASCIIToUTF16("strong_password");
+      submitted_form.form_data.fields[1].value = ASCIIToUTF16("password1");
 
       OnPasswordFormSubmitted(submitted_form);
       EXPECT_TRUE(manager()->GetSubmittedManagerForTest());
@@ -2724,6 +2733,7 @@ TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
 
       // Multiple calls of OnPasswordFormsRendered should be handled gracefully.
       manager()->OnPasswordFormsRendered(&driver_, observed, true);
+      testing::Mock::VerifyAndClearExpectations(&client_);
     }
   }
 }
@@ -2732,11 +2742,13 @@ TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
 // with the new parsing. For details see scheme 2 in comments before
 // |form_managers_| in password_manager.h.
 TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
-  for (bool skip_old_form_managers_in_tests : {false, true}) {
-    SCOPED_TRACE(testing::Message("skip_old_form_managers_in_tests = ")
-                 << skip_old_form_managers_in_tests);
+  for (bool only_new_parser : {false, true}) {
+    SCOPED_TRACE(testing::Message("only_new_parser = ") << only_new_parser);
     base::test::ScopedFeatureList scoped_feature_list;
-    TurnOnNewParsingForSaving(&scoped_feature_list);
+    if (only_new_parser)
+      TurnOnOnlyNewPassword(&scoped_feature_list);
+    else
+      TurnOnNewParsingForSaving(&scoped_feature_list);
 
     EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
         .WillRepeatedly(Return(true));
@@ -2759,6 +2771,7 @@ TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
         .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
     manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
     EXPECT_TRUE(manager()->form_managers().empty());
+    testing::Mock::VerifyAndClearExpectations(&client_);
   }
 }
 
