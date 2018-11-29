@@ -438,14 +438,15 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
 enum CanvasResourceType {
   kDirectGpuMemoryBufferResourceType,
   kTextureGpuMemoryBufferResourceType,
-  kRamGpuMemoryBufferResourceType,
+  kBitmapGpuMemoryBufferResourceType,
   kSharedBitmapResourceType,
   kTextureResourceType,
   kBitmapResourceType,
 };
 
 constexpr CanvasResourceType kSoftwareCompositedFallbackList[] = {
-    kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
+    kBitmapGpuMemoryBufferResourceType,
+    kSharedBitmapResourceType,
     // Fallback to no direct compositing support
     kBitmapResourceType,
 };
@@ -461,9 +462,11 @@ constexpr CanvasResourceType kAcceleratedFallbackList[] = {
 };
 
 constexpr CanvasResourceType kAcceleratedCompositedFallbackList[] = {
-    kTextureGpuMemoryBufferResourceType, kTextureResourceType,
+    kTextureGpuMemoryBufferResourceType,
+    kTextureResourceType,
     // Fallback to software composited
-    kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
+    kBitmapGpuMemoryBufferResourceType,
+    kSharedBitmapResourceType,
     // Fallback to no direct compositing support
     kBitmapResourceType,
 };
@@ -474,7 +477,7 @@ constexpr CanvasResourceType kAcceleratedDirectFallbackList[] = {
     kTextureGpuMemoryBufferResourceType,
     kTextureResourceType,
     // Fallback to software composited
-    kRamGpuMemoryBufferResourceType,
+    kBitmapGpuMemoryBufferResourceType,
     kSharedBitmapResourceType,
     // Fallback to no direct compositing support
     kBitmapResourceType,
@@ -558,7 +561,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                   is_origin_top_left);
         }
         break;
-      case kRamGpuMemoryBufferResourceType:
+      case kBitmapGpuMemoryBufferResourceType:
         if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
         if (presentation_mode != kAllowImageChromiumPresentationMode)
