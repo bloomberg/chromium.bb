@@ -241,11 +241,10 @@ class NET_EXPORT HostResolverImpl
   int Resolve(RequestImpl* request);
 
   // Attempts host resolution using fast local sources: IP literal resolution,
-  // cache lookup, HOSTS lookup (if enabled), and localhost. Returns OK if
-  // successful, ERR_NAME_NOT_RESOLVED if input is invalid, or
-  // ERR_DNS_CACHE_MISS if the host could not be resolved using local sources.
-  //
-  // On success, the resulting addresses are written to |addresses|.
+  // cache lookup, HOSTS lookup (if enabled), and localhost. Returns results
+  // with error() OK if successful, ERR_NAME_NOT_RESOLVED if input is invalid,
+  // or ERR_DNS_CACHE_MISS if the host could not be resolved using local
+  // sources.
   //
   // On ERR_DNS_CACHE_MISS and OK, the cache key for the request is written to
   // |key|. On other errors, it may not be.
@@ -256,33 +255,27 @@ class NET_EXPORT HostResolverImpl
   //
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
-  int ResolveLocally(const HostPortPair& host,
-                     DnsQueryType requested_address_family,
-                     HostResolverSource source,
-                     HostResolverFlags flags,
-                     bool allow_cache,
-                     bool allow_stale,
-                     HostCache::EntryStaleness* stale_info,
-                     const NetLogWithSource& request_net_log,
-                     AddressList* addresses,
-                     Key* key);
+  HostCache::Entry ResolveLocally(const std::string& hostname,
+                                  DnsQueryType requested_address_family,
+                                  HostResolverSource source,
+                                  HostResolverFlags flags,
+                                  bool allow_cache,
+                                  bool allow_stale,
+                                  HostCache::EntryStaleness* stale_info,
+                                  const NetLogWithSource& request_net_log,
+                                  Key* out_key);
 
   // Attempts to create and start a Job to asynchronously attempt to resolve
   // |key|. On success, returns ERR_IO_PENDING and attaches the Job to
   // |request|. On error, marks |request| completed and returns the error.
   int CreateAndStartJob(const Key& key, RequestImpl* request);
 
-  // Tries to resolve |key| as an IP, returns true and sets |net_error| if
-  // succeeds, returns false otherwise.
-  bool ResolveAsIP(const Key& key,
-                   uint16_t host_port,
-                   const IPAddress* ip_address,
-                   int* net_error,
-                   AddressList* addresses);
+  // Tries to resolve |key| and its possible IP address representation,
+  // |ip_address|. Returns a results entry iff the input can be resolved.
+  base::Optional<HostCache::Entry> ResolveAsIP(const Key& key,
+                                               const IPAddress* ip_address);
 
-  // If |key| is not found in cache returns false, otherwise returns
-  // true, sets |net_error| to the cached error code and fills |addresses|
-  // if it is a positive entry.
+  // Returns the result iff a positive match is found for |key| in the cache.
   //
   // If |allow_stale| is true, then stale cache entries can be returned.
   // |stale_info| must be non-null, and will be filled in with details of the
@@ -290,24 +283,18 @@ class NET_EXPORT HostResolverImpl
   //
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
-  bool ServeFromCache(const Key& key,
-                      uint16_t host_port,
-                      int* net_error,
-                      AddressList* addresses,
-                      bool allow_stale,
-                      HostCache::EntryStaleness* stale_info);
+  base::Optional<HostCache::Entry> ServeFromCache(
+      const Key& key,
+      bool allow_stale,
+      HostCache::EntryStaleness* stale_info);
 
-  // If we have a DnsClient with a valid DnsConfig, and |key| is found in the
-  // HOSTS file, returns true and fills |addresses|. Otherwise returns false.
-  bool ServeFromHosts(const Key& key,
-                      uint16_t host_port,
-                      AddressList* addresses);
+  // Iff we have a DnsClient with a valid DnsConfig, and |key| can be resolved
+  // from the HOSTS file, return the results.
+  base::Optional<HostCache::Entry> ServeFromHosts(const Key& key);
 
-  // If |key| is for a localhost name (RFC 6761), returns true and fills
-  // |addresses| with the loopback IP. Otherwise returns false.
-  bool ServeLocalhost(const Key& key,
-                      uint16_t host_port,
-                      AddressList* addresses);
+  // Iff |key| is for a localhost name (RFC 6761) and address DNS query type,
+  // returns a results entry with the loopback IP.
+  base::Optional<HostCache::Entry> ServeLocalhost(const Key& key);
 
   // Returns the (hostname, address_family) key to use for |info|, choosing an
   // "effective" address family by inheriting the resolver's default address
@@ -480,7 +467,7 @@ class NET_EXPORT HostResolverImpl
 };
 
 // Resolves a local hostname (such as "localhost" or "localhost6") into
-// IP endpoints with the given port. Returns true if |host| is a local
+// IP endpoints (with port 0). Returns true if |host| is a local
 // hostname and false otherwise. Special IPv6 names (e.g. "localhost6")
 // will resolve to an IPv6 address only, whereas other names will
 // resolve to both IPv4 and IPv6.
@@ -488,7 +475,6 @@ class NET_EXPORT HostResolverImpl
 // TODO(tfarina): It would be better to change the tests so this function
 // gets exercised indirectly through HostResolverImpl.
 NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
-                                             uint16_t port,
                                              AddressList* address_list);
 
 }  // namespace net
