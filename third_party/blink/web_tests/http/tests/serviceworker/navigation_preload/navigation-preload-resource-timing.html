@@ -75,21 +75,18 @@ promise_test(t => {
           assert_equals(results[0][0].name, frames[0].src,
                         'The entry of the first result must be the entry for ' +
                         'the first iframe.');
-          assert_equals(results[1].length, 2,
-                        'The second result must contain two entry.');
-          assert_object_equals(results[1][0], results[0][0],
-                               'The first entry of the second result must be ' +
-                               'same as the entry of the first result.');
-          assert_equals(results[1][1].name, frames[1].src,
-                        'The second entry of the second result must be the ' +
-                        'entry for the second iframe.');
+          assert_equals(results[1].length, 1,
+                        'The second result must contain only one entry.');
+          assert_equals(results[1][0].name, frames[1].src,
+                        'The entry of the second result must be the entry ' +
+                        'for the second iframe.');
           assert_equals(results[2].length, 1,
                         'The third result must contain only one entry.');
           assert_equals(results[2][0].name, frames[2].src,
                         'The entry of the third result must be the entry for ' +
                         'the third iframe.');
+          check_timing_entry(results[0][0], false /* allow_negative_value */);
           check_timing_entry(results[1][0], false /* allow_negative_value */);
-          check_timing_entry(results[1][1], false /* allow_negative_value */);
           check_timing_entry(results[2][0], true /* allow_negative_value */);
           frames.forEach(frame => frame.remove());
           return registration.unregister();
