@@ -19,6 +19,7 @@ js_type_check("closure_compile") {
     ":lock_state_behavior",
     ":manage_profile",
     ":manage_profile_browser_proxy",
+    ":people_browser_proxy",
     ":people_page",
     ":profile_info_browser_proxy",
     ":setup_fingerprint_dialog",
@@ -150,10 +151,17 @@ js_library("lock_screen_password_prompt_dialog") {
   ]
 }
 
+js_library("people_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
 js_library("people_page") {
   deps = [
     ":lock_screen",
     ":lock_state_behavior",
+    ":people_browser_proxy",
     ":profile_info_browser_proxy",
     ":signout_dialog",
     ":sync_browser_proxy",

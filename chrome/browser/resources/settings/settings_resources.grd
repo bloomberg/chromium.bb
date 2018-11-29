@@ -763,6 +763,12 @@
       <structure name="IDR_SETTINGS_PAYMENTS_SECTION_JS"
                  file="passwords_and_forms_page/payments_section.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PEOPLE_BROWSER_PROXY_HTML"
+                 file="people_page/people_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PEOPLE_BROWSER_PROXY_JS"
+                 file="people_page/people_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_HTML"
                  file="people_page/people_page.html"
                  type="chrome_html"

@@ -3,6 +3,20 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page', function() {
+  /** @implements {settings.PeopleBrowserProxy} */
+  class TestPeopleBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'openURL',
+      ]);
+    }
+
+    /** @override */
+    openURL(url) {
+      this.methodCalled('openURL', url);
+    }
+  }
+
   suite('ProfileInfoTests', function() {
     /** @type {SettingsPeoplePageElement} */
     let peoplePage = null;
@@ -499,6 +513,68 @@ cr.define('settings_people_page', function() {
       Polymer.dom.flush();
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
+    });
+  });
+
+  suite('PasswordsUITest', function() {
+    /** @type {SettingsPeoplePageElement} */
+    let peoplePage = null;
+    /** @type {settings.PeopleBrowserProxy} */
+    let browserProxy = null;
+
+    suiteSetup(function() {
+      // Forces navigation to Google Password Manager to be off by default.
+      loadTimeData.overrideValues({
+        navigateToGooglePasswordManager: false,
+      });
+    });
+
+    setup(function() {
+      browserProxy = new TestPeopleBrowserProxy();
+      settings.PeopleBrowserProxyImpl.instance_ = browserProxy;
+
+      PolymerTest.clearBody();
+      peoplePage = document.createElement('settings-people-page');
+
+      // Force enable Autofill Home.
+      // TODO(jdoerrie): https://crbug.com/854562.
+      // Remove when removing Autofill Home flag.
+      peoplePage.autofillHomeEnabled = true;
+      document.body.appendChild(peoplePage);
+
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      peoplePage.remove();
+    });
+
+    test('Google Password Manager Off', function() {
+      assertTrue(!!peoplePage.$$('#passwordManagerButton'));
+      peoplePage.$$('#passwordManagerButton').click();
+      Polymer.dom.flush();
+
+      assertEquals(
+          settings.getCurrentRoute(), settings.routes.MANAGE_PASSWORDS);
+    });
+
+    test('Google Password Manager On', function() {
+      // Hardcode this value so that the test is independent of the production
+      // implementation that might include additional query parameters.
+      const googlePasswordManagerUrl = 'https://passwords.google.com';
+
+      loadTimeData.overrideValues({
+        navigateToGooglePasswordManager: true,
+        googlePasswordManagerUrl: googlePasswordManagerUrl,
+      });
+
+      assertTrue(!!peoplePage.$$('#passwordManagerButton'));
+      peoplePage.$$('#passwordManagerButton').click();
+      Polymer.dom.flush();
+
+      return browserProxy.whenCalled('openURL').then(url => {
+        assertEquals(googlePasswordManagerUrl, url);
+      });
     });
   });
 });
