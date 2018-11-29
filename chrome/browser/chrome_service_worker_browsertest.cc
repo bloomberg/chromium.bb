@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -36,14 +37,16 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
-namespace {
+namespace chrome_service_worker_browser_test {
 
 const char kInstallAndWaitForActivatedPage[] =
     "<script>"
@@ -663,4 +666,99 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest, NoFetchHandler) {
       false);
 }
 
-}  // namespace
+// Copied from devtools_sanity_browsertest.cc.
+class StaticURLDataSource : public content::URLDataSource {
+ public:
+  StaticURLDataSource(const std::string& source, const std::string& content)
+      : source_(source), content_(content) {}
+  ~StaticURLDataSource() override = default;
+
+  // content::URLDataSource:
+  std::string GetSource() const override { return source_; }
+  void StartDataRequest(
+      const std::string& path,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const GotDataCallback& callback) override {
+    std::string data(content_);
+    callback.Run(base::RefCountedString::TakeString(&data));
+  }
+  std::string GetMimeType(const std::string& path) const override {
+    return "application/javascript";
+  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
+
+ private:
+  const std::string source_;
+  const std::string content_;
+
+  DISALLOW_COPY_AND_ASSIGN(StaticURLDataSource);
+};
+
+// Copied from devtools_sanity_browsertest.cc.
+class MockWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
+ public:
+  MockWebUIProvider(const std::string& source, const std::string& content)
+      : source_(source), content_(content) {}
+  ~MockWebUIProvider() override = default;
+
+  std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
+                                                     const GURL& url) override {
+    content::URLDataSource::Add(
+        Profile::FromWebUI(web_ui),
+        std::make_unique<StaticURLDataSource>(source_, content_));
+    return std::make_unique<content::WebUIController>(web_ui);
+  }
+
+ private:
+  const std::string source_;
+  const std::string content_;
+  DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
+};
+
+// Tests that registering a service worker with a chrome:// URL fails.
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, DisallowChromeScheme) {
+  const GURL kScript("chrome://dummyurl/sw.js");
+  const GURL kScope("chrome://dummyurl");
+
+  // Make chrome://dummyurl/sw.js serve a service worker script.
+  TestChromeWebUIControllerFactory test_factory;
+  MockWebUIProvider mock_provider("serviceworker", "// empty service worker");
+  test_factory.AddFactoryOverride(kScript.host(), &mock_provider);
+  content::WebUIControllerFactory::RegisterFactory(&test_factory);
+
+  // Try to register the service worker.
+  base::RunLoop run_loop;
+  bool result = true;
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      kScope, blink::mojom::ScriptType::kClassic,
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      kScript, options,
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, bool* out_result, bool result) {
+            *out_result = result;
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure(), &result));
+  run_loop.Run();
+
+  // Registration should fail. This is the desired behavior. At the time of this
+  // writing, there are a few reasons the registration fails:
+  // * OriginCanAccessServiceWorkers() returns false for the "chrome" scheme.
+  // * Even if that returned true, the URL loader factory bundle used to make
+  //   the resource request in ServiceWorkerNewScriptLoader doesn't support
+  //   the "chrome" scheme. This is because:
+  //     * The call to RegisterNonNetworkSubresourceURLLoaderFactories() from
+  //       CreateFactoryBundle() in embedded_worker_instance.cc doesn't register
+  //       the "chrome" scheme, because there is no frame/web_contents.
+  //     * Even if that registered a factory, CreateFactoryBundle() would
+  //       skip it because GetServiceWorkerSchemes() doesn't include "chrome".
+  //
+  // It's difficult to change all these, so the test author hasn't actually
+  // changed Chrome in a way that makes this test fail, to prove that the test
+  // would be effective at catching a regression.
+  EXPECT_FALSE(result);
+}
+
+}  // namespace chrome_service_worker_browser_test
