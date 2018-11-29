@@ -90,7 +90,9 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
       active_permissions.explicit_hosts().Contains(
           unpack_result->optional_explicit_hosts) &&
       active_permissions.explicit_hosts().Contains(
-          unpack_result->required_explicit_hosts);
+          unpack_result->required_explicit_hosts) &&
+      active_permissions.scriptable_hosts().Contains(
+          unpack_result->required_scriptable_hosts);
 
   return RespondNow(ArgumentList(
       api::permissions::Contains::Results::Create(has_all_permissions)));
@@ -143,7 +145,8 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   // withheld. I don't think that will be a common use case, and so is probably
   // fine.
   if (!unpack_result->required_apis.empty() ||
-      !unpack_result->required_explicit_hosts.is_empty()) {
+      !unpack_result->required_explicit_hosts.is_empty() ||
+      !unpack_result->required_scriptable_hosts.is_empty()) {
     return RespondNow(Error(kCantRemoveRequiredPermissionsError));
   }
 
@@ -242,7 +245,8 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   // Do the same for withheld permissions.
   requested_withheld_ = std::make_unique<const PermissionSet>(
       APIPermissionSet(), ManifestPermissionSet(),
-      unpack_result->required_explicit_hosts, URLPatternSet());
+      unpack_result->required_explicit_hosts,
+      unpack_result->required_scriptable_hosts);
   requested_withheld_ =
       PermissionSet::CreateDifference(*requested_withheld_, active_permissions);
 

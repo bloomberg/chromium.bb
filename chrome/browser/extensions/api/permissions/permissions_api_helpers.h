@@ -37,8 +37,8 @@ struct UnpackPermissionSetResult {
   APIPermissionSet required_apis;
   // Explicit hosts that are in the extension's "required" permission set.
   URLPatternSet required_explicit_hosts;
-  // TODO(devlin): Add scriptable host support.
-  // https://crbug.com/889654.
+  // Scriptable hosts that are in the extension's "required" permission set.
+  URLPatternSet required_scriptable_hosts;
 
   // API permissions that are in the extension's "optional" permission set.
   APIPermissionSet optional_apis;

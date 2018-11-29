@@ -100,6 +100,7 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
   bool RunContainsFunction(const std::string& manifest_permission,
                            const std::string& args_string,
                            bool allow_file_access) {
+    SCOPED_TRACE(args_string);
     ListBuilder required_permissions;
     required_permissions.Append(manifest_permission);
     scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
@@ -186,9 +187,12 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   scoped_feature_list.InitAndEnableFeature(
       extensions_features::kRuntimeHostPermissions);
 
+  constexpr char kExampleCom[] = "https://example.com/*";
+  constexpr char kContentScriptCom[] = "https://contentscript.com/*";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .AddPermissions({"https://example.com/"})
+          .AddPermission(kExampleCom)
+          .AddContentScript("foo.js", {kContentScriptCom, kExampleCom})
           .Build();
 
   AddExtensionAndGrantPermissions(*extension);
@@ -198,6 +202,7 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   service()->AddExtension(extension.get());
 
   auto contains_origin = [this, &extension](const char* origin) {
+    SCOPED_TRACE(origin);
     auto function = base::MakeRefCounted<PermissionsContainsFunction>();
     function->set_extension(extension.get());
     if (!extension_function_test_utils::RunFunction(
@@ -235,10 +240,10 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
     return origins;
   };
 
-  // Currently, the extension should have access to example.com (since
-  // permissions are not withheld).
-  constexpr char kExampleCom[] = "https://example.com/*";
+  // Currently, the extension should have access to example.com and
+  // contentscript.com (since permissions are not withheld).
   EXPECT_TRUE(contains_origin(kExampleCom));
+  EXPECT_TRUE(contains_origin(kContentScriptCom));
   EXPECT_THAT(get_all(), testing::ElementsAre(kExampleCom));
 
   ScriptingPermissionsModifier modifier(profile(), extension);
@@ -247,6 +252,7 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   // Once we withhold the permission, the contains function should correctly
   // report the value.
   EXPECT_FALSE(contains_origin(kExampleCom));
+  EXPECT_FALSE(contains_origin(kContentScriptCom));
   EXPECT_THAT(get_all(), testing::IsEmpty());
 
   constexpr char kChromiumOrg[] = "https://chromium.org/";
@@ -258,6 +264,30 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
   // able to use them anyway (since they aren't active).
   EXPECT_FALSE(contains_origin(kChromiumOrg));
   EXPECT_THAT(get_all(), testing::IsEmpty());
+
+  // Fun edge case: example.com is requested as both a scriptable and an
+  // explicit host. It is technically possible that it may be granted *only* as
+  // one of the two (e.g., only explicit granted).
+  {
+    URLPatternSet explicit_hosts(
+        {URLPattern(Extension::kValidHostPermissionSchemes, kExampleCom)});
+    permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+        profile(), *extension,
+        PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                      explicit_hosts, URLPatternSet()));
+    const GURL example_url("https://example.com");
+    const PermissionSet& active_permissions =
+        extension->permissions_data()->active_permissions();
+    EXPECT_TRUE(active_permissions.explicit_hosts().MatchesURL(example_url));
+    EXPECT_FALSE(active_permissions.scriptable_hosts().MatchesURL(example_url));
+  }
+  // In this case, contains() should return *false* (because not all the
+  // permissions are active, but getAll() should include example.com (because it
+  // has been [partially] granted). In practice, this case should be
+  // exceptionally rare, and we're mostly just making sure that there's some
+  // sane behavior.
+  EXPECT_FALSE(contains_origin(kExampleCom));
+  EXPECT_THAT(get_all(), testing::ElementsAre(kExampleCom));
 }
 
 // Tests requesting withheld permissions with the permissions.request() API.
@@ -298,6 +328,91 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
   EXPECT_FALSE(
       permissions_data->active_permissions().effective_hosts().MatchesURL(
           kGoogleCom));
+}
+
+// Tests requesting withheld content script permissions with the
+// permissions.request() API.
+TEST_F(PermissionsAPIUnitTest, RequestingWithheldContentScriptPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  constexpr char kContentScriptPattern[] = "https://contentscript.com/*";
+  // Create an extension with required host permissions, and withhold those
+  // permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddContentScript("foo.js", {kContentScriptPattern})
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  const GURL kContentScriptCom("https://contentscript.com");
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+
+  // Request one of the withheld permissions.
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(
+      RunRequestFunction(*extension, browser(),
+                         R"([{"origins": ["https://contentscript.com/*"]}])",
+                         &prompted_permissions));
+  ASSERT_TRUE(prompted_permissions);
+  EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+              testing::UnorderedElementsAre(kContentScriptPattern));
+
+  // The withheld permission should be granted.
+  EXPECT_THAT(GetPatternsAsStrings(
+                  permissions_data->active_permissions().effective_hosts()),
+              testing::UnorderedElementsAre(kContentScriptPattern));
+  EXPECT_TRUE(
+      permissions_data->withheld_permissions().effective_hosts().is_empty());
+}
+
+// Tests requesting a withheld host permission that is both an explicit and a
+// scriptable host with the permissions.request() API.
+TEST_F(PermissionsAPIUnitTest,
+       RequestingWithheldExplicitAndScriptablePermissionsInTheSameCall) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  constexpr char kContentScriptPattern[] = "https://example.com/*";
+  // Create an extension with required host permissions, and withhold those
+  // permissions.
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermission("https://example.com/*")
+          .AddContentScript("foo.js", {kContentScriptPattern})
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  const GURL kExampleCom("https://example.com");
+  const PermissionsData* permissions_data = extension->permissions_data();
+  EXPECT_TRUE(
+      permissions_data->active_permissions().effective_hosts().is_empty());
+
+  // Request one of the withheld permissions.
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(RunRequestFunction(*extension, browser(),
+                                 R"([{"origins": ["https://example.com/*"]}])",
+                                 &prompted_permissions));
+  ASSERT_TRUE(prompted_permissions);
+  EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+              testing::UnorderedElementsAre(kContentScriptPattern));
+
+  // The withheld permission should be granted to both explicit and scriptable
+  // hosts.
+  EXPECT_TRUE(
+      permissions_data->active_permissions().explicit_hosts().MatchesURL(
+          kExampleCom));
+  EXPECT_TRUE(
+      permissions_data->active_permissions().scriptable_hosts().MatchesURL(
+          kExampleCom));
 }
 
 // Tests an extension re-requesting an optional host after the user removes it.
