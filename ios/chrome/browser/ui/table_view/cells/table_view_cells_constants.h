@@ -38,6 +38,9 @@ extern const int kTableViewTextLabelColorBlue;
 // Hex Value for light gray label text color.
 extern const int kTableViewTextLabelColorLightGrey;
 
+// Hex Value for blue label text color.
+extern const int kTableViewTextLabelColorBlue;
+
 // Hex Value for the text color of the secondary labels (e.g. details, URL,
 // metadata...).
 extern const int kTableViewSecondaryLabelLightGrayTextColor;

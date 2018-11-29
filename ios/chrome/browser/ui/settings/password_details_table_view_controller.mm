@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
 
 #import <UIKit/UIKit.h>
 
@@ -15,25 +15,25 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kPasswordDetailsTableViewId = @"PasswordDetailsTableViewId";
+NSString* const kPasswordDetailsDeletionAlertViewId =
+    @"PasswordDetailsDeletionAlertViewId";
 
 namespace {
 
@@ -60,18 +60,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-// This protocol declares the methods used by the context menus, so that
-// selectors can be created from those methods and passed to UIMenuItem.
-@protocol PasswordDetailsViewerProtocol<NSObject>
-- (void)copySite;
-- (void)copyUsername;
-- (void)copyPassword;
-- (void)showPassword;
-- (void)hidePassword;
-@end
-
-@interface PasswordDetailsCollectionViewController ()<
-    PasswordDetailsViewerProtocol> {
+@interface PasswordDetailsTableViewController () {
   // The username to which the saved password belongs.
   NSString* _username;
   // The saved password.
@@ -86,34 +75,35 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofill::PasswordForm _passwordForm;
   // Instance of the parent view controller needed in order to update the
   // password list when a password is deleted.
-  __weak id<PasswordDetailsCollectionViewControllerDelegate> _weakDelegate;
+  __weak id<PasswordDetailsTableViewControllerDelegate> _weakDelegate;
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
   __weak id<ReauthenticationProtocol> _weakReauthenticationModule;
   // The password item.
-  PasswordDetailsItem* _passwordItem;
+  TableViewTextItem* _passwordItem;
 }
 
-// Alert dialogue to confirm deletion of passwords upon pressing the delete
+// Alert dialog to confirm deletion of passwords upon pressing the delete
 // button.
 @property(nonatomic, strong) UIAlertController* deleteConfirmation;
 
 @end
 
-@implementation PasswordDetailsCollectionViewController
+@implementation PasswordDetailsTableViewController
 
 @synthesize deleteConfirmation = _deleteConfirmation;
 
-- (instancetype)
-  initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
-              delegate:
-                  (id<PasswordDetailsCollectionViewControllerDelegate>)delegate
-reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
+- (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
+                            delegate:
+                                (id<PasswordDetailsTableViewControllerDelegate>)
+                                    delegate
+              reauthenticationModule:
+                  (id<ReauthenticationProtocol>)reauthenticationModule {
   DCHECK(delegate);
   DCHECK(reauthenticationModule);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _weakDelegate = delegate;
     _weakReauthenticationModule = reauthenticationModule;
@@ -130,69 +120,55 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     }
     auto name_and_link =
         password_manager::GetShownOriginAndLinkUrl(_passwordForm);
+    self.title = base::SysUTF8ToNSString(name_and_link.first);
     _site = base::SysUTF8ToNSString(name_and_link.second.spec());
-    self.title = [PasswordDetailsCollectionViewController
-        simplifyOrigin:base::SysUTF8ToNSString(name_and_link.first)];
-    self.collectionViewAccessibilityIdentifier =
-        @"PasswordDetailsCollectionViewController";
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(hidePassword)
                           name:UIApplicationDidEnterBackgroundNotification
                         object:nil];
-
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
-+ (NSString*)simplifyOrigin:(NSString*)origin {
-  NSString* originWithoutScheme = nil;
-  if (![origin rangeOfString:@"://"].length) {
-    originWithoutScheme = origin;
-  } else {
-    originWithoutScheme =
-        [[origin componentsSeparatedByString:@"://"] objectAtIndex:1];
-  }
-  return
-      [[originWithoutScheme componentsSeparatedByString:@"/"] objectAtIndex:0];
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.accessibilityIdentifier = kPasswordDetailsTableViewId;
+
+  [self loadModel];
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - ChromeTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSite];
-  SettingsTextItem* siteHeader =
-      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+  TableViewTextHeaderFooterItem* siteHeader =
+      [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
   siteHeader.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
-  siteHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:siteHeader forSectionWithIdentifier:SectionIdentifierSite];
-  PasswordDetailsItem* siteItem =
-      [[PasswordDetailsItem alloc] initWithType:ItemTypeSite];
+  TableViewTextItem* siteItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeSite];
   siteItem.text = _site;
-  siteItem.showingText = YES;
   [model addItem:siteItem toSectionWithIdentifier:SectionIdentifierSite];
   [model addItem:[self siteCopyButtonItem]
       toSectionWithIdentifier:SectionIdentifierSite];
 
   if (!_passwordForm.blacklisted_by_user) {
     [model addSectionWithIdentifier:SectionIdentifierUsername];
-    SettingsTextItem* usernameHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+    TableViewTextHeaderFooterItem* usernameHeader =
+        [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
     usernameHeader.text =
         l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
-    usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:usernameHeader
         forSectionWithIdentifier:SectionIdentifierUsername];
-    PasswordDetailsItem* usernameItem =
-        [[PasswordDetailsItem alloc] initWithType:ItemTypeUsername];
+    TableViewTextItem* usernameItem =
+        [[TableViewTextItem alloc] initWithType:ItemTypeUsername];
     usernameItem.text = _username;
-    usernameItem.showingText = YES;
     [model addItem:usernameItem
         toSectionWithIdentifier:SectionIdentifierUsername];
     [model addItem:[self usernameCopyButtonItem]
@@ -200,17 +176,15 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 
     if (_passwordForm.federation_origin.opaque()) {
       [model addSectionWithIdentifier:SectionIdentifierPassword];
-      SettingsTextItem* passwordHeader =
-          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+      TableViewTextHeaderFooterItem* passwordHeader =
+          [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
       passwordHeader.text =
           l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-      passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
       [model setHeader:passwordHeader
           forSectionWithIdentifier:SectionIdentifierPassword];
-      _passwordItem =
-          [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
+      _passwordItem = [[TableViewTextItem alloc] initWithType:ItemTypePassword];
       _passwordItem.text = _password;
-      _passwordItem.showingText = NO;
+      _passwordItem.masked = YES;
       [model addItem:_passwordItem
           toSectionWithIdentifier:SectionIdentifierPassword];
 
@@ -220,17 +194,15 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
           toSectionWithIdentifier:SectionIdentifierPassword];
     } else {
       [model addSectionWithIdentifier:SectionIdentifierFederation];
-      SettingsTextItem* federationHeader =
-          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+      TableViewTextHeaderFooterItem* federationHeader =
+          [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
       federationHeader.text =
           l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION);
-      federationHeader.textColor = [[MDCPalette greyPalette] tint500];
       [model setHeader:federationHeader
           forSectionWithIdentifier:SectionIdentifierFederation];
-      PasswordDetailsItem* federationItem =
-          [[PasswordDetailsItem alloc] initWithType:ItemTypeFederation];
+      TableViewTextItem* federationItem =
+          [[TableViewTextItem alloc] initWithType:ItemTypeFederation];
       federationItem.text = _federation;
-      federationItem.showingText = YES;
       [model addItem:federationItem
           toSectionWithIdentifier:SectionIdentifierFederation];
     }
@@ -243,11 +215,12 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 
 #pragma mark - Items
 
-- (CollectionViewItem*)siteCopyButtonItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeCopySite];
+// Returns the "Copy" button for site.
+- (TableViewItem*)siteCopyButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeCopySite];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_COPY_BUTTON);
-  item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -260,11 +233,12 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   return item;
 }
 
-- (CollectionViewItem*)usernameCopyButtonItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeCopyUsername];
+// Returns the "Copy" button for user name.
+- (TableViewItem*)usernameCopyButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeCopyUsername];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON);
-  item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -278,11 +252,12 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   return item;
 }
 
-- (CollectionViewItem*)passwordCopyButtonItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeCopyPassword];
+// Returns the "Copy" button for password.
+- (TableViewItem*)passwordCopyButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeCopyPassword];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
-  item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -296,26 +271,29 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   return item;
 }
 
-- (CollectionViewItem*)showHidePasswordButtonItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeShowHide];
+// Returns the "Show/Hide" toggle button for password.
+- (TableViewItem*)showHidePasswordButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
-  item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
 
-- (CollectionViewItem*)deletePasswordButtonItem {
-  SettingsTextItem* item =
-      [[SettingsTextItem alloc] initWithType:ItemTypeDelete];
+// Returns the "Delete" button for password.
+- (TableViewItem*)deletePasswordButtonItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeDelete];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
-  item.textColor = [[MDCPalette cr_redPalette] tint500];
+  item.textColor = [UIColor redColor];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
 
 #pragma mark - Actions
 
+// Copies the site to system pasteboard and shows a toast of success.
 - (void)copySite {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   generalPasteboard.string = _site;
@@ -324,6 +302,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
        forSuccess:YES];
 }
 
+// Copies the user name to system pasteboard and shows a toast of success.
 - (void)copyUsername {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   generalPasteboard.string = _username;
@@ -332,6 +311,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
        forSuccess:YES];
 }
 
+// Returns the title of "Show/Hide" toggle button for password based on current
+// state of |_plainTextPasswordShown|.
 - (NSString*)showHideButtonText {
   if (_plainTextPasswordShown) {
     return l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON);
@@ -342,32 +323,31 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 // Changes the text on the Show/Hide button appropriately according to
 // |_plainTextPasswordShown|.
 - (void)toggleShowHideButton {
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
   NSIndexPath* path = [model indexPathForItemType:ItemTypeShowHide
                                 sectionIdentifier:SectionIdentifierPassword];
-  SettingsTextItem* item =
-      base::mac::ObjCCastStrict<SettingsTextItem>([model itemAtIndexPath:path]);
+  TableViewTextItem* item = base::mac::ObjCCastStrict<TableViewTextItem>(
+      [model itemAtIndexPath:path]);
   item.text = [self showHideButtonText];
-  item.textColor = [[MDCPalette cr_bluePalette] tint500];
   [self reconfigureCellsForItems:@[ item ]];
-  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
+// Shows the password and toggles the "Show/Hide" button if the user can
+// reauthenticate, otherwise shows the password dialog.
 - (void)showPassword {
   if (_plainTextPasswordShown) {
     return;
   }
 
   if ([_weakReauthenticationModule canAttemptReauth]) {
-    __weak PasswordDetailsCollectionViewController* weakSelf = self;
+    __weak PasswordDetailsTableViewController* weakSelf = self;
     void (^showPasswordHandler)(BOOL) = ^(BOOL success) {
-      PasswordDetailsCollectionViewController* strongSelf = weakSelf;
+      PasswordDetailsTableViewController* strongSelf = weakSelf;
       if (!strongSelf || !success)
         return;
-      PasswordDetailsItem* passwordItem = strongSelf->_passwordItem;
-      passwordItem.showingText = YES;
+      TableViewTextItem* passwordItem = strongSelf->_passwordItem;
+      passwordItem.masked = NO;
       [strongSelf reconfigureCellsForItems:@[ passwordItem ]];
-      [[strongSelf collectionView].collectionViewLayout invalidateLayout];
       strongSelf->_plainTextPasswordShown = YES;
       [strongSelf toggleShowHideButton];
       UMA_HISTOGRAM_ENUMERATION(
@@ -386,17 +366,19 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   }
 }
 
+// Hides the password and toggles the "Show/Hide" button.
 - (void)hidePassword {
   if (!_plainTextPasswordShown) {
     return;
   }
-  _passwordItem.showingText = NO;
+  _passwordItem.masked = YES;
   [self reconfigureCellsForItems:@[ _passwordItem ]];
-  [self.collectionView.collectionViewLayout invalidateLayout];
   _plainTextPasswordShown = NO;
   [self toggleShowHideButton];
 }
 
+// Copies the password to system pasteboard and shows a toast of success if the
+// user can reauthenticate, otherwise shows the password dialog.
 - (void)copyPassword {
   // If the password is displayed in plain text, there is no need to
   // re-authenticate the user when copying the password because they are already
@@ -416,9 +398,9 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
         password_manager::metrics_util::REAUTH_SKIPPED,
         password_manager::metrics_util::REAUTH_COUNT);
   } else if ([_weakReauthenticationModule canAttemptReauth]) {
-    __weak PasswordDetailsCollectionViewController* weakSelf = self;
+    __weak PasswordDetailsTableViewController* weakSelf = self;
     void (^copyPasswordHandler)(BOOL) = ^(BOOL success) {
-      PasswordDetailsCollectionViewController* strongSelf = weakSelf;
+      PasswordDetailsTableViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
       if (success) {
@@ -488,13 +470,16 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   [MDCSnackbarManager showMessage:copyPasswordResultMessage];
 }
 
+// Deletes the password with a deletion confirmation alert.
 - (void)deletePassword {
-  __weak PasswordDetailsCollectionViewController* weakSelf = self;
+  __weak PasswordDetailsTableViewController* weakSelf = self;
 
   self.deleteConfirmation = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
+  _deleteConfirmation.view.accessibilityIdentifier =
+      kPasswordDetailsDeletionAlertViewId;
 
   UIAlertAction* cancelAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
@@ -508,12 +493,14 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
                 style:UIAlertActionStyleDestructive
               handler:^(UIAlertAction* action) {
-                PasswordDetailsCollectionViewController* strongSelf = weakSelf;
+                PasswordDetailsTableViewController* strongSelf = weakSelf;
                 if (!strongSelf) {
                   return;
                 }
                 strongSelf.deleteConfirmation = nil;
-                [strongSelf->_weakDelegate deletePassword:_passwordForm];
+                [strongSelf->_weakDelegate
+                    passwordDetailsTableViewController:strongSelf
+                                        deletePassword:_passwordForm];
               }];
   [_deleteConfirmation addAction:deleteAction];
 
@@ -561,7 +548,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 // menu and shows it. This method should only be called for item types
 // representing the cells with the site, username and password.
 - (void)ensureContextMenuShownForItemType:(NSInteger)itemType
-                           collectionView:(UICollectionView*)collectionView
+                                tableView:(UITableView*)tableView
                               atIndexPath:(NSIndexPath*)indexPath {
   UIMenuController* menu = [UIMenuController sharedMenuController];
   if (![menu isMenuVisible]) {
@@ -580,27 +567,24 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
         NOTREACHED();
     }
     [menu setMenuItems:options];
-    UICollectionViewLayoutAttributes* attributes =
-        [collectionView.collectionViewLayout
-            layoutAttributesForItemAtIndexPath:indexPath];
-    [menu setTargetRect:attributes.frame inView:collectionView];
+    [menu setTargetRect:[tableView rectForRowAtIndexPath:indexPath]
+                 inView:tableView];
     [menu setMenuVisible:YES animated:YES];
   }
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSite:
     case ItemTypeUsername:
     case ItemTypePassword:
       [self ensureContextMenuShownForItemType:itemType
-                               collectionView:collectionView
+                                    tableView:tableView
                                   atIndexPath:indexPath];
       break;
     case ItemTypeCopySite:
@@ -625,24 +609,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     default:
       break;
   }
-}
-
-#pragma mark MDCCollectionViewStylingDelegate
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeSite:
-    case ItemTypeUsername:
-    case ItemTypePassword:
-      return [MDCCollectionViewCell
-          cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                             forItem:item];
-    default:
-      return MDCCellDefaultOneLineHeight;
-  }
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark - ForTesting

@@ -36,6 +36,7 @@
   header.textLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
   header.accessibilityLabel = self.text;
+  header.isAccessibilityElement = YES;
   if (styler.cellHighlightColor)
     header.highlightColor = styler.cellHighlightColor;
 }

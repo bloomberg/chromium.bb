@@ -69,8 +69,8 @@ int ChromeTableViewControllerTest::NumberOfItemsInSection(int section) {
 
 id ChromeTableViewControllerTest::GetTableViewItem(int section, int item) {
   TableViewModel* model = [controller_ tableViewModel];
-  NSIndexPath* index_path =
-      [NSIndexPath indexPathForItem:item inSection:section];
+  NSIndexPath* index_path = [NSIndexPath indexPathForItem:item
+                                                inSection:section];
   TableViewItem* collection_view_item = [model hasItemAtIndexPath:index_path]
                                             ? [model itemAtIndexPath:index_path]
                                             : nil;
@@ -114,14 +114,15 @@ void ChromeTableViewControllerTest::CheckSectionFooterWithId(
   CheckSectionFooter(l10n_util::GetNSString(expected_text_id), section);
 }
 
+// TODO(crbug.com/894791): There are some unittests that are using
+// CheckTextCellText to check Item with both "text" and "detailText". Change all
+// of them to CheckTextCellTextAndDetailText when the migration is finished.
 void ChromeTableViewControllerTest::CheckTextCellText(NSString* expected_text,
                                                       int section,
                                                       int item) {
   id cell = GetTableViewItem(section, item);
   ASSERT_TRUE([cell respondsToSelector:@selector(text)]);
-  ASSERT_TRUE([cell respondsToSelector:@selector(detailText)]);
   EXPECT_NSEQ(expected_text, [cell text]);
-  EXPECT_FALSE([cell detailText]);
 }
 
 void ChromeTableViewControllerTest::CheckTextCellTextWithId(
@@ -190,8 +191,8 @@ void ChromeTableViewControllerTest::DeleteItem(
     int section,
     int item,
     ProceduralBlock completion_block) {
-  NSIndexPath* index_path =
-      [NSIndexPath indexPathForItem:item inSection:section];
+  NSIndexPath* index_path = [NSIndexPath indexPathForItem:item
+                                                inSection:section];
   __weak ChromeTableViewController* weak_controller = controller_;
   void (^batch_updates)() = ^{
     ChromeTableViewController* strong_controller = weak_controller;
