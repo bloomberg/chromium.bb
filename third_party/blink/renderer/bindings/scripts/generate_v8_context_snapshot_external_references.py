@@ -23,17 +23,10 @@ INCLUDES = frozenset([
     'third_party/blink/renderer/bindings/core/v8/v8_html_document.h',
     'third_party/blink/renderer/bindings/core/v8/v8_initializer.h',
     'third_party/blink/renderer/bindings/core/v8/v8_window.h',
-    'third_party/blink/renderer/platform/bindings/dom_wrapper_world.h',
     'third_party/blink/renderer/platform/bindings/v8_object_constructor.h',
-    'third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h',
-    'third_party/blink/renderer/platform/bindings/v8_private_property.h',
     'v8/include/v8.h'])
 
 TEMPLATE_FILE = 'external_reference_table.cc.tmpl'
-
-WHITE_LIST_INTERFACES = frozenset([
-    'DOMMatrix',  # crbug.com/733481
-])
 
 SNAPSHOTTED_INTERFACES = frozenset([
     'Window',
@@ -119,7 +112,7 @@ class InterfaceTemplateContextBuilder(object):
 
         return {
             'attributes': attributes,
-            'exported': '%s_EXPORT ' % component.upper(),
+            'component': component,
             'has_origin_safe_method_setter': has_origin_safe_method_setter,
             'has_constructor_callback': has_constructor_callback,
             'has_cross_origin_named_getter': has_cross_origin_named_getter,
@@ -131,17 +124,14 @@ class InterfaceTemplateContextBuilder(object):
             'indexed_property_setter': v8_interface.property_setter(interface.indexed_property_setter, interface),
             'indexed_property_deleter': v8_interface.property_deleter(interface.indexed_property_deleter),
             'internal_namespace': v8_interface.internal_namespace(interface),
-            'is_array_buffer_or_view': interface.idl_type.is_array_buffer_or_view,
-            'is_callback': interface.is_callback,
             'is_partial': interface.is_partial,
-            'is_snapshotted': interface in SNAPSHOTTED_INTERFACES,
             'methods': methods,
             'name': name,
             'named_constructor': v8_interface.named_constructor_context(interface),
             'named_property_getter': named_property_getter,
             'named_property_setter': v8_interface.property_setter(interface.named_property_setter, interface),
             'named_property_deleter': v8_interface.property_deleter(interface.named_property_deleter),
-            'v8_name': v8_utilities.v8_class_name_or_partial(interface),
+            'v8_class': v8_utilities.v8_class_name_or_partial(interface),
         }
 
 
@@ -171,14 +161,15 @@ class ExternalReferenceTableGenerator(object):
     # in V8 context snapshot, so we can skip them.
     def _process_interface(self, interface, component, interfaces):
         def has_impl(interface):
-            if interface.name in WHITE_LIST_INTERFACES:
-                return True
             # Non legacy callback interface does not provide V8 callbacks.
             if interface.is_callback:
                 return len(interface.constants) > 0
             if 'RuntimeEnabled' in interface.extended_attributes:
                 return False
-            return True
+            if 'Exposed' not in interface.extended_attributes:
+                return True
+            return any(exposure.exposed == 'Window' and exposure.runtime_enabled is None
+                       for exposure in interface.extended_attributes['Exposed'])
 
         if not has_impl(interface):
             return
@@ -193,7 +184,7 @@ class ExternalReferenceTableGenerator(object):
             return
 
         include_file = 'third_party/blink/renderer/bindings/%s/v8/%s.h' % (
-            component, utilities.to_snake_case(context['v8_name']))
+            component, utilities.to_snake_case(context['v8_class']))
         self._include_files.add(include_file)
 
     # Gathers all interface-dependent information and returns as a Jinja template context.
