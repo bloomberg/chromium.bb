@@ -7,8 +7,7 @@
 /**
  * Tests restoring the sorting order.
  */
-testcase.restoreSortColumn = function() {
-  var appId;
+testcase.restoreSortColumn = async function() {
   var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,     // 'photos' (directory)
     ENTRIES.world,      // 'world.ogv', 59943 bytes
@@ -16,104 +15,57 @@ testcase.restoreSortColumn = function() {
     ENTRIES.desktop,    // 'My Desktop Background.png', 272 bytes
     ENTRIES.hello,      // 'hello.txt', 51 bytes
   ]);
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Sort by name.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                                    appId,
-                                    ['.table-header-cell:nth-of-type(1)'],
-                                    this.next);
-    },
-    // Check the sorted style of the header.
-    function() {
-      remoteCall.waitForElement(appId, '.table-header-sort-image-asc').
-          then(this.next);
-    },
-    // Sort by size (in descending order).
-    function() {
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                                    appId,
-                                    ['.table-header-cell:nth-of-type(2)'],
-                                    this.next);
-    },
-    // Check the sorted style of the header.
-    function() {
-      remoteCall.waitForElement(appId, '.table-header-sort-image-desc').
-          then(this.next);
-    },
-    // Check the sorted files.
-    function() {
-      remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).
-          then(this.next);
-    },
-    // Open another window, where the sorted column should be restored.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check the sorted style of the header.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, '.table-header-sort-image-desc').
-          then(this.next);
-    },
-    // Check the sorted files.
-    function() {
-      remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true}).
-          then(this.next);
-    },
-    // Check the error.
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+
+  // Set up Files app.
+  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+
+  // Sort by name.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(1)']);
+
+  // Check the sorted style of the header.
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-asc');
+
+  // Sort by size (in descending order).
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(2)']);
+
+  // Check the sorted style of the header.
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
+
+  // Check the sorted files.
+  await remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true});
+
+  // Open another window, where the sorted column should be restored.
+  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+
+  // Check the sorted style of the header.
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
+
+  // Check the sorted files.
+  await remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true});
 };
 
 /**
  * Tests restoring the current view (the file list or the thumbnail grid).
  */
-testcase.restoreCurrentView = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check the initial view.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, '.thumbnail-grid[hidden]').
-          then(this.next);
-    },
-    // Change the current view.
-    function() {
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                                    appId,
-                                    ['#view-button'],
-                                    this.next);
-    },
-    // Check the new current view.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '.detail-table[hidden]').
-          then(this.next);
-    },
-    // Open another window, where the current view is restored.
-    function() {
-      openNewWindow(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check the current view.
-    function(inAppId) {
-      appId = inAppId;
-      remoteCall.waitForElement(appId, '.detail-table[hidden]').then(this.next);
-    },
-    // Check the error.
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+testcase.restoreCurrentView = async function() {
+  // Set up Files app.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+
+  // Check the initial view.
+  await remoteCall.waitForElement(appId, '.thumbnail-grid[hidden]');
+
+  // Change the current view.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#view-button']));
+
+  // Check the new current view.
+  await remoteCall.waitForElement(appId, '.detail-table[hidden]');
+
+  // Open another window, where the current view is restored.
+  const appId2 = await openNewWindow(null, RootPath.DOWNLOADS);
+
+  // Check the current view.
+  await remoteCall.waitForElement(appId2, '.detail-table[hidden]');
 };
