@@ -86,6 +86,7 @@ CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];
 CHROMEOS_EXPORT extern const char kDisableWakeOnWifi[];
 CHROMEOS_EXPORT extern const char kEnableArc[];
 CHROMEOS_EXPORT extern const char kEnableArcOobeOptinNoSkip[];
+CHROMEOS_EXPORT extern const char kEnableArcVm[];
 CHROMEOS_EXPORT extern const char kEnableCaptivePortalRandomUrl[];
 CHROMEOS_EXPORT extern const char kEnableCastReceiver[];
 CHROMEOS_EXPORT extern const char kEnableChromevoxDeveloperOption[];
