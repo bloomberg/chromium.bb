@@ -99,7 +99,7 @@ void BluetoothFeaturePodController::UpdateButton() {
        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices()) {
     if (device->connection_state ==
         BluetoothDeviceInfo::ConnectionState::kConnected) {
-      connected_devices.push_back(std::move(device));
+      connected_devices.push_back(device->Clone());
     }
   }
 
