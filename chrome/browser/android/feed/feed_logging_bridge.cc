@@ -65,6 +65,12 @@ void FeedLoggingBridge::OnContentDismissed(
       j_position, GURL(ConvertJavaStringToUTF8(j_env, j_url)));
 }
 
+void FeedLoggingBridge::OnContentSwiped(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this) {
+  feed_logging_metrics_->OnSuggestionSwiped();
+}
+
 void FeedLoggingBridge::OnContentClicked(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
@@ -120,6 +126,14 @@ void FeedLoggingBridge::OnOpenedWithNoContent(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this) {}
 
+void FeedLoggingBridge::OnSpinnerShown(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jlong j_shownTimeMs) {
+  feed_logging_metrics_->OnSpinnerShown(
+      base::TimeDelta::FromMilliseconds(j_shownTimeMs));
+}
+
 void FeedLoggingBridge::OnContentTargetVisited(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
@@ -133,6 +147,12 @@ void FeedLoggingBridge::OnContentTargetVisited(
     feed_logging_metrics_->OnSuggestionArticleVisited(
         base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
   }
+}
+
+void FeedLoggingBridge::ReportScrolledAfterOpen(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this) {
+  feed_logging_metrics_->ReportScrolledAfterOpen();
 }
 
 }  // namespace feed

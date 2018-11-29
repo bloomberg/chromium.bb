@@ -350,6 +350,7 @@ public class FeedNewTabPage extends NewTabPage {
         if (mSigninPromoView != null) UiUtils.removeViewFromParent(mSigninPromoView);
         mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                 new NonDismissibleHeader(mSectionHeaderView)));
+        mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(loggingBridge));
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
         // the scroll container for policy is removed.
         view.requestFocus();
