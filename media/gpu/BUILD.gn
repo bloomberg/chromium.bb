@@ -645,6 +645,7 @@ if (is_chromeos) {
       "test:video_player",
       "//base/test:test_support",
       "//media:test_support",
+      "//mojo/core/embedder",
       "//testing/gtest",
     ]
     if (use_vaapi) {
