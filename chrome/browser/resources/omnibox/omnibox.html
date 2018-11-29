@@ -76,6 +76,7 @@
       <button id="copy-text" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling `Show all details` affects what will be copied.">Copy as text</button>
       <button id="copy-json" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">Copy as JSON</button>
     </div>
+
     <div class="section">
       <input id="filter-text" type="text" size="60" placeholder="Filter output">
       <label class="toggle left-20">
@@ -91,30 +92,18 @@
     <div id="contents"></div>
   </template>
 
-  <template id="results-group-template">
-    <div class="details"></div>
-    <div class="combined-results">
-      <p>Combined results</p>
+  <template id="details-and-table-template">
+    <div class="details-and-table">
+      <div class="details"></div>
+      <table class="table"></table>
     </div>
-    <div class="individual-results"></div>
   </template>
 
-  <template id="results-group-details-template">
+  <template id="details-template">
     <p>cursor position = <span class="cursor-position"></span></p>
     <p>elapsed time = <span class="time"></span>ms</p>
     <p>all providers done = <span class="done"></span></p>
     <p>host = <span class="host"></span>, has isTypedHost = <span class="is-typed-host"></span></p>
-  </template>
-
-  <template id="results-group-individual-results-template">
-    <p>individual results</p>
-  </template>
-
-  <template id="results-table-template">
-    <table class="autocomplete-results-table">
-      <tbody class="results-table-body">
-      </tbody>
-    </table>
   </template>
 
   <div class="section">
