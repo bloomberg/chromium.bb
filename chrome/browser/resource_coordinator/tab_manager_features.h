@@ -329,6 +329,12 @@ InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
 // Gets number of oldest tab that should be scored by TabRanker.
 int GetNumOldestTabsToScoreWithTabRanker();
 
+// Gets number of oldest tabs that should be logged by TabRanker.
+int GetNumOldestTabsToLogWithTabRanker();
+
+// Whether to disable background time TabMetrics log.
+bool DisableBackgroundLogWithTabRanker();
+
 }  // namespace resource_coordinator
 
 #endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_

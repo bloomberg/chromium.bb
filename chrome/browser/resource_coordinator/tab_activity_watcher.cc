@@ -4,8 +4,11 @@
 
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
+#include <limits>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/rand_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
@@ -53,7 +56,7 @@ class TabActivityWatcher::WebContentsData
   // Calculates the tab reactivation score for a background tab. Returns nullopt
   // if the score could not be calculated, e.g. because the tab is in the
   // foreground.
-  base::Optional<float> CalculateReactivationScore() {
+  base::Optional<float> CalculateReactivationScore(bool also_log_to_ukm) {
     if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
       return base::nullopt;
 
@@ -62,22 +65,34 @@ class TabActivityWatcher::WebContentsData
     const auto mru = GetMRUFeatures();
     const int lru_index = mru.total - mru.index - 1;
 
-    // If the least recently used index is greater than or equals to N, which
-    // means the tab is not in the oldest N list, we should simply skip it.
-    // The N is defaulted as kMaxInt so that all tabs are scored.
-    if (lru_index >= GetNumOldestTabsToScoreWithTabRanker())
+    // If the least recently used index is greater than both numbers, then we
+    // don't need to score or log the tab; directly return instead.
+    if (lru_index >= GetNumOldestTabsToScoreWithTabRanker() &&
+        lru_index >= GetNumOldestTabsToLogWithTabRanker()) {
       return base::nullopt;
+    }
 
     base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures(mru);
     if (!tab.has_value())
       return base::nullopt;
 
-    float score;
-    tab_ranker::TabRankerResult result =
-        TabActivityWatcher::GetInstance()->predictor_.ScoreTab(tab.value(),
-                                                               &score);
-    if (result == tab_ranker::TabRankerResult::kSuccess)
-      return score;
+    if (also_log_to_ukm && lru_index < GetNumOldestTabsToLogWithTabRanker()) {
+      // A new label_id_ is generated for this query.
+      // The same label_id_ will be logged with ForegroundedOrClosed event later
+      // on so that TabFeatures can be paired with ForegroundedOrClosed.
+      label_id_ = static_cast<int64_t>(
+          base::RandGenerator(std::numeric_limits<uint64_t>::max() - 1) + 1);
+      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
+          ukm_source_id_, tab.value(), web_contents(), label_id_);
+    }
+
+    if (lru_index < GetNumOldestTabsToScoreWithTabRanker()) {
+      float score;
+      if (TabActivityWatcher::GetInstance()->predictor_.ScoreTab(
+              tab.value(), &score) == tab_ranker::TabRankerResult::kSuccess)
+        return score;
+    }
+
     return base::nullopt;
   }
 
@@ -102,6 +117,9 @@ class TabActivityWatcher::WebContentsData
 
     // Record previous ukm_source_id from the |replaced_tab|.
     previous_ukm_source_id_ = replaced_tab.ukm_source_id_;
+
+    // Copy the replaced label_id_.
+    label_id_ = replaced_tab.label_id_;
   }
 
   // Call when the WebContents is detached from its tab. If the tab is later
@@ -134,11 +152,15 @@ class TabActivityWatcher::WebContentsData
 
   // Logs TabMetrics for the tab if it is considered to be backgrounded.
   void LogTabIfBackgrounded() {
-    if (!backgrounded_time_.is_null()) {
-      base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures();
-      if (tab.has_value())
-        TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
-            ukm_source_id_, tab.value(), web_contents());
+    if (backgrounded_time_.is_null() || DisableBackgroundLogWithTabRanker())
+      return;
+
+    base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures();
+    if (tab.has_value()) {
+      // Background time logging always logged with label_id == 0, since we
+      // only use label_id for query time logging for now.
+      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
+          ukm_source_id_, tab.value(), web_contents(), 0);
     }
   }
 
@@ -399,6 +421,7 @@ class TabActivityWatcher::WebContentsData
     const auto mru = GetMRUFeatures();
     metrics.mru_index = mru.index;
     metrics.total_tab_count = mru.total;
+    metrics.label_id = label_id_;
 
     const ukm::SourceId source_id = discarded_since_backgrounded_
                                         ? previous_ukm_source_id_
@@ -406,6 +429,14 @@ class TabActivityWatcher::WebContentsData
     TabActivityWatcher::GetInstance()
         ->tab_metrics_logger_->LogForegroundedOrClosedMetrics(source_id,
                                                               metrics);
+    // label_id_ is reset whenever a label is logged.
+    // A new label_id_ is generated when a query happens inside
+    // CalculateReactivationScore, after that this ForegroundedOrClosed logging
+    // can happen many times (tabs may get backgrounded and reactivated several
+    // times). In such cases, we only count the first time as the true label,
+    // the rest are considered to be query time logging irrelevant, for which we
+    // log with label_id == 0.
+    label_id_ = 0;
   }
 
   // Updated when a navigation is finished.
@@ -451,6 +482,9 @@ class TabActivityWatcher::WebContentsData
   // Whether this tab is currently in discarded state.
   bool discarded_since_backgrounded_ = false;
 
+  // An int64 random label to pair TabFeatures with ForegroundedOrClosed event.
+  int64_t label_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
@@ -467,12 +501,17 @@ TabActivityWatcher::TabActivityWatcher()
 TabActivityWatcher::~TabActivityWatcher() = default;
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    bool also_log_to_ukm) {
   WebContentsData* web_contents_data =
       WebContentsData::FromWebContents(web_contents);
   if (!web_contents_data)
     return base::nullopt;
-  return web_contents_data->CalculateReactivationScore();
+  return web_contents_data->CalculateReactivationScore(also_log_to_ukm);
+}
+
+void TabActivityWatcher::SetQueryIdForTabMetricsLogger(int64_t query_id) {
+  tab_metrics_logger_->set_query_id(query_id);
 }
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {

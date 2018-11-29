@@ -31,6 +31,7 @@
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -97,6 +98,10 @@ struct LifecycleUnitAndSortKey {
       : lifecycle_unit(lifecycle_unit),
         sort_key(lifecycle_unit->GetSortKey()) {}
 
+  LifecycleUnitAndSortKey(LifecycleUnit* lifecycle_unit,
+                          const LifecycleUnit::SortKey& key)
+      : lifecycle_unit(lifecycle_unit), sort_key(key) {}
+
   bool operator<(const LifecycleUnitAndSortKey& other) const {
     return sort_key < other.sort_key;
   }
@@ -107,6 +112,23 @@ struct LifecycleUnitAndSortKey {
   LifecycleUnit* lifecycle_unit;
   LifecycleUnit::SortKey sort_key;
 };
+
+// Helper function that sorts |lifecycle_units_and_sort_keys|, and returns
+// a LifecycleUnitVector.
+LifecycleUnitVector SortedLifecycleUnitsFrom(
+    std::vector<LifecycleUnitAndSortKey>* lifecycle_units_and_sort_keys) {
+  std::sort(lifecycle_units_and_sort_keys->begin(),
+            lifecycle_units_and_sort_keys->end());
+
+  LifecycleUnitVector sorted_lifecycle_units;
+  sorted_lifecycle_units.reserve(lifecycle_units_and_sort_keys->size());
+  for (auto& lifecycle_unit_and_sort_key : *lifecycle_units_and_sort_keys) {
+    sorted_lifecycle_units.push_back(
+        lifecycle_unit_and_sort_key.lifecycle_unit);
+  }
+
+  return sorted_lifecycle_units;
+}
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
     TabManager::BackgroundTabLoadingMode mode,
@@ -279,17 +301,8 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
   lifecycle_units_and_sort_keys.reserve(lifecycle_units_.size());
   for (auto* lifecycle_unit : lifecycle_units_)
     lifecycle_units_and_sort_keys.emplace_back(lifecycle_unit);
-  std::sort(lifecycle_units_and_sort_keys.begin(),
-            lifecycle_units_and_sort_keys.end());
 
-  LifecycleUnitVector sorted_lifecycle_units;
-  sorted_lifecycle_units.reserve(lifecycle_units_.size());
-  for (auto& lifecycle_unit_and_sort_key : lifecycle_units_and_sort_keys) {
-    sorted_lifecycle_units.push_back(
-        lifecycle_unit_and_sort_key.lifecycle_unit);
-  }
-
-  return sorted_lifecycle_units;
+  return SortedLifecycleUnitsFrom(&lifecycle_units_and_sort_keys);
 }
 
 void TabManager::DiscardTab(LifecycleUnitDiscardReason reason) {
@@ -657,7 +670,12 @@ content::WebContents* TabManager::DiscardTabImpl(
     LifecycleUnitDiscardReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {
+  const LifecycleUnitVector sorted_lifecycle_units =
+      base::FeatureList::IsEnabled(features::kTabRanker)
+          ? GetSortedLifecycleUnitsFromTabRanker()
+          : GetSortedLifecycleUnits();
+
+  for (LifecycleUnit* lifecycle_unit : sorted_lifecycle_units) {
     DecisionDetails decision_details;
     if (lifecycle_unit->CanDiscard(reason, &decision_details) &&
         lifecycle_unit->Discard(reason)) {
@@ -1158,6 +1176,36 @@ bool TabManager::ShouldProactivelyDiscardTabs() {
     return false;
 
   return true;
+}
+
+LifecycleUnitVector TabManager::GetSortedLifecycleUnitsFromTabRanker() {
+  // Set query_id if TabRanker is enabled.
+  const int64_t query_id = static_cast<int64_t>(base::RandUint64());
+  resource_coordinator::TabActivityWatcher::GetInstance()
+      ->SetQueryIdForTabMetricsLogger(query_id);
+
+  std::vector<LifecycleUnitAndSortKey> lifecycle_units_and_sort_keys;
+  lifecycle_units_and_sort_keys.reserve(lifecycle_units_.size());
+  for (auto* lifecycle_unit : lifecycle_units_) {
+    TabLifecycleUnitExternal* tab_lifecycle_unit_external =
+        lifecycle_unit->AsTabLifecycleUnitExternal();
+    // For now, all LifecycleUnits are TabLifecycleUnitExternals.
+    DCHECK(tab_lifecycle_unit_external);
+
+    base::Optional<float> reactivation_score =
+        resource_coordinator::TabActivityWatcher::GetInstance()
+            ->CalculateReactivationScore(
+                tab_lifecycle_unit_external->GetWebContents(), true);
+
+    float score = reactivation_score.has_value()
+                      ? reactivation_score.value()
+                      : LifecycleUnit::SortKey::kMaxScore;
+    lifecycle_units_and_sort_keys.emplace_back(
+        lifecycle_unit,
+        LifecycleUnit::SortKey(score, lifecycle_unit->GetLastFocusedTime()));
+  }
+
+  return SortedLifecycleUnitsFrom(&lifecycle_units_and_sort_keys);
 }
 
 }  // namespace resource_coordinator

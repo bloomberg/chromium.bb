@@ -221,6 +221,17 @@ class TabActivityWatcherUkmTest : public TabActivityWatcherTest {
     return entry->source_id;
   }
 
+  // Gets the latest metric value from the event with given |metric_name|.
+  int64_t GetLatestMetricValue(const std::string& event_name,
+                               const std::string& metric_name) {
+    const std::vector<const ukm::mojom::UkmEntry*> entries =
+        test_ukm_recorder_->GetEntriesByName(event_name);
+    // Check nonemptiness.
+    EXPECT_FALSE(entries.empty());
+
+    return *(test_ukm_recorder_->GetEntryMetric(entries.back(), metric_name));
+  }
+
   std::unique_ptr<UkmEntryChecker> ukm_entry_checker_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
@@ -482,4 +493,230 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
   }
 }
 
+// Test the query time logging is correct.
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
+                       LogInCalculateReactivationScore) {
+  // Set Feature params for this test.
+  // (1) background log is disabled, so that only query time logging and
+  // corresponding labels should be logged.
+  // (2) number of oldest tabs to log is set to 2, so that foreground tab should
+  // not be logged.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"number_of_oldest_tabs_to_log_with_TabRanker", "2"},
+       {"disable_background_log_with_TabRanker", "true"}});
+
+  // Use test clock so tabs have non-zero backgrounded times.
+  base::SimpleTestTickClock test_clock;
+  ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing(&test_clock);
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+
+  ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
+  // Insert the tab@1.
+  AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  // Insert the tab@2.
+  AddTabAtIndex(2, test_urls_[2], ui::PAGE_TRANSITION_LINK);
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  // Activate tab@0.
+  browser()->tab_strip_model()->ActivateTabAt(0, kIsUserGesture);
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+
+  // Score tab_0 will fail because tab_0 is current foreground tab.
+  base::Optional<float> tab_0 =
+      TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+          browser()->tab_strip_model()->GetWebContentsAt(0), true);
+  EXPECT_FALSE(tab_0.has_value());
+
+  // No metrics should be logged till now.
+  EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kEntryName));
+  EXPECT_EQ(1, ukm_entry_checker_->NumNewEntriesRecorded(kFOCEntryName));
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_->ExpectNewEntry(
+        kFOCEntryName, test_urls_[0],
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 0},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
+  }
+
+  // Set query_id.
+  const int64_t query_id = 1234;
+  TabActivityWatcher::GetInstance()->SetQueryIdForTabMetricsLogger(query_id);
+
+  // tab@1 is scored successfully.
+  base::Optional<float> tab_1 =
+      TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+          browser()->tab_strip_model()->GetWebContentsAt(1), true);
+  EXPECT_TRUE(tab_1.has_value());
+  int64_t label_id_1 = 0;
+  {
+    SCOPED_TRACE("");
+    // tab feature of tab@1 should be logged correctly.
+    UkmMetricMap expected_tab_feature_values = kBasicMetricValues;
+    expected_tab_feature_values[TabManager_TabMetrics::kMRUIndexName] = 2;
+    expected_tab_feature_values
+        [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
+    expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 3;
+    expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 3;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = query_id;
+
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[1],
+                                       expected_tab_feature_values);
+    // Get label_id_1 for later verification.
+    label_id_1 =
+        GetLatestMetricValue(kEntryName, TabManager_TabMetrics::kLabelIdName);
+    EXPECT_NE(label_id_1, 0);
+  }
+
+  // Reactivate tab@1 should log a ForegroundedOrClosed event with LabelId as
+  // label_id_1.
+  browser()->tab_strip_model()->ActivateTabAt(1, kIsUserGesture);
+  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  {
+    SCOPED_TRACE("");
+    ukm_entry_checker_->ExpectNewEntry(
+        kFOCEntryName, test_urls_[1],
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, label_id_1},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
+  }
+
+  // tab@2 is scored successfully.
+  base::Optional<float> tab_2 =
+      TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+          browser()->tab_strip_model()->GetWebContentsAt(2), true);
+  EXPECT_TRUE(tab_2.has_value());
+  int64_t label_id_2 = 0;
+  {
+    SCOPED_TRACE("");
+    // tab feature of tab@2 should be logged correctly.
+    UkmMetricMap expected_tab_feature_values = kBasicMetricValues;
+    expected_tab_feature_values[TabManager_TabMetrics::kMRUIndexName] = 2;
+    expected_tab_feature_values
+        [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
+    expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 3;
+    expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 3;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = query_id;
+
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[2],
+                                       expected_tab_feature_values);
+    // Get label_id_2 for later verification.
+    label_id_2 =
+        GetLatestMetricValue(kEntryName, TabManager_TabMetrics::kLabelIdName);
+    EXPECT_NE(label_id_2, 0);
+  }
+
+  // No ForegroundedOrClosed event is logged for tab@1 because it's foregrounded
+  CloseBrowserSynchronously(browser());
+  {
+    SCOPED_TRACE("");
+    // Close Browser should log a ForegroundedOrClosed event for tab@2 with
+    // correct label_id.
+    ukm_entry_checker_->ExpectNewEntry(
+        kFOCEntryName, test_urls_[2],
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, label_id_2},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
+
+    // Close Browser should log a ForegroundedOrClosed event for tab@0 with
+    // label_id == 0 because  when we score it, it was not in the oldest N list.
+    ukm_entry_checker_->ExpectNewEntry(
+        kFOCEntryName, test_urls_[0],
+        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 0},
+         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
+  }
+}
+
+// Tests label id is recorded correctly for discarded tabs.
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
+                       DiscardedTabGetsCorrectLabelId) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"number_of_oldest_tabs_to_log_with_TabRanker", "2"},
+       {"disable_background_log_with_TabRanker", "true"}});
+
+  ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
+  AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
+  // No TabMetrics events are logged till now.
+  EXPECT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
+
+  // Score tab_0 will succeed.
+  base::Optional<float> tab_0 =
+      TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+          browser()->tab_strip_model()->GetWebContentsAt(0), true);
+  EXPECT_TRUE(tab_0.has_value());
+  int64_t label_id_0 = 0;
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = kBasicMetricValues;
+    expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+    // tab feature of tab@0 should be logged correctly.
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
+                                       expected_metrics);
+    // Get label_id_0 for later verification.
+    label_id_0 =
+        GetLatestMetricValue(kEntryName, TabManager_TabMetrics::kLabelIdName);
+    EXPECT_NE(label_id_0, 0);
+  }
+
+  // Discard the first tab.
+  content::WebContents* first_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  resource_coordinator::GetTabLifecycleUnitSource()
+      ->GetTabLifecycleUnitExternal(first_contents)
+      ->DiscardTab();
+
+  // Switching to first tab logs a forgrounded event for test_urls_[0].
+  browser()->tab_strip_model()->ActivateTabAt(0, kIsUserGesture);
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = {
+        {TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
+        {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1},
+        {TabManager_Background_ForegroundedOrClosed::kLabelIdName, label_id_0}};
+
+    ukm_entry_checker_->ExpectNewEntry(kFOCEntryName, test_urls_[0],
+                                       expected_metrics);
+  }
+
+  // Score tab_1 will succeed.
+  base::Optional<float> tab_1 =
+      TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+          browser()->tab_strip_model()->GetWebContentsAt(1), true);
+  EXPECT_TRUE(tab_1.has_value());
+  int64_t label_id_1 = 0;
+  {
+    SCOPED_TRACE("");
+    // tab feature of tab@1 should be logged correctly.
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[1],
+                                       kBasicMetricValues);
+    // Get label_id_1 for later verification.
+    label_id_1 =
+        GetLatestMetricValue(kEntryName, TabManager_TabMetrics::kLabelIdName);
+    EXPECT_NE(label_id_0, 0);
+  }
+
+  // Discard the second tab.
+  content::WebContents* second_content =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  resource_coordinator::GetTabLifecycleUnitSource()
+      ->GetTabLifecycleUnitExternal(second_content)
+      ->DiscardTab();
+
+  CloseBrowserSynchronously(browser());
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = {
+        {TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
+        {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1},
+        {TabManager_Background_ForegroundedOrClosed::kLabelIdName, label_id_1}};
+
+    ukm_entry_checker_->ExpectNewEntry(kFOCEntryName, test_urls_[1],
+                                       expected_metrics);
+  }
+}
 }  // namespace resource_coordinator

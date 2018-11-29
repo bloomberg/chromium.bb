@@ -168,8 +168,11 @@ class TabMetricsLoggerUKMTest : public ::testing::Test {
 TEST_F(TabMetricsLoggerUKMTest, LogTabMetrics) {
   const tab_ranker::TabFeatures tab =
       tab_ranker::GetFullTabFeaturesForTesting();
+  const int64_t query_id = 1234;
+  const int64_t label_id = 5678;
+  GetLogger()->set_query_id(query_id);
 
-  GetLogger()->LogTabMetrics(GetSourceId(), tab, nullptr);
+  GetLogger()->LogTabMetrics(GetSourceId(), tab, nullptr, label_id);
 
   // Checks that the size is logged correctly.
   EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
@@ -184,6 +187,7 @@ TEST_F(TabMetricsLoggerUKMTest, LogTabMetrics) {
                                 {"HasFormEntry", 1},
                                 {"IsPinned", 1},
                                 {"KeyEventCount", 21},
+                                {"LabelId", label_id},
                                 {"MouseEventCount", 22},
                                 {"MRUIndex", 27},
                                 {"NavigationEntryCount", 24},
@@ -191,7 +195,7 @@ TEST_F(TabMetricsLoggerUKMTest, LogTabMetrics) {
                                 {"PageTransitionCoreType", 2},
                                 {"PageTransitionFromAddressBar", 1},
                                 {"PageTransitionIsRedirect", 1},
-                                {"SequenceId", 1},
+                                {"QueryId", query_id},
                                 {"SiteEngagementScore", 26},
                                 {"TimeFromBackgrounded", 10000},
                                 {"TotalTabCount", 30},
@@ -212,6 +216,7 @@ TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
   foc_metrics.time_from_backgrounded = 1234;
   foc_metrics.mru_index = 4;
   foc_metrics.total_tab_count = 7;
+  foc_metrics.label_id = 5678;
 
   GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
 
@@ -225,30 +230,12 @@ TEST_F(TabMetricsLoggerUKMTest, LogForegroundedOrClosedMetrics) {
 
   // Checks that all the fields are logged correctly.
   ExpectEntries(entries[0], {
-                                {"SequenceId", 1},
-                                {"IsForegrounded", 0},
+                                {"IsDiscarded", foc_metrics.is_discarded},
+                                {"IsForegrounded", foc_metrics.is_foregrounded},
+                                {"LabelId", foc_metrics.label_id},
                                 {"MRUIndex", foc_metrics.mru_index},
                                 {"TimeFromBackgrounded",
                                  foc_metrics.time_from_backgrounded},
                                 {"TotalTabCount", foc_metrics.total_tab_count},
-                                {"IsDiscarded", foc_metrics.is_discarded},
                             });
-}
-
-// Checks the sequence id is logged as sequentially incremental sequence across
-// different events.
-TEST_F(TabMetricsLoggerUKMTest, SequenceIdShouldBeLoggedSequentially) {
-  const TabMetricsLogger::ForegroundedOrClosedMetrics foc_metrics;
-
-  GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
-  GetLogger()->LogForegroundedOrClosedMetrics(GetSourceId(), foc_metrics);
-
-  EXPECT_EQ(2U, GetTestUkmRecorder()->sources_count());
-  EXPECT_EQ(2U, GetTestUkmRecorder()->entries_count());
-  const std::vector<const ukm::mojom::UkmEntry*> entries =
-      GetTestUkmRecorder()->GetEntriesByName(
-          "TabManager.Background.ForegroundedOrClosed");
-  EXPECT_EQ(2U, entries.size());
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
-  GetTestUkmRecorder()->ExpectEntryMetric(entries[1], "SequenceId", 2);
 }
