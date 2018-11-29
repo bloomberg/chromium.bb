@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 
 class GURL;
 
@@ -20,7 +21,9 @@ enum class DeepLinkType;
 }  // namespace util
 }  // namespace assistant
 
-class AssistantControllerObserver {
+// A checked observer which receives notification of changes to the
+// AssistantController.
+class AssistantControllerObserver : public base::CheckedObserver {
  public:
   // Invoked when the AssistantController has been fully constructed.
   virtual void OnAssistantControllerConstructed() {}
@@ -40,7 +43,7 @@ class AssistantControllerObserver {
 
  protected:
   AssistantControllerObserver() = default;
-  virtual ~AssistantControllerObserver() = default;
+  ~AssistantControllerObserver() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantControllerObserver);
 };

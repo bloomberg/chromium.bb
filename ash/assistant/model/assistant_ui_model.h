@@ -86,7 +86,7 @@ class AssistantUiModel {
 
   AssistantSource entry_point_ = AssistantSource::kUnspecified;
 
-  base::ObserverList<AssistantUiModelObserver>::Unchecked observers_;
+  base::ObserverList<AssistantUiModelObserver> observers_;
 
   // Usable work area for Assistant. Value is only meaningful when Assistant
   // UI exists.
