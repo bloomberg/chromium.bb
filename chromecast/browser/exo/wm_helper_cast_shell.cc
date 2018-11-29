@@ -183,7 +183,7 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayRemoved(
 void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (!base::ContainsValue(display_info_, display.id())) {
+  if (display_info_.find(display.id()) == display_info_.end()) {
     display::ManagedDisplayInfo md(display.id(), "CastDisplayInfo", true);
     md.SetBounds(display.bounds());
     display_info_.emplace(display.id(), md);
