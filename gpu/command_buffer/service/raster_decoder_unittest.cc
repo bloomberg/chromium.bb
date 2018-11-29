@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
@@ -195,6 +196,9 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
 }
 
 TEST_P(RasterDecoderTest, YieldAfterEndRasterCHROMIUM) {
+#if defined(OS_MACOSX)
+  EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
+#endif
   GetDecoder()->SetUpForRasterCHROMIUMForTest();
   cmds::EndRasterCHROMIUM end_raster_cmd;
   end_raster_cmd.Init();
