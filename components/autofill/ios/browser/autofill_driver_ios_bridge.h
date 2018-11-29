@@ -22,13 +22,12 @@ class WebFrame;
 // Interface used to pipe form data from AutofillDriverIOS to the embedder.
 @protocol AutofillDriverIOSBridge
 
-- (void)onFormDataFilled:(uint16_t)query_id
-                 inFrame:(web::WebFrame*)frame
-                  result:(const autofill::FormData&)result;
+- (void)fillFormData:(const autofill::FormData&)form
+             inFrame:(web::WebFrame*)frame;
 
-- (void)sendAutofillTypePredictionsToRenderer:
+- (void)fillFormDataPredictions:
             (const std::vector<autofill::FormDataPredictions>&)forms
-                                      toFrame:(web::WebFrame*)frame;
+                        inFrame:(web::WebFrame*)frame;
 
 @end
 

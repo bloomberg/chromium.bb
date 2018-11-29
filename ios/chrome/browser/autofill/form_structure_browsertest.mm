@@ -21,12 +21,12 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
-#import "ios/chrome/browser/autofill/autofill_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
+#import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/web/public/web_state/web_frame.h"
@@ -113,8 +113,9 @@ class FormStructureBrowserTest
   std::string FormStructuresToString(
       const AutofillManager::FormStructureMap& forms);
 
-  FormSuggestionController* suggestionController_;
-  AutofillController* autofillController_;
+  std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
+  AutofillAgent* autofill_agent_;
+  FormSuggestionController* suggestion_controller_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -142,24 +143,29 @@ void FormStructureBrowserTest::SetUp() {
   AddressNormalizerFactory::GetInstance();
 
   IOSSecurityStateTabHelper::CreateForWebState(web_state());
-  InfoBarManagerImpl::CreateForWebState(web_state());
-  AutofillAgent* autofillAgent = [[AutofillAgent alloc]
+
+  autofill_agent_ = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()
                  webState:web_state()];
-  suggestionController_ =
+  suggestion_controller_ =
       [[FormSuggestionController alloc] initWithWebState:web_state()
-                                               providers:@[ autofillAgent ]];
-  autofillController_ = [[AutofillController alloc]
-           initWithBrowserState:chrome_browser_state_.get()
-                       webState:web_state()
-                  autofillAgent:autofillAgent
-      passwordGenerationManager:nullptr
-                downloadEnabled:NO];
+                                               providers:@[ autofill_agent_ ]];
+
+  InfoBarManagerImpl::CreateForWebState(web_state());
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(web_state());
+  autofill_client_.reset(new autofill::ChromeAutofillClientIOS(
+      chrome_browser_state_.get(), web_state(), infobar_manager,
+      autofill_agent_,
+      /*password_generation_manager=*/nullptr));
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
 void FormStructureBrowserTest::TearDown() {
-  [autofillController_ detachFromWebState];
-
   ChromeWebTest::TearDown();
 }
 

@@ -14,10 +14,10 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#import "ios/chrome/browser/autofill/autofill_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
+#import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
@@ -70,30 +70,29 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state()->SetJSInjectionReceiver(injectionReceiver);
 
-    AutofillAgent* autofill_agent =
-        [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
-                                          webState:web_state()];
-    InfoBarManagerImpl::CreateForWebState(web_state());
     web_state()->CreateWebFramesManager();
     auto main_frame = std::make_unique<web::FakeWebFrame>("main", true, GURL());
     web_state()->AddWebFrame(std::move(main_frame));
-    autofill_controller_ =
-        [[AutofillController alloc] initWithBrowserState:browser_state()
-                                                webState:web_state()
-                                           autofillAgent:autofill_agent
-                               passwordGenerationManager:nullptr
-                                         downloadEnabled:NO];
+
+    autofill_agent_ =
+        [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
+                                          webState:web_state()];
+
+    InfoBarManagerImpl::CreateForWebState(web_state());
+    infobars::InfoBarManager* infobar_manager =
+        InfoBarManagerImpl::FromWebState(web_state());
+    autofill_client_.reset(new autofill::ChromeAutofillClientIOS(
+        browser_state(), web_state(), infobar_manager, autofill_agent_,
+        /*password_generation_manager=*/nullptr));
+
+    std::string locale("en");
+    autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+        web_state(), autofill_client_.get(), nil, locale,
+        autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   }
 
-  // PlatformTest:
-  void TearDown() override {
-    [autofill_controller_ detachFromWebState];
-
-    DoTearDown();
-  }
-
-  // Manages autofill for a single page.
-  AutofillController* autofill_controller_;
+  std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
+  AutofillAgent* autofill_agent_;
 };
 
 // Tests that the FullCardRequester presents and dismisses the card unmask

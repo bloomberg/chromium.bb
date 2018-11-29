@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/autofill_controller.h"
-
 #include <memory>
 #include <vector>
 
@@ -219,14 +217,15 @@ class AutofillControllerTest : public ChromeWebTest {
   // Histogram tester for these tests.
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
+  std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
+
+  AutofillAgent* autofill_agent_;
+
   // Retrieves suggestions according to form events.
   TestSuggestionController* suggestion_controller_;
 
   // Retrieves accessory views according to form events.
   FormInputAccessoryMediator* accessory_mediator_;
-
-  // Manages autofill for a single page.
-  AutofillController* autofill_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillControllerTest);
 };
@@ -239,20 +238,28 @@ void AutofillControllerTest::SetUp() {
   // default.
   chrome_browser_state_->CreateWebDataService();
 
-  AutofillAgent* agent = [[AutofillAgent alloc]
+  IOSSecurityStateTabHelper::CreateForWebState(web_state());
+
+  autofill_agent_ = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()
                  webState:web_state()];
+  suggestion_controller_ =
+      [[TestSuggestionController alloc] initWithWebState:web_state()
+                                               providers:@[ autofill_agent_ ]];
+
   InfoBarManagerImpl::CreateForWebState(web_state());
-  IOSSecurityStateTabHelper::CreateForWebState(web_state());
-  autofill_controller_ = [[AutofillController alloc]
-           initWithBrowserState:chrome_browser_state_.get()
-                       webState:web_state()
-                  autofillAgent:agent
-      passwordGenerationManager:nullptr
-                downloadEnabled:NO];
-  suggestion_controller_ = [[TestSuggestionController alloc]
-      initWithWebState:web_state()
-             providers:@[ [autofill_controller_ suggestionProvider] ]];
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(web_state());
+  autofill_client_.reset(new autofill::ChromeAutofillClientIOS(
+      chrome_browser_state_.get(), web_state(), infobar_manager,
+      autofill_agent_,
+      /*password_generation_manager=*/nullptr));
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
   accessory_mediator_ =
       [[FormInputAccessoryMediator alloc] initWithConsumer:nil
                                               webStateList:NULL];
@@ -267,7 +274,6 @@ void AutofillControllerTest::SetUp() {
 }
 
 void AutofillControllerTest::TearDown() {
-  [autofill_controller_ detachFromWebState];
   [suggestion_controller_ detachFromWebState];
 
   ChromeWebTest::TearDown();

@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -31,12 +32,14 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -51,6 +54,7 @@
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -92,62 +96,9 @@ void GetFormField(autofill::FormFieldData* field,
 
 }  // namespace
 
-@interface AutofillAgent ()<CRWWebStateObserver,
-                            FormActivityObserver,
-                            PrefObserverDelegate>
-
-// Notifies the autofill manager when forms are detected on a page.
-- (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
-                  ofFormsSeen:(const FormDataVector&)forms;
-
-// Notifies the autofill manager when forms are submitted.
-- (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
-             ofFormsSubmitted:(const FormDataVector&)forms
-                userInitiated:(BOOL)userInitiated;
-
-// Invokes the form extraction script in |frame| and loads the output into the
-// format expected by the AutofillManager.
-// If |filtered| is NO, all forms are extracted.
-// If |filtered| is YES,
-//   - if |formName| is non-empty, only a form of that name is extracted.
-//   - if |formName| is empty, unowned fields are extracted.
-// Only forms with at least |requiredFieldsCount| fields are extracted.
-// Calls |completionHandler| with a success BOOL of YES and the form data that
-// was extracted.
-// Calls |completionHandler| with NO if the forms could not be extracted.
-// |completionHandler| cannot be nil.
-- (void)fetchFormsFiltered:(BOOL)filtered
-                      withName:(const base::string16&)formName
-    minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
-                       inFrame:(web::WebFrame*)frame
-             completionHandler:(FetchFormsCompletionHandler)completionHandler;
-
-// Returns whether Autofill is enabled by checking if Autofill is turned on and
-// if the current URL has a web scheme and the page content is HTML.
-- (BOOL)isAutofillEnabled;
-
-// Sends a request to AutofillManager to retrieve suggestions for the specified
-// form and field.
-- (void)queryAutofillForForm:(const autofill::FormData&)form
-             fieldIdentifier:(NSString*)fieldIdentifier
-                        type:(NSString*)type
-                  typedValue:(NSString*)typedValue
-                     frameID:(NSString*)frameID
-                    webState:(web::WebState*)webState
-           completionHandler:(SuggestionsAvailableCompletion)completion;
-
-// Rearranges and filters the suggestions to move profile or credit card
-// suggestions to the front if the user has selected one recently and remove
-// key/value suggestions if the user hasn't started typing.
-- (NSArray*)processSuggestions:(NSArray<FormSuggestion*>*)suggestions;
-
-// Sends the the |data| to |frame| to actually fill the data.
-- (void)sendData:(std::unique_ptr<base::Value>)data
-         toFrame:(web::WebFrame*)frame;
-
-@end
-
-@implementation AutofillAgent {
+@interface AutofillAgent () <CRWWebStateObserver,
+                             FormActivityObserver,
+                             PrefObserverDelegate> {
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
   web::WebState* webState_;
@@ -169,18 +120,23 @@ void GetFormField(autofill::FormFieldData* field,
   // Suggestions state:
   // The most recent form suggestions.
   NSArray* mostRecentSuggestions_;
+
   // The completion to inform FormSuggestionController that a user selection
   // has been handled.
   SuggestionHandledCompletion suggestionHandledCompletion_;
+
   // The completion to inform FormSuggestionController that suggestions are
   // available for a given form and field.
   SuggestionsAvailableCompletion suggestionsAvailableCompletion_;
+
   // The text entered by the user into the active field.
   NSString* typedValue_;
+
   // Popup delegate for the most recent suggestions.
   // The reference is weak because a weak pointer is sent to our
   // AutofillManagerDelegate.
   base::WeakPtr<autofill::AutofillPopupDelegate> popupDelegate_;
+
   // The autofill data that needs to be send when the |webState_| is shown.
   // The pair contains the frame ID and the base::Value to send.
   // If the value is nullptr, no data needs to be sent.
@@ -197,14 +153,18 @@ void GetFormField(autofill::FormFieldData* field,
 
   // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
   // This is a workaround crbug.com/892612. On submission,
-  // AutofillDownloadManager and CreditCardSaveManager expect autofillManager
-  // and autofillDriver to live after web frame deletion so AutofillAgent will
+  // AutofillDownloadManager and CreditCardSaveManager expect AutofillManager
+  // and AutofillDriver to live after web frame deletion so AutofillAgent will
   // keep the latest submitted AutofillDriver alive.
-  // TODO(crbug.com/892612): remove this workaround once life cycle of autofill
-  // manager is fixed.
+  // TODO(crbug.com/892612): remove this workaround once life cycle of
+  // AutofillManager is fixed.
   scoped_refptr<autofill::AutofillDriverIOSRefCountable>
       last_submitted_autofill_driver_;
 }
+
+@end
+
+@implementation AutofillAgent
 
 - (instancetype)initWithPrefService:(PrefService*)prefService
                            webState:(web::WebState*)webState {
@@ -213,12 +173,12 @@ void GetFormField(autofill::FormFieldData* field,
   self = [super init];
   if (self) {
     webState_ = webState;
-    prefService_ = prefService;
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     webState_->AddObserver(webStateObserverBridge_.get());
     formActivityObserverBridge_ =
         std::make_unique<autofill::FormActivityObserverBridge>(webState_, self);
+    prefService_ = prefService;
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
     prefChangeRegistrar_.Init(prefService);
     prefObserverBridge_->ObserveChangesForPreference(
@@ -232,42 +192,18 @@ void GetFormField(autofill::FormFieldData* field,
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
 - (void)dealloc {
   if (webState_) {
-    formActivityObserverBridge_.reset();
-    webState_->RemoveObserver(webStateObserverBridge_.get());
-    webStateObserverBridge_.reset();
-    webState_ = nullptr;
+    [self webStateDestroyed:webState_];
   }
 }
 
-- (void)detachFromWebState {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-  last_submitted_autofill_driver_ = nullptr;
-  if (webState_) {
-    formActivityObserverBridge_.reset();
-    webState_->RemoveObserver(webStateObserverBridge_.get());
-    webStateObserverBridge_.reset();
-    webState_ = nullptr;
-  }
-
-  // Do not wait for deallocation. Remove all observers here.
-  prefChangeRegistrar_.RemoveAll();
-}
-
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private methods
 
 // Returns the autofill manager associated with a web::WebState instance.
 // Returns nullptr if there is no autofill manager associated anymore, this can
 // happen when |close| has been called on the |webState|. Also returns nullptr
-// if detachFromWebState has been called.
+// if -webStateDestroyed: has been called.
 - (autofill::AutofillManager*)
 autofillManagerFromWebState:(web::WebState*)webState
                    webFrame:(web::WebFrame*)webFrame {
@@ -278,6 +214,7 @@ autofillManagerFromWebState:(web::WebState*)webState
       ->autofill_manager();
 }
 
+// Notifies the autofill manager when forms are detected on a page.
 - (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
                   ofFormsSeen:(const FormDataVector&)forms {
   DCHECK(autofillManager);
@@ -285,6 +222,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   autofillManager->OnFormsSeen(forms, base::TimeTicks::Now());
 }
 
+// Notifies the autofill manager when forms are submitted.
 - (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
              ofFormsSubmitted:(const FormDataVector&)forms
                 userInitiated:(BOOL)userInitiated {
@@ -298,6 +236,17 @@ autofillManagerFromWebState:(web::WebState*)webState
   autofill::KeyboardAccessoryMetricsLogger::OnFormSubmitted();
 }
 
+// Invokes the form extraction script in |frame| and loads the output into the
+// format expected by the AutofillManager.
+// If |filtered| is NO, all forms are extracted.
+// If |filtered| is YES,
+//   - if |formName| is non-empty, only a form of that name is extracted.
+//   - if |formName| is empty, unowned fields are extracted.
+// Only forms with at least |requiredFieldsCount| fields are extracted.
+// Calls |completionHandler| with a success BOOL of YES and the form data that
+// was extracted.
+// Calls |completionHandler| with NO if the forms could not be extracted.
+// |completionHandler| cannot be nil.
 - (void)fetchFormsFiltered:(BOOL)filtered
                       withName:(const base::string16&)formName
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
@@ -321,55 +270,21 @@ autofillManagerFromWebState:(web::WebState*)webState
                              }];
 }
 
-- (NSArray*)processSuggestions:(NSArray<FormSuggestion*>*)suggestions {
-  // The suggestion array is cloned (to claim ownership) and to slightly
-  // reorder; a future improvement is to base order on text typed in other
-  // fields by users as well as accepted suggestions (crbug.com/245261).
-  NSMutableArray<FormSuggestion*>* suggestionsCopy = [suggestions mutableCopy];
-
-  // Filter out any key/value suggestions if the user hasn't typed yet.
-  if ([typedValue_ length] == 0) {
-    for (NSInteger idx = [suggestionsCopy count] - 1; idx >= 0; idx--) {
-      FormSuggestion* suggestion = suggestionsCopy[idx];
-      if (suggestion.identifier == autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
-        [suggestionsCopy removeObjectAtIndex:idx];
-      }
-    }
-  }
-
-  // If "clear form" entry exists then move it to the front of the suggestions.
-  // If "GPay branding" icon is present, it remains as the first suggestion.
-  for (NSInteger idx = [suggestionsCopy count] - 1; idx > 0; idx--) {
-    FormSuggestion* suggestion = suggestionsCopy[idx];
-    if (suggestion.identifier == autofill::POPUP_ITEM_ID_CLEAR_FORM) {
-      BOOL hasGPayBranding = suggestionsCopy[0].identifier ==
-                             autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
-
-      FormSuggestion* clearFormSuggestion = suggestionsCopy[idx];
-      [suggestionsCopy removeObjectAtIndex:idx];
-      [suggestionsCopy insertObject:clearFormSuggestion
-                            atIndex:hasGPayBranding ? 1 : 0];
-      break;
-    }
-  }
-
-  return suggestionsCopy;
-}
-
 - (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
              popupDelegate:
                  (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                      delegate {
   popupDelegate_ = delegate;
-  mostRecentSuggestions_ = [[self processSuggestions:suggestions] copy];
+  mostRecentSuggestions_ = suggestions;
   if (suggestionsAvailableCompletion_)
     suggestionsAvailableCompletion_([mostRecentSuggestions_ count] > 0);
   suggestionsAvailableCompletion_ = nil;
 }
 
-#pragma mark -
-#pragma mark FormSuggestionProvider
+#pragma mark - FormSuggestionProvider
 
+// Sends a request to AutofillManager to retrieve suggestions for the specified
+// form and field.
 - (void)queryAutofillForForm:(const autofill::FormData&)form
              fieldIdentifier:(NSString*)fieldIdentifier
                         type:(NSString*)type
@@ -396,7 +311,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   typedValue_ = [typedValue copy];
 
   // Query the AutofillManager for suggestions. Results will arrive in
-  // [AutofillController showAutofillPopup].
+  // -showAutofillPopup:popupDelegate:.
   autofillManager->OnQueryFormFieldAutofill(
       queryId, form, field, gfx::RectF(),
       /*autoselect_first_suggestion=*/false);
@@ -513,13 +428,141 @@ autofillManagerFromWebState:(web::WebState*)webState
   }
 }
 
-#pragma mark -
-#pragma mark CRWWebStateObserver
+#pragma mark - AutofillDriverIOSBridge
 
-- (void)webStateDestroyed:(web::WebState*)webState {
-  DCHECK_EQ(webState_, webState);
-  [self detachFromWebState];
+- (void)fillFormData:(const autofill::FormData&)form
+             inFrame:(web::WebFrame*)frame {
+  auto autofillData =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  autofillData->SetKey("formName", base::Value(base::UTF16ToUTF8(form.name)));
+
+  base::Value fieldsData(base::Value::Type::DICTIONARY);
+  for (const auto& field : form.fields) {
+    // Skip empty fields and those that are not autofilled.
+    if (field.value.empty() || !field.is_autofilled)
+      continue;
+
+    base::Value fieldData(base::Value::Type::DICTIONARY);
+    fieldData.SetKey("value", base::Value(field.value));
+    fieldData.SetKey("section", base::Value(field.section));
+    fieldsData.SetKey(base::UTF16ToUTF8(field.unique_id), std::move(fieldData));
+  }
+  autofillData->SetKey("fields", std::move(fieldsData));
+
+  // Store the form data when WebState is not visible, to send it as soon as it
+  // becomes visible again, e.g., when the CVC unmask prompt is showing.
+  if (!webState_->IsVisible()) {
+    pendingFormData_ =
+        std::make_pair(web::GetWebFrameId(frame), std::move(autofillData));
+  } else {
+    [self sendData:std::move(autofillData) toFrame:frame];
+  }
+
+  autofill::AutofillManager* autofillManager =
+      [self autofillManagerFromWebState:webState_ webFrame:frame];
+  if (autofillManager)
+    autofillManager->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
 }
+
+- (void)fillFormDataPredictions:
+            (const std::vector<autofill::FormDataPredictions>&)forms
+                        inFrame:(web::WebFrame*)frame {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillShowTypePredictions)) {
+    return;
+  }
+
+  auto predictionData =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  for (const auto& form : forms) {
+    base::Value fieldData(base::Value::Type::DICTIONARY);
+    DCHECK(form.fields.size() == form.data.fields.size());
+    for (size_t i = 0; i < form.fields.size(); i++) {
+      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].unique_id),
+                       base::Value(form.fields[i].overall_type));
+    }
+    predictionData->SetKey(base::UTF16ToUTF8(form.data.name),
+                           std::move(fieldData));
+  }
+  [jsAutofillManager_ fillPredictionData:std::move(predictionData)
+                                 inFrame:frame];
+}
+
+#pragma mark - AutofillClientIOSBridge
+
+- (void)showAutofillPopup:
+            (const std::vector<autofill::Suggestion>&)popup_suggestions
+            popupDelegate:
+                (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
+                    delegate {
+  bool has_gpay_branding = false;
+  // Convert the suggestions into an NSArray for the keyboard.
+  NSMutableArray<FormSuggestion*>* suggestions = [[NSMutableArray alloc] init];
+  for (auto popup_suggestion : popup_suggestions) {
+    // In the Chromium implementation the identifiers represent rows on the
+    // drop down of options. These include elements that aren't relevant to us
+    // such as separators ... see blink::WebAutofillClient::MenuItemIDSeparator
+    // for example. We can't include that enum because it's from WebKit, but
+    // fortunately almost all the entries we are interested in (profile or
+    // autofill entries) are zero or positive. Negative entries we are
+    // interested in is autofill::POPUP_ITEM_ID_CLEAR_FORM, used to show the
+    // "clear form" button and autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING, used
+    // to show the "Google Pay" branding.
+    NSString* value = nil;
+    NSString* displayDescription = nil;
+    if (popup_suggestion.frontend_id >= 0) {
+      // Filter out any key/value suggestions if the user hasn't typed yet.
+      if (popup_suggestion.frontend_id ==
+              autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
+          [typedValue_ length] == 0) {
+        continue;
+      }
+      // Value will contain the text to be filled in the selected element while
+      // displayDescription will contain a summary of the data to be filled in
+      // the other elements.
+      value = base::SysUTF16ToNSString(popup_suggestion.value);
+      displayDescription = base::SysUTF16ToNSString(popup_suggestion.label);
+    } else if (popup_suggestion.frontend_id ==
+               autofill::POPUP_ITEM_ID_CLEAR_FORM) {
+      // Show the "clear form" button.
+      value = base::SysUTF16ToNSString(popup_suggestion.value);
+    } else if (popup_suggestion.frontend_id ==
+               autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
+      // Show "GPay branding" icon
+      value = base::SysUTF16ToNSString(popup_suggestion.value);
+      has_gpay_branding = true;
+    }
+
+    if (!value)
+      continue;
+
+    FormSuggestion* suggestion = [FormSuggestion
+        suggestionWithValue:value
+         displayDescription:displayDescription
+                       icon:base::SysUTF16ToNSString(popup_suggestion.icon)
+                 identifier:popup_suggestion.frontend_id];
+
+    // Put "clear form" entry at the front of the suggestions. If
+    // "GPay branding" icon is present, it remains as the first suggestion.
+    if (popup_suggestion.frontend_id == autofill::POPUP_ITEM_ID_CLEAR_FORM) {
+      [suggestions insertObject:suggestion atIndex:has_gpay_branding ? 1 : 0];
+    } else {
+      [suggestions addObject:suggestion];
+    }
+  }
+
+  [self onSuggestionsReady:suggestions popupDelegate:delegate];
+
+  if (delegate)
+    delegate->OnPopupShown();
+}
+
+- (void)hideAutofillPopup {
+  [self onSuggestionsReady:@[]
+             popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
+}
+
+#pragma mark - CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(webState_, webState);
@@ -538,6 +581,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
 - (void)webState:(web::WebState*)webState
     frameDidBecomeAvailable:(web::WebFrame*)web_frame {
+  DCHECK_EQ(webState_, webState);
   DCHECK(web_frame);
   if (![self isAutofillEnabled] || webState->IsLoading()) {
     return;
@@ -564,6 +608,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  DCHECK_EQ(webState_, webState);
   // Ignore navigations within the same document, e.g., history.pushState().
   if (navigation->IsSameDocument())
     return;
@@ -577,15 +622,30 @@ autofillManagerFromWebState:(web::WebState*)webState
     autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, nullptr)
         ->set_processed(false);
   }
-
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(webState_, webState);
   if (![self isAutofillEnabled])
     return;
 
   [self processPage:webState];
 }
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
+  last_submitted_autofill_driver_ = nullptr;
+  if (webState_) {
+    formActivityObserverBridge_.reset();
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
+  // Do not wait for deallocation. Remove all observers here.
+  prefChangeRegistrar_.RemoveAll();
+}
+
+#pragma mark - Private methods
 
 - (void)processPage:(web::WebState*)webState {
   web::WebFramesManager* framesManager =
@@ -750,11 +810,11 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
     // This is a workaround crbug.com/892612. On submission,
-    // AutofillDownloadManager and CreditCardSaveManager expect autofillManager
-    // and autofillDriver to live after web frame deletion so AutofillAgent will
+    // AutofillDownloadManager and CreditCardSaveManager expect AutofillManager
+    // and AutofillDriver to live after web frame deletion so AutofillAgent will
     // keep the latest submitted AutofillDriver alive.
     // TODO(crbug.com/892612): remove this workaround once life cycle of
-    // autofill manager is fixed.
+    // AutofillManager is fixed.
     DCHECK(frame);
     last_submitted_autofill_driver_ =
         autofill::AutofillDriverIOSWebFrame::FromWebFrame(frame)
@@ -776,8 +836,10 @@ autofillManagerFromWebState:(web::WebState*)webState
     [self processPage:webState_];
 }
 
-#pragma mark - Private methods.
+#pragma mark - Private methods
 
+// Returns whether Autofill is enabled by checking if Autofill is turned on and
+// if the current URL has a web scheme and the page content is HTML.
 - (BOOL)isAutofillEnabled {
   if (!autofill::prefs::IsAutofillEnabled(prefService_))
     return NO;
@@ -786,9 +848,6 @@ autofillManagerFromWebState:(web::WebState*)webState
   return web::UrlHasWebScheme(webState_->GetLastCommittedURL()) &&
          webState_->ContentIsHTML();
 }
-
-#pragma mark -
-#pragma mark AutofillViewClient
 
 // Complete a field identified with |fieldIdentifier| on the form named
 // |formName| in |frame| using |value| then move the cursor.
@@ -813,35 +872,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   suggestionHandledCompletion_ = nil;
 }
 
-- (void)onFormDataFilled:(const autofill::FormData&)form
-                 inFrame:(web::WebFrame*)frame {
-  auto autofillData =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  autofillData->SetKey("formName", base::Value(base::UTF16ToUTF8(form.name)));
-
-  base::Value fieldsData(base::Value::Type::DICTIONARY);
-  for (const auto& field : form.fields) {
-    // Skip empty fields and those that are not autofilled.
-    if (field.value.empty() || !field.is_autofilled)
-      continue;
-
-    base::Value fieldData(base::Value::Type::DICTIONARY);
-    fieldData.SetKey("value", base::Value(field.value));
-    fieldData.SetKey("section", base::Value(field.section));
-    fieldsData.SetKey(base::UTF16ToUTF8(field.unique_id), std::move(fieldData));
-  }
-  autofillData->SetKey("fields", std::move(fieldsData));
-
-  // Store the form data when WebState is not visible, to send it as soon as it
-  // becomes visible again, e.g., when the CVC unmask prompt is showing.
-  if (!webState_->IsVisible()) {
-    pendingFormData_ =
-        std::make_pair(web::GetWebFrameId(frame), std::move(autofillData));
-    return;
-  }
-  [self sendData:std::move(autofillData) toFrame:frame];
-}
-
+// Sends the the |data| to |frame| to actually fill the data.
 - (void)sendData:(std::unique_ptr<base::Value>)data
          toFrame:(web::WebFrame*)frame {
   DCHECK(webState_->IsVisible());
@@ -856,53 +887,6 @@ autofillManagerFromWebState:(web::WebState*)webState
                        inFrame:frame
              completionHandler:suggestionHandledCompletion_];
   suggestionHandledCompletion_ = nil;
-}
-
-// Returns the first value from the array of possible values that has a match in
-// the list of accepted values in the AutofillField, or nil if there is no
-// match. If AutofillField does not specify valid values, the first value is
-// returned from the list.
-+ (NSString*)selectFrom:(NSArray*)values for:(autofill::AutofillField*)field {
-  if (field->option_values.empty())
-    return values[0];
-
-  for (NSString* value in values) {
-    std::string valueString = base::SysNSStringToUTF8(value);
-    for (size_t i = 0; i < field->option_values.size(); ++i) {
-      if (base::UTF16ToUTF8(field->option_values[i]) == valueString)
-        return value;
-    }
-    for (size_t i = 0; i < field->option_contents.size(); ++i) {
-      if (base::UTF16ToUTF8(field->option_contents[i]) == valueString)
-        return value;
-    }
-  }
-
-  return nil;
-}
-
-- (void)renderAutofillTypePredictions:
-            (const std::vector<autofill::FormDataPredictions>&)forms
-                              inFrame:(web::WebFrame*)frame {
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutofillShowTypePredictions)) {
-    return;
-  }
-
-  auto predictionData =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  for (const auto& form : forms) {
-    base::Value fieldData(base::Value::Type::DICTIONARY);
-    DCHECK(form.fields.size() == form.data.fields.size());
-    for (size_t i = 0; i < form.fields.size(); i++) {
-      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].unique_id),
-                       base::Value(form.fields[i].overall_type));
-    }
-    predictionData->SetKey(base::UTF16ToUTF8(form.data.name),
-                           std::move(fieldData));
-  }
-  [jsAutofillManager_ fillPredictionData:std::move(predictionData)
-                                 inFrame:frame];
 }
 
 @end

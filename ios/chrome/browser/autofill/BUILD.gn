@@ -95,8 +95,6 @@ source_set("autofill_shared") {
 source_set("autofill_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_controller.h",
-    "autofill_controller.mm",
     "autofill_tab_helper.h",
     "autofill_tab_helper.mm",
   ]
