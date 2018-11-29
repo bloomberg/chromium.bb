@@ -6,12 +6,13 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -31,21 +32,23 @@ constexpr char kDefaultNetworkServicePath[] = "/service/eth1";
 }  // namespace
 
 // Hands-off enrollment flow test.
-class HandsOffEnrollmentTest : public WizardInProcessBrowserTest {
+class HandsOffEnrollmentTest : public InProcessBrowserTest {
  protected:
-  HandsOffEnrollmentTest()
-      : WizardInProcessBrowserTest(OobeScreen::SCREEN_TEST_NO_WINDOW) {}
+  HandsOffEnrollmentTest() {}
   ~HandsOffEnrollmentTest() override = default;
 
-  // WizardInProcessBrowserTest:
+  // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    WizardInProcessBrowserTest::SetUpCommandLine(command_line);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendArg(switches::kLoginManager);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
   }
 
   void SetUpOnMainThread() override {
-    WizardInProcessBrowserTest::SetUpOnMainThread();
+    InProcessBrowserTest::SetUpOnMainThread();
+    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+
     // Set official build so EULA screen is not skipped by default.
     WizardController::default_controller()->is_official_build_ = true;
 
