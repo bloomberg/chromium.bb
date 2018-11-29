@@ -114,6 +114,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // The box state for the line box.
   NGInlineBoxState& LineBoxState() { return stack_.front(); }
 
+  void SetIsEmptyLine(bool is_empty_line) { is_empty_line_ = is_empty_line; }
+
   // Initialize the box state stack for a new line.
   // @return The initial box state for the line.
   NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle*, FontBaseline, bool);
@@ -246,6 +248,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   Vector<NGInlineBoxState, 4> stack_;
   Vector<BoxData, 4> box_data_list_;
+
+  bool is_empty_line_ = false;
 };
 
 }  // namespace blink

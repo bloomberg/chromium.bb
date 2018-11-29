@@ -191,6 +191,10 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
       }
       LayoutSize corrected_offset = additional_offset - first_fragment_offset;
       for (auto& outline : blockflow_outline_rects) {
+        // Skip if both width and height are zero. Contaning blocks in empty
+        // linebox is one such case.
+        if (outline.Size().IsZero())
+          continue;
         if (UNLIKELY(block_for_flipping))
           block_for_flipping->FlipForWritingMode(outline);
         outline.Move(corrected_offset);
