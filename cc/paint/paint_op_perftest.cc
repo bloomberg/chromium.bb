@@ -164,8 +164,7 @@ TEST_F(PaintOpPerfTest, TextOps) {
 
   auto typeface = SkTypeface::MakeDefault();
 
-  SkPaint font;
-  font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  SkFont font;
   font.setTypeface(typeface);
 
   SkTextBlobBuilder builder;
