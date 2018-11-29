@@ -642,7 +642,7 @@ deps = {
     Var('chromium_git') + '/catapult.git' + '@' + Var('catapult_revision'),
 
   'src/third_party/cct_dynamic_module/src': {
-      'url': Var('chromium_git') + '/dynamicmodule' + '@' + 'b5a34248be7ff38ef4d7836123f3c796dfb18225',
+      'url': Var('chromium_git') + '/dynamicmodule' + '@' + '4c0a460459bc34177d3a71d6b49e253476431ec9',
       'condition': 'checkout_android',
   },
 
