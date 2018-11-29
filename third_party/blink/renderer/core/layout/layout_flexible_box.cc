@@ -1511,12 +1511,17 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
 }
 
 void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
-  if (line_contexts.IsEmpty() || !IsMultiline())
-    return;
-
   const StyleContentAlignmentData align_content =
       FlexLayoutAlgorithm::ResolvedAlignContent(StyleRef());
   if (align_content.GetPosition() == ContentPosition::kFlexStart)
+    return;
+
+  if (IsMultiline() && !line_contexts.IsEmpty()) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kFlexboxSingleLineAlignContent);
+  }
+
+  if (line_contexts.IsEmpty() || !IsMultiline())
     return;
 
   LayoutUnit available_cross_axis_space = CrossAxisContentExtent();

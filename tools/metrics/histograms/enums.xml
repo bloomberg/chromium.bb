@@ -20873,6 +20873,7 @@ Called by update_net_error_codes.py.-->
   <int value="2639" label="WebKitUserModifyReadOnlyEffective"/>
   <int value="2640" label="WebKitUserModifyPlainTextEffective"/>
   <int value="2641" label="CSSAtRuleFontFeatureValues"/>
+  <int value="2642" label="FlexboxSingleLineAlignContent"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
