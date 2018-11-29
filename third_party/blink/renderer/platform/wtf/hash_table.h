@@ -26,7 +26,6 @@
 #include <memory>
 
 #include "base/numerics/checked_math.h"
-#include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"

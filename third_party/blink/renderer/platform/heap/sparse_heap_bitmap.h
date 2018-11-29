@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
-#include "third_party/blink/renderer/platform/wtf/alignment.h"
 
 namespace blink {
 
