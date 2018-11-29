@@ -1094,10 +1094,10 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // the containing view space, and rounded off.  See
   // LayoutEmbeddedContent::UpdateGeometry. To remove the lossy effect of
   // rounding off, use contentBoxRect directly.
-  LayoutRect unclipped_absolute_rect(box->PhysicalContentBoxRect());
-  box->MapToVisualRectInAncestorSpace(root_view, unclipped_absolute_rect);
-  unclipped_absolute_rect =
-      box->View()->GetFrameView()->DocumentToFrame(unclipped_absolute_rect);
+  LayoutRect unclipped_root_frame_rect(box->PhysicalContentBoxRect());
+  box->MapToVisualRectInAncestorSpace(root_view, unclipped_root_frame_rect);
+  unclipped_root_frame_rect =
+      root_view->GetFrameView()->DocumentToFrame(unclipped_root_frame_rect);
 
   // The frameRect is already in absolute space of the local frame to the
   // plugin so map it up to the root frame.
@@ -1112,20 +1112,19 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
 
   window_rect = PixelSnappedIntRect(layout_window_rect);
 
-  LayoutRect layout_clipped_local_rect = unclipped_absolute_rect;
-  LayoutRect unclipped_layout_local_rect = layout_clipped_local_rect;
-  layout_clipped_local_rect.Intersect(
+  LayoutRect clipped_root_frame_rect = unclipped_root_frame_rect;
+  clipped_root_frame_rect.Intersect(
       LayoutRect(LayoutPoint(), LayoutSize(root_view->GetFrameView()->Size())));
 
   unclipped_int_local_rect =
-      box->AbsoluteToLocalQuad(FloatRect(unclipped_layout_local_rect),
+      box->AbsoluteToLocalQuad(FloatRect(unclipped_root_frame_rect),
                                kTraverseDocumentBoundaries | kUseTransforms)
           .EnclosingBoundingBox();
   // As a performance optimization, map the clipped rect separately if is
   // different than the unclipped rect.
-  if (layout_clipped_local_rect != unclipped_layout_local_rect) {
+  if (clipped_root_frame_rect != unclipped_root_frame_rect) {
     clipped_local_rect =
-        box->AbsoluteToLocalQuad(FloatRect(layout_clipped_local_rect),
+        box->AbsoluteToLocalQuad(FloatRect(clipped_root_frame_rect),
                                  kTraverseDocumentBoundaries | kUseTransforms)
             .EnclosingBoundingBox();
   } else {
