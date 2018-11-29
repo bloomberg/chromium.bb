@@ -17,6 +17,15 @@
 @property(nonatomic, weak) id<FormInputAccessoryViewDelegate>
     navigationDelegate;
 
+// Hides or shows the manual fill password button.
+@property(nonatomic) BOOL passwordButtonHidden;
+
+// Hides or shows the manual fill credit card button.
+@property(nonatomic) BOOL creditCardButtonHidden;
+
+// Hides or shows the manual fill address button.
+@property(nonatomic) BOOL addressButtonHidden;
+
 // Enables or disables the next button if any.
 @property(nonatomic) BOOL formInputNextButtonEnabled;
 

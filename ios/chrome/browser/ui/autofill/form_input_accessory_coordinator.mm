@@ -10,11 +10,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
-#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
-#import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
@@ -31,21 +28,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FormInputAccessoryCoordinator ()<
+@interface FormInputAccessoryCoordinator () <
     AutofillSecurityAlertPresenter,
     AddressCoordinatorDelegate,
     CardCoordinatorDelegate,
     ManualFillAccessoryViewControllerDelegate,
-    PasswordCoordinatorDelegate,
-    PasswordFetcherDelegate,
-    PersonalDataManagerObserver> {
-  // Personal data manager to be observed.
-  autofill::PersonalDataManager* _personalDataManager;
-
-  // C++ to ObjC bridge for PersonalDataManagerObserver.
-  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
-      _personalDataManagerObserver;
-}
+    PasswordCoordinatorDelegate>
 
 // The Mediator for the input accessory view controller.
 @property(nonatomic, strong)
@@ -55,17 +43,10 @@
 @property(nonatomic, strong)
     FormInputAccessoryViewController* formInputAccessoryViewController;
 
-// The manual fill accessory to show above the keyboard.
-@property(nonatomic, strong)
-    ManualFillAccessoryViewController* manualFillAccessoryViewController;
-
 // The object in charge of interacting with the web view. Used to fill the data
 // in the forms.
 @property(nonatomic, strong)
     ManualFillInjectionHandler* manualFillInjectionHandler;
-
-// The password fetcher used to inform if passwords are available.
-@property(nonatomic, strong) PasswordFetcher* passwordFetcher;
 
 // The WebStateList for this instance. Used to instantiate the child
 // coordinators lazily.
@@ -91,64 +72,25 @@
                                           securityAlertPresenter:self];
 
     _formInputAccessoryViewController =
-        [[FormInputAccessoryViewController alloc] init];
-
-    if (autofill::features::IsPasswordManualFallbackEnabled()) {
-      _manualFillAccessoryViewController =
-          [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
-      _formInputAccessoryViewController.manualFillAccessoryViewController =
-          _manualFillAccessoryViewController;
-    }
-
-    _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
-        initWithConsumer:self.formInputAccessoryViewController
-            webStateList:webStateList];
+        [[FormInputAccessoryViewController alloc]
+            initWithManualFillAccessoryViewControllerDelegate:self];
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
-    // In BVC unit tests the password store doesn't exist. Skip creating the
-    // fetcher.
-    // TODO:(crbug.com/878388) Remove this workaround.
-    if (passwordStore) {
-      _passwordFetcher =
-          [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                                delegate:self];
-    }
     autofill::PersonalDataManager* personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-    // There is no personal data manager in OTR (incognito).
-    // TODO:(crbug.com/905720) Support Incognito.
-    if (personalDataManager) {
-      _personalDataManager = personalDataManager;
-      _personalDataManagerObserver.reset(
-          new autofill::PersonalDataManagerObserverBridge(self));
-      personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
-      // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
-      // button is hidden when local cards are saved and then
-      // kAutofillCreditCardEnabled is changed to disabled.
-      _manualFillAccessoryViewController.creditCardButtonHidden =
-          personalDataManager->GetCreditCards().empty();
-
-      _manualFillAccessoryViewController.addressButtonHidden =
-          personalDataManager->GetProfilesToSuggest().empty();
-    } else {
-      _manualFillAccessoryViewController.creditCardButtonHidden = YES;
-      _manualFillAccessoryViewController.addressButtonHidden = YES;
-    }
+    _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
+           initWithConsumer:self.formInputAccessoryViewController
+               webStateList:webStateList
+        personalDataManager:personalDataManager
+              passwordStore:passwordStore];
   }
   return self;
 }
 
-- (void)dealloc {
-  if (_personalDataManager) {
-    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
-  }
-}
-
 - (void)stop {
   [self stopChildren];
-  [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
 }
 
@@ -248,7 +190,7 @@
 }
 
 - (void)resetAccessoryView {
-  [self.manualFillAccessoryViewController reset];
+  [self.formInputAccessoryViewController resetManualFallbackIcons];
 }
 
 #pragma mark - CardCoordinatorDelegate
@@ -261,30 +203,6 @@
 
 - (void)openAddressSettings {
   [self.delegate openAddressSettings];
-}
-
-#pragma mark - PasswordFetcherDelegate
-
-- (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
-      didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
-  self.manualFillAccessoryViewController.passwordButtonHidden =
-      passwords.empty();
-}
-
-#pragma mark - PersonalDataManagerObserver
-
-- (void)onPersonalDataChanged {
-  autofill::PersonalDataManager* personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(
-          self.browserState);
-  DCHECK(personalDataManager);
-
-  self.manualFillAccessoryViewController.creditCardButtonHidden =
-      personalDataManager->GetCreditCards().empty();
-
-  self.manualFillAccessoryViewController.addressButtonHidden =
-      personalDataManager->GetProfilesToSuggest().empty();
 }
 
 #pragma mark - AutofillSecurityAlertPresenter
