@@ -3326,25 +3326,12 @@
   {
     'name': 'chromium.webrtc',
     'machines': {
-      'Android Builder': {},
-      'Android Tester': {
+      'WebRTC Chromium Android Builder': {},
+      'WebRTC Chromium Android Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
         },
       },
-      'Mac Builder': {
-        'additional_compile_targets': [
-          'frame_analyzer',
-          'jingle_unittests',
-          'remoting_unittests',
-        ],
-      },
-      'Mac Tester': {
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
-        },
-      },
-      'Mac Tester (long-running)': {},
       'WebRTC Chromium Linux Builder': {
         'additional_compile_targets': [
           'frame_analyzer',
@@ -3357,26 +3344,36 @@
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
-      'Win Builder': {
+      'WebRTC Chromium Mac Builder': {
         'additional_compile_targets': [
           'frame_analyzer',
           'jingle_unittests',
           'remoting_unittests',
         ],
       },
-      'Win10 Tester': {
+      'WebRTC Chromium Mac Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
-      'Win7 Tester': {
+      'WebRTC Chromium Win Builder': {
+        'additional_compile_targets': [
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'WebRTC Chromium Win10 Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
-      # TODO(crbug.com/877018): delete long-running bots.
-      'Win7 Tester (long-running)': {},
-      'Win8 Tester': {
+      'WebRTC Chromium Win7 Tester': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
+        },
+      },
+      'WebRTC Chromium Win8 Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
