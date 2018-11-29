@@ -30,7 +30,6 @@ Local modifications:
   modified to accept an additional parameter convertingTextToURL:, which
   indicates whether the string contents of the pasteboard should be
   interpreted as a URL if possible.
-- -[NSPasteboard htmlFromRtf] was added to do rtf->html conversion.
 - NSWorkspace+Utils.m was modified to compile on the x86_64 architecture.
 - MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.
 - +[NSWorkspace(CaminoDefaultBrowserAdditions) isLeopardOrHigher] hidden since

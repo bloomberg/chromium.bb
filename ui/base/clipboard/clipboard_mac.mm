@@ -281,9 +281,11 @@ void ClipboardMac::ReadHTML(ClipboardType type,
       @[ NSHTMLPboardType, NSRTFPboardType, NSPasteboardTypeString ];
   NSString* bestType = [pb availableTypeFromArray:supportedTypes];
   if (bestType) {
-    NSString* contents = [pb stringForType:bestType];
+    NSString* contents;
     if ([bestType isEqualToString:NSRTFPboardType])
-      contents = [pb htmlFromRtf];
+      contents = ClipboardUtil::GetHTMLFromRTFOnPasteboard(pb);
+    else
+      contents = [pb stringForType:bestType];
     *markup = base::SysNSStringToUTF16(contents);
   }
 
