@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/prefetch/tasks/add_unique_urls_task.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -28,15 +29,12 @@ const char kTestNamespace[] = "test";
 const char kClientId1[] = "ID-1";
 const char kClientId2[] = "ID-2";
 const char kClientId3[] = "ID-3";
-const char kClientId4[] = "ID-5";
 const GURL kTestURL1("https://www.google.com/");
 const GURL kTestURL2("http://www.example.com/");
 const GURL kTestURL3("https://news.google.com/");
-const GURL kTestURL4("https://chrome.google.com/");
 const base::string16 kTestTitle1 = base::ASCIIToUTF16("Title 1");
 const base::string16 kTestTitle2 = base::ASCIIToUTF16("Title 2");
 const base::string16 kTestTitle3 = base::ASCIIToUTF16("Title 3");
-const base::string16 kTestTitle4 = base::ASCIIToUTF16("Title 4");
 }  // namespace
 
 class AddUniqueUrlsTaskTest : public PrefetchTaskTestBase {
@@ -77,12 +75,12 @@ TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
                                               kTestNamespace, urls));
 
   std::map<std::string, PrefetchItem> items = GetAllItems();
-  ASSERT_EQ(2u, items.size());
-  ASSERT_TRUE(items.count(kClientId1) > 0);
+  ASSERT_EQ(2U, items.size());
+  ASSERT_GT(items.count(kClientId1), 0U);
   EXPECT_EQ(kTestURL1, items[kClientId1].url);
   EXPECT_EQ(kTestNamespace, items[kClientId1].client_id.name_space);
   EXPECT_EQ(kTestTitle1, items[kClientId1].title);
-  ASSERT_TRUE(items.count(kClientId2) > 0);
+  ASSERT_GT(items.count(kClientId2), 0U);
   EXPECT_EQ(kTestURL2, items[kClientId2].url);
   EXPECT_EQ(kTestNamespace, items[kClientId2].client_id.name_space);
   EXPECT_EQ(kTestTitle2, items[kClientId2].title);
@@ -111,92 +109,78 @@ TEST_F(AddUniqueUrlsTaskTest, SingleDuplicateUrlNotAdded) {
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 }
 
-TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
+TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItAlreadyExists) {
+  // Overrides and initializes a test clock.
   TestScopedOfflineClock clock;
-  std::vector<PrefetchURL> urls;
-  urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
-  urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
+  const base::Time start_time = base::Time::Now();
+  clock.SetNow(start_time);
+
+  // Populate the store with pre-existing items.
+  std::vector<PrefetchURL> urls = {{kClientId1, kTestURL1, kTestTitle1},
+                                   {kClientId2, kTestURL2, kTestTitle2}};
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
-  std::map<std::string, PrefetchItem> items_before = GetAllItems();
 
-  // Advance time to verify that timestamp of kClientId1 is updated on the next
-  // task execution.
-  clock.Advance(base::TimeDelta::FromSeconds(1));
+  // Advance time by 1 hour to verify that timestamp of ID-1 is updated on the
+  // next task execution.
+  clock.Advance(base::TimeDelta::FromHours(1));
+  const base::Time later_time = clock.Now();
 
-  urls = {
-      // This PrefetchURL has a duplicate URL, should not be added.
-      {kClientId4, kTestURL1, kTestTitle4},
-      {kClientId3, kTestURL3, kTestTitle3},
-  };
+  // Turn ID-1 and ID-2 items into zombies.
+  // Note: ZombifyPrefetchItem returns the number of affected items.
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, kTestURL1));
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, kTestURL2));
 
+  urls = {{kClientId1, kTestURL1, kTestTitle1},
+          {kClientId3, kTestURL3, kTestTitle3}};
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
   EXPECT_EQ(2, dispatcher()->task_schedule_count);
 
   std::map<std::string, PrefetchItem> items = GetAllItems();
-  ASSERT_EQ(3u, items.size());
-  ASSERT_TRUE(items.count(kClientId1) > 0);
+  ASSERT_EQ(3U, items.size());
+  ASSERT_GT(items.count(kClientId1), 0U);
+
+  // Re-suggested ID-1 should have its timestamp updated.
   EXPECT_EQ(kTestURL1, items[kClientId1].url);
   EXPECT_EQ(kTestNamespace, items[kClientId1].client_id.name_space);
   EXPECT_EQ(kTestTitle1, items[kClientId1].title);
-  ASSERT_TRUE(items.count(kClientId2) > 0);
+  EXPECT_EQ(PrefetchItemState::ZOMBIE, items[kClientId1].state);
+  // Note: as timestamps are inserted with microsecond variations, we're
+  // comparing them using a safe range of 1 second.
+  EXPECT_LE(later_time, items[kClientId1].creation_time);
+  EXPECT_GE(later_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId1].creation_time);
+  EXPECT_LE(later_time, items[kClientId1].freshness_time);
+  EXPECT_GE(later_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId1].freshness_time);
+
+  // Previously existing ID-2 should not have been modified.
+  ASSERT_GT(items.count(kClientId2), 0U);
   EXPECT_EQ(kTestURL2, items[kClientId2].url);
   EXPECT_EQ(kTestNamespace, items[kClientId2].client_id.name_space);
   EXPECT_EQ(kTestTitle2, items[kClientId2].title);
-  ASSERT_TRUE(items.count(kClientId3) > 0);
+  EXPECT_EQ(PrefetchItemState::ZOMBIE, items[kClientId2].state);
+  EXPECT_LE(start_time, items[kClientId2].creation_time);
+  EXPECT_GE(start_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId2].creation_time);
+  EXPECT_LE(start_time, items[kClientId2].freshness_time);
+  EXPECT_GE(start_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId2].freshness_time);
+
+  // Newly suggested ID-3 should be added.
+  ASSERT_GT(items.count(kClientId3), 0U);
   EXPECT_EQ(kTestURL3, items[kClientId3].url);
   EXPECT_EQ(kTestNamespace, items[kClientId3].client_id.name_space);
   EXPECT_EQ(kTestTitle3, items[kClientId3].title);
-
-  // Although kClientId4 was not inserted, it should have resulted in updating
-  // kClientId1's timestamp.
-  EXPECT_GT(items[kClientId1].creation_time,
-            items_before[kClientId1].creation_time);
-  EXPECT_EQ(items[kClientId1].creation_time, items[kClientId1].freshness_time);
-}
-
-TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
-  std::vector<PrefetchURL> urls;
-  urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
-  urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
-  urls.push_back(PrefetchURL{kClientId3, kTestURL3, kTestTitle3});
-  RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
-                                              kTestNamespace, urls));
-  EXPECT_EQ(1, dispatcher()->task_schedule_count);
-
-  // ZombifyPrefetchItem returns the number of affected items.
-  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, urls[0].url));
-  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(kTestNamespace, urls[1].url));
-
-  urls = {
-      {kClientId1, kTestURL1, kTestTitle1},
-      {kClientId3, kTestURL3, kTestTitle3},
-      {kClientId4, kTestURL4, kTestTitle4},
-  };
-  // ID-1 is expected to stay in zombie state.
-  // ID-2 is expected to be removed, because it is in zombie state.
-  // ID-3 is still requested, so it is ignored.
-  // ID-4 is added.
-  RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
-                                              kTestNamespace, urls));
-  EXPECT_EQ(2, dispatcher()->task_schedule_count);
-
-  std::map<std::string, PrefetchItem> items = GetAllItems();
-  ASSERT_EQ(3u, items.size());
-  ASSERT_TRUE(items.count(kClientId1) > 0);
-  EXPECT_EQ(kTestURL1, items[kClientId1].url);
-  EXPECT_EQ(kTestNamespace, items[kClientId1].client_id.name_space);
-  EXPECT_EQ(kTestTitle1, items[kClientId1].title);
-  ASSERT_TRUE(items.count(kClientId3) > 0);
-  EXPECT_EQ(kTestURL3, items[kClientId3].url);
-  EXPECT_EQ(kTestNamespace, items[kClientId3].client_id.name_space);
-  EXPECT_EQ(kTestTitle3, items[kClientId3].title);
-  ASSERT_TRUE(items.count(kClientId4) > 0);
-  EXPECT_EQ(kTestURL4, items[kClientId4].url);
-  EXPECT_EQ(kTestNamespace, items[kClientId4].client_id.name_space);
-  EXPECT_EQ(kTestTitle4, items[kClientId4].title);
+  EXPECT_EQ(PrefetchItemState::NEW_REQUEST, items[kClientId3].state);
+  EXPECT_LE(later_time, items[kClientId3].creation_time);
+  EXPECT_GE(later_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId3].creation_time);
+  EXPECT_LE(later_time, items[kClientId3].freshness_time);
+  EXPECT_GE(later_time + base::TimeDelta::FromSeconds(1),
+            items[kClientId3].freshness_time);
 }
 
 }  // namespace offline_pages

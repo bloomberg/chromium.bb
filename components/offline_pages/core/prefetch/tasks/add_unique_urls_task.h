@@ -20,12 +20,10 @@ struct PrefetchURL;
 // Task that adds new URL suggestions to the pipeline. URLs are matched against
 // existing ones from any stage of the process so that only new, unique ones are
 // actually added.
-// Fully processed items are kept in the store in the PrefetchItemState::ZOMBIE
-// state until it is confirmed that the client for its namespace is not
-// recommending the same URL anymore to avoid processing it twice. So once the
-// step described above is done, all same namespace items in the ZOMBIE state
-// whose URL didn't match any of the just suggested ones are finally deleted
-// from the store.
+// Fully processed items are kept in store in the zombie state so that follow up
+// recommendations of the same URL from the same client are not processed twice.
+// Zombie items are then cleaned after a set period of time by the
+// |StaleEntryFinalizerTask|.
 class AddUniqueUrlsTask : public Task {
  public:
   // Result of executing the command in the store.
