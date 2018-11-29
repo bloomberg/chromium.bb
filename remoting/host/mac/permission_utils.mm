@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -22,7 +23,7 @@ constexpr int kMinDialogWidthPx = 650;
 constexpr NSString* kServiceScriptName = @"org.chromium.chromoting.me2me.sh";
 
 void ShowPermissionDialog() {
-  NSAlert* alert = [[NSAlert alloc] init];
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:l10n_util::GetNSString(
                             IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE)];
   [alert setInformativeText:
@@ -42,13 +43,14 @@ void ShowPermissionDialog() {
   // Increase the alert width so the title doesn't wrap and the body text is
   // less scrunched.  Note that we only want to set a min-width, we don't
   // want to shrink the dialog if it is already larger than our min value.
-  NSRect frame = [alert.window frame];
+  NSWindow* alert_window = [alert window];
+  NSRect frame = [alert_window frame];
   if (frame.size.width < kMinDialogWidthPx)
     frame.size.width = kMinDialogWidthPx;
-  [alert.window setFrame:frame display:YES];
+  [alert_window setFrame:frame display:YES];
 
   [alert setAlertStyle:NSAlertStyleWarning];
-  [alert.window makeKeyWindow];
+  [alert_window makeKeyWindow];
   if ([alert runModal] == NSAlertFirstButtonReturn) {
     // Launch the Security and Preferences pane with Accessibility selected.
     [[NSWorkspace sharedWorkspace]
