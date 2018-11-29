@@ -404,40 +404,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2708) # ANGLE bug ID
     self.Fail('conformance/canvas/canvas-test.html',
         ['win', 'passthrough', 'vulkan'], bug=2929) # ANGLE bug ID
-    self.Fail('conformance/canvas/canvas-zero-size.html',
-        ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/' +
         'context-attribute-preserve-drawing-buffer.html',
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/extensions/webgl-debug-shaders.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/bugs/sampler-array-using-loop-index.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/bugs/uniforms-should-not-lose-values.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/bugs/' +
-        'varying-arrays-should-not-be-reversed.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/functions/glsl-function*',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/matrices/glsl-mat3-construction.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/matrices/glsl-mat4-to-mat3.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/misc/shader-with-reserved-words.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
     self.Fail('conformance/glsl/misc/' +
         'shader-with-short-circuiting-operators.html',
         ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
-    self.Fail('conformance/glsl/misc/' +
-        'uninitialized-local-global-variables.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
     self.Fail('conformance/misc/uninitialized-test.html',
-        ['win', 'passthrough', 'vulkan'], bug=2722) # ANGLE bug ID
+        ['win', 'passthrough', 'vulkan'], bug=2987) # ANGLE bug ID
     self.Fail('conformance/more/functions/copyTexSubImage2D.html',
         ['win', 'passthrough', 'vulkan'], bug=2911) # ANGLE bug ID
     self.Fail('conformance/offscreencanvas/context-lost-restored-worker.html',
@@ -458,23 +432,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=0) # ANGLE bug ID
     self.Fail('conformance/rendering/preservedrawingbuffer-leak.html',
         ['win', 'passthrough', 'vulkan'], bug=2919) # ANGLE bug ID
-    self.Fail('conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_byte.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['win', 'passthrough', 'vulkan'], bug=2722) # ANGLE bug ID
     self.Fail('conformance/textures/misc/' +
@@ -497,15 +454,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['win', 'passthrough', 'vulkan'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/textures/webgl_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
     self.Fail('conformance/uniforms/out-of-bounds-uniform-array-access.html',
         ['win', 'passthrough', 'vulkan'], bug=2921) # ANGLE bug ID
     self.Fail('WebglExtension_ANGLE_instanced_arrays',
@@ -522,8 +470,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2899) # ANGLE bug ID
     self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'passthrough', 'vulkan'], bug=2900) # ANGLE bug ID
-    self.Fail('WebglExtension_EXT_texture_filter_anisotropic',
-        ['win', 'passthrough', 'vulkan'], bug=2901) # ANGLE bug ID
     self.Fail('WebglExtension_OES_element_index_uint',
         ['win', 'passthrough', 'vulkan'], bug=2902) # ANGLE bug ID
     self.Fail('WebglExtension_OES_standard_derivatives',
@@ -582,8 +528,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2922) # ANGLE bug ID
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_byte.html',
+    self.Fail('conformance/textures/image_bitmap_from_canvas/*',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2913) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2926) # ANGLE bug ID
