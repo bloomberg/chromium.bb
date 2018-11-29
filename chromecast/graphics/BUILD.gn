@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromecast/chromecast.gni")
 import("//build/config/ui.gni")
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
 cast_source_set("graphics") {
@@ -92,6 +92,10 @@ cast_source_set("graphics") {
       "//ui/gfx/geometry",
       "//ui/platform_window",
     ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

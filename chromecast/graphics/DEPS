@@ -8,6 +8,7 @@ include_rules = [
   "+ui/events/test",
   "+ui/gfx",
   "+ui/gl/test",
+  "+ui/ozone/public",
   "+ui/platform_window",
   "+ui/views",
   "+ui/wm/core",
