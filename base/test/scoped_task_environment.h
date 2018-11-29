@@ -9,19 +9,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_task_runner.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "build/build_config.h"
 
 namespace base {
 
-namespace internal {
-class ScopedSetSequenceLocalStorageMapForCurrentThread;
-class SequenceLocalStorageMap;
-}  // namespace internal
 
 class FileDescriptorWatcher;
-class MessageLoop;
 class TaskScheduler;
-class TestMockTimeTaskRunner;
 class TickClock;
 
 namespace test {
@@ -76,6 +71,11 @@ class ScopedTaskEnvironment {
     MOCK_TIME,
     // The main thread pumps UI messages.
     UI,
+    // The main thread pumps UI messages and uses a mock clock for delayed tasks
+    // (controllable via FastForward*() methods).
+    // TODO(gab@): Enable mock time on all threads and make MOCK_TIME
+    // configurable independent of MainThreadType.
+    UI_MOCK_TIME,
     // The main thread pumps asynchronous IO messages and supports the
     // FileDescriptorWatcher API on POSIX.
     IO,
@@ -91,6 +91,13 @@ class ScopedTaskEnvironment {
   };
 
   ScopedTaskEnvironment(
+      MainThreadType main_thread_type = MainThreadType::DEFAULT,
+      ExecutionMode execution_control_mode = ExecutionMode::ASYNC);
+
+  // Constructs a ScopedTaskEnvironment using a preexisting |sequence_manager|.
+  // |sequence_manager| must outlive this ScopedTaskEnvironment.
+  ScopedTaskEnvironment(
+      sequence_manager::SequenceManager* sequence_manager,
       MainThreadType main_thread_type = MainThreadType::DEFAULT,
       ExecutionMode execution_control_mode = ExecutionMode::ASYNC);
 
@@ -155,24 +162,25 @@ class ScopedTaskEnvironment {
   TimeDelta NextMainThreadPendingTaskDelay() const;
 
  private:
+  class MockTimeDomain;
   class TestTaskTracker;
+
+  ScopedTaskEnvironment(
+      std::unique_ptr<sequence_manager::SequenceManager> owned_sequence_manager,
+      sequence_manager::SequenceManager* sequence_manager,
+      MainThreadType main_thread_type,
+      ExecutionMode execution_control_mode);
+
+  scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
   const ExecutionMode execution_control_mode_;
 
-  // Exactly one of these will be non-null to provide the task environment on
-  // the main thread. Users of this class should NOT rely on the presence of a
-  // MessageLoop beyond (Thread|Sequenced)TaskRunnerHandle and RunLoop as
-  // the backing implementation of each MainThreadType may change over time.
-  const std::unique_ptr<MessageLoop> message_loop_;
-  const scoped_refptr<TestMockTimeTaskRunner> mock_time_task_runner_;
+  const std::unique_ptr<MockTimeDomain> mock_time_domain_;
+  const std::unique_ptr<sequence_manager::SequenceManager>
+      owned_sequence_manager_;
+  sequence_manager::SequenceManager* const sequence_manager_;
 
-  // Non-null in MOCK_TIME, where an explicit SequenceLocalStorageMap needs to
-  // be provided. TODO(gab): This can be removed once mock time support is added
-  // to MessageLoop directly.
-  const std::unique_ptr<internal::SequenceLocalStorageMap> slsm_for_mock_time_;
-  const std::unique_ptr<
-      internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
-      slsm_registration_for_mock_time_;
+  scoped_refptr<sequence_manager::TaskQueue> task_queue_;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Enables the FileDescriptorWatcher API iff running a MainThreadType::IO.
