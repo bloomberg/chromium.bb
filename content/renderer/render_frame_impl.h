@@ -127,7 +127,6 @@ class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
-struct WebNavigationParams;
 struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
@@ -160,7 +159,6 @@ class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
 class ExternalPopupMenu;
 class FrameRequestBlocker;
-class HistoryEntry;
 class ManifestManager;
 class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
@@ -1130,15 +1128,12 @@ class CONTENT_EXPORT RenderFrameImpl
                            base::string16* result);
 
   // Loads the appropriate error page for the specified failure into the frame.
-  // |entry| is only when navigating to a history item.
   void LoadNavigationErrorPage(
-      const std::string& error_html,
-      const GURL& error_url,
-      bool replace,
-      HistoryEntry* history_entry,
-      std::unique_ptr<blink::WebNavigationParams> navigation_params,
-      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
-      const blink::WebURLRequest* failed_request);
+      blink::WebDocumentLoader* document_loader,
+      const blink::WebURLError& error,
+      const base::Optional<std::string>& error_page_content,
+      bool replace_current_item,
+      bool inherit_document_state);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,
