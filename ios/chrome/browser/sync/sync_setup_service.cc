@@ -11,16 +11,15 @@
 #include "components/sync/base/stop_source.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as
 // |SyncSetupService::SyncableDatatype|.
 syncer::ModelType kDataTypes[] = {
-    syncer::BOOKMARKS,    syncer::TYPED_URLS,  syncer::PASSWORDS,
-    syncer::PROXY_TABS,   syncer::AUTOFILL,    syncer::PREFERENCES,
-    syncer::READING_LIST, syncer::USER_EVENTS,
+    syncer::BOOKMARKS,    syncer::TYPED_URLS, syncer::PASSWORDS,
+    syncer::PROXY_TABS,   syncer::AUTOFILL,   syncer::PREFERENCES,
+    syncer::READING_LIST,
 };
 }  // namespace
 
@@ -28,9 +27,6 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service)
     : sync_service_(sync_service) {
   DCHECK(sync_service_);
   for (unsigned int i = 0; i < base::size(kDataTypes); ++i) {
-    if (kDataTypes[i] == syncer::USER_EVENTS &&
-        !unified_consent::IsUnifiedConsentFeatureEnabled())
-      continue;
     user_selectable_types_.Put(kDataTypes[i]);
   }
 }

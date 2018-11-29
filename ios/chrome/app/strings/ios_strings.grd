@@ -705,12 +705,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_GOOGLE_APPS_SM_SETTINGS" desc="Title for the view in Settings for managing Google apps specific settings. Translate 'Google Apps'. [Length: 15em] [iOS only]">
         Google Apps
       </message>
-      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL" desc="Detail text for a feature in the settings for the user to enable/disable, to personalize the user experience. Related to 'Activity and interactions'. [iOS only]">
-        Uses content on sites you visit and browser activity and interactions for personalization
-      </message>
-      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT" desc="Title for a feature in the settings for the user to enable/disable, to personalize the user experience. Related to 'Uses content on sites you visit and browser activity and interactions for personalization'. [iOS only]">
-        Activity and interactions
-      </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL" desc="Feature detail text in the settings for the user to enable/disable, to have autocomplete searches and URLs. Text related to 'Autocomplete Searches and URLs' [iOS only]">
         Sends searches from the address bar and search box, and some cookies to your default search engine
       </message>

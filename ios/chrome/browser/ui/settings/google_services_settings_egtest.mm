@@ -136,36 +136,6 @@ using chrome_test_util::SettingsDoneButton;
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that "Activity and Interactions" switch should be disabled when the
-// "History" sync is off.
-- (void)testActivityAndInteractionsDisabledWithHistoryDisabled {
-  // TODO(crbug.com/906680): Re-enable this test when it's fixed.
-  EARL_GREY_TEST_DISABLED(@"Test disabled on devices and simulators.");
-
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  [self openGoogleServicesSettings];
-  // "Activity and Interactions" is enabled.
-  [self
-      assertSwitchCellWithTitleID:
-          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
-                     detailTextID:
-                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
-                          enabled:YES];
-  [self scrollUp];
-  // Turn off "History".
-  [[self cellElementInteractionWithTitleID:
-             IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT
-                              detailTextID:0] performAction:grey_tap()];
-  [self scrollUp];
-  // "Activity and Interactions" is disabled.
-  [self
-      assertSwitchCellWithTitleID:
-          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
-                     detailTextID:
-                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
-                          enabled:NO];
-}
-
 #pragma mark - Helpers
 
 // Opens the Google services settings.
@@ -297,11 +267,6 @@ using chrome_test_util::SettingsDoneButton;
     [self
         assertCellWithTitleID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
                  detailTextID:0];
-    [self
-        assertCellWithTitleID:
-            IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
-                 detailTextID:
-                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL];
     [self
         assertCellWithTitleID:
             IDS_IOS_GOOGLE_SERVICES_SETTINGS_GOOGLE_ACTIVITY_CONTROL_TEXT
