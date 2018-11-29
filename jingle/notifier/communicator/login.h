@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "jingle/glue/network_service_config.h"
 #include "jingle/notifier/base/server_information.h"
 #include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
@@ -26,10 +27,6 @@ namespace buzz {
 class XmppClientSettings;
 class XmppTaskParentInterface;
 }  // namespace buzz
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 
 namespace notifier {
 
@@ -67,15 +64,15 @@ class Login
   };
 
   // Does not take ownership of |delegate|, which must not be NULL.
-  Login(
-      Delegate* delegate,
-      const buzz::XmppClientSettings& user_settings,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      const ServerList& servers,
-      bool try_ssltcp_first,
-      const std::string& auth_mechanism,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      network::NetworkConnectionTracker* network_connection_tracker);
+  Login(Delegate* delegate,
+        const buzz::XmppClientSettings& user_settings,
+        jingle_glue::GetProxyResolvingSocketFactoryCallback
+            get_socket_factory_callback,
+        const ServerList& servers,
+        bool try_ssltcp_first,
+        const std::string& auth_mechanism,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation,
+        network::NetworkConnectionTracker* network_connection_tracker);
   ~Login() override;
 
   // Starts connecting (or forces a reconnection if we're backed off).

@@ -16,6 +16,7 @@
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_test_template.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -40,10 +41,12 @@ class NonBlockingInvalidatorTestDelegate {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
-    request_context_getter_ =
-        new net::TestURLRequestContextGetter(io_thread_.task_runner());
+    net_config_helper_ =
+        std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+            base::MakeRefCounted<net::TestURLRequestContextGetter>(
+                io_thread_.task_runner()));
     notifier::NotifierOptions notifier_options;
-    notifier_options.request_context_getter = request_context_getter_;
+    net_config_helper_->FillInNetworkConfig(&notifier_options.network_config);
     notifier_options.network_connection_tracker =
         network::TestNetworkConnectionTracker::GetInstance();
     NetworkChannelCreator network_channel_creator =
@@ -52,7 +55,7 @@ class NonBlockingInvalidatorTestDelegate {
         network_channel_creator, invalidator_client_id,
         UnackedInvalidationsMap(), initial_state,
         invalidation_state_tracker.get(), "fake_client_info",
-        request_context_getter_->GetNetworkTaskRunner()));
+        notifier_options.network_config.task_runner));
   }
 
   Invalidator* GetInvalidator() {
@@ -61,7 +64,7 @@ class NonBlockingInvalidatorTestDelegate {
 
   void DestroyInvalidator() {
     invalidator_.reset();
-    request_context_getter_ = nullptr;
+    net_config_helper_ = nullptr;
     io_thread_.Stop();
     base::RunLoop().RunUntilIdle();
   }
@@ -85,7 +88,7 @@ class NonBlockingInvalidatorTestDelegate {
  private:
   base::MessageLoop message_loop_;
   base::Thread io_thread_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> net_config_helper_;
   std::unique_ptr<NonBlockingInvalidator> invalidator_;
 };
 

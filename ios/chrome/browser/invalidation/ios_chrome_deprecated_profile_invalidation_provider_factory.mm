@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
@@ -23,7 +24,7 @@
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/web/public/web_client.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "ios/web/public/web_task_traits.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,6 +34,29 @@
 using invalidation::InvalidatorStorage;
 using invalidation::ProfileInvalidationProvider;
 using invalidation::TiclInvalidationService;
+
+namespace {
+
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    ios::ChromeBrowserState* browser_state,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  browser_state->GetProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    ios::ChromeBrowserState* browser_state,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                     browser_state, std::move(service), std::move(request)));
+}
+}
 
 // static
 invalidation::ProfileInvalidationProvider*
@@ -78,7 +102,8 @@ IOSChromeDeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
-      browser_state->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, browser_state),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
       browser_state->GetSharedURLLoaderFactory(),
       GetApplicationContext()->GetNetworkConnectionTracker()));
   service->Init(

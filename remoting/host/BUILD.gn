@@ -306,6 +306,7 @@ static_library("host") {
     "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
+    "//services/network:network_service",
     "//third_party/webrtc/modules/desktop_capture",
 
     # //remoting uses the power_save_blocker directly. See crbug.com/689423

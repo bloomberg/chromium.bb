@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -22,13 +23,10 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/backoff_entry.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 namespace gcm {
 class GCMDriver;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace network {
@@ -65,7 +63,13 @@ class TiclInvalidationService : public InvalidationService,
       IdentityProvider* identity_provider,
       std::unique_ptr<TiclSettingsProvider> settings_provider,
       gcm::GCMDriver* gcm_driver,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      // |get_socket_factory_callback| will be safe to call on the IO thread,
+      // but will check its WeakPtr parameter on the UI thread.
+      base::RepeatingCallback<
+          void(base::WeakPtr<TiclInvalidationService>,
+               network::mojom::ProxyResolvingSocketFactoryRequest)>
+          get_socket_factory_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker);
   ~TiclInvalidationService() override;
@@ -150,7 +154,10 @@ class TiclInvalidationService : public InvalidationService,
   InvalidationNetworkChannel network_channel_type_;
   gcm::GCMDriver* gcm_driver_;
   std::unique_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  base::RepeatingCallback<void(
+      network::mojom::ProxyResolvingSocketFactoryRequest)>
+      get_socket_factory_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::NetworkConnectionTracker* network_connection_tracker_;
 
@@ -163,6 +170,9 @@ class TiclInvalidationService : public InvalidationService,
   base::DictionaryValue network_channel_options_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Used on the UI thread.
+  base::WeakPtrFactory<TiclInvalidationService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TiclInvalidationService);
 };

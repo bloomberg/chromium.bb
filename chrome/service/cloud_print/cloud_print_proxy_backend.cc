@@ -166,6 +166,17 @@ class CloudPrintProxyBackend::Core
 
   CloudPrintTokenStore* GetTokenStore();
 
+  // Runs on Core thread.
+  static void RequestProxyResolvingSocketFactoryOnCoreThread(
+      base::WeakPtr<CloudPrintProxyBackend::Core> owner,
+      network::mojom::ProxyResolvingSocketFactoryRequest request);
+
+  // Runs on IO thread.
+  static void RequestProxyResolvingSocketFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> core_runner,
+      base::WeakPtr<CloudPrintProxyBackend::Core> owner,
+      network::mojom::ProxyResolvingSocketFactoryRequest request);
+
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* const backend_;
 
@@ -203,6 +214,8 @@ class CloudPrintProxyBackend::Core
   ConnectorSettings settings_;
   std::string robot_email_;
   std::unique_ptr<CloudPrintTokenStore> token_store_;
+
+  base::WeakPtrFactory<Core> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -288,7 +301,8 @@ CloudPrintProxyBackend::Core::Core(
       job_poll_scheduled_(false),
       enable_job_poll_(enable_job_poll),
       xmpp_ping_scheduled_(false),
-      pending_xmpp_pings_(0) {
+      pending_xmpp_pings_(0),
+      weak_ptr_factory_(this) {
   settings_.CopyFrom(settings);
 }
 
@@ -432,8 +446,14 @@ void CloudPrintProxyBackend::Core::InitNotifications(
 
   pending_xmpp_pings_ = 0;
   notifier::NotifierOptions notifier_options;
-  notifier_options.request_context_getter =
-      g_service_process->GetServiceURLRequestContextGetter();
+  notifier_options.network_config.task_runner =
+      g_service_process->io_task_runner();
+  notifier_options.network_config.get_proxy_resolving_socket_factory_callback =
+      base::BindRepeating(&Core::RequestProxyResolvingSocketFactory,
+                          backend_->core_thread_.task_runner(),
+                          // This needs to use weak pointers since the callback
+                          // is repeatable and a ref would result in a cycle.
+                          weak_ptr_factory_.GetWeakPtr());
   notifier_options.auth_mechanism = "X-OAUTH2";
   notifier_options.try_ssltcp_first = true;
   notifier_options.xmpp_host_port = net::HostPortPair::FromString(
@@ -466,6 +486,7 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
   notifications_enabled_ = false;
   notifications_enabled_since_ = base::TimeTicks();
   token_store_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   url_loader_factory_owner_.reset();
 
   DestroyAuthAndConnector();
@@ -575,6 +596,32 @@ CloudPrintTokenStore* CloudPrintProxyBackend::Core::GetTokenStore() {
   if (!token_store_.get())
     token_store_.reset(new CloudPrintTokenStore);
   return token_store_.get();
+}
+
+// static
+void CloudPrintProxyBackend::Core::
+    RequestProxyResolvingSocketFactoryOnCoreThread(
+        base::WeakPtr<CloudPrintProxyBackend::Core> owner,
+        network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!owner)
+    return;
+  DCHECK(owner->CurrentlyOnCoreThread());
+  owner->GetURLLoaderFactory();  // initialize |url_loader_factory_owner_|
+  owner->url_loader_factory_owner_->GetNetworkContext()
+      ->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+// static
+void CloudPrintProxyBackend::Core::RequestProxyResolvingSocketFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> core_runner,
+    base::WeakPtr<CloudPrintProxyBackend::Core> owner,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
+  // This runs on IO thread; should not dereference |owner|.
+  core_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::RequestProxyResolvingSocketFactoryOnCoreThread,
+                     std::move(owner), std::move(request)));
 }
 
 void CloudPrintProxyBackend::Core::NotifyAuthenticated(

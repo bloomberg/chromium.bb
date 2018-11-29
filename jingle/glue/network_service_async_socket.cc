@@ -21,7 +21,7 @@
 namespace jingle_glue {
 
 NetworkServiceAsyncSocket::NetworkServiceAsyncSocket(
-    GetProxyResolvingFactoryCallback get_socket_factory_callback,
+    GetProxyResolvingSocketFactoryCallback get_socket_factory_callback,
     bool use_fake_tls_handshake,
     size_t read_buf_size,
     size_t write_buf_size,

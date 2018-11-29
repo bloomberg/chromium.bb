@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/communicator/login_settings.h"
@@ -82,12 +83,14 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
 class SingleLoginAttemptTest : public ::testing::Test {
  protected:
   SingleLoginAttemptTest()
-      : login_settings_(
-            buzz::XmppClientSettings(),
-            new net::TestURLRequestContextGetter(
+      : net_config_helper_(
+            base::MakeRefCounted<net::TestURLRequestContextGetter>(
                 base::ThreadTaskRunnerHandle::Get(),
                 std::unique_ptr<net::TestURLRequestContext>(
-                    new MyTestURLRequestContext())),
+                    new MyTestURLRequestContext()))),
+        login_settings_(
+            buzz::XmppClientSettings(),
+            net_config_helper_.MakeSocketFactoryCallback(),
             ServerList(1,
                        ServerInformation(net::HostPortPair("example.com", 100),
                                          SUPPORTS_SSLTCP)),
@@ -109,6 +112,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;
   const LoginSettings login_settings_;
 
  protected:

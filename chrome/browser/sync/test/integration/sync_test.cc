@@ -84,6 +84,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
@@ -181,9 +182,12 @@ std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
+  auto config_helper =
+      std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+          profile->GetRequestContext());
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<invalidation::P2PInvalidationService>(
-          profile->GetRequestContext(), content::GetNetworkConnectionTracker(),
+          std::move(config_helper), content::GetNetworkConnectionTracker(),
           notification_target),
       std::make_unique<invalidation::ProfileIdentityProvider>(
           IdentityManagerFactory::GetForProfile(profile)));

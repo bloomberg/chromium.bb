@@ -175,7 +175,7 @@ void SingleLoginAttempt::TryConnect(
           client_settings.token_service(),
           login_settings_.auth_mechanism());
   xmpp_connection_.reset(new XmppConnection(
-      client_settings, login_settings_.request_context_getter(), this,
+      client_settings, login_settings_.get_socket_factory_callback(), this,
       pre_xmpp_auth, login_settings_.traffic_annotation()));
 }
 

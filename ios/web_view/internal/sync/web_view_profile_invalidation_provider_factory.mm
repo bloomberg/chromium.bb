@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
@@ -19,13 +20,13 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,6 +38,29 @@ using invalidation::ProfileInvalidationProvider;
 using invalidation::TiclInvalidationService;
 
 namespace ios_web_view {
+
+namespace {
+
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    WebViewBrowserState* browser_state,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  browser_state->GetProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    WebViewBrowserState* browser_state,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                     browser_state, std::move(service), std::move(request)));
+}
+}
 
 // static
 invalidation::ProfileInvalidationProvider*
@@ -83,7 +107,8 @@ WebViewProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           browser_state->GetPrefs()),
       WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
-      browser_state->GetRequestContext(),
+      base::BindRepeating(&RequestProxyResolvingSocketFactory, browser_state),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
       browser_state->GetSharedURLLoaderFactory(),
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker()));
   service->Init(

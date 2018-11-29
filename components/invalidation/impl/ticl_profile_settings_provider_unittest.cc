@@ -20,6 +20,7 @@
 #include "components/invalidation/impl/ticl_settings_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -40,7 +41,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   TiclInvalidationService::InvalidationNetworkChannel GetNetworkChannel();
 
   base::MessageLoop message_loop_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> net_config_helper_;
   gcm::FakeGCMDriver gcm_driver_;
 
   // |identity_test_env_| should be declared before |identity_provider_|
@@ -55,6 +56,11 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 
  private:
+  void RequestSocket(
+      base::WeakPtr<TiclInvalidationService> service,
+      network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    net_config_helper_->MakeSocketFactoryCallback().Run(std::move(request));
+  }
   DISALLOW_COPY_AND_ASSIGN(TiclProfileSettingsProviderTest);
 };
 
@@ -66,8 +72,10 @@ void TiclProfileSettingsProviderTest::SetUp() {
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(pref_service_.registry());
   ProfileInvalidationProvider::RegisterProfilePrefs(pref_service_.registry());
 
-  request_context_getter_ =
-      new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
+  net_config_helper_ =
+      std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+          base::MakeRefCounted<net::TestURLRequestContextGetter>(
+              base::ThreadTaskRunnerHandle::Get()));
   identity_provider_ = std::make_unique<ProfileIdentityProvider>(
       identity_test_env_.identity_manager());
 
@@ -75,7 +83,10 @@ void TiclProfileSettingsProviderTest::SetUp() {
       "TestUserAgent", identity_provider_.get(),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
-      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */,
+      &gcm_driver_,
+      base::BindRepeating(&TiclProfileSettingsProviderTest::RequestSocket,
+                          base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get(), nullptr /* url_loader_factory */,
       network::TestNetworkConnectionTracker::GetInstance());
   invalidation_service_->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));

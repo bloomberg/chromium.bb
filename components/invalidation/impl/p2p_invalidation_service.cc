@@ -9,23 +9,20 @@
 #include "base/command_line.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/impl/p2p_invalidator.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "net/url_request/url_request_context_getter.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace invalidation {
 
 P2PInvalidationService::P2PInvalidationService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> config_helper,
     network::NetworkConnectionTracker* network_connection_tracker,
-    syncer::P2PNotificationTarget notification_target) {
+    syncer::P2PNotificationTarget notification_target)
+    : config_helper_(std::move(config_helper)) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*base::CommandLine::ForCurrentProcess());
-  notifier_options.request_context_getter = request_context;
+  config_helper_->FillInNetworkConfig(&notifier_options.network_config);
   notifier_options.network_connection_tracker = network_connection_tracker;
   invalidator_id_ = GenerateInvalidatorClientId();
   invalidator_.reset(new syncer::P2PInvalidator(
