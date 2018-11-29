@@ -7,11 +7,9 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ws/common/switches.h"
+#include "services/ws/tests_catalog_source.h"
 #include "ui/gl/gl_switches.h"
 
 namespace ws {
@@ -19,27 +17,6 @@ namespace ws {
 namespace {
 
 const char kTestAppName[] = "ui_ws2_service_unittests";
-
-class WindowServerServiceTestClient
-    : public service_manager::test::ServiceTestClient {
- public:
-  explicit WindowServerServiceTestClient(WindowServerServiceTestBase* test)
-      : ServiceTestClient(test), test_(test) {}
-  ~WindowServerServiceTestClient() override {}
-
- private:
-  // service_manager::test::ServiceTestClient:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    test_->OnBindInterface(source_info, interface_name,
-                           std::move(interface_pipe));
-  }
-
-  WindowServerServiceTestBase* test_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowServerServiceTestClient);
-};
 
 void EnsureCommandLineSwitch(const std::string& name) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -50,16 +27,18 @@ void EnsureCommandLineSwitch(const std::string& name) {
 }  // namespace
 
 WindowServerServiceTestBase::WindowServerServiceTestBase()
-    : ServiceTest(kTestAppName) {
+    : test_service_manager_(test::CreateTestCatalog()),
+      test_service_binding_(
+          this,
+          test_service_manager_.RegisterTestInstance(kTestAppName)) {
   EnsureCommandLineSwitch(switches::kUseTestConfig);
   EnsureCommandLineSwitch(::switches::kOverrideUseSoftwareGLForTests);
 }
 
-WindowServerServiceTestBase::~WindowServerServiceTestBase() {}
+WindowServerServiceTestBase::~WindowServerServiceTestBase() = default;
 
-std::unique_ptr<service_manager::Service>
-WindowServerServiceTestBase::CreateService() {
-  return std::make_unique<WindowServerServiceTestClient>(this);
+const char* WindowServerServiceTestBase::test_name() const {
+  return kTestAppName;
 }
 
 }  // namespace ws

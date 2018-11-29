@@ -44,8 +44,9 @@ std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
-std::unique_ptr<service_manager::Service> CreateTestImeDriver() {
-  return std::make_unique<ws::test::TestIMEApplication>();
+std::unique_ptr<service_manager::Service> CreateTestImeDriver(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<ws::test::TestIMEApplication>(std::move(request));
 }
 
 class ShellContentUtilityClient : public content::ContentUtilityClient {
@@ -65,11 +66,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
       info.factory = base::BindRepeating(&CreateTapVisualizer);
       (*services)[tap_visualizer::mojom::kServiceName] = info;
     }
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateTestImeDriver);
-      (*services)[test_ime_driver::mojom::kServiceName] = info;
-    }
   }
 
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
@@ -77,6 +73,8 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
       service_manager::mojom::ServiceRequest request) override {
     if (service_name == quick_launch::mojom::kServiceName)
       return CreateQuickLaunch(std::move(request));
+    if (service_name == test_ime_driver::mojom::kServiceName)
+      return CreateTestImeDriver(std::move(request));
 
     return nullptr;
   }

@@ -5,7 +5,6 @@
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -32,11 +31,14 @@ source_set("tests") {
   ]
 
   deps = [
+    ":tests_catalog_source",
     "//base",
+    "//base/test:test_support",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/ws/ime/test_ime_driver/public/mojom",
     "//services/ws/public/mojom",
+    "//testing/gtest",
   ]
 
   data_deps = [
@@ -53,5 +55,14 @@ service_manifest("unittest_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
-  standalone_services = [ "//services/ws/ime/test_ime_driver:manifest" ]
+  standalone_services = [
+    "//services/ws/ime/test_ime_driver:manifest",
+    "//services/ws/test_ws:manifest",
+  ]
+}
+
+catalog_cpp_source("tests_catalog_source") {
+  testonly = true
+  catalog = ":tests_catalog"
+  generated_function_name = "ws::test::CreateImeTestCatalog"
 }

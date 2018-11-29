@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,25 @@
 #include "base/files/file.h"
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/test/common_initialization.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/scale_factor.h"
 #include "ui/base/ui_base_paths.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "mojo/core/embedder/default_mach_broker.h"
+#endif
 
 namespace {
 
@@ -25,6 +36,8 @@ class ServiceTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
+
+#if !defined(OS_IOS)
     ui::RegisterPathProvider();
 
     base::FilePath ui_test_pak_path;
@@ -41,13 +54,17 @@ class ServiceTestSuite : public base::TestSuite {
         path.Append(FILE_PATH_LITERAL("bluetooth_test_strings.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         bluetooth_test_strings, ui::SCALE_FACTOR_NONE);
+#endif  // !defined(OS_IOS)
 
     // base::TestSuite and ViewsInit both try to load icu. That's ok for tests.
     base::i18n::AllowMultipleInitializeCallsForTesting();
   }
 
   void Shutdown() override {
+#if !defined(OS_IOS)
     ui::ResourceBundle::CleanupSharedInstance();
+#endif
+
     base::TestSuite::Shutdown();
   }
 
@@ -60,7 +77,21 @@ class ServiceTestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   ServiceTestSuite test_suite(argc, argv);
 
-  return service_manager::InitializeAndLaunchUnitTests(
+  mojo::core::Init();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  mojo::core::SetMachPortProvider(
+      mojo::core::DefaultMachBroker::Get()->port_provider());
+#endif
+
+  base::Thread ipc_thread("IPC thread");
+  ipc_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  mojo::core::ScopedIPCSupport ipc_support(
+      ipc_thread.task_runner(),
+      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+  return base::LaunchUnitTests(
       argc, argv,
-      base::Bind(&ServiceTestSuite::Run, base::Unretained(&test_suite)));
+      base::BindOnce(&ServiceTestSuite::Run, base::Unretained(&test_suite)));
 }

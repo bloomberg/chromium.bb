@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ws/common/util.h"
 #include "services/ws/ids.h"
 #include "services/ws/public/mojom/constants.mojom.h"
