@@ -1336,6 +1336,8 @@ jumbo_split_static_library("ui") {
       "ash/chrome_screenshot_grabber_test_observer.h",
       "ash/chrome_shell_delegate.cc",
       "ash/chrome_shell_delegate.h",
+      "ash/contained_shell_client.cc",
+      "ash/contained_shell_client.h",
       "ash/ime_controller_client.cc",
       "ash/ime_controller_client.h",
       "ash/ksv/keyboard_shortcut_viewer_util.cc",

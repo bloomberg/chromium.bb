@@ -103,6 +103,7 @@ class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class DisplayOutputProtection;
+class ContainedShellController;
 class CrosDisplayConfig;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
@@ -357,6 +358,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
   service_manager::Connector* connector() { return connector_; }
+  ContainedShellController* contained_shell_controller() {
+    return contained_shell_controller_.get();
+  }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -720,6 +724,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   service_manager::Connector* const connector_;
+  std::unique_ptr<ContainedShellController> contained_shell_controller_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;

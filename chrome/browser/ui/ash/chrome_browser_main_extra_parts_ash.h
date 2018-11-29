@@ -36,6 +36,7 @@ class AppListClientImpl;
 class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
+class ContainedShellClient;
 class DataPromoNotification;
 class ImeControllerClient;
 class ImmersiveContextMus;
@@ -118,6 +119,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   // Initialized in PostProfileInit in all configs:
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
+  std::unique_ptr<ContainedShellClient> contained_shell_client_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
   std::unique_ptr<MediaClient> media_client_;
   std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;

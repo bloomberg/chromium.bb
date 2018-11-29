@@ -76,6 +76,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables running an external binary which provides lock screen authentication.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 
+// Enables the ContainedShell feature.
+ASH_PUBLIC_EXPORT extern const base::Feature kContainedShell;
+
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 

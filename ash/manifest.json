@@ -22,6 +22,7 @@
           "ash.mojom.AssistantSetupController",
           "ash.mojom.AssistantVolumeControl",
           "ash.mojom.CastConfig",
+          "ash.mojom.ContainedShellController",
           "ash.mojom.CrosDisplayConfigController",
           "ash.mojom.DockedMagnifierController",
           "ash.mojom.EventRewriterController",
