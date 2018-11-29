@@ -897,7 +897,9 @@ void TransportSecurityState::ClearDynamicData() {
   enabled_expect_ct_hosts_.clear();
 }
 
-void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
+void TransportSecurityState::DeleteAllDynamicDataSince(
+    const base::Time& time,
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   bool dirtied = false;
@@ -934,8 +936,10 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
     ++expect_ct_iterator;
   }
 
-  if (dirtied)
-    DirtyNotify();
+  if (dirtied && delegate_)
+    delegate_->WriteNow(this, std::move(callback));
+  else
+    std::move(callback).Run();
 }
 
 TransportSecurityState::~TransportSecurityState() {

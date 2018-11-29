@@ -153,16 +153,13 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
 
-  // Persist the data to the file. For the test to be fast and not flaky, we
-  // just do it directly rather than call persister_->StateIsDirty. (That uses
-  // ImportantFileWriter, which has an asynchronous commit interval rather
-  // than block.) Use a different basename just for cleanliness.
-  base::FilePath path =
-      temp_dir_.GetPath().AppendASCII("TransportSecurityPersisterTest");
-  EXPECT_EQ(static_cast<int>(serialized.size()),
-            base::WriteFile(path, serialized.c_str(), serialized.size()));
+  // Persist the data to the file.
+  base::RunLoop run_loop;
+  persister_->WriteNow(&state_, run_loop.QuitClosure());
+  run_loop.Run();
 
   // Read the data back.
+  base::FilePath path = temp_dir_.GetPath().AppendASCII("TransportSecurity");
   std::string persisted;
   EXPECT_TRUE(base::ReadFileToString(path, &persisted));
   EXPECT_EQ(persisted, serialized);

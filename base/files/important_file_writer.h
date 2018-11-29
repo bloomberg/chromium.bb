@@ -106,8 +106,8 @@ class BASE_EXPORT ImportantFileWriter {
   // If called more than once before a write is scheduled on |task_runner|, the
   // latest callbacks clobber the others.
   void RegisterOnNextWriteCallbacks(
-      const Closure& before_next_write_callback,
-      const Callback<void(bool success)>& after_next_write_callback);
+      OnceClosure before_next_write_callback,
+      OnceCallback<void(bool success)> after_next_write_callback);
 
   TimeDelta commit_interval() const {
     return commit_interval_;
@@ -125,8 +125,8 @@ class BASE_EXPORT ImportantFileWriter {
   void ClearPendingWrite();
 
   // Invoked synchronously on the next write event.
-  Closure before_next_write_callback_;
-  Callback<void(bool success)> after_next_write_callback_;
+  OnceClosure before_next_write_callback_;
+  OnceCallback<void(bool success)> after_next_write_callback_;
 
   // Path being written to.
   const FilePath path_;

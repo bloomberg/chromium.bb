@@ -52,6 +52,10 @@ class NET_EXPORT TransportSecurityState {
     // This function may not block and may be called with internal locks held.
     // Thus it must not reenter the TransportSecurityState object.
     virtual void StateIsDirty(TransportSecurityState* state) = 0;
+    // Same as StateIsDirty but instructs the Delegate to persist the data
+    // immediately and call |callback| when done.
+    virtual void WriteNow(TransportSecurityState* state,
+                          base::OnceClosure callback) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -417,8 +421,9 @@ class NET_EXPORT TransportSecurityState {
   // time.
   //
   // If any entries are deleted, the new state will be persisted through
-  // the Delegate (if any).
-  void DeleteAllDynamicDataSince(const base::Time& time);
+  // the Delegate (if any). Calls |callback| when data is persisted to disk.
+  void DeleteAllDynamicDataSince(const base::Time& time,
+                                 base::OnceClosure callback);
 
   // Deletes any dynamic data stored for |host| (e.g. HSTS or HPKP data).
   // If |host| doesn't have an exact entry then no action is taken. Does

@@ -246,6 +246,25 @@ void TransportSecurityPersister::StateIsDirty(TransportSecurityState* state) {
   writer_.ScheduleWrite(this);
 }
 
+void TransportSecurityPersister::WriteNow(TransportSecurityState* state,
+                                          base::OnceClosure callback) {
+  DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(transport_security_state_, state);
+
+  writer_.RegisterOnNextWriteCallbacks(
+      base::OnceClosure(),
+      base::BindOnce(&TransportSecurityPersister::OnWriteFinished,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  auto data = std::make_unique<std::string>();
+  SerializeData(data.get());
+  writer_.WriteNow(std::move(data));
+}
+
+void TransportSecurityPersister::OnWriteFinished(base::OnceClosure callback,
+                                                 bool result) {
+  foreground_runner_->PostTask(FROM_HERE, std::move(callback));
+}
+
 bool TransportSecurityPersister::SerializeData(std::string* output) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
 
