@@ -470,9 +470,9 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // This will be set to a group number for newly created profiles, and is used
-  // to indicate which users went through onboarding with the current group.
-  registry->RegisterIntegerPref(prefs::kNuxOnboardGroup, 0);
+  // This will be set for newly created profiles, and is used to indicate which
+  // users went through onboarding with the current experiment group.
+  registry->RegisterStringPref(prefs::kNaviOnboardGroup, "");
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 }
 

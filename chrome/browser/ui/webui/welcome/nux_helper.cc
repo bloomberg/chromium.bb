@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/common/pref_names.h"
@@ -34,11 +36,15 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
     {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
-int GetOnboardingGroup() {
-  // Preppend a 0 to avoid issues with empty string.
-  return std::stoi("0" + base::GetFieldTrialParamValue(
-                             /* Must match finch study name */ "NaviOnboarding",
-                             "onboarding-group"));
+// Must match study name in configs.
+const char kNuxOnboardingStudyName[] = "NaviOnboarding";
+
+std::string GetOnboardingGroup() {
+  // We need to use |base::GetFieldTrialParamValue| instead of
+  // |base::FeatureParam| because our control group needs a custom value for
+  // this param.
+  return base::GetFieldTrialParamValue(kNuxOnboardingStudyName,
+                                       "onboarding-group");
 }
 
 bool IsNuxOnboardingEnabled(Profile* profile) {
@@ -47,23 +53,21 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
   } else {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // To avoid diluting data collection, existing users should not be assigned
-    // an NUX group. So, the kNuxOnboardGroup integer is used to short-circuit
-    // the feature checks below.
+    // an onboarding group. So, |prefs::kNaviOnboardGroup| is used to
+    // short-circuit the feature checks below.
     PrefService* prefs = profile->GetPrefs();
     if (!prefs)
       return false;
 
-    int onboard_group = prefs->GetInteger(prefs::kNuxOnboardGroup);
+    std::string onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
 
-    if (onboard_group == 0)
+    if (onboard_group.empty())
       return false;
 
-    int current_group = GetOnboardingGroup();
-    if (onboard_group != current_group) {
-      // Remove user from group if they're not part of the current experiment.
-      prefs->SetInteger(prefs::kNuxOnboardGroup, 0);
-      return false;
-    }
+    // User will be tied to their original onboarding group, even after
+    // experiment ends.
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kNuxOnboardingStudyName, onboard_group);
 
     return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
 #else
@@ -85,7 +89,7 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                       kNuxOnboardingForceEnabledReturningUserModules.Get());
     modules.SetBoolean("show-email-interstitial",
                        kNuxOnboardingForceEnabledShowEmailInterstitial.Get());
-  } else {  // This means nux::kNuxOnboardingFeature is enabled.
+  } else {  // This means |nux::kNuxOnboardingFeature| is enabled.
     modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingReturningUserModules.Get());
