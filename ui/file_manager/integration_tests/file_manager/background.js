@@ -398,7 +398,7 @@ function setupAndWaitUntilReady(
     driveEntriesPromise,
     detailedTablePromise
   ]).then(function(results) {
-    result = {windowId: results[0], fileList: results[3]};
+    result = {windowId: results[0], fileList: results[3], appId: results[0]};
     return remoteCall.waitFor('isFileManagerLoaded', result.windowId, true);
   }).then(() => {
     if (opt_callback)
@@ -412,9 +412,10 @@ function setupAndWaitUntilReady(
 /**
  * Verifies if there are no Javascript errors in any of the app windows.
  * @param {function()} Completion callback.
+ * @return {Promise} Promise to be fulfilled on completion.
  */
 function checkIfNoErrorsOccured(callback) {
-  checkIfNoErrorsOccuredOnApp(remoteCall, callback);
+  return checkIfNoErrorsOccuredOnApp(remoteCall, callback);
 }
 
 /**
@@ -442,6 +443,46 @@ function getFileSize(fileListEntry) {
  */
 function getFileType(fileListEntry) {
   return fileListEntry[2];
+}
+
+/**
+ * A value that when returned by an async test indicates that app errors should
+ * not be checked following completion of the test.
+ */
+const IGNORE_APP_ERRORS = Symbol('IGNORE_APP_ERRORS');
+
+/**
+ * For async function tests, wait for the test to complete, check for app errors
+ * unless skipped, and report the results.
+ * @param {Promise} resultPromise A promise that resolves with the test result.
+ * @private
+ */
+async function awaitAsyncTestResult(resultPromise) {
+  // Hold a pending callback to ensure the test doesn't complete early.
+  const passCallback = chrome.test.callbackPass();
+
+  try {
+    const result = await resultPromise;
+    if (result != IGNORE_APP_ERRORS) {
+      await checkIfNoErrorsOccured();
+    }
+  } catch (error) {
+    // If the test has failed, ignore the exception and return.
+    if (error == 'chrome.test.failure') {
+      return;
+    }
+
+    // Otherwise, report the exception as a test failure. chrome.test.fail()
+    // emits an exception; catch it to avoid spurious logging about an uncaught
+    // exception.
+    try {
+      chrome.test.fail(error.stack || error);
+    } catch (_) {
+      return;
+    }
+  }
+
+  passCallback();
 }
 
 /**
@@ -489,8 +530,10 @@ window.addEventListener('load', function() {
       test.generatedName = testCaseName;
       var testCaseSymbol = Symbol(testCaseName);
       var testCase = {
-        [testCaseSymbol] :() => {
-          return test();
+        [testCaseSymbol]: () => {
+          const result = test();
+          return (result instanceof Promise) ? awaitAsyncTestResult(result) :
+                                               result;
         },
       };
       // Run the test.

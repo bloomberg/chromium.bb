@@ -359,57 +359,33 @@ testcase.renameNewFolderDrive = function() {
  * Test that selecting "Google Drive" in the directory tree with the keyboard
  * expands it and selects "My Drive".
  */
-testcase.keyboardSelectDriveDirectoryTree = function() {
-  let appId = null;
+testcase.keyboardSelectDriveDirectoryTree = async function() {
+  // Open Files app.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.world], [ENTRIES.hello]);
 
-  StepsRunner.run([
-    // Open Files app.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.world],
-          [ENTRIES.hello]);
-    },
-    // Focus the directory tree.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree'])
-          .then(this.next);
-    },
-    // Select Google Drive in the directory tree; it's the last item.
-    function() {
-      return remoteCall
-          .fakeKeyDown(appId, '#directory-tree', 'End', false, false, false)
-          .then(this.next);
-    },
-    // Ensure it's selected.
-    function() {
-      remoteCall.waitForElement(appId, ['.drive-volume [selected]'])
-          .then(this.next);
-    },
-    // Activate it.
-    function() {
-      return remoteCall
-          .fakeKeyDown(
-              appId, '#directory-tree .drive-volume', 'Enter', false, false,
-              false)
-          .then(this.next);
-    },
-    // It should have expanded.
-    function() {
-      remoteCall
-          .waitForElement(appId, ['.drive-volume .tree-children[expanded]'])
-          .then(this.next);
-    },
-    // My Drive should be selected.
-    function() {
-      remoteCall
-          .waitForElement(appId, ['[full-path-for-testing="/root"] [selected]'])
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Focus the directory tree.
+  await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+  // Select Google Drive in the directory tree; as of the time of writing, it's
+  // the last item so this happens to work.
+  await remoteCall.fakeKeyDown(
+      appId, '#directory-tree', 'End', false, false, false);
+
+  // Ensure it's selected.
+  await remoteCall.waitForElement(appId, ['.drive-volume [selected]']);
+
+  // Activate it.
+  await remoteCall.fakeKeyDown(
+      appId, '#directory-tree .drive-volume', 'Enter', false, false, false);
+
+  // It should have expanded.
+  await remoteCall.waitForElement(
+      appId, ['.drive-volume .tree-children[expanded]']);
+
+  // My Drive should be selected.
+  await remoteCall.waitForElement(
+      appId, ['[full-path-for-testing="/root"] [selected]']);
 };
 
 /**
