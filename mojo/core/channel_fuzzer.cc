@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/connection_params.h"
+#include "mojo/core/entrypoints.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 
 using namespace mojo::core;
@@ -30,9 +31,16 @@ class FakeChannelDelegate : public Channel::Delegate {
   void OnChannelError(Channel::Error error) override {}
 };
 
+// Message deserialization may register handles in the global handle table. We
+// need to initialize Core for that to be OK.
+struct Environment {
+  Environment() : message_loop(base::MessageLoop::TYPE_IO) { InitializeCore(); }
+
+  base::MessageLoop message_loop;
+};
+
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
-  static base::NoDestructor<base::MessageLoop> message_loop(
-      base::MessageLoop::TYPE_IO);
+  static base::NoDestructor<Environment> environment;
 
   // Platform-specific implementation of an OS IPC primitive that is normally
   // used to carry messages between processes.
@@ -41,13 +49,13 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeChannelDelegate receiver_delegate;
   auto receiver = Channel::Create(&receiver_delegate,
                                   ConnectionParams(channel.TakeLocalEndpoint()),
-                                  message_loop->task_runner());
+                                  environment->message_loop.task_runner());
   receiver->Start();
 
   FakeChannelDelegate sender_delegate;
   auto sender = Channel::Create(&sender_delegate,
                                 ConnectionParams(channel.TakeRemoteEndpoint()),
-                                message_loop->task_runner());
+                                environment->message_loop.task_runner());
   sender->Start();
 
   sender->Write(

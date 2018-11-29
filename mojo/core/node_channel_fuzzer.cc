@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/connection_params.h"
+#include "mojo/core/entrypoints.h"
 #include "mojo/core/node_channel.h"  // nogncheck
 #include "mojo/public/cpp/platform/platform_channel.h"
 
@@ -83,9 +84,16 @@ class FakeChannelDelegate : public Channel::Delegate {
   void OnChannelError(Channel::Error error) override {}
 };
 
+// Message deserialization may register handles in the global handle table. We
+// need to initialize Core for that to be OK.
+struct Environment {
+  Environment() : message_loop(base::MessageLoop::TYPE_IO) { InitializeCore(); }
+
+  base::MessageLoop message_loop;
+};
+
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
-  static base::NoDestructor<base::MessageLoop> message_loop(
-      base::MessageLoop::TYPE_IO);
+  static base::NoDestructor<Environment> environment;
 
   // Platform-specific implementation of an OS IPC primitive that is normally
   // used to carry messages between processes.
@@ -94,7 +102,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeNodeChannelDelegate receiver_delegate;
   auto receiver = NodeChannel::Create(
       &receiver_delegate, ConnectionParams(channel.TakeLocalEndpoint()),
-      message_loop->task_runner(), base::DoNothing());
+      environment->message_loop.task_runner(), base::DoNothing());
   receiver->Start();
 
   // We only use a Channel for the sender side, since it allows us to easily
@@ -105,7 +113,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeChannelDelegate sender_delegate;
   auto sender = Channel::Create(&sender_delegate,
                                 ConnectionParams(channel.TakeRemoteEndpoint()),
-                                message_loop->task_runner());
+                                environment->message_loop.task_runner());
   sender->Start();
   auto message = std::make_unique<Channel::Message>(size, 0 /* num_handles */);
   std::copy(data, data + size,

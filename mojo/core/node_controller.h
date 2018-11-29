@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
@@ -129,6 +130,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // node.
   void NotifyBadMessageFrom(const ports::NodeName& source_node,
                             const std::string& error);
+
+  static void DeserializeRawBytesAsEventForFuzzer(
+      base::span<const unsigned char> data);
+  static void DeserializeMessageAsEventForFuzzer(Channel::MessagePtr message);
 
  private:
   friend Core;
