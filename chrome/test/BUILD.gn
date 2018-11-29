@@ -5790,12 +5790,12 @@ if (!is_android && !is_fuchsia) {
   }
 }
 
-# Note: this compiles and runs on Mac but may cause
-# system instability; if you try it out, close other
-# programs and then reboot afterwards. It should be
-# possible to make it work on Linux if you use the
-# --enable-speech-dispatcher flag.
 if (is_win) {
+  # Note: this compiles and runs on Mac but may cause
+  # system instability; if you try it out, close other
+  # programs and then reboot afterwards. It should be
+  # possible to make it work on Linux if you use the
+  # --enable-speech-dispatcher flag.
   fuzzer_test("tts_platform_fuzzer") {
     sources = [
       "../browser/speech/mock_tts_controller.cc",
@@ -5813,5 +5813,24 @@ if (is_win) {
       "//base/test:test_support",
       "//ui/base",
     ]
+  }
+
+  fuzzer_test("safe_browsing_binary_feature_extractor_fuzzer") {
+    sources = [
+      "../common/safe_browsing/binary_feature_extractor.cc",
+      "../common/safe_browsing/binary_feature_extractor_fuzzer.cc",
+      "../common/safe_browsing/binary_feature_extractor_win.cc",
+      "../common/safe_browsing/pe_image_reader_win.cc",
+    ]
+    deps = [
+      "//base",
+      "//components/safe_browsing:csd_proto",
+      "//crypto",
+    ]
+    libs = [ "wintrust.lib" ]
+
+    # Directory contains useful and non-useful files. Don't worry about
+    # non-useful since they are eliminated during pruning.
+    seed_corpus = "data/safe_browsing/download_protection/"
   }
 }
