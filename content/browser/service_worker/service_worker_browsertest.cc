@@ -3039,51 +3039,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   }
 }
 
-class ServiceWorkerSitePerProcessTest : public ServiceWorkerBrowserTest {
- public:
-  ServiceWorkerSitePerProcessTest() {}
-  ~ServiceWorkerSitePerProcessTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    IsolateAllSitesForTesting(command_line);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSitePerProcessTest);
-};
-
-// Times out on CrOS and Linux. https://crbug.com/702256
-#if defined(ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_CrossSiteNavigation DISABLED_CrossSiteNavigation
-#else
-#define MAYBE_CrossSiteNavigation CrossSiteNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerSitePerProcessTest,
-                       MAYBE_CrossSiteNavigation) {
-  StartServerAndNavigateToSetup();
-  // The first page registers a service worker.
-  const char kRegisterPageUrl[] = "/service_worker/cross_site_xfer.html";
-  const base::string16 kOKTitle1(base::ASCIIToUTF16("OK_1"));
-  const base::string16 kFailTitle1(base::ASCIIToUTF16("FAIL_1"));
-  content::TitleWatcher title_watcher1(shell()->web_contents(), kOKTitle1);
-  title_watcher1.AlsoWaitForTitle(kFailTitle1);
-
-  NavigateToURL(shell(), embedded_test_server()->GetURL(kRegisterPageUrl));
-  ASSERT_EQ(kOKTitle1, title_watcher1.WaitAndGetTitle());
-
-  // The second pages loads via the serviceworker including a subresource.
-  const char kConfirmPageUrl[] =
-      "/service_worker/cross_site_xfer_scope/"
-      "cross_site_xfer_confirm_via_serviceworker.html";
-  const base::string16 kOKTitle2(base::ASCIIToUTF16("OK_2"));
-  const base::string16 kFailTitle2(base::ASCIIToUTF16("FAIL_2"));
-  content::TitleWatcher title_watcher2(shell()->web_contents(), kOKTitle2);
-  title_watcher2.AlsoWaitForTitle(kFailTitle2);
-
-  NavigateToURL(shell(), embedded_test_server()->GetURL(kConfirmPageUrl));
-  EXPECT_EQ(kOKTitle2, title_watcher2.WaitAndGetTitle());
-}
-
 class ServiceWorkerVersionBrowserV8FullCodeCacheTest
     : public ServiceWorkerVersionBrowserTest,
       public ServiceWorkerVersion::Observer {
