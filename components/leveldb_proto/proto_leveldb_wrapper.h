@@ -133,6 +133,9 @@ class ProtoLevelDBWrapper {
 
   void Destroy(DestroyCallback callback);
 
+  void RunInitCallback(typename ProtoLevelDBWrapper::InitCallback callback,
+                       const leveldb::Status* status);
+
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(LevelDB* database,
                         const base::FilePath& database_dir,
@@ -142,12 +145,16 @@ class ProtoLevelDBWrapper {
 
   void SetMetricsId(const std::string& id);
 
+  bool IsCorrupt();
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
 
   const scoped_refptr<base::SequencedTaskRunner>& task_runner();
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Set to true if the status from the previous Init call is corruption.
+  bool is_corrupt_ = false;
 
   // Used to run blocking tasks in-order, must be the TaskRunner that |db_|
   // relies on.
@@ -157,6 +164,8 @@ class ProtoLevelDBWrapper {
   // The identifier used when recording metrics to determine the source of the
   // LevelDB calls, likely the database client name.
   std::string metrics_id_ = "Default";
+
+  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoLevelDBWrapper);
 };
