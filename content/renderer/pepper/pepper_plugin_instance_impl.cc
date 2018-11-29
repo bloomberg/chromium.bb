@@ -1295,7 +1295,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   unobscured_rect_ = unobscured;
 
   view_data_.rect = PP_FromGfxRect(window);
-  view_data_.clip_rect = PP_FromGfxRect(clip);
+  view_data_.clip_rect = PP_FromGfxRect(new_clip);
   view_data_.device_scale = container_->DeviceScaleFactor();
   view_data_.css_scale =
       container_->PageZoomFactor() * container_->PageScaleFactor();

@@ -1295,6 +1295,102 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   web_view_helper.Reset();
 }
 
+TEST_F(WebPluginContainerTest, ClippedRectsForShiftedIframedElement) {
+  RegisterMockedURL("plugin_hidden_before_scroll.html");
+  RegisterMockedURL("shifted_plugin_containing_page.html");
+
+  // Must outlive |web_view_helper|.
+  TestPluginWebFrameClient plugin_web_frame_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "shifted_plugin_containing_page.html",
+      &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+  UpdateAllLifecyclePhases(web_view);
+  WebLocalFrame* iframe =
+      web_view->MainFrame()->FirstChild()->ToWebLocalFrame();
+  WebElement plugin_element =
+      iframe->GetDocument().GetElementById("plugin-hidden-before-scroll");
+  WebPluginContainerImpl* plugin_container_impl =
+      ToWebPluginContainerImpl(plugin_element.PluginContainer());
+
+  DCHECK(plugin_container_impl);
+
+  IntSize plugin_size(40, 40);
+  IntSize iframe_size(40, 40);
+
+  IntPoint iframe_offset_in_root_frame(0, 300);
+  IntPoint plugin_offset_in_iframe(0, 40);
+
+  auto compute_expected_values = [=](IntSize root_document_scroll_to,
+                                     IntSize iframe_scroll_to) {
+    IntPoint offset_in_iframe = plugin_offset_in_iframe - iframe_scroll_to;
+    IntPoint offset_in_root_document =
+        iframe_offset_in_root_frame - root_document_scroll_to;
+    // window_rect is a plugin rectangle in the root frame coordinates.
+    IntRect expected_window_rect =
+        IntRect(offset_in_root_document + offset_in_iframe, plugin_size);
+
+    // unobscured_rect is the visible part of the plugin, inside the iframe.
+    IntRect expected_unobscured_rect(IntPoint(iframe_scroll_to), iframe_size);
+    expected_unobscured_rect.Intersect({plugin_offset_in_iframe, plugin_size});
+    expected_unobscured_rect.MoveBy(-plugin_offset_in_iframe);
+
+    // clip_rect is the visible part of the unobscured_rect, inside the
+    // root_frame.
+    IntRect expected_clip_rect = expected_unobscured_rect;
+    expected_clip_rect.MoveBy(expected_window_rect.Location());
+    expected_clip_rect.Intersect({{0, 0}, IntSize(300, 300)});
+    expected_clip_rect.MoveBy(-expected_window_rect.Location());
+
+    return std::make_tuple(expected_window_rect, expected_clip_rect,
+                           expected_unobscured_rect);
+  };
+
+  IntSize root_document_scrolls_to[] = {IntSize(0, 0),
+                                        IntSize(0, 20),
+                                        IntSize(0, 300),
+                                        IntSize(0, 320),
+                                        IntSize(0, 340)};
+
+  IntSize iframe_scrolls_to[] = {IntSize(0, 0),
+                                 IntSize(0, 20),
+                                 IntSize(0, 40),
+                                 IntSize(0, 60),
+                                 IntSize(0, 80)};
+
+  for (auto& root_document_scroll_to : root_document_scrolls_to) {
+    for (auto& iframe_scroll_to : iframe_scrolls_to) {
+      web_view->SmoothScroll(root_document_scroll_to.Width(),
+                             root_document_scroll_to.Height(), 0);
+      iframe->SetScrollOffset(iframe_scroll_to);
+      UpdateAllLifecyclePhases(web_view);
+      RunPendingTasks();
+
+      auto expected_values =
+          compute_expected_values(root_document_scroll_to, iframe_scroll_to);
+
+      IntRect window_rect, clip_rect, unobscured_rect;
+      CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
+                        unobscured_rect);
+
+      EXPECT_EQ(std::get<0>(expected_values), window_rect);
+      EXPECT_EQ(std::get<1>(expected_values), clip_rect);
+
+      // It seems that CalculateGeometry calculates x and y values for empty
+      // rectangles slightly differently, but these values are not important in
+      // the empty case.
+      if(std::get<2>(expected_values).IsEmpty())
+        EXPECT_TRUE(unobscured_rect.IsEmpty());
+      else
+        EXPECT_EQ(std::get<2>(expected_values), unobscured_rect);
+    }
+  }
+
+  // Cause the plugin's frame to be detached.
+  web_view_helper.Reset();
+}
+
 TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   RegisterMockedURL("plugin_container.html");
 
