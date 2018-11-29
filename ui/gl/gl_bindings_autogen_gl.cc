@@ -285,6 +285,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ANGLE_framebuffer_multisample");
   ext.b_GL_ANGLE_instanced_arrays =
       gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays");
+  ext.b_GL_ANGLE_multi_draw =
+      gfx::HasExtension(extensions, "GL_ANGLE_multi_draw");
   ext.b_GL_ANGLE_multiview =
       gfx::HasExtension(extensions, "GL_ANGLE_multiview");
   ext.b_GL_ANGLE_request_extension =
@@ -1854,6 +1856,29 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
     fn.glMinSampleShadingFn = reinterpret_cast<glMinSampleShadingProc>(
         GetGLProcAddress("glMinSampleShading"));
+  }
+
+  if (ext.b_GL_ANGLE_multi_draw) {
+    fn.glMultiDrawArraysANGLEFn = reinterpret_cast<glMultiDrawArraysANGLEProc>(
+        GetGLProcAddress("glMultiDrawArraysANGLE"));
+  }
+
+  if (ext.b_GL_ANGLE_multi_draw) {
+    fn.glMultiDrawArraysInstancedANGLEFn =
+        reinterpret_cast<glMultiDrawArraysInstancedANGLEProc>(
+            GetGLProcAddress("glMultiDrawArraysInstancedANGLE"));
+  }
+
+  if (ext.b_GL_ANGLE_multi_draw) {
+    fn.glMultiDrawElementsANGLEFn =
+        reinterpret_cast<glMultiDrawElementsANGLEProc>(
+            GetGLProcAddress("glMultiDrawElementsANGLE"));
+  }
+
+  if (ext.b_GL_ANGLE_multi_draw) {
+    fn.glMultiDrawElementsInstancedANGLEFn =
+        reinterpret_cast<glMultiDrawElementsInstancedANGLEProc>(
+            GetGLProcAddress("glMultiDrawElementsInstancedANGLE"));
   }
 
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
@@ -4484,6 +4509,42 @@ void GLApiBase::glMemoryBarrierEXTFn(GLbitfield barriers) {
 
 void GLApiBase::glMinSampleShadingFn(GLfloat value) {
   driver_->fn.glMinSampleShadingFn(value);
+}
+
+void GLApiBase::glMultiDrawArraysANGLEFn(GLenum mode,
+                                         const GLint* firsts,
+                                         const GLsizei* counts,
+                                         GLsizei drawcount) {
+  driver_->fn.glMultiDrawArraysANGLEFn(mode, firsts, counts, drawcount);
+}
+
+void GLApiBase::glMultiDrawArraysInstancedANGLEFn(GLenum mode,
+                                                  const GLint* firsts,
+                                                  const GLsizei* counts,
+                                                  const GLsizei* instanceCounts,
+                                                  GLsizei drawcount) {
+  driver_->fn.glMultiDrawArraysInstancedANGLEFn(mode, firsts, counts,
+                                                instanceCounts, drawcount);
+}
+
+void GLApiBase::glMultiDrawElementsANGLEFn(GLenum mode,
+                                           const GLsizei* counts,
+                                           GLenum type,
+                                           const GLvoid* const* indices,
+                                           GLsizei drawcount) {
+  driver_->fn.glMultiDrawElementsANGLEFn(mode, counts, type, indices,
+                                         drawcount);
+}
+
+void GLApiBase::glMultiDrawElementsInstancedANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  driver_->fn.glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
+                                                  instanceCounts, drawcount);
 }
 
 void GLApiBase::glObjectLabelFn(GLenum identifier,
@@ -7844,6 +7905,48 @@ void TraceGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
 void TraceGLApi::glMinSampleShadingFn(GLfloat value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMinSampleShading")
   gl_api_->glMinSampleShadingFn(value);
+}
+
+void TraceGLApi::glMultiDrawArraysANGLEFn(GLenum mode,
+                                          const GLint* firsts,
+                                          const GLsizei* counts,
+                                          GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMultiDrawArraysANGLE")
+  gl_api_->glMultiDrawArraysANGLEFn(mode, firsts, counts, drawcount);
+}
+
+void TraceGLApi::glMultiDrawArraysInstancedANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glMultiDrawArraysInstancedANGLE")
+  gl_api_->glMultiDrawArraysInstancedANGLEFn(mode, firsts, counts,
+                                             instanceCounts, drawcount);
+}
+
+void TraceGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
+                                            const GLsizei* counts,
+                                            GLenum type,
+                                            const GLvoid* const* indices,
+                                            GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMultiDrawElementsANGLE")
+  gl_api_->glMultiDrawElementsANGLEFn(mode, counts, type, indices, drawcount);
+}
+
+void TraceGLApi::glMultiDrawElementsInstancedANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glMultiDrawElementsInstancedANGLE")
+  gl_api_->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
+                                               instanceCounts, drawcount);
 }
 
 void TraceGLApi::glObjectLabelFn(GLenum identifier,
@@ -12106,6 +12209,64 @@ void DebugGLApi::glMinSampleShadingFn(GLfloat value) {
   gl_api_->glMinSampleShadingFn(value);
 }
 
+void DebugGLApi::glMultiDrawArraysANGLEFn(GLenum mode,
+                                          const GLint* firsts,
+                                          const GLsizei* counts,
+                                          GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawArraysANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(firsts) << ", "
+                 << static_cast<const void*>(counts) << ", " << drawcount
+                 << ")");
+  gl_api_->glMultiDrawArraysANGLEFn(mode, firsts, counts, drawcount);
+}
+
+void DebugGLApi::glMultiDrawArraysInstancedANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawArraysInstancedANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(firsts) << ", "
+                 << static_cast<const void*>(counts) << ", "
+                 << static_cast<const void*>(instanceCounts) << ", "
+                 << drawcount << ")");
+  gl_api_->glMultiDrawArraysInstancedANGLEFn(mode, firsts, counts,
+                                             instanceCounts, drawcount);
+}
+
+void DebugGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
+                                            const GLsizei* counts,
+                                            GLenum type,
+                                            const GLvoid* const* indices,
+                                            GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawElementsANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(counts) << ", "
+                 << GLEnums::GetStringEnum(type) << ", " << indices << ", "
+                 << drawcount << ")");
+  gl_api_->glMultiDrawElementsANGLEFn(mode, counts, type, indices, drawcount);
+}
+
+void DebugGLApi::glMultiDrawElementsInstancedANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawElementsInstancedANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(counts) << ", "
+                 << GLEnums::GetStringEnum(type) << ", " << indices << ", "
+                 << static_cast<const void*>(instanceCounts) << ", "
+                 << drawcount << ")");
+  gl_api_->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
+                                               instanceCounts, drawcount);
+}
+
 void DebugGLApi::glObjectLabelFn(GLenum identifier,
                                  GLuint name,
                                  GLsizei length,
@@ -15743,6 +15904,40 @@ void NoContextGLApi::glMemoryBarrierEXTFn(GLbitfield barriers) {
 
 void NoContextGLApi::glMinSampleShadingFn(GLfloat value) {
   NoContextHelper("glMinSampleShading");
+}
+
+void NoContextGLApi::glMultiDrawArraysANGLEFn(GLenum mode,
+                                              const GLint* firsts,
+                                              const GLsizei* counts,
+                                              GLsizei drawcount) {
+  NoContextHelper("glMultiDrawArraysANGLE");
+}
+
+void NoContextGLApi::glMultiDrawArraysInstancedANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  NoContextHelper("glMultiDrawArraysInstancedANGLE");
+}
+
+void NoContextGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
+                                                const GLsizei* counts,
+                                                GLenum type,
+                                                const GLvoid* const* indices,
+                                                GLsizei drawcount) {
+  NoContextHelper("glMultiDrawElementsANGLE");
+}
+
+void NoContextGLApi::glMultiDrawElementsInstancedANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  NoContextHelper("glMultiDrawElementsInstancedANGLE");
 }
 
 void NoContextGLApi::glObjectLabelFn(GLenum identifier,
