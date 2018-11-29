@@ -43,6 +43,63 @@ _log = logging.getLogger(__name__)
 DRIVER_START_TIMEOUT_SECS = 30
 
 
+def coalesce_repeated_switches(cmd):
+    """Combines known repeated command line switches.
+
+    Repetition of a switch notably happens when both per-test switches and the
+    additional driver flags specify different --enable-features. For instance:
+
+    --enable-features=X --enable-features=Y
+
+    Conceptually, this indicates to enable features X and Y. However
+    Chrome's command line parsing only applies the last seen switch, resulting
+    in only feature Y being enabled.
+
+    To solve this, transform it to:
+
+    --enable-features=X,Y
+    """
+
+    def parse_csv_switch(prefix, switch, values_set):
+        """If |switch| starts with |prefix|, parses it as a comma-separated
+        list of values and adds them all to |values_set|. Returns False if the
+        switch was not a match for |prefix|."""
+        if not switch.startswith(prefix):
+            return False
+
+        values = switch[len(prefix):].split(',')
+        for value in values:
+            values_set.add(value)
+        return True
+
+    def add_csv_switch(prefix, values_set, result):
+        if len(values_set) == 0:
+            return
+        sorted_values = sorted(list(values_set))
+        result.append('%s%s' % (prefix, ','.join(sorted_values)))
+
+    result = []
+
+    ENABLE_FEATURES_FLAG = '--enable-features='
+    DISABLE_FEATURES_FLAG = '--disable-features='
+
+    enabled_set = set()
+    disabled_set = set()
+
+    for switch in cmd:
+        if parse_csv_switch(ENABLE_FEATURES_FLAG, switch, enabled_set):
+            continue
+        if parse_csv_switch(DISABLE_FEATURES_FLAG, switch, disabled_set):
+            continue
+        result.append(switch)
+
+    # Append any coalesced (comma separated) flags to the end.
+    add_csv_switch(ENABLE_FEATURES_FLAG, enabled_set, result)
+    add_csv_switch(DISABLE_FEATURES_FLAG, disabled_set, result)
+
+    return result
+
+
 class DriverInput(object):
 
     def __init__(self, test_name, timeout, image_hash, args):
@@ -391,6 +448,7 @@ class Driver(object):
         if self._port.get_option('enable_leak_detection'):
             cmd.append('--enable-leak-detection')
         cmd.extend(per_test_args)
+        cmd = coalesce_repeated_switches(cmd)
         cmd.append('-')
         return cmd
 
