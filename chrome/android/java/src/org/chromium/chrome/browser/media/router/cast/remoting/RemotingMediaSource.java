@@ -106,7 +106,7 @@ public class RemotingMediaSource implements MediaSource {
                 // Should never happen, implies a corrupt AndroidManifest.
             }
 
-            sApplicationId = (customAppId != null)
+            sApplicationId = (customAppId != null && !customAppId.isEmpty())
                     ? customAppId
                     : CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
         }
