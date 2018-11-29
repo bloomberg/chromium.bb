@@ -36,6 +36,8 @@ class RTCDataChannelEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  RTCDataChannelEvent(const AtomicString& type, RTCDataChannel*);
+  RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit*);
   ~RTCDataChannelEvent() override;
 
   static RTCDataChannelEvent* Create(const AtomicString& type,
@@ -51,10 +53,6 @@ class RTCDataChannelEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCDataChannelEvent(const AtomicString& type,
-                      RTCDataChannel*);
-
-  RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit*);
   Member<RTCDataChannel> channel_;
 };
 

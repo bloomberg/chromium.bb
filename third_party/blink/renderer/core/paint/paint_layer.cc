@@ -3265,8 +3265,10 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
   PaintLayerRareData& rare_data = EnsureRareData();
-  if (!rare_data.resource_info)
-    rare_data.resource_info = new PaintLayerResourceInfo(this);
+  if (!rare_data.resource_info) {
+    rare_data.resource_info =
+        MakeGarbageCollected<PaintLayerResourceInfo>(this);
+  }
   return *rare_data.resource_info;
 }
 

@@ -261,9 +261,10 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
       token_syntax.Parse(CSSParserTokenRange(tokens), context, false);
   ASSERT_TRUE(initial_value);
   ASSERT_TRUE(initial_value->IsVariableReferenceValue());
-  PropertyRegistration* registration = new PropertyRegistration(
-      "--prop3", token_syntax, false, initial_value,
-      ToCSSVariableReferenceValue(*initial_value).VariableDataValue());
+  PropertyRegistration* registration =
+      MakeGarbageCollected<PropertyRegistration>(
+          "--prop3", token_syntax, false, initial_value,
+          ToCSSVariableReferenceValue(*initial_value).VariableDataValue());
   ASSERT_TRUE(GetDocument().GetPropertyRegistry());
   GetDocument().GetPropertyRegistry()->RegisterProperty("--prop3",
                                                         *registration);

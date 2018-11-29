@@ -53,12 +53,13 @@ RTCSessionDescription* RTCSessionDescription::Create(
   else
     UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoSdp);
 
-  return new RTCSessionDescription(WebRTCSessionDescription(type, sdp));
+  return MakeGarbageCollected<RTCSessionDescription>(
+      WebRTCSessionDescription(type, sdp));
 }
 
 RTCSessionDescription* RTCSessionDescription::Create(
     WebRTCSessionDescription web_session_description) {
-  return new RTCSessionDescription(web_session_description);
+  return MakeGarbageCollected<RTCSessionDescription>(web_session_description);
 }
 
 RTCSessionDescription::RTCSessionDescription(

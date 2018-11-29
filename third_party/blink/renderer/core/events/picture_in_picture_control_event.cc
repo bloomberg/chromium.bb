@@ -9,13 +9,13 @@ namespace blink {
 PictureInPictureControlEvent* PictureInPictureControlEvent::Create(
     const AtomicString& type,
     String id) {
-  return new PictureInPictureControlEvent(type, id);
+  return MakeGarbageCollected<PictureInPictureControlEvent>(type, id);
 }
 
 PictureInPictureControlEvent* PictureInPictureControlEvent::Create(
     const AtomicString& type,
     const PictureInPictureControlEventInit* initializer) {
-  return new PictureInPictureControlEvent(type, initializer);
+  return MakeGarbageCollected<PictureInPictureControlEvent>(type, initializer);
 }
 
 String PictureInPictureControlEvent::id() const {

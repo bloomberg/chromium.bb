@@ -53,19 +53,20 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
       DocumentFragment* fragment,
       CommandOptions options,
       InputEvent::InputType input_type = InputEvent::InputType::kNone) {
-    return new ReplaceSelectionCommand(document, fragment, options, input_type);
+    return MakeGarbageCollected<ReplaceSelectionCommand>(document, fragment,
+                                                         options, input_type);
   }
+
+  ReplaceSelectionCommand(Document&,
+                          DocumentFragment*,
+                          CommandOptions,
+                          InputEvent::InputType);
 
   EphemeralRange InsertedRange() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  ReplaceSelectionCommand(Document&,
-                          DocumentFragment*,
-                          CommandOptions,
-                          InputEvent::InputType);
-
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;
   bool IsReplaceSelectionCommand() const override;

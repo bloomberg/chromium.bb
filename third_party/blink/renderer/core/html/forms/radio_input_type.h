@@ -42,8 +42,9 @@ class RadioInputType final : public BaseCheckableInputType {
   CORE_EXPORT static HTMLInputElement* NextRadioButtonInGroup(HTMLInputElement*,
                                                               bool forward);
 
- private:
   RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) {}
+
+ private:
   const AtomicString& FormControlType() const override;
   bool ValueMissing(const String&) const override;
   String ValueMissingText() const override;

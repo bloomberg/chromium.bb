@@ -35,7 +35,7 @@ PlatformSpeechSynthesizerMock* PlatformSpeechSynthesizerMock::Create(
     PlatformSpeechSynthesizerClient* client,
     ExecutionContext* context) {
   PlatformSpeechSynthesizerMock* synthesizer =
-      new PlatformSpeechSynthesizerMock(client, context);
+      MakeGarbageCollected<PlatformSpeechSynthesizerMock>(client, context);
   synthesizer->InitializeVoiceList();
   client->VoicesDidChange();
   return synthesizer;

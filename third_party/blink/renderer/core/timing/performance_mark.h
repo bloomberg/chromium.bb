@@ -41,8 +41,14 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
                                  const AtomicString& name,
                                  double start_time,
                                  const ScriptValue& detail) {
-    return new PerformanceMark(script_state, name, start_time, detail);
+    return MakeGarbageCollected<PerformanceMark>(script_state, name, start_time,
+                                                 detail);
   }
+
+  PerformanceMark(ScriptState*,
+                  const AtomicString& name,
+                  double start_time,
+                  const ScriptValue& detail);
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
@@ -52,11 +58,6 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceMark(ScriptState*,
-                  const AtomicString& name,
-                  double start_time,
-                  const ScriptValue& detail);
-
   ~PerformanceMark() override = default;
 
   scoped_refptr<DOMWrapperWorld> world_;

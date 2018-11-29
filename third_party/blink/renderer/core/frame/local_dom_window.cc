@@ -603,9 +603,9 @@ void LocalDOMWindow::SchedulePostMessage(
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
   std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
-  PostMessageTimer* timer =
-      new PostMessageTimer(*this, event, std::move(target), std::move(location),
-                           UserGestureIndicator::CurrentToken());
+  PostMessageTimer* timer = MakeGarbageCollected<PostMessageTimer>(
+      *this, event, std::move(target), std::move(location),
+      UserGestureIndicator::CurrentToken());
   timer->StartOneShot(TimeDelta(), FROM_HERE);
   timer->PauseIfNeeded();
   probe::AsyncTaskScheduled(document(), "postMessage", timer);

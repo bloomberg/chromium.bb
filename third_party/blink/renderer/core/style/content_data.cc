@@ -47,7 +47,7 @@ ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
 }
 
 ContentData* ContentData::Create(QuoteType quote) {
-  return new QuoteContentData(quote);
+  return MakeGarbageCollected<QuoteContentData>(quote);
 }
 
 ContentData* ContentData::Clone() const {

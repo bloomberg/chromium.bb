@@ -23,6 +23,8 @@ class CORE_EXPORT PausableTask final
   USING_GARBAGE_COLLECTED_MIXIN(PausableTask);
 
  public:
+  // Note: This asserts that the context is currently suspended.
+  PausableTask(ExecutionContext*, WebLocalFrame::PausableTaskCallback);
   ~PausableTask() override;
 
   // Checks if the context is paused, and, if not, executes the callback
@@ -35,9 +37,6 @@ class CORE_EXPORT PausableTask final
   void Fired() override;
 
  private:
-  // Note: This asserts that the context is currently suspended.
-  PausableTask(ExecutionContext*, WebLocalFrame::PausableTaskCallback);
-
   void Dispose();
 
   WebLocalFrame::PausableTaskCallback callback_;

@@ -45,7 +45,8 @@ PushMessagingBridge* PushMessagingBridge::From(
           service_worker_registration);
 
   if (!bridge) {
-    bridge = new PushMessagingBridge(*service_worker_registration);
+    bridge =
+        MakeGarbageCollected<PushMessagingBridge>(*service_worker_registration);
     Supplement<ServiceWorkerRegistration>::ProvideTo(
         *service_worker_registration, bridge);
   }

@@ -22,9 +22,9 @@ PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
     const String& frame_id,
     const String& frame_name,
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
-  return new PerformanceLongTaskTiming(start_time, end_time, name, frame_src,
-                                       frame_id, frame_name,
-                                       sub_task_attributions);
+  return MakeGarbageCollected<PerformanceLongTaskTiming>(
+      start_time, end_time, name, frame_src, frame_id, frame_name,
+      sub_task_attributions);
 }
 
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(

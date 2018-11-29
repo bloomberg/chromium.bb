@@ -17,11 +17,11 @@ namespace blink {
 
 ResizeObserver* ResizeObserver::Create(Document& document,
                                        V8ResizeObserverCallback* callback) {
-  return new ResizeObserver(callback, document);
+  return MakeGarbageCollected<ResizeObserver>(callback, document);
 }
 
 ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
-  return new ResizeObserver(delegate, document);
+  return MakeGarbageCollected<ResizeObserver>(delegate, document);
 }
 
 ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
@@ -50,7 +50,7 @@ void ResizeObserver::observe(Element* target) {
   if (observer_map.Contains(this))
     return;  // Already registered.
 
-  auto* observation = new ResizeObservation(target, this);
+  auto* observation = MakeGarbageCollected<ResizeObservation>(target, this);
   observations_.insert(observation);
   observer_map.Set(this, observation);
 
@@ -141,7 +141,8 @@ void ResizeObserver::DeliverObservations() {
       content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnit(
           content_rect.Height(), style));
     }
-    auto* entry = new ResizeObserverEntry(observation->Target(), content_rect);
+    auto* entry = MakeGarbageCollected<ResizeObserverEntry>(
+        observation->Target(), content_rect);
     entries.push_back(entry);
   }
 

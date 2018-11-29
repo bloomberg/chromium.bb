@@ -38,7 +38,7 @@ namespace blink {
 PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::Create(
     PlatformSpeechSynthesizerClient* client) {
   PlatformSpeechSynthesizer* synthesizer =
-      new PlatformSpeechSynthesizer(client);
+      MakeGarbageCollected<PlatformSpeechSynthesizer>(client);
 #if defined(OS_ANDROID)
 // On Android devices we don't fetch voices until the object
 // is touched to avoid needlessly binding to TTS service, see

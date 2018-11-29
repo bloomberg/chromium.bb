@@ -64,6 +64,11 @@ class MODULES_EXPORT RTCIceTransport final
       scoped_refptr<base::SingleThreadTaskRunner> host_thread,
       std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
+  explicit RTCIceTransport(
+      ExecutionContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
   ~RTCIceTransport() override;
 
   // Returns true if start() has been called.
@@ -122,12 +127,6 @@ class MODULES_EXPORT RTCIceTransport final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit RTCIceTransport(
-      ExecutionContext* context,
-      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
-
   // IceTransportProxy::Delegate overrides.
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;

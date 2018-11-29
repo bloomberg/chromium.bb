@@ -27,8 +27,12 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(
       ScriptState* script_state,
       ReadableStreamBytesConsumer* consumer) {
-    return (new OnFulfilled(script_state, consumer))->BindToV8Function();
+    return (MakeGarbageCollected<OnFulfilled>(script_state, consumer))
+        ->BindToV8Function();
   }
+
+  OnFulfilled(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
+      : ScriptFunction(script_state), consumer_(consumer) {}
 
   ScriptValue Call(ScriptValue v) override {
     bool done;
@@ -62,9 +66,6 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
   }
 
  private:
-  OnFulfilled(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
-      : ScriptFunction(script_state), consumer_(consumer) {}
-
   Member<ReadableStreamBytesConsumer> consumer_;
 };
 
@@ -73,8 +74,12 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(
       ScriptState* script_state,
       ReadableStreamBytesConsumer* consumer) {
-    return (new OnRejected(script_state, consumer))->BindToV8Function();
+    return (MakeGarbageCollected<OnRejected>(script_state, consumer))
+        ->BindToV8Function();
   }
+
+  OnRejected(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
+      : ScriptFunction(script_state), consumer_(consumer) {}
 
   ScriptValue Call(ScriptValue v) override {
     consumer_->OnRejected();
@@ -87,9 +92,6 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
   }
 
  private:
-  OnRejected(ScriptState* script_state, ReadableStreamBytesConsumer* consumer)
-      : ScriptFunction(script_state), consumer_(consumer) {}
-
   Member<ReadableStreamBytesConsumer> consumer_;
 };
 

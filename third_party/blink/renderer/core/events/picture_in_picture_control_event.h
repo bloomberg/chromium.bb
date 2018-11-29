@@ -22,14 +22,14 @@ class CORE_EXPORT PictureInPictureControlEvent final : public Event {
       const AtomicString&,
       const PictureInPictureControlEventInit*);
 
-  String id() const;
-  void setId(String id);
-
- private:
   PictureInPictureControlEvent(AtomicString const&, String);
   PictureInPictureControlEvent(AtomicString const&,
                                const PictureInPictureControlEventInit*);
 
+  String id() const;
+  void setId(String id);
+
+ private:
   // id_ holds the id of a PictureIncPictureControlEvent, which is used to
   // convey which custom control fired the event by being clicked.
   String id_;

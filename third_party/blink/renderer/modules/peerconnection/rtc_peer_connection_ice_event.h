@@ -36,6 +36,9 @@ class MODULES_EXPORT RTCPeerConnectionIceEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  RTCPeerConnectionIceEvent(RTCIceCandidate*);
+  RTCPeerConnectionIceEvent(const AtomicString& type,
+                            const RTCPeerConnectionIceEventInit*);
   ~RTCPeerConnectionIceEvent() override;
 
   static RTCPeerConnectionIceEvent* Create(RTCIceCandidate*);
@@ -51,11 +54,6 @@ class MODULES_EXPORT RTCPeerConnectionIceEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCPeerConnectionIceEvent(RTCIceCandidate*);
-
-  RTCPeerConnectionIceEvent(const AtomicString& type,
-                            const RTCPeerConnectionIceEventInit*);
-
   Member<RTCIceCandidate> candidate_;
 };
 

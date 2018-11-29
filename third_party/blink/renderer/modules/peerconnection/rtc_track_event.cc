@@ -14,7 +14,7 @@ namespace blink {
 
 RTCTrackEvent* RTCTrackEvent::Create(const AtomicString& type,
                                      const RTCTrackEventInit* eventInitDict) {
-  return new RTCTrackEvent(type, eventInitDict);
+  return MakeGarbageCollected<RTCTrackEvent>(type, eventInitDict);
 }
 
 RTCTrackEvent::RTCTrackEvent(const AtomicString& type,

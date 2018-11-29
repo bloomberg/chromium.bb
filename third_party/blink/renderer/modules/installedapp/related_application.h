@@ -18,9 +18,13 @@ class RelatedApplication final : public ScriptWrappable {
   static RelatedApplication* Create(const String& platform,
                                     const String& url,
                                     const String& id) {
-    return new RelatedApplication(platform, url, id);
+    return MakeGarbageCollected<RelatedApplication>(platform, url, id);
   }
 
+  RelatedApplication(const String& platform,
+                     const String& url,
+                     const String& id)
+      : platform_(platform), url_(url), id_(id) {}
   ~RelatedApplication() override = default;
 
   String platform() const { return platform_; }
@@ -28,11 +32,6 @@ class RelatedApplication final : public ScriptWrappable {
   String id() const { return id_; }
 
  private:
-  RelatedApplication(const String& platform,
-                     const String& url,
-                     const String& id)
-      : platform_(platform), url_(url), id_(id) {}
-
   const String platform_;
   const String url_;
   const String id_;

@@ -68,6 +68,12 @@ class PLATFORM_EXPORT ResourceLoader final
                                 ResourceLoadScheduler*,
                                 Resource*,
                                 uint32_t inflight_keepalive_bytes = 0);
+
+  // Assumes ResourceFetcher and Resource are non-null.
+  ResourceLoader(ResourceFetcher*,
+                 ResourceLoadScheduler*,
+                 Resource*,
+                 uint32_t inflight_keepalive_bytes);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 
@@ -148,12 +154,6 @@ class PLATFORM_EXPORT ResourceLoader final
  private:
   friend class SubresourceIntegrityTest;
   class CodeCacheRequest;
-
-  // Assumes ResourceFetcher and Resource are non-null.
-  ResourceLoader(ResourceFetcher*,
-                 ResourceLoadScheduler*,
-                 Resource*,
-                 uint32_t inflight_keepalive_bytes);
 
   bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);

@@ -23,6 +23,8 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
  public:
   static PaymentManager* Create(ServiceWorkerRegistration*);
 
+  explicit PaymentManager(ServiceWorkerRegistration*);
+
   PaymentInstruments* instruments();
 
   const String& userHint();
@@ -31,8 +33,6 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit PaymentManager(ServiceWorkerRegistration*);
-
   void OnServiceConnectionError();
 
   Member<ServiceWorkerRegistration> registration_;

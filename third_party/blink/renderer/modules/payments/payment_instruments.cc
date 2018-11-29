@@ -248,10 +248,11 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
               mojom::blink::PermissionName::PAYMENT_HANDLER),
           LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                      : nullptr),
-          WTF::Bind(&PaymentInstruments::OnRequestPermission,
-                    WrapPersistent(this), WrapPersistent(resolver),
-                    instrument_key,
-                    WrapPersistent(new PaymentInstrumentParameter(details))));
+          WTF::Bind(
+              &PaymentInstruments::OnRequestPermission, WrapPersistent(this),
+              WrapPersistent(resolver), instrument_key,
+              WrapPersistent(
+                  MakeGarbageCollected<PaymentInstrumentParameter>(details))));
   return resolver->Promise();
 }
 

@@ -292,8 +292,8 @@ ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
                                        Resource* resource,
                                        uint32_t inflight_keepalive_bytes) {
-  return new ResourceLoader(fetcher, scheduler, resource,
-                            inflight_keepalive_bytes);
+  return MakeGarbageCollected<ResourceLoader>(fetcher, scheduler, resource,
+                                              inflight_keepalive_bytes);
 }
 
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,

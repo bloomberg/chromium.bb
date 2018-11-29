@@ -45,7 +45,7 @@
 namespace blink {
 
 InputType* PasswordInputType::Create(HTMLInputElement& element) {
-  return new PasswordInputType(element);
+  return MakeGarbageCollected<PasswordInputType>(element);
 }
 
 void PasswordInputType::CountUsage() {

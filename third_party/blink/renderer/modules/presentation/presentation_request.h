@@ -28,6 +28,7 @@ class MODULES_EXPORT PresentationRequest final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  PresentationRequest(ExecutionContext*, const Vector<KURL>&);
   ~PresentationRequest() override = default;
 
   static PresentationRequest* Create(ExecutionContext*,
@@ -60,8 +61,6 @@ class MODULES_EXPORT PresentationRequest final
                           RegisteredEventListener&) override;
 
  private:
-  PresentationRequest(ExecutionContext*, const Vector<KURL>&);
-
   Member<PresentationAvailabilityProperty> availability_property_;
   Vector<KURL> urls_;
 };

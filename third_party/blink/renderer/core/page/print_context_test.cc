@@ -72,8 +72,9 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
 
   void SetUp() override {
     RenderingTest::SetUp();
-    print_context_ = new PrintContext(GetDocument().GetFrame(),
-                                      /*use_printing_layout=*/true);
+    print_context_ =
+        MakeGarbageCollected<PrintContext>(GetDocument().GetFrame(),
+                                           /*use_printing_layout=*/true);
   }
 
   PrintContext& GetPrintContext() { return *print_context_.Get(); }

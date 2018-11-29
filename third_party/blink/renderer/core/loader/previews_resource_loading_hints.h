@@ -32,6 +32,10 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
       int64_t ukm_source_id,
       const std::vector<WTF::String>& subresource_patterns_to_block);
 
+  PreviewsResourceLoadingHints(
+      ExecutionContext* execution_context,
+      int64_t ukm_source_id,
+      const std::vector<WTF::String>& subresource_patterns_to_block);
   ~PreviewsResourceLoadingHints();
 
   // Returns true if load of resource with URL |resource_url| and priority
@@ -47,11 +51,6 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
   void RecordUKM(ukm::UkmRecorder* ukm_recorder) const;
 
  private:
-  PreviewsResourceLoadingHints(
-      ExecutionContext* execution_context,
-      int64_t ukm_source_id,
-      const std::vector<WTF::String>& subresource_patterns_to_block);
-
   // Reports to console when loading of |resource_url| is blocked.
   void ReportBlockedLoading(const KURL& resource_url) const;
 

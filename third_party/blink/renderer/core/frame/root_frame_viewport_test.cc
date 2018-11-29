@@ -144,8 +144,13 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
  public:
   static RootLayoutViewportStub* Create(const IntSize& viewport_size,
                                         const IntSize& contents_size) {
-    return new RootLayoutViewportStub(viewport_size, contents_size);
+    return MakeGarbageCollected<RootLayoutViewportStub>(viewport_size,
+                                                        contents_size);
   }
+
+  RootLayoutViewportStub(const IntSize& viewport_size,
+                         const IntSize& contents_size)
+      : ScrollableAreaStub(viewport_size, contents_size) {}
 
   ScrollOffset MaximumScrollOffset() const override {
     return ScrollOffset(ContentsSize() - ViewportSize());
@@ -158,10 +163,6 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
   }
 
  private:
-  RootLayoutViewportStub(const IntSize& viewport_size,
-                         const IntSize& contents_size)
-      : ScrollableAreaStub(viewport_size, contents_size) {}
-
   int VisibleWidth() const override { return viewport_size_.Width(); }
   int VisibleHeight() const override { return viewport_size_.Height(); }
 };

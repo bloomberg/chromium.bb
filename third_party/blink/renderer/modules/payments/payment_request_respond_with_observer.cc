@@ -23,7 +23,8 @@ PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
     ExecutionContext* context,
     int event_id,
     WaitUntilObserver* observer) {
-  return new PaymentRequestRespondWithObserver(context, event_id, observer);
+  return MakeGarbageCollected<PaymentRequestRespondWithObserver>(
+      context, event_id, observer);
 }
 
 void PaymentRequestRespondWithObserver::OnResponseRejected(

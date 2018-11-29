@@ -16,12 +16,12 @@ namespace blink {
 
 PaymentManager* PaymentManager::Create(
     ServiceWorkerRegistration* registration) {
-  return new PaymentManager(registration);
+  return MakeGarbageCollected<PaymentManager>(registration);
 }
 
 PaymentInstruments* PaymentManager::instruments() {
   if (!instruments_)
-    instruments_ = new PaymentInstruments(manager_);
+    instruments_ = MakeGarbageCollected<PaymentInstruments>(manager_);
   return instruments_;
 }
 

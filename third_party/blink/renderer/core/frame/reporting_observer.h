@@ -29,6 +29,10 @@ class CORE_EXPORT ReportingObserver final
                                    V8ReportingObserverCallback*,
                                    ReportingObserverOptions*);
 
+  explicit ReportingObserver(ExecutionContext*,
+                             V8ReportingObserverCallback*,
+                             ReportingObserverOptions*);
+
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
@@ -56,10 +60,6 @@ class CORE_EXPORT ReportingObserver final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ReportingObserver(ExecutionContext*,
-                             V8ReportingObserverCallback*,
-                             ReportingObserverOptions*);
-
   Member<ExecutionContext> execution_context_;
   TraceWrapperMember<V8ReportingObserverCallback> callback_;
   Member<ReportingObserverOptions> options_;

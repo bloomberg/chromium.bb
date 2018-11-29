@@ -557,7 +557,7 @@ void FetchManager::Loader::DidReceiveResponse(
   if (response.UrlListViaServiceWorker().IsEmpty()) {
     // Note: |urlListViaServiceWorker| is empty, unless the response came from a
     // service worker, in which case it will only be empty if it was created
-    // through new Response().
+    // through MakeGarbageCollected<Response>().
     response_data->SetURLList(url_list_);
   } else {
     DCHECK(response.WasFetchedViaServiceWorker());

@@ -71,7 +71,7 @@ static Decimal EnsureMaximum(const Decimal& proposed_value,
 }
 
 InputType* RangeInputType::Create(HTMLInputElement& element) {
-  return new RangeInputType(element);
+  return MakeGarbageCollected<RangeInputType>(element);
 }
 
 RangeInputType::RangeInputType(HTMLInputElement& element)

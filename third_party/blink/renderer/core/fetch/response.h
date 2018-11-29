@@ -55,6 +55,10 @@ class CORE_EXPORT Response final : public Body {
                             unsigned short status,
                             ExceptionState&);
 
+  explicit Response(ExecutionContext*);
+  Response(ExecutionContext*, FetchResponseData*);
+  Response(ExecutionContext*, FetchResponseData*, Headers*);
+
   const FetchResponseData* GetResponse() const { return response_; }
 
   // From Response.idl:
@@ -108,10 +112,6 @@ class CORE_EXPORT Response final : public Body {
   bool IsBodyUsedForDCheck(ExceptionState&) override;
 
  private:
-  explicit Response(ExecutionContext*);
-  Response(ExecutionContext*, FetchResponseData*);
-  Response(ExecutionContext*, FetchResponseData*, Headers*);
-
   const TraceWrapperMember<FetchResponseData> response_;
   const Member<Headers> headers_;
   DISALLOW_COPY_AND_ASSIGN(Response);

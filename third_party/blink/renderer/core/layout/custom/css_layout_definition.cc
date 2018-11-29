@@ -127,7 +127,7 @@ bool CSSLayoutDefinition::Instance::Layout(
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.
   StylePropertyMapReadOnly* style_map =
-      new PrepopulatedComputedStylePropertyMap(
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_custom.GetDocument(), layout_custom.StyleRef(),
           layout_custom.GetNode(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);

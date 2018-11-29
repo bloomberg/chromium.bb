@@ -17,8 +17,8 @@ RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::Create(
     ScriptPromiseResolver* resolver,
     const char* interface_name,
     const char* property_name) {
-  return new RTCVoidRequestPromiseImpl(std::move(operation), requester,
-                                       resolver, interface_name, property_name);
+  return MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
+      std::move(operation), requester, resolver, interface_name, property_name);
 }
 
 RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(

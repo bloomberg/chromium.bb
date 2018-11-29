@@ -79,7 +79,8 @@ using testing::StrictMock;
 
 TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   V8TestingScope scope;
-  auto* receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver =
+      MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -95,7 +96,8 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
 
 TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   V8TestingScope scope;
-  auto* receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver =
+      MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -116,7 +118,8 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   V8TestingScope scope;
-  auto* receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver =
+      MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -147,7 +150,8 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   V8TestingScope scope;
-  auto* receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver =
+      MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();

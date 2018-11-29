@@ -28,9 +28,10 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
 
  public:
   static ProgrammaticScrollAnimator* Create(ScrollableArea* scrollable_area) {
-    return new ProgrammaticScrollAnimator(scrollable_area);
+    return MakeGarbageCollected<ProgrammaticScrollAnimator>(scrollable_area);
   }
 
+  explicit ProgrammaticScrollAnimator(ScrollableArea*);
   ~ProgrammaticScrollAnimator() override;
 
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&,
@@ -54,8 +55,6 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ProgrammaticScrollAnimator(ScrollableArea*);
-
   void NotifyOffsetChanged(const ScrollOffset&);
   void AnimationFinished();
 

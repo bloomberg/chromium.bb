@@ -617,13 +617,13 @@ Request* Request::Create(ScriptState* script_state,
 }
 
 Request* Request::Create(ScriptState* script_state, FetchRequestData* request) {
-  return new Request(script_state, request);
+  return MakeGarbageCollected<Request>(script_state, request);
 }
 
 Request* Request::Create(ScriptState* script_state,
                          const WebServiceWorkerRequest& web_request) {
   FetchRequestData* data = FetchRequestData::Create(script_state, web_request);
-  return new Request(script_state, data);
+  return MakeGarbageCollected<Request>(script_state, data);
 }
 
 Request* Request::Create(
@@ -631,7 +631,7 @@ Request* Request::Create(
     const mojom::blink::FetchAPIRequest& fetch_api_request) {
   FetchRequestData* data =
       FetchRequestData::Create(script_state, fetch_api_request);
-  return new Request(script_state, data);
+  return MakeGarbageCollected<Request>(script_state, data);
 }
 
 bool Request::ParseCredentialsMode(
@@ -875,7 +875,7 @@ Request* Request::clone(ScriptState* script_state,
   headers->SetGuard(headers_->GetGuard());
   auto* signal = new AbortSignal(ExecutionContext::From(script_state));
   signal->Follow(signal_);
-  return new Request(script_state, request, headers, signal);
+  return MakeGarbageCollected<Request>(script_state, request, headers, signal);
 }
 
 FetchRequestData* Request::PassRequestData(ScriptState* script_state,

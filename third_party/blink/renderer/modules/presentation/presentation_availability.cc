@@ -23,8 +23,8 @@ PresentationAvailability* PresentationAvailability::Take(
     const WTF::Vector<KURL>& urls,
     bool value) {
   PresentationAvailability* presentation_availability =
-      new PresentationAvailability(resolver->GetExecutionContext(), urls,
-                                   value);
+      MakeGarbageCollected<PresentationAvailability>(
+          resolver->GetExecutionContext(), urls, value);
   presentation_availability->PauseIfNeeded();
   presentation_availability->UpdateListening();
   return presentation_availability;

@@ -31,6 +31,11 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                                      const PaymentRequestEventInit*,
                                      RespondWithObserver*,
                                      WaitUntilObserver*);
+
+  PaymentRequestEvent(const AtomicString& type,
+                      const PaymentRequestEventInit*,
+                      RespondWithObserver*,
+                      WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -49,11 +54,6 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  PaymentRequestEvent(const AtomicString& type,
-                      const PaymentRequestEventInit*,
-                      RespondWithObserver*,
-                      WaitUntilObserver*);
-
   String top_origin_;
   String payment_request_origin_;
   String payment_request_id_;

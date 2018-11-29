@@ -48,6 +48,9 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   static PlatformSpeechSynthesisUtterance* Create(
       PlatformSpeechSynthesisUtteranceClient*);
 
+  explicit PlatformSpeechSynthesisUtterance(
+      PlatformSpeechSynthesisUtteranceClient*);
+
   const String& GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
 
@@ -77,9 +80,6 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   void Trace(blink::Visitor*);
 
  private:
-  explicit PlatformSpeechSynthesisUtterance(
-      PlatformSpeechSynthesisUtteranceClient*);
-
   Member<PlatformSpeechSynthesisUtteranceClient> client_;
   String text_;
   String lang_;

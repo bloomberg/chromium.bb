@@ -38,6 +38,8 @@ class CORE_EXPORT PseudoElement : public Element {
  public:
   static PseudoElement* Create(Element* parent, PseudoId);
 
+  PseudoElement(Element*, PseudoId);
+
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   void AttachLayoutTree(AttachContext&) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
@@ -57,9 +59,6 @@ class CORE_EXPORT PseudoElement : public Element {
   virtual Node* InnerNodeForHitTesting() const;
 
   virtual void Dispose();
-
- protected:
-  PseudoElement(Element*, PseudoId);
 
  private:
   PseudoId pseudo_id_;

@@ -43,7 +43,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
   Node* node = PageNode();
 
   PrepopulatedComputedStylePropertyMap* map =
-      new PrepopulatedComputedStylePropertyMap(
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           GetDocument(), node->ComputedStyleRef(), node, native_properties,
           empty_custom_properties);
 
@@ -79,7 +79,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
   Node* node = PageNode();
 
   PrepopulatedComputedStylePropertyMap* map =
-      new PrepopulatedComputedStylePropertyMap(
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           GetDocument(), node->ComputedStyleRef(), node,
           empty_native_properties, custom_properties);
 

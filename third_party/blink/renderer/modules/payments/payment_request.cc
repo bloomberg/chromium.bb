@@ -778,8 +778,9 @@ PaymentRequest* PaymentRequest::Create(
     const HeapVector<Member<PaymentMethodData>>& method_data,
     const PaymentDetailsInit* details,
     ExceptionState& exception_state) {
-  return new PaymentRequest(execution_context, method_data, details,
-                            PaymentOptions::Create(), exception_state);
+  return MakeGarbageCollected<PaymentRequest>(execution_context, method_data,
+                                              details, PaymentOptions::Create(),
+                                              exception_state);
 }
 
 PaymentRequest* PaymentRequest::Create(
@@ -788,8 +789,8 @@ PaymentRequest* PaymentRequest::Create(
     const PaymentDetailsInit* details,
     const PaymentOptions* options,
     ExceptionState& exception_state) {
-  return new PaymentRequest(execution_context, method_data, details, options,
-                            exception_state);
+  return MakeGarbageCollected<PaymentRequest>(
+      execution_context, method_data, details, options, exception_state);
 }
 
 PaymentRequest::~PaymentRequest() = default;
@@ -1152,7 +1153,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
     return;
   }
 
-  shipping_address_ = new PaymentAddress(std::move(address));
+  shipping_address_ = MakeGarbageCollected<PaymentAddress>(std::move(address));
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingaddresschange);
@@ -1222,8 +1223,8 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
       return;
     }
 
-    shipping_address_ =
-        new PaymentAddress(std::move(response->shipping_address));
+    shipping_address_ = MakeGarbageCollected<PaymentAddress>(
+        std::move(response->shipping_address));
     shipping_option_ = response->shipping_option;
   } else {
     if (response->shipping_address || !response->shipping_option.IsNull()) {
@@ -1258,9 +1259,9 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     // connection to display a success or failure message to the user.
     retry_resolver_.Clear();
   } else if (accept_resolver_) {
-    payment_response_ = new PaymentResponse(accept_resolver_->GetScriptState(),
-                                            std::move(response),
-                                            shipping_address_.Get(), this, id_);
+    payment_response_ = MakeGarbageCollected<PaymentResponse>(
+        accept_resolver_->GetScriptState(), std::move(response),
+        shipping_address_.Get(), this, id_);
     accept_resolver_->Resolve(payment_response_);
 
     // Do not close the mojo connection here. The merchant website should call

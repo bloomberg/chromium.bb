@@ -246,7 +246,8 @@ Response* Response::Create(ScriptState* script_state,
   // "3. Let |r| be a new Response object, associated with a new response.
   // "4. Set |r|'s headers to a new Headers object whose list is
   // |r|'s response's header list, and guard is "response" "
-  Response* r = new Response(ExecutionContext::From(script_state));
+  Response* r =
+      MakeGarbageCollected<Response>(ExecutionContext::From(script_state));
   // "5. Set |r|'s response's status to |init|'s status member."
   r->response_->SetStatus(init->status());
 
@@ -319,22 +320,22 @@ Response* Response::Create(ScriptState* script_state,
 
 Response* Response::Create(ExecutionContext* context,
                            FetchResponseData* response) {
-  return new Response(context, response);
+  return MakeGarbageCollected<Response>(context, response);
 }
 
 Response* Response::Create(ScriptState* script_state,
                            mojom::blink::FetchAPIResponse& response) {
   auto* fetch_response_data =
       CreateFetchResponseDataFromFetchAPIResponse(script_state, response);
-  return new Response(ExecutionContext::From(script_state),
-                      fetch_response_data);
+  return MakeGarbageCollected<Response>(ExecutionContext::From(script_state),
+                                        fetch_response_data);
 }
 
 Response* Response::error(ScriptState* script_state) {
   FetchResponseData* response_data =
       FetchResponseData::CreateNetworkErrorResponse();
-  Response* r =
-      new Response(ExecutionContext::From(script_state), response_data);
+  Response* r = MakeGarbageCollected<Response>(
+      ExecutionContext::From(script_state), response_data);
   r->headers_->SetGuard(Headers::kImmutableGuard);
   return r;
 }
@@ -354,7 +355,8 @@ Response* Response::redirect(ScriptState* script_state,
     return nullptr;
   }
 
-  Response* r = new Response(ExecutionContext::From(script_state));
+  Response* r =
+      MakeGarbageCollected<Response>(ExecutionContext::From(script_state));
   r->headers_->SetGuard(Headers::kImmutableGuard);
   r->response_->SetStatus(status);
   r->response_->HeaderList()->Set("Location", parsed_url);
@@ -438,7 +440,8 @@ Response* Response::clone(ScriptState* script_state,
     return nullptr;
   Headers* headers = Headers::Create(response->HeaderList());
   headers->SetGuard(headers_->GetGuard());
-  return new Response(GetExecutionContext(), response, headers);
+  return MakeGarbageCollected<Response>(GetExecutionContext(), response,
+                                        headers);
 }
 
 bool Response::HasPendingActivity() const {

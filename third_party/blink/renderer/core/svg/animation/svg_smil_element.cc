@@ -48,21 +48,20 @@ namespace blink {
 class RepeatEvent final : public Event {
  public:
   static RepeatEvent* Create(const AtomicString& type, int repeat) {
-    return new RepeatEvent(type, Bubbles::kNo, Cancelable::kNo, repeat);
+    return MakeGarbageCollected<RepeatEvent>(type, Bubbles::kNo,
+                                             Cancelable::kNo, repeat);
   }
 
-  ~RepeatEvent() override = default;
-
-  int Repeat() const { return repeat_; }
-
-  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
-
- protected:
   RepeatEvent(const AtomicString& type,
               Bubbles bubbles,
               Cancelable cancelable,
               int repeat = -1)
       : Event(type, bubbles, cancelable), repeat_(repeat) {}
+  ~RepeatEvent() override = default;
+
+  int Repeat() const { return repeat_; }
+
+  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
   int repeat_;

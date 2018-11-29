@@ -47,7 +47,7 @@ const char PaintTiming::kSupplementName[] = "PaintTiming";
 PaintTiming& PaintTiming::From(Document& document) {
   PaintTiming* timing = Supplement<Document>::From<PaintTiming>(document);
   if (!timing) {
-    timing = new PaintTiming(document);
+    timing = MakeGarbageCollected<PaintTiming>(document);
     ProvideTo(document, timing);
   }
   return *timing;

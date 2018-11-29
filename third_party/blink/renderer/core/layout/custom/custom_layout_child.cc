@@ -15,7 +15,7 @@ namespace blink {
 CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
                                      LayoutBox* box)
     : box_(box),
-      style_map_(new PrepopulatedComputedStylePropertyMap(
+      style_map_(MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           box->GetDocument(),
           box->StyleRef(),
           box->GetNode(),

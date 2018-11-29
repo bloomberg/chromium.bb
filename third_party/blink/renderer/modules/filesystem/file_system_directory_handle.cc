@@ -28,7 +28,7 @@ ScriptPromise FileSystemDirectoryHandle::getFile(
   filesystem()->GetFile(
       this, name, flags,
       MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 
@@ -43,7 +43,7 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(
   filesystem()->GetDirectory(
       this, name, flags,
       MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 
@@ -60,7 +60,7 @@ ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
       context, mojom::blink::FileSystemType::kTemporary, /*size=*/0,
       FileSystemCallbacks::Create(
           new FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl(resolver),
-          new PromiseErrorCallback(resolver), context,
+          MakeGarbageCollected<PromiseErrorCallback>(resolver), context,
           mojom::blink::FileSystemType::kTemporary),
       LocalFileSystem::kAsynchronous);
   return result;
@@ -96,7 +96,7 @@ ScriptPromise FileSystemDirectoryHandle::removeRecursively(
   ScriptPromise result = resolver->Promise();
   filesystem()->RemoveRecursively(
       this, new VoidCallbacks::OnDidSucceedPromiseImpl(resolver),
-      new PromiseErrorCallback(resolver));
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 

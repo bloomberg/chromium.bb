@@ -46,7 +46,7 @@ HTMLInputElement* NextInputElement(const HTMLInputElement& element,
 }  // namespace
 
 InputType* RadioInputType::Create(HTMLInputElement& element) {
-  return new RadioInputType(element);
+  return MakeGarbageCollected<RadioInputType>(element);
 }
 
 const AtomicString& RadioInputType::FormControlType() const {

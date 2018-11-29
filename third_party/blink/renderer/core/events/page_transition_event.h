@@ -35,16 +35,21 @@ class PageTransitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PageTransitionEvent* Create() { return new PageTransitionEvent; }
+  static PageTransitionEvent* Create() {
+    return MakeGarbageCollected<PageTransitionEvent>();
+  }
   static PageTransitionEvent* Create(const AtomicString& type, bool persisted) {
-    return new PageTransitionEvent(type, persisted);
+    return MakeGarbageCollected<PageTransitionEvent>(type, persisted);
   }
   static PageTransitionEvent* Create(
       const AtomicString& type,
       const PageTransitionEventInit* initializer) {
-    return new PageTransitionEvent(type, initializer);
+    return MakeGarbageCollected<PageTransitionEvent>(type, initializer);
   }
 
+  PageTransitionEvent();
+  PageTransitionEvent(const AtomicString& type, bool persisted);
+  PageTransitionEvent(const AtomicString&, const PageTransitionEventInit*);
   ~PageTransitionEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -54,10 +59,6 @@ class PageTransitionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  PageTransitionEvent();
-  PageTransitionEvent(const AtomicString& type, bool persisted);
-  PageTransitionEvent(const AtomicString&, const PageTransitionEventInit*);
-
   bool persisted_;
 };
 

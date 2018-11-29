@@ -20,7 +20,7 @@ Presentation::Presentation(LocalFrame* frame) : ContextClient(frame) {}
 // static
 Presentation* Presentation::Create(LocalFrame* frame) {
   DCHECK(frame);
-  Presentation* presentation = new Presentation(frame);
+  Presentation* presentation = MakeGarbageCollected<Presentation>(frame);
   PresentationController* controller = PresentationController::From(*frame);
   DCHECK(controller);
   controller->SetPresentation(presentation);
@@ -59,7 +59,7 @@ PresentationReceiver* Presentation::receiver() {
   }
 
   if (!receiver_)
-    receiver_ = new PresentationReceiver(GetFrame());
+    receiver_ = MakeGarbageCollected<PresentationReceiver>(GetFrame());
 
   return receiver_;
 }

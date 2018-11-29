@@ -59,7 +59,7 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
   HeapVector<Member<Command>>* third_commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
   third_commands->push_back(MakeGarbageCollected<Log>('c', log));
-  third_commands->push_back(new Recurse(queue));
+  third_commands->push_back(MakeGarbageCollected<Recurse>(queue));
   CustomElementReaction* third =
       MakeGarbageCollected<TestReaction>(third_commands);  // "Empty" recursion
 
@@ -74,7 +74,7 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
       MakeGarbageCollected<HeapVector<Member<Command>>>();
   first_commands->push_back(MakeGarbageCollected<Log>('a', log));
   first_commands->push_back(MakeGarbageCollected<Enqueue>(queue, second));
-  first_commands->push_back(new Recurse(queue));
+  first_commands->push_back(MakeGarbageCollected<Recurse>(queue));
   CustomElementReaction* first = MakeGarbageCollected<TestReaction>(
       first_commands);  // Non-empty recursion
 

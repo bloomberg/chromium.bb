@@ -97,7 +97,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
       RoundedIntSize(container_size), color_params, context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadOnly* style_map =
-      new PrepopulatedComputedStylePropertyMap(
+      MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
           layout_object.GetNode(), native_invalidation_properties_,
           custom_invalidation_properties_);

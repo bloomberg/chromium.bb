@@ -210,7 +210,7 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
 
   Persistent<DummyClient> dummy_client = MakeGarbageCollected<DummyClient>();
   Persistent<RemovingClient> removing_client =
-      new RemovingClient(dummy_client.Get());
+      MakeGarbageCollected<RemovingClient>(dummy_client.Get());
   raw->AddClient(dummy_client, platform_->test_task_runner().get());
   raw->AddClient(removing_client, platform_->test_task_runner().get());
   platform_->RunUntilIdle();

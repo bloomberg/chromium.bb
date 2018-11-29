@@ -288,8 +288,8 @@ void WebView::ResetVisitedLinkState(bool invalidate_visited_link_hashes) {
 void WebViewImpl::SetPrerendererClient(
     WebPrerendererClient* prerenderer_client) {
   DCHECK(page_);
-  ProvidePrerendererClientTo(*page_,
-                             new PrerendererClient(*page_, prerenderer_client));
+  ProvidePrerendererClientTo(*page_, MakeGarbageCollected<PrerendererClient>(
+                                         *page_, prerenderer_client));
 }
 
 WebViewImpl::WebViewImpl(WebViewClient* client,
@@ -355,7 +355,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   AllInstances().insert(this);
 
   page_importance_signals_.SetObserver(client);
-  resize_viewport_anchor_ = new ResizeViewportAnchor(*page_);
+  resize_viewport_anchor_ = MakeGarbageCollected<ResizeViewportAnchor>(*page_);
 }
 
 WebViewImpl::~WebViewImpl() {

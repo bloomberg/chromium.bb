@@ -50,8 +50,10 @@ class CORE_EXPORT PerformanceNavigation final : public ScriptWrappable,
 
  public:
   static PerformanceNavigation* Create(LocalFrame* frame) {
-    return new PerformanceNavigation(frame);
+    return MakeGarbageCollected<PerformanceNavigation>(frame);
   }
+
+  explicit PerformanceNavigation(LocalFrame*);
 
   enum PerformanceNavigationType {
     kTypeNavigate,
@@ -66,9 +68,6 @@ class CORE_EXPORT PerformanceNavigation final : public ScriptWrappable,
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit PerformanceNavigation(LocalFrame*);
 };
 
 }  // namespace blink

@@ -18,6 +18,10 @@ class RTCVoidRequestScriptPromiseResolverImpl : public RTCVoidRequest {
       ScriptPromiseResolver*,
       const char* interface_name,
       const char* property_name);
+
+  RTCVoidRequestScriptPromiseResolverImpl(ScriptPromiseResolver*,
+                                          const char* interface_name,
+                                          const char* property_name);
   ~RTCVoidRequestScriptPromiseResolverImpl() override;
 
   // RTCVoidRequest
@@ -27,10 +31,6 @@ class RTCVoidRequestScriptPromiseResolverImpl : public RTCVoidRequest {
   void Trace(blink::Visitor*) override;
 
  protected:
-  RTCVoidRequestScriptPromiseResolverImpl(ScriptPromiseResolver*,
-                                          const char* interface_name,
-                                          const char* property_name);
-
   Member<ScriptPromiseResolver> resolver_;
   const char* interface_name_;
   const char* property_name_;

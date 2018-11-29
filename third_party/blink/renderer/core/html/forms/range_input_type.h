@@ -44,11 +44,13 @@ class RangeInputType final : public InputType, public InputTypeView {
 
  public:
   static InputType* Create(HTMLInputElement&);
+
+  RangeInputType(HTMLInputElement&);
+
   void Trace(blink::Visitor*) override;
   using InputType::GetElement;
 
  private:
-  RangeInputType(HTMLInputElement&);
   InputTypeView* CreateView() override;
   ValueMode GetValueMode() const override;
   void CountUsage() override;

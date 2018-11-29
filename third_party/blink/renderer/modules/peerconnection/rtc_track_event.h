@@ -29,6 +29,8 @@ class RTCTrackEvent final : public Event {
                 MediaStreamTrack*,
                 const HeapVector<Member<MediaStream>>&,
                 RTCRtpTransceiver*);
+  RTCTrackEvent(const AtomicString& type,
+                const RTCTrackEventInit* eventInitDict);
 
   RTCRtpReceiver* receiver() const;
   MediaStreamTrack* track() const;
@@ -38,9 +40,6 @@ class RTCTrackEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCTrackEvent(const AtomicString& type,
-                const RTCTrackEventInit* eventInitDict);
-
   Member<RTCRtpReceiver> receiver_;
   Member<MediaStreamTrack> track_;
   HeapVector<Member<MediaStream>> streams_;

@@ -95,7 +95,8 @@ PresentationRequest* PresentationRequest::Create(
     return nullptr;
   }
 
-  return new PresentationRequest(execution_context, parsed_urls);
+  return MakeGarbageCollected<PresentationRequest>(execution_context,
+                                                   parsed_urls);
 }
 
 const AtomicString& PresentationRequest::InterfaceName() const {

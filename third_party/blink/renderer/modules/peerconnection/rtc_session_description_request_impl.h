@@ -59,6 +59,12 @@ class RTCSessionDescriptionRequestImpl final
       RTCPeerConnection*,
       V8RTCSessionDescriptionCallback*,
       V8RTCPeerConnectionErrorCallback*);
+
+  RTCSessionDescriptionRequestImpl(ExecutionContext*,
+                                   RTCCreateSessionDescriptionOperation,
+                                   RTCPeerConnection*,
+                                   V8RTCSessionDescriptionCallback*,
+                                   V8RTCPeerConnectionErrorCallback*);
   ~RTCSessionDescriptionRequestImpl() override;
 
   void RequestSucceeded(const WebRTCSessionDescription&) override;
@@ -70,12 +76,6 @@ class RTCSessionDescriptionRequestImpl final
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCSessionDescriptionRequestImpl(ExecutionContext*,
-                                   RTCCreateSessionDescriptionOperation,
-                                   RTCPeerConnection*,
-                                   V8RTCSessionDescriptionCallback*,
-                                   V8RTCPeerConnectionErrorCallback*);
-
   void Clear();
 
   RTCCreateSessionDescriptionOperation operation_;

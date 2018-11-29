@@ -45,8 +45,8 @@ RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::Create(
     RTCPeerConnection* requester,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  return new RTCSessionDescriptionRequestImpl(context, operation, requester,
-                                              success_callback, error_callback);
+  return MakeGarbageCollected<RTCSessionDescriptionRequestImpl>(
+      context, operation, requester, success_callback, error_callback);
 }
 
 RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(

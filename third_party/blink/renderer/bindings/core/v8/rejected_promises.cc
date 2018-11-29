@@ -39,6 +39,22 @@ class RejectedPromises::Message final {
                                         sanitize_script_errors));
   }
 
+  Message(ScriptState* script_state,
+          v8::Local<v8::Promise> promise,
+          v8::Local<v8::Value> exception,
+          const String& error_message,
+          std::unique_ptr<SourceLocation> location,
+          SanitizeScriptErrors sanitize_script_errors)
+      : script_state_(script_state),
+        promise_(script_state->GetIsolate(), promise),
+        exception_(script_state->GetIsolate(), exception),
+        error_message_(error_message),
+        location_(std::move(location)),
+        promise_rejection_id_(0),
+        collected_(false),
+        should_log_to_console_(true),
+        sanitize_script_errors_(sanitize_script_errors) {}
+
   bool IsCollected() { return collected_ || !script_state_->ContextIsValid(); }
 
   bool HasPromise(v8::Local<v8::Value> promise) {
@@ -152,22 +168,6 @@ class RejectedPromises::Message final {
   }
 
  private:
-  Message(ScriptState* script_state,
-          v8::Local<v8::Promise> promise,
-          v8::Local<v8::Value> exception,
-          const String& error_message,
-          std::unique_ptr<SourceLocation> location,
-          SanitizeScriptErrors sanitize_script_errors)
-      : script_state_(script_state),
-        promise_(script_state->GetIsolate(), promise),
-        exception_(script_state->GetIsolate(), exception),
-        error_message_(error_message),
-        location_(std::move(location)),
-        promise_rejection_id_(0),
-        collected_(false),
-        should_log_to_console_(true),
-        sanitize_script_errors_(sanitize_script_errors) {}
-
   static void DidCollectPromise(const v8::WeakCallbackInfo<Message>& data) {
     data.GetParameter()->collected_ = true;
     data.GetParameter()->promise_.Clear();

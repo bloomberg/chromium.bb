@@ -46,6 +46,9 @@ class PagePopupController final : public ScriptWrappable {
 
  public:
   static PagePopupController* Create(PagePopup&, PagePopupClient*);
+
+  PagePopupController(PagePopup&, PagePopupClient*);
+
   void setValueAndClosePopup(int num_value, const String& string_value);
   void setValue(const String&);
   void closePopup();
@@ -60,8 +63,6 @@ class PagePopupController final : public ScriptWrappable {
   void setWindowRect(int x, int y, int width, int height);
 
  private:
-  PagePopupController(PagePopup&, PagePopupClient*);
-
   PagePopup& popup_;
   PagePopupClient* popup_client_;
 };

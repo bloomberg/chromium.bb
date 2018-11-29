@@ -17,12 +17,17 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit* initializer,
                               TimeTicks platform_time_stamp) {
-    return new PointerEvent(type, initializer, platform_time_stamp);
+    return MakeGarbageCollected<PointerEvent>(type, initializer,
+                                              platform_time_stamp);
   }
   static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit* initializer) {
     return PointerEvent::Create(type, initializer, CurrentTimeTicks());
   }
+
+  PointerEvent(const AtomicString&,
+               const PointerEventInit*,
+               TimeTicks platform_time_stamp);
 
   int32_t pointerId() const { return pointer_id_; }
   double width() const { return width_; }
@@ -65,10 +70,6 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  PointerEvent(const AtomicString&,
-               const PointerEventInit*,
-               TimeTicks platform_time_stamp);
-
   int32_t pointer_id_;
   double width_;
   double height_;

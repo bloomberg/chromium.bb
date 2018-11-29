@@ -124,7 +124,7 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 }
 
 Page* Page::Create(PageClients& page_clients) {
-  Page* page = new Page(page_clients);
+  Page* page = MakeGarbageCollected<Page>(page_clients);
   page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
   return page;
 }

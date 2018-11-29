@@ -99,8 +99,9 @@ RTCQuicTransport* RTCQuicTransport::Create(
       return nullptr;
     }
   }
-  return new RTCQuicTransport(context, transport, certificates, exception_state,
-                              std::move(p2p_quic_transport_factory));
+  return MakeGarbageCollected<RTCQuicTransport>(
+      context, transport, certificates, exception_state,
+      std::move(p2p_quic_transport_factory));
 }
 
 RTCQuicTransport::RTCQuicTransport(

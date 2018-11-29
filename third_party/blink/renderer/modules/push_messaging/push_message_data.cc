@@ -37,14 +37,15 @@ PushMessageData* PushMessageData::Create(
             ? message_data.GetAsArrayBufferView().View()->buffer()
             : message_data.GetAsArrayBuffer();
 
-    return new PushMessageData(static_cast<const char*>(buffer->Data()),
-                               buffer->ByteLength());
+    return MakeGarbageCollected<PushMessageData>(
+        static_cast<const char*>(buffer->Data()), buffer->ByteLength());
   }
 
   if (message_data.IsUSVString()) {
     CString encoded_string = UTF8Encoding().Encode(
         message_data.GetAsUSVString(), WTF::kNoUnencodables);
-    return new PushMessageData(encoded_string.data(), encoded_string.length());
+    return MakeGarbageCollected<PushMessageData>(encoded_string.data(),
+                                                 encoded_string.length());
   }
 
   DCHECK(message_data.IsNull());

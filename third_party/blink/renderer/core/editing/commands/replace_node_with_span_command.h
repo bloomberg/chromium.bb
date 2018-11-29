@@ -43,16 +43,16 @@ class HTMLSpanElement;
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
  public:
   static ReplaceNodeWithSpanCommand* Create(HTMLElement* element) {
-    return new ReplaceNodeWithSpanCommand(element);
+    return MakeGarbageCollected<ReplaceNodeWithSpanCommand>(element);
   }
+
+  explicit ReplaceNodeWithSpanCommand(HTMLElement*);
 
   HTMLSpanElement* SpanElement() { return span_element_.Get(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ReplaceNodeWithSpanCommand(HTMLElement*);
-
   void DoApply(EditingState*) override;
   void DoUnapply() override;
 

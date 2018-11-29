@@ -35,6 +35,7 @@ class CORE_EXPORT PaintTiming final
  public:
   static const char kSupplementName[];
 
+  explicit PaintTiming(Document&);
   virtual ~PaintTiming() = default;
 
   static PaintTiming& From(Document&);
@@ -110,7 +111,6 @@ class CORE_EXPORT PaintTiming final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit PaintTiming(Document&);
   LocalFrame* GetFrame() const;
   void NotifyPaintTimingChanged();
 

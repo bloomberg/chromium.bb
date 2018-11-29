@@ -17,11 +17,11 @@ ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create(
     ExecutionContext* context) {
   DCHECK(context);
   DCHECK(context->IsContextThread());
-  return new ParentExecutionContextTaskRunners(context);
+  return MakeGarbageCollected<ParentExecutionContextTaskRunners>(context);
 }
 
 ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create() {
-  return new ParentExecutionContextTaskRunners(nullptr);
+  return MakeGarbageCollected<ParentExecutionContextTaskRunners>(nullptr);
 }
 
 ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(

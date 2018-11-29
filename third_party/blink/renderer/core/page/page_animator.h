@@ -18,6 +18,9 @@ class Page;
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
  public:
   static PageAnimator* Create(Page&);
+
+  explicit PageAnimator(Page&);
+
   void Trace(blink::Visitor*);
   void ScheduleVisualUpdate(LocalFrame*);
   void ServiceScriptedAnimations(
@@ -40,8 +43,6 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   AnimationClock& Clock() { return animation_clock_; }
 
  private:
-  explicit PageAnimator(Page&);
-
   Member<Page> page_;
   bool servicing_animations_;
   bool updating_layout_and_style_for_painting_;

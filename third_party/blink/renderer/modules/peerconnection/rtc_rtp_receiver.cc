@@ -72,7 +72,8 @@ void RTCRtpReceiver::UpdateSourcesIfNeeded() {
     DCHECK_EQ(web_contributing_source->SourceType(),
               WebRTCRtpContributingSourceType::CSRC);
     RTCRtpContributingSource* contributing_source =
-        new RTCRtpContributingSource(this, *web_contributing_source);
+        MakeGarbageCollected<RTCRtpContributingSource>(
+            this, *web_contributing_source);
     contributing_sources_.push_back(contributing_source);
   }
   // Clear the flag and schedule a microtask to reset it to true. This makes

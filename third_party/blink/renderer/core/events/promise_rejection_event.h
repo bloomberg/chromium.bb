@@ -25,8 +25,13 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
       ScriptState* state,
       const AtomicString& type,
       const PromiseRejectionEventInit* initializer) {
-    return new PromiseRejectionEvent(state, type, initializer);
+    return MakeGarbageCollected<PromiseRejectionEvent>(state, type,
+                                                       initializer);
   }
+
+  PromiseRejectionEvent(ScriptState*,
+                        const AtomicString&,
+                        const PromiseRejectionEventInit*);
 
   ScriptValue reason(ScriptState*) const;
   ScriptPromise promise(ScriptState*) const;
@@ -40,9 +45,6 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  PromiseRejectionEvent(ScriptState*,
-                        const AtomicString&,
-                        const PromiseRejectionEventInit*);
   ~PromiseRejectionEvent() override;
   void Dispose();
 

@@ -38,6 +38,8 @@ class MODULES_EXPORT PresentationAvailability final
   static PresentationAvailability* Take(PresentationAvailabilityProperty*,
                                         const WTF::Vector<KURL>&,
                                         bool);
+
+  PresentationAvailability(ExecutionContext*, const WTF::Vector<KURL>&, bool);
   ~PresentationAvailability() override;
 
   // EventTarget implementation.
@@ -80,8 +82,6 @@ class MODULES_EXPORT PresentationAvailability final
     kSuspended,
     kInactive,
   };
-
-  PresentationAvailability(ExecutionContext*, const WTF::Vector<KURL>&, bool);
 
   void SetState(State);
   void UpdateListening();

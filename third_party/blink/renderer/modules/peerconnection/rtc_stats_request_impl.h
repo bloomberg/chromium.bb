@@ -47,6 +47,11 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
                                      RTCPeerConnection*,
                                      V8RTCStatsCallback*,
                                      MediaStreamTrack*);
+
+  RTCStatsRequestImpl(ExecutionContext*,
+                      RTCPeerConnection*,
+                      V8RTCStatsCallback*,
+                      MediaStreamTrack*);
   ~RTCStatsRequestImpl() override;
 
   RTCStatsResponseBase* CreateResponse() override;
@@ -61,11 +66,6 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCStatsRequestImpl(ExecutionContext*,
-                      RTCPeerConnection*,
-                      V8RTCStatsCallback*,
-                      MediaStreamTrack*);
-
   void Clear();
 
   // This request object is held by WebRTCPeerConnectionHandler, which doesn't

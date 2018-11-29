@@ -59,7 +59,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           certificate_generator->FromPEM(pem_private_key, pem_certificate);
       if (!certificate)
         return nullptr;
-      return new RTCCertificate(std::move(certificate));
+      return MakeGarbageCollected<RTCCertificate>(std::move(certificate));
     }
     case kDetectedBarcodeTag: {
       String raw_value;

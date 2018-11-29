@@ -674,7 +674,7 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
-      pending_animations_(new PendingAnimations(*this)),
+      pending_animations_(MakeGarbageCollected<PendingAnimations>(*this)),
       worklet_animation_controller_(
           MakeGarbageCollected<WorkletAnimationController>(this)),
       template_document_host_(nullptr),
@@ -6709,8 +6709,10 @@ Document::EnsureIntersectionObserverController() {
 }
 
 ResizeObserverController& Document::EnsureResizeObserverController() {
-  if (!resize_observer_controller_)
-    resize_observer_controller_ = new ResizeObserverController();
+  if (!resize_observer_controller_) {
+    resize_observer_controller_ =
+        MakeGarbageCollected<ResizeObserverController>();
+  }
   return *resize_observer_controller_;
 }
 
@@ -7703,8 +7705,8 @@ void Document::ReportFeaturePolicyViolation(
           (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
                                                                    : "enforce"),
           SourceLocation::Capture());
-  Report* report =
-      new Report("feature-policy-violation", Url().GetString(), body);
+  Report* report = MakeGarbageCollected<Report>("feature-policy-violation",
+                                                Url().GetString(), body);
   ReportingContext::From(this)->QueueReport(report);
 
   bool is_null;

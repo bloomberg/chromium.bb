@@ -191,8 +191,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
       PerformanceServerTiming::ParseServerTiming(*info);
   if (!server_timing.empty())
     UseCounter::Count(GetFrame(), WebFeature::kPerformanceServerTiming);
-  return new PerformanceNavigationTiming(GetFrame(), info, time_origin_,
-                                         server_timing);
+  return MakeGarbageCollected<PerformanceNavigationTiming>(
+      GetFrame(), info, time_origin_, server_timing);
 }
 
 void WindowPerformance::UpdateLongTaskInstrumentation() {

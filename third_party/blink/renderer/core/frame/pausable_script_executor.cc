@@ -140,7 +140,7 @@ PausableScriptExecutor* PausableScriptExecutor::Create(
     bool user_gesture,
     WebScriptExecutionCallback* callback) {
   ScriptState* script_state = ToScriptState(frame, *world);
-  return new PausableScriptExecutor(
+  return MakeGarbageCollected<PausableScriptExecutor>(
       frame, script_state, callback,
       new WebScriptExecutor(sources, world->GetWorldId(), user_gesture));
 }
@@ -160,9 +160,10 @@ void PausableScriptExecutor::CreateAndRun(
       callback->Completed(Vector<v8::Local<v8::Value>>());
     return;
   }
-  PausableScriptExecutor* executor = new PausableScriptExecutor(
-      frame, script_state, callback,
-      new V8FunctionExecutor(isolate, function, receiver, argc, argv));
+  PausableScriptExecutor* executor =
+      MakeGarbageCollected<PausableScriptExecutor>(
+          frame, script_state, callback,
+          new V8FunctionExecutor(isolate, function, receiver, argc, argv));
   executor->Run();
 }
 

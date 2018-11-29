@@ -19,19 +19,27 @@ class PresentationConnectionCloseEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  PresentationConnectionCloseEvent(const AtomicString& event_type,
+                                   const String& reason,
+                                   const String& message);
+  PresentationConnectionCloseEvent(
+      const AtomicString& event_type,
+      const PresentationConnectionCloseEventInit* initializer);
   ~PresentationConnectionCloseEvent() override = default;
 
   static PresentationConnectionCloseEvent* Create(
       const AtomicString& event_type,
       const String& reason,
       const String& message) {
-    return new PresentationConnectionCloseEvent(event_type, reason, message);
+    return MakeGarbageCollected<PresentationConnectionCloseEvent>(
+        event_type, reason, message);
   }
 
   static PresentationConnectionCloseEvent* Create(
       const AtomicString& event_type,
       const PresentationConnectionCloseEventInit* initializer) {
-    return new PresentationConnectionCloseEvent(event_type, initializer);
+    return MakeGarbageCollected<PresentationConnectionCloseEvent>(event_type,
+                                                                  initializer);
   }
 
   const String& reason() const { return reason_; }
@@ -42,13 +50,6 @@ class PresentationConnectionCloseEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  PresentationConnectionCloseEvent(const AtomicString& event_type,
-                                   const String& reason,
-                                   const String& message);
-  PresentationConnectionCloseEvent(
-      const AtomicString& event_type,
-      const PresentationConnectionCloseEventInit* initializer);
-
   String reason_;
   String message_;
 };

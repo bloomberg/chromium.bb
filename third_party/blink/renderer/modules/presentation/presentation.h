@@ -27,6 +27,8 @@ class Presentation final : public ScriptWrappable, public ContextClient {
  public:
   static Presentation* Create(LocalFrame*);
 
+  explicit Presentation(LocalFrame*);
+
   void Trace(blink::Visitor*) override;
 
   PresentationRequest* defaultRequest() const;
@@ -35,8 +37,6 @@ class Presentation final : public ScriptWrappable, public ContextClient {
   PresentationReceiver* receiver();
 
  private:
-  explicit Presentation(LocalFrame*);
-
   // Default PresentationRequest used by the embedder.
   Member<PresentationRequest> default_request_;
 
