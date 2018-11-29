@@ -38,6 +38,10 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   base::Optional<GURL> prefetch_url() const { return prefetch_url_; }
 
+  base::Optional<url::Origin> preconnect_origin() const {
+    return preconnect_origin_;
+  }
+
   const std::map<GURL, int>& GetAreaRankMap() const { return area_rank_map_; }
 
  private:
@@ -66,7 +70,8 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   ~NavigationPredictorTest() override = default;
 
   void SetUp() override {
-    SetupFieldTrial(base::nullopt /* prefetch_url_score_threshold */);
+    SetupFieldTrial(base::nullopt /* preconnect_origin_score_threshold */,
+                    base::nullopt /* prefetch_url_score_threshold */);
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
         mojo::MakeRequest(&predictor_service_), main_rfh());
@@ -96,12 +101,21 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     return predictor_service_helper_->prefetch_url();
   }
 
+  base::Optional<url::Origin> preconnect_origin() const {
+    return predictor_service_helper_->preconnect_origin();
+  }
+
  protected:
-  void SetupFieldTrial(base::Optional<int> prefetch_url_score_threshold) {
+  void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
+                       base::Optional<int> prefetch_url_score_threshold) {
     const std::string kTrialName = "TrialFoo2";
     const std::string kGroupName = "GroupFoo2";  // Value not used
 
     std::map<std::string, std::string> params;
+    if (preconnect_origin_score_threshold.has_value()) {
+      params["preconnect_origin_score_threshold"] =
+          base::IntToString(preconnect_origin_score_threshold.value());
+    }
     if (prefetch_url_score_threshold.has_value()) {
       params["prefetch_url_score_threshold"] =
           base::IntToString(prefetch_url_score_threshold.value());
@@ -374,7 +388,8 @@ TEST_F(NavigationPredictorTest,
 class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   void SetUp() override {
-    SetupFieldTrial(101 /* prefetch_url_score_threshold */);
+    SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
+                    101 /* prefetch_url_score_threshold */);
 
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
@@ -382,7 +397,103 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
   }
 };
 
+// Disables prefetch and loads a page where the preconnect score of the document
+// origin is highest among all origins. Verifies that navigation predictor
+// preconnects to the document origin.
 TEST_F(NavigationPredictorPrefetchDisabledTest,
+       ActionTaken_SameOrigin_Prefetch_BelowThreshold) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "https://example.com/small";
+  const std::string same_origin_href_large = "https://example.com/large";
+
+  // Cross origin anchor element is small. This should result in example.com to
+  // have the highest preconnect score.
+  const std::string diff_origin_href_xsmall = "https://example2.com/xsmall";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xsmall, 0.0001));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPreconnect, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
+  EXPECT_EQ(url::Origin::Create(GURL(source)), preconnect_origin());
+
+  auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
+      1);
+}
+
+// Disables prefetch and loads a page where the preconnect score of a cross
+// origin is highest among all origins. Verifies that navigation predictor does
+// not preconnect to the cross origin.
+TEST_F(NavigationPredictorPrefetchDisabledTest,
+       ActionTaken_PreconnectHighScoreIsCrossOrigin) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "https://example.com/small";
+  const std::string same_origin_href_large = "https://example.com/large";
+
+  // Cross origin anchor element is large. This should result in example2.com to
+  // have the highest preconnect score.
+  const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 10));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
+  EXPECT_FALSE(preconnect_origin().has_value());
+
+  auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
+}
+
+// Framework for testing cases where preconnect and prefetch are effectively
+// disabled by setting their thresholds as too high.
+class NavigationPredictorPreconnectPrefetchDisabledTest
+    : public NavigationPredictorTest {
+ public:
+  void SetUp() override {
+    SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
+                    101 /* prefetch_url_score_threshold */);
+
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh());
+  }
+};
+
+// No action should be taken when both preconnect and prefetch are effectively
+// disabled.
+TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
        ActionTaken_SameOrigin_Prefetch_BelowThreshold) {
   const std::string source = "https://example.com";
   const std::string same_origin_href_small = "https://example.com/small";

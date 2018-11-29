@@ -17,14 +17,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
-}
-
-namespace url {
-class Origin;
 }
 
 class SiteEngagementService;
@@ -78,10 +75,21 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
     // Navigation predictor prefetched a URL, and an anchor element was clicked
     // whose URL had a different origin than the prefetched URL.
     kPrefetchActionClickToDifferentOrigin = 3,
-    kMaxValue = kPrefetchActionClickToDifferentOrigin,
+
+    // Navigation predictor preconnected to an origin, and an anchor element was
+    // clicked whose URL had the same origin as the preconnected origin.
+    kPreconnectActionClickToSameOrigin = 4,
+
+    // Navigation predictor preconnected to an origin, and an anchor element was
+    // clicked whose URL had a different origin than the preconnected origin.
+    kPreconnectActionClickToDifferentOrigin = 5,
+    kMaxValue = kPreconnectActionClickToDifferentOrigin,
   };
 
  protected:
+  // Origin that we decided to preconnect to.
+  base::Optional<url::Origin> preconnect_origin_;
+
   // URL that we decided to prefetch.
   base::Optional<GURL> prefetch_url_;
 
@@ -139,6 +147,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
+  base::Optional<url::Origin> GetOriginToPreconnect(
+      const url::Origin& document_origin,
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores) const;
+
   // Record anchor element metrics on page load.
   void RecordMetricsOnLoad(
       const blink::mojom::AnchorElementMetrics& metric) const;
@@ -184,8 +197,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // True if device is a low end device.
   const bool is_low_end_device_;
 
-  // Minimum score that a URL should have for it to be prefetched.
+  // Minimum score that a URL should have for it to be prefetched. Note
+  // that scores of origins are computed differently from scores of URLs, so
+  // they are not comparable.
   const int prefetch_url_score_threshold_;
+
+  // Minimum preconnect score that the origin should have for preconnect. Note
+  // that scores of origins are computed differently from scores of URLs, so
+  // they are not comparable.
+  const int preconnect_origin_score_threshold_;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

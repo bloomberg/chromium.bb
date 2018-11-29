@@ -34615,6 +34615,12 @@ Called by update_use_counter_css.py.-->
              prefetch URL"/>
   <int value="3"
       label="Click was to a URL with different origin than the prefetch URL"/>
+  <int value="4"
+      label="Click was to a URL with the same origin as the preconnected
+             origin"/>
+  <int value="5"
+      label="Click was to a URL with different origin than the preconnected
+             origin"/>
 </enum>
 
 <enum name="NavigationPredictorActionTaken">
