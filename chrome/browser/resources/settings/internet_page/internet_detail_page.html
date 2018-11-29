@@ -103,7 +103,7 @@
               prefs.vpn_config_allowed)]]">
         $i18n{networkButtonConfigure}
       </paper-button>
-      <controlled-button action-button on-click="onConnectTap_"
+      <controlled-button id="connect" action-button on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
@@ -113,7 +113,8 @@
           pref="[[getVpnConfigPrefFromValue_(networkProperties,
               prefs.vpn_config_allowed)]]">
       </controlled-button>
-      <controlled-button action-button on-click="onDisconnectTap_"
+      <controlled-button id="disconnect" action-button
+          on-click="onDisconnectTap_"
           hidden$="[[!showDisconnect_(networkProperties)]]"
           label="$i18n{networkButtonDisconnect}"
           pref="[[getVpnConfigPrefFromValue_(networkProperties,

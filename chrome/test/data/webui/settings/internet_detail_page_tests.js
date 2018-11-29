@@ -83,11 +83,8 @@ suite('InternetDetailPage', function() {
     return allowShared;
   }
 
-  function getDisconnectButton() {
-    const titleDiv = internetDetailPage.$$('#titleDiv');
-    assertTrue(!!titleDiv);
-    const button =
-        titleDiv.querySelector('controlled-button[label="Disconnect"]');
+  function getButton(buttonId) {
+    const button = internetDetailPage.$$(`#${buttonId}`);
     assertTrue(!!button);
     return button;
   }
@@ -218,7 +215,7 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = true;
       internetDetailPage.prefs = prefs_;
       return flushAsync().then(() => {
-        const disconnectButton = getDisconnectButton();
+        const disconnectButton = getButton('disconnect');
         assertFalse(disconnectButton.hasAttribute('enforced_'));
         assertFalse(!!disconnectButton.$$('cr-policy-pref-indicator'));
       });
@@ -235,9 +232,25 @@ suite('InternetDetailPage', function() {
       prefs_.vpn_config_allowed.value = false;
       internetDetailPage.prefs = prefs_;
       return flushAsync().then(() => {
-        const disconnectButton = getDisconnectButton();
+        const disconnectButton = getButton('disconnect');
         assertTrue(disconnectButton.hasAttribute('enforced_'));
         assertTrue(!!disconnectButton.$$('cr-policy-pref-indicator'));
+      });
+    });
+
+    test('Connect button disabled on cellular scan', function() {
+      api_.enableNetworkType('Cellular');
+      setNetworksForTest([{
+        GUID: 'cell_guid',
+        Name: 'cell_user',
+        Type: 'Cellular',
+        ConnectionState: 'NotConnected',
+        Cellular: {SIMLockStatus: {LockType: 'sim-pin'}}
+      }]);
+      internetDetailPage.init('cell_guid', 'Cellular', 'cell_user');
+      return flushAsync().then(() => {
+        const connectButton = getButton('connect');
+        assertTrue(connectButton.hasAttribute('disabled'));
       });
     });
   });
