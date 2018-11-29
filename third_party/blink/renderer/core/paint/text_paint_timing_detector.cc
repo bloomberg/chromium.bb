@@ -117,6 +117,10 @@ void TextPaintTimingDetector::OnPrePaintFinished() {
 }
 
 void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
+  for (TextRecord& record : texts_to_record_swap_time_) {
+    if (record.node_id == node_id)
+      record.node_id = kInvalidDOMNodeId;
+  }
   if (recorded_text_node_ids_.find(node_id) == recorded_text_node_ids_.end())
     return;
   // We assume that removed nodes' id would not be recycled, and it's expensive
@@ -161,6 +165,8 @@ void TextPaintTimingDetector::ReportSwapTime(
   // that only one or zero callback will be called after one OnPrePaintFinished.
   DCHECK_GT(texts_to_record_swap_time_.size(), 0UL);
   for (TextRecord& record : texts_to_record_swap_time_) {
+    if (record.node_id == kInvalidDOMNodeId)
+      continue;
     record.first_paint_time = timestamp;
     recorded_text_node_ids_.insert(record.node_id);
     largest_text_heap_.push(std::make_unique<TextRecord>(record));
