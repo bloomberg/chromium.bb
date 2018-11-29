@@ -16,6 +16,10 @@ static_library("leveldb_proto") {
     "proto_leveldb_wrapper.h",
     "proto_leveldb_wrapper_metrics.cc",
     "proto_leveldb_wrapper_metrics.h",
+    "shared_proto_database.cc",
+    "shared_proto_database.h",
+    "shared_proto_database_client.cc",
+    "shared_proto_database_client.h",
     "unique_proto_database.h",
   ]
 
@@ -43,6 +47,8 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "shared_proto_database_client_unittest.cc",
+    "shared_proto_database_unittest.cc",
     "unique_proto_database_unittest.cc",
   ]
   deps = [

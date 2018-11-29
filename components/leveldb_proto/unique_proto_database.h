@@ -96,12 +96,15 @@ class UniqueProtoDatabase : public ProtoDatabase<T> {
 
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
 
+ protected:
+  std::unique_ptr<ProtoLevelDBWrapper> db_wrapper_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
  private:
   THREAD_CHECKER(thread_checker_);
 
   base::FilePath database_dir_;
   leveldb_env::Options options_;
-  std::unique_ptr<ProtoLevelDBWrapper> db_wrapper_;
   std::unique_ptr<LevelDB> db_;
 };
 
