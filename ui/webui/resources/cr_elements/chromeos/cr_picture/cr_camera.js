@@ -13,19 +13,22 @@
  * Dimensions for camera capture.
  * @const
  */
-var CAPTURE_SIZE = {width: 576, height: 576};
+const CAPTURE_SIZE = {
+  width: 576,
+  height: 576
+};
 
 /**
  * Interval between frames for camera capture (milliseconds).
  * @const
  */
-var CAPTURE_INTERVAL_MS = 1000 / 10;
+const CAPTURE_INTERVAL_MS = 1000 / 10;
 
 /**
  * Duration of camera capture (milliseconds).
  * @const
  */
-var CAPTURE_DURATION_MS = 1000;
+const CAPTURE_DURATION_MS = 1000;
 
 Polymer({
   is: 'cr-camera',
@@ -104,14 +107,14 @@ Polymer({
     this.cameraCaptureInProgress_ = true;
 
     /** Pre-allocate all frames needed for capture. */
-    var frames = [];
+    const frames = [];
     if (this.videomode) {
       /** Reduce capture size when in video mode. */
-      var captureSize = {
+      const captureSize = {
         width: CAPTURE_SIZE.width / 2,
         height: CAPTURE_SIZE.height / 2
       };
-      var captureFrameCount = CAPTURE_DURATION_MS / CAPTURE_INTERVAL_MS;
+      const captureFrameCount = CAPTURE_DURATION_MS / CAPTURE_INTERVAL_MS;
       while (frames.length < captureFrameCount)
         frames.push(this.allocateFrame_(captureSize));
     } else {
@@ -119,10 +122,10 @@ Polymer({
     }
 
     /** Start capturing frames at an interval. */
-    var capturedFrames = [];
+    const capturedFrames = [];
     this.$.userImageStreamCrop.classList.remove('preview');
     this.$.userImageStreamCrop.classList.add('capture');
-    var interval = setInterval(() => {
+    const interval = setInterval(() => {
       /** Stop capturing frames when all allocated frames have been consumed. */
       if (frames.length) {
         capturedFrames.push(
@@ -143,7 +146,7 @@ Polymer({
     this.stopCamera();
     this.cameraStartInProgress_ = true;
 
-    var successCallback = function(stream) {
+    const successCallback = function(stream) {
       if (this.cameraStartInProgress_) {
         this.$.cameraVideo.srcObject = stream;
         this.cameraStream_ = stream;
@@ -153,12 +156,12 @@ Polymer({
       this.cameraStartInProgress_ = false;
     }.bind(this);
 
-    var errorCallback = function() {
+    const errorCallback = function() {
       this.cameraOnline_ = false;
       this.cameraStartInProgress_ = false;
     }.bind(this);
 
-    var videoConstraints = {
+    const videoConstraints = {
       width: {ideal: CAPTURE_SIZE.width},
       height: {ideal: CAPTURE_SIZE.height},
     };
@@ -185,8 +188,8 @@ Polymer({
    * @private
    */
   stopVideoTracks_: function(stream) {
-    var tracks = stream.getVideoTracks();
-    for (var i = 0; i < tracks.length; i++)
+    const tracks = stream.getVideoTracks();
+    for (let i = 0; i < tracks.length; i++)
       tracks[i].stop();
   },
 
@@ -206,11 +209,11 @@ Polymer({
    * @private
    */
   allocateFrame_: function(size) {
-    var canvas =
+    const canvas =
         /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
     canvas.width = size.width;
     canvas.height = size.height;
-    var ctx = /** @type {!CanvasRenderingContext2D} */ (
+    const ctx = /** @type {!CanvasRenderingContext2D} */ (
         canvas.getContext('2d', {alpha: false}));
     // Flip frame horizontally.
     ctx.translate(size.width, 0);
@@ -227,16 +230,16 @@ Polymer({
    * @private
    */
   captureFrame_: function(video, canvas) {
-    var ctx =
+    const ctx =
         /** @type {!CanvasRenderingContext2D} */ (
             canvas.getContext('2d', {alpha: false}));
-    var width = video.videoWidth;
-    var height = video.videoHeight;
+    const width = video.videoWidth;
+    const height = video.videoHeight;
     if (width < canvas.width || height < canvas.height) {
       console.error(
           'Video capture size too small: ' + width + 'x' + height + '!');
     }
-    var src = {};
+    const src = {};
     if (width / canvas.width > height / canvas.height) {
       // Full height, crop left/right.
       src.height = height;
@@ -262,7 +265,7 @@ Polymer({
    */
   convertFramesToPng_: function(frames) {
     /** Encode captured frames. */
-    var encodedImages = frames.map(function(frame) {
+    const encodedImages = frames.map(function(frame) {
       return frame.toDataURL('image/png');
     });
 
@@ -271,7 +274,7 @@ Polymer({
       return encodedImages[0];
 
     /** Create forward/backward image sequence. */
-    var forwardBackwardImageSequence =
+    const forwardBackwardImageSequence =
         encodedImages.concat(encodedImages.slice(1, -1).reverse());
 
     /** Convert image sequence to animated PNG. */

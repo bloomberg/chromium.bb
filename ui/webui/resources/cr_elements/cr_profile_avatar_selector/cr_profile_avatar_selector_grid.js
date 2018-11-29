@@ -26,7 +26,7 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
-    var items = this.querySelectorAll('.avatar');
+    const items = this.querySelectorAll('.avatar');
     switch (e.key) {
       case 'ArrowDown':
       case 'ArrowUp':
@@ -54,24 +54,24 @@ Polymer({
    * @private
    */
   moveFocusRow_: function(items, direction) {
-    var offset =
+    let offset =
         (direction == 'ArrowDown' || direction == 'ArrowRight') ? 1 : -1;
-    var style = getComputedStyle(this);
-    var avatarSpacing =
+    const style = getComputedStyle(this);
+    const avatarSpacing =
         parseInt(style.getPropertyValue('--avatar-spacing'), 10);
-    var avatarSize = parseInt(style.getPropertyValue('--avatar-size'), 10);
-    var rowSize = Math.floor(this.clientWidth / (avatarSpacing + avatarSize));
-    var rows = Math.ceil(items.length / rowSize);
-    var gridSize = rows * rowSize;
+    const avatarSize = parseInt(style.getPropertyValue('--avatar-size'), 10);
+    const rowSize = Math.floor(this.clientWidth / (avatarSpacing + avatarSize));
+    const rows = Math.ceil(items.length / rowSize);
+    const gridSize = rows * rowSize;
 
-    var focusIndex =
+    const focusIndex =
         Array.prototype.slice.call(items).findIndex(function(item) {
           return Polymer.dom(item).getOwnerRoot().activeElement == item;
         });
 
-    var nextItem = null;
+    let nextItem = null;
     if (direction == 'ArrowDown' || direction == 'ArrowUp') {
-      for (var i = offset; Math.abs(i) <= rows; i += offset) {
+      for (let i = offset; Math.abs(i) <= rows; i += offset) {
         nextItem = items[(focusIndex + i * rowSize + gridSize) % gridSize];
         if (nextItem)
           break;
@@ -82,7 +82,7 @@ Polymer({
     } else {
       if (style.direction == 'rtl')
         offset *= -1;
-      var nextIndex = (focusIndex + offset) % items.length;
+      let nextIndex = (focusIndex + offset) % items.length;
       if (nextIndex < 0)
         nextIndex = items.length - 1;
       nextItem = items[nextIndex];

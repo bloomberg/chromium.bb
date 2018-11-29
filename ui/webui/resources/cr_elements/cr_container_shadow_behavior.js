@@ -19,24 +19,24 @@
  */
 
 /** @polymerBehavior */
-var CrContainerShadowBehavior = {
+const CrContainerShadowBehavior = {
   /** @private {?IntersectionObserver} */
   intersectionObserver_: null,
 
   /** @override */
   attached: function() {
     // The element holding the drop shadow effect to be shown.
-    var dropShadow = document.createElement('div');
+    const dropShadow = document.createElement('div');
     // This ID should match the CSS rules in shared_styles_css.html.
     dropShadow.id = 'cr-container-shadow';
     this.$.container.parentNode.insertBefore(dropShadow, this.$.container);
 
     // Dummy element used to detect scrolling. Has a 0px height intentionally.
-    var intersectionProbe = document.createElement('div');
+    const intersectionProbe = document.createElement('div');
     this.$.container.prepend(intersectionProbe);
 
     // Setup drop shadow logic.
-    var callback = entries => {
+    const callback = entries => {
       dropShadow.classList.toggle(
           'has-shadow', entries[entries.length - 1].intersectionRatio == 0);
     };

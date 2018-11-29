@@ -39,13 +39,13 @@ Polymer({
 
   /** @private */
   propertyChanged_: function() {
-    var property = this.property;
+    const property = this.property;
     if (property == null || !this.isControlled(property)) {
       this.indicatorType = CrPolicyIndicatorType.NONE;
       return;
     }
-    var effective = property.Effective;
-    var active = property.Active;
+    const effective = property.Effective;
+    let active = property.Active;
     if (active == undefined)
       active = property[effective];
 
@@ -81,10 +81,10 @@ Polymer({
     if (this.property === undefined)
       return '';
 
-    var matches;
+    let matches;
     if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED &&
         this.property) {
-      var value = this.property.Active;
+      let value = this.property.Active;
       if (value == undefined && this.property.Effective)
         value = this.property[this.property.Effective];
       matches = value == this.recommended_;

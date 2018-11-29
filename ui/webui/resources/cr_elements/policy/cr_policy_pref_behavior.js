@@ -7,7 +7,7 @@
  */
 
 /** @polymerBehavior */
-var CrPolicyPrefBehavior = {
+const CrPolicyPrefBehavior = {
   properties: {
     /**
      * Showing that an extension is controlling a pref is sometimes done with a
