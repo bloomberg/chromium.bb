@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_encryption_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
 
 #include <memory>
 
@@ -12,8 +12,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,8 +39,8 @@ std::unique_ptr<KeyedService> CreateNiceProfileSyncServiceMock(
       &init_params);
 }
 
-class SyncEncryptionCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class SyncEncryptionTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  protected:
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
@@ -48,7 +48,7 @@ class SyncEncryptionCollectionViewControllerTest
         ProfileSyncServiceFactory::GetInstance(),
         base::BindRepeating(&CreateNiceProfileSyncServiceMock));
     chrome_browser_state_ = test_cbs_builder.Build();
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
 
     mock_profile_sync_service_ =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
@@ -62,8 +62,8 @@ class SyncEncryptionCollectionViewControllerTest
     CreateController();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[SyncEncryptionCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[SyncEncryptionTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -73,20 +73,20 @@ class SyncEncryptionCollectionViewControllerTest
   browser_sync::ProfileSyncServiceMock* mock_profile_sync_service_;
 };
 
-TEST_F(SyncEncryptionCollectionViewControllerTest, TestModel) {
+TEST_F(SyncEncryptionTableViewControllerTest, TestModel) {
   CheckController();
   CheckTitleWithId(IDS_IOS_SYNC_ENCRYPTION_TITLE);
 
-  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(1, NumberOfSections());
 
   NSInteger const kSection = 0;
   EXPECT_EQ(2, NumberOfItemsInSection(kSection));
 
-  EncryptionItem* accountItem = GetCollectionViewItem(kSection, 0);
+  EncryptionItem* accountItem = GetTableViewItem(kSection, 0);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA),
               accountItem.text);
 
-  EncryptionItem* passphraseItem = GetCollectionViewItem(kSection, 1);
+  EncryptionItem* passphraseItem = GetTableViewItem(kSection, 1);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA),
               passphraseItem.text);
 }

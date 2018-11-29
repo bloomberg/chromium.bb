@@ -7,14 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // Item displaying possible options in the Sync Encryption screen.
-@interface EncryptionItem : CollectionViewItem
+@interface EncryptionItem : TableViewItem
 
 // The accessory type for the represented cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+@property(nonatomic) UITableViewCellAccessoryType accessoryType;
 
 // The text to display.
 @property(nonatomic, copy) NSString* text;
@@ -26,7 +25,7 @@
 @end
 
 // The cell associated to |EncryptionCell|.
-@interface EncryptionCell : MDCCollectionViewCell
+@interface EncryptionCell : UITableViewCell
 
 // UILabel corresponding to |text| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

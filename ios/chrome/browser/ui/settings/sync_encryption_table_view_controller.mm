@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_encryption_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
 
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
@@ -16,14 +17,14 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_create_passphrase_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -36,7 +37,6 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierEncryption = kSectionIdentifierEnumZero,
-  SectionIdentifierFooter,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -47,28 +47,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface SyncEncryptionCollectionViewController ()<SyncObserverModelBridge> {
+@interface SyncEncryptionTableViewController () <SyncObserverModelBridge> {
   ios::ChromeBrowserState* _browserState;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   BOOL _isUsingSecondaryPassphrase;
 }
-// Returns an account item.
-- (CollectionViewItem*)accountItem;
-
-// Returns a passphrase item.
-- (CollectionViewItem*)passphraseItem;
-
-// Returns a footer item with a link.
-- (CollectionViewItem*)footerItem;
 @end
 
-@implementation SyncEncryptionCollectionViewController
+@implementation SyncEncryptionTableViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     _browserState = browserState;
@@ -77,18 +69,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
                                   syncService->IsUsingSecondaryPassphrase();
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.estimatedSectionFooterHeight =
+      kTableViewHeaderFooterViewHeight;
+  [self loadModel];
 }
 
 #pragma mark - SettingsRootCollectionViewController
 
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierEncryption];
   [model addItem:[self accountItem]
@@ -97,15 +93,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierEncryption];
 
   if (_isUsingSecondaryPassphrase) {
-    [model addSectionWithIdentifier:SectionIdentifierFooter];
-    [model addItem:[self footerItem]
-        toSectionWithIdentifier:SectionIdentifierFooter];
+    [model setFooter:[self footerItem]
+        forSectionWithIdentifier:SectionIdentifierEncryption];
   }
 }
 
 #pragma mark - Items
 
-- (CollectionViewItem*)accountItem {
+// Returns an account item.
+- (TableViewItem*)accountItem {
   DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypeAccount
@@ -114,7 +110,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     enabled:!_isUsingSecondaryPassphrase];
 }
 
-- (CollectionViewItem*)passphraseItem {
+// Returns a passphrase item.
+- (TableViewItem*)passphraseItem {
   DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypePassphrase
@@ -123,69 +120,53 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     enabled:!_isUsingSecondaryPassphrase];
 }
 
-- (CollectionViewItem*)footerItem {
-  CollectionViewFooterItem* footerItem =
-      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
-  footerItem.cellStyle = CollectionViewCellStyle::kUIKit;
+// Returns a footer item with a link.
+- (TableViewHeaderFooterItem*)footerItem {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_HINT);
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(
       GURL(kSyncGoogleDashboardURL),
       GetApplicationContext()->GetApplicationLocale());
-  footerItem.linkDelegate = self;
   return footerItem;
 }
 
-#pragma mark - MDCCollectionViewStylingDelegate
+#pragma mark - UITableViewDelegate
 
-- (MDCCollectionViewCellStyle)collectionView:(UICollectionView*)collectionView
-                         cellStyleForSection:(NSInteger)section {
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:section];
-  switch (sectionIdentifier) {
-    case SectionIdentifierFooter:
-      // Display the Learn More footer in the default style with no "card" UI
-      // and no section padding.
-      return MDCCollectionViewCellStyleDefault;
-    default:
-      return self.styler.cellStyle;
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  UIView* footerView = [super tableView:tableView
+                 viewForFooterInSection:section];
+  if (SectionIdentifierEncryption ==
+          [self.tableViewModel sectionIdentifierForSection:section] &&
+      [self.tableViewModel footerForSection:section]) {
+    TableViewLinkHeaderFooterView* footer =
+        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(footerView);
+    footer.delegate = self;
   }
+  return footerView;
 }
 
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
-  switch (sectionIdentifier) {
-    case SectionIdentifierFooter:
-      // Display the Learn More footer without any background image or
-      // shadowing.
-      return YES;
-    default:
-      return NO;
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type == ItemTypePassphrase || item.type == ItemTypeAccount) {
+    EncryptionItem* encryptionItem =
+        base::mac::ObjCCastStrict<EncryptionItem>(item);
+    // Don't perform any action if the cell isn't enabled.
+    return encryptionItem.isEnabled;
   }
+  return YES;
 }
 
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  return [MDCCollectionViewCell
-      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                         forItem:item];
-}
-
-#pragma mark - UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(indexPath.section,
-            [self.collectionViewModel
+            [self.tableViewModel
                 sectionForSectionIdentifier:SectionIdentifierEncryption]);
 
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   if ([item respondsToSelector:@selector(isEnabled)] &&
       ![item performSelector:@selector(isEnabled)]) {
     // Don't perform any action if the cell isn't enabled.
@@ -211,6 +192,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     default:
       break;
   }
+
+  [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
 
 #pragma mark SyncObserverModelBridge
@@ -228,14 +211,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private methods
 
-- (CollectionViewItem*)itemWithType:(NSInteger)type
-                               text:(NSString*)text
-                            checked:(BOOL)checked
-                            enabled:(BOOL)enabled {
+- (TableViewItem*)itemWithType:(NSInteger)type
+                          text:(NSString*)text
+                       checked:(BOOL)checked
+                       enabled:(BOOL)enabled {
   EncryptionItem* item = [[EncryptionItem alloc] initWithType:type];
   item.text = text;
-  item.accessoryType = checked ? MDCCollectionViewCellAccessoryCheckmark
-                               : MDCCollectionViewCellAccessoryNone;
+  item.accessoryType = checked ? UITableViewCellAccessoryCheckmark
+                               : UITableViewCellAccessoryNone;
   item.enabled = enabled;
   return item;
 }

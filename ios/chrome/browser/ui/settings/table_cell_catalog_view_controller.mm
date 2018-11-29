@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
@@ -45,6 +46,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLWithSupplementalText,
   ItemTypeURLWithBadgeImage,
   ItemTypeTextSettingsDetail,
+  ItemTypeEncryption,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
   ItemTypeSettingsSwitch,
@@ -171,6 +173,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[SettingsSwitchItem alloc] initWithType:ItemTypeSettingsSwitch];
   settingsSwitchItem.text = @"This is a switch item";
   [model addItem:settingsSwitchItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  EncryptionItem* encryptionChecked =
+      [[EncryptionItem alloc] initWithType:ItemTypeEncryption];
+  encryptionChecked.text =
+      @"These two cells have exactly the same text, but one has a checkmark "
+      @"and the other does not.  They should lay out identically, and the "
+      @"presence of the checkmark should not cause the text to reflow.";
+  encryptionChecked.accessoryType = UITableViewCellAccessoryCheckmark;
+  [model addItem:encryptionChecked
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  EncryptionItem* encryptionUnchecked =
+      [[EncryptionItem alloc] initWithType:ItemTypeEncryption];
+  encryptionUnchecked.text =
+      @"These two cells have exactly the same text, but one has a checkmark "
+      @"and the other does not.  They should lay out identically, and the "
+      @"presence of the checkmark should not cause the text to reflow.";
+  [model addItem:encryptionUnchecked
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =

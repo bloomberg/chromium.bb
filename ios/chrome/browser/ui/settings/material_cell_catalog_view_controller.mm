@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
@@ -112,8 +111,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillStatus,
   ItemTypeAccountControlDynamicHeight,
   ItemTypeFooter,
-  ItemTypeSyncEncryption,
-  ItemTypeSyncEncryptionChecked,
   ItemTypeSyncPassphraseError,
   ItemTypeContentSuggestions,
   ItemTypeImageDetailTextItem,
@@ -407,10 +404,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
   // Sync cells.
   [model addSectionWithIdentifier:SectionIdentifierSync];
-  [model addItem:[self syncEncryptionItem]
-      toSectionWithIdentifier:SectionIdentifierSync];
-  [model addItem:[self syncEncryptionCheckedItem]
-      toSectionWithIdentifier:SectionIdentifierSync];
   [model addItem:[self syncPassphraseErrorItem]
       toSectionWithIdentifier:SectionIdentifierSync];
 
@@ -469,8 +462,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeAutofillDynamicHeight:
     case ItemTypeColdStateSigninPromo:
     case ItemTypeWarmStateSigninPromo:
-    case ItemTypeSyncEncryption:
-    case ItemTypeSyncEncryptionChecked:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -844,27 +835,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
                  title:@"Footer title"
               callback:nil];
   return footerItem;
-}
-
-- (EncryptionItem*)syncEncryptionItem {
-  EncryptionItem* item =
-      [[EncryptionItem alloc] initWithType:ItemTypeSyncEncryption];
-  item.text =
-      @"These two cells have exactly the same text, but one has a checkmark "
-      @"and the other does not.  They should lay out identically, and the "
-      @"presence of the checkmark should not cause the text to reflow.";
-  return item;
-}
-
-- (EncryptionItem*)syncEncryptionCheckedItem {
-  EncryptionItem* item =
-      [[EncryptionItem alloc] initWithType:ItemTypeSyncEncryptionChecked];
-  item.text =
-      @"These two cells have exactly the same text, but one has a checkmark "
-      @"and the other does not.  They should lay out identically, and the "
-      @"presence of the checkmark should not cause the text to reflow.";
-  item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-  return item;
 }
 
 - (PassphraseErrorItem*)syncPassphraseErrorItem {
