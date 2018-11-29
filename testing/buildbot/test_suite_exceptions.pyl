@@ -1289,7 +1289,6 @@
       # chromium.linux
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.mac
-      'Mac10.12 Tests', # crbug.com/908551
       'Mac10.13 Tests', # crbug.com/908551
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
