@@ -14,17 +14,13 @@ extern CGFloat const kInputAccessoryHeight;
 }  // namespace autofill
 
 @class ManualFillAccessoryViewController;
+@protocol ManualFillAccessoryViewControllerDelegate;
 
 // Creates and manages a custom input accessory view while the user is
 // interacting with a form. Also handles hiding and showing the default
 // accessory view elements.
 @interface FormInputAccessoryViewController
     : NSObject<FormInputAccessoryConsumer>
-
-// The manual fill accessory view controller to add at the end of the
-// suggestions.
-@property(nonatomic, weak)
-    ManualFillAccessoryViewController* manualFillAccessoryViewController;
 
 // Presents a view above the keyboard.
 - (void)presentView:(UIView*)view;
@@ -36,6 +32,22 @@ extern CGFloat const kInputAccessoryHeight;
 // Shows the manual fallback icons as the first option in the suggestions bar,
 // and locks them in that position.
 - (void)lockManualFallbackView;
+
+// Tells the view to restore the manual fallback icons to a clean state. That
+// means no icon selected.
+- (void)resetManualFallbackIcons;
+
+// Instances an object with the desired delegate.
+//
+// @param manualFillAccessoryViewControllerDelegate the delegate for the actions
+// in the manual fallback icons.
+// @return A fresh object with the passed delegate.
+- (instancetype)initWithManualFillAccessoryViewControllerDelegate:
+    (id<ManualFillAccessoryViewControllerDelegate>)
+        manualFillAccessoryViewControllerDelegate;
+
+// Unavailable
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

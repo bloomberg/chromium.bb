@@ -8,9 +8,11 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #import "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
@@ -19,6 +21,7 @@
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
+#import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
@@ -38,10 +41,9 @@
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
                                           KeyboardObserverHelperConsumer,
+                                          PasswordFetcherDelegate,
+                                          PersonalDataManagerObserver,
                                           WebStateListObserving>
-
-// The JS manager for interacting with the underlying form.
-@property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
 
 // The main consumer for this mediator.
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
@@ -53,6 +55,13 @@
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
 
+// Track the use of hardware keyboard, when there's a notification of keyboard
+// use but no keyboard on the screen.
+@property(nonatomic, assign) BOOL hardwareKeyboard;
+
+// The JS manager for interacting with the underlying form.
+@property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
+
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
@@ -62,19 +71,19 @@
 // Last seen suggestions. Used to reenable suggestions.
 @property(nonatomic, strong) NSArray<FormSuggestion*>* lastSuggestions;
 
-// Whether suggestions are disabled.
-@property(nonatomic, assign) BOOL suggestionsDisabled;
-
 // The objects that can provide a custom input accessory view while filling
 // forms.
 @property(nonatomic, copy) NSArray<id<FormInputSuggestionsProvider>>* providers;
 
+// The password fetcher used to know if passwords are available and update the
+// consumer accordingly.
+@property(nonatomic, strong) PasswordFetcher* passwordFetcher;
+
+// Whether suggestions are disabled.
+@property(nonatomic, assign) BOOL suggestionsDisabled;
+
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
-
-// Track the use of hardware keyboard, when there's a notification of keyboard
-// use but no keyboard on the screen.
-@property(nonatomic, assign) BOOL hardwareKeyboard;
 
 @end
 
@@ -82,6 +91,13 @@
   // The WebStateList this instance is observing in order to update the
   // active WebState.
   WebStateList* _webStateList;
+
+  // Personal data manager to be observed.
+  autofill::PersonalDataManager* _personalDataManager;
+
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
 
   // Bridge to observe the web state list from Objective-C.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
@@ -97,12 +113,17 @@
   BOOL _suggestionsHaveBeenShown;
 }
 
-- (instancetype)initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
-                    webStateList:(WebStateList*)webStateList {
+- (instancetype)
+       initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+           webStateList:(WebStateList*)webStateList
+    personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+          passwordStore:
+              (scoped_refptr<password_manager::PasswordStore>)passwordStore {
   self = [super init];
   if (self) {
     _consumer = consumer;
     _consumer.navigationDelegate = self;
+
     if (webStateList) {
       _webStateList = webStateList;
       _webStateListObserver =
@@ -143,6 +164,35 @@
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
     _keyboardObserver.consumer = self;
   }
+  // In BVC unit tests the password store doesn't exist. Skip creating the
+  // fetcher.
+  // TODO:(crbug.com/878388) Remove this workaround.
+  if (passwordStore) {
+    _passwordFetcher =
+        [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                              delegate:self];
+  }
+  // There is no personal data manager in OTR (incognito).
+  // TODO:(crbug.com/905720) Support Incognito.
+  if (personalDataManager) {
+    _personalDataManager = personalDataManager;
+    _personalDataManagerObserver.reset(
+        new autofill::PersonalDataManagerObserverBridge(self));
+    personalDataManager->AddObserver(_personalDataManagerObserver.get());
+
+    // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
+    // button is hidden when local cards are saved and then
+    // kAutofillCreditCardEnabled is changed to disabled.
+    consumer.creditCardButtonHidden =
+        personalDataManager->GetCreditCards().empty();
+
+    consumer.addressButtonHidden =
+        personalDataManager->GetProfilesToSuggest().empty();
+  } else {
+    consumer.creditCardButtonHidden = YES;
+    consumer.addressButtonHidden = YES;
+  }
+
   return self;
 }
 
@@ -158,6 +208,9 @@
     _webStateList = nullptr;
   }
   _formActivityObserverBridge.reset();
+  if (_personalDataManager) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+  }
 }
 
 - (void)detachFromWebState {
@@ -465,6 +518,26 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
 // ends editing, continue presenting.
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
   [self.consumer continueCustomKeyboardView];
+}
+
+#pragma mark - PasswordFetcherDelegate
+
+- (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
+      didFetchPasswords:
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+  self.consumer.passwordButtonHidden = passwords.empty();
+}
+
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  DCHECK(_personalDataManager);
+
+  self.consumer.creditCardButtonHidden =
+      _personalDataManager->GetCreditCards().empty();
+
+  self.consumer.addressButtonHidden =
+      _personalDataManager->GetProfilesToSuggest().empty();
 }
 
 #pragma mark - Tests

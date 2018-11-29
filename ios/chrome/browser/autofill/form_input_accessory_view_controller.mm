@@ -21,7 +21,8 @@ namespace autofill {
 CGFloat const kInputAccessoryHeight = 44.0f;
 }  // namespace autofill
 
-@interface FormInputAccessoryViewController ()
+@interface FormInputAccessoryViewController () <
+    ManualFillAccessoryViewControllerDelegate>
 
 // Grey view used as the background of the keyboard to fix
 // http://crbug.com/847523
@@ -39,6 +40,16 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 // If this view controller is paused it shouldn't add its views to the keyboard.
 @property(nonatomic, getter=isPaused) BOOL paused;
 
+// The manual fill accessory view controller to add at the end of the
+// suggestions.
+@property(nonatomic, strong, readonly)
+    ManualFillAccessoryViewController* manualFillAccessoryViewController;
+
+// Delegate to handle interactions with the manual fill buttons.
+@property(nonatomic, readonly, weak)
+    id<ManualFillAccessoryViewControllerDelegate>
+        manualFillAccessoryViewControllerDelegate;
+
 // Called when the keyboard will or did change frame.
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification;
 
@@ -52,15 +63,27 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   BOOL _suggestionsHaveBeenShown;
 }
 
-@synthesize navigationDelegate = _navigationDelegate;
+@synthesize addressButtonHidden = _addressButtonHidden;
+@synthesize creditCardButtonHidden = _creditCardButtonHidden;
 @synthesize formInputNextButtonEnabled = _formInputNextButtonEnabled;
 @synthesize formInputPreviousButtonEnabled = _formInputPreviousButtonEnabled;
+@synthesize navigationDelegate = _navigationDelegate;
+@synthesize passwordButtonHidden = _passwordButtonHidden;
 
 #pragma mark - Life Cycle
 
-- (instancetype)init {
+- (instancetype)initWithManualFillAccessoryViewControllerDelegate:
+    (id<ManualFillAccessoryViewControllerDelegate>)
+        manualFillAccessoryViewControllerDelegate {
   self = [super init];
   if (self) {
+    _manualFillAccessoryViewControllerDelegate =
+        manualFillAccessoryViewControllerDelegate;
+    if (autofill::features::IsPasswordManualFallbackEnabled()) {
+      _manualFillAccessoryViewController =
+          [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
+    }
+
     _suggestionsHaveBeenShown = NO;
     if (IsIPadIdiom()) {
       _grayBackgroundView = [[UIView alloc] init];
@@ -113,6 +136,10 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 - (void)lockManualFallbackView {
   [self.formSuggestionView lockTrailingView];
+}
+
+- (void)resetManualFallbackIcons {
+  [self.manualFillAccessoryViewController reset];
 }
 
 #pragma mark - FormInputAccessoryConsumer
@@ -206,6 +233,24 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 #pragma mark - Setters
+
+- (void)setPasswordButtonHidden:(BOOL)passwordButtonHidden {
+  _passwordButtonHidden = passwordButtonHidden;
+  self.manualFillAccessoryViewController.passwordButtonHidden =
+      passwordButtonHidden;
+}
+
+- (void)setAddressButtonHidden:(BOOL)addressButtonHidden {
+  _addressButtonHidden = addressButtonHidden;
+  self.manualFillAccessoryViewController.addressButtonHidden =
+      addressButtonHidden;
+}
+
+- (void)setCreditCardButtonHidden:(BOOL)creditCardButtonHidden {
+  _creditCardButtonHidden = creditCardButtonHidden;
+  self.manualFillAccessoryViewController.creditCardButtonHidden =
+      creditCardButtonHidden;
+}
 
 - (void)setFormInputNextButtonEnabled:(BOOL)formInputNextButtonEnabled {
   if (formInputNextButtonEnabled == _formInputNextButtonEnabled) {
@@ -363,6 +408,24 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       }
     }
   }
+}
+
+#pragma mark - ManualFillAccessoryViewControllerDelegate
+
+- (void)keyboardButtonPressed {
+  [self.manualFillAccessoryViewControllerDelegate keyboardButtonPressed];
+}
+
+- (void)accountButtonPressed:(UIButton*)sender {
+  [self.manualFillAccessoryViewControllerDelegate accountButtonPressed:sender];
+}
+
+- (void)cardButtonPressed:(UIButton*)sender {
+  [self.manualFillAccessoryViewControllerDelegate cardButtonPressed:sender];
+}
+
+- (void)passwordButtonPressed:(UIButton*)sender {
+  [self.manualFillAccessoryViewControllerDelegate passwordButtonPressed:sender];
 }
 
 @end
