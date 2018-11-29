@@ -16,6 +16,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/user_script.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -188,25 +189,50 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_HostSeparation) {
   auto explicit_url_pattern = [](const char* pattern) {
     return URLPattern(Extension::kValidHostPermissionSchemes, pattern);
   };
+  auto scriptable_url_pattern = [](const char* pattern) {
+    return URLPattern(UserScript::ValidUserScriptSchemes(), pattern);
+  };
 
   constexpr char kRequiredExplicit1[] = "https://required_explicit1.com/*";
   constexpr char kRequiredExplicit2[] = "https://required_explicit2.com/*";
   constexpr char kOptionalExplicit1[] = "https://optional_explicit1.com/*";
   constexpr char kOptionalExplicit2[] = "https://optional_explicit2.com/*";
+  constexpr char kRequiredScriptable1[] = "https://required_scriptable1.com/*";
+  constexpr char kRequiredScriptable2[] = "https://required_scriptable2.com/*";
+  constexpr char kRequiredExplicitAndScriptable1[] =
+      "https://required_explicit_and_scriptable1.com/*";
+  constexpr char kRequiredExplicitAndScriptable2[] =
+      "https://required_explicit_and_scriptable2.com/*";
+  constexpr char kOptionalExplicitAndRequiredScriptable1[] =
+      "https://optional_explicit_and_scriptable1.com/*";
+  constexpr char kOptionalExplicitAndRequiredScriptable2[] =
+      "https://optional_explicit_and_scriptable2.com/*";
   constexpr char kUnlisted1[] = "https://unlisted1.com/*";
 
   URLPatternSet required_explicit_hosts({
       explicit_url_pattern(kRequiredExplicit1),
       explicit_url_pattern(kRequiredExplicit2),
+      explicit_url_pattern(kRequiredExplicitAndScriptable1),
+      explicit_url_pattern(kRequiredExplicitAndScriptable2),
+  });
+  URLPatternSet required_scriptable_hosts({
+      scriptable_url_pattern(kRequiredScriptable1),
+      scriptable_url_pattern(kRequiredScriptable2),
+      scriptable_url_pattern(kRequiredExplicitAndScriptable1),
+      scriptable_url_pattern(kRequiredExplicitAndScriptable2),
+      scriptable_url_pattern(kOptionalExplicitAndRequiredScriptable1),
+      scriptable_url_pattern(kOptionalExplicitAndRequiredScriptable2),
   });
   URLPatternSet optional_explicit_hosts({
       explicit_url_pattern(kOptionalExplicit1),
       explicit_url_pattern(kOptionalExplicit2),
+      explicit_url_pattern(kOptionalExplicitAndRequiredScriptable1),
+      explicit_url_pattern(kOptionalExplicitAndRequiredScriptable2),
   });
 
-  PermissionSet required_permissions(APIPermissionSet(),
-                                     ManifestPermissionSet(),
-                                     required_explicit_hosts, URLPatternSet());
+  PermissionSet required_permissions(
+      APIPermissionSet(), ManifestPermissionSet(), required_explicit_hosts,
+      required_scriptable_hosts);
   PermissionSet optional_permissions(APIPermissionSet(),
                                      ManifestPermissionSet(),
                                      optional_explicit_hosts, URLPatternSet());
@@ -214,7 +240,9 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_HostSeparation) {
   Permissions permissions_object;
   permissions_object.origins =
       std::make_unique<std::vector<std::string>>(std::vector<std::string>(
-          {kRequiredExplicit1, kOptionalExplicit1, kUnlisted1}));
+          {kRequiredExplicit1, kOptionalExplicit1, kRequiredScriptable1,
+           kRequiredExplicitAndScriptable1,
+           kOptionalExplicitAndRequiredScriptable1, kUnlisted1}));
 
   std::string error;
   std::unique_ptr<UnpackPermissionSetResult> unpack_result =
@@ -224,9 +252,15 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_HostSeparation) {
   EXPECT_TRUE(error.empty()) << error;
 
   EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_explicit_hosts),
-              testing::UnorderedElementsAre(kRequiredExplicit1));
+              testing::UnorderedElementsAre(kRequiredExplicit1,
+                                            kRequiredExplicitAndScriptable1));
   EXPECT_THAT(GetPatternsAsStrings(unpack_result->optional_explicit_hosts),
-              testing::UnorderedElementsAre(kOptionalExplicit1));
+              testing::UnorderedElementsAre(
+                  kOptionalExplicit1, kOptionalExplicitAndRequiredScriptable1));
+  EXPECT_THAT(GetPatternsAsStrings(unpack_result->required_scriptable_hosts),
+              testing::UnorderedElementsAre(
+                  kRequiredScriptable1, kRequiredExplicitAndScriptable1,
+                  kOptionalExplicitAndRequiredScriptable1));
   EXPECT_THAT(GetPatternsAsStrings(unpack_result->unlisted_hosts),
               testing::UnorderedElementsAre(kUnlisted1));
 }
