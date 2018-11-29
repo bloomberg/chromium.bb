@@ -672,7 +672,7 @@ void AppListControllerImpl::StartAssistant() {
     DismissAppList();
 
   ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-      ash::AssistantSource::kLauncherSearchBox);
+      ash::AssistantEntryPoint::kLauncherSearchBox);
 }
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {

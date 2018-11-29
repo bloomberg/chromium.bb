@@ -5,6 +5,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/assistant/util/histogram_util.h"
 
 namespace ash {
 
@@ -28,19 +29,16 @@ void AssistantUiModel::SetUiMode(AssistantUiMode ui_mode) {
   NotifyUiModeChanged();
 }
 
-void AssistantUiModel::SetVisibility(AssistantVisibility visibility,
-                                     AssistantSource source) {
-  if (visibility == visibility_)
-    return;
+void AssistantUiModel::SetVisible(AssistantEntryPoint entry_point) {
+  SetVisibility(AssistantVisibility::kVisible, entry_point, base::nullopt);
+}
 
-  const AssistantVisibility old_visibility = visibility_;
-  visibility_ = visibility;
+void AssistantUiModel::SetHidden(AssistantExitPoint exit_point) {
+  SetVisibility(AssistantVisibility::kHidden, base::nullopt, exit_point);
+}
 
-  // Cache the Assistant entry point used for query count UMA metric.
-  if (visibility == AssistantVisibility::kVisible)
-    entry_point_ = source;
-
-  NotifyUiVisibilityChanged(old_visibility, source);
+void AssistantUiModel::SetClosed(AssistantExitPoint exit_point) {
+  SetVisibility(AssistantVisibility::kClosed, base::nullopt, exit_point);
 }
 
 void AssistantUiModel::SetUsableWorkArea(const gfx::Rect& usable_work_area) {
@@ -51,6 +49,29 @@ void AssistantUiModel::SetUsableWorkArea(const gfx::Rect& usable_work_area) {
   NotifyUsableWorkAreaChanged();
 }
 
+void AssistantUiModel::SetVisibility(
+    AssistantVisibility visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  if (visibility == visibility_)
+    return;
+
+  const AssistantVisibility old_visibility = visibility_;
+  visibility_ = visibility;
+
+  if (visibility == AssistantVisibility::kVisible) {
+    // Cache the Assistant entry point used for query count UMA metric.
+    DCHECK(entry_point.has_value());
+    DCHECK(!exit_point.has_value());
+    entry_point_ = entry_point.value();
+  } else {
+    DCHECK(!entry_point.has_value());
+    DCHECK(exit_point.has_value());
+  }
+
+  NotifyUiVisibilityChanged(old_visibility, entry_point, exit_point);
+}
+
 void AssistantUiModel::NotifyUiModeChanged() {
   for (AssistantUiModelObserver& observer : observers_)
     observer.OnUiModeChanged(ui_mode_);
@@ -58,9 +79,11 @@ void AssistantUiModel::NotifyUiModeChanged() {
 
 void AssistantUiModel::NotifyUiVisibilityChanged(
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   for (AssistantUiModelObserver& observer : observers_)
-    observer.OnUiVisibilityChanged(visibility_, old_visibility, source);
+    observer.OnUiVisibilityChanged(visibility_, old_visibility, entry_point,
+                                   exit_point);
 }
 
 void AssistantUiModel::NotifyUsableWorkAreaChanged() {

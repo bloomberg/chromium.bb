@@ -11,12 +11,17 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-void IncrementAssistantQueryCountForEntryPoint(AssistantSource entry_point) {
+void IncrementAssistantQueryCountForEntryPoint(
+    AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.QueryCountPerEntryPoint", entry_point);
 }
 
-void RecordAssistantEntryPoint(AssistantSource entry_point) {
+void RecordAssistantEntryPoint(AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.EntryPoint", entry_point);
+}
+
+void RecordAssistantExitPoint(AssistantExitPoint exit_point) {
+  UMA_HISTOGRAM_ENUMERATION("Assistant.ExitPoint", exit_point);
 }
 
 }  // namespace util

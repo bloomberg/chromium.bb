@@ -82,7 +82,7 @@ void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
     // this will also handle the case where we are deactivated without a press
     // event occurring. This happens, for example, when launching Chrome OS
     // feedback using keyboard shortcuts.
-    HideUi(AssistantSource::kUnspecified);
+    HideUi(AssistantExitPoint::kUnspecified);
   }
 }
 
@@ -95,8 +95,7 @@ void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
   // We need to update the model when the widget is destroyed as this may have
   // happened outside our control. This can occur as the result of pressing the
   // ESC key, for example.
-  model_.SetVisibility(AssistantVisibility::kClosed,
-                       AssistantSource::kUnspecified);
+  model_.SetClosed(AssistantExitPoint::kUnspecified);
 
   ResetContainerView();
 }
@@ -114,7 +113,7 @@ void AssistantUiController::OnInteractionStateChanged(
   // If there is an active interaction, we need to show Assistant UI if it is
   // not already showing. We don't have enough information here to know what
   // the interaction source is.
-  ShowUi(AssistantSource::kUnspecified);
+  ShowUi(AssistantEntryPoint::kUnspecified);
 }
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
@@ -153,7 +152,8 @@ bool AssistantUiController::OnCaptionButtonPressed(CaptionButtonId id) {
       UpdateUiMode(AssistantUiMode::kMainUi);
       return true;
     case CaptionButtonId::kClose:
-      return false;
+      CloseUi(AssistantExitPoint::kCloseButton);
+      return true;
     case CaptionButtonId::kMinimize:
       UpdateUiMode(AssistantUiMode::kMiniUi);
       return true;
@@ -177,11 +177,11 @@ void AssistantUiController::OnHighlighterEnabledChanged(
   switch (state) {
     case HighlighterEnabledState::kEnabled:
       if (model_.visibility() != AssistantVisibility::kVisible)
-        ShowUi(AssistantSource::kStylus);
+        ShowUi(AssistantEntryPoint::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
       if (model_.visibility() == AssistantVisibility::kVisible)
-        HideUi(AssistantSource::kStylus);
+        HideUi(AssistantExitPoint::kStylus);
       break;
     case HighlighterEnabledState::kDisabledBySessionComplete:
     case HighlighterEnabledState::kDisabledBySessionAbort:
@@ -212,7 +212,7 @@ void AssistantUiController::OnDeepLinkReceived(
   if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
-  ShowUi(AssistantSource::kDeepLink);
+  ShowUi(AssistantEntryPoint::kDeepLink);
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
@@ -225,15 +225,16 @@ void AssistantUiController::OnUrlOpened(const GURL& url, bool from_server) {
   // was user initiated so we only hide the UI to retain session state. That way
   // the user can choose to resume their session if they are so inclined.
   if (from_server)
-    CloseUi(AssistantSource::kUnspecified);
+    CloseUi(AssistantExitPoint::kNewBrowserTabFromServer);
   else
-    HideUi(AssistantSource::kUnspecified);
+    HideUi(AssistantExitPoint::kNewBrowserTabFromUser);
 }
 
 void AssistantUiController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       new_visibility == AssistantVisibility::kVisible
           ? mojom::VoiceInteractionState::RUNNING
@@ -254,7 +255,7 @@ void AssistantUiController::OnUiVisibilityChanged(
           FROM_HERE, kAutoCloseThreshold,
           base::BindRepeating(&AssistantUiController::CloseUi,
                               weak_factory_.GetWeakPtr(),
-                              AssistantSource::kUnspecified));
+                              AssistantExitPoint::kUnspecified));
 
       // Because the UI is not visible we needn't monitor events.
       event_monitor_.reset();
@@ -271,15 +272,23 @@ void AssistantUiController::OnUiVisibilityChanged(
           container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
       event_monitor_ = views::EventMonitor::CreateWindowMonitor(
           this, root_window, {ui::ET_MOUSE_PRESSED, ui::ET_TOUCH_PRESSED});
+
+      // Only record the entry point when Assistant UI becomes visible.
+      assistant::util::RecordAssistantEntryPoint(entry_point.value());
       break;
   }
 
   // Metalayer should not be sticky. Disable when the UI is no longer visible.
-  if (old_visibility == AssistantVisibility::kVisible)
+  if (old_visibility == AssistantVisibility::kVisible) {
     Shell::Get()->highlighter_controller()->AbortSession();
+
+    // Only record the exit point when Assistant UI becomes invisible to
+    // avoid duplicate happens (e.g., pressing ESC key).
+    assistant::util::RecordAssistantExitPoint(exit_point.value());
+  }
 }
 
-void AssistantUiController::ShowUi(AssistantSource source) {
+void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   if (!Shell::Get()
            ->voice_interaction_controller()
            ->settings_enabled()
@@ -305,8 +314,6 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     return;
   }
 
-  assistant::util::RecordAssistantEntryPoint(source);
-
   if (!container_view_)
     CreateContainerView();
 
@@ -314,24 +321,24 @@ void AssistantUiController::ShowUi(AssistantSource source) {
   // necessary due to limitations imposed by retrieving screen context. Once we
   // have finished retrieving screen context, the Assistant widget is activated.
   container_view_->GetWidget()->ShowInactive();
-  model_.SetVisibility(AssistantVisibility::kVisible, source);
+  model_.SetVisible(entry_point);
 }
 
-void AssistantUiController::HideUi(AssistantSource source) {
+void AssistantUiController::HideUi(AssistantExitPoint exit_point) {
   if (model_.visibility() != AssistantVisibility::kVisible)
     return;
 
+  model_.SetHidden(exit_point);
+
   if (container_view_)
     container_view_->GetWidget()->Hide();
-
-  model_.SetVisibility(AssistantVisibility::kHidden, source);
 }
 
-void AssistantUiController::CloseUi(AssistantSource source) {
+void AssistantUiController::CloseUi(AssistantExitPoint exit_point) {
   if (model_.visibility() == AssistantVisibility::kClosed)
     return;
 
-  model_.SetVisibility(AssistantVisibility::kClosed, source);
+  model_.SetClosed(exit_point);
 
   if (container_view_) {
     container_view_->GetWidget()->CloseNow();
@@ -339,10 +346,13 @@ void AssistantUiController::CloseUi(AssistantSource source) {
   }
 }
 
-void AssistantUiController::ToggleUi(AssistantSource source) {
+void AssistantUiController::ToggleUi(
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // When not visible, toggling will show the UI.
   if (model_.visibility() != AssistantVisibility::kVisible) {
-    ShowUi(source);
+    DCHECK(entry_point.has_value());
+    ShowUi(entry_point.value());
     return;
   }
 
@@ -353,7 +363,8 @@ void AssistantUiController::ToggleUi(AssistantSource source) {
   }
 
   // In all other cases, toggling closes the UI.
-  CloseUi(source);
+  DCHECK(exit_point.has_value());
+  CloseUi(exit_point.value());
 }
 
 void AssistantUiController::UpdateUiMode(
@@ -443,7 +454,7 @@ void AssistantUiController::OnEvent(const ui::Event& event) {
   // enforce logic to prevent hiding when using the stylus.
   if (!screen_bounds.Contains(screen_location) &&
       !keyboard_bounds.Contains(screen_location)) {
-    HideUi(AssistantSource::kUnspecified);
+    HideUi(AssistantExitPoint::kOutsidePress);
   }
 }
 

@@ -5,6 +5,7 @@
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 
 #include <algorithm>
+#include <map>
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -582,7 +583,8 @@ void AssistantMainStage::OnResponseChanged(
 void AssistantMainStage::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the greeting label and footer.

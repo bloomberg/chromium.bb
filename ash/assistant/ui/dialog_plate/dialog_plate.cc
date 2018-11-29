@@ -242,9 +242,11 @@ void DialogPlate::OnCommittedQueryChanged(
   query_history_iterator_->ResetToLast();
 }
 
-void DialogPlate::OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                                        AssistantVisibility old_visibility,
-                                        AssistantSource source) {
+void DialogPlate::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // When the Assistant UI is no longer visible we need to clear the dialog
   // plate so that text does not persist across Assistant launches.
   if (old_visibility == AssistantVisibility::kVisible)

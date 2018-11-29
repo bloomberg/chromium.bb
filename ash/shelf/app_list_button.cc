@@ -153,7 +153,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             GetWidget()->GetNativeWindow()->GetRootWindow());
         if (chromeos::switches::IsAssistantEnabled()) {
           Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-              AssistantSource::kLongPressLauncher);
+              AssistantEntryPoint::kLongPressLauncher);
         } else {
           Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         }

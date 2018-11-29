@@ -4,6 +4,9 @@
 
 #include "ash/assistant/assistant_screen_context_controller.h"
 
+#include <utility>
+#include <vector>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -197,7 +200,8 @@ void AssistantScreenContextController::OnAssistantControllerDestroying() {
 void AssistantScreenContextController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // We only initiate a contextual query for caching if the UI is being shown.
   // Otherwise, we abort any requests in progress and reset state.
   if (new_visibility != AssistantVisibility::kVisible) {
