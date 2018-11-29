@@ -38,6 +38,12 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpan {
   // Return data of the span at |index| by the form of a QuicStringPiece.
   QuicStringPiece GetData(int index) { return impl_.GetData(index); }
 
+  // Return the total length of the data inside the span.
+  QuicByteCount total_length() { return impl_.total_length(); }
+
+  // Return total number of slices in the span.
+  size_t NumSlices() { return impl_.NumSlices(); }
+
   bool empty() const { return impl_.empty(); }
 
  private:
