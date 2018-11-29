@@ -8,11 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_value_store.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class PersistentPrefStore;
 class PrefRegistry;
@@ -27,10 +29,8 @@ class InProcessPrefServiceFactory : public KeyedService {
 
   std::unique_ptr<PrefValueStore::Delegate> CreateDelegate();
 
-  base::Callback<std::unique_ptr<service_manager::Service>()>
-  CreatePrefServiceFactory();
-
-  std::unique_ptr<service_manager::Service> CreatePrefService();
+  std::unique_ptr<service_manager::Service> CreatePrefService(
+      service_manager::mojom::ServiceRequest request);
 
  private:
   class RegisteringDelegate;
@@ -47,7 +47,7 @@ class InProcessPrefServiceFactory : public KeyedService {
 
   base::OnceClosure quit_closure_;
 
-  base::WeakPtrFactory<InProcessPrefServiceFactory> weak_factory_;
+  base::WeakPtrFactory<InProcessPrefServiceFactory> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessPrefServiceFactory);
 };

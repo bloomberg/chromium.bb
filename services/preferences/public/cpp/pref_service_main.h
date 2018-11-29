@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_value_store.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class PersistentPrefStore;
 class PrefRegistry;
@@ -21,8 +22,13 @@ class Service;
 namespace prefs {
 
 // Creates a PrefService and a closure that can be used to shut it down.
+//
+// TODO(https://crbug.com/908649): This should NOT be in the public client
+// library for the prefs service. Neither should anything here which depends on
+// it, like InProcessPrefServiceFactory.
 std::pair<std::unique_ptr<service_manager::Service>, base::OnceClosure>
-CreatePrefService(PrefStore* managed_prefs,
+CreatePrefService(service_manager::mojom::ServiceRequest request,
+                  PrefStore* managed_prefs,
                   PrefStore* supervised_user_prefs,
                   PrefStore* extension_prefs,
                   PrefStore* command_line_prefs,
