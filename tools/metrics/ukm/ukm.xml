@@ -4531,6 +4531,12 @@ be describing additional metrics about the same event.
       brought to foreground again.
     </summary>
   </metric>
+  <metric name="LabelId">
+    <summary>
+      An int64 random number generated when TabManager.TabMetric is logged. The
+      same number is also logged here, so that feature label can be paired.
+    </summary>
+  </metric>
   <metric name="MRUIndex">
     <summary>
       Index of the tab in most-recently-used order. A value of N means there are
@@ -4539,10 +4545,14 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SequenceId">
+    <obsolete>
+      Deprecated 11/2018 in favor LabelId.
+    </obsolete>
     <summary>
-      The sequence of this event and TabManager.TabMetrics event in the current
-      session. Incremented by 1 each time one of the two events is logged to
-      provide an ordering of events.
+      This metric is obsolete in 11/2018 in favor of LabelId for pairing with
+      Tabmanager.TabMetrics event. The sequence of this event and
+      TabManager.TabMetrics event in the current session. Incremented by 1 each
+      time one of the two events is logged to provide an ordering of events.
     </summary>
   </metric>
   <metric name="TimeFromBackgrounded">
@@ -5338,6 +5348,13 @@ be describing additional metrics about the same event.
       Number of key events that were sent to the page.
     </summary>
   </metric>
+  <metric name="LabelId">
+    <summary>
+      An int64 random number generated at logging time. The same number will
+      also be logged to the TabManager.Background.ForegroundedOrClosed event, so
+      that feature label can be paired.
+    </summary>
+  </metric>
   <metric name="MouseEventCount">
     <summary>
       Number of mouse events that were sent to the page.
@@ -5379,11 +5396,23 @@ be describing additional metrics about the same event.
       PageTransition type may not be accurate.
     </summary>
   </metric>
-  <metric name="SequenceId">
+  <metric name="QueryId">
     <summary>
-      The sequence of this event and TabManager.ForegroundedOrClosed event in
-      the current session. Incremented by 1 each time one of the two events is
-      logged to provide an ordering of events.
+      An int64 random number generated at query time of
+      TabManager::GetSortedLifecycleUnitsFromTabRanker. Tabs with the same
+      QueryId will be later on combined in one full list for further analysis.
+    </summary>
+  </metric>
+  <metric name="SequenceId">
+    <obsolete>
+      Deprecated 11/2018 in favor LabelId.
+    </obsolete>
+    <summary>
+      This metric is obsolete in 11/2018 in favor of LabelId for pairing with
+      Tabmanager.ForegroundedOrClosed event. The sequence of this event and
+      TabManager.ForegroundedOrClosed event in the current session. Incremented
+      by 1 each time one of the two events is logged to provide an ordering of
+      events.
     </summary>
   </metric>
   <metric name="SiteEngagementScore">

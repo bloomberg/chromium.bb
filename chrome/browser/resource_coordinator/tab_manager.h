@@ -471,6 +471,13 @@ class TabManager : public LifecycleUnitObserver,
   // Indicates if TabManager should proactively discard tabs.
   bool ShouldProactivelyDiscardTabs();
 
+  // Returns the LifecycleUnits managed by this, similar to
+  // GetSortedLifecycleUnits. The result is sorted based on
+  // (reactivation_score_from_tab_ranker, last_activity_time).
+  // TODO(charleszhao): This is only used for TabRanker experiment and should be
+  // cleaned up once the experiment is done. https://crbug.com/908959.
+  LifecycleUnitVector GetSortedLifecycleUnitsFromTabRanker();
+
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
 

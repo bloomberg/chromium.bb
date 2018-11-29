@@ -306,4 +306,14 @@ int GetNumOldestTabsToScoreWithTabRanker() {
       std::numeric_limits<int>::max());
 }
 
+int GetNumOldestTabsToLogWithTabRanker() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabRanker, "number_of_oldest_tabs_to_log_with_TabRanker", 0);
+}
+
+bool DisableBackgroundLogWithTabRanker() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kTabRanker, "disable_background_log_with_TabRanker", false);
+}
+
 }  // namespace resource_coordinator

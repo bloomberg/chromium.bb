@@ -34,7 +34,13 @@ class TabActivityWatcher : public BrowserListObserver,
   // value indicates a higher likelihood of being reactivated.
   // Returns the score if the tab could be scored.
   base::Optional<float> CalculateReactivationScore(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      bool also_log_to_ukm = false);
+
+  // Generates a new query_id for logging CalculateReactivationScore calls.
+  // This function is called inside TabManager::GetSortedLifecycleUnits when
+  // reactivation scores are queried for all tabs.
+  void SetQueryIdForTabMetricsLogger(int64_t query_id);
 
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();

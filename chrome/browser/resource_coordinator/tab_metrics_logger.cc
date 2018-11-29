@@ -143,7 +143,8 @@ tab_ranker::TabFeatures TabMetricsLogger::GetTabFeatures(
 void TabMetricsLogger::LogTabMetrics(
     ukm::SourceId ukm_source_id,
     const tab_ranker::TabFeatures& tab_features,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    int64_t label_id) {
   if (!ukm_source_id)
     return;
 
@@ -167,7 +168,8 @@ void TabMetricsLogger::LogTabMetrics(
 
   ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
   PopulateTabFeaturesToUkmEntry(tab_features, &entry);
-  entry.SetSequenceId(++sequence_id_);
+  entry.SetLabelId(label_id);
+  entry.SetQueryId(query_id_);
   entry.Record(ukm::UkmRecorder::Get());
 }
 
@@ -178,7 +180,7 @@ void TabMetricsLogger::LogForegroundedOrClosedMetrics(
     return;
 
   ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
-      .SetSequenceId(++sequence_id_)
+      .SetLabelId(metrics.label_id)
       .SetIsForegrounded(metrics.is_foregrounded)
       .SetMRUIndex(metrics.mru_index)
       .SetTimeFromBackgrounded(metrics.time_from_backgrounded)

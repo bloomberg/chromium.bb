@@ -60,6 +60,7 @@ class TabMetricsLogger {
     int64_t time_from_backgrounded = 0;
     int mru_index = 0;
     int total_tab_count = 0;
+    int64_t label_id = 0;
   };
 
   TabMetricsLogger();
@@ -69,7 +70,8 @@ class TabMetricsLogger {
   // |ukm_source_id| is zero.
   void LogTabMetrics(ukm::SourceId ukm_source_id,
                      const tab_ranker::TabFeatures& tab_features,
-                     content::WebContents* web_contents);
+                     content::WebContents* web_contents,
+                     int64_t label_id);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
   // shown or closed after being inactive.
@@ -98,10 +100,12 @@ class TabMetricsLogger {
       const TabMetrics& tab_metrics,
       base::TimeDelta inactive_duration);
 
+  void set_query_id(int64_t query_id) { query_id_ = query_id; }
+
  private:
-  // A counter to be incremented and logged with each UKM entry, used to
-  // indicate the order that events within the same report were logged.
-  int sequence_id_ = 0;
+  // query_id should be set whenever a new tabRanker query happens, so all logs
+  // that happened within the same query will have same query_id_.
+  int64_t query_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLogger);
 };
