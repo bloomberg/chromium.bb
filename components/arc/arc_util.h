@@ -36,6 +36,9 @@ namespace arc {
 // check, so it is ok to access them directly.
 bool IsArcAvailable();
 
+// Returns true if ARC VM is enabled.
+bool IsArcVmEnabled();
+
 // Returns true if ARC should always start within the primary user session
 // (opted in user or not), and other supported mode such as guest and Kiosk
 // mode.

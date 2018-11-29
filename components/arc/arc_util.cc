@@ -71,6 +71,11 @@ bool IsArcAvailable() {
           base::FeatureList::IsEnabled(kEnableArcFeature));
 }
 
+bool IsArcVmEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableArcVm);
+}
+
 bool ShouldArcAlwaysStart() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))
