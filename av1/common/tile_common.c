@@ -143,30 +143,6 @@ int av1_get_sb_cols_in_tile(AV1_COMMON *cm, TileInfo tile) {
   return sb_cols;
 }
 
-int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
-  // Round the frame up to a whole number of max superblocks
-  mi_frame_size = ALIGN_POWER_OF_TWO(mi_frame_size, MAX_MIB_SIZE_LOG2);
-
-  // Divide by the signalled number of tiles, rounding up to the multiple of
-  // the max superblock size. To do this, shift right (and round up) to get the
-  // tile size in max super-blocks and then shift left again to convert it to
-  // mi units.
-  const int shift = log2_tile_num + MAX_MIB_SIZE_LOG2;
-  const int max_sb_tile_size =
-      ALIGN_POWER_OF_TWO(mi_frame_size, shift) >> shift;
-  const int mi_tile_size = max_sb_tile_size << MAX_MIB_SIZE_LOG2;
-
-  // The actual number of tiles is the ceiling of the frame size in mi units
-  // divided by mi_size. This is at most 1 << log2_tile_num but might be
-  // strictly less if max_sb_tile_size got rounded up significantly.
-  if (ntiles) {
-    *ntiles = (mi_frame_size + mi_tile_size - 1) / mi_tile_size;
-    assert(*ntiles <= (1 << log2_tile_num));
-  }
-
-  return mi_tile_size;
-}
-
 AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
                                int is_uv) {
   AV1PixelRect r;
