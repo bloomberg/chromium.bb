@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
   run_loop.Run();
 }
 
-// Only CrOS, and Cast support system tracing.
+// Only CrOS and Cast support system tracing.
 #if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
 #define MAYBE_SystemTraceEvents SystemTraceEvents
 #else

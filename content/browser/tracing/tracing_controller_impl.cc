@@ -50,7 +50,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -136,8 +135,6 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
 #elif defined(CAST_TRACING_AGENT)
   agents_.push_back(std::make_unique<CastTracingAgent>(connector));
-#elif defined(OS_WIN)
-  agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
 
   auto trace_event_agent = tracing::TraceEventAgent::Create(

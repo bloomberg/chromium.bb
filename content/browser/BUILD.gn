@@ -1742,8 +1742,6 @@ jumbo_source_set("browser") {
     "tracing/background_tracing_manager_impl.h",
     "tracing/background_tracing_rule.cc",
     "tracing/background_tracing_rule.h",
-    "tracing/etw_tracing_agent_win.cc",
-    "tracing/etw_tracing_agent_win.h",
     "tracing/file_tracing_provider_impl.cc",
     "tracing/file_tracing_provider_impl.h",
     "tracing/trace_message_filter.cc",
