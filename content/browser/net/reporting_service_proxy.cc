@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -19,6 +21,7 @@
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/platform/reporting.mojom.h"
 #include "url/gurl.h"
 
@@ -28,9 +31,8 @@ namespace {
 
 class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
  public:
-  ReportingServiceProxyImpl(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-      : request_context_getter_(std::move(request_context_getter)) {}
+  explicit ReportingServiceProxyImpl(int render_process_id)
+      : render_process_id_(render_process_id) {}
 
   // blink::mojom::ReportingServiceProxy:
 
@@ -132,55 +134,29 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<base::Value> body) {
-    net::URLRequestContext* request_context =
-        request_context_getter_->GetURLRequestContext();
-    if (!request_context) {
-      net::ReportingReport::RecordReportDiscardedForNoURLRequestContext();
+    auto* rph = RenderProcessHost::FromID(render_process_id_);
+    if (!rph)
       return;
-    }
 
-    net::ReportingService* reporting_service =
-        request_context->reporting_service();
-    if (!reporting_service) {
-      net::ReportingReport::RecordReportDiscardedForNoReportingService();
-      return;
-    }
-
-    // Depth is only non-zero for NEL reports, and those can't come from the
-    // renderer.
-    std::string user_agent;
-    if (request_context->http_user_agent_settings() != nullptr)
-      user_agent = request_context->http_user_agent_settings()->GetUserAgent();
-    reporting_service->QueueReport(url, user_agent, group, type,
-                                   std::move(body),
-                                   /* depth= */ 0);
+    rph->GetStoragePartition()->GetNetworkContext()->QueueReport(
+        type, group, url, /*user_agent=*/base::nullopt,
+        base::Value::FromUniquePtrValue(std::move(body)));
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  int render_process_id_;
 };
-
-void CreateReportingServiceProxyOnNetworkTaskRunner(
-    blink::mojom::ReportingServiceProxyRequest request,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  mojo::MakeStrongBinding(std::make_unique<ReportingServiceProxyImpl>(
-                              std::move(request_context_getter)),
-                          std::move(request));
-}
 
 }  // namespace
 
 // static
 void CreateReportingServiceProxy(
-    StoragePartition* storage_partition,
+    int render_process_id,
     blink::mojom::ReportingServiceProxyRequest request) {
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      storage_partition->GetURLRequestContext());
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner(
-      request_context_getter->GetNetworkTaskRunner());
-  network_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateReportingServiceProxyOnNetworkTaskRunner,
-                     std::move(request), std::move(request_context_getter)));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  mojo::MakeStrongBinding(
+      std::make_unique<ReportingServiceProxyImpl>(render_process_id),
+      std::move(request));
 }
 
 }  // namespace content
