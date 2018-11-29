@@ -202,7 +202,8 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   format.fmt.pix_mp.width = input_layout.coded_size().width();
   format.fmt.pix_mp.height = input_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat = input_format_fourcc;
-  if (device->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+  if (device->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != input_format_fourcc) {
     VLOGF(1) << "Failed to negotiate input format";
     return nullptr;
   }
@@ -237,7 +238,8 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   format.fmt.pix_mp.width = output_layout.coded_size().width();
   format.fmt.pix_mp.height = output_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat = output_format_fourcc;
-  if (device->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+  if (device->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != output_format_fourcc) {
     VLOGF(1) << "Failed to negotiate output format";
     return nullptr;
   }
