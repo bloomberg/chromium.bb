@@ -769,16 +769,14 @@ void BbrSender::CalculatePacingRate() {
   // Slow the pacing rate in STARTUP by the bytes_lost / CWND.
   if (startup_rate_reduction_multiplier_ != 0 && has_ever_detected_loss &&
       has_non_app_limited_sample_) {
-    if (startup_bytes_lost_ > congestion_window_) {
-      pacing_rate_ = BandwidthEstimate();
-    } else {
-      pacing_rate_ =
-          (1 - (startup_bytes_lost_ * startup_rate_reduction_multiplier_ *
-                1.0f / congestion_window_)) *
-          target_rate;
-      // Ensure the pacing rate doesn't drop below the bandwidth estimate.
-      pacing_rate_ = std::max(pacing_rate_, BandwidthEstimate());
-    }
+    pacing_rate_ =
+        (1 - (startup_bytes_lost_ * startup_rate_reduction_multiplier_ * 1.0f /
+              congestion_window_)) *
+        target_rate;
+    // Ensure the pacing rate doesn't drop below the startup growth target times
+    // the bandwidth estimate.
+    pacing_rate_ =
+        std::max(pacing_rate_, kStartupGrowthTarget * BandwidthEstimate());
     return;
   }
 

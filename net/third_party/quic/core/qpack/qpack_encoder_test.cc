@@ -124,6 +124,22 @@ TEST_P(QpackEncoderTest, StaticTable) {
   }
 }
 
+TEST_P(QpackEncoderTest, SimpleIndexed) {
+  spdy::SpdyHeaderBlock header_list;
+  header_list[":path"] = "/";
+
+  QpackEncoder encoder;
+  auto progressive_encoder = encoder.EncodeHeaderList(&header_list);
+  EXPECT_TRUE(progressive_encoder->HasNext());
+
+  // This indexed header field takes exactly one byte.
+  QuicString output;
+  progressive_encoder->Next(1, &output);
+
+  EXPECT_EQ(QuicTextUtils::HexDecode("c1"), output);
+  EXPECT_FALSE(progressive_encoder->HasNext());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

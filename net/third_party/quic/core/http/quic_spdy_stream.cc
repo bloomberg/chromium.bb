@@ -14,6 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
@@ -263,6 +264,10 @@ void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
   set_stream_error(frame.error_code);
   CloseWriteSide();
+}
+
+void QuicSpdyStream::OnDataAvailable() {
+  OnBodyAvailable();
 }
 
 void QuicSpdyStream::OnClose() {

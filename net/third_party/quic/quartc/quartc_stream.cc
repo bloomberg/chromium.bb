@@ -72,12 +72,15 @@ void QuartcStream::OnStreamFrameLost(QuicStreamOffset offset,
                                      bool fin_lost) {
   QuicStream::OnStreamFrameLost(offset, data_length, fin_lost);
 
+  ++total_frames_lost_;
+
   DCHECK(delegate_);
   delegate_->OnBufferChanged(this);
 }
 
 void QuartcStream::OnCanWrite() {
-  if (cancel_on_loss_ && HasPendingRetransmission()) {
+  if (total_frames_lost_ > max_frame_retransmission_count_ &&
+      HasPendingRetransmission()) {
     Reset(QUIC_STREAM_CANCELLED);
     return;
   }
@@ -85,15 +88,28 @@ void QuartcStream::OnCanWrite() {
 }
 
 bool QuartcStream::cancel_on_loss() {
-  return cancel_on_loss_;
+  return max_frame_retransmission_count_ == 0;
 }
 
 void QuartcStream::set_cancel_on_loss(bool cancel_on_loss) {
-  cancel_on_loss_ = cancel_on_loss;
+  if (cancel_on_loss) {
+    max_frame_retransmission_count_ = 0;
+  } else {
+    max_frame_retransmission_count_ = std::numeric_limits<int>::max();
+  }
+}
+
+int QuartcStream::max_frame_retransmission_count() const {
+  return max_frame_retransmission_count_;
+}
+
+void QuartcStream::set_max_frame_retransmission_count(
+    int max_frame_retransmission_count) {
+  max_frame_retransmission_count_ = max_frame_retransmission_count;
 }
 
 QuicByteCount QuartcStream::BytesPendingRetransmission() {
-  if (cancel_on_loss_) {
+  if (total_frames_lost_ > max_frame_retransmission_count_) {
     return 0;  // Lost bytes will never be retransmitted.
   }
   QuicByteCount bytes = 0;

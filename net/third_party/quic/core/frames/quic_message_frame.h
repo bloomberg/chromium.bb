@@ -23,8 +23,8 @@ struct QUIC_EXPORT_PRIVATE QuicMessageFrame {
   // message_id is only used on the sender side and does not get serialized on
   // wire.
   QuicMessageId message_id;
-  // The actual data is not owned.
-  QuicStringPiece message_data;
+  // The actual data.
+  QuicString message_data;
 };
 
 }  // namespace quic

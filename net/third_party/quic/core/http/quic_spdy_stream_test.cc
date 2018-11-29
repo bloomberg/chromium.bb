@@ -49,7 +49,7 @@ class TestStream : public QuicSpdyStream {
       : QuicSpdyStream(id, session, BIDIRECTIONAL),
         should_process_data_(should_process_data) {}
 
-  void OnDataAvailable() override {
+  void OnBodyAvailable() override {
     if (!should_process_data_) {
       return;
     }

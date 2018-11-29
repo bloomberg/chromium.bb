@@ -96,7 +96,7 @@ void QuicSpdyClientStream::OnPromiseHeaderList(
   }
 }
 
-void QuicSpdyClientStream::OnDataAvailable() {
+void QuicSpdyClientStream::OnBodyAvailable() {
   // For push streams, visitor will not be set until the rendezvous
   // between server promise and client request is complete.
   if (visitor() == nullptr)

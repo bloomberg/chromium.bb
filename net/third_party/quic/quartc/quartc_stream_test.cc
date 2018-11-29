@@ -409,6 +409,53 @@ TEST_F(QuartcStreamTest, TestCancelOnLossEnabled) {
   EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_CANCELLED);
 }
 
+TEST_F(QuartcStreamTest, TestMaxRetransmissionsAbsent) {
+  CreateReliableQuicStream();
+
+  // This should be the default state.
+  EXPECT_EQ(stream_->max_frame_retransmission_count(),
+            std::numeric_limits<int>::max());
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo barFoo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_NO_ERROR);
+}
+
+TEST_F(QuartcStreamTest, TestMaxRetransmissionsSet) {
+  CreateReliableQuicStream();
+  stream_->set_max_frame_retransmission_count(2);
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo barFoo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo barFoo barFoo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 7, false);
+  stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo barFoo barFoo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_CANCELLED);
+}
+
 TEST_F(QuartcStreamTest, TestBytesPendingRetransmission) {
   CreateReliableQuicStream();
   stream_->set_cancel_on_loss(false);

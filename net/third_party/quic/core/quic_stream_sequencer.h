@@ -20,14 +20,40 @@ namespace test {
 class QuicStreamSequencerPeer;
 }  // namespace test
 
-class QuicStream;
-
 // Buffers frames until we have something which can be passed
 // up to the next layer.
 class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
  public:
-  explicit QuicStreamSequencer(QuicStream* quic_stream);
+  // Interface that thie Sequencer uses to communicate with the Stream.
+  class StreamInterface {
+   public:
+    virtual ~StreamInterface() = default;
+
+    // Called when new data is available to be read from the sequencer.
+    virtual void OnDataAvailable() = 0;
+    // Called when the end of the stream has been read.
+    virtual void OnFinRead() = 0;
+    // Called when bytes have been consumed from the sequencer.
+    virtual void AddBytesConsumed(QuicByteCount bytes) = 0;
+    // TODO(rch): Clean up this interface via OnUnrecoverableError and
+    // remove PeerAddressOfLatestPacket().
+    // Called when an error has occurred which should result in the stream
+    // being reset.
+    virtual void Reset(QuicRstStreamErrorCode error) = 0;
+    // Called when an error has occurred which should result in the connection
+    // being closed.
+    virtual void CloseConnectionWithDetails(QuicErrorCode error,
+                                            const QuicString& details) = 0;
+
+    // Returns the stream id of this stream.
+    virtual QuicStreamId id() const = 0;
+    // Returns the peer address of the last packet received for this stream.
+    virtual const QuicSocketAddress& PeerAddressOfLatestPacket() const = 0;
+  };
+
+  explicit QuicStreamSequencer(StreamInterface* quic_stream);
   QuicStreamSequencer(const QuicStreamSequencer&) = delete;
+  QuicStreamSequencer(QuicStreamSequencer&&) = default;
   QuicStreamSequencer& operator=(const QuicStreamSequencer&) = delete;
   virtual ~QuicStreamSequencer();
 
@@ -131,7 +157,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   bool MaybeCloseStream();
 
   // The stream which owns this sequencer.
-  QuicStream* stream_;
+  StreamInterface* stream_;
 
   // Stores received data in offset order.
   QuicStreamSequencerBuffer buffered_frames_;

@@ -72,7 +72,8 @@ TEST_F(QpackEncoderStreamReceiverTest, InsertWithNameReferenceIndexTooLarge) {
 }
 
 TEST_F(QpackEncoderStreamReceiverTest, InsertWithNameReferenceValueTooLong) {
-  EXPECT_CALL(*delegate(), OnErrorDetected(Eq("ValueLen too large.")));
+  EXPECT_CALL(*delegate(),
+              OnErrorDetected(QuicStringPiece("Encoded integer too large.")));
 
   Decode(QuicTextUtils::HexDecode("c57fffffffffffffffffffff"));
 }
@@ -107,8 +108,11 @@ TEST_F(QpackEncoderStreamReceiverTest, InsertWithoutNameReferenceNameTooLong) {
   Decode(QuicTextUtils::HexDecode("5fffffffffffffffffffff"));
 }
 
-TEST_F(QpackEncoderStreamReceiverTest, InsertWithoutNameReferenceValueTooLong) {
-  EXPECT_CALL(*delegate(), OnErrorDetected(Eq("ValueLen too large.")));
+// Name Length value can be decoded by varint decoder but exceeds 1 MB limit.
+TEST_F(QpackEncoderStreamReceiverTest,
+       InsertWithoutNameReferenceNameExceedsLimit) {
+  EXPECT_CALL(*delegate(),
+              OnErrorDetected(QuicStringPiece("Encoded integer too large.")));
 
   Decode(QuicTextUtils::HexDecode("436261727fffffffffffffffffffff"));
 }

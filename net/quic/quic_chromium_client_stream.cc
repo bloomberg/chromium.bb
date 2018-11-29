@@ -480,7 +480,7 @@ void QuicChromiumClientStream::OnPromiseHeaderList(
   session_->HandlePromised(id(), promised_id, promise_headers);
 }
 
-void QuicChromiumClientStream::OnDataAvailable() {
+void QuicChromiumClientStream::OnBodyAvailable() {
   if (!FinishedReadingHeaders() || !headers_delivered_) {
     // Buffer the data in the sequencer until the headers have been read.
     return;

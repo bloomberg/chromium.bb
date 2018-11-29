@@ -186,7 +186,7 @@ void QuicStreamIdManager::OnStreamClosed(QuicStreamId stream_id) {
   // If the stream is inbound, we can increase the stream ID limit and maybe
   // advertise the new limit to the peer.
   if (actual_max_allowed_incoming_stream_id_ >=
-      (kMaximumStreamIdSupported - kV99StreamIdIncrement)) {
+      (kMaxQuicStreamId - kV99StreamIdIncrement)) {
     // Reached the maximum stream id value that the implementation
     // supports. Nothing can be done here.
     return;

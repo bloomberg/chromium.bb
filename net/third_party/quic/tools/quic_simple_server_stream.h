@@ -42,7 +42,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
 
   // QuicStream implementation called by the sequencer when there is
   // data (or a FIN) to be read.
-  void OnDataAvailable() override;
+  void OnBodyAvailable() override;
 
   // Make this stream start from as if it just finished parsing an incoming
   // request whose headers are equivalent to |push_request_headers|.

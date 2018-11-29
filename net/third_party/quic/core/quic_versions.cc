@@ -326,5 +326,11 @@ QuicString ParsedQuicVersionVectorToString(
   return result;
 }
 
+ParsedQuicVersion UnsupportedQuicVersion() {
+  static const ParsedQuicVersion kUnsupportedQuicVersion(
+      PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED);
+  return kUnsupportedQuicVersion;
+}
+
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds
 }  // namespace quic

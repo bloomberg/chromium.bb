@@ -51,6 +51,13 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   // From QuicCryptoHandshaker
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;
 
+ protected:
+  // Returns the QuicSession that this stream belongs to.
+  QuicSession* session() const { return session_; }
+
+  // Send either InchoateClientHello or ClientHello message to the server.
+  void DoSendCHLO(QuicCryptoClientConfig::CachedState* cached);
+
  private:
   // ChannelIDSourceCallbackImpl is passed as the callback method to
   // GetChannelIDKey. The ChannelIDSource calls this class with the result of
@@ -118,9 +125,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   // Start the handshake process.
   void DoInitialize(QuicCryptoClientConfig::CachedState* cached);
 
-  // Send either InchoateClientHello or ClientHello message to the server.
-  void DoSendCHLO(QuicCryptoClientConfig::CachedState* cached);
-
   // Process REJ message from the server.
   void DoReceiveREJ(const CryptoHandshakeMessage* in,
                     QuicCryptoClientConfig::CachedState* cached);
@@ -158,9 +162,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   // Returns true if the server crypto config in |cached| requires a ChannelID
   // and the client config settings also allow sending a ChannelID.
   bool RequiresChannelID(QuicCryptoClientConfig::CachedState* cached);
-
-  // Returns the QuicSession that this stream belongs to.
-  QuicSession* session() const { return session_; }
 
   QuicCryptoClientStream* stream_;
 

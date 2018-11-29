@@ -150,11 +150,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the peer seems unreachable over the current path.
   virtual void OnPathDegrading() = 0;
 
-  // Called after OnStreamFrame, OnRstStream, OnGoAway, OnWindowUpdateFrame,
-  // OnBlockedFrame, and OnCanWrite to allow post-processing once the work has
-  // been done.
-  virtual void PostProcessAfterData() = 0;
-
   // Called when the connection sends ack after
   // max_consecutive_num_packets_with_no_retransmittable_frames_ consecutive not
   // retransmittable packets sent. To instigate an ack from peer, a
@@ -816,10 +811,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     donot_retransmit_old_window_updates_ = value;
   }
 
-  bool deprecate_post_process_after_data() const {
-    return deprecate_post_process_after_data_;
-  }
-
   // Attempts to process any queued undecryptable packets.
   void MaybeProcessUndecryptablePackets();
 
@@ -1363,9 +1354,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
   bool donot_retransmit_old_window_updates_;
-
-  // Latched value of quic_reloadable_flag_quic_move_post_process_after_data.
-  const bool deprecate_post_process_after_data_;
 
   // Indicates whether server connection does version negotiation. Server
   // connection does not support version negotiation if a single version is

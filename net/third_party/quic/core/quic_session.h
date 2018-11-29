@@ -110,9 +110,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void OnCanWrite() override;
   void OnCongestionWindowChange(QuicTime /*now*/) override {}
   void OnConnectionMigration(AddressChangeType type) override {}
-  // Deletes streams that are safe to be deleted now that it's safe to do so (no
-  // other operations are being done on the streams at this time).
-  void PostProcessAfterData() override;
   // Adds a connection level WINDOW_UPDATE frame.
   void OnAckNeedsRetransmittableFrame() override;
   void SendPing() override;
@@ -161,10 +158,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // includes the message status and message ID (valid if the write succeeds).
   // SendMessage flushes a message packet even it is not full. If the
   // application wants to bundle other data in the same packet, please consider
-  // adding a packet flusher around the SendMessage and/or WritevData calls. If
-  // a packet flusher is added, ensure the |message|'s buffer is not modified or
-  // deleted before exiting the flusher's scope. OnMessageAcked and
-  // OnMessageLost are called when a particular message gets acked or lost.
+  // adding a packet flusher around the SendMessage and/or WritevData calls.
+  //
+  // OnMessageAcked and OnMessageLost are called when a particular message gets
+  // acked or lost.
   //
   // Note that SendMessage will fail with status = MESSAGE_STATUS_BLOCKED
   // if connection is congestion control blocked or underlying socket is write
@@ -359,8 +356,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void CleanUpClosedStreams();
 
   bool session_decides_what_to_write() const;
-
-  bool deprecate_post_process_after_data() const;
 
   const ParsedQuicVersionVector& supported_versions() const {
     return supported_versions_;

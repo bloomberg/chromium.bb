@@ -8,8 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
-#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
+#include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -17,7 +16,8 @@
 namespace quic {
 
 // This class decodes data received on the encoder stream.
-class QUIC_EXPORT_PRIVATE QpackEncoderStreamReceiver {
+class QUIC_EXPORT_PRIVATE QpackEncoderStreamReceiver
+    : public QpackInstructionDecoder::Delegate {
  public:
   // An interface for handling instructions decoded from the encoder stream, see
   // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#rfc.section.5.2
@@ -51,83 +51,13 @@ class QUIC_EXPORT_PRIVATE QpackEncoderStreamReceiver {
   // and all further data is ignored.
   void Decode(QuicStringPiece data);
 
+  // QpackInstructionDecoder::Delegate implementation.
+  bool OnInstructionDecoded(const QpackInstruction* instruction) override;
+  void OnError(QuicStringPiece error_message) override;
+
  private:
-  enum class State {
-    // Identify the instruction and start decoding an integer.
-    kStart,
-    // Decode name index or name length.
-    kNameIndexOrLengthResume,
-    kNameIndexOrLengthDone,
-    // Read name string literal, which is optionally Huffman encoded.
-    kReadName,
-    // Optionally decode Huffman encoded name.
-    kDecodeName,
-    // Read value string length.
-    kValueLengthStart,
-    kValueLengthResume,
-    kValueLengthDone,
-    // Read value string literal, which is optionally Huffman encoded.
-    kReadValue,
-    // Optionally decode Huffman encoded value.
-    kDecodeValue,
-    // Done with insertion instruction.
-    kInsertDone,
-    // Read index to duplicate.
-    kIndexResume,
-    kIndexDone,
-    // Read maximum table size.
-    kMaxSizeResume,
-    kMaxSizeDone,
-  };
-
-  // One method for each state.  Some take input data and return the number of
-  // octets processed.  Some only change internal state.
-  size_t DoStart(QuicStringPiece data);
-  size_t DoNameIndexOrLengthResume(QuicStringPiece data);
-  void DoNameIndexOrLengthDone();
-  size_t DoReadName(QuicStringPiece data);
-  void DoDecodeName();
-  size_t DoValueLengthStart(QuicStringPiece data);
-  size_t DoValueLengthResume(QuicStringPiece data);
-  void DoValueLengthDone();
-  size_t DoReadValue(QuicStringPiece data);
-  void DoDecodeValue();
-  void DoInsertDone();
-  size_t DoIndexResume(QuicStringPiece data);
-  void DoIndexDone();
-  size_t DoMaxSizeResume(QuicStringPiece data);
-  void DoMaxSizeDone();
-
-  void OnError(QuicStringPiece error_message);
-
+  QpackInstructionDecoder instruction_decoder_;
   Delegate* const delegate_;
-  http2::HpackVarintDecoder varint_decoder_;
-  http2::HpackHuffmanDecoder huffman_decoder_;
-  State state_;
-
-  // True if the currently parsed string (name or value) is Huffman encoded.
-  bool is_huffman_;
-
-  // True if the name index refers to the static table.
-  bool is_static_;
-
-  // True if the header field value is encoded as a string literal.
-  bool literal_name_;
-
-  // Decoded name index.
-  uint64_t name_index_;
-
-  // Decoded length for header name.
-  size_t name_length_;
-
-  // Decoded header name.
-  QuicString name_;
-
-  // Decoded length for header value.
-  size_t value_length_;
-
-  // Decoded header value.
-  QuicString value_;
 
   // True if a decoding error has been detected.
   bool error_detected_;

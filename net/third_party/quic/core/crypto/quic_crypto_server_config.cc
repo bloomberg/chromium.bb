@@ -1111,6 +1111,14 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
   }
 
   QuicString forward_secure_public_value;
+  if (GetQuicRestartFlag(quic_no_ephemeral_key_source)) {
+    if (ephemeral_key_source_) {
+      QUIC_BUG << "quic_no_ephemeral_key_source flag is on, but "
+                  "ephemeral_key_source is present";
+    } else {
+      QUIC_FLAG_COUNT(quic_restart_flag_quic_no_ephemeral_key_source);
+    }
+  }
   if (ephemeral_key_source_) {
     params->forward_secure_premaster_secret =
         ephemeral_key_source_->CalculateForwardSecureKey(

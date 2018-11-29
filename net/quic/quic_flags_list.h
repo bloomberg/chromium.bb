@@ -219,9 +219,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_has_pending_crypto_data,
           true)
 
-// This flag fixes a bug where a zombie stream cannot be correctly reset.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_reset_zombie_streams, true)
-
 // When true, fix initialization and updating of
 // |time_of_first_packet_sent_after_receiving_| in QuicConnection.
 QUIC_FLAG(
@@ -229,19 +226,9 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_fix_time_of_first_packet_sent_after_receiving,
     true)
 
-// If true, deprecate PostProcessAfterData from QuicConnection. This is used to
-// fix a bug where window update causes session to write data.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_post_process_after_data,
-          true)
-
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
-
-// When true, don't arm the path degrading alarm on the server side and stop
-// using HasUnackedPackets to decide when to arm it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, true)
 
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
@@ -252,7 +239,7 @@ QUIC_FLAG(bool,
 // a new decryption key is made available.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_decrypt_packets_on_key_change,
-          false)
+          true)
 
 // This flag fixes a bug where dispatcher's last_packet_is_ietf_quic may be
 // wrong when getting proof asynchronously.
@@ -316,3 +303,18 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
+
+// If true, enable the fix for the bug where v44 packets are rejected
+// by a lower-version connection close.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_reject_by_session_type,
+          true)
+
+// If true, only send version negotiation packets when they are at least
+// 1200 bytes.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_limit_version_negotiation,
+          false)
+
+// If true, disables key share caching for QUIC key exchange
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, false)

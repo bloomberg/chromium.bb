@@ -22,7 +22,7 @@
 
 namespace quic {
 
-QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream)
+QuicStreamSequencer::QuicStreamSequencer(StreamInterface* quic_stream)
     : stream_(quic_stream),
       buffered_frames_(kStreamReceiveWindowLimit),
       close_offset_(std::numeric_limits<QuicStreamOffset>::max()),

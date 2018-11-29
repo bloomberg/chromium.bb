@@ -56,7 +56,7 @@ void QuicSimpleServerStream::OnTrailingHeadersComplete(
   SendErrorResponse();
 }
 
-void QuicSimpleServerStream::OnDataAvailable() {
+void QuicSimpleServerStream::OnBodyAvailable() {
   while (HasBytesToRead()) {
     struct iovec iov;
     if (GetReadableRegions(&iov, 1) == 0) {

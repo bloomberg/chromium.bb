@@ -32,14 +32,11 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // Fixes behavior of StopReading() with level-triggered stream sequencers.
   SetQuicReloadableFlag(quic_stop_reading_when_level_triggered, true);
 
-  // Quartc uses zombie streams -- we close the stream for read as soon as we
-  // create a stream -- this makes the stream a zombie stream. b/115323618
-  // revealed that closing zombie streams is problematic, and enabling this flag
-  // fixes it.
-  SetQuicReloadableFlag(quic_fix_reset_zombie_streams, true);
-
   // Fix b/110259444.
   SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
+
+  // Enable version 45+ to enable SendMessage API.
+  SetQuicReloadableFlag(quic_enable_version_46, true);
 
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());

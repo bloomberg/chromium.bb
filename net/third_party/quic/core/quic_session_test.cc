@@ -19,6 +19,7 @@
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
+#include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -251,7 +252,6 @@ class TestSession : public QuicSession {
   using QuicSession::ActivateStream;
   using QuicSession::closed_streams;
   using QuicSession::next_outgoing_stream_id;
-  using QuicSession::PostProcessAfterData;
   using QuicSession::zombie_streams;
 
  private:
@@ -1063,9 +1063,6 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream->id(),
                                QUIC_STREAM_CANCELLED, kByteOffset);
   session_.OnRstStream(rst_frame);
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
 }
 
@@ -1081,9 +1078,6 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingFinAndLocalReset) {
       kInitialSessionFlowControlWindowForTest / 2 - 1;
   QuicStreamFrame frame(stream->id(), true, kByteOffset, ".");
   session_.OnStreamFrame(frame);
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_TRUE(connection_->connected());
 
   EXPECT_EQ(0u, stream->flow_controller()->bytes_consumed());
@@ -1263,12 +1257,6 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   // Create one more data streams to exceed limit of open stream.
   QuicStreamFrame data1(kFinalStreamId, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
-
-  // Called after any new data is received by the session, and triggers the
-  // call to close the connection.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
 }
 
 TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpenedOutgoing) {
@@ -1308,12 +1296,6 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
     EXPECT_EQ(1u, session_.GetNumOpenIncomingStreams());
     session_.StreamDraining(i);
     EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
-  }
-
-  // Called after any new data is received by the session, and triggers the call
-  // to close the connection.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
   }
 }
 
@@ -1380,10 +1362,6 @@ TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
   stream->Reset(QUIC_STREAM_CANCELLED);
   EXPECT_TRUE(QuicStreamPeer::read_side_closed(stream));
 
-  // Allow the session to delete the stream object.
-  if (!session_.deprecate_post_process_after_data()) {
-    session_.PostProcessAfterData();
-  }
   EXPECT_TRUE(connection_->connected());
   EXPECT_TRUE(QuicSessionPeer::IsStreamClosed(&session_, stream_id));
   EXPECT_FALSE(QuicSessionPeer::IsStreamCreated(&session_, stream_id));
@@ -1697,22 +1675,14 @@ TEST_P(QuicSessionTestServer, LocallyResetZombieStreams) {
   EXPECT_CALL(*connection_, OnStreamReset(stream2->id(), _));
   stream2->Reset(QUIC_STREAM_CANCELLED);
 
-  if (GetQuicReloadableFlag(quic_fix_reset_zombie_streams)) {
-    // Verify stream 2 gets closed.
-    EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
-    EXPECT_TRUE(session_.IsClosedStream(stream2->id()));
-    EXPECT_CALL(*stream2, OnCanWrite()).Times(0);
-  } else {
-    EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
-    EXPECT_CALL(*stream2, OnCanWrite());
-  }
+  // Verify stream 2 gets closed.
+  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
+  EXPECT_TRUE(session_.IsClosedStream(stream2->id()));
+  EXPECT_CALL(*stream2, OnCanWrite()).Times(0);
   session_.OnCanWrite();
 }
 
 TEST_P(QuicSessionTestServer, CleanUpClosedStreamsAlarm) {
-  if (!GetQuicReloadableFlag(quic_deprecate_post_process_after_data)) {
-    return;
-  }
   EXPECT_FALSE(
       QuicSessionPeer::GetCleanUpClosedStreamsAlarm(&session_)->IsSet());
 
