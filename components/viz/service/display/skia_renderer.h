@@ -92,7 +92,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearFramebuffer();
 
   void PrepareCanvasForDrawQuads(
-      const SharedQuadState* shared_quad_state,
+      const gfx::Transform& transform,
       const gfx::QuadF* draw_region,
       const gfx::Rect* scissor_rect,
       base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
@@ -180,9 +180,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // State common to all tile quads in a batch
   struct BatchedTileState {
-    const SharedQuadState* shared_quad_state;
+    gfx::Transform transform;
     gfx::Rect scissor_rect;
     gfx::QuadF draw_region;
+    SkBlendMode blend_mode;
     bool is_nearest_neighbor;
     bool has_scissor_rect;
     bool has_draw_region;
