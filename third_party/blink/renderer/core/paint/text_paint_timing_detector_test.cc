@@ -24,6 +24,19 @@ class TextPaintTimingDetectorTest
     return GetFrameView().GetPaintTimingDetector();
   }
 
+  unsigned CountRecords() {
+    return GetPaintTimingDetector()
+        .GetTextPaintTimingDetector()
+        .recorded_text_node_ids_.size();
+  }
+
+  void InvokeCallback() {
+    TextPaintTimingDetector& detector =
+        GetPaintTimingDetector().GetTextPaintTimingDetector();
+    detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
+                            CurrentTimeTicks());
+  }
+
   TimeTicks LargestPaintStoredResult() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
@@ -73,6 +86,19 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OneText) {
                            .FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   EXPECT_EQ(record->text, "The only text");
+}
+
+TEST_F(TextPaintTimingDetectorTest, NodeRemovedBeforeAssigningSwapTime) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <div id="remove">The only text</div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("remove"));
+  InvokeCallback();
+  EXPECT_EQ(CountRecords(), 0u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
