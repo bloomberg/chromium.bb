@@ -34,6 +34,12 @@ per-file *.typemap=file://ipc/SECURITY_OWNERS
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
+# Content client.
+per-file chrome_content_client.cc=*
+per-file chrome_content_client_constants.h=*
+per-file chrome_content_client.h=*
+per-file chrome_content_client_unittest.cc=*
+
 # Content settings
 per-file content_settings*=markusheintz@chromium.org
 
