@@ -99,7 +99,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/tabs/tab_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
@@ -161,7 +160,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
-#import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
@@ -249,7 +247,6 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/ssl/ssl_info.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMUIImage+Resize.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -476,9 +473,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Used to display the Find In Page UI. Nil if not visible.
   FindBarControllerIOS* _findBarController;
-
-  // Used to display the Print UI. Nil if not visible.
-  PrintController* _printController;
 
   // Adapter to let BVC be the delegate for WebState.
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
@@ -1431,8 +1425,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   }
 
   [_paymentRequestManager cancelRequest];
-  [_printController dismissAnimated:YES];
-  _printController = nil;
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [_contextMenuCoordinator stop];
 
@@ -4371,17 +4363,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
       presentBookmarkEditorForTab:self.tabModel.currentTab
               currentlyBookmarked:[self.helper isWebStateBookmarkedByUser:
                                                    self.currentWebState]];
-}
-
-- (void)printTab {
-  if (!_printController) {
-    _printController = [[PrintController alloc]
-        initWithContextGetter:_browserState->GetRequestContext()];
-  }
-  Tab* currentTab = self.tabModel.currentTab;
-  [_printController printView:[currentTab viewForPrinting]
-                    withTitle:tab_util::GetTabTitle(currentTab.webState)
-               viewController:self];
 }
 
 - (void)addToReadingList:(ReadingListAddCommand*)command {

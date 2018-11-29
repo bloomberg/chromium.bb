@@ -12,6 +12,9 @@
 // and representative of the contents.
 @protocol BrowserCoordinatorCommands
 
+// Prints the currently active tab.
+- (void)printTab;
+
 // Shows the Reading List UI.
 - (void)showReadingList;
 
