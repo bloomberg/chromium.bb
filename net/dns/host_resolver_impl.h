@@ -357,7 +357,9 @@ class NET_EXPORT HostResolverImpl
   void OnDNSChanged() override;
   void OnInitialDNSConfigRead() override;
 
-  DnsConfig GetBaseDnsConfig() const;
+  // Returns DNS configuration including applying overrides. |log_to_net_log|
+  // indicates whether the config should be logged to the netlog.
+  DnsConfig GetBaseDnsConfig(bool log_to_net_log);
   void UpdateDNSConfig(bool config_changed);
 
   // True if have a DnsClient with a valid DnsConfig.
@@ -378,7 +380,8 @@ class NET_EXPORT HostResolverImpl
     return dispatcher_->num_running_jobs();
   }
 
-  // Update |mode_for_histogram_|. Called when DNS config changes.
+  // Update |mode_for_histogram_|. Called when DNS config changes. |dns_config|
+  // is the current DNS config and is only used if !HaveDnsConfig().
   void UpdateModeForHistogram(const DnsConfig& dns_config);
 
   // Cache of host resolution results.
