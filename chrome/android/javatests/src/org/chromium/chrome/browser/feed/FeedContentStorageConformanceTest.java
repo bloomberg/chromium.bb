@@ -37,7 +37,7 @@ import java.util.Map;
 @SmallTest
 @RunWith(ChromeJUnit4ClassRunner.class)
 public final class FeedContentStorageConformanceTest extends ContentStorageConformanceTest {
-    private static final long TIMEOUT = scaleTimeout(1000);
+    private static final long TIMEOUT = scaleTimeout(3000);
 
     class ContentStorageWrapper extends FeedContentStorage {
         public ContentStorageWrapper(Profile p) {
