@@ -105,8 +105,9 @@ void SearchEngineTabHelper::OnFaviconUpdated(
       ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   TemplateURLService* url_service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
-  if (url_service && url_service->loaded())
-    url_service->UpdateProviderFavicons(driver->GetActiveURL(), icon_url);
+  const GURL potential_search_url = driver->GetActiveURL();
+  if (url_service && url_service->loaded() && potential_search_url.is_valid())
+    url_service->UpdateProviderFavicons(potential_search_url, icon_url);
 }
 
 // When the page is loaded, checks if |searchable_url_| has a value generated
