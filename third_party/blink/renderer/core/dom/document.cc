@@ -120,6 +120,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_recalc_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/transform_source.h"
 #include "third_party/blink/renderer/core/dom/tree_walker.h"
@@ -2200,10 +2201,7 @@ void Document::UpdateStyleAndLayoutTree() {
   // NeedsLayoutTreeUpdate().
   GetSlotAssignmentEngine().RecalcSlotAssignments();
 
-#if DCHECK_IS_ON()
-  NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
-      slot_assignment_recalc_forbidden_recursion_depth_);
-#endif
+  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
 
   if (!NeedsLayoutTreeUpdate()) {
     if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {
