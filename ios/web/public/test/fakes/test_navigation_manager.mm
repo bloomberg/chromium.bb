@@ -154,10 +154,12 @@ void TestNavigationManager::ReloadWithUserAgentType(
 }
 
 NavigationItemList TestNavigationManager::GetBackwardItems() const {
+  NOTREACHED();
   return NavigationItemList();
 }
 
 NavigationItemList TestNavigationManager::GetForwardItems() const {
+  NOTREACHED();
   return NavigationItemList();
 }
 
