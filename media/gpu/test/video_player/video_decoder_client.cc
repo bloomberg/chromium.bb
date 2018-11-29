@@ -236,7 +236,6 @@ void VideoDecoderClient::CreateDecoderTask(
 
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  LOG_ASSERT(decoder_) << "Can't destroy decoder: not created yet";
   DVLOGF(4);
 
   // Invalidate all scheduled tasks.
@@ -244,9 +243,11 @@ void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
 
   // Destroying a decoder requires an active GL context.
   // TODO(dstaessens@) Investigate making the decoder manage the GL context.
-  frame_renderer_->AcquireGLContext();
-  decoder_.reset();
-  frame_renderer_->ReleaseGLContext();
+  if (decoder_) {
+    frame_renderer_->AcquireGLContext();
+    decoder_.reset();
+    frame_renderer_->ReleaseGLContext();
+  }
 
   done->Signal();
 }
