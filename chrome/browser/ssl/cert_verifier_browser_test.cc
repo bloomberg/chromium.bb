@@ -11,11 +11,13 @@ ChromeMockCertVerifier::ChromeMockCertVerifier() = default;
 ChromeMockCertVerifier::~ChromeMockCertVerifier() = default;
 
 void ChromeMockCertVerifier::SetUpInProcessBrowserTestFixture() {
+  ContentMockCertVerifier::SetUpInProcessBrowserTestFixture();
   IOThread::SetCertVerifierForTesting(mock_cert_verifier_internal());
   ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_internal());
 }
 
 void ChromeMockCertVerifier::TearDownInProcessBrowserTestFixture() {
+  ContentMockCertVerifier::TearDownInProcessBrowserTestFixture();
   IOThread::SetCertVerifierForTesting(nullptr);
   ProfileIOData::SetCertVerifierForTesting(nullptr);
 }
