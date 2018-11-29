@@ -1468,7 +1468,7 @@
       'libfuzzer', 'asan', 'debug_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
     'libfuzzer_chromeos_asan_release_bot': [
-      'libfuzzer', 'asan', 'chromeos_with_codecs', 'release_bot', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'chromeos_with_codecs', 'shared_release_bot', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
     'libfuzzer_asan_release_bot': [
       'libfuzzer', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
