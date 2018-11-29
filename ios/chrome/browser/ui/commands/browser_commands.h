@@ -48,9 +48,6 @@ class GURL;
 // Bookmarks the current page.
 - (void)bookmarkPage;
 
-// Prints the currently active tab.
-- (void)printTab;
-
 // Adds a page to the reading list using data in |command|.
 - (void)addToReadingList:(ReadingListAddCommand*)command;
 

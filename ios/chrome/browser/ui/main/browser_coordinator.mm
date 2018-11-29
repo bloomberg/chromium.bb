@@ -9,9 +9,12 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
@@ -22,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
@@ -30,6 +34,7 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -59,6 +64,10 @@
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
+
+// Used to display the Print UI. Nil if not visible.
+// TODO(crbug.com/910017): Convert to coordinator.
+@property(nonatomic, strong) PrintController* printController;
 
 // Coordinator for the QR scanner.
 @property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
@@ -118,6 +127,10 @@
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.passKitCoordinator stop];
+
+  [self.printController dismissAnimated:YES];
+  self.printController = nil;
+
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }
@@ -153,6 +166,7 @@
 
   self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
       initWithBaseViewController:self.viewController];
+
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
@@ -170,6 +184,8 @@
 
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
+
+  /* PrintController is created and started by a BrowserCommand */
 
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -204,6 +220,8 @@
   [self.passKitCoordinator stop];
   self.passKitCoordinator = nil;
 
+  self.printController = nil;
+
   [self.qrScannerCoordinator stop];
   self.qrScannerCoordinator = nil;
 
@@ -221,6 +239,19 @@
 
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator = nil;
+}
+
+#pragma mark - BrowserCoordinatorCommands
+
+- (void)printTab {
+  if (!self.printController) {
+    self.printController = [[PrintController alloc]
+        initWithContextGetter:self.browserState->GetRequestContext()];
+  }
+  Tab* currentTab = self.tabModel.currentTab;
+  [self.printController printView:[currentTab viewForPrinting]
+                        withTitle:tab_util::GetTabTitle(currentTab.webState)
+                   viewController:self.viewController];
 }
 
 - (void)showReadingList {
