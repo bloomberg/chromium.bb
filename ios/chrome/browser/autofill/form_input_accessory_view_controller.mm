@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
@@ -417,14 +418,20 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenProfiles",
+                           self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate accountButtonPressed:sender];
 }
 
 - (void)cardButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenCreditCards",
+                           self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate cardButtonPressed:sender];
 }
 
 - (void)passwordButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenPasswords",
+                           self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate passwordButtonPressed:sender];
 }
 
