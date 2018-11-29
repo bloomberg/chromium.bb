@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Custom Elements: CEReactions on HTMLSelectElement interface Uncaught ReferenceError: test_with_window is not defined
-Harness: the test ran to completion.
-
