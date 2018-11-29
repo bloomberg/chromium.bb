@@ -31,7 +31,8 @@ class SideSwipeDetector;
 // An aura::WindowTreeHost that correctly converts input events.
 class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
  public:
-  CastWindowTreeHost(bool enable_input, const gfx::Rect& bounds);
+  CastWindowTreeHost(bool enable_input,
+                     ui::PlatformWindowInitProperties properties);
   ~CastWindowTreeHost() override;
 
   // aura::WindowTreeHostPlatform implementation:
