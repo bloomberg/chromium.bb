@@ -1414,7 +1414,6 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
   WebPluginContainerImpl* container = static_cast<WebPluginContainerImpl*>(
       GetWebPluginContainer(web_view, WebString::FromUTF8("plugin")));
   ASSERT_TRUE(container);
-  Element* element = static_cast<Element*>(container->GetElement());
   const auto* plugin =
       static_cast<const CompositedPlugin*>(container->Plugin());
 
@@ -1429,7 +1428,6 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
   const auto& display_items =
       paint_controller->GetPaintArtifact().GetDisplayItemList();
   ASSERT_EQ(1u, display_items.size());
-  EXPECT_EQ(element->GetLayoutObject(), &display_items[0].Client());
   ASSERT_EQ(DisplayItem::kForeignLayerPlugin, display_items[0].GetType());
   const auto& foreign_layer_display_item =
       static_cast<const ForeignLayerDisplayItem&>(display_items[0]);

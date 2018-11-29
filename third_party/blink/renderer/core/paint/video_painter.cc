@@ -52,11 +52,11 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   if (paint_with_foreign_layer) {
     if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
-      layer->SetBounds(static_cast<gfx::Size>(pixel_snapped_rect.Size()));
+      layer->SetOffsetToTransformParent(
+          gfx::Vector2dF(pixel_snapped_rect.X(), pixel_snapped_rect.Y()));
+      layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);
-      RecordForeignLayer(
-          context, layout_video_, DisplayItem::kForeignLayerVideo, layer,
-          FloatPoint(pixel_snapped_rect.Location()), pixel_snapped_rect.Size());
+      RecordForeignLayer(context, DisplayItem::kForeignLayerVideo, layer);
       return;
     }
   }

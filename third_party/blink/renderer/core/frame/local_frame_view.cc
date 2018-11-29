@@ -2688,10 +2688,8 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
     // layers are still attached. In future we will disable all those layer
     // hierarchy code so we won't need this line.
     container_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, *container_layer,
-                       DisplayItem::kForeignLayerWrapper,
-                       container_layer->CcLayer(), FloatPoint(),
-                       IntSize(container_layer->CcLayer()->bounds()));
+    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                       container_layer->CcLayer());
   }
 
   // Collect the page scale layer.
@@ -2702,8 +2700,8 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
         *scale_layer, DisplayItem::kForeignLayerWrapper);
 
     scale_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, *scale_layer, DisplayItem::kForeignLayerWrapper,
-                       scale_layer->CcLayer(), FloatPoint(), IntSize());
+    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                       scale_layer->CcLayer());
   }
 
   // Collect the visual viewport scroll layer.
@@ -2714,10 +2712,8 @@ static void CollectViewportLayersForLayerList(GraphicsContext& context,
         *scroll_layer, DisplayItem::kForeignLayerWrapper);
 
     scroll_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, *scroll_layer,
-                       DisplayItem::kForeignLayerWrapper,
-                       scroll_layer->CcLayer(), FloatPoint(),
-                       IntSize(scroll_layer->CcLayer()->bounds()));
+    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                       scroll_layer->CcLayer());
   }
 }
 
@@ -2742,22 +2738,16 @@ static void CollectDrawableLayersForLayerListRecursively(
     // extraneous layers are still attached. In future we will disable all
     // those layer hierarchy code so we won't need this line.
     layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
-                       layer->CcLayer(),
-                       FloatPoint(layer->GetOffsetFromTransformNode()),
-                       IntSize(layer->Size()));
+    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                       layer->CcLayer());
   }
 
-  if (scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer()) {
+  if (auto* contents_layer = layer->ContentsLayer()) {
     ScopedPaintChunkProperties scope(
         context.GetPaintController(), layer->GetContentsPropertyTreeState(),
         *layer, DisplayItem::kForeignLayerContentsWrapper);
-    auto size = contents_layer->bounds();
-    RecordForeignLayer(context, *layer,
-                       DisplayItem::kForeignLayerContentsWrapper,
-                       std::move(contents_layer),
-                       FloatPoint(layer->GetContentsOffsetFromTransformNode()),
-                       IntSize(size.width(), size.height()));
+    RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,
+                       contents_layer);
   }
 
   DCHECK(!layer->ContentsClippingMaskLayer());
@@ -2783,13 +2773,8 @@ static void CollectLinkHighlightLayersForLayerListRecursively(
     ScopedPaintChunkProperties scope(context.GetPaintController(),
                                      property_tree_state, *highlight,
                                      DisplayItem::kForeignLayerLinkHighlight);
-    auto position = highlight_layer->position();
-    auto size = highlight_layer->bounds();
-    RecordForeignLayer(context, *highlight,
-                       DisplayItem::kForeignLayerLinkHighlight, highlight_layer,
-                       layer->GetOffsetFromTransformNode() +
-                           FloatSize(position.x(), position.y()),
-                       IntSize(size.width(), size.height()));
+    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight,
+                       highlight_layer);
   }
 
   for (const auto* child : layer->Children())

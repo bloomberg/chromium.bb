@@ -78,12 +78,6 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(const FloatRect& bounds,
   return RectDrawing(NewClient(), bounds, color);
 }
 
-TestPaintArtifact& TestPaintArtifact::ForeignLayer(
-    const FloatPoint& location,
-    const IntSize& size,
-    scoped_refptr<cc::Layer> layer) {
-  return ForeignLayer(NewClient(), location, size, std::move(layer));
-}
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     const TransformPaintPropertyNode& scroll_offset) {
   return ScrollHitTest(NewClient(), scroll_offset);
@@ -99,15 +93,9 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(FakeDisplayItemClient& client,
 }
 
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
-    FakeDisplayItemClient& client,
-    const FloatPoint& location,
-    const IntSize& size,
     scoped_refptr<cc::Layer> layer) {
-  static_cast<DummyRectClient&>(client).SetVisualRect(
-      FloatRect(location, FloatSize(size)));
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      client, DisplayItem::kForeignLayerFirst, std::move(layer), location,
-      size);
+      DisplayItem::kForeignLayerFirst, std::move(layer));
   return *this;
 }
 

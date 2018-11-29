@@ -167,13 +167,13 @@ class PaintArtifactCompositorTest : public testing::Test,
       const auto* scroll_node = scroll_offset.ScrollNode();
       scoped_refptr<cc::Layer> layer = cc::Layer::Create();
       auto rect = scroll_node->ContainerRect();
-      layer->SetScrollable(gfx::Size(rect.Width(), rect.Height()));
-      layer->SetBounds(gfx::Size(rect.Width(), rect.Height()));
+      layer->SetOffsetToTransformParent(gfx::Vector2dF(rect.X(), rect.Y()));
+      layer->SetScrollable(gfx::Size(rect.Size()));
+      layer->SetBounds(gfx::Size(rect.Size()));
       layer->SetElementId(scroll_node->GetCompositorElementId());
       layer->set_did_scroll_callback(
           paint_artifact_compositor_->scroll_callback_);
-      artifact.Chunk(scroll_offset, clip, effect)
-          .ForeignLayer(FloatPoint(rect.Location()), rect.Size(), layer);
+      artifact.Chunk(scroll_offset, clip, effect).ForeignLayer(layer);
       return;
     }
     // Scroll hit test layers are marked as scrollable for hit testing but are
@@ -904,12 +904,12 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
 TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   layer->SetIsDrawable(true);
+  layer->SetOffsetToTransformParent(gfx::Vector2dF(50, 60));
   layer->SetBounds(gfx::Size(400, 300));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().ForeignLayer(FloatPoint(50, 60), IntSize(400, 300),
-                                     layer);
+  test_artifact.Chunk().ForeignLayer(layer);
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
 
   auto artifact = test_artifact.Build();

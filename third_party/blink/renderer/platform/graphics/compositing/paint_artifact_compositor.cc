@@ -132,13 +132,8 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
 
   const auto& foreign_layer_display_item =
       static_cast<const ForeignLayerDisplayItem&>(display_item);
-  layer_offset = gfx::Vector2dF(foreign_layer_display_item.Location().X(),
-                                foreign_layer_display_item.Location().Y());
-  scoped_refptr<cc::Layer> layer = foreign_layer_display_item.GetLayer();
-  DCHECK(layer->bounds() ==
-         static_cast<gfx::Size>(foreign_layer_display_item.Bounds()))
-      << "\n  layer bounds: " << layer->bounds().ToString()
-      << "\n  display item bounds: " << foreign_layer_display_item.Bounds();
+  auto* layer = foreign_layer_display_item.GetLayer();
+  layer_offset = layer->offset_to_transform_parent();
   return layer;
 }
 
