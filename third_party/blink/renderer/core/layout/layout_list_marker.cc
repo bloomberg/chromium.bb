@@ -36,7 +36,7 @@ namespace blink {
 
 const int kCMarkerPaddingPx = 7;
 
-// TODO(glebl): Move to WebKit/Source/core/css/html.css after
+// TODO(glebl): Move to core/html/resources/html.css after
 // Blink starts to support ::marker crbug.com/457718
 // Recommended UA margin for list markers.
 const int kCUAMarkerMarginEm = 1;

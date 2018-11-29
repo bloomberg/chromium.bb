@@ -92,9 +92,9 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String extra_style_sheet = LayoutTheme::ExtraDefaultStyleSheet();
   String multiple_fields_style_sheet =
       RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()
-          ? GetDataResourceAsASCIIString("themeInputMultipleFields.css")
+          ? GetDataResourceAsASCIIString("input_multiple_fields.css")
           : String();
-  String windows_style_sheet = GetDataResourceAsASCIIString("themeWin.css");
+  String windows_style_sheet = GetDataResourceAsASCIIString("win.css");
   StringBuilder builder;
   builder.ReserveCapacity(extra_style_sheet.length() +
                           multiple_fields_style_sheet.length() +
@@ -106,7 +106,7 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
 }
 
 String LayoutThemeDefault::ExtraQuirksStyleSheet() {
-  return GetDataResourceAsASCIIString("themeWinQuirks.css");
+  return GetDataResourceAsASCIIString("win_quirks.css");
 }
 
 Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {

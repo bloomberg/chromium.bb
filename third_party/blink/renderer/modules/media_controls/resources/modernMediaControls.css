@@ -356,7 +356,7 @@ video::-webkit-media-controls-overlay-play-button {
 
 /**
  * The overlay-play-button is disabled if the video element is loaded via
- * MHTML, and a ruleset for input[type=button]:disabled in themeWin.css has
+ * MHTML, and a ruleset for input[type=button]:disabled in win.css has
  * higher priority than the above ruleset.
  */
 video::-webkit-media-controls-overlay-play-button:disabled {
