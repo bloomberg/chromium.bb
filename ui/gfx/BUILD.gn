@@ -118,8 +118,6 @@ jumbo_component("gfx") {
     "ios/NSString+CrStringDrawing.mm",
     "ios/uikit_util.h",
     "ios/uikit_util.mm",
-    "linux_font_delegate.cc",
-    "linux_font_delegate.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
     "mac/nswindow_frame_controls.h",
@@ -139,8 +137,6 @@ jumbo_component("gfx") {
     "platform_font.h",
     "platform_font_ios.h",
     "platform_font_ios.mm",
-    "platform_font_linux.cc",
-    "platform_font_linux.h",
     "platform_font_mac.h",
     "platform_font_mac.mm",
     "platform_font_win.cc",
@@ -267,13 +263,13 @@ jumbo_component("gfx") {
     "//third_party/zlib",
   ]
 
-  if (is_android) {
-    set_sources_assignment_filter([])
+  if (is_linux || is_android || is_fuchsia) {
     sources += [
-      "platform_font_linux.cc",
-      "platform_font_linux.h",
+      "platform_font_skia.cc",
+      "platform_font_skia.h",
+      "skia_font_delegate.cc",
+      "skia_font_delegate.h",
     ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   # iOS.
@@ -367,7 +363,6 @@ jumbo_component("gfx") {
     sources += [
       "font_fallback_fuchsia.cc",
       "font_render_params_fuchsia.cc",
-      "platform_font_fuchsia.cc",
     ]
   }
 }
@@ -621,7 +616,6 @@ test("gfx_unittests") {
     "image/image_unittest.cc",
     "ios/NSString+CrStringDrawing_unittest.mm",
     "ios/uikit_util_unittest.mm",
-    "platform_font_linux_unittest.cc",
     "test/run_all_unittests.cc",
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
@@ -688,6 +682,10 @@ test("gfx_unittests") {
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
+  }
+
+  if (is_linux || is_android || is_fuchsia) {
+    sources += [ "platform_font_skia_unittest.cc" ]
   }
 
   if (!is_ios) {

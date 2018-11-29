@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
-#include "ui/gfx/linux_font_delegate.h"
+#include "ui/gfx/skia_font_delegate.h"
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/features.h"
@@ -58,7 +58,7 @@ class NavButtonProvider;
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
-                             public gfx::LinuxFontDelegate,
+                             public gfx::SkiaFontDelegate,
                              public ui::ShellDialogLinux,
                              public ui::TextEditKeyBindingsDelegateAuraLinux {
  public:

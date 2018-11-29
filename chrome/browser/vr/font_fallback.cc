@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "ui/gfx/platform_font_linux.h"
+#include "ui/gfx/platform_font_skia.h"
 
 namespace vr {
 
@@ -130,7 +130,7 @@ bool FontSupportsChar(const gfx::Font& font, UChar32 c) {
   return true;  // TODO(crbug/770893): Implement this on Windows.
 #else
   sk_sp<SkTypeface> typeface =
-      static_cast<gfx::PlatformFontLinux*>(font.platform_font())->typeface();
+      static_cast<gfx::PlatformFontSkia*>(font.platform_font())->typeface();
   std::unique_ptr<CachedFont>& cached_font =
       g_fonts.Get()[typeface->uniqueID()];
   if (!cached_font)

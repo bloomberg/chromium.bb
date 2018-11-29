@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PLATFORM_FONT_LINUX_H_
-#define UI_GFX_PLATFORM_FONT_LINUX_H_
+#ifndef UI_GFX_PLATFORM_FONT_SKIA_H_
+#define UI_GFX_PLATFORM_FONT_SKIA_H_
 
 #include <memory>
 #include <string>
@@ -17,13 +17,13 @@
 
 namespace gfx {
 
-class GFX_EXPORT PlatformFontLinux : public PlatformFont {
+class GFX_EXPORT PlatformFontSkia : public PlatformFont {
  public:
   // TODO(derat): Get rid of the default constructor in favor of using
   // FontList (which also has the concept of a default font but may contain
   // multiple font families) everywhere. See http://crbug.com/398885#c16.
-  PlatformFontLinux();
-  PlatformFontLinux(const std::string& font_name, int font_size_pixels);
+  PlatformFontSkia();
+  PlatformFontSkia(const std::string& font_name, int font_size_pixels);
 
   // Initials the default PlatformFont. Returns true if this is successful, or
   // false if fonts resources are not available. If this returns false, the
@@ -35,11 +35,12 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   // the locale has changed.
   static void ReloadDefaultFont();
 
-#if defined(OS_CHROMEOS)
   // Sets the default font. |font_description| is a FontList font description;
   // only the first family will be used.
+  // TODO(sergeyu): Remove this function. Currently it is used only on ChromeOS
+  // to set the default font to the one loaded from resources.
+  //
   static void SetDefaultFontDescription(const std::string& font_description);
-#endif
 
   // Overridden from PlatformFont:
   Font DeriveFont(int size_delta,
@@ -61,26 +62,25 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
-  PlatformFontLinux(sk_sp<SkTypeface> typeface,
-                    const std::string& family,
-                    int size_pixels,
-                    int style,
-                    Font::Weight weight,
-                    const FontRenderParams& params);
-  ~PlatformFontLinux() override;
+  PlatformFontSkia(sk_sp<SkTypeface> typeface,
+                   const std::string& family,
+                   int size_pixels,
+                   int style,
+                   Font::Weight weight,
+                   const FontRenderParams& params);
+  ~PlatformFontSkia() override;
 
   // Initializes this object based on the passed-in details. If |typeface| is
   // empty, a new typeface will be loaded.
-  void InitFromDetails(
-      sk_sp<SkTypeface> typeface,
-      const std::string& font_family,
-      int font_size_pixels,
-      int style,
-      Font::Weight weight,
-      const FontRenderParams& params);
+  void InitFromDetails(sk_sp<SkTypeface> typeface,
+                       const std::string& font_family,
+                       int font_size_pixels,
+                       int style,
+                       Font::Weight weight,
+                       const FontRenderParams& params);
 
-  // Initializes this object as a copy of another PlatformFontLinux.
-  void InitFromPlatformFont(const PlatformFontLinux* other);
+  // Initializes this object as a copy of another PlatformFontSkia.
+  void InitFromPlatformFont(const PlatformFontSkia* other);
 
   // Computes the metrics if they have not yet been computed.
   void ComputeMetricsIfNecessary();
@@ -105,14 +105,12 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   double average_width_pixels_;
   Font::Weight weight_;
 
-#if defined(OS_CHROMEOS)
   // A font description string of the format used by FontList.
   static std::string* default_font_description_;
-#endif
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformFontLinux);
+  DISALLOW_COPY_AND_ASSIGN(PlatformFontSkia);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PLATFORM_FONT_LINUX_H_
+#endif  // UI_GFX_PLATFORM_FONT_SKIA_H_

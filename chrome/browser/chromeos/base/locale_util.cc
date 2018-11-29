@@ -20,7 +20,7 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/platform_font_linux.h"
+#include "ui/gfx/platform_font_skia.h"
 
 namespace chromeos {
 
@@ -100,7 +100,7 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
   // The font clean up of ResourceBundle should be done on UI thread, since the
   // cached fonts are thread unsafe.
   ui::ResourceBundle::GetSharedInstance().ReloadFonts();
-  gfx::PlatformFontLinux::ReloadDefaultFont();
+  gfx::PlatformFontSkia::ReloadDefaultFont();
   if (!data->callback.is_null())
     data->callback.Run(data->result);
 }
