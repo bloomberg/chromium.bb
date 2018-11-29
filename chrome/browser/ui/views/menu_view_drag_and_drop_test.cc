@@ -345,12 +345,7 @@ void MenuViewDragAndDropTestTestInMenuDrag::Step4() {
 // Disabled for being flaky. Tracked in:
 // TODO(erg): Fix DND tests on linux_aura. http://crbug.com/163931.
 // TODO(tapted): De-flake and run on Mac. http://crbug.com/449058.
-#if defined(OS_WIN)
-#define MAYBE_TestInMenuDrag TestInMenuDrag
-#else
-#define MAYBE_TestInMenuDrag DISABLED_TestInMenuDrag
-#endif
-VIEW_TEST(MenuViewDragAndDropTestTestInMenuDrag, MAYBE_TestInMenuDrag)
+VIEW_TEST(MenuViewDragAndDropTestTestInMenuDrag, DISABLED_TestInMenuDrag)
 
 class MenuViewDragAndDropTestNestedDrag : public MenuViewDragAndDropTest {
  public:
