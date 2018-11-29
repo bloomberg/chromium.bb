@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -731,20 +732,19 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {
+  auto barrier = base::BarrierClosure(2, std::move(completion_callback));
+
+  url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
+      time, barrier);
+
   // TODO(mmenke): Neither of these methods waits until the changes have been
   // commited to disk. They probably should, as most similar methods net/
   // exposes do.
-
-  // Completes synchronously.
-  url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
-      time);
-
   // May not be set in all tests.
   if (network_qualities_pref_delegate_)
     network_qualities_pref_delegate_->ClearPrefs();
 
-  url_request_context_->http_server_properties()->Clear(
-      std::move(completion_callback));
+  url_request_context_->http_server_properties()->Clear(barrier);
 }
 
 void NetworkContext::ClearHttpCache(base::Time start_time,

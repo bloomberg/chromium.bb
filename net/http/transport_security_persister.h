@@ -66,6 +66,9 @@ class NET_EXPORT TransportSecurityPersister
 
   // Called by the TransportSecurityState when it changes its state.
   void StateIsDirty(TransportSecurityState*) override;
+  // Called when the TransportSecurityState should be written immediately.
+  void WriteNow(TransportSecurityState* state,
+                base::OnceClosure callback) override;
 
   // ImportantFileWriter::DataSerializer:
   //
@@ -118,6 +121,7 @@ class NET_EXPORT TransportSecurityPersister
                           TransportSecurityState* state);
 
   void CompleteLoad(const std::string& state);
+  void OnWriteFinished(base::OnceClosure callback, bool result);
 
   TransportSecurityState* transport_security_state_;
 
