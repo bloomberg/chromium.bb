@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
-#include "third_party/blink/renderer/core/frame/dom_window_base64.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
@@ -70,8 +69,7 @@ struct GlobalScopeCreationParams;
 class CORE_EXPORT WorkerGlobalScope
     : public WorkerOrWorkletGlobalScope,
       public ActiveScriptWrappable<WorkerGlobalScope>,
-      public Supplementable<WorkerGlobalScope>,
-      public DOMWindowBase64 {
+      public Supplementable<WorkerGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 

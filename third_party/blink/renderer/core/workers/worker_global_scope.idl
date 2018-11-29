@@ -79,7 +79,6 @@
     [RuntimeEnabled=OffscreenCanvasText] readonly attribute FontFaceSet fonts;
 };
 
-WorkerGlobalScope implements WindowBase64;
 WorkerGlobalScope implements WindowOrWorkerGlobalScope;
 // TODO(fserb): this needs to be enabled once we get out of RuntimeEnabled.
 //WorkerGlobalScope implements FontFaceSource;

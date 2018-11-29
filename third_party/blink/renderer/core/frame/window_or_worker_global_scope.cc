@@ -39,10 +39,12 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
 
@@ -78,6 +80,48 @@ static bool IsAllowed(ScriptState* script_state,
   }
   NOTREACHED();
   return false;
+}
+
+String WindowOrWorkerGlobalScope::btoa(EventTarget&,
+                                       const String& string_to_encode,
+                                       ExceptionState& exception_state) {
+  if (string_to_encode.IsNull())
+    return String();
+
+  if (!string_to_encode.ContainsOnlyLatin1OrEmpty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidCharacterError,
+        "The string to be encoded contains "
+        "characters outside of the Latin1 range.");
+    return String();
+  }
+
+  return Base64Encode(string_to_encode.Latin1());
+}
+
+String WindowOrWorkerGlobalScope::atob(EventTarget&,
+                                       const String& encoded_string,
+                                       ExceptionState& exception_state) {
+  if (encoded_string.IsNull())
+    return String();
+
+  if (!encoded_string.ContainsOnlyLatin1OrEmpty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidCharacterError,
+        "The string to be decoded contains "
+        "characters outside of the Latin1 range.");
+    return String();
+  }
+  Vector<char> out;
+  if (!Base64Decode(encoded_string, out, IsHTMLSpace<UChar>,
+                    kBase64ValidatePadding)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidCharacterError,
+        "The string to be decoded is not correctly encoded.");
+    return String();
+  }
+
+  return String(out.data(), out.size());
 }
 
 int WindowOrWorkerGlobalScope::setTimeout(
