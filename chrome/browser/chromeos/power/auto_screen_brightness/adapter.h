@@ -189,6 +189,10 @@ class Adapter : public AlsReader::Observer,
 
   chromeos::PowerManagerClient* const power_manager_client_;
 
+  // Whether to continue adapting brightness after user makes a brightness
+  // change.
+  bool continue_auto_brightness_after_user_adjustment_ = false;
+
   Params params_;
 
   // This will be replaced by a mock tick clock during tests.

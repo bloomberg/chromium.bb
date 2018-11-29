@@ -21,6 +21,14 @@ const base::Feature kAndroidMessagesProdEndpoint{
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, auto-screen-brightness model will continue to adapt brightness
+// (based on ambient light)
+// after user changes brightness. Otherwise, the model will be disabled until
+// Chrome restarts.
+const base::Feature kAutoScreenBrightnessContinuedAdjustment{
+    "AutoScreenBrightnessContinuedAdjustment",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables native ChromeVox support for Arc.
 const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

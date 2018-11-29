@@ -56,6 +56,10 @@ Adapter::Adapter(Profile* profile,
     return;
   }
 
+  continue_auto_brightness_after_user_adjustment_ =
+      base::FeatureList::IsEnabled(
+          features::kAutoScreenBrightnessContinuedAdjustment);
+
   InitParams();
 }
 
@@ -95,9 +99,12 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {}
 
 void Adapter::OnUserBrightnessChangeRequested() {
-  // This will disable |adapter_status_| so that the model will not make any
-  // brightness adjustment.
-  adapter_status_ = Status::kDisabled;
+  if (!continue_auto_brightness_after_user_adjustment_) {
+    // This will disable |adapter_status_| so that the model will not make any
+    // brightness adjustment.
+    adapter_status_ = Status::kDisabled;
+  }
+
   if (!als_init_status_)
     return;
 
