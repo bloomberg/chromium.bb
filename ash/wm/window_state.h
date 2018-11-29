@@ -364,9 +364,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
 
-  // Class to host the rounded mask for PIP windows.
-  class PipMask;
-
   explicit WindowState(aura::Window* window);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
@@ -417,10 +414,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       const gfx::Rect& bounds,
       gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
 
-  // Updates rounded corners for PIP window states. Removes rounded corners
-  // for non-PIP window states.
-  void UpdatePipRoundedCorners();
-
   // Update PIP related state, such as next window animation type, upon
   // state change.
   void UpdatePipState(bool was_pip);
@@ -436,7 +429,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                intptr_t old) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowLayerRecreated(aura::Window* window) override;
 
   // The owner of this window settings.
   aura::Window* window_;
@@ -453,9 +445,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool autohide_shelf_when_maximized_or_fullscreen_;
   bool cached_always_on_top_;
   bool allow_set_bounds_direct_ = false;
-
-  // Mask layer for PIP windows.
-  std::unique_ptr<PipMask> pip_mask_;
 
   // A property to save the ratio between snapped window width and display
   // workarea width. It is used to update snapped window width on

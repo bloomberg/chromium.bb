@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -45,9 +44,6 @@
 namespace ash {
 namespace wm {
 namespace {
-
-// TODO(edcourtney): Move this to a PIP specific file, once it's created.
-const int kPipRoundedCornerRadius = 8;
 
 bool IsTabletModeEnabled() {
   return Shell::Get()
@@ -150,72 +146,6 @@ void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
 }
 
 }  // namespace
-
-class WindowState::PipMask : public ui::LayerDelegate,
-                             public aura::WindowObserver {
- public:
-  explicit PipMask(aura::Window* window)
-      : layer_(ui::LAYER_TEXTURED), window_(window) {
-    DCHECK(window);
-    DCHECK(window->layer());
-
-    window_->AddObserver(this);
-    layer_.set_delegate(this);
-    layer_.SetFillsBoundsOpaquely(false);
-    layer_.SetBounds(window->layer()->bounds());
-  }
-
-  ~PipMask() override {
-    if (window_)
-      window_->RemoveObserver(this);
-    layer_.set_delegate(nullptr);
-  }
-
-  ui::Layer* layer() { return &layer_; }
-  const aura::Window* window() const { return window_; }
-
- private:
-  // ui::LayerDelegate overridden:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    cc::PaintFlags flags;
-    flags.setAlpha(255);
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    const int radius = kPipRoundedCornerRadius;
-    SkScalar radii[8] = {radius, radius,   // top-left
-                         radius, radius,   // top-right
-                         radius, radius,   // bottom-right
-                         radius, radius};  // bottom-left
-
-    SkPath path;
-    path.addRoundRect(gfx::RectToSkRect(gfx::Rect(layer()->size())), radii);
-
-    ui::PaintRecorder recorder(context, layer()->size());
-    recorder.canvas()->DrawPath(path, flags);
-  }
-
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-
-  // aura::WindowObserver overridden:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    layer_.SetBounds(new_bounds);
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    window_->RemoveObserver(this);
-    window_ = nullptr;
-  }
-
-  ui::Layer layer_;
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipMask);
-};
 
 constexpr base::TimeDelta WindowState::kBoundsChangeSlideDuration;
 
@@ -736,29 +666,6 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::UpdatePipRoundedCorners() {
-  if (!features::IsPipRoundedCornersEnabled())
-    return;
-
-  auto* layer = window()->layer();
-  if (!IsPip()) {
-    // Only remove the mask layer if it is from the existing PIP mask.
-    if (layer && pip_mask_ && layer->layer_mask_layer() == pip_mask_->layer())
-      layer->SetMaskLayer(nullptr);
-    pip_mask_.reset();
-    return;
-  }
-
-  gfx::Rect bounds = window()->bounds();
-  if (layer && (!pip_mask_ || pip_mask_->layer()->size() != bounds.size())) {
-    layer->SetMaskLayer(nullptr);
-    if (!pip_mask_ || window() != pip_mask_->window())
-      pip_mask_ = std::make_unique<PipMask>(window());
-    layer->SetFillsBoundsOpaquely(false);
-    layer->SetMaskLayer(pip_mask_->layer());
-  }
-}
-
 void WindowState::UpdatePipState(bool was_pip) {
   if (IsPip()) {
     ::wm::SetWindowVisibilityAnimationType(
@@ -866,15 +773,6 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
   immersive_gesture_drag_handler_.reset();
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
-}
-
-void WindowState::OnWindowLayerRecreated(aura::Window* window) {
-  DCHECK_EQ(window_, window);
-  // THe mask layer will be moved with old layer.
-  DCHECK(!window_->layer()->layer_mask_layer());
-  pip_mask_.reset();
-  if (IsPip())
-    UpdatePipRoundedCorners();
 }
 
 }  // namespace wm

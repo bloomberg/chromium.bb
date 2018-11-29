@@ -11,6 +11,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/rounded_corner_decorator.h"
+#endif
+
 namespace views {
 class ControlImageButton;
 class CloseImageButton;
@@ -193,6 +197,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
+#endif
 
   // Automatically hides the controls a few seconds after user tap gesture.
   base::RetainingOneShotTimer hide_controls_timer_;
