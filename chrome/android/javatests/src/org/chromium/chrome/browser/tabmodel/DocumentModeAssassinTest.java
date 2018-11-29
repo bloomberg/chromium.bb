@@ -458,7 +458,7 @@ public class DocumentModeAssassinTest {
             throws Exception {
         // Load up the metadata file via a TabPersistentStore to make sure that it contains all of
         // the migrated tab information.
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
         mTestRule.loadNativeLibraryAndInitBrowserProcess();
         TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
 

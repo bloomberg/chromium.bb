@@ -54,7 +54,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 

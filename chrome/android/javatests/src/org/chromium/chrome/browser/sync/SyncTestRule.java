@@ -271,7 +271,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         ApplicationTestUtils.clearAppData(InstrumentationRegistry.getTargetContext());
 
         // This must be called before super.setUp() in order for test authentication to work.
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
     }
 
     private void ruleTearDown() throws Exception {

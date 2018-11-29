@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Browser;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
@@ -675,7 +674,7 @@ public class HistoryActivityTest {
 
         // Sign in to account. Note that if supervised user is set before sign in, the supervised
         // user setting will be reset.
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
         final Account account = SigninTestUtil.addTestAccount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             SigninManager.get().onFirstRunCheckDone();

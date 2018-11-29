@@ -83,7 +83,7 @@ public class ClearBrowsingDataPreferencesTest {
 
     @Before
     public void setUp() throws Exception {
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
