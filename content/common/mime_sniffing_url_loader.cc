@@ -109,9 +109,8 @@ void MimeSniffingURLLoader::OnComplete(
   DCHECK(!complete_status_.has_value());
   switch (state_) {
     case State::kWaitForBody:
-      // OnComplete() is called without OnStartLoadingResponseBody(). There is
-      // no response body in this case. Use |kDefaultMimeType| as its mime type
-      // even though it's empty.
+      // An error occured before receiving any data.
+      DCHECK_NE(net::OK, status.error_code);
       state_ = State::kCompleted;
       response_head_.mime_type = kDefaultMimeType;
       if (!throttle_) {
@@ -231,19 +230,9 @@ void MimeSniffingURLLoader::OnBodyWritable(MojoResult) {
 void MimeSniffingURLLoader::CompleteSniffing() {
   DCHECK_EQ(State::kSniffing, state_);
   if (buffered_body_.empty()) {
-    // A data pipe for the body was received but no body was provided. Don't
-    // propagate OnStartLoadingResponseBody() in this case. We treat this
-    // situation as the same as when OnStartLoadingResponseBody() was not
-    // called.
-    //
-    // TODO(crbug.com/826868): Remove this once all loaders are aligned.
-    state_ = State::kWaitForBody;
-    if (complete_status_.has_value()) {
-      auto status = complete_status_.value();
-      complete_status_.reset();
-      OnComplete(status);
-    }
-    return;
+    // The URLLoader ended before sending any data. There is not enough
+    // informations to determine the MIME type.
+    response_head_.mime_type = kDefaultMimeType;
   }
 
   state_ = State::kSending;
@@ -272,7 +261,13 @@ void MimeSniffingURLLoader::CompleteSniffing() {
   // Call OnComplete() if OnComplete() has already been called.
   if (complete_status_.has_value())
     destination_url_loader_client_->OnComplete(complete_status_.value());
-  SendReceivedBodyToClient();
+
+  if (bytes_remaining_in_buffer_) {
+    SendReceivedBodyToClient();
+    return;
+  }
+
+  CompleteSending();
 }
 
 void MimeSniffingURLLoader::CompleteSending() {
