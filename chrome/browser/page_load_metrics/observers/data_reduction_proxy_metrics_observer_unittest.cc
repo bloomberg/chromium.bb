@@ -40,9 +40,9 @@ class TestDataReductionProxyMetricsObserver
 
   ~TestDataReductionProxyMetricsObserver() override {}
 
-  // page_load_metrics::PageLoadMetricsObserver:
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override {
+  // DataReductionProxyMetricsObserver:
+  ObservePolicy OnCommitCalled(content::NavigationHandle* navigation_handle,
+                               ukm::SourceId source_id) override {
     DataReductionProxyData* data =
         DataForNavigationHandle(web_contents_, navigation_handle);
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
@@ -54,8 +54,8 @@ class TestDataReductionProxyMetricsObserver
     auto* previews_data = PreviewsDataForNavigationHandle(navigation_handle);
     previews_data->set_black_listed_for_lite_page(black_listed_);
 
-    return DataReductionProxyMetricsObserver::OnCommit(navigation_handle,
-                                                       source_id);
+    return DataReductionProxyMetricsObserver::OnCommitCalled(navigation_handle,
+                                                             source_id);
   }
 
   DataReductionProxyPingbackClient* GetPingbackClient() const override {

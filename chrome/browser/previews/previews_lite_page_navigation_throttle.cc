@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,6 +33,7 @@
 #include "components/base32/base32.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_settings_base.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_url_handler.h"
@@ -157,7 +159,7 @@ GetOrCreateServerLitePageInfo(content::NavigationHandle* handle) {
   std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info =
       GetServerLitePageInfo(handle);
   if (!info) {
-    info.reset(new previews::PreviewsUserData::ServerLitePageInfo());
+    info = std::make_unique<previews::PreviewsUserData::ServerLitePageInfo>();
     info->original_navigation_start = handle->NavigationStart();
   }
   return info;
@@ -462,6 +464,9 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   content::BrowserContext* browser_context =
       navigation_handle()->GetWebContents()->GetBrowserContext();
 
+  std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info =
+      GetOrCreateServerLitePageInfo(navigation_handle());
+
   // Set DRP headers.
   DataReductionProxyChromeSettings* drp_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
@@ -477,14 +482,22 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
 
   // Add in the page id to the chrome-proxy header.
   if (request_headers.HasHeader(kChromeProxyHeader)) {
+    // Persist some state in |info| so it can be used by metrics later on.
+    base::Optional<std::string> session_id =
+        data_reduction_proxy::DataReductionProxyRequestOptions::
+            GetSessionKeyFromRequestHeaders(request_headers);
+    if (session_id.has_value())
+      info->drp_session_key = session_id.value();
+    uint64_t page_id = manager_->GeneratePageID();
+    info->page_id = page_id;
+
     std::string header_value;
     request_headers.GetHeader(kChromeProxyHeader, &header_value);
 
     // 64 bit uint fits in 16 characters when represented in hexadecimal, but
     // there needs to be a trailing null terminated character in the buffer.
     char page_id_buffer[17];
-    base::strings::SafeSPrintf(page_id_buffer, "%x",
-                               manager_->GeneratePageID());
+    base::strings::SafeSPrintf(page_id_buffer, "%x", page_id);
     header_value += ", pid=" + std::string(page_id_buffer);
     request_headers.SetHeader(kChromeProxyHeader, header_value);
   }
@@ -511,7 +524,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
                 base::Unretained(web_contents), manager_,
                 MakeOpenURLParams(navigation_handle(),
                                   navigation_handle()->GetURL(), std::string()),
-                GetOrCreateServerLitePageInfo(navigation_handle()), false)),
+                info->Clone(), false)),
         timeout);
   }
 
@@ -525,7 +538,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
                      helper->GetWeakPtr(),
                      MakeOpenURLParams(navigation_handle(), GetPreviewsURL(),
                                        request_headers.ToString()),
-                     GetOrCreateServerLitePageInfo(navigation_handle())));
+                     info->Clone()));
 
   return content::NavigationThrottle::CANCEL;
 }

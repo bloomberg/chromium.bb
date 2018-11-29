@@ -89,18 +89,11 @@ DataReductionProxyMetricsObserverBase::
     ~DataReductionProxyMetricsObserverBase() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataReductionProxyMetricsObserverBase::OnRedirect(
-    content::NavigationHandle* navigation_handle) {
-  redirect_count_++;
-  return CONTINUE_OBSERVING;
-}
-
-// Check if the NavigationData indicates anything about the DataReductionProxy.
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserverBase::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserverBase. BrowserContext is always valid and
   // non-nullptr in NavigationControllerImpl, which is a member of WebContents.
@@ -109,6 +102,35 @@ DataReductionProxyMetricsObserverBase::OnCommit(
   // will be called is in MetricsWebContentsObserver's destrcutor, which is
   // called in WebContents destructor.
   browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
+
+  process_id_ = navigation_handle->GetWebContents()
+                    ->GetMainFrame()
+                    ->GetProcess()
+                    ->GetProcess()
+                    .Pid();
+  render_process_host_id_ = navigation_handle->GetWebContents()
+                                ->GetMainFrame()
+                                ->GetProcess()
+                                ->GetID();
+  navigation_start_ = navigation_handle->NavigationStart();
+
+  return OnCommitCalled(navigation_handle, source_id);
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataReductionProxyMetricsObserverBase::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  redirect_count_++;
+  return CONTINUE_OBSERVING;
+}
+
+// Check if the NavigationData indicates anything about the DataReductionProxy.
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataReductionProxyMetricsObserverBase::OnCommitCalled(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // As documented in content/public/browser/navigation_handle.h, this
   // NavigationData is a clone of the NavigationData instance returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit.
@@ -138,18 +160,6 @@ DataReductionProxyMetricsObserverBase::OnCommit(
   if (previews_data) {
     data_->set_black_listed(previews_data->black_listed_for_lite_page());
   }
-
-  process_id_ = navigation_handle->GetWebContents()
-                    ->GetMainFrame()
-                    ->GetProcess()
-                    ->GetProcess()
-                    .Pid();
-  render_process_host_id_ = navigation_handle->GetWebContents()
-                                ->GetMainFrame()
-                                ->GetProcess()
-                                ->GetID();
-
-  navigation_start_ = navigation_handle->NavigationStart();
 
   // DataReductionProxy page loads should only occur on HTTP navigations.
   DCHECK(!navigation_handle->GetURL().SchemeIsCryptographic());

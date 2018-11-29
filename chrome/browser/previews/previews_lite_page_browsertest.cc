@@ -278,6 +278,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       EXPECT_NE(
           previews_data->server_lite_page_info()->original_navigation_start,
           base::TimeTicks());
+      EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
+      EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
     }
 
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());

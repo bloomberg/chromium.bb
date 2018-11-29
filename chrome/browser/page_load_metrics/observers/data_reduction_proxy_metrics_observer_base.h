@@ -39,8 +39,6 @@ class DataReductionProxyMetricsObserverBase
                         bool started_in_foreground) override;
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
-  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
-                         ukm::SourceId source_id) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -62,6 +60,16 @@ class DataReductionProxyMetricsObserverBase
   static int64_t ExponentiallyBucketBytes(int64_t bytes);
 
  protected:
+  // Derived classes can override this method and treat it as they would
+  // |OnCommit|. This is done so that internal state is set correctly in this'
+  // OnCommit.
+  virtual ObservePolicy OnCommitCalled(
+      content::NavigationHandle* navigation_handle,
+      ukm::SourceId source_id);
+
+  void set_data(std::unique_ptr<DataReductionProxyData> data) {
+    data_ = std::move(data);
+  }
   DataReductionProxyData* data() const { return data_.get(); }
   int num_network_resources() const { return num_network_resources_; }
   int num_data_reduction_proxy_resources() const {
@@ -80,6 +88,10 @@ class DataReductionProxyMetricsObserverBase
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
+  // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) final;
+
   // Sends the page load information to the pingback client.
   void SendPingback(const page_load_metrics::mojom::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info,

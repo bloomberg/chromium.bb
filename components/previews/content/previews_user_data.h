@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -22,9 +23,19 @@ class PreviewsUserData {
   explicit PreviewsUserData(uint64_t page_id);
 
   struct ServerLitePageInfo {
+    std::unique_ptr<ServerLitePageInfo> Clone() {
+      return std::make_unique<ServerLitePageInfo>(*this);
+    }
+
     // The start time of the original navigation, that is, the one started by
     // the user.
     base::TimeTicks original_navigation_start = base::TimeTicks();
+
+    // The page id used for this preview.
+    uint64_t page_id = 0;
+
+    // The DRP session key used for this preview.
+    std::string drp_session_key = std::string();
   };
 
   ~PreviewsUserData();
