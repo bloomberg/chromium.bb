@@ -908,7 +908,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
   }
 
   // And create a context associated with them.
-  const bool success = CreateContext(va_format, size, va_surface_ids_);
+  const bool success = CreateContext(va_format, size);
   if (success)
     *va_surfaces = va_surface_ids_;
   else
@@ -917,11 +917,17 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 }
 
 bool VaapiWrapper::CreateContext(unsigned int va_format,
-                                 const gfx::Size& size,
-                                 const std::vector<VASurfaceID>& va_surfaces) {
-  VAStatus va_res = vaCreateContext(
-      va_display_, va_config_id_, size.width(), size.height(), VA_PROGRESSIVE,
-      &va_surface_ids_[0], va_surface_ids_.size(), &va_context_id_);
+                                 const gfx::Size& size) {
+  // vaCreateContext() doesn't really need an array of VASurfaceIDs (see
+  // https://lists.01.org/pipermail/intel-vaapi-media/2017-July/000052.html and
+  // https://github.com/intel/libva/issues/251); pass a dummy list of valid
+  // (non-null) IDs until the signature gets updated.
+  constexpr VASurfaceID* empty_va_surfaces_ids_pointer = nullptr;
+  constexpr size_t empty_va_surfaces_ids_size = 0u;
+  const VAStatus va_res =
+      vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
+                      VA_PROGRESSIVE, empty_va_surfaces_ids_pointer,
+                      empty_va_surfaces_ids_size, &va_context_id_);
 
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   if (va_res == VA_STATUS_SUCCESS)
