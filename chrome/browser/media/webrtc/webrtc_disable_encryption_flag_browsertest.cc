@@ -51,12 +51,12 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
 // Makes a call and checks that there's encryption or not in the SDP offer.
 // TODO(crbub.com/910216): De-flake this for ChromeOs.
 #if defined(OS_CHROMEOS)
-#define MAYBE_TestInMenuDrag DISABLED_VerifyEncryption
+#define MAYBE_VerifyEncryption DISABLED_VerifyEncryption
 #else
-#define MAYBE_TestInMenuDrag VerifyEncryption
+#define MAYBE_VerifyEncryption VerifyEncryption
 #endif
 IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
-                       VerifyEncryption) {
+                       MAYBE_VerifyEncryption) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =
