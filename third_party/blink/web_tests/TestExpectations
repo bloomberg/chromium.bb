@@ -5625,7 +5625,6 @@ crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Time
 # Enable AnimationWorklet tests for mainthread
 crbug.com/785940 [ Release ] animations/animationworklet/worklet-animation-currentTime.html [ Pass Failure ]
 crbug.com/887659 virtual/threaded/animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
-crbug.com/910295 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
 
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
