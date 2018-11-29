@@ -822,6 +822,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("metadataDownloads"),
+        TestCase("metadataDownloads").EnableMyFilesVolume(),
         TestCase("metadataDrive").DisableDriveFs(),
         TestCase("metadataDrive").EnableDriveFs(),
         TestCase("metadataDrive").EnableDriveFs().EnableMyFilesVolume(),
@@ -1004,6 +1005,12 @@ class DriveFsFilesAppBrowserTest : public FileManagerBrowserTestBase {
     return profile()->GetPath().Append("drive/v1");
   }
 
+  bool GetEnableMyFilesVolume() const override {
+    return base::StringPiece(
+               ::testing::UnitTest::GetInstance()->current_test_info()->name())
+        .ends_with("MyFiles");
+  }
+
  private:
   std::string test_case_name_;
 
@@ -1016,6 +1023,20 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_MigratePinnedFiles) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFiles) {
+  set_test_case_name("driveMigratePinnedFile");
+  StartTest();
+
+  base::ScopedAllowBlockingForTesting allow_io;
+  EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest,
+                       PRE_MigratePinnedFilesMyFiles) {
+  set_test_case_name("PRE_driveMigratePinnedFile");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFilesMyFiles) {
   set_test_case_name("driveMigratePinnedFile");
   StartTest();
 
@@ -1036,6 +1057,27 @@ IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_RecoverDirtyFiles) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFiles) {
+  set_test_case_name("driveRecoverDirtyFiles");
+  StartTest();
+
+  base::ScopedAllowBlockingForTesting allow_io;
+  EXPECT_TRUE(base::IsDirectoryEmpty(GetDriveDataDirectory()));
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest,
+                       PRE_RecoverDirtyFilesMyFiles) {
+  set_test_case_name("PRE_driveRecoverDirtyFiles");
+  StartTest();
+
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    // Create a non-dirty file in the cache.
+    base::WriteFile(GetDriveDataDirectory().Append("files/foo"), "data", 4);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, RecoverDirtyFilesMyFiles) {
   set_test_case_name("driveRecoverDirtyFiles");
   StartTest();
 

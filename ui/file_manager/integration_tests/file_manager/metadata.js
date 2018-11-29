@@ -177,7 +177,8 @@ testcase.metadataDownloads = function() {
       appId = result.windowId;
       remoteCall
           .navigateWithDirectoryTree(
-              appId, '/photos1/folder1', 'My files/Downloads')
+              appId, RootPath.DOWNLOADS_PATH + '/photos1/folder1',
+              'My files/Downloads')
           .then(this.next);
     },
     // Fetch the metadata stats.

@@ -519,6 +519,13 @@ class LocalTestVolume : public TestVolume {
     CreateEntryImpl(entry, root_path().AppendASCII(entry.target_path));
   }
 
+  void InsertEntryOnMap(const AddEntriesMessage::TestEntryInfo& entry,
+                        const base::FilePath& target_path) {
+    const auto it = entries_.find(target_path);
+    if (it == entries_.end())
+      entries_.insert(std::make_pair(target_path, entry));
+  }
+
   void CreateEntryImpl(const AddEntriesMessage::TestEntryInfo& entry,
                        const base::FilePath& target_path) {
     entries_.insert(std::make_pair(target_path, entry));
@@ -589,11 +596,14 @@ class DownloadsTestVolume : public LocalTestVolume {
 
     // When MyFiles is the volume create the Downloads folder under it.
     auto downloads_folder = root_path().Append("Downloads");
-    if (!base::PathExists(downloads_folder)) {
-      CreateEntryImpl(AddEntriesMessage::TestEntryInfo(
-                          AddEntriesMessage::DIRECTORY, "", "Downloads"),
-                      downloads_folder);
-    }
+    auto downloads_entry = AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::DIRECTORY, "", "Downloads");
+    if (!base::PathExists(downloads_folder))
+      CreateEntryImpl(downloads_entry, downloads_folder);
+
+    // Make sure that Downloads exists in the local entries_ map, in case the
+    // folder in the FS has been created by a PRE_ routine.
+    InsertEntryOnMap(downloads_entry, downloads_folder);
   }
   // Forces the content to be created inside MyFiles/Downloads when MyFiles is
   // the Volume, so tests are compatible with volume being MyFiles or Downloads.
