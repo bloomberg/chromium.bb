@@ -33,6 +33,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 LoadIconCallback callback) override;
+  void Launch(const std::string& app_id, int32_t event_flags) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   Profile* profile_;

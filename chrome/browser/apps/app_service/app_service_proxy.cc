@@ -68,6 +68,12 @@ void AppServiceProxy::LoadIcon(
   }
 }
 
+void AppServiceProxy::Launch(const std::string& app_id, int32_t event_flags) {
+  cache_.ForOneApp(app_id, [this, event_flags](const apps::AppUpdate& update) {
+    app_service_->Launch(update.AppType(), update.AppId(), event_flags);
+  });
+}
+
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }

@@ -96,4 +96,9 @@ void BuiltInChromeOsApps::LoadIcon(
   std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
+void BuiltInChromeOsApps::Launch(const std::string& app_id,
+                                 int32_t event_flags) {
+  app_list::OpenInternalApp(app_id, profile_, event_flags);
+}
+
 }  // namespace apps

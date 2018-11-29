@@ -13,7 +13,7 @@
 
 namespace {
 
-void RecordActiveHistogram(app_list::InternalAppName name) {
+void RecordActiveHistogramInternal(app_list::InternalAppName name) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListInternalApp.Activate", name);
 }
 
@@ -21,6 +21,11 @@ void RecordActiveHistogram(app_list::InternalAppName name) {
 
 // static
 const char InternalAppItem::kItemType[] = "InternalAppItem";
+
+// static
+void InternalAppItem::RecordActiveHistogram(const std::string& app_id) {
+  RecordActiveHistogramInternal(app_list::GetInternalAppNameByAppId(app_id));
+}
 
 InternalAppItem::InternalAppItem(
     Profile* profile,
@@ -45,7 +50,7 @@ const char* InternalAppItem::GetItemType() const {
 }
 
 void InternalAppItem::Activate(int event_flags) {
-  RecordActiveHistogram(app_list::GetInternalAppNameByAppId(id()));
+  RecordActiveHistogram(id());
   app_list::OpenInternalApp(id(), profile(), event_flags);
 }
 

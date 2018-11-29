@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class AppServiceAppItem : public ChromeAppListItem {
  public:
@@ -22,10 +23,13 @@ class AppServiceAppItem : public ChromeAppListItem {
 
  private:
   // ChromeAppListItem overrides:
+  void Activate(int event_flags) override;
   const char* GetItemType() const override;
-  // TODO(crbug.com/826982): Activate, GetContextMenuModel, etc.
+  // TODO(crbug.com/826982): GetContextMenuModel, etc.
 
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
+  apps::mojom::AppType app_type_;
 
   base::WeakPtrFactory<AppServiceAppItem> weak_ptr_factory_{this};
 

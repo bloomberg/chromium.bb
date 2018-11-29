@@ -37,6 +37,9 @@ class AppServiceImpl : public apps::mojom::AppService {
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 LoadIconCallback callback) override;
+  void Launch(apps::mojom::AppType app_type,
+              const std::string& app_id,
+              int32_t event_flags) override;
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
