@@ -1202,13 +1202,13 @@
         Q&amp;A
       </message>
       <message desc="Accessibility role description for subtitle" name="IDS_CHROMEVOX_ROLE_DOC_SUBTITLE">
-        subti
+        Subtitle
       </message>
       <message desc="Accessibility role description for tip" name="IDS_CHROMEVOX_ROLE_DOC_TIP">
-        tip
+        Tip
       </message>
       <message desc="Accessibility role description for table of contents" name="IDS_CHROMEVOX_ROLE_DOC_TOC">
-        toc
+        Table of contents
       </message>
       <message desc="Accessibility role description for graphics document" name="IDS_CHROMEVOX_ROLE_GRAPHICS_DOCUMENT">
         Graphics document
