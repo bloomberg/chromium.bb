@@ -33,6 +33,10 @@
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
 ] interface WindowOrWorkerGlobalScope {
+    // base64 utility methods
+    [RaisesException] DOMString btoa(DOMString btoa);
+    [RaisesException] DOMString atob(DOMString atob);
+
     // TODO(yukishiino): Use TimerHandler (or Function at least) to implement
     // setTimeout and setInterval.
     // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin

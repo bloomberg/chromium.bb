@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/frame/dom_window_base64.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -35,8 +34,7 @@ class WindowProxyManager;
 // TODO(tkent): Rename DOMWindow to Window. The class was named as 'DOMWindow'
 // because WebKit already had KJS::Window.  We have no reasons to avoid
 // blink::Window now.
-class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
-                              public DOMWindowBase64 {
+class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

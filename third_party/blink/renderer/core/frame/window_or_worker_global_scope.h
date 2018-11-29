@@ -49,6 +49,13 @@ class WindowOrWorkerGlobalScope {
   STATIC_ONLY(WindowOrWorkerGlobalScope);
 
  public:
+  static String btoa(EventTarget&,
+                     const String& string_to_encode,
+                     ExceptionState&);
+  static String atob(EventTarget&,
+                     const String& encoded_string,
+                     ExceptionState&);
+
   static int setTimeout(ScriptState*,
                         EventTarget&,
                         const ScriptValue& handler,
