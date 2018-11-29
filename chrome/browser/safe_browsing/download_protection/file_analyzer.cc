@@ -94,8 +94,7 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
 
   if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
     StartExtractZipFeatures();
-  } else if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".rar")) &&
-             base::FeatureList::IsEnabled(kInspectDownloadedRarFiles)) {
+  } else if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".rar"))) {
     StartExtractRarFeatures();
 #if defined(OS_MACOSX)
   } else if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||

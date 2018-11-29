@@ -30,10 +30,6 @@ extern const base::Feature kCheckByURLLoaderThrottle;
 // purpose.
 extern const base::Feature kForceEnableResetPasswordWebUI;
 
-// Controls whether .rar files downloaded by the user are inspected for being
-// unsafe.
-extern const base::Feature kInspectDownloadedRarFiles;
-
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 

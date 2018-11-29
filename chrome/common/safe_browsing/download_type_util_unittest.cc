@@ -19,9 +19,7 @@ TEST(DownloadProtectionUtilTest, KnownValues) {
             GetDownloadType(base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
   EXPECT_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE,
             GetDownloadType(base::FilePath(FILE_PATH_LITERAL("foo.zip"))));
-  EXPECT_EQ(base::FeatureList::IsEnabled(kInspectDownloadedRarFiles)
-                ? ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE
-                : ClientDownloadRequest::ARCHIVE,
+  EXPECT_EQ(ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE,
             GetDownloadType(base::FilePath(FILE_PATH_LITERAL("foo.rar"))));
   EXPECT_EQ(ClientDownloadRequest::MAC_EXECUTABLE,
             GetDownloadType(base::FilePath(FILE_PATH_LITERAL("foo.pkg"))));
