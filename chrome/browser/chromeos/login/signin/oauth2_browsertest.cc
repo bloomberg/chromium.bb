@@ -230,7 +230,7 @@ class OAuth2Test : public OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
-    // Disable sync sinc we don't really need this for these tests and it also
+    // Disable sync since we don't really need this for these tests and it also
     // makes OAuth2Test.MergeSession test flaky http://crbug.com/408867.
     command_line->AppendSwitch(switches::kDisableSync);
   }
@@ -494,7 +494,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 // PRE_MergeSession is testing merge session for a new profile.
 IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
   StartNewUserSession(/*wait_for_merge=*/true,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
   // Check for existence of refresh token.
   std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
   identity::IdentityManager* identity_manager =
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_MergeSession) {
   LoginAsExistingUser();
   scoped_refptr<CookieReader> cookie_reader(new CookieReader());
   cookie_reader->ReadCookies(profile());
-  // These are still cookie values form the initial session since
+  // These are still cookie values from the initial session since
   // /ListAccounts
   EXPECT_EQ(cookie_reader->GetCookieValue("SID"), kTestSessionSIDCookie);
   EXPECT_EQ(cookie_reader->GetCookieValue("LSID"), kTestSessionLSIDCookie);
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
 // Sets up a new user with stored refresh token.
 IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_OverlappingContinueSessionRestore) {
   StartNewUserSession(/*wait_for_merge=*/true,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
 }
 
 // Tests that ContinueSessionRestore could be called multiple times.
@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
 
 IN_PROC_BROWSER_TEST_F(OAuth2Test, VerifyInAdvancedProtectionAfterOnlineAuth) {
   StartNewUserSession(/*wait_for_merge=*/true,
-                      /*is_under_advanced_protectionis_true=*/true);
+                      /*is_under_advanced_protection=*/true);
 
   // Verify that AccountInfo is properly updated.
   AccountTrackerService* account_tracker =
@@ -672,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, VerifyInAdvancedProtectionAfterOnlineAuth) {
 IN_PROC_BROWSER_TEST_F(OAuth2Test,
                        VerifyNotInAdvancedProtectionAfterOnlineAuth) {
   StartNewUserSession(/*wait_for_merge=*/true,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
 
   // Verify that AccountInfo is properly updated.
   AccountTrackerService* account_tracker =
@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test,
 // Sets up a new user with stored refresh token.
 IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_SetInvalidTokenStatus) {
   StartNewUserSession(/*wait_for_merge=*/true,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
 }
 
 // Tests that an auth error marks invalid auth token status despite
@@ -896,7 +896,7 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
 
 IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
   StartNewUserSession(/*wait_for_merge=*/false,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
 
   // Try to open a page from google.com.
   Browser* browser = FindOrCreateVisibleBrowser(profile());
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
 
 IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
   StartNewUserSession(/*wait_for_merge=*/false,
-                      /*is_under_advanced_protectionis_true=*/false);
+                      /*is_under_advanced_protection=*/false);
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
                                     fake_google_page_url_.spec().c_str(),
                                     non_google_page_url_.spec().c_str()));
 
-  // Verify that we've sent XHR request form the extension side...
+  // Verify that we've sent XHR request from the extension side...
   JsExpectOnBackgroundPage(ext->id(),
                            "googleRequestSent && !googleResponseReceived");
 
