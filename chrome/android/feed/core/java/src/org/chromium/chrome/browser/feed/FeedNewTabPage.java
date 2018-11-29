@@ -282,6 +282,13 @@ public class FeedNewTabPage extends NewTabPage {
         mMediator.onThumbnailCaptured();
     }
 
+    /**
+     * @return The {@link StreamLifecycleManager} that manages the lifecycle of the {@link Stream}.
+     */
+    StreamLifecycleManager getStreamLifecycleManager() {
+        return mStreamLifecycleManager;
+    }
+
     /** @return The {@link Stream} that this class holds. */
     Stream getStream() {
         return mStream;
@@ -362,6 +369,9 @@ public class FeedNewTabPage extends NewTabPage {
     void createScrollViewForPolicy() {
         if (mStream != null) {
             mRootView.removeView(mStream.getView());
+            assert mStreamLifecycleManager
+                    != null
+                : "StreamLifecycleManager should not be null when the Stream is not null.";
             mStreamLifecycleManager.destroy();
             mStreamLifecycleManager = null;
             // Do not call mStream.onDestroy(), the mStreamLifecycleManager has done that for us.

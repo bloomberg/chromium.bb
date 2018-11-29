@@ -29,9 +29,20 @@ import java.util.concurrent.Executors;
 public class FeedProcessScopeFactory {
     private static final String TAG = "FeedProcessScopeFtry";
 
-    /** Flag that tracks whether we've ever been disabled via enterprise policy. Should only be
-     * accessed through isFeedProcessScopeEnabled(). */
+    /**
+     * Flag that tracks whether we've ever been disabled via enterprise policy. Should only be
+     * accessed through isFeedProcessScopeEnabled().
+     */
     private static boolean sEverDisabledForPolicy;
+
+    /**
+     * Tracks whether the article suggestions should be visible to the user during the current
+     * session. If user opts in to the suggestions during the current session, the suggestions
+     * services will be immediately warmed up. If user opts out during the current session,
+     * the suggestions services will not shut down until the next session.
+     */
+    private static boolean sArticlesVisibleDuringSession;
+
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedAppLifecycle sFeedAppLifecycle;
     private static FeedProcessScope sFeedProcessScope;
@@ -109,6 +120,8 @@ public class FeedProcessScopeFactory {
                 && sFeedAppLifecycle == null && sFeedLoggingBridge == null;
         if (!isFeedProcessEnabled()) return;
 
+        sArticlesVisibleDuringSession =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
         sPrefChangeRegistrar = new PrefChangeRegistrar();
         sPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED,
                 FeedProcessScopeFactory::articlesEnabledPrefChange);
@@ -191,6 +204,21 @@ public class FeedProcessScopeFactory {
     @VisibleForTesting
     static void clearFeedProcessScopeForTesting() {
         destroy();
+    }
+
+    /**
+     * @return Whether article suggestions are prepared to be shown based on user preference. If
+     *         article suggestions are set hidden within a session, this will still return true
+     *         until the next restart.
+     */
+    static boolean areArticlesVisibleDuringSession() {
+        // Skip the native call if sArticlesVisibleDuringSession is already true to reduce overhead.
+        if (!sArticlesVisibleDuringSession
+                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+            sArticlesVisibleDuringSession = true;
+        }
+
+        return sArticlesVisibleDuringSession;
     }
 
     private static void articlesEnabledPrefChange() {

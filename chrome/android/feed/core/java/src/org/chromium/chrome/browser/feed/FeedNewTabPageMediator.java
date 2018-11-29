@@ -152,14 +152,20 @@ class FeedNewTabPageMediator
         if (stream == null) return;
 
         stream.removeScrollListener(mStreamScrollListener);
-        stream.removeOnContentChangedListener(mStreamContentChangedListener);
-        MemoryPressureListener.removeCallback(mMemoryPressureCallback);
-        if (mSignInPromo != null) mSignInPromo.destroy();
-        mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
         mStreamScrollListener = null;
+
+        stream.removeOnContentChangedListener(mStreamContentChangedListener);
         mStreamContentChangedListener = null;
+
+        MemoryPressureListener.removeCallback(mMemoryPressureCallback);
         mMemoryPressureCallback = null;
-        mSignInPromo = null;
+
+        if (mSignInPromo != null) {
+            mSignInPromo.destroy();
+            mSignInPromo = null;
+        }
+
+        mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
     }
 
     /**
@@ -178,6 +184,7 @@ class FeedNewTabPageMediator
         if (mSignInPromo != null) {
             mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
         }
+        if (suggestionsVisible) mCoordinator.getStreamLifecycleManager().activate();
         mStreamContentChanged = true;
     }
 
