@@ -442,7 +442,7 @@ extern const char kHasSeenWelcomePage[];
 #if defined(OS_WIN)
 extern const char kHasSeenWin10PromoPage[];
 #if defined(GOOGLE_CHROME_BUILD)
-extern const char kNuxOnboardGroup[];
+extern const char kNaviOnboardGroup[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 

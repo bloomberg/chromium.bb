@@ -1081,8 +1081,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // Enterprise users should not be included in any NUX/Navi flow.
     if (!base::win::IsEnterpriseManaged()) {
-      int group = nux::GetOnboardingGroup();
-      profile->GetPrefs()->SetInteger(prefs::kNuxOnboardGroup, group);
+      profile->GetPrefs()->SetString(prefs::kNaviOnboardGroup,
+                                     nux::GetOnboardingGroup());
     }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   }

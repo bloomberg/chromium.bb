@@ -1295,7 +1295,7 @@ const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
 // Put the user into an onboarding group that's decided when they go through
 // the first run onboarding experience. Only users in a group will have their
 // finch group pinged to keep track of them for the experiment.
-const char kNuxOnboardGroup[] = "browser.onboard_group";
+const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
