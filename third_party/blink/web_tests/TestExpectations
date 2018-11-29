@@ -5158,7 +5158,6 @@ crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-con
 crbug.com/846547 fast/webgl/webgl-composite-modes.html [ Pass Failure ]
 crbug.com/846471 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeout ]
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002-manual.html [ Pass Timeout ]
-crbug.com/846631 virtual/service-worker-servicification/http/tests/serviceworker/navigation_preload/navigation-preload-resource-timing.html [ Pass Failure ]
 
 # Sheriff 2018-05-28
 # Merged failing devtools/editor tests.
