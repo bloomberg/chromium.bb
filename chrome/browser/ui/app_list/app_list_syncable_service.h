@@ -27,6 +27,7 @@
 #include "components/sync/protocol/app_list_specifics.pb.h"
 
 class AppListModelUpdater;
+class AppServiceAppModelBuilder;
 class ArcAppModelBuilder;
 class ChromeAppListItem;
 class CrostiniAppModelBuilder;
@@ -281,16 +282,22 @@ class AppListSyncableService : public syncer::SyncableService,
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModelUpdater> model_updater_;
   std::unique_ptr<ModelUpdaterDelegate> model_updater_delegate_;
-  std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
+
+  std::unique_ptr<AppServiceAppModelBuilder> app_service_apps_builder_;
+  // TODO(crbug.com/826982): delete all the other FooModelBuilder's, after
+  // folding them into the App Service.
+  std::unique_ptr<ExtensionAppModelBuilder> ext_apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;
   std::unique_ptr<CrostiniAppModelBuilder> crostini_apps_builder_;
   std::unique_ptr<InternalAppModelBuilder> internal_apps_builder_;
+
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
   syncer::SyncableService::StartSyncFlare flare_;
   bool initial_sync_data_processed_;
   bool first_app_list_sync_;
+  const bool is_app_service_enabled_;
   std::string oem_folder_name_;
 
   // List of observers.
