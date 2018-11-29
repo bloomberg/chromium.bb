@@ -161,51 +161,65 @@ Is trace expanded: YES
 activeElement: LI.parent.object-properties-section-root-element.selected
 active text: {x: 1}
 
-ArrowDown:
-Viewport virtual selection: 2
-Has object: collapsed
+ArrowRight:
+Viewport virtual selection: 1
+Has object: expanded
 Is trace expanded: YES
-activeElement: DIV.console-message-wrapper.console-from-api.console-info-level.console-selected
-active text: console-key-expand.js:112 after
+activeElement: LI.parent.object-properties-section-root-element.selected.expanded
+active text: {x: 1}
+
+ArrowDown:
+Viewport virtual selection: 1
+Has object: expanded
+Is trace expanded: YES
+activeElement: LI.selected
+active text: x: 1
 
 ArrowDown:
 
 ArrowDown:
 Viewport virtual selection: 2
-Has object: collapsed
+Has object: expanded
 Is trace expanded: YES
 activeElement: DIV.console-message-wrapper.console-from-api.console-info-level.console-selected
 active text: console-key-expand.js:112 after
 
 ArrowUp:
 Viewport virtual selection: 1
-Has object: collapsed
+Has object: expanded
 Is trace expanded: YES
-activeElement: LI.parent.object-properties-section-root-element.selected
+activeElement: SPAN.devtools-link
+active text: console-key-expand.js:112
+
+ArrowUp:
+Viewport virtual selection: 1
+Has object: expanded
+Is trace expanded: YES
+activeElement: LI.parent.object-properties-section-root-element.expanded.selected
 active text: {x: 1}
 
 ArrowUp:
 Viewport virtual selection: 1
-Has object: collapsed
+Has object: expanded
 Is trace expanded: YES
 activeElement: DIV.console-message-wrapper.console-from-api.console-warning-level.console-selected
-active text: console-key-expand.js:112 warning {x: 1}
+active text: console-key-expand.js:112 warning {x: 1}x: 1
 (anonymous) @ console-key-expand.js:112
 
 ArrowLeft:
 Viewport virtual selection: 1
-Has object: collapsed
+Has object: expanded
 Is trace expanded: NO
 activeElement: DIV.console-message-wrapper.console-from-api.console-warning-level.console-selected
-active text: console-key-expand.js:112 warning {x: 1}
+active text: console-key-expand.js:112 warning {x: 1}x: 1
 (anonymous) @ console-key-expand.js:112
 
 ArrowLeft:
 Viewport virtual selection: 1
-Has object: collapsed
+Has object: expanded
 Is trace expanded: NO
 activeElement: DIV.console-message-wrapper.console-from-api.console-warning-level.console-selected
-active text: console-key-expand.js:112 warning {x: 1}
+active text: console-key-expand.js:112 warning {x: 1}x: 1
 (anonymous) @ console-key-expand.js:112
 
 Running: testExpandingElement
@@ -215,7 +229,7 @@ Message count: 3
 Force selecting index 1
 Viewport virtual selection: 1
 activeElement: DIV.console-message-wrapper.console-from-api.console-info-level.console-selected
-active text: console-key-expand.js:156 <div>​…​</div>​
+active text: console-key-expand.js:160 <div>​…​</div>​
 
 ArrowDown:
 Viewport virtual selection: 1
