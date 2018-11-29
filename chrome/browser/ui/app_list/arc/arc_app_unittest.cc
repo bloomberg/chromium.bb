@@ -1269,6 +1269,48 @@ TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnOptOut) {
   prefs->RemoveObserver(&observer);
 }
 
+TEST_P(ArcAppModelBuilderTest, AppLifeCycleEventsOnPackageListRefresh) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::MockArcAppListPrefsObserver observer;
+  prefs->AddObserver(&observer);
+
+  // Refreshing the package list with hithero unseen packages should call
+  // OnPackageInstalled.
+  EXPECT_CALL(observer, OnPackageInstalled(testing::Field(
+                            &arc::mojom::ArcPackageInfo::package_name,
+                            fake_packages()[0]->package_name)))
+      .Times(1);
+  EXPECT_CALL(observer, OnPackageInstalled(testing::Field(
+                            &arc::mojom::ArcPackageInfo::package_name,
+                            fake_packages()[1]->package_name)))
+      .Times(1);
+  EXPECT_CALL(observer, OnPackageInstalled(testing::Field(
+                            &arc::mojom::ArcPackageInfo::package_name,
+                            fake_packages()[2]->package_name)))
+      .Times(1);
+  app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(fake_packages()));
+
+  // Refreshing the package list and omitting previously seen packages should
+  // call OnPackageRemoved for the omitted packages only.
+  EXPECT_CALL(observer,
+              OnPackageRemoved(fake_packages()[0]->package_name, false))
+      .Times(0);
+  EXPECT_CALL(observer,
+              OnPackageRemoved(fake_packages()[1]->package_name, false))
+      .Times(1);
+  EXPECT_CALL(observer,
+              OnPackageRemoved(fake_packages()[2]->package_name, false))
+      .Times(1);
+
+  std::vector<arc::mojom::ArcPackageInfoPtr> packages;
+  packages.push_back(fake_packages()[0].Clone());
+  app_instance()->SendRefreshPackageList(std::move(packages));
+  prefs->RemoveObserver(&observer);
+}
+
 // Validate that arc model contains expected elements on restart.
 TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
   // No apps on initial start.
