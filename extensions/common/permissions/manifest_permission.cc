@@ -15,7 +15,7 @@ ManifestPermission::ManifestPermission() {}
 
 ManifestPermission::~ManifestPermission() { }
 
-ManifestPermission* ManifestPermission::Clone() const {
+std::unique_ptr<ManifestPermission> ManifestPermission::Clone() const {
   return Union(this);
 }
 

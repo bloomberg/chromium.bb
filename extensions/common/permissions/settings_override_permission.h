@@ -29,10 +29,11 @@ class SettingsOverrideAPIPermission : public APIPermission {
                  std::string* error,
                  std::vector<std::string>* unhandled_permissions) override;
   std::unique_ptr<base::Value> ToValue() const override;
-  APIPermission* Clone() const override;
-  APIPermission* Diff(const APIPermission* rhs) const override;
-  APIPermission* Union(const APIPermission* rhs) const override;
-  APIPermission* Intersect(const APIPermission* rhs) const override;
+  std::unique_ptr<APIPermission> Clone() const override;
+  std::unique_ptr<APIPermission> Diff(const APIPermission* rhs) const override;
+  std::unique_ptr<APIPermission> Union(const APIPermission* rhs) const override;
+  std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const override;
   void Write(base::Pickle* m) const override;
   bool Read(const base::Pickle* m, base::PickleIterator* iter) override;
   void Log(std::string* log) const override;

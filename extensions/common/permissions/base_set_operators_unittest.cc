@@ -17,10 +17,12 @@ class TestPermission {
   ~TestPermission() = default;
 
   // Methods required by BaseSetOperators operations.
-  TestPermission* Clone() const { return new TestPermission(id_); }
-  TestPermission* Diff() const { return nullptr; }
-  TestPermission* Union() const { return Clone(); }
-  TestPermission* Intersect() const { return Clone(); }
+  std::unique_ptr<TestPermission> Clone() const {
+    return std::make_unique<TestPermission>(id_);
+  }
+  std::unique_ptr<TestPermission> Diff() const { return nullptr; }
+  std::unique_ptr<TestPermission> Union() const { return Clone(); }
+  std::unique_ptr<TestPermission> Intersect() const { return Clone(); }
   bool Equal(const TestPermission* other) const { return id_ == other->id_; }
 
   int id() const { return id_; }

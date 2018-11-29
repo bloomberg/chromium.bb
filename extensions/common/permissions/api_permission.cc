@@ -50,23 +50,25 @@ class SimpleAPIPermission : public APIPermission {
     return std::unique_ptr<base::Value>();
   }
 
-  APIPermission* Clone() const override {
-    return new SimpleAPIPermission(info());
+  std::unique_ptr<APIPermission> Clone() const override {
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
-  APIPermission* Diff(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Diff(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return NULL;
+    return nullptr;
   }
 
-  APIPermission* Union(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Union(
+      const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return new SimpleAPIPermission(info());
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
-  APIPermission* Intersect(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return new SimpleAPIPermission(info());
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
   void Write(base::Pickle* m) const override {}
