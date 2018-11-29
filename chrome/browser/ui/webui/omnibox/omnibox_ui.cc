@@ -18,6 +18,8 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOmniboxHost);
+  source->AddResourcePath("omnibox_column_widths.css",
+                          IDR_OMNIBOX_COLUMN_WIDTHS_CSS);
   source->AddResourcePath("omnibox.css", IDR_OMNIBOX_CSS);
   source->AddResourcePath("omnibox_element.js", IDR_OMNIBOX_ELEMENT_JS);
   source->AddResourcePath("omnibox_inputs.js", IDR_OMNIBOX_INPUTS_JS);

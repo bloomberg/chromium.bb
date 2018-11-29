@@ -345,19 +345,31 @@ cr.define('omnibox_output', function() {
      * @return {!Element}
      */
     render(showDetails, showIncompleteResults, showAllProviders) {
-      const resultsGroupNode =
-          OmniboxElement.getTemplate('results-group-template');
+      const detailsAndTable =
+          OmniboxElement.getTemplate('details-and-table-template');
       if (showDetails || showIncompleteResults) {
-        resultsGroupNode.querySelector('.details')
+        detailsAndTable.querySelector('.details')
             .appendChild(this.renderDetails_());
       }
-      resultsGroupNode.querySelector('.combined-results')
-          .appendChild(this.combinedResults.render(showDetails));
+
+      const showAdditionalPropertiesColumn =
+          this.showAdditionalPropertiesColumn_(showDetails);
+
+      detailsAndTable.querySelector('.table').appendChild(
+          OutputResultsTable.renderHeader(
+              showDetails, showAdditionalPropertiesColumn));
+      detailsAndTable.querySelector('.table').appendChild(
+          this.combinedResults.render(showDetails));
       if (showAllProviders) {
-        resultsGroupNode.querySelector('.individual-results')
-            .appendChild(this.renderIndividualResults_(showDetails));
+        this.individualResultsList.forEach(individualResults => {
+          detailsAndTable.querySelector('.table').appendChild(
+              individualResults.renderInnerHeader(
+                  showDetails, showAdditionalPropertiesColumn));
+          detailsAndTable.querySelector('.table').appendChild(
+              individualResults.render(showDetails));
+        });
       }
-      return resultsGroupNode;
+      return detailsAndTable;
     }
 
     /**
@@ -365,8 +377,7 @@ cr.define('omnibox_output', function() {
      * @return {!Element}
      */
     renderDetails_() {
-      const details =
-          OmniboxElement.getTemplate('results-group-details-template');
+      const details = OmniboxElement.getTemplate('details-template');
       details.querySelector('.cursor-position').textContent =
           this.details.cursorPosition;
       details.querySelector('.time').textContent = this.details.time;
@@ -380,15 +391,13 @@ cr.define('omnibox_output', function() {
     /**
      * @private
      * @param {boolean} showDetails
-     * @return {!Element}
+     * @return {boolean}
      */
-    renderIndividualResults_(showDetails) {
-      const individualResultsNode = OmniboxElement.getTemplate(
-          'results-group-individual-results-template');
-      this.individualResultsList.forEach(
-          individualResults => individualResultsNode.appendChild(
-              individualResults.render(showDetails)));
-      return individualResultsNode;
+    showAdditionalPropertiesColumn_(showDetails) {
+      return showDetails &&
+          (this.combinedResults.hasAdditionalProperties ||
+           this.individualResultsList.some(
+               results => results.hasAdditionalProperties));
     }
 
     /** @return {!Array<!OutputMatch>} */
@@ -411,23 +420,58 @@ cr.define('omnibox_output', function() {
     }
 
     /**
+     * @param {boolean} showDetails
+     * @param {boolean} showAdditionalPropertiesColumn
+     * @return {Element}
+     */
+    static renderHeader(showDetails, showAdditionalPropertiesColumn) {
+      const head = document.createElement('thead');
+      const row = document.createElement('tr');
+      const cells =
+          OutputMatch.displayedProperties(showDetails)
+              .map(
+                  ({header, url, tooltip}) =>
+                      OutputMatch.renderHeaderCell(header, url, tooltip));
+      if (showAdditionalPropertiesColumn)
+        cells.push(OutputMatch.renderHeaderCell('Additional Properties'));
+      cells.forEach(cell => row.appendChild(cell));
+      head.appendChild(row);
+      return head;
+    }
+
+    /**
      * Creates a HTML Node representing this data.
      * @param {boolean} showDetails
      * @return {!Element}
      */
     render(showDetails) {
-      const resultsTable = OmniboxElement.getTemplate('results-table-template');
-      // The additional properties column only needs be displayed if at least
-      // one of the results have additional properties.
-      const showAdditionalPropertiesHeader = this.matches.some(
-          match => match.showAdditionalProperties(showDetails));
-      resultsTable.querySelector('.results-table-body')
-          .appendChild(OutputMatch.renderHeader_(
-              showDetails, showAdditionalPropertiesHeader));
+      const body = document.createElement('tbody');
       this.matches.forEach(
-          match => resultsTable.querySelector('.results-table-body')
-                       .appendChild(match.render(showDetails)));
-      return resultsTable;
+          match => body.appendChild(match.render(showDetails)));
+      return body;
+    }
+
+    /**
+     * @param {boolean} showDetails
+     * @param {boolean} showAdditionalPropertiesColumn
+     * @return {!Element}
+     */
+    renderInnerHeader(showDetails, showAdditionalPropertiesColumn) {
+      const head = document.createElement('thead');
+      const row = document.createElement('tr');
+      const cell = document.createElement('th');
+      // Reserve 1 more column if showing the additional properties column.
+      cell.colSpan = OutputMatch.displayedProperties(showDetails).length +
+          showAdditionalPropertiesColumn;
+      cell.textContent = this.matches[0].properties.providerName;
+      row.appendChild(cell);
+      head.appendChild(row);
+      return head;
+    }
+
+    /** @return {boolean} */
+    get hasAdditionalProperties() {
+      return this.matches.some(match => match.hasAdditionalProperties);
     }
   }
 
@@ -485,7 +529,7 @@ cr.define('omnibox_output', function() {
           })
           .forEach(cell => row.appendChild(cell));
 
-      if (this.showAdditionalProperties(showDetails)) {
+      if (showDetails && this.hasAdditionalProperties) {
         row.appendChild(
             OutputMatch.renderJsonProperty_(this.additionalProperties));
       }
@@ -563,35 +607,12 @@ cr.define('omnibox_output', function() {
     }
 
     /**
-     * @private
-     * @param {boolean} showDetails
-     * @param {boolean} showAdditionalHeader
-     * @return {!Element}
-     */
-    static renderHeader_(showDetails, showAdditionalHeader) {
-      const row = document.createElement('tr');
-      const headerCells =
-          OutputMatch.displayedProperties(showDetails)
-              .map(
-                  displayProperty => OutputMatch.renderHeaderCell_(
-                      displayProperty.header, displayProperty.url,
-                      displayProperty.tooltip));
-      if (showAdditionalHeader) {
-        headerCells.push(
-            OutputMatch.renderHeaderCell_('Additional Properties'));
-      }
-      headerCells.forEach(headerCell => row.appendChild(headerCell));
-      return row;
-    }
-
-    /**
-     * @private
      * @param {string} name
      * @param {string=} url
      * @param {string=} tooltip
      * @return {!Element}
      */
-    static renderHeaderCell_(name, url, tooltip) {
+    static renderHeaderCell(name, url, tooltip) {
       const cell = document.createElement('th');
       if (url) {
         const link = document.createElement('a');
@@ -601,6 +622,8 @@ cr.define('omnibox_output', function() {
       } else {
         cell.textContent = name;
       }
+      cell.className =
+          'column-' + name.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
       cell.title = tooltip || '';
       return cell;
     }
@@ -616,12 +639,11 @@ cr.define('omnibox_output', function() {
     }
 
     /**
-     * @return {boolean} True if the additional properties column is required
-     * to be displayed for this result. False if the column can be hidden
-     * because this result does not have additional properties.
+     * @return {boolean} Used to determine if the additional properties column
+     * needs to be displayed for this match.
      */
-    showAdditionalProperties(showDetails) {
-      return showDetails && Object.keys(this.additionalProperties).length;
+    get hasAdditionalProperties() {
+      return Object.keys(this.additionalProperties).length > 0;
     }
   }
 
