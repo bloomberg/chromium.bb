@@ -20881,6 +20881,9 @@ Called by update_net_error_codes.py.-->
   <int value="2642" label="FlexboxSingleLineAlignContent"/>
   <int value="2643" label="SignedExchangeInnerResponseInMainFrame"/>
   <int value="2644" label="SignedExchangeInnerResponseInSubFrame"/>
+  <int value="2645" label="CSSSelectorNotWithValidList"/>
+  <int value="2646" label="CSSSelectorNotWithInvalidList"/>
+  <int value="2647" label="CSSSelectorNotWithPartiallyValidList"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

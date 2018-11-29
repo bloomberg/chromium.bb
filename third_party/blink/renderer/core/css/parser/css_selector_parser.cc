@@ -487,6 +487,44 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
   return selector;
 }
 
+void CSSSelectorParser::CountRejectedNot(CSSParserTokenRange& range) {
+  bool exists_valid = false;
+  bool exists_invalid = false;
+
+  do {
+    if (exists_valid || exists_invalid) {
+      DCHECK(range.Peek().GetType() == kCommaToken);
+      range.ConsumeIncludingWhitespace();
+    }
+    // else we are parsing the first complex selector
+
+    failed_parsing_ = false;
+    bool consumed_invalid = !ConsumeComplexSelector(range) || failed_parsing_;
+    range.ConsumeWhitespace();
+    while (!range.AtEnd() && range.Peek().GetType() != kCommaToken) {
+      consumed_invalid = true;
+      range.ConsumeIncludingWhitespace();
+    }
+
+    if (consumed_invalid)
+      exists_invalid = true;
+    else
+      exists_valid = true;
+  } while (!range.AtEnd());
+
+  WebFeature feature;
+  if (exists_valid) {
+    if (exists_invalid)
+      feature = WebFeature::kCSSSelectorNotWithPartiallyValidList;
+    else
+      feature = WebFeature::kCSSSelectorNotWithValidList;
+  } else {
+    feature = WebFeature::kCSSSelectorNotWithInvalidList;
+  }
+  context_->Count(feature);
+  failed_parsing_ = true;
+}
+
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().GetType(), kColonToken);
@@ -577,11 +615,17 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       return selector;
     }
     case CSSSelector::kPseudoNot: {
+      CSSParserTokenRange fallback_block = block;
+
       std::unique_ptr<CSSParserSelector> inner_selector =
           ConsumeCompoundSelector(block);
       block.ConsumeWhitespace();
-      if (!inner_selector || !inner_selector->IsSimple() || !block.AtEnd())
+      if (!inner_selector || !inner_selector->IsSimple() ||
+          inner_selector->Relation() != CSSSelector::kSubSelector ||
+          !block.AtEnd()) {
+        CountRejectedNot(fallback_block);
         return nullptr;
+      }
       Vector<std::unique_ptr<CSSParserSelector>> selector_vector;
       selector_vector.push_back(std::move(inner_selector));
       selector->AdoptSelectorVector(selector_vector);
