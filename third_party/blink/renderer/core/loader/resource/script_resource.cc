@@ -164,8 +164,14 @@ String ScriptResource::TextForInspector() const {
 
     // 2. We have finished loading with no data received, so no streaming ever
     //    happened or streaming was suppressed.
-    CHECK(!streamer_ || streamer_->StreamingSuppressedReason() ==
-                            ScriptStreamer::kScriptTooSmall);
+    //
+    // TODO(crbug/909858) Currently this CHECK can occasionally fail, but this
+    // doesn't seem to cause real issues immediately. For now, we suppress the
+    // crashes on release builds by making this a DCHECK and continue baking the
+    // script streamer control (crbug/865098) on beta, while investigating the
+    // failure reason on canary.
+    DCHECK(!streamer_ || streamer_->StreamingSuppressedReason() ==
+                             ScriptStreamer::kScriptTooSmall);
     return "";
   }
 
