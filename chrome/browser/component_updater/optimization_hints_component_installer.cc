@@ -90,10 +90,10 @@ void OptimizationHintsComponentInstallerPolicy::ComponentReady(
   optimization_guide::OptimizationGuideService* optimization_guide_service =
       g_browser_process->optimization_guide_service();
   if (optimization_guide_service) {
-    optimization_guide::ComponentInfo component_info(
+    optimization_guide::HintsComponentInfo info(
         version,
         install_dir.Append(optimization_guide::kUnindexedHintsFileName));
-    optimization_guide_service->ProcessHints(component_info);
+    optimization_guide_service->MaybeUpdateHintsComponent(info);
   }
 }
 
