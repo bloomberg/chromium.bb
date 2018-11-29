@@ -2772,46 +2772,25 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   if (!document_loader)
     return;
 
-  const WebURLRequest& failed_request = document_loader->GetRequest();
-
   // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(failed_request, error, frame_);
+  SendFailedProvisionalLoad(document_loader->GetRequest(), error, frame_);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
     return;
-
-  NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(document_loader);
-
-  std::unique_ptr<blink::WebNavigationParams> navigation_params;
-  std::unique_ptr<DocumentState> document_state;
-
-  // If we failed on a browser initiated request, then make sure that our error
-  // page load is regarded as the same browser initiated request.
-  if (!navigation_state->IsContentInitiated()) {
-    document_state = BuildDocumentStateFromParams(
-        navigation_state->common_params(), navigation_state->request_params(),
-        base::TimeTicks(),  // Not used for failed navigation.
-        CommitNavigationCallback(), nullptr);
-    navigation_params = BuildNavigationParams(
-        navigation_state->common_params(), navigation_state->request_params(),
-        BuildServiceWorkerNetworkProviderForNavigation(
-            nullptr /* request_params */,
-            nullptr /* controller_service_worker_info */));
-  }
 
   // If this is a failed back/forward/reload navigation, then we need to do a
   // 'replace' load. This is necessary to avoid messing up session history.
   // Otherwise, we do a normal load, which simulates a 'go' navigation as far
   // as session history is concerned.
-  bool replace = commit_type != blink::kWebStandardCommit;
+  bool replace_current_item = commit_type != blink::kWebStandardCommit;
 
-  std::string error_html;
-  GetContentClient()->renderer()->PrepareErrorPage(this, failed_request, error,
-                                                   &error_html);
-  LoadNavigationErrorPage(error_html, error.url(), replace, nullptr,
-                          std::move(navigation_params),
-                          std::move(document_state), &failed_request);
+  // If we failed on a browser initiated request, then make sure that our error
+  // page load is regarded as the same browser initiated request.
+  bool inherit_document_state =
+      !NavigationState::FromDocumentLoader(document_loader)
+           ->IsContentInitiated();
+  LoadNavigationErrorPage(document_loader, error, base::nullopt,
+                          replace_current_item, inherit_document_state);
 }
 
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
@@ -2823,41 +2802,53 @@ void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
-    const std::string& error_html,
-    const GURL& error_url,
-    bool replace,
-    HistoryEntry* history_entry,
-    std::unique_ptr<blink::WebNavigationParams> navigation_params,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
-    const WebURLRequest* failed_request) {
+    WebDocumentLoader* document_loader,
+    const WebURLError& error,
+    const base::Optional<std::string>& error_page_content,
+    bool replace_current_item,
+    bool inherit_document_state) {
+  WebURLRequest failed_request = document_loader->GetRequest();
+
+  std::string error_html;
+  if (error_page_content) {
+    error_html = error_page_content.value();
+  } else {
+    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
+                                                     error, &error_html);
+  }
+
+  std::unique_ptr<blink::WebNavigationParams> navigation_params;
+  std::unique_ptr<DocumentState> document_state;
+
+  if (inherit_document_state) {
+    NavigationState* navigation_state =
+        NavigationState::FromDocumentLoader(document_loader);
+    document_state = BuildDocumentStateFromParams(
+        navigation_state->common_params(), navigation_state->request_params(),
+        base::TimeTicks(),  // Not used for failed navigation.
+        CommitNavigationCallback(), nullptr);
+    navigation_params = BuildNavigationParams(
+        navigation_state->common_params(), navigation_state->request_params(),
+        BuildServiceWorkerNetworkProviderForNavigation(
+            nullptr /* request_params */,
+            nullptr /* controller_service_worker_info */));
+  } else {
+    document_state = BuildDocumentState();
+  }
+
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
-  blink::WebFrameLoadType frame_load_type =
-      history_entry ? blink::WebFrameLoadType::kBackForward
-                    : blink::WebFrameLoadType::kStandard;
-  const blink::WebHistoryItem& history_item =
-      history_entry ? history_entry->root() : blink::WebHistoryItem();
-  if (replace && frame_load_type == WebFrameLoadType::kStandard)
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  // Locally generated error pages should not be cached.
+  failed_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
+  failed_request.SetURL(GURL(kUnreachableWebDataURL));
 
-  // Failed navigations will always provide a |failed_request|.  Error induced
-  // by the client/renderer side after a commit won't have a |failed_request|.
-  bool is_client_redirect = !failed_request;
-
-  WebURLRequest new_request;
-  if (failed_request)
-    new_request = *failed_request;
-  new_request.SetURL(GURL(kUnreachableWebDataURL));
-
-  // Locally generated error pages should not be cached (in particular they
-  // should not inherit the cache mode from |failed_request|).
-  new_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
-
-  frame_->CommitDataNavigation(new_request, error_html, "text/html", "UTF-8",
-                               error_url, frame_load_type, history_item,
-                               is_client_redirect, std::move(navigation_params),
-                               std::move(navigation_data));
+  frame_->CommitDataNavigation(
+      failed_request, error_html, "text/html", "UTF-8", error.url(),
+      replace_current_item ? WebFrameLoadType::kReplaceCurrentItem
+                           : WebFrameLoadType::kStandard,
+      WebHistoryItem(), false /* is_client_redirect */,
+      std::move(navigation_params), std::move(document_state));
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2973,16 +2964,10 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 }
 
 void RenderFrameImpl::LoadErrorPage(int reason) {
-  WebURLError error(reason, frame_->GetDocument().Url());
-
-  std::string error_html;
-  GetContentClient()->renderer()->PrepareErrorPage(
-      this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html);
-
-  LoadNavigationErrorPage(
-      error_html, error.url(), true /* replace */, nullptr /* history_entry */,
-      nullptr /* navigation_params */, nullptr /* navigation_data */,
-      nullptr /* failed_request */);
+  LoadNavigationErrorPage(frame_->GetDocumentLoader(),
+                          WebURLError(reason, frame_->GetDocument().Url()),
+                          base::nullopt, true /* replace_current_item */,
+                          false /* inherit_document_state */);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -3461,21 +3446,29 @@ void RenderFrameImpl::CommitFailedNavigation(
                                                      error, &error_html);
   }
 
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+  if (history_entry)
+    frame_load_type = WebFrameLoadType::kBackForward;
+  else if (replace)
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+
+  failed_request.SetURL(GURL(kUnreachableWebDataURL));
+  failed_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
+
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
   base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-
-  // Don't pass history entry for renderer initiated navigations.
-  bool pass_history_entry = request_params.nav_entry_id != 0;
-  // TODO(dgozman): if this DCHECK never triggers, we can just pass
-  // |history_entry| unconditionally.
-  DCHECK(pass_history_entry || !history_entry);
-  LoadNavigationErrorPage(error_html, error.url(), replace,
-                          pass_history_entry ? history_entry.get() : nullptr,
-                          std::move(navigation_params),
-                          std::move(document_state), &failed_request);
+  frame_->CommitDataNavigation(
+      failed_request, error_html, "text/html", "UTF-8", error.url(),
+      frame_load_type,
+      history_entry ? history_entry->root() : blink::WebHistoryItem(),
+      false /* is_client_redirect */, std::move(navigation_params),
+      std::move(document_state));
   if (!weak_this)
     return;
 
@@ -4546,23 +4539,22 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
           frame_->GetDocumentLoader());
   int http_status_code = internal_data->http_status_code();
   if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
-    // This call may run scripts, e.g. via the beforeunload event.
-    std::unique_ptr<DocumentState> document_state(BuildDocumentState());
-    std::unique_ptr<blink::WebNavigationParams> navigation_params =
-        std::make_unique<blink::WebNavigationParams>();
-    navigation_params->service_worker_network_provider =
-        BuildServiceWorkerNetworkProviderForNavigation(
-            nullptr /* request_params */, nullptr /* controller_info */);
-    WebURLRequest failed_request = frame_->GetDocumentLoader()->GetRequest();
+    WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
     WebURL unreachable_url = frame_->GetDocument().Url();
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
-        this, failed_request, unreachable_url, http_status_code, &error_html);
-    LoadNavigationErrorPage(error_html, unreachable_url, true /* replace */,
-                            nullptr /* entry */, std::move(navigation_params),
-                            std::move(document_state), &failed_request);
+        this, document_loader->GetRequest(), unreachable_url, http_status_code,
+        &error_html);
+    // This call may run scripts, e.g. via the beforeunload event, and possibly
+    // delete |this|.
+    LoadNavigationErrorPage(document_loader,
+                            WebURLError(net::ERR_FAILED, unreachable_url),
+                            error_html, true /* replace_current_item */,
+                            false /* inherit_document_state */);
+    if (!weak_self)
+      return;
+    // Do not use |this| or |frame_| here without checking |weak_self|.
   }
-  // Do not use |this| or |frame_| here without checking |weak_self|.
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentIdle() {
