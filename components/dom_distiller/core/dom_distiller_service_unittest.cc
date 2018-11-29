@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
@@ -82,7 +82,6 @@ std::unique_ptr<DistilledArticleProto> CreateDefaultArticle() {
 class DomDistillerServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    main_loop_.reset(new base::MessageLoop());
     FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(&db_model_);
     FakeDB<ArticleEntry>::EntryMap store_model;
     store_ =
@@ -106,12 +105,12 @@ class DomDistillerServiceTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
   // store is owned by service_.
   DomDistillerStoreInterface* store_;
   MockDistillerFactory* distiller_factory_;
   MockDistillerPageFactory* distiller_page_factory_;
   std::unique_ptr<DomDistillerService> service_;
-  std::unique_ptr<base::MessageLoop> main_loop_;
   FakeDB<ArticleEntry>::EntryMap db_model_;
 };
 
