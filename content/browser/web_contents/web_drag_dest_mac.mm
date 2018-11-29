@@ -18,6 +18,7 @@
 #include "content/public/common/drop_data.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
@@ -387,7 +388,7 @@ GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
     NSString* html = [pboard stringForType:ui::kChromeDragImageHTMLPboardType];
     data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
   } else if ([types containsObject:NSRTFPboardType]) {
-    NSString* html = [pboard htmlFromRtf];
+    NSString* html = ui::ClipboardUtil::GetHTMLFromRTFOnPasteboard(pboard);
     data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
   }
 

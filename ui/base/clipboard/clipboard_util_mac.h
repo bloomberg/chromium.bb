@@ -63,16 +63,21 @@ class UI_BASE_EXPORT ClipboardUtil {
   // and its associated data.
   static void AddDataToPasteboard(NSPasteboard* pboard, NSPasteboardItem* item);
 
-  // Returns whether the operation was succesful. On success, the two arrays are
-  // guaranteed to be equal length, and are populated with strings of |urls| and
-  // |titles|.
+  // Returns whether the operation was successful. On success, the two arrays
+  // are guaranteed to be equal length, and are populated with strings of |urls|
+  // and |titles|.
   static bool URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
                                           NSArray** urls,
                                           NSArray** titles);
 
   // Gets the NSPasteboard specified from the clipboard type.
   static NSPasteboard* PasteboardFromType(ui::ClipboardType type);
+
+  // If there is RTF data on the pasteboard, returns an HTML version of it.
+  // Otherwise returns nil.
+  static NSString* GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard);
 };
-}
+
+}  // namespace ui
 
 #endif  // UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_MAC_H_
