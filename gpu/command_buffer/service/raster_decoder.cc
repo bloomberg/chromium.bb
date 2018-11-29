@@ -2516,6 +2516,19 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   // prepareForExternalIO above. Use kDeferLaterCommands to ensure we yield to
   // the Scheduler before processing more commands.
   current_decoder_error_ = error::kDeferLaterCommands;
+
+#if defined(OS_MACOSX)
+  // Aggressively call glFlush on macOS to determine if this is sufficient to
+  // avoid GL driver crashes.
+  // TODO(ccameron): If this is not sufficient, then add a flush to
+  // DoRasterCHROMIUM as well. Also add crash report data to indicate which
+  // sequence of commands result in the crash, and formalize this as a GPU
+  // bug workaround.
+  // https://crbug.com/906453
+  if (gr_context())
+    gr_context()->flush();
+  api()->glFlushFn();
+#endif
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
