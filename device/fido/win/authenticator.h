@@ -29,6 +29,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   // The return value of |GetId|.
   static const char kAuthenticatorId[];
 
+  static bool IsUserVerifyingPlatformAuthenticatorAvailable();
+
   WinWebAuthnApiAuthenticator(WinWebAuthnApi* win_api, HWND current_window);
   ~WinWebAuthnApiAuthenticator() override;
 

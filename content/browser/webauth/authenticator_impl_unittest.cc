@@ -48,6 +48,10 @@
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
 
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif
+
 namespace content {
 
 using ::testing::_;
@@ -1947,9 +1951,42 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAATrueIfTouchIdAvailable) {
 }
 #endif  // defined(OS_MACOSX)
 
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
+TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
+  for (const bool enable_feature_flag : {false, true}) {
+    SCOPED_TRACE(enable_feature_flag ? "enable_feature_flag"
+                                     : "!enable_feature_flag");
+    for (const bool enable_win_webauthn_api : {false, true}) {
+      SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
+                                           : "!enable_win_webauthn_api");
+      for (const bool is_uvpaa : {false, true}) {
+        SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
+
+        base::test::ScopedFeatureList scoped_feature_list;
+        if (enable_feature_flag)
+          scoped_feature_list.InitAndEnableFeature(
+              device::kWebAuthUseNativeWinApi);
+        device::ScopedFakeWinWebAuthnApi fake_api;
+        fake_api.set_available(enable_win_webauthn_api);
+        fake_api.set_is_uvpaa(is_uvpaa);
+
+        AuthenticatorPtr authenticator = ConnectToAuthenticator();
+        TestIsUvpaaCallback cb;
+        authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+            cb.callback());
+        cb.WaitForCallback();
+        EXPECT_EQ(enable_feature_flag && enable_win_webauthn_api && is_uvpaa,
+                  cb.value());
+      }
+    }
+  }
+}
+#endif  // defined(OS_WIN)
+
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
-  // No platform authenticator on non-macOS platforms.
+  // There are no platform authenticators other than Windows Hello and macOS
+  // Touch ID.
   NavigateAndCommit(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
 
@@ -1958,7 +1995,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
   cb.WaitForCallback();
   EXPECT_FALSE(cb.value());
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX) && !defined(OS_WIN)
 
 TEST_F(AuthenticatorContentBrowserClientTest,
        CryptotokenBypassesAttestationConsentPrompt) {

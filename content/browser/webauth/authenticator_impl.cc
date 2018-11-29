@@ -61,6 +61,10 @@
 #include "device/fido/mac/authenticator.h"
 #endif
 
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#endif
+
 namespace content {
 
 namespace client_data {
@@ -232,7 +236,8 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
     const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
-    bool is_individual_attestation) {
+    bool is_individual_attestation,
+    bool is_incognito) {
   auto credential_params = mojo::ConvertTo<
       std::vector<device::PublicKeyCredentialParams::CredentialInfo>>(
       options->public_key_parameters);
@@ -251,6 +256,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
   make_credential_param.SetExcludeList(std::move(exclude_list));
   make_credential_param.SetIsIndividualAttestation(is_individual_attestation);
   make_credential_param.SetHmacSecret(options->hmac_create_secret);
+  make_credential_param.set_is_incognito_mode(is_incognito);
   return make_credential_param;
 }
 
@@ -258,7 +264,8 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
     const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
     base::Optional<base::span<const uint8_t, device::kRpIdHashLength>>
-        alternative_application_parameter) {
+        alternative_application_parameter,
+    bool is_incognito) {
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
                                                     client_data_json);
 
@@ -281,6 +288,7 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
         mojo::ConvertTo<std::vector<device::CableDiscoveryData>>(
             options->cable_authentication_data));
   }
+  request_parameter.set_is_incognito_mode(is_incognito);
   return request_parameter;
 }
 
@@ -482,12 +490,11 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
     transports.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
 
+  if (
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable) &&
-      base::FeatureList::IsEnabled(features::kWebAuthCableWin)) {
-#else
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
-#endif  // defined(OS_WIN)
+      base::FeatureList::IsEnabled(features::kWebAuthCableWin) &&
+#endif
+      base::FeatureList::IsEnabled(features::kWebAuthCable)) {
     transports.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
@@ -669,7 +676,8 @@ void AuthenticatorImpl::MakeCredential(
           : device::AuthenticatorSelectionCriteria();
 
   auto ctap_request = CreateCtapMakeCredentialRequest(
-      client_data_json_, options, individual_attestation);
+      client_data_json_, options, individual_attestation,
+      browser_context()->IsOffTheRecord());
   ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin_));
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
@@ -778,9 +786,9 @@ void AuthenticatorImpl::GetAssertion(
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  auto ctap_request =
-      CreateCtapGetAssertionRequest(client_data_json_, std::move(options),
-                                    alternative_application_parameter_);
+  auto ctap_request = CreateCtapGetAssertionRequest(
+      client_data_json_, std::move(options), alternative_application_parameter_,
+      browser_context()->IsOffTheRecord());
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);
@@ -815,18 +823,25 @@ void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
 }
 
 bool AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailableImpl() {
+  //  N.B. request_delegate_ may be nullptr at this point.
+  // All platform authenticators are disabled in incognito mode.
+  // TODO(martinkr): Revisit incognito handling (crbug/908622).
+  if (browser_context()->IsOffTheRecord())
+    return false;
+
 #if defined(OS_MACOSX)
   // Touch ID is disabled, regardless of hardware support, if the embedder
-  // doesn't support it or if this is an Incognito session. N.B.
-  // request_delegate_ may be nullptr at this point.
+  // doesn't support it.
   if (!GetContentClient()
            ->browser()
-           ->IsWebAuthenticationTouchIdAuthenticatorSupported() ||
-      browser_context()->IsOffTheRecord()) {
+           ->IsWebAuthenticationTouchIdAuthenticatorSupported())
     return false;
-  }
 
   return device::fido::mac::TouchIdAuthenticator::IsAvailable();
+#elif defined(OS_WIN)
+  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+         device::WinWebAuthnApiAuthenticator::
+             IsUserVerifyingPlatformAuthenticatorAvailable();
 #else
   return false;
 #endif
