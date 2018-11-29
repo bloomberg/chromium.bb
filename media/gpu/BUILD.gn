@@ -357,6 +357,7 @@ source_set("common") {
     "//base",
     "//media",
     "//ui/gfx:buffer_types",
+    "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
 }
