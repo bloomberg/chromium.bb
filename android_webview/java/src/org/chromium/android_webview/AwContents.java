@@ -343,7 +343,7 @@ public class AwContents implements SmartClipProvider {
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
-    private AwGLFunctor mDrawFunctor;
+    private AwFunctor mDrawFunctor;
     private final Context mContext;
     private final int mAppTargetSdkVersion;
     private AwViewAndroidDelegate mViewAndroidDelegate;
@@ -778,7 +778,7 @@ public class AwContents implements SmartClipProvider {
                 if (isDestroyedOrNoOperation(NO_WARN)) return;
                 if (level >= TRIM_MEMORY_MODERATE) {
                     if (mDrawFunctor != null) {
-                        mDrawFunctor.deleteHardwareRenderer();
+                        mDrawFunctor.trimMemory();
                     }
                 }
                 nativeTrimMemory(mNativeAwContents, level, visible);
@@ -1145,18 +1145,18 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    private void setFunctor(AwGLFunctor functor) {
+    private void setFunctor(AwFunctor functor) {
         if (mDrawFunctor == functor) return;
-        AwGLFunctor oldFunctor = mDrawFunctor;
+        AwFunctor oldFunctor = mDrawFunctor;
         mDrawFunctor = functor;
         updateNativeAwGLFunctor();
 
-        if (oldFunctor != null) oldFunctor.releasedByContents();
+        if (oldFunctor != null) oldFunctor.destroy();
     }
 
     private void updateNativeAwGLFunctor() {
-        nativeSetAwGLFunctor(
-                mNativeAwContents, mDrawFunctor != null ? mDrawFunctor.getNativeAwGLFunctor() : 0);
+        nativeSetCompositorFrameConsumer(mNativeAwContents,
+                mDrawFunctor != null ? mDrawFunctor.getNativeCompositorFrameConsumer() : 0);
     }
 
     /* Common initialization routine for adopting a native AwContents instance into this
@@ -3376,7 +3376,7 @@ public class AwContents implements SmartClipProvider {
         // Only valid within software onDraw().
         private final Rect mClipBoundsTemporary = new Rect();
 
-        @SuppressLint("DrawAllocation") // For new AwGLFunctor.
+        @SuppressLint("DrawAllocation") // For new AwFunctor.
         @Override
         public void onDraw(Canvas canvas) {
             if (isDestroyedOrNoOperation(NO_WARN)) {
@@ -3426,7 +3426,7 @@ public class AwContents implements SmartClipProvider {
             }
             if (did_draw && canvas.isHardwareAccelerated()
                     && !ForceAuxiliaryBitmapRendering.sResult) {
-                did_draw = mDrawFunctor.requestDrawGL(canvas);
+                did_draw = mDrawFunctor.requestDraw(canvas);
             }
             if (did_draw) {
                 int scrollXDiff = mContainerView.getScrollX() - scrollX;
@@ -3773,7 +3773,8 @@ public class AwContents implements SmartClipProvider {
             InterceptNavigationDelegate navigationInterceptionDelegate,
             AutofillProvider autofillProvider);
     private native WebContents nativeGetWebContents(long nativeAwContents);
-    private native void nativeSetAwGLFunctor(long nativeAwContents, long nativeAwGLFunctor);
+    private native void nativeSetCompositorFrameConsumer(
+            long nativeAwContents, long nativeCompositorFrameConsumer);
 
     private native void nativeDocumentHasImages(long nativeAwContents, Message message);
     private native void nativeGenerateMHTML(

@@ -19,7 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
  * the render node hierarchy.
  */
 @JNINamespace("android_webview")
-public class AwGLFunctor {
+public class AwGLFunctor implements AwFunctor {
     private final long mNativeAwGLFunctor;
     private final AwContents.NativeDrawGLFunctor mNativeDrawGLFunctor;
     private final ViewGroup mContainerView;
@@ -41,7 +41,8 @@ public class AwGLFunctor {
         addReference();
     }
 
-    public void releasedByContents() {
+    @Override
+    public void destroy() {
         assert mRefCount > 0;
         removeReference();
     }
@@ -50,12 +51,14 @@ public class AwGLFunctor {
         return nativeGetAwDrawGLFunction();
     }
 
-    public long getNativeAwGLFunctor() {
+    @Override
+    public long getNativeCompositorFrameConsumer() {
         assert mRefCount > 0;
-        return mNativeAwGLFunctor;
+        return nativeGetCompositorFrameConsumer(mNativeAwGLFunctor);
     }
 
-    public boolean requestDrawGL(Canvas canvas) {
+    @Override
+    public boolean requestDraw(Canvas canvas) {
         assert mRefCount > 0;
         boolean success = mNativeDrawGLFunctor.requestDrawGL(canvas, mFunctorReleasedCallback);
         if (success && mFunctorReleasedCallback != null) {
@@ -91,7 +94,8 @@ public class AwGLFunctor {
         mContainerView.invalidate();
     }
 
-    public void deleteHardwareRenderer() {
+    @Override
+    public void trimMemory() {
         assert mRefCount > 0;
         nativeDeleteHardwareRenderer(mNativeAwGLFunctor);
     }
@@ -107,6 +111,7 @@ public class AwGLFunctor {
 
     private native void nativeDeleteHardwareRenderer(long nativeAwGLFunctor);
     private native long nativeGetAwDrawGLViewContext(long nativeAwGLFunctor);
+    private native long nativeGetCompositorFrameConsumer(long nativeAwGLFunctor);
 
     private static native long nativeGetAwDrawGLFunction();
     private static native void nativeDestroy(long nativeAwGLFunctor);

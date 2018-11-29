@@ -39,7 +39,6 @@ class WebContents;
 namespace android_webview {
 
 class AwContentsClientBridge;
-class AwGLFunctor;
 class AwPdfExporter;
 class AwWebContentsDelegate;
 class PermissionRequestHandler;
@@ -103,9 +102,10 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetAwGLFunctor(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      jlong gl_functor);
+  void SetCompositorFrameConsumer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong compositor_frame_consumer);
 
   base::android::ScopedJavaLocalRef<jobject> GetRenderProcess(
       JNIEnv* env,
@@ -373,8 +373,6 @@ class AwContents : public FindHelper::Listener,
   void HideGeolocationPrompt(const GURL& origin);
 
   void SetDipScaleInternal(float dip_scale);
-
-  void SetAwGLFunctor(AwGLFunctor* functor);
 
   JavaObjectWeakGlobalRef java_ref_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
