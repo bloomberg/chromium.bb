@@ -1872,6 +1872,8 @@ jumbo_split_static_library("ui") {
       "webui/welcome/nux/constants.h",
       "webui/welcome/nux/email_handler.cc",
       "webui/welcome/nux/email_handler.h",
+      "webui/welcome/nux/email_providers_list.cc",
+      "webui/welcome/nux/email_providers_list.h",
       "webui/welcome/nux/google_apps_handler.cc",
       "webui/welcome/nux/google_apps_handler.h",
       "webui/welcome/nux/set_as_default_handler.cc",
@@ -1883,6 +1885,8 @@ jumbo_split_static_library("ui") {
       "webui/welcome/welcome_ui.cc",
       "webui/welcome/welcome_ui.h",
     ]
+
+    deps += [ "//components/country_codes" ]
 
     if (enable_dice_support) {
       sources += [

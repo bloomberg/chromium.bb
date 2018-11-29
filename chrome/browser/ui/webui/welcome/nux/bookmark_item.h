@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_BOOKMARK_ITEM_H_
 
 #include <stddef.h>
+#include <vector>
 
 namespace base {
 class ListValue;
@@ -23,6 +24,9 @@ struct BookmarkItem {
 
 base::ListValue bookmarkItemsToListValue(const BookmarkItem items[],
                                          size_t count);
+
+base::ListValue bookmarkItemsToListValue(
+    const std::vector<BookmarkItem>& items);
 
 }  // namespace nux
 

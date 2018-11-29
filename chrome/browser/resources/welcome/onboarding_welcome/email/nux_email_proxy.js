@@ -135,7 +135,7 @@ cr.define('nux', function() {
       this.savedProvider_ = providerId;
       chrome.metricsPrivate.recordEnumerationValue(
           SELECTION_METRIC_NAME, providerId,
-          loadTimeData.getInteger('email_providers_count'));
+          loadTimeData.getInteger('email_providers_enum_count'));
     }
 
     /** @override */

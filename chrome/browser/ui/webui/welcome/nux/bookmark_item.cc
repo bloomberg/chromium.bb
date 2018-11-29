@@ -13,13 +13,28 @@ base::ListValue bookmarkItemsToListValue(const BookmarkItem items[],
                                          size_t count) {
   base::ListValue list_value;
   for (size_t i = 0; i < count; ++i) {
-    std::unique_ptr<base::DictionaryValue> element =
-        std::make_unique<base::DictionaryValue>();
+    auto element = std::make_unique<base::DictionaryValue>();
 
-    element->SetInteger("id", static_cast<int>(items[i].id));
+    element->SetInteger("id", items[i].id);
     element->SetString("name", items[i].name);
     element->SetString("icon", items[i].webui_icon);
     element->SetString("url", items[i].url);
+
+    list_value.Append(std::move(element));
+  }
+  return list_value;
+}
+
+base::ListValue bookmarkItemsToListValue(
+    const std::vector<BookmarkItem>& items) {
+  base::ListValue list_value;
+  for (const auto& item : items) {
+    auto element = std::make_unique<base::DictionaryValue>();
+
+    element->SetInteger("id", item.id);
+    element->SetString("name", item.name);
+    element->SetString("icon", item.webui_icon);
+    element->SetString("url", item.url);
 
     list_value.Append(std::move(element));
   }
