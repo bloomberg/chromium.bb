@@ -1436,6 +1436,12 @@ ElementInternals* HTMLElement::attachInternals(
         "Unable to attach ElementInternals to non-custom elements.");
     return nullptr;
   }
+  if (!definition->Descriptor().IsAutonomous()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Unable to attach ElementInternals to a customized built-in element.");
+    return nullptr;
+  }
   if (definition->DisableInternals()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
