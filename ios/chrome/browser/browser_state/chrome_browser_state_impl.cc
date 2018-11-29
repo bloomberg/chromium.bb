@@ -33,6 +33,7 @@
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
 #include "ios/chrome/browser/signin/identity_service_creator.h"
 #include "ios/web/public/web_thread.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 
 namespace {
 
@@ -170,11 +171,17 @@ base::FilePath ChromeBrowserStateImpl::GetStatePath() const {
   return state_path_;
 }
 
-void ChromeBrowserStateImpl::RegisterServices(StaticServiceMap* services) {
+std::unique_ptr<service_manager::Service>
+ChromeBrowserStateImpl::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
   // TODO(crbug.com/787794): It would be nice to avoid ChromeBrowserState/
   // Profile needing to know explicitly about every service that it is
   // embedding.
-  RegisterIdentityServiceForBrowserState(this, services);
+  if (service_name == identity::mojom::kServiceName)
+    return CreateIdentityService(this, std::move(request));
+
+  return nullptr;
 }
 
 void ChromeBrowserStateImpl::SetOffTheRecordChromeBrowserState(

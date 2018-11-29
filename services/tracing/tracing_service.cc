@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/timer/timer.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/coordinator.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -19,13 +18,9 @@
 
 namespace tracing {
 
-std::unique_ptr<service_manager::Service> TracingService::Create() {
-  return std::make_unique<TracingService>();
-}
-
-TracingService::TracingService() : weak_factory_(this) {
-  task_runner_ = base::SequencedTaskRunnerHandle::Get();
-}
+TracingService::TracingService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 TracingService::~TracingService() {
   task_runner_->DeleteSoon(FROM_HERE, std::move(tracing_agent_registry_));

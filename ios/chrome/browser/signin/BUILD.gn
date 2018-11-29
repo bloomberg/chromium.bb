@@ -82,6 +82,7 @@ source_set("signin") {
     "//services/identity:lib",
     "//services/identity/public/cpp",
     "//services/identity/public/mojom",
+    "//services/service_manager/public/mojom",
     "//url",
   ]
 }

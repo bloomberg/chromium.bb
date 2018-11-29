@@ -5,11 +5,8 @@
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/network/public/cpp/features.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 
 jumbo_component("network_service") {
   sources = [
@@ -367,7 +364,7 @@ source_set("tests") {
     "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
 
@@ -426,15 +423,4 @@ jumbo_source_set("test_support") {
 service_manifest("manifest") {
   name = "network"
   source = "manifest.json"
-}
-
-service_manifest("unittest_manifest") {
-  name = "network_unittests"
-  source = "test/service_unittest_manifest.json"
-  packaged_services = [ ":manifest" ]
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
 }

@@ -328,6 +328,12 @@ std::unique_ptr<TestConnectorFactory> TestConnectorFactory::CreateForServices(
       instance_group));
 }
 
+Connector* TestConnectorFactory::GetDefaultConnector() {
+  if (!default_connector_)
+    default_connector_ = CreateConnector();
+  return default_connector_.get();
+}
+
 std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
   mojom::ConnectorPtr proxy;
   impl_->Clone(mojo::MakeRequest(&proxy));

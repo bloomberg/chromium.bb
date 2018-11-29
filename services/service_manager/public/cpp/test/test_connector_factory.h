@@ -90,6 +90,11 @@ class TestConnectorFactory : public mojom::ServiceControl {
       NameToServiceMap services,
       bool release_service_on_quit_request = false);
 
+  // A Connector which can be used to connect to any service instances
+  // registered with this object. This Connector identifies its source as a
+  // generic meaningless Identity.
+  Connector* GetDefaultConnector();
+
   // Creates a new connector which routes BindInterfaces requests directly to
   // the Service instance associated with this factory.
   std::unique_ptr<Connector> CreateConnector();
@@ -147,6 +152,7 @@ class TestConnectorFactory : public mojom::ServiceControl {
 
   std::unique_ptr<mojom::Connector> impl_;
   base::Token test_instance_group_;
+  std::unique_ptr<Connector> default_connector_;
 
   // Mapping used only in the default-constructed case where Service instances
   // are unowned by the TestConnectorFactory. Maps service names to their

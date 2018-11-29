@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "content/child/service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -36,7 +38,9 @@ class UtilityServiceFactory : public ServiceFactory {
  private:
   void OnLoadFailed() override;
 
-  std::unique_ptr<service_manager::Service> CreateNetworkService();
+  void RunNetworkServiceOnIOThread(
+      service_manager::mojom::ServiceRequest service_request,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner);
   std::unique_ptr<service_manager::Service> CreateAudioService(
       service_manager::mojom::ServiceRequest request);
 
