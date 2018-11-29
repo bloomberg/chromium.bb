@@ -10,9 +10,11 @@
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/rounded_corner_decorator.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -915,10 +917,16 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
       // make sure to deactivate it now.
       wm::DeactivateWindow(window);
     }
-
     widget_->widget_delegate()->set_can_activate(false);
+
+    if (ash::features::IsPipRoundedCornersEnabled()) {
+      decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
+          window_state->window(), host_window(), host_window()->layer(),
+          ash::kPipRoundedCornerRadius);
+    }
   } else {
     widget_->widget_delegate()->set_can_activate(true);
+    decorator_.reset();  // Remove rounded corners.
   }
 
   if (client_controlled_state_->EnterNextState(window_state,

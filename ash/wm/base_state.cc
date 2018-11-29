@@ -41,7 +41,6 @@ void BaseState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
 
   if (event->IsBoundsEvent()) {
     HandleBoundsEvents(window_state, event);
-    window_state->UpdatePipRoundedCorners();
     return;
   }
   DCHECK(event->IsTransitionEvent());

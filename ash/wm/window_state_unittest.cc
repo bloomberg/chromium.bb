@@ -162,67 +162,6 @@ TEST_F(WindowStateTest, PipWindowCannotSnap) {
   EXPECT_FALSE(window_state->CanSnap());
 }
 
-// Test that a mask layer is created correctly.
-TEST_F(WindowStateTest, PipWindowMaskRecreated) {
-  // Prepare a PIP window.
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  WindowState* window_state = GetWindowState(window.get());
-
-  const WMEvent enter_pip(WM_EVENT_PIP);
-  window_state->OnWMEvent(&enter_pip);
-  window_state->UpdatePipRoundedCorners();
-
-  // Mask layer exists.
-  EXPECT_TRUE(window->layer());
-  EXPECT_TRUE(window->layer()->layer_mask_layer());
-
-  // Close the PIP window.
-  window->Hide();
-
-  // Reshow the PIP window.
-  window->Show();
-
-  // Confirms a mask layer exists.
-  EXPECT_TRUE(window->layer());
-  EXPECT_TRUE(window->layer()->layer_mask_layer());
-}
-
-// Test that a PIP window cannot be snapped.
-TEST_F(WindowStateTest, PipWindowHasMaskLayer) {
-  // Prepare a PIP window.
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
-  WindowState* window_state = GetWindowState(window.get());
-
-  const WMEvent enter_pip(WM_EVENT_PIP);
-  window_state->OnWMEvent(&enter_pip);
-  EXPECT_TRUE(window->layer());
-
-  // No mask layer exist at this time.
-  EXPECT_FALSE(window->layer()->layer_mask_layer());
-
-  // Install a mask layer.
-  window_state->UpdatePipRoundedCorners();
-
-  // Mask layer exists at this time.
-  EXPECT_TRUE(window->layer()->layer_mask_layer());
-
-  // Make sure the layer has the same bounds.
-  EXPECT_EQ(gfx::Rect(100, 100, 100, 100).ToString(),
-            window->bounds().ToString());
-  EXPECT_EQ(window->layer()->layer_mask_layer()->bounds().ToString(),
-            window->bounds().ToString());
-
-  // Change the bounds of the window.
-  window->SetBounds(gfx::Rect(0, 0, 150, 150));
-
-  // Make sure the layer's bounds is also changed.
-  EXPECT_EQ(gfx::Rect(0, 0, 150, 150).ToString(), window->bounds().ToString());
-  EXPECT_EQ(window->layer()->layer_mask_layer()->bounds().ToString(),
-            window->bounds().ToString());
-}
-
 // Test that modal window dialogs can be snapped.
 TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   UpdateDisplay("0+0-600x900");

@@ -92,6 +92,8 @@ component("cpp") {
     "power_utils.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
+    "rounded_corner_decorator.cc",
+    "rounded_corner_decorator.h",
     "scale_utility.cc",
     "scale_utility.h",
     "session_types.h",
@@ -133,6 +135,7 @@ component("cpp") {
     "//skia/public/interfaces",
     "//ui/aura",
     "//ui/chromeos/strings",
+    "//ui/compositor_extra",
     "//ui/display",
     "//ui/events/devices",
     "//ui/message_center/public/cpp",
@@ -175,6 +178,7 @@ source_set("unit_tests") {
     "default_scale_factor_retriever_unittest.cc",
     "menu_utils_unittest.cc",
     "power_utils_unittest.cc",
+    "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
     "shelf_struct_mojom_traits_unittest.cc",
   ]
@@ -184,6 +188,7 @@ source_set("unit_tests") {
     ":test_interfaces",
     "//base",
     "//testing/gtest",
+    "//ui/aura:test_support",
     "//ui/gfx:test_support",
   ]
 }

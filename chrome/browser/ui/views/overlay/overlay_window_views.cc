@@ -35,6 +35,7 @@
 #include "ui/views/window/window_resize_utils.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
 #include "ui/aura/window.h"
 #endif
@@ -199,6 +200,7 @@ OverlayWindowViews::OverlayWindowViews(
   params.visible_on_all_workspaces = true;
   params.remove_standard_frame = true;
   params.name = "PictureInPictureWindow";
+  params.layer_type = ui::LAYER_NOT_DRAWN;
 
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(this);
@@ -279,6 +281,9 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 }
 
 void OverlayWindowViews::SetUpViews() {
+  GetRootView()->SetPaintToLayer(ui::LAYER_TEXTURED);
+  GetRootView()->layer()->set_name("RootView");
+
   // views::View that is displayed when video is hidden. ----------------------
   // Adding an extra pixel to width/height makes sure controls background cover
   // entirely window when platform has fractional scale applied.
@@ -286,11 +291,13 @@ void OverlayWindowViews::SetUpViews() {
   larger_window_bounds.Inset(-1, -1);
   window_background_view_->SetSize(larger_window_bounds.size());
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  window_background_view_->layer()->set_name("WindowBackgroundView");
   GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
 
   // views::View that holds the scrim, which appears with the controls. -------
   controls_scrim_view_->SetSize(GetBounds().size());
   controls_scrim_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  controls_scrim_view_->layer()->set_name("ControlsScrimView");
   GetControlsScrimLayer()->SetColor(gfx::kGoogleGrey900);
   GetControlsScrimLayer()->SetOpacity(0.43f);
 
@@ -298,15 +305,18 @@ void OverlayWindowViews::SetUpViews() {
   controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   controls_parent_view_->SetSize(GetBounds().size());
   controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
+  controls_parent_view_->layer()->set_name("ControlsParentView");
   controls_parent_view_->set_owned_by_client();
 
   // views::View that closes the window. --------------------------------------
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  close_controls_view_->layer()->set_name("CloseControlsView");
   close_controls_view_->set_owned_by_client();
 
   // view::View that holds the video. -----------------------------------------
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  video_view_->layer()->set_name("VideoView");
 
   // views::View that toggles play/pause. -------------------------------------
   play_pause_controls_view_->SetImageAlignment(
@@ -318,6 +328,7 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   resize_handle_view_->layer()->SetFillsBoundsOpaquely(false);
+  resize_handle_view_->layer()->set_name("ResizeHandleView");
   resize_handle_view_->set_owned_by_client();
 #endif
 
@@ -551,6 +562,14 @@ void OverlayWindowViews::Close() {
 
 void OverlayWindowViews::Show() {
   views::Widget::Show();
+#if defined(OS_CHROMEOS)
+  // For rounded corners.
+  if (ash::features::IsPipRoundedCornersEnabled()) {
+    decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
+        GetNativeWindow(), GetNativeWindow(), GetRootView()->layer(),
+        ash::kPipRoundedCornerRadius);
+  }
+#endif
 
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;
@@ -569,7 +588,7 @@ bool OverlayWindowViews::IsAlwaysOnTop() const {
 }
 
 ui::Layer* OverlayWindowViews::GetLayer() {
-  return views::Widget::GetLayer();
+  return GetRootView()->layer();
 }
 
 gfx::Rect OverlayWindowViews::GetBounds() const {
