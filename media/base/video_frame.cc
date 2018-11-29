@@ -599,8 +599,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   // Copy all metadata to the wrapped frame.
   wrapping_frame->metadata()->MergeMetadataFrom(frame->metadata());
 
-  for (size_t i = 0; i < NumPlanes(format); ++i) {
-    wrapping_frame->data_[i] = frame->data(i);
+  if (frame->IsMappable()) {
+    for (size_t i = 0; i < NumPlanes(format); ++i) {
+      wrapping_frame->data_[i] = frame->data(i);
+    }
   }
 
 #if defined(OS_LINUX)
