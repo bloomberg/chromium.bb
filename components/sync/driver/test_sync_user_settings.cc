@@ -46,11 +46,11 @@ void TestSyncUserSettings::SetSyncAllowedByPlatform(bool allowed) {
 }
 
 bool TestSyncUserSettings::IsFirstSetupComplete() const {
-  return service_->IsFirstSetupComplete();
+  return first_setup_complete_;
 }
 
 void TestSyncUserSettings::SetFirstSetupComplete() {
-  service_->SetFirstSetupComplete(true);
+  SetFirstSetupComplete(true);
 }
 
 bool TestSyncUserSettings::IsSyncEverythingEnabled() const {
@@ -119,6 +119,10 @@ void TestSyncUserSettings::SetEncryptionPassphrase(
 bool TestSyncUserSettings::SetDecryptionPassphrase(
     const std::string& passphrase) {
   return service_->SetDecryptionPassphrase(passphrase);
+}
+
+void TestSyncUserSettings::SetFirstSetupComplete(bool first_setup_complete) {
+  first_setup_complete_ = first_setup_complete;
 }
 
 }  // namespace syncer

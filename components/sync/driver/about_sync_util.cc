@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -483,7 +484,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   // Local State.
   server_connection->Set(GetConnectionStatus(token_status));
   last_synced->Set(GetLastSyncedTimeString(service->GetLastSyncedTime()));
-  is_setup_complete->Set(service->IsFirstSetupComplete());
+  is_setup_complete->Set(service->GetUserSettings()->IsFirstSetupComplete());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
   is_local_sync_enabled->Set(service->IsLocalSyncEnabled());

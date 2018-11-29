@@ -30,7 +30,6 @@ class FakeSyncService : public SyncService {
   TransportState GetTransportState() const override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
-  bool IsFirstSetupComplete() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;

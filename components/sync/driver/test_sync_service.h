@@ -51,8 +51,6 @@ class TestSyncService : public SyncService {
   bool IsAuthenticatedAccountPrimary() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
 
-  bool IsFirstSetupComplete() const override;
-
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
@@ -112,7 +110,6 @@ class TestSyncService : public SyncService {
   AccountInfo account_info_;
   bool account_is_primary_ = true;
   GoogleServiceAuthError auth_error_;
-  bool first_setup_complete_ = true;
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;

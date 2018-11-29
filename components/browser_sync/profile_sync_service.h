@@ -225,7 +225,7 @@ class ProfileSyncService : public syncer::SyncService,
   const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
-  bool IsFirstSetupComplete() const override;
+  virtual bool IsFirstSetupComplete() const;  // Virtual for testing.
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;

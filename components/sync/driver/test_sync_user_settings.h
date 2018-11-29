@@ -47,9 +47,12 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
+  void SetFirstSetupComplete(bool first_setup_complete);
+
  private:
   TestSyncService* service_;
 
+  bool first_setup_complete_ = true;
   bool sync_everything_enabled_ = true;
 };
 
