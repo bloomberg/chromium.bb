@@ -10,4 +10,5 @@
     Please see src/ui/android/java/res/values/colors.xml for the shared common colors.
     -->
     <color name="autofill_assistant_light_blue">#e9f0fd</color>
+    <color name="autofill_assistant_light_grey">@color/modern_grey_300</color>
 </resources>
