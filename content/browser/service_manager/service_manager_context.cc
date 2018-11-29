@@ -43,6 +43,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/audio/audio_manager.h"
@@ -704,12 +705,8 @@ ServiceManagerContext::ServiceManagerContext(
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(network::features::kNetworkService);
-  bool network_service_in_process =
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess);
   if (network_service_enabled) {
-    if (network_service_in_process) {
+    if (IsInProcessNetworkService()) {
       service_manager::EmbeddedServiceInfo network_service_info;
       network_service_info.factory = base::BindRepeating(CreateNetworkService);
       network_service_info.task_runner = service_manager_thread_task_runner_;

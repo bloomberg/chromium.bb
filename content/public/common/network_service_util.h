@@ -13,6 +13,10 @@ namespace content {
 // process.
 CONTENT_EXPORT bool IsOutOfProcessNetworkService();
 
+// Returns true if the network service is enabled and it's running in the
+// browser process.
+CONTENT_EXPORT bool IsInProcessNetworkService();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_NETWORK_SERVICE_UTIL_H_
