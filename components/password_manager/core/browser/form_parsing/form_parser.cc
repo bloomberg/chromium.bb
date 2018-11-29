@@ -235,6 +235,8 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
           processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
           if (processed_field) {
+            if (!processed_field->is_password)
+              return nullptr;
             result->password = processed_field->field;
           }
         }
@@ -254,6 +256,8 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
           processed_field =
               FindFieldWithUniqueRendererId(processed_fields, prediction.first);
           if (processed_field) {
+            if (!processed_field->is_password)
+              return nullptr;
             result->new_password = processed_field->field;
           }
         }
@@ -262,6 +266,8 @@ std::unique_ptr<SignificantFields> ParseUsingPredictions(
         processed_field =
             FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         if (processed_field) {
+          if (!processed_field->is_password)
+            return nullptr;
           result->confirmation_password = processed_field->field;
         }
         break;

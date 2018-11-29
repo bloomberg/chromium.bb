@@ -1045,6 +1045,17 @@ TEST(FormParserTest, ServerHints) {
               },
           .number_of_all_possible_passwords = 4,
       },
+      {
+          "password prediction for a non-password field is ignored",
+          {
+              {.role = ElementRole::USERNAME,
+               .prediction = {.type = autofill::PASSWORD},
+               .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+
   });
 }
 
