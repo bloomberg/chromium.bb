@@ -3926,8 +3926,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
 
       <!-- Chrome Duet -->
+      <message name="IDS_IPH_DUET_START_SEARCH" desc="The in-product help message for the split toolbar experiment that explains that the user can start a new web search using the focused icon.">
+        Tap here to quickly begin a search
+      </message>
       <message name="IDS_IPH_DUET_ICONS_MOVED" desc="The in-product help message for the split toolbar experiment that explains that the user's icons (menu button, tab switcher button, and home button) have moved to the bottom of the screen.">
-        Your icons have moved to the bottom of the screen
+        Easily navigate anywhere in Chrome using the buttons at the bottom of your screen
       </message>
 
       <!-- Photo picker -->

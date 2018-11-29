@@ -96,12 +96,13 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
 
-        final View iphAnchor = toolbarRoot.findViewById(R.id.bottom_toolbar_container);
+        final View iphAnchor = toolbarRoot.findViewById(R.id.search_accelerator);
         tabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
-                mMediator.showIPH(iphAnchor, TrackerFactory.getTrackerForProfile(tab.getProfile()));
+                mMediator.showIPH(tab.getActivity(), iphAnchor,
+                        TrackerFactory.getTrackerForProfile(tab.getProfile()));
                 tabProvider.removeObserver(this);
             }
         });

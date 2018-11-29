@@ -8,7 +8,9 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.view.View;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -21,13 +23,12 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
-import org.chromium.ui.widget.ViewRectProvider;
 
 /**
  * This class is responsible for reacting to events from the outside world, interacting with other
@@ -40,6 +41,9 @@ class BrowsingModeBottomToolbarMediator
                    ThemeColorObserver {
     /** The amount of time to show the Duet help bubble for. */
     private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 6000;
+
+    /** The transparency fraction of the IPH bubble. */
+    private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
 
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private BrowsingModeBottomToolbarModel mModel;
@@ -122,19 +126,27 @@ class BrowsingModeBottomToolbarMediator
 
     /**
      * Maybe show the IPH bubble for Chrome Duet.
+     * @param activity An activity to attach the IPH to.
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
      */
-    void showIPH(View anchor, Tracker tracker) {
-        if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) {
-            TextBubble bubble =
-                    new TextBubble(anchor.getContext(), anchor, R.string.iph_duet_icons_moved,
-                            R.string.iph_duet_icons_moved, true, new ViewRectProvider(anchor));
-            bubble.setAutoDismissTimeout(DUET_IPH_BUBBLE_SHOW_DURATION_MS);
-            bubble.addOnDismissListener(
-                    () -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE));
-            bubble.show();
-        }
+    void showIPH(ChromeActivity activity, View anchor, Tracker tracker) {
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) return;
+        int baseColor =
+                ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
+
+        // Clear out the alpha and use custom transparency.
+        int finalColor =
+                (baseColor & 0x00FFFFFF) | ((int) (DUET_IPH_BUBBLE_ALPHA_FRACTION * 255) << 24);
+
+        FeatureHighlightProvider.getInstance().buildForView(activity, anchor,
+                R.string.iph_duet_start_search, FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.WhiteTitle1, R.string.iph_duet_icons_moved,
+                FeatureHighlightProvider.TextAlignment.CENTER, R.style.WhiteBody, finalColor,
+                DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+
+        anchor.postDelayed(() -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE),
+                DUET_IPH_BUBBLE_SHOW_DURATION_MS);
     }
 
     boolean isVisible() {
