@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
@@ -127,6 +128,11 @@ void UtilityServiceFactory::CreateService(
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   if (trace_log->IsProcessNameEmpty())
     trace_log->set_process_name("Service: " + name);
+
+  static auto* service_name = base::debug::AllocateCrashKeyString(
+      "service-name", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(service_name, name);
+
   ServiceFactory::CreateService(std::move(request), name,
                                 std::move(pid_receiver));
 }
