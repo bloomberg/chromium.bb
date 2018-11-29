@@ -198,7 +198,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {
-  if (node->PlatformIsChildOfLeaf())
+  if (!node->CanFireEvents())
     return;
 
   // If there's no root delegate, this may be a new frame that hasn't
