@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/message_loop/message_pump.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -21,7 +22,7 @@
 namespace base {
 namespace trace_event {
 class BlameContext;
-}
+}  // namespace trace_event
 }  // namespace base
 
 namespace blink {
@@ -31,7 +32,7 @@ class WebInputEvent;
 
 namespace viz {
 struct BeginFrameArgs;
-}
+}  // namespace viz
 
 namespace blink {
 namespace scheduler {
@@ -57,10 +58,13 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // the main thread. They have default implementation that only does
   // NOTREACHED(), and are overridden only by the main thread scheduler.
 
-  // If |initial_virtual_time| is specified then the scheduler will be created
-  // with virtual time enabled and paused, and base::Time will be overridden to
-  // start at |initial_virtual_time|.
+  // If |message_pump| is null caller must have registered one using
+  // base::MessageLoop.
+  // If |initial_virtual_time| is specified then the
+  // scheduler will be created with virtual time enabled and paused, and
+  // base::Time will be overridden to start at |initial_virtual_time|.
   static std::unique_ptr<WebThreadScheduler> CreateMainThreadScheduler(
+      std::unique_ptr<base::MessagePump> message_pump = nullptr,
       base::Optional<base::Time> initial_virtual_time = base::nullopt);
 
   // Returns compositor thread scheduler for the compositor thread

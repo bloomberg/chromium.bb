@@ -37,24 +37,32 @@ namespace {
 LazyInstance<ThreadLocalPointer<ScopedTaskEnvironment::LifetimeObserver>>::Leaky
     environment_lifetime_observer;
 
-std::unique_ptr<sequence_manager::SequenceManager>
-CreateSequenceManagerForMainThreadType(
+base::Optional<MessageLoop::Type> GetMessageLoopTypeForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
   switch (main_thread_type) {
     case ScopedTaskEnvironment::MainThreadType::DEFAULT:
     case ScopedTaskEnvironment::MainThreadType::MOCK_TIME:
-      return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-          MessageLoop::TYPE_DEFAULT);
+      return MessageLoop::TYPE_DEFAULT;
     case ScopedTaskEnvironment::MainThreadType::UI:
     case ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME:
-      return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-          MessageLoop::TYPE_UI);
+      return MessageLoop::TYPE_UI;
     case ScopedTaskEnvironment::MainThreadType::IO:
-      return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-          MessageLoop::TYPE_IO);
+      return MessageLoop::TYPE_IO;
   }
   NOTREACHED();
-  return nullptr;
+  return base::nullopt;
+}
+
+std::unique_ptr<sequence_manager::SequenceManager>
+CreateSequenceManagerForMainThreadType(
+    ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  auto type = GetMessageLoopTypeForMainThreadType(main_thread_type);
+  if (!type) {
+    return nullptr;
+  } else {
+    return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
+        *type, MessageLoop::CreateMessagePumpForType(*type));
+  }
 }
 
 }  // namespace
