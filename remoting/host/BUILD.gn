@@ -508,6 +508,7 @@ source_set("unit_tests") {
   deps = [
     ":host",
     ":test_support",
+    "//remoting/host/file_transfer:unit_tests",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
     "//remoting/host/security_key:unit_tests",
