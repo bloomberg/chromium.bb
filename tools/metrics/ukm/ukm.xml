@@ -5614,6 +5614,14 @@ be describing additional metrics about the same event.
       Type of a input field which the user is trying to use the Virtual Keyboard
       on.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
