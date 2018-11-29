@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
@@ -38,6 +39,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
       std::unique_ptr<WEBAUTHN_ASSERTION,
                       std::function<void(WEBAUTHN_ASSERTION*)>>;
 
+  using AuthenticatorMakeCredentialCallback =
+      base::OnceCallback<void(HRESULT, ScopedCredentialAttestation)>;
+  using AuthenticatorGetAssertionCallback =
+      base::OnceCallback<void(HRESULT, ScopedAssertion)>;
+
   // Returns the default implementation of WinWebAuthnApi backed by
   // webauthn.dll. May return nullptr if webauthn.dll cannot be loaded.
   static WinWebAuthnApi* GetDefault();
@@ -56,25 +62,25 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
   //
   // The lifetime of |credential_attestation| must not exceed the lifetime of
   // the WinWebAuthnApi instance.
-  virtual HRESULT AuthenticatorMakeCredential(
+  virtual void AuthenticatorMakeCredential(
       HWND h_wnd,
       const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
       const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
       const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
-      ScopedCredentialAttestation* credential_attestation) = 0;
+      AuthenticatorMakeCredentialCallback callback) = 0;
 
   // See WebAuthNAuthenticatorGetAssertion in <webauthn.h>.
   //
   // The lifetime of |assertion| must not exceed the lifetime of
   // the WinWebAuthnApi instance.
-  virtual HRESULT AuthenticatorGetAssertion(
+  virtual void AuthenticatorGetAssertion(
       HWND h_wnd,
       const wchar_t* rp_id_utf16,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
-      ScopedAssertion* assertion) = 0;
+      AuthenticatorGetAssertionCallback callback) = 0;
 
   // See WebAuthNCancelCurrentOperation in <webauthn.h>.
   virtual HRESULT CancelCurrentOperation(GUID* cancellation_id) = 0;

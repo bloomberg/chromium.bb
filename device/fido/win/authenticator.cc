@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -66,8 +65,6 @@ WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
 }
 
 WinWebAuthnApiAuthenticator::~WinWebAuthnApiAuthenticator() {
-  // Cancel in order to dismiss any pending API request and UI dialog and shut
-  // down |thread_|.
   Cancel();
 }
 
@@ -79,122 +76,75 @@ void WinWebAuthnApiAuthenticator::InitializeAuthenticator(
 void WinWebAuthnApiAuthenticator::MakeCredential(
     CtapMakeCredentialRequest request,
     MakeCredentialCallback callback) {
-  DCHECK(!thread_);
-  if (thread_) {
+  DCHECK(!is_pending_);
+  if (is_pending_)
     return;
-  }
 
-  thread_ = std::make_unique<base::Thread>("WindowsWebAuthnAPIRequest");
-  thread_->Start();
-  // TODO(martinkr): Perhaps pull conversion of the Windows request/response
-  // messages out of |thread_| so we can spawn it later and terminate it
-  // earlier?
+  DCHECK(!make_credential_data_);
+  make_credential_data_ = MakeCredentialData{};
+  make_credential_data_->rp_id = base::UTF8ToUTF16(request.rp().rp_id());
+  make_credential_data_->rp_name =
+      base::UTF8ToUTF16(request.rp().rp_name().value_or(""));
+  make_credential_data_->rp_icon_url =
+      OptionalGURLToUTF16(request.rp().rp_icon_url());
+  make_credential_data_->rp_entity_information = {
+      WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION,
+      make_credential_data_->rp_id.c_str(),
+      make_credential_data_->rp_name.c_str(),
+      make_credential_data_->rp_icon_url.c_str()};
 
-  thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &WinWebAuthnApiAuthenticator::MakeCredentialBlocking,
-          // Because |thread_| and its task runner are owned by this
-          // authenticator instance, binding to Unretained(this) here is
-          // fine. If the instance got destroyed before invocation of the
-          // task, so would the task. Once the task is running, destruction
-          // of the authenticator instance blocks on the thread exiting.
-          base::Unretained(this), std::move(request),
-          base::BindOnce(
-              &WinWebAuthnApiAuthenticator::InvokeMakeCredentialCallback,
-              weak_factory_.GetWeakPtr(), std::move(callback)),
-          base::SequencedTaskRunnerHandle::Get()));
-}
-
-void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
-                                               GetAssertionCallback callback) {
-  DCHECK(!thread_);
-  if (thread_) {
-    return;
-  }
-
-  thread_ = std::make_unique<base::Thread>("WindowsWebAuthnAPIRequest");
-  thread_->Start();
-  thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &WinWebAuthnApiAuthenticator::GetAssertionBlocking,
-          // Because |thread_| and its task runner are owned by this
-          // authenticator instance, binding to Unretained(this) here is
-          // fine. If the instance got destroyed before invocation of the
-          // task, so would the task. Once the task is running, destruction
-          // of the authenticator instance blocks on the thread exiting.
-          base::Unretained(this), std::move(request),
-          base::BindOnce(
-              &WinWebAuthnApiAuthenticator::InvokeGetAssertionCallback,
-              weak_factory_.GetWeakPtr(), std::move(callback)),
-          base::SequencedTaskRunnerHandle::Get()));
-}
-
-// Invokes the blocking WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL API call. This
-// method is run on |thread_|. Note that the destructor for this class blocks
-// on |thread_| shutdown.
-void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
-    CtapMakeCredentialRequest request,
-    MakeCredentialCallback callback,
-    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
-  base::string16 rp_id(base::UTF8ToUTF16(request.rp().rp_id()));
-  base::string16 rp_name(
-      base::UTF8ToUTF16(request.rp().rp_name().value_or("")));
-  base::string16 rp_icon_url(OptionalGURLToUTF16(request.rp().rp_icon_url()));
-  WEBAUTHN_RP_ENTITY_INFORMATION rp_entity_information{
-      WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, rp_id.c_str(),
-      rp_name.c_str(), rp_icon_url.c_str()};
-
-  base::string16 user_name(
-      base::UTF8ToUTF16(request.user().user_name().value_or("")));
-  base::string16 user_icon_url(
-      OptionalGURLToUTF16(request.user().user_icon_url()));
-  base::string16 user_display_name(
-      base::UTF8ToUTF16(request.user().user_display_name().value_or("")));
-  WEBAUTHN_USER_ENTITY_INFORMATION user_entity_information{
+  make_credential_data_->user_id = request.user().user_id();
+  make_credential_data_->user_name =
+      base::UTF8ToUTF16(request.user().user_name().value_or(""));
+  make_credential_data_->user_icon_url =
+      OptionalGURLToUTF16(request.user().user_icon_url());
+  make_credential_data_->user_display_name =
+      base::UTF8ToUTF16(request.user().user_display_name().value_or(""));
+  make_credential_data_->user_entity_information = {
       WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
-      request.user().user_id().size(),
-      const_cast<unsigned char*>(request.user().user_id().data()),
-      user_name.c_str(),
-      user_icon_url.c_str(),
-      user_display_name.c_str(),  // This appears to be ignored by Windows UI.
+      make_credential_data_->user_id.size(),
+      const_cast<unsigned char*>(make_credential_data_->user_id.data()),
+      make_credential_data_->user_name.c_str(),
+      make_credential_data_->user_icon_url.c_str(),
+      make_credential_data_->user_display_name
+          .c_str(),  // This appears to be ignored by Windows UI.
   };
 
-  std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
-      cose_credential_parameter_values;
   for (const PublicKeyCredentialParams::CredentialInfo& credential_info :
        request.public_key_credential_params().public_key_credential_params()) {
     if (credential_info.type != CredentialType::kPublicKey) {
       continue;
     }
-    cose_credential_parameter_values.push_back(
+    make_credential_data_->cose_credential_parameter_values.push_back(
         {WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION,
          WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY, credential_info.algorithm});
   }
-  WEBAUTHN_COSE_CREDENTIAL_PARAMETERS cose_credential_parameters = {
-      cose_credential_parameter_values.size(),
-      cose_credential_parameter_values.data()};
+  make_credential_data_->cose_credential_parameters = {
+      make_credential_data_->cose_credential_parameter_values.size(),
+      make_credential_data_->cose_credential_parameter_values.data()};
 
-  WEBAUTHN_CLIENT_DATA client_data{
-      WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, request.client_data_json().size(),
+  make_credential_data_->request_client_data = request.client_data_json();
+  make_credential_data_->client_data = {
+      WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
+      make_credential_data_->request_client_data.size(),
       const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(
-          request.client_data_json().data())),
+          make_credential_data_->request_client_data.data())),
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
-  std::vector<WEBAUTHN_EXTENSION> extensions;
   if (request.hmac_secret()) {
     static BOOL kHMACSecretTrue = TRUE;
-    extensions.emplace_back(
+    make_credential_data_->extensions.emplace_back(
         WEBAUTHN_EXTENSION{WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET,
                            sizeof(BOOL), static_cast<void*>(&kHMACSecretTrue)});
   }
 
-  std::vector<_WEBAUTHN_CREDENTIAL_EX> exclude_list =
+  make_credential_data_->exclude_list =
       ToWinCredentialExVector(request.exclude_list());
-  auto* exclude_list_ptr = exclude_list.data();
-  _WEBAUTHN_CREDENTIAL_LIST exclude_credential_list{exclude_list.size(),
-                                                    &exclude_list_ptr};
+  make_credential_data_->exclude_list_ptr =
+      make_credential_data_->exclude_list.data();
+  make_credential_data_->exclude_credential_list = {
+      make_credential_data_->exclude_list.size(),
+      &make_credential_data_->exclude_list_ptr};
 
   uint32_t authenticator_attachment;
   if (request.is_u2f_only()) {
@@ -209,42 +159,59 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
         ToWinAuthenticatorAttachment(request.authenticator_attachment());
   }
 
-  WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS make_credential_options{
+  make_credential_data_->make_credential_options = {
       WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3,
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{
           0, nullptr},  // Ignored because pExcludeCredentialList is set.
-      WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
+      WEBAUTHN_EXTENSIONS{make_credential_data_->extensions.size(),
+                          make_credential_data_->extensions.data()},
       authenticator_attachment,
       request.resident_key_required(),
       ToWinUserVerificationRequirement(request.user_verification()),
       WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
       0 /* flags */,
       &cancellation_id_,
-      &exclude_credential_list,
+      &make_credential_data_->exclude_credential_list,
   };
 
-  // |credential_attestation| must not not outlive |win_api_|.
-  WinWebAuthnApi::ScopedCredentialAttestation credential_attestation;
-  // This call will block.
-  HRESULT hresult = win_api_->AuthenticatorMakeCredential(
-      current_window_, &rp_entity_information, &user_entity_information,
-      &cose_credential_parameters, &client_data, &make_credential_options,
-      &credential_attestation);
+  is_pending_ = true;
+  // TODO(martinkr): This might be unsafe because we don't know whether the
+  // Windows API call might touch any of the pointers passed here after the
+  // destructor's call to CancelCurrentOperation returns and this object gets
+  // deleted. Fixing this requires transferring ownership of the pointees into
+  // WinWebAuthnAPI.
+  win_api_->AuthenticatorMakeCredential(
+      current_window_, &make_credential_data_->rp_entity_information,
+      &make_credential_data_->user_entity_information,
+      &make_credential_data_->cose_credential_parameters,
+      &make_credential_data_->client_data,
+      &make_credential_data_->make_credential_options,
+      base::BindOnce(&WinWebAuthnApiAuthenticator::MakeCredentialDone,
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     std::move(callback)));
+}
 
-  if (operation_cancelled_.IsSet()) {
-    // Cancel() was called. Ignore the result.
-    return;
-  }
-
+void WinWebAuthnApiAuthenticator::MakeCredentialDone(
+    CtapMakeCredentialRequest request,
+    MakeCredentialCallback callback,
+    HRESULT hresult,
+    WinWebAuthnApi::ScopedCredentialAttestation credential_attestation) {
+  DCHECK(is_pending_);
+  is_pending_ = false;
   const CtapDeviceResponseCode status =
       hresult == S_OK ? CtapDeviceResponseCode::kSuccess
                       : WinErrorNameToCtapDeviceResponseCode(
                             base::string16(win_api_->GetErrorName(hresult)));
+  if (waiting_for_cancellation_) {
+    // Don't bother invoking the reply callback if the caller has already
+    // cancelled the operation.
+    waiting_for_cancellation_ = false;
+    return;
+  }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
-    callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), status, base::nullopt));
+    std::move(callback).Run(status, base::nullopt);
     return;
   }
 
@@ -253,10 +220,8 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
           ? ToAuthenticatorMakeCredentialResponse(*credential_attestation)
           : base::nullopt;
   if (!response) {
-    callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
-                                  base::nullopt));
+    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
+                            base::nullopt);
     return;
   }
 
@@ -276,52 +241,49 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
     }
     if (!hmac_secret_extension_ok) {
       DLOG(ERROR) << "missing hmacSecret extension";
-      callback_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(callback),
-                         CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension,
-                         base::nullopt));
+      std::move(callback).Run(
+          CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension, base::nullopt);
       return;
     }
   }
 
-  // Post the callback back onto the runner from which this thread originated.
-  callback_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), status, std::move(response)));
+  std::move(callback).Run(status, std::move(response));
 }
 
-// Invokes the blocking WEBAUTHN_AUTHENTICATOR_GET_ASSERTION API call. This
-// method is run on |thread_|. Note that the destructor for this class blocks
-// on |thread_| shutdown.
-void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
-    CtapGetAssertionRequest request,
-    GetAssertionCallback callback,
-    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
+void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
+                                               GetAssertionCallback callback) {
   static BOOL kUseAppIdTrue = TRUE;  // const
+  DCHECK(!is_pending_);
+  if (is_pending_)
+    return;
 
-  base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id());
+  DCHECK(!get_assertion_data_);
+  get_assertion_data_ = GetAssertionData{};
+  get_assertion_data_->rp_id16 = base::UTF8ToUTF16(request.rp_id());
   base::Optional<base::string16> opt_app_id16 = base::nullopt;
   // TODO(martinkr): alternative_application_parameter() is already hashed,
   // so this doesn't work. We need to make it store the full AppID.
   if (request.alternative_application_parameter()) {
-    opt_app_id16 = base::UTF8ToUTF16(base::StringPiece(
+    get_assertion_data_->opt_app_id16 = base::UTF8ToUTF16(base::StringPiece(
         reinterpret_cast<const char*>(
             request.alternative_application_parameter()->data()),
         request.alternative_application_parameter()->size()));
   }
 
-  WEBAUTHN_CLIENT_DATA client_data{
-      WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, request.client_data_json().size(),
+  get_assertion_data_->request_client_data = request.client_data_json();
+  get_assertion_data_->client_data = {
+      WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
+      get_assertion_data_->request_client_data.size(),
       const_cast<unsigned char*>(reinterpret_cast<const unsigned char*>(
-          request.client_data_json().data())),
+          get_assertion_data_->request_client_data.data())),
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
-  std::vector<_WEBAUTHN_CREDENTIAL_EX> allow_list =
+  get_assertion_data_->allow_list =
       ToWinCredentialExVector(request.allow_list());
-  auto* allow_list_ptr = allow_list.data();
-  _WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list.size(),
-                                                  &allow_list_ptr};
+  get_assertion_data_->allow_list_ptr = get_assertion_data_->allow_list.data();
+  get_assertion_data_->allow_credential_list = {
+      get_assertion_data_->allow_list.size(),
+      &get_assertion_data_->allow_list_ptr};
 
   uint32_t authenticator_attachment;
   if (opt_app_id16) {
@@ -335,7 +297,7 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
   }
 
-  WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS get_assertion_options{
+  get_assertion_data_->get_assertion_options = {
       WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4,
       kWinWebAuthnTimeoutMilliseconds,
       WEBAUTHN_CREDENTIALS{
@@ -343,49 +305,63 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
       WEBAUTHN_EXTENSIONS{0, nullptr},
       authenticator_attachment,
       ToWinUserVerificationRequirement(request.user_verification()),
-      0,                                               // flags
-      opt_app_id16 ? opt_app_id16->c_str() : nullptr,  // pwszU2fAppId
-      opt_app_id16 ? &kUseAppIdTrue : nullptr,         // pbU2fAppId
+      0,  // flags
+      get_assertion_data_->opt_app_id16
+          ? get_assertion_data_->opt_app_id16->c_str()
+          : nullptr,  // pwszU2fAppId
+      get_assertion_data_->opt_app_id16 ? &kUseAppIdTrue
+                                        : nullptr,  // pbU2fAppId
       &cancellation_id_,
-      &allow_credential_list,
+      &get_assertion_data_->allow_credential_list,
   };
 
-  // |assertion| must not not outlive |win_api_|.
-  WinWebAuthnApi::ScopedAssertion assertion;
-  // This call will block.
-  HRESULT hresult = win_api_->AuthenticatorGetAssertion(
-      current_window_, rp_id16.c_str(), &client_data, &get_assertion_options,
-      &assertion);
+  is_pending_ = true;
+  // TODO(martinkr): This might be unsafe because we don't know whether the
+  // Windows API call might touch any of the pointers passed here after the
+  // destructor's call to CancelCurrentOperation returns and this object gets
+  // deleted. Fixing this requires transferring ownership of the pointees into
+  // WinWebAuthnAPI.
+  win_api_->AuthenticatorGetAssertion(
+      current_window_, get_assertion_data_->rp_id16.c_str(),
+      &get_assertion_data_->client_data,
+      &get_assertion_data_->get_assertion_options,
+      base::BindOnce(&WinWebAuthnApiAuthenticator::GetAssertionDone,
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     std::move(callback)));
+}
 
-  if (operation_cancelled_.IsSet()) {
-    // Cancel() was called. Ignore the result.
-    return;
-  }
-
+void WinWebAuthnApiAuthenticator::GetAssertionDone(
+    CtapGetAssertionRequest request,
+    GetAssertionCallback callback,
+    HRESULT hresult,
+    WinWebAuthnApi::ScopedAssertion assertion) {
+  DCHECK(is_pending_);
+  is_pending_ = false;
   const CtapDeviceResponseCode status =
       hresult == S_OK ? CtapDeviceResponseCode::kSuccess
                       : WinErrorNameToCtapDeviceResponseCode(
                             base::string16(win_api_->GetErrorName(hresult)));
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      assertion ? ToAuthenticatorGetAssertionResponse(*assertion)
-                : base::nullopt;
+  if (waiting_for_cancellation_) {
+    // Don't bother invoking the reply callback if the caller has already
+    // cancelled the operation.
+    waiting_for_cancellation_ = false;
+    return;
+  }
 
-  // Post the callback back onto the runner from which this thread originated.
-  callback_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), status, std::move(response)));
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      (hresult == S_OK && assertion)
+          ? ToAuthenticatorGetAssertionResponse(*assertion)
+          : base::nullopt;
+  std::move(callback).Run(status, std::move(response));
 }
 
 void WinWebAuthnApiAuthenticator::Cancel() {
-  if (!thread_ || operation_cancelled_.IsSet()) {
+  if (!is_pending_ || waiting_for_cancellation_)
     return;
-  }
-  // |thread_| might be blocked waiting on a response from the API. Tell it to
-  // throw away the response it receives right after CancelCurrentOperation()
-  // unblocks it.
-  operation_cancelled_.Set();
+
+  waiting_for_cancellation_ = true;
+  // This returns immediately.
   win_api_->CancelCurrentOperation(&cancellation_id_);
-  thread_->Stop();
 }
 
 std::string WinWebAuthnApiAuthenticator::GetId() const {
@@ -425,27 +401,21 @@ base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void WinWebAuthnApiAuthenticator::InvokeMakeCredentialCallback(
-    MakeCredentialCallback cb,
-    CtapDeviceResponseCode status,
-    base::Optional<AuthenticatorMakeCredentialResponse> response) {
-  // Check for cancellation on the originating sequence before dispatching
-  // the callback.
-  if (operation_cancelled_.IsSet()) {
-    return;
-  }
-  std::move(cb).Run(status, std::move(response));
-}
-void WinWebAuthnApiAuthenticator::InvokeGetAssertionCallback(
-    GetAssertionCallback cb,
-    CtapDeviceResponseCode status,
-    base::Optional<AuthenticatorGetAssertionResponse> response) {
-  // Check for cancellation on the originating sequence before dispatching
-  // the callback.
-  if (operation_cancelled_.IsSet()) {
-    return;
-  }
-  std::move(cb).Run(status, std::move(response));
-}
+WinWebAuthnApiAuthenticator::MakeCredentialData::MakeCredentialData() = default;
+WinWebAuthnApiAuthenticator::MakeCredentialData::MakeCredentialData(
+    MakeCredentialData&&) = default;
+WinWebAuthnApiAuthenticator::MakeCredentialData&
+WinWebAuthnApiAuthenticator::MakeCredentialData::operator=(
+    MakeCredentialData&&) = default;
+WinWebAuthnApiAuthenticator::MakeCredentialData::~MakeCredentialData() =
+    default;
+
+WinWebAuthnApiAuthenticator::GetAssertionData::GetAssertionData() = default;
+WinWebAuthnApiAuthenticator::GetAssertionData::GetAssertionData(
+    GetAssertionData&&) = default;
+WinWebAuthnApiAuthenticator::GetAssertionData&
+WinWebAuthnApiAuthenticator::GetAssertionData::operator=(GetAssertionData&&) =
+    default;
+WinWebAuthnApiAuthenticator::GetAssertionData::~GetAssertionData() = default;
 
 }  // namespace device
