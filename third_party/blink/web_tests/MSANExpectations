@@ -115,7 +115,7 @@ crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass F
 
 crbug.com/856601 [ Linux ] fast/css/visited-link-hang.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
-crbug.com/856601 [ Linux ] http/tests/event-timing/event-timing-retrievability.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/event-timing/event-timing-retrievability.html [ Pass Timeout ]
 
 # Slow idlharness.js tests on MSAN
 crbug.com/856601 [ Linux ] external/wpt/BackgroundSync/interfaces.https.any.html [ Timeout Pass ]

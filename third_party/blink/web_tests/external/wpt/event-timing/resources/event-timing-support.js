@@ -1,31 +1,20 @@
 // Clicks on the element with the given ID. It adds an event handler to the element
 // which ensures that the events have a long duration and reported by EventTiming
-// where appropriate.
+// where appropriate. Calls |callback| during event handler.
 function clickOnElement(id, callback) {
   const element = document.getElementById(id);
   const rect = element.getBoundingClientRect();
   const xCenter = rect.x + rect.width / 2;
   const yCenter = rect.y + rect.height / 2;
   const leftButton = 0;
-  var pointerActions = [{
-    source: "mouse",
-    actions: [
-      { name: "pointerDown", x: xCenter, y: yCenter, button: leftButton },
-      { name: "pointerUp" },
-    ]
-  }];
-  var clickHandler = () => {
+  const clickHandler = () => {
     mainThreadBusy(60);
     if (callback)
       callback();
     element.removeEventListener("click", clickHandler);
   };
   element.addEventListener("click", clickHandler);
-  if (!chrome || !chrome.gpuBenchmarking) {
-    reject();
-  } else {
-    chrome.gpuBenchmarking.pointerActionSequence(pointerActions);
-  }
+  test_driver.click(element);
 }
 
 function mainThreadBusy(duration) {
@@ -64,7 +53,7 @@ function verifyClickEvent(entry, is_first=false) {
 
 function wait() {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
+    step_timeout(() => {
       resolve();
     }, 0);
   });
