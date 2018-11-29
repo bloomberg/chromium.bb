@@ -57,6 +57,12 @@ UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 // TODO(jamescook): Make flag only available in Chrome OS.
 UI_BASE_EXPORT extern const base::Feature kMash;
 
+// Used to run Viz in its own process when kMash is enabled. Viz is run in Ash
+// process by default.
+// TODO(mohsen): Remove this when Viz can run fully in a separate process. Then
+// make it the default kMash behavior.
+UI_BASE_EXPORT extern const base::Feature kMashOopViz;
+
 UI_BASE_EXPORT extern const base::Feature kSingleProcessMash;
 
 // Returns true if Chrome's aura usage is backed by the WindowService.
@@ -65,6 +71,8 @@ UI_BASE_EXPORT bool IsUsingWindowService();
 // Returns true if ash in running in a separate process (and is hosting the UI
 // service and Viz graphics). See //ash/README.md.
 UI_BASE_EXPORT bool IsMultiProcessMash();
+
+UI_BASE_EXPORT bool IsMashOopVizEnabled();
 
 // Returns true if code outside of ash is using the WindowService. In this mode
 // there are two aura::Envs. Ash uses one with Env::Mode::LOCAL. Non-ash code

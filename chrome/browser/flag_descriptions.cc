@@ -3470,6 +3470,11 @@ const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
 
+const char kMashOopVizName[] = "Out-of-process viz for mash";
+const char kMashOopVizDescription[] =
+    "Runs viz in a separate process when mash is enabled (otherwise viz would "
+    "run in ash process)";
+
 const char kMaterialDesignInkDropAnimationSpeedName[] =
     "Material design ink drop animation speed";
 const char kMaterialDesignInkDropAnimationSpeedDescription[] =

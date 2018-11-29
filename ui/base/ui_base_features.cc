@@ -143,6 +143,9 @@ const base::Feature kDirectManipulationStylus = {
 
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kMashOopViz = {"MashOopViz",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -152,6 +155,10 @@ bool IsUsingWindowService() {
 
 bool IsMultiProcessMash() {
   return base::FeatureList::IsEnabled(features::kMash);
+}
+
+bool IsMashOopVizEnabled() {
+  return base::FeatureList::IsEnabled(features::kMashOopViz);
 }
 
 bool IsSingleProcessMash() {
