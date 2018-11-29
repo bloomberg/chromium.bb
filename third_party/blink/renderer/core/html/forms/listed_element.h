@@ -93,6 +93,10 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   void InsertedInto(ContainerNode&);
   void RemovedFrom(ContainerNode&);
   void DidMoveToNewDocument(Document& old_document);
+  void AncestorDisabledStateWasChanged();
+
+  // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
+  bool IsActuallyDisabled() const;
 
   typedef HeapVector<Member<ListedElement>> List;
 
@@ -115,7 +119,15 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   String CustomValidationMessage() const;
 
+  virtual void DisabledAttributeChanged();
+
+  // False; There are no FIELDSET ancestors.
+  // True; There might be a FIELDSET ancestor, and thre might be no
+  //       FIELDSET ancestors.
+  mutable bool may_have_field_set_ancestor_ = true;
+
  private:
+  void UpdateAncestorDisabledState() const;
   void SetFormAttributeTargetObserver(FormAttributeTargetObserver*);
   void ResetFormAttributeTargetObserver();
 
@@ -125,6 +137,10 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   String custom_validation_message_;
   // If form_was_set_by_parser_ is true, form_ is always non-null.
   bool form_was_set_by_parser_;
+
+  enum class AncestorDisabledState { kUnknown, kEnabled, kDisabled };
+  mutable AncestorDisabledState ancestor_disabled_state_ =
+      AncestorDisabledState::kUnknown;
 };
 
 CORE_EXPORT HTMLElement* ToHTMLElement(ListedElement*);
