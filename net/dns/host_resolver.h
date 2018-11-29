@@ -92,23 +92,10 @@ class NET_EXPORT HostResolver {
     // Address record (A or AAAA) results of the request. Should only be called
     // after Start() signals completion, either by invoking the callback or by
     // returning a result other than |ERR_IO_PENDING|.
-    virtual const base::Optional<AddressList>& GetAddressResults() const = 0;
-
-    // Text record (TXT) results of the request. Should only be called after
-    // Start() signals completion, either by invoking the callback or by
-    // returning a result other than |ERR_IO_PENDING|.
-    virtual const base::Optional<std::vector<std::string>>& GetTextResults()
-        const = 0;
-
-    // Hostname record (SRV or PTR) results of the request. For SRV results,
-    // hostnames are ordered acording to their priorities and weights. See RFC
-    // 2782.
     //
-    // Should only be called after Start() signals completion, either by
-    // invoking the callback or by returning a result other than
-    // |ERR_IO_PENDING|.
-    virtual const base::Optional<std::vector<HostPortPair>>&
-    GetHostnameResults() const = 0;
+    // TODO(crbug.com/821021): Implement other GetResults() methods for requests
+    // that return other data (eg DNS TXT requests).
+    virtual const base::Optional<AddressList>& GetAddressResults() const = 0;
   };
 
   // |max_concurrent_resolves| is how many resolve requests will be allowed to
