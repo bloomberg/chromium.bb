@@ -527,6 +527,7 @@ def AddDepfileOption(parser):
 
 def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
   assert depfile_path != first_gn_output  # http://crbug.com/646165
+  assert not isinstance(inputs, basestring)  # Easy mistake to make
   inputs = inputs or []
   if add_pydeps:
     inputs = _ComputePythonDependencies() + inputs
