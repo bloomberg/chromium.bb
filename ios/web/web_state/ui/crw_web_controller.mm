@@ -954,10 +954,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (self) {
     _webStateImpl = webState;
     _webUsageEnabled = YES;
-
-    if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
-      _allowsBackForwardNavigationGestures = YES;
-
     DCHECK(_webStateImpl);
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.
