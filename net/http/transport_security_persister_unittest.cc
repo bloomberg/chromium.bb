@@ -31,13 +31,13 @@ class TransportSecurityPersisterTest : public TestWithScopedTaskEnvironment {
   TransportSecurityPersisterTest() = default;
 
   ~TransportSecurityPersisterTest() override {
-    EXPECT_TRUE(base::MessageLoopForIO::IsCurrent());
+    EXPECT_TRUE(base::MessageLoopCurrentForIO::IsSet());
     base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
     persister_ = std::make_unique<TransportSecurityPersister>(
         &state_, temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
   }

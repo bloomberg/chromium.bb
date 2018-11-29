@@ -300,16 +300,6 @@ MessageLoopForUI::MessageLoopForUI(Type type) : MessageLoop(type) {
 #endif
 }
 
-// static
-MessageLoopCurrentForUI MessageLoopForUI::current() {
-  return MessageLoopCurrentForUI::Get();
-}
-
-// static
-bool MessageLoopForUI::IsCurrent() {
-  return MessageLoopCurrentForUI::IsSet();
-}
-
 #if defined(OS_IOS)
 void MessageLoopForUI::Attach() {
   backend_->AttachToMessagePump();
@@ -337,18 +327,5 @@ void MessageLoopForUI::EnableWmQuit() {
 #endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_NACL)
-
-//------------------------------------------------------------------------------
-// MessageLoopForIO
-
-// static
-MessageLoopCurrentForIO MessageLoopForIO::current() {
-  return MessageLoopCurrentForIO::Get();
-}
-
-// static
-bool MessageLoopForIO::IsCurrent() {
-  return MessageLoopCurrentForIO::IsSet();
-}
 
 }  // namespace base

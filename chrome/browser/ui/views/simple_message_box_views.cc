@@ -109,7 +109,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
 // ResourceBundle is not initialized yet.
 // Fallback to logging with a default response or a Windows MessageBox.
 #if defined(OS_WIN)
-  if (!base::MessageLoopForUI::IsCurrent() ||
+  if (!base::MessageLoopCurrentForUI::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
@@ -121,7 +121,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #elif defined(OS_MACOSX)
-  if (!base::MessageLoopForUI::IsCurrent() ||
+  if (!base::MessageLoopCurrentForUI::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     // Even though this function could return a value synchronously here in
@@ -132,7 +132,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #else
-  if (!base::MessageLoopForUI::IsCurrent() ||
+  if (!base::MessageLoopCurrentForUI::IsSet() ||
       !ui::ResourceBundle::HasSharedInstance() ||
       !display::Screen::GetScreen()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "

@@ -403,10 +403,6 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
   explicit MessageLoopForUI(Type type = TYPE_UI);
 
-  // TODO(gab): Mass migrate callers to MessageLoopCurrentForUI::Get()/IsSet().
-  static MessageLoopCurrentForUI current();
-  static bool IsCurrent();
-
 #if defined(OS_IOS)
   // On iOS, the main message loop cannot be Run().  Instead call Attach(),
   // which connects this MessageLoop to the UI thread's CFRunLoop and allows
@@ -456,10 +452,6 @@ static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
 class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:
   MessageLoopForIO() : MessageLoop(TYPE_IO) {}
-
-  // TODO(gab): Mass migrate callers to MessageLoopCurrentForIO::Get()/IsSet().
-  static MessageLoopCurrentForIO current();
-  static bool IsCurrent();
 };
 
 // Do not add any member variables to MessageLoopForIO!  This is important b/c

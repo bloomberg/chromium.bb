@@ -514,7 +514,7 @@ void ScreenLocker::HandleShowLockScreenRequest() {
 // static
 void ScreenLocker::Show() {
   base::RecordAction(UserMetricsAction("ScreenLocker_Show"));
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
@@ -541,7 +541,7 @@ void ScreenLocker::Show() {
 
 // static
 void ScreenLocker::Hide() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   // For a guest user, screen_locker_ would have never been initialized.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
     VLOG(1) << "Refusing to hide lock screen for guest account";
@@ -595,7 +595,7 @@ void ScreenLocker::SetAuthenticatorsForTesting(
 
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   if (authenticator_)
     authenticator_->SetConsumer(nullptr);

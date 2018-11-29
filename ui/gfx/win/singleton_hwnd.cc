@@ -27,7 +27,7 @@ BOOL SingletonHwnd::ProcessWindowMessage(HWND window,
 }
 
 SingletonHwnd::SingletonHwnd() {
-  if (!base::MessageLoopForUI::IsCurrent()) {
+  if (!base::MessageLoopCurrentForUI::IsSet()) {
     // Creating this window in (e.g.) a renderer inhibits shutdown on
     // Windows. See http://crbug.com/230122 and http://crbug.com/236039.
     return;

@@ -56,7 +56,7 @@ class FocusPODWaiter {
   }
 
   void OnFocusPOD() {
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
     focused_ = true;
     if (runner_.get()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(

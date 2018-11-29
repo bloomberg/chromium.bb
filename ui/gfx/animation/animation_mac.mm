@@ -15,8 +15,8 @@ namespace gfx {
 bool Animation::ScrollAnimationsEnabledBySystem() {
   // Because of sandboxing, OS settings should only be queried from the browser
   // process.
-  DCHECK(base::MessageLoopForUI::IsCurrent() ||
-      base::MessageLoopForIO::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet() ||
+         base::MessageLoopCurrentForIO::IsSet());
 
   bool enabled = false;
   id value = nil;

@@ -70,7 +70,7 @@ class OCSPIOLoop {
 
   void StartUsing() {
     base::AutoLock autolock(lock_);
-    DCHECK(base::MessageLoopForIO::IsCurrent());
+    DCHECK(base::MessageLoopCurrentForIO::IsSet());
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
@@ -370,7 +370,7 @@ class OCSPRequestSession
     {
       base::AutoLock autolock(lock_);
       DCHECK(!io_task_runner_);
-      DCHECK(base::MessageLoopForIO::IsCurrent());
+      DCHECK(base::MessageLoopCurrentForIO::IsSet());
       io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
       g_ocsp_io_loop.Get().AddRequest(this);
     }

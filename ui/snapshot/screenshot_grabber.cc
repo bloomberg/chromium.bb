@@ -73,7 +73,7 @@ ScreenshotGrabber::~ScreenshotGrabber() {
 void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
                                        const gfx::Rect& rect,
                                        ScreenshotCallback callback) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   last_screenshot_timestamp_ = base::TimeTicks::Now();
 
   bool is_partial = true;
@@ -106,7 +106,7 @@ void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(
     bool is_partial,
     ScreenshotCallback callback,
     scoped_refptr<base::RefCountedMemory> png_data) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
 #if defined(USE_AURA)
   cursor_hider_.reset();

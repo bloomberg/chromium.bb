@@ -329,7 +329,7 @@ class MenuControllerTest : public ViewsTestBase {
     set_views_delegate(std::move(views_delegate));
     ViewsTestBase::SetUp();
     Init();
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
   }
 
   void TearDown() override {

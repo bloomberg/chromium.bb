@@ -75,7 +75,7 @@ void MaterialDesignController::Initialize() {
       // Win 10+ uses dynamic mode by default and checks the current tablet mode
       // state to determine whether to start in touch mode.
       automatic_touch_ui_ = true;
-      if (base::MessageLoopForUI::IsCurrent() &&
+      if (base::MessageLoopCurrentForUI::IsSet() &&
           !GetInstance()->singleton_hwnd_observer_) {
         GetInstance()->singleton_hwnd_observer_ =
             std::make_unique<gfx::SingletonHwndObserver>(

@@ -26,7 +26,7 @@ void ProcessAcceleratorNow(const ui::Accelerator& accelerator) {
 views::ViewsDelegate::ProcessMenuAcceleratorResult
 ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     const ui::Accelerator& accelerator) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   // Early return because mash chrome does not have access to ash::Shell
   if (features::IsMultiProcessMash())

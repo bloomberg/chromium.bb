@@ -306,7 +306,7 @@ bool GetFallbackFont(const Font& font,
   // browser process because we can use the shared system fallback, but in the
   // renderer this can cause hangs. Code that needs font fallback in the
   // renderer should instead use the font proxy.
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   // Check that we have at least as much text as was claimed. If we have less
   // text than expected then DirectWrite will become confused and crash. This

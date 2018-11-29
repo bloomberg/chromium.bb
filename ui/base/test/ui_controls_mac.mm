@@ -265,7 +265,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   std::vector<NSEvent*> events;
   SynthesizeKeyEventsSequence(window.GetNativeNSWindow(), key, control, shift,
