@@ -1447,8 +1447,6 @@ if (enable_java_templates) {
   #     implementation .jars.
   #   use_unprocessed_jars: Use unprocessed / undesugared .jars.
   #   direct_deps_only: Do not recurse on deps.
-  #   jar_excluded_patterns (optional)
-  #     List of globs for paths to exclude.
   #
   # Example
   #   dist_jar("lib_fatjar") {
@@ -1511,7 +1509,7 @@ if (enable_java_templates) {
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     action_with_pydeps(_jar_target_name) {
       forward_variables_from(invoker, [ "data" ])
-      script = "//build/android/gyp/zip.py"
+      script = "//build/android/gyp/create_dist_jar.py"
       depfile = "$target_gen_dir/$target_name.d"
       deps = _deps
 
@@ -1528,16 +1526,15 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--output",
         rebase_path(invoker.output, root_build_dir),
-        "--no-compress",
       ]
 
       if (_direct_deps_only) {
         if (_use_interface_jars) {
-          args += [ "--input-zips=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
-        } else if (_use_unprocessed_jars) {
           args += [
-            "--input-zips=@FileArg($_rebased_build_config:javac:classpath)",
+            "--jars=@FileArg($_rebased_build_config:javac:interface_classpath)",
           ]
+        } else if (_use_unprocessed_jars) {
+          args += [ "--jars=@FileArg($_rebased_build_config:javac:classpath)" ]
         } else {
           assert(
               false,
@@ -1545,16 +1542,12 @@ if (enable_java_templates) {
         }
       } else {
         if (_use_interface_jars) {
-          args += [ "--input-zips=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)" ]
+          args += [ "--jars=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)" ]
         } else if (_use_unprocessed_jars) {
-          args += [ "--input-zips=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)" ]
+          args += [ "--jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)" ]
         } else {
-          args += [ "--input-zips=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
+          args += [ "--jars=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
         }
-      }
-      if (defined(invoker.jar_excluded_patterns)) {
-        args +=
-            [ "--input-zips-excluded-globs=${invoker.jar_excluded_patterns}" ]
       }
     }
   }
