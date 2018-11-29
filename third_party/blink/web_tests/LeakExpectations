@@ -87,6 +87,7 @@ crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 crbug.com/862029 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Leak ]
 
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass Leak ]
+crbug.com/733494 [ Linux ] virtual/video-surface-layer/media/autoplay/document-user-activation.html [ Pass Leak ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
