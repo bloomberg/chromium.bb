@@ -7,107 +7,68 @@
 /**
  * Tests sharing a file on Drive
  */
-testcase.suggestAppDialog = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      sendTestMessage({name: 'getCwsWidgetContainerMockUrl'}).then(this.next);
-    },
-    // Override the container URL with the mock.
-    function(json) {
-      var data = JSON.parse(json);
+testcase.suggestAppDialog = async function() {
+  // Fetch the mock CWS page data.
+  const data =
+      JSON.parse(await sendTestMessage({name: 'getCwsWidgetContainerMockUrl'}));
 
-      var appState = {
-        suggestAppsDialogState: {
-          overrideCwsContainerUrlForTest: data.url,
-          overrideCwsContainerOriginForTest: data.origin
-        }
-      };
-      setupAndWaitUntilReady(appState, RootPath.DRIVE, this.next);
-    },
-    function(results) {
-      appId = results.windowId;
-
-      remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['unsupported.foo'], this.next);
-    },
-    // Double-click the file.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseDoubleClick',
-          appId,
-          ['#file-list li.table-row[selected] .filename-label span'],
-          this.next);
-    },
-    // Wait for the widget is loaded.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#suggest-app-dialog webview[src]').
-          then(this.next);
-    },
-    // Wait for the widget is initialized.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(
-          appId, '.cws-widget-spinner-layer:not(.cws-widget-show-spinner)').
-          then(this.next);
-    },
-    // Override task APIs for test.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'overrideTasks',
-          appId,
-          [[
-            {
-              driveApp: false,
-              iconUrl: 'chrome://theme/IDR_DEFAULT_FAVICON',  // Dummy icon
-              isDefault: true,
-              taskId: 'dummytaskid|drive|open-with',
-              title: 'The dummy task for test'
-            }
-          ]],
-          this.next);
-    },
-    // Override installWebstoreItem API for test.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'overrideInstallWebstoreItemApi',
-          appId,
-          [
-            'DUMMY_ITEM_ID_FOR_TEST',  // Same ID in cws_container_mock/main.js.
-            null  // Success
-          ],
-          this.next);
-    },
-    // Initiate an installation from the widget.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'executeScriptInWebView',
-          appId,
-          ['#suggest-app-dialog webview',
-           'document.querySelector("button").click()'],
-          this.next);
-    },
-    // Wait until the installation is finished and the dialog is closed.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElementLost(appId, '#suggest-app-dialog').
-          then(this.next);
-    },
-    // Wait until the task is executed.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitUntilTaskExecutes(appId, 'dummytaskid|drive|open-with').
-          then(this.next);
-    },
-    // Check error
-    function() {
-      checkIfNoErrorsOccured(this.next);
+  // Override the container URL with the mock.
+  var appState = {
+    suggestAppsDialogState: {
+      overrideCwsContainerUrlForTest: data.url,
+      overrideCwsContainerOriginForTest: data.origin
     }
-  ]);
+  };
+
+  // Set up File Manager.
+  const {appId} = await setupAndWaitUntilReady(appState, RootPath.DRIVE);
+
+  // Select a file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, ['unsupported.foo']));
+
+  // Double-click the file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseDoubleClick', appId,
+      ['#file-list li.table-row[selected] .filename-label span']));
+
+  // Wait until the widget is loaded.
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '#suggest-app-dialog webview[src]'));
+
+  // Wait until the widget is initialized.
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '.cws-widget-spinner-layer:not(.cws-widget-show-spinner)'));
+
+  // Override task APIs for test.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'overrideTasks', appId, [[{
+        driveApp: false,
+        iconUrl: 'chrome://theme/IDR_DEFAULT_FAVICON',  // Dummy icon
+        isDefault: true,
+        taskId: 'dummytaskid|drive|open-with',
+        title: 'The dummy task for test'
+      }]]));
+
+  // Override installWebstoreItem API for test.
+  chrome.test.assertTrue(!!remoteCall.callRemoteTestUtil(
+      'overrideInstallWebstoreItemApi', appId,
+      [
+        'DUMMY_ITEM_ID_FOR_TEST',  // Same ID in cws_container_mock/main.js.
+        null                       // Success
+      ]));
+
+  // Initiate an installation from the widget.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('executeScriptInWebView', appId, [
+        '#suggest-app-dialog webview',
+        'document.querySelector("button").click()'
+      ]));
+
+  // Wait until the installation is finished and the dialog is closed.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElementLost(appId, '#suggest-app-dialog'));
+
+  // Wait until the task is executed.
+  await remoteCall.waitUntilTaskExecutes(appId, 'dummytaskid|drive|open-with');
 };
