@@ -269,7 +269,25 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     return;
   }
 
-  if (!is_valid) {
+  // Compute the validity of the new refresh token: The identity code sets an
+  // account's refresh token to be invalid (error
+  // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
+  // the web.
+  // TODO(blundell): Hide this logic inside IdentityManager.
+  // NOTE: We don't use |is_valid| because we will shortly be eliminating that
+  // parameter. TODO(https://crbug.com/908412): Eliminate that parameter and
+  // this comment.
+  bool is_refresh_token_valid = true;
+  GoogleServiceAuthError token_error =
+      identity_manager_->GetErrorStateOfRefreshTokenForAccount(
+          account_info.account_id);
+  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                             CREDENTIALS_REJECTED_BY_CLIENT)) {
+    is_refresh_token_valid = false;
+  }
+
+  if (!is_refresh_token_valid) {
     // When the refresh token is replaced by an invalid token, Sync must be
     // stopped immediately, even if the current access token is still valid.
     // This happens e.g. when the user signs out of the web with Dice enabled.
