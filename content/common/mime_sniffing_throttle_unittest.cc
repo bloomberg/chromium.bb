@@ -300,6 +300,33 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
 
   // Call OnComplete() without sending body.
   delegate->source_loader_client()->OnComplete(
+      network::URLLoaderCompletionStatus(net::ERR_FAILED));
+  delegate->destination_loader_client()->RunUntilComplete();
+
+  // The mime type should be updated to the default mime type ("text/plain").
+  EXPECT_TRUE(delegate->destination_loader_client()->has_received_response());
+  EXPECT_EQ("text/plain",
+            delegate->destination_loader_client()->response_head().mime_type);
+}
+
+TEST_F(MimeSniffingThrottleTest, EmptyBody) {
+  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto delegate = std::make_unique<MockDelegate>();
+  throttle->set_delegate(delegate.get());
+
+  GURL response_url("https://example.com");
+  network::ResourceResponseHead response_head;
+  bool defer = false;
+  throttle->WillProcessResponse(response_url, &response_head, &defer);
+  EXPECT_TRUE(defer);
+  EXPECT_TRUE(delegate->is_intercepted());
+
+  mojo::DataPipe pipe;
+  delegate->source_loader_client()->OnStartLoadingResponseBody(
+      std::move(pipe.consumer_handle));
+  pipe.producer_handle.reset();  // The pipe is empty.
+
+  delegate->source_loader_client()->OnComplete(
       network::URLLoaderCompletionStatus());
   delegate->destination_loader_client()->RunUntilComplete();
 
