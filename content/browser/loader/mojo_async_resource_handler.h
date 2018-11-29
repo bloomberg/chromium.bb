@@ -149,6 +149,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;
+  bool was_proceed_with_response_called_ = false;
   // True if OnWillRead was deferred, in order to wait to be able to allocate a
   // buffer.
   bool did_defer_on_will_read_ = false;
