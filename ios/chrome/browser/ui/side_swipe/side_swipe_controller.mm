@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -113,6 +114,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Browser state passed to the initialiser.
   ios::ChromeBrowserState* browserState_;
 }
+
+// Whether to allow navigating from the leading edge.
+@property(nonatomic, assign) BOOL leadingEdgeNavigationEnabled;
+// Whether to allow navigating from the trailing edge.
+@property(nonatomic, assign) BOOL trailingEdgeNavigationEnabled;
 
 // Load grey snapshots for the next |kIpadGreySwipeTabCount| tabs in
 // |direction|.
@@ -219,11 +225,17 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
     shouldBeRequiredToFailByGestureRecognizer:
         (UIGestureRecognizer*)otherGestureRecognizer {
-  // Only take precedence over a pan gesture recognizer so that moving up and
+  // Take precedence over a pan gesture recognizer so that moving up and
   // down while swiping doesn't trigger overscroll actions.
   if ([otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
     return YES;
   }
+  // Take precedence over a WKWebView side swipe gesture.
+  if ([otherGestureRecognizer
+          isKindOfClass:[UIScreenEdgePanGestureRecognizer class]]) {
+    return YES;
+  }
+
   return NO;
 }
 
@@ -257,6 +269,16 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       CGRectInset([[swipeDelegate_ sideSwipeContentView] frame], -1, -1);
   if (CGRectContainsPoint(contentViewFrame, location)) {
     if (![gesture isEqual:swipeGestureRecognizer_]) {
+      return NO;
+    }
+
+    if (gesture.direction == UISwipeGestureRecognizerDirectionRight &&
+        !self.leadingEdgeNavigationEnabled) {
+      return NO;
+    }
+
+    if (gesture.direction == UISwipeGestureRecognizerDirectionLeft &&
+        !self.trailingEdgeNavigationEnabled) {
       return NO;
     }
     swipeType_ = SwipeType::CHANGE_PAGE;
@@ -586,6 +608,39 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   completionHandler();
 }
 
+- (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState {
+  // With slim nav disabled, always use SideSwipeController's edge swipe for
+  // navigation.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    self.leadingEdgeNavigationEnabled = YES;
+    self.trailingEdgeNavigationEnabled = YES;
+    return;
+  }
+
+  // With slim nav enabled, disable SideSwipeController's edge swipe for a
+  // typical navigation.  Continue to use SideSwipeController when on, before,
+  // or after a native page.
+  self.leadingEdgeNavigationEnabled = NO;
+  self.trailingEdgeNavigationEnabled = NO;
+
+  if (UseNativeSwipe(webState->GetNavigationManager()->GetVisibleItem())) {
+    self.leadingEdgeNavigationEnabled = YES;
+    self.trailingEdgeNavigationEnabled = YES;
+  }
+
+  // If the previous page is an NTP, enable leading edge swipe.
+  web::NavigationItemList backItems =
+      webState->GetNavigationManager()->GetBackwardItems();
+  if (backItems.size() > 0 && UseNativeSwipe(backItems[0]))
+    self.leadingEdgeNavigationEnabled = YES;
+
+  // If the next page is an NTP, enable trailing edge swipe.
+  web::NavigationItemList fordwardItems =
+      webState->GetNavigationManager()->GetForwardItems();
+  if (fordwardItems.size() > 0 && UseNativeSwipe(fordwardItems[0]))
+    self.trailingEdgeNavigationEnabled = YES;
+}
+
 #pragma mark - CRWWebStateObserver Methods
 
 // Checking -webStateDidStopLoading is likely incorrect, but to narrow the scope
@@ -621,6 +676,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // the gesture recognizer.
   [swipeGestureRecognizer_ setEnabled:NO];
   [swipeGestureRecognizer_ setEnabled:YES];
+
+  [self updateNavigationEdgeSwipeForWebState:newTab.webState];
+}
+
+- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
+  [self updateNavigationEdgeSwipeForWebState:tab.webState];
 }
 
 @end
