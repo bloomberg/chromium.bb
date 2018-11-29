@@ -52,10 +52,30 @@ void IdentityManagerObserverBridge::OnRefreshTokenRemovedForAccount(
   }
 }
 
+void IdentityManagerObserverBridge::OnRefreshTokensLoaded() {
+  if ([delegate_ respondsToSelector:@selector(onRefreshTokensLoaded)]) {
+    [delegate_ onRefreshTokensLoaded];
+  }
+}
+
 void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
     const std::vector<AccountInfo>& accounts) {
   if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:)]) {
     [delegate_ onAccountsInCookieUpdated:accounts];
+  }
+}
+
+void IdentityManagerObserverBridge::OnStartBatchOfRefreshTokenStateChanges() {
+  if ([delegate_ respondsToSelector:@selector
+                 (onStartBatchOfRefreshTokenStateChanges)]) {
+    [delegate_ onStartBatchOfRefreshTokenStateChanges];
+  }
+}
+
+void IdentityManagerObserverBridge::OnEndBatchOfRefreshTokenStateChanges() {
+  if ([delegate_
+          respondsToSelector:@selector(onEndBatchOfRefreshTokenStateChanges)]) {
+    [delegate_ onEndBatchOfRefreshTokenStateChanges];
   }
 }
 
