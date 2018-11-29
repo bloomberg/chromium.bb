@@ -9,6 +9,8 @@
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class AccountTrackerService;
 class ProfileOAuth2TokenService;
@@ -19,12 +21,12 @@ class IdentityService : public service_manager::Service {
  public:
   IdentityService(AccountTrackerService* account_tracker,
                   SigninManagerBase* signin_manager,
-                  ProfileOAuth2TokenService* token_service);
+                  ProfileOAuth2TokenService* token_service,
+                  service_manager::mojom::ServiceRequest request);
   ~IdentityService() override;
 
  private:
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -36,6 +38,8 @@ class IdentityService : public service_manager::Service {
   // call.
   void ShutDown();
   bool IsShutDown();
+
+  service_manager::ServiceBinding service_binding_;
 
   AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;

@@ -13,6 +13,8 @@
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class FilePath;
@@ -104,6 +106,11 @@ class BrowserState : public base::SupportsUserData {
 
   // Registers per-browser-state services to be loaded by the Service Manager.
   virtual void RegisterServices(StaticServiceMap* services) {}
+
+  // Handles an incoming request for a per-browser-state service.
+  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
 
  protected:
   BrowserState();

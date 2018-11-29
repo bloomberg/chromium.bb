@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/service_manager/public/service_manifest.gni")
+
 # There should be only one tracing service. It is currently
 # in the browser process. So, only //content/browser should link to this target.
 # Others modules should only need the public targets.
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
-
 source_set("lib") {
   sources = [
     "agent_registry.cc",
@@ -55,19 +52,6 @@ service_manifest("manifest") {
   source = "manifest.json"
 }
 
-service("tracing") {
-  sources = [
-    "service_main.cc",
-  ]
-
-  configs = [ "//build/config/compiler:wexit_time_destructors" ]
-
-  deps = [
-    ":lib",
-    "//mojo/public/cpp/system",
-  ]
-}
-
 source_set("tests") {
   testonly = true
 
@@ -97,7 +81,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//services/tracing:lib",
     "//testing/gmock",
@@ -119,19 +103,4 @@ source_set("tests") {
       "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
     ]
   }
-
-  data_deps = [
-    ":tracing",
-  ]
-}
-
-service_manifest("unittest_manifest") {
-  name = "tracing_unittests"
-  source = "unittest_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-  standalone_services = [ ":manifest" ]
 }

@@ -1201,24 +1201,19 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     services->emplace(apps::mojom::kServiceName, info);
   }
 #endif
-
-  service_manager::EmbeddedServiceInfo identity_service_info;
-
-  // The Identity Service must run on the UI thread.
-  identity_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-
-  // NOTE: The dependencies of the Identity Service have not yet been created,
-  // so it is not possible to bind them here. Instead, bind them at the time
-  // of the actual request to create the Identity Service.
-  identity_service_info.factory =
-      base::Bind(&ProfileImpl::CreateIdentityService, base::Unretained(this));
-  services->insert(
-      std::make_pair(identity::mojom::kServiceName, identity_service_info));
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
+  if (service_name == identity::mojom::kServiceName) {
+    return std::make_unique<identity::IdentityService>(
+        AccountTrackerServiceFactory::GetForProfile(this),
+        SigninManagerFactory::GetForProfile(this),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(this),
+        std::move(request));
+  }
+
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (service_name == chromeos::assistant::mojom::kServiceName) {
@@ -1459,16 +1454,6 @@ void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
     *cache_path = path.Append(cache_path->BaseName());
 
   *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
-}
-
-std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(this);
-  SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(this);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(this);
-  return std::make_unique<identity::IdentityService>(
-      account_tracker, signin_manager, token_service);
 }
 
 #if defined(OS_CHROMEOS)

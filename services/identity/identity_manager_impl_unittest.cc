@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -10,16 +11,14 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
 namespace {
@@ -37,69 +36,24 @@ const char kSecondaryTestEmail[] = "metoo@dummy.com";
 const char kTestRefreshToken[] = "dummy-refresh-token";
 const char kTestAccessToken[] = "access_token";
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory {
- public:
-  ServiceTestClient(service_manager::test::ServiceTest* test,
-                    AccountTrackerService* account_tracker,
-                    SigninManagerBase* signin_manager,
-                    ProfileOAuth2TokenService* token_service)
-      : service_manager::test::ServiceTestClient(test),
-        account_tracker_(account_tracker),
-        signin_manager_(signin_manager),
-        token_service_(token_service) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&ServiceTestClient::Create,
-                            base::Unretained(this)));
-  }
-
- protected:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == mojom::kServiceName) {
-      identity_service_context_.reset(new service_manager::ServiceContext(
-          std::make_unique<IdentityService>(account_tracker_, signin_manager_,
-                                            token_service_),
-          std::move(request)));
-    }
-  }
-
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  AccountTrackerService* account_tracker_;
-  SigninManagerBase* signin_manager_;
-  ProfileOAuth2TokenService* token_service_;
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-  std::unique_ptr<service_manager::ServiceContext> identity_service_context_;
-};
-
-class IdentityManagerImplTest : public service_manager::test::ServiceTest {
+class IdentityManagerImplTest : public testing::Test {
  public:
   IdentityManagerImplTest()
-      : ServiceTest("identity_unittests"),
-        signin_client_(&pref_service_),
+      : signin_client_(&pref_service_),
         token_service_(&pref_service_),
 #if defined(OS_CHROMEOS)
-        signin_manager_(&signin_client_, &account_tracker_) {
+        signin_manager_(&signin_client_, &account_tracker_),
 #else
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_,
-                        nullptr) {
+                        nullptr),
 #endif
+        service_(
+            &account_tracker_,
+            &signin_manager_,
+            &token_service_,
+            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
@@ -112,7 +66,6 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
     // Shut down the SigninManager so that the IdentityManagerImpl doesn't end
     // up outliving it.
     signin_manager_.Shutdown();
-    ServiceTest::TearDown();
   }
 
   void OnReceivedPrimaryAccountInfo(
@@ -160,11 +113,11 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
   }
 
  protected:
-  void SetUp() override { ServiceTest::SetUp(); }
-
   mojom::IdentityManager* GetIdentityManagerImpl() {
-    if (!identity_manager_)
-      connector()->BindInterface(mojom::kServiceName, &identity_manager_);
+    if (!identity_manager_) {
+      test_connector_factory_.GetDefaultConnector()->BindInterface(
+          mojom::kServiceName, &identity_manager_);
+    }
     return identity_manager_.get();
   }
 
@@ -181,11 +134,7 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
     identity_manager_.set_connection_error_handler(handler);
   }
 
-  // service_manager::test::ServiceTest:
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClient>(
-        this, &account_tracker_, &signin_manager_, &token_service_);
-  }
+  base::test::ScopedTaskEnvironment task_environemnt_;
 
   mojom::IdentityManagerPtr identity_manager_;
   base::Optional<AccountInfo> primary_account_info_;
@@ -205,6 +154,9 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   SigninManagerForTest signin_manager_;
+
+  service_manager::TestConnectorFactory test_connector_factory_;
+  IdentityService service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerImplTest);
 };

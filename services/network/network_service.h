@@ -32,6 +32,8 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace net {
 class FileNetLogObserver;
@@ -66,9 +68,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   //
   // TODO(https://crbug.com/767450): Once the NetworkService can always create
   // its own NetLog in production, remove the |net_log| argument.
-  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
-                 mojom::NetworkServiceRequest request = nullptr,
-                 net::NetLog* net_log = nullptr);
+  NetworkService(
+      std::unique_ptr<service_manager::BinderRegistry> registry,
+      mojom::NetworkServiceRequest request = nullptr,
+      net::NetLog* net_log = nullptr,
+      service_manager::mojom::ServiceRequest service_request = nullptr);
 
   ~NetworkService() override;
 
@@ -111,9 +115,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // its own NetLog, instead of sharing one.
   static std::unique_ptr<NetworkService> Create(
       mojom::NetworkServiceRequest request,
-      net::NetLog* net_log = nullptr);
+      net::NetLog* net_log = nullptr,
+      service_manager::mojom::ServiceRequest service_request = nullptr);
 
+  // Creates a testing instance of NetworkService not bound to an actual
+  // Service pipe. This instance must be driven by direct calls onto the
+  // NetworkService object.
   static std::unique_ptr<NetworkService> CreateForTesting();
+
+  // Creates a testing instance of NetworkService similar to above, but the
+  // instance is bound to |request|. Test code may use an appropriate Connector
+  // to bind interface requests within this service instance.
+  static std::unique_ptr<NetworkService> CreateForTesting(
+      service_manager::mojom::ServiceRequest service_request);
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -229,6 +243,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Invoked once the browser has acknowledged receiving the previous LoadInfo.
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
+
+  service_manager::ServiceBinding service_binding_{this};
 
   net::NetLog* net_log_ = nullptr;
 

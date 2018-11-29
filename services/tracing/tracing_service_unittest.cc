@@ -6,32 +6,38 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 #include "services/tracing/test_util.h"
+#include "services/tracing/tracing_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
 
-class TracingServiceTest : public service_manager::test::ServiceTest {
+class TracingServiceTest : public testing::Test {
  public:
   TracingServiceTest()
-      : service_manager::test::ServiceTest("tracing_unittests") {}
+      : service_(
+            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
   ~TracingServiceTest() override {}
 
  protected:
-  void SetRunLoopToQuit(base::RunLoop* loop) { loop_ = loop; }
+  service_manager::Connector* connector() {
+    return test_connector_factory_.GetDefaultConnector();
+  }
 
  private:
-  base::RunLoop* loop_ = nullptr;
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  TracingService service_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingServiceTest);
 };
 
 TEST_F(TracingServiceTest, TracingServiceInstantiate) {
-  base::RunLoop run_loop;
   mojom::AgentRegistryPtr agent_registry;
   connector()->BindInterface(mojom::kServiceName,
                              mojo::MakeRequest(&agent_registry));
@@ -41,7 +47,7 @@ TEST_F(TracingServiceTest, TracingServiceInstantiate) {
       agent1.CreateAgentPtr(), "FOO", mojom::TraceDataType::STRING,
       false /*supports_explicit_clock_sync*/, base::kNullProcessId);
 
-  run_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace tracing

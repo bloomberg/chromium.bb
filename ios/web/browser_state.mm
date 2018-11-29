@@ -92,11 +92,18 @@ void RemoveBrowserStateFromInstanceGroupMap(BrowserState* browser_state) {
 class BrowserStateServiceManagerConnectionHolder
     : public base::SupportsUserData::Data {
  public:
-  explicit BrowserStateServiceManagerConnectionHolder(
+  BrowserStateServiceManagerConnectionHolder(
+      BrowserState* browser_state,
       service_manager::mojom::ServiceRequest request)
-      : service_manager_connection_(ServiceManagerConnection::Create(
+      : browser_state_(browser_state),
+        service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}))) {}
+            base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}))) {
+    service_manager_connection_->SetDefaultServiceRequestHandler(
+        base::BindRepeating(
+            &BrowserStateServiceManagerConnectionHolder::OnServiceRequest,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
   ~BrowserStateServiceManagerConnectionHolder() override {}
 
   ServiceManagerConnection* service_manager_connection() {
@@ -104,7 +111,34 @@ class BrowserStateServiceManagerConnectionHolder
   }
 
  private:
+  void OnServiceRequest(const std::string& service_name,
+                        service_manager::mojom::ServiceRequest request) {
+    std::unique_ptr<service_manager::Service> service =
+        browser_state_->HandleServiceRequest(service_name, std::move(request));
+    if (!service) {
+      LOG(ERROR) << "Ignoring request for unknown per-browser-state service:"
+                 << service_name;
+      return;
+    }
+
+    auto* raw_service = service.get();
+    service->set_termination_closure(base::BindOnce(
+        &BrowserStateServiceManagerConnectionHolder::OnServiceQuit,
+        base::Unretained(this), raw_service));
+    running_services_.emplace(raw_service, std::move(service));
+  }
+
+  void OnServiceQuit(service_manager::Service* service) {
+    running_services_.erase(service);
+  }
+
+  BrowserState* const browser_state_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
+  std::map<service_manager::Service*, std::unique_ptr<service_manager::Service>>
+      running_services_;
+
+  base::WeakPtrFactory<BrowserStateServiceManagerConnectionHolder>
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateServiceManagerConnectionHolder);
 };
@@ -271,7 +305,7 @@ void BrowserState::Initialize(BrowserState* browser_state,
 
     auto connection_holder =
         std::make_unique<BrowserStateServiceManagerConnectionHolder>(
-            std::move(service_request));
+            browser_state, std::move(service_request));
 
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();
@@ -317,6 +351,12 @@ ServiceManagerConnection* BrowserState::GetServiceManagerConnectionFor(
           browser_state->GetUserData(kServiceManagerConnection));
   return connection_holder ? connection_holder->service_manager_connection()
                            : nullptr;
+}
+
+std::unique_ptr<service_manager::Service> BrowserState::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  return nullptr;
 }
 
 }  // namespace web

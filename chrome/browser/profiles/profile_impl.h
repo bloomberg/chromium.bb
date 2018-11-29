@@ -191,10 +191,6 @@ class ProfileImpl : public Profile {
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
-  // Creates an instance of the Identity Service for this Profile, populating it
-  // with the appropriate instances of its dependencies.
-  std::unique_ptr<service_manager::Service> CreateIdentityService();
-
 #if defined(OS_CHROMEOS)
   std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
   std::unique_ptr<service_manager::Service> CreateMultiDeviceSetupService();

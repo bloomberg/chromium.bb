@@ -362,12 +362,15 @@ bool ShouldEnableVizService() {
 #endif
 }
 
-std::unique_ptr<service_manager::Service> CreateNetworkService() {
+std::unique_ptr<service_manager::Service> CreateNetworkService(
+    service_manager::mojom::ServiceRequest service_request) {
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
       [](network::mojom::NetworkServiceTestRequest request) {}));
-  return std::make_unique<network::NetworkService>(std::move(registry));
+  return std::make_unique<network::NetworkService>(
+      std::move(registry), nullptr /* request */, nullptr /* net_log */,
+      std::move(service_request));
 }
 
 bool AudioServiceOutOfProcess() {
@@ -642,12 +645,12 @@ ServiceManagerContext::ServiceManagerContext(
         media_session::mojom::kServiceName, media_session_info);
   }
 
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&tracing::TracingService::Create);
-    packaged_services_connection_->AddEmbeddedService(
-        tracing::mojom::kServiceName, info);
-  }
+  packaged_services_connection_->AddServiceRequestHandler(
+      tracing::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        service_manager::Service::RunUntilTermination(
+            std::make_unique<tracing::TracingService>(std::move(request)));
+      }));
 
   if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     RegisterInProcessService(
@@ -707,11 +710,13 @@ ServiceManagerContext::ServiceManagerContext(
       base::FeatureList::IsEnabled(network::features::kNetworkService);
   if (network_service_enabled) {
     if (IsInProcessNetworkService()) {
-      service_manager::EmbeddedServiceInfo network_service_info;
-      network_service_info.factory = base::BindRepeating(CreateNetworkService);
-      network_service_info.task_runner = service_manager_thread_task_runner_;
-      packaged_services_connection_->AddEmbeddedService(
-          mojom::kNetworkServiceName, network_service_info);
+      packaged_services_connection_->AddServiceRequestHandler(
+          mojom::kNetworkServiceName,
+          base::BindRepeating(
+              [](service_manager::mojom::ServiceRequest request) {
+                service_manager::Service::RunUntilTermination(
+                    CreateNetworkService(std::move(request)));
+              }));
     } else {
       out_of_process_services[mojom::kNetworkServiceName] =
           base::BindRepeating(&base::ASCIIToUTF16, "Network Service");

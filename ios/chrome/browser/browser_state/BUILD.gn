@@ -123,6 +123,7 @@ source_set("browser_state_impl") {
     "//net",
     "//net:extras",
     "//services/identity/public/cpp",
+    "//services/identity/public/mojom",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser",

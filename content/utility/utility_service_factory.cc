@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -65,6 +66,10 @@ extern sandbox::TargetServices* g_utility_target_services;
 namespace content {
 
 namespace {
+
+void TerminateThisProcess() {
+  UtilityThread::Get()->ReleaseProcess();
+}
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -146,17 +151,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   service_manager::EmbeddedServiceInfo viz_info;
   viz_info.factory = base::Bind(&CreateVizService);
   services->insert(std::make_pair(viz::mojom::kVizServiceName, viz_info));
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    GetContentClient()->utility()->RegisterNetworkBinders(
-        network_registry_.get());
-    service_manager::EmbeddedServiceInfo network_info;
-    network_info.factory = base::Bind(
-        &UtilityServiceFactory::CreateNetworkService, base::Unretained(this));
-    network_info.task_runner = ChildProcess::current()->io_task_runner();
-    services->insert(
-        std::make_pair(content::mojom::kNetworkServiceName, network_info));
-  }
 }
 
 bool UtilityServiceFactory::HandleServiceRequest(
@@ -168,6 +162,18 @@ bool UtilityServiceFactory::HandleServiceRequest(
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     running_service_ =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
+  } else if (name == mojom::kNetworkServiceName &&
+             base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Unlike other services supported by the utility process, the network
+    // service runs on the IO thread and never self-terminates.
+    GetContentClient()->utility()->RegisterNetworkBinders(
+        network_registry_.get());
+    ChildProcess::current()->io_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&UtilityServiceFactory::RunNetworkServiceOnIOThread,
+                       base::Unretained(this), std::move(request),
+                       base::SequencedTaskRunnerHandle::Get()));
+    return true;
   } else if (name == video_capture::mojom::kServiceName) {
     running_service_ =
         std::make_unique<video_capture::ServiceImpl>(std::move(request));
@@ -187,8 +193,8 @@ bool UtilityServiceFactory::HandleServiceRequest(
   if (running_service_) {
     // If we actually started a service for this request, make sure its
     // self-termination results in full process termination.
-    running_service_->set_termination_closure(base::BindOnce(
-        &UtilityServiceFactory::OnServiceQuit, base::Unretained(this)));
+    running_service_->set_termination_closure(
+        base::BindOnce(&TerminateThisProcess));
     return true;
   }
 
@@ -196,7 +202,7 @@ bool UtilityServiceFactory::HandleServiceRequest(
 }
 
 void UtilityServiceFactory::OnServiceQuit() {
-  UtilityThread::Get()->ReleaseProcess();
+  TerminateThisProcess();
 }
 
 void UtilityServiceFactory::OnLoadFailed() {
@@ -206,10 +212,23 @@ void UtilityServiceFactory::OnLoadFailed() {
   utility_thread->ReleaseProcess();
 }
 
-std::unique_ptr<service_manager::Service>
-UtilityServiceFactory::CreateNetworkService() {
-  return std::make_unique<network::NetworkService>(
-      std::move(network_registry_));
+void UtilityServiceFactory::RunNetworkServiceOnIOThread(
+    service_manager::mojom::ServiceRequest service_request,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
+  auto service = std::make_unique<network::NetworkService>(
+      std::move(network_registry_), nullptr /* request */,
+      nullptr /* net_log */, std::move(service_request));
+
+  // Transfer ownership of the service to itself, and have it post to the main
+  // thread on self-termination to kill the process.
+  auto* raw_service = service.get();
+  raw_service->set_termination_closure(base::BindOnce(
+      [](std::unique_ptr<network::NetworkService> service,
+         scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
+        main_thread_task_runner->PostTask(
+            FROM_HERE, base::BindOnce(&TerminateThisProcess));
+      },
+      std::move(service), std::move(main_thread_task_runner)));
 }
 
 std::unique_ptr<service_manager::Service>

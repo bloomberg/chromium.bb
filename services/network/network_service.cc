@@ -140,10 +140,16 @@ bool LoadInfoIsMoreInteresting(const mojom::LoadInfo& a,
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    service_manager::mojom::ServiceRequest service_request)
     : registry_(std::move(registry)), binding_(this) {
   DCHECK(!g_network_service);
   g_network_service = this;
+
+  // In testing environments, |service_request| may not be provided.
+  if (service_request.is_pending())
+    service_binding_.Bind(std::move(service_request));
+
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly. The latter is done in concert with using
   // CreateNetworkContextWithBuilder to ease the transition to using the
@@ -231,8 +237,10 @@ void NetworkService::set_os_crypt_is_configured() {
 
 std::unique_ptr<NetworkService> NetworkService::Create(
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request), net_log);
+    net::NetLog* net_log,
+    service_manager::mojom::ServiceRequest service_request) {
+  return std::make_unique<NetworkService>(nullptr, std::move(request), net_log,
+                                          std::move(service_request));
 }
 
 std::unique_ptr<mojom::NetworkContext>
@@ -255,8 +263,14 @@ void NetworkService::SetHostResolver(
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  return base::WrapUnique(
-      new NetworkService(std::make_unique<service_manager::BinderRegistry>()));
+  return CreateForTesting(nullptr);
+}
+
+std::unique_ptr<NetworkService> NetworkService::CreateForTesting(
+    service_manager::mojom::ServiceRequest service_request) {
+  return std::make_unique<NetworkService>(
+      std::make_unique<service_manager::BinderRegistry>(),
+      nullptr /* request */, nullptr /* net_log */, std::move(service_request));
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
