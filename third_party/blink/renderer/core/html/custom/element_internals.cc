@@ -25,12 +25,20 @@ void ElementInternals::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void ElementInternals::setFormValue(const FileOrUSVString& value) {
-  setFormValue(value, nullptr);
+void ElementInternals::setFormValue(const FileOrUSVString& value,
+                                    ExceptionState& exception_state) {
+  setFormValue(value, nullptr, exception_state);
 }
 
 void ElementInternals::setFormValue(const FileOrUSVString& value,
-                                    FormData* entry_source) {
+                                    FormData* entry_source,
+                                    ExceptionState& exception_state) {
+  if (!Target().IsFormAssociatedCustomElement()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return;
+  }
   if (!entry_source || entry_source->size() == 0u) {
     value_ = value;
     entry_source_ = nullptr;
@@ -40,7 +48,13 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
   entry_source_ = MakeGarbageCollected<FormData>(*entry_source);
 }
 
-HTMLFormElement* ElementInternals::form() const {
+HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
+  if (!Target().IsFormAssociatedCustomElement()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return nullptr;
+  }
   return ListedElement::Form();
 }
 
@@ -49,7 +63,7 @@ void ElementInternals::DidUpgrade() {
   if (!parent)
     return;
   InsertedInto(*parent);
-  if (auto* owner_form = form()) {
+  if (auto* owner_form = Form()) {
     if (auto* lists = owner_form->NodeLists())
       lists->InvalidateCaches(nullptr);
   }
@@ -97,7 +111,7 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
 
 void ElementInternals::DidChangeForm() {
   ListedElement::DidChangeForm();
-  CustomElement::EnqueueFormAssociatedCallback(Target(), form());
+  CustomElement::EnqueueFormAssociatedCallback(Target(), Form());
 }
 
 }  // namespace blink

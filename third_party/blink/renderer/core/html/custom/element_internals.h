@@ -26,9 +26,12 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   void DidUpgrade();
 
   // IDL attributes/operations
-  void setFormValue(const FileOrUSVString& value);
-  void setFormValue(const FileOrUSVString& value, FormData* entry_source);
-  HTMLFormElement* form() const;
+  void setFormValue(const FileOrUSVString& value,
+                    ExceptionState& exception_state);
+  void setFormValue(const FileOrUSVString& value,
+                    FormData* entry_source,
+                    ExceptionState& exception_state);
+  HTMLFormElement* form(ExceptionState& exception_state) const;
 
  private:
   // ListedElement overrides:

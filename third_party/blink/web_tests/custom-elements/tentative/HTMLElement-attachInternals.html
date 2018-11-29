@@ -31,6 +31,14 @@ test(() => {
 }, 'Successful attachInternals() and the second call.');
 
 test(() => {
+  class MyDiv extends HTMLDivElement {}
+  customElements.define('my-div', MyDiv, { extends: 'div' });
+  const customizedBuiltin = document.createElement('div', { is: 'my-div'});
+  assert_throws('InvalidStateError', () => { customizedBuiltin.attachInternals() });
+}, 'attachInternals() throws an InvalidStateError if it is called for ' +
+     'a customized built-in element');
+
+test(() => {
   const builtin = document.createElement('div');
   assert_throws('InvalidStateError', () => { builtin.attachInternals() });
 
