@@ -131,7 +131,8 @@ TEST_F('ChromeVoxLiveRegionsUnitTest', 'ModifyStatusLiveRegion', function() {
 /**
  * Test adding element to a atomic and non-atomic live regions.
  */
-TEST_F('ChromeVoxLiveRegionsUnitTest', 'AddToLiveRegion', function() {
+// Flaky on Chromium OS: crbug.com/909973.
+TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_AddToLiveRegion', function() {
   this.loadDoc(function() {/*!
     <div>
       <div id="non_atomic_buddylist" aria-live="polite">
