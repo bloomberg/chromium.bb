@@ -63,3 +63,6 @@
 
 # https://crbug.com/902171
 -NonClientFrameControllerMashTest.ContentRegionNotDrawnForClient
+
+# https://crbug.com/910303
+-WindowSelectorControllerTest.OcclusionTest

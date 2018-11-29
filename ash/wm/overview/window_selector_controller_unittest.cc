@@ -244,7 +244,7 @@ TEST_F(WindowSelectorControllerTest, OcclusionTest) {
 
   Shell::Get()
       ->window_selector_controller()
-      ->set_occlusion_pause_duration_for_end_ms_for_test(50);
+      ->set_occlusion_pause_duration_for_end_ms_for_test(100);
   TestShellObserver observer(/*should_monitor_animation_state = */ true);
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
