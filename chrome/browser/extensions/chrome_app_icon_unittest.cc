@@ -377,13 +377,16 @@ TEST_F(ChromeAppIconTest, ChromeBadging) {
   arc_test.app_instance()->SendRefreshAppList(fake_apps);
   arc_test.app_instance()->SendRefreshPackageList(
       ArcAppTest::ClonePackages(arc_test.fake_packages()));
-  EXPECT_EQ(1U, reference_icon.icon_update_count());
+
+  // Expect the package list refresh to generate two icon updates - one called
+  // by ArcAppListPrefs, and one called by LaunchExtensionAppUpdate.
+  EXPECT_EQ(2U, reference_icon.icon_update_count());
   EXPECT_FALSE(AreEqual(reference_icon.image_skia(), image_before_badging));
 
   // Opts out the Play Store. Badge should be gone and icon image is the same
   // as it was before badging.
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
-  EXPECT_EQ(2U, reference_icon.icon_update_count());
+  EXPECT_EQ(3U, reference_icon.icon_update_count());
   EXPECT_TRUE(AreEqual(reference_icon.image_skia(), image_before_badging));
 }
 
