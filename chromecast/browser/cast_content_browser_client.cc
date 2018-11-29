@@ -146,7 +146,7 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       std::move(mojo_media_client), std::move(request));
 #endif  // defined(OS_ANDROID)
 
-  service_manager::Service::RunUntilTermination(std::move(service));
+  service_manager::Service::RunAsyncUntilTermination(std::move(service));
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 

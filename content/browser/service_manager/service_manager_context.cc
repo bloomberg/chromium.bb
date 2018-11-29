@@ -424,7 +424,7 @@ void CreateInProcessAudioService(
       FROM_HERE, base::BindOnce(
                      [](media::AudioManager* audio_manager,
                         service_manager::mojom::ServiceRequest request) {
-                       service_manager::Service::RunUntilTermination(
+                       service_manager::Service::RunAsyncUntilTermination(
                            audio::CreateEmbeddedService(audio_manager,
                                                         std::move(request)));
                      },
@@ -634,7 +634,7 @@ ServiceManagerContext::ServiceManagerContext(
   packaged_services_connection_->AddServiceRequestHandler(
       resource_coordinator::mojom::kServiceName,
       base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunUntilTermination(
+        service_manager::Service::RunAsyncUntilTermination(
             std::make_unique<resource_coordinator::ResourceCoordinatorService>(
                 std::move(request)));
       }));
@@ -650,7 +650,7 @@ ServiceManagerContext::ServiceManagerContext(
   packaged_services_connection_->AddServiceRequestHandler(
       tracing::mojom::kServiceName,
       base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunUntilTermination(
+        service_manager::Service::RunAsyncUntilTermination(
             std::make_unique<tracing::TracingService>(std::move(request)));
       }));
 
@@ -716,7 +716,7 @@ ServiceManagerContext::ServiceManagerContext(
           mojom::kNetworkServiceName,
           base::BindRepeating(
               [](service_manager::mojom::ServiceRequest request) {
-                service_manager::Service::RunUntilTermination(
+                service_manager::Service::RunAsyncUntilTermination(
                     CreateNetworkService(std::move(request)));
               }));
     } else {
@@ -885,7 +885,7 @@ void ServiceManagerContext::OnUnhandledServiceRequest(
             base::Unretained(GetContentClient()->browser())),
         std::move(request));
 #endif
-    service_manager::Service::RunUntilTermination(std::move(service));
+    service_manager::Service::RunAsyncUntilTermination(std::move(service));
     return;
   }
 
