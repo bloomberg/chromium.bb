@@ -15,6 +15,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "crypto/sha2.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -49,9 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   CtapGetAssertionRequest& SetPinProtocol(uint8_t pin_protocol);
   CtapGetAssertionRequest& SetCableExtension(
       std::vector<CableDiscoveryData> cable_extension);
-  CtapGetAssertionRequest& SetAlternativeApplicationParameter(
-      base::span<const uint8_t, kRpIdHashLength>
-          alternative_application_parameter);
+  CtapGetAssertionRequest& SetAppId(std::string app_id);
 
   // Return true if the given RP ID hash from a response is valid for this
   // request.
@@ -87,6 +86,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   alternative_application_parameter() const {
     return alternative_application_parameter_;
   }
+  const base::Optional<std::string>& app_id() const { return app_id_; }
 
   bool is_incognito_mode() const { return is_incognito_mode_; }
   void set_is_incognito_mode(bool is_incognito_mode) {
@@ -105,8 +105,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
   base::Optional<std::vector<CableDiscoveryData>> cable_extension_;
-  base::Optional<std::array<uint8_t, kRpIdHashLength>>
+  base::Optional<std::string> app_id_;
+  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter_;
+
   bool is_incognito_mode_ = false;
 };
 

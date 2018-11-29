@@ -263,8 +263,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
     const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
-    base::Optional<base::span<const uint8_t, device::kRpIdHashLength>>
-        alternative_application_parameter,
+    base::Optional<std::string> app_id,
     bool is_incognito) {
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
                                                     client_data_json);
@@ -278,9 +277,8 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
       mojo::ConvertTo<device::UserVerificationRequirement>(
           options->user_verification));
 
-  if (alternative_application_parameter) {
-    request_parameter.SetAlternativeApplicationParameter(
-        std::move(*alternative_application_parameter));
+  if (app_id) {
+    request_parameter.SetAppId(std::move(*app_id));
   }
 
   if (!options->cable_authentication_data.empty()) {
@@ -303,8 +301,9 @@ std::array<uint8_t, crypto::kSHA256Length> CreateApplicationParameter(
   return application_parameter;
 }
 
-base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
-ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
+base::Optional<std::string> ProcessAppIdExtension(
+    std::string appid,
+    const url::Origin& caller_origin) {
   if (appid.empty()) {
     // See step two in the comments in |IsAppIdAllowedForOrigin|.
     appid = caller_origin.Serialize() + "/";
@@ -316,7 +315,7 @@ ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
     return base::nullopt;
   }
 
-  return CreateApplicationParameter(appid);
+  return appid;
 }
 
 // Parses the FIDO transport types extension from the DER-encoded, X.509
@@ -767,9 +766,8 @@ void AuthenticatorImpl::GetAssertion(
   }
 
   if (options->appid) {
-    alternative_application_parameter_ =
-        ProcessAppIdExtension(*options->appid, caller_origin_);
-    if (!alternative_application_parameter_) {
+    app_id_ = ProcessAppIdExtension(*options->appid, caller_origin_);
+    if (!app_id_) {
       std::move(callback).Run(blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                               nullptr);
       return;
@@ -787,7 +785,7 @@ void AuthenticatorImpl::GetAssertion(
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
   auto ctap_request = CreateCtapGetAssertionRequest(
-      client_data_json_, std::move(options), alternative_application_parameter_,
+      client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
@@ -1072,9 +1070,9 @@ void AuthenticatorImpl::OnSignResponse(
       }
 
       base::Optional<bool> echo_appid_extension;
-      if (alternative_application_parameter_) {
+      if (app_id_) {
         echo_appid_extension = (response_data->GetRpIdHash() ==
-                                *alternative_application_parameter_);
+                                CreateApplicationParameter(*app_id_));
       }
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
@@ -1162,7 +1160,7 @@ void AuthenticatorImpl::Cleanup() {
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();
-  alternative_application_parameter_.reset();
+  app_id_.reset();
 }
 
 BrowserContext* AuthenticatorImpl::browser_context() const {

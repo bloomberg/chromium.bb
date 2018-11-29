@@ -120,20 +120,20 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::SetCableExtension(
   return *this;
 }
 
-CtapGetAssertionRequest&
-CtapGetAssertionRequest::SetAlternativeApplicationParameter(
-    base::span<const uint8_t, kRpIdHashLength>
-        alternative_application_parameter) {
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetAppId(std::string app_id) {
+  app_id_ = std::move(app_id);
   alternative_application_parameter_ =
-      fido_parsing_utils::Materialize(alternative_application_parameter);
+      std::array<uint8_t, crypto::kSHA256Length>();
+  crypto::SHA256HashString(*app_id_, alternative_application_parameter_->data(),
+                           alternative_application_parameter_->size());
   return *this;
 }
 
 bool CtapGetAssertionRequest::CheckResponseRpIdHash(
     const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) {
   return response_rp_id_hash == fido_parsing_utils::CreateSHA256Hash(rp_id_) ||
-         (alternative_application_parameter_ &&
-          response_rp_id_hash == *alternative_application_parameter_);
+         (app_id_ &&
+          response_rp_id_hash == *alternative_application_parameter());
 }
 
 }  // namespace device
