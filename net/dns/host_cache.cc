@@ -6,15 +6,16 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 
@@ -66,16 +67,6 @@ bool AddressListFromListValue(const base::ListValue* value,
   return true;
 }
 
-template <typename T>
-void MergeLists(base::Optional<T>* target, const base::Optional<T>& source) {
-  if (target->has_value() && source) {
-    target->value().insert(target->value().end(), source.value().begin(),
-                           source.value().end());
-  } else if (source) {
-    *target = source;
-  }
-}
-
 }  // namespace
 
 // Used in histograms; do not modify existing values.
@@ -123,78 +114,9 @@ HostCache::Key::Key(const std::string& hostname,
 HostCache::Key::Key()
     : Key("", DnsQueryType::UNSPECIFIED, 0, HostResolverSource::ANY) {}
 
-HostCache::Entry::Entry(int error, Source source, base::TimeDelta ttl)
-    : error_(error), source_(source), ttl_(ttl) {
-  DCHECK_GE(ttl_, base::TimeDelta());
-  DCHECK_NE(OK, error_);
-}
-
-HostCache::Entry::Entry(int error, Source source)
-    : error_(error), source_(source), ttl_(base::TimeDelta::FromSeconds(-1)) {
-  DCHECK_NE(OK, error_);
-}
-
-HostCache::Entry::Entry(const Entry& entry) = default;
-
-HostCache::Entry::Entry(Entry&& entry) = default;
-
 HostCache::Entry::~Entry() = default;
 
-base::Optional<base::TimeDelta> HostCache::Entry::GetOptionalTtl() const {
-  if (has_ttl())
-    return ttl();
-  else
-    return base::nullopt;
-}
-
-// static
-HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
-  // Only expected to merge OK or ERR_NAME_NOT_RESOLVED results.
-  DCHECK(front.error() == OK || front.error() == ERR_NAME_NOT_RESOLVED);
-  DCHECK(back.error() == OK || back.error() == ERR_NAME_NOT_RESOLVED);
-
-  // Build results in |front| to preserve unmerged fields.
-
-  front.error_ =
-      front.error() == OK || back.error() == OK ? OK : ERR_NAME_NOT_RESOLVED;
-
-  MergeLists(&front.addresses_, back.addresses());
-  MergeLists(&front.text_records_, back.text_records());
-  MergeLists(&front.hostnames_, back.hostnames());
-
-  // Use canonical name from |back| iff empty in |front|.
-  if (front.addresses() && front.addresses().value().canonical_name().empty() &&
-      back.addresses()) {
-    front.addresses_.value().set_canonical_name(
-        back.addresses().value().canonical_name());
-  }
-
-  // Only expected to merge entries from same source.
-  DCHECK_EQ(front.source(), back.source());
-
-  if (front.has_ttl() && back.has_ttl()) {
-    front.ttl_ = std::min(front.ttl(), back.ttl());
-  } else if (back.has_ttl()) {
-    front.ttl_ = back.ttl();
-  }
-
-  front.expires_ = std::min(front.expires(), back.expires());
-  front.network_changes_ =
-      std::max(front.network_changes(), back.network_changes());
-  front.total_hits_ = front.total_hits() + back.total_hits();
-  front.stale_hits_ = front.stale_hits() + back.stale_hits();
-
-  return front;
-}
-
-NetLogParametersCallback HostCache::Entry::CreateNetLogCallback() const {
-  return base::BindRepeating(&HostCache::Entry::NetLogCallback,
-                             base::Unretained(this));
-}
-
-HostCache::Entry& HostCache::Entry::operator=(const Entry& entry) = default;
-
-HostCache::Entry& HostCache::Entry::operator=(Entry&& entry) = default;
+HostCache::Entry::Entry(HostCache::Entry&& entry) = default;
 
 HostCache::Entry::Entry(const HostCache::Entry& entry,
                         base::TimeTicks now,
@@ -250,69 +172,6 @@ void HostCache::Entry::GetStaleness(base::TimeTicks now,
   out->expired_by = now - expires_;
   out->network_changes = network_changes - network_changes_;
   out->stale_hits = stale_hits_;
-}
-
-std::unique_ptr<base::Value> HostCache::Entry::NetLogCallback(
-    NetLogCaptureMode capture_mode) const {
-  return std::make_unique<base::Value>(
-      GetAsValue(false /* include_staleness */));
-}
-
-base::DictionaryValue HostCache::Entry::GetAsValue(
-    bool include_staleness) const {
-  base::DictionaryValue entry_dict;
-
-  if (include_staleness) {
-    // The kExpirationKey value is using TimeTicks instead of Time used if
-    // |include_staleness| is false, so it cannot be used to deserialize.
-    // This is ok as it is used only for netlog.
-    entry_dict.SetString(kExpirationKey, NetLog::TickCountToString(expires()));
-    entry_dict.SetInteger(kTtlKey, ttl().InMilliseconds());
-    entry_dict.SetInteger(kNetworkChangesKey, network_changes());
-  } else {
-    // Convert expiration time in TimeTicks to Time for serialization, using a
-    // string because base::Value doesn't handle 64-bit integers.
-    base::Time expiration_time =
-        base::Time::Now() - (base::TimeTicks::Now() - expires());
-    entry_dict.SetString(
-        kExpirationKey, base::Int64ToString(expiration_time.ToInternalValue()));
-  }
-
-  if (error() != OK) {
-    entry_dict.SetInteger(kErrorKey, error());
-  } else {
-    if (addresses()) {
-      // Append all of the resolved addresses.
-      base::ListValue addresses_value;
-      for (const IPEndPoint& address : addresses().value()) {
-        addresses_value.GetList().emplace_back(address.ToStringWithoutPort());
-      }
-      entry_dict.SetKey(kAddressesKey, std::move(addresses_value));
-    }
-
-    if (text_records()) {
-      // Append all resolved text records.
-      base::ListValue text_list_value;
-      for (const std::string& text_record : text_records().value()) {
-        text_list_value.GetList().emplace_back(text_record);
-      }
-      entry_dict.SetKey(kTextRecordsKey, std::move(text_list_value));
-    }
-
-    if (hostnames()) {
-      // Append all the resolved hostnames.
-      base::ListValue hostnames_value;
-      base::ListValue host_ports_value;
-      for (const HostPortPair& hostname : hostnames().value()) {
-        hostnames_value.GetList().emplace_back(hostname.host());
-        host_ports_value.GetList().emplace_back(hostname.port());
-      }
-      entry_dict.SetKey(kHostnameResultsKey, std::move(hostnames_value));
-      entry_dict.SetKey(kHostPortsKey, std::move(host_ports_value));
-    }
-  }
-
-  return entry_dict;
 }
 
 HostCache::HostCache(size_t max_entries)
@@ -509,8 +368,8 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     const Key& key = pair.first;
     const Entry& entry = pair.second;
 
-    auto entry_dict = std::make_unique<base::DictionaryValue>(
-        entry.GetAsValue(include_staleness));
+    std::unique_ptr<base::DictionaryValue> entry_dict(
+        new base::DictionaryValue());
 
     entry_dict->SetString(kHostnameKey, key.hostname);
     entry_dict->SetInteger(kDnsQueryTypeKey,
@@ -518,6 +377,58 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     entry_dict->SetInteger(kFlagsKey, key.host_resolver_flags);
     entry_dict->SetInteger(kHostResolverSourceKey,
                            static_cast<int>(key.host_resolver_source));
+
+    if (include_staleness) {
+      // The kExpirationKey value is using TimeTicks instead of Time used if
+      // |include_staleness| is false, so it cannot be used to deserialize.
+      // This is ok as it is used only for netlog.
+      entry_dict->SetString(kExpirationKey,
+                            NetLog::TickCountToString(entry.expires()));
+      entry_dict->SetInteger(kTtlKey, entry.ttl().InMilliseconds());
+      entry_dict->SetInteger(kNetworkChangesKey, entry.network_changes());
+    } else {
+      // Convert expiration time in TimeTicks to Time for serialization, using a
+      // string because base::Value doesn't handle 64-bit integers.
+      base::Time expiration_time =
+          base::Time::Now() - (tick_clock_->NowTicks() - entry.expires());
+      entry_dict->SetString(
+          kExpirationKey,
+          base::Int64ToString(expiration_time.ToInternalValue()));
+    }
+
+    if (entry.error() != OK) {
+      entry_dict->SetInteger(kErrorKey, entry.error());
+    } else {
+      if (entry.addresses()) {
+        // Append all of the resolved addresses.
+        base::ListValue addresses_value;
+        for (const IPEndPoint& address : entry.addresses().value()) {
+          addresses_value.GetList().emplace_back(address.ToStringWithoutPort());
+        }
+        entry_dict->SetKey(kAddressesKey, std::move(addresses_value));
+      }
+
+      if (entry.text_records()) {
+        // Append all resolved text records.
+        base::ListValue text_list_value;
+        for (const std::string& text_record : entry.text_records().value()) {
+          text_list_value.GetList().emplace_back(text_record);
+        }
+        entry_dict->SetKey(kTextRecordsKey, std::move(text_list_value));
+      }
+
+      if (entry.hostnames()) {
+        // Append all the resolved hostnames.
+        base::ListValue hostnames_value;
+        base::ListValue host_ports_value;
+        for (const HostPortPair& hostname : entry.hostnames().value()) {
+          hostnames_value.GetList().emplace_back(hostname.host());
+          host_ports_value.GetList().emplace_back(hostname.port());
+        }
+        entry_dict->SetKey(kHostnameResultsKey, std::move(hostnames_value));
+        entry_dict->SetKey(kHostPortsKey, std::move(host_ports_value));
+      }
+    }
 
     entry_list->Append(std::move(entry_dict));
   }
