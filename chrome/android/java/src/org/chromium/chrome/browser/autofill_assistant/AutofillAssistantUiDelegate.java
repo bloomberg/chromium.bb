@@ -30,7 +30,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -121,12 +120,6 @@ class AutofillAssistantUiDelegate {
         void onDismiss();
 
         /**
-         * Called when the user chose not to use the assistant from the
-         * onboarding screen.
-         */
-        void onInitRejected();
-
-        /**
          * Called when a script has been selected.
          *
          * @param scriptPath The path for the selected script.
@@ -174,11 +167,6 @@ class AutofillAssistantUiDelegate {
          * @return A string describing the current execution context.
          */
         String getDebugContext();
-
-        /**
-         * Called when the init was successful.
-         */
-        void onInitOk();
     }
 
     /** Describes a chip to display. */
@@ -760,47 +748,6 @@ class AutofillAssistantUiDelegate {
             childViews.add(chipView);
         }
         setCarouselChildViews(childViews, /* alignRight= */ false);
-    }
-
-    /**
-     * Starts the init screen unless it has been marked to be skipped.
-     */
-    public void startOrSkipInitScreen() {
-        if (AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
-            mClient.onInitOk();
-            return;
-        }
-        showInitScreen();
-    }
-
-    /**
-     * Shows the init screen and launch the autofill assistant when it succeeds.
-     */
-    public void showInitScreen() {
-        View initView = LayoutInflater.from(mActivity)
-                                .inflate(R.layout.init_screen, mCoordinatorView)
-                                .findViewById(R.id.init_screen);
-        // Set focusable for accessibility.
-        initView.findViewById(R.id.init).setFocusable(true);
-
-        // Set default state to checked.
-        ((CheckBox) initView.findViewById(R.id.checkbox_dont_show_init_again)).setChecked(true);
-        initView.findViewById(R.id.button_init_ok)
-                .setOnClickListener(unusedView -> onInitClicked(true, initView));
-        initView.findViewById(R.id.button_init_not_ok)
-                .setOnClickListener(unusedView -> onInitClicked(false, initView));
-        initView.announceForAccessibility(
-                mActivity.getString(R.string.autofill_assistant_first_run_accessibility));
-    }
-
-    private void onInitClicked(boolean accept, View initView) {
-        CheckBox checkBox = initView.findViewById(R.id.checkbox_dont_show_init_again);
-        AutofillAssistantPreferencesUtil.setInitialPreferences(accept, checkBox.isChecked());
-        mCoordinatorView.removeView(initView);
-        if (accept)
-            mClient.onInitOk();
-        else
-            mClient.onInitRejected();
     }
 
     /**

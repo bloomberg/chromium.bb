@@ -8,7 +8,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 
 /** Autofill Assistant related preferences util class. */
-public class AutofillAssistantPreferencesUtil {
+class AutofillAssistantPreferencesUtil {
     // Avoid instatiation by accident.
     private AutofillAssistantPreferencesUtil() {}
 
@@ -19,15 +19,24 @@ public class AutofillAssistantPreferencesUtil {
             "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
 
     /** Checks whether the Autofill Assistant switch preference in settings is on. */
-    public static boolean isAutofillAssistantSwitchOn() {
+    static boolean isAutofillAssistantSwitchOn() {
         return ContextUtils.getAppSharedPreferences().getBoolean(
                 AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
     }
 
     /** Gets whether skip initial screen preference. */
-    public static boolean getSkipInitScreenPreference() {
+    static boolean getSkipInitScreenPreference() {
         return ContextUtils.getAppSharedPreferences().getBoolean(
                 AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, false);
+    }
+
+    /**
+     * Returns true if the switch for AutofillAssistant is turned on or the init screen can
+     * be shown. The later is important if the switched is turned off, but we can ask again
+     * to enable AutofillAssistant.
+     */
+    static boolean canShowAutofillAssistant() {
+        return isAutofillAssistantSwitchOn() || !getSkipInitScreenPreference();
     }
 
     /**
@@ -36,7 +45,7 @@ public class AutofillAssistantPreferencesUtil {
      * @param accept Flag indicates whether this service is accepted.
      * @param dontShowAgain Flag indicates whether initial screen should be shown again next time.
      */
-    public static void setInitialPreferences(boolean accept, boolean dontShowAgain) {
+    static void setInitialPreferences(boolean accept, boolean dontShowAgain) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, accept)

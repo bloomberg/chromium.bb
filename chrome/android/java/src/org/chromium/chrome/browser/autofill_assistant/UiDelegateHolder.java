@@ -36,13 +36,6 @@ class UiDelegateHolder {
     }
 
     /**
-     * Starts the init screen unless it has been marked to be skipped.
-     */
-    public void startOrSkipInitScreen() {
-        mUiDelegate.startOrSkipInitScreen();
-    }
-
-    /**
      * Perform a UI operation:
      *  - directly if we are not in a pause state.
      *  - later if the shutdown is cancelled.
