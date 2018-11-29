@@ -876,11 +876,15 @@ v8::Isolate* ToIsolate(const ExecutionContext* context) {
   if (!context)
     return nullptr;
 
+#if DCHECK_IS_ON()
   v8::Isolate* isolate;
   if (context && context->IsDocument())
     isolate = V8PerIsolateData::MainThreadIsolate();
-  isolate = v8::Isolate::GetCurrent();
+  else
+    isolate = v8::Isolate::GetCurrent();
   DCHECK(context->GetIsolate() == isolate);
+#endif
+
   return context->GetIsolate();
 }
 
