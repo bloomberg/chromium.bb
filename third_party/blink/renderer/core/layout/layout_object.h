@@ -1800,6 +1800,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                : NGOutlineType::kDontIncludeBlockVisualOverflow;
   }
 
+  // Only public for LayoutNG.
+  void SetContainsInlineWithOutlineAndContinuation(bool b) {
+    bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
+  }
+
   // Collects rectangles enclosing visual overflows of the DOM subtree under
   // this object.
   // The rects also cover continuations which may be not in the layout subtree
@@ -2370,10 +2375,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Remove this object and all descendants from the containing
   // LayoutFlowThread.
   void RemoveFromLayoutFlowThread();
-
-  void SetContainsInlineWithOutlineAndContinuation(bool b) {
-    bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
-  }
 
   void SetPreviousOutlineMayBeAffectedByDescendants(bool b) {
     bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
