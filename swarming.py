@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.13'
+__version__ = '0.14'
 
 import collections
 import datetime
@@ -560,51 +560,6 @@ def retrieve_results(
       return result
 
 
-def convert_to_old_format(result):
-  """Converts the task result data from Endpoints API format to old API format
-  for compatibility.
-
-  This goes into the file generated as --task-summary-json.
-  """
-  # Sets default.
-  result.setdefault('abandoned_ts', None)
-  result.setdefault('bot_id', None)
-  result.setdefault('bot_version', None)
-  result.setdefault('children_task_ids', [])
-  result.setdefault('completed_ts', None)
-  result.setdefault('cost_saved_usd', None)
-  result.setdefault('costs_usd', None)
-  result.setdefault('deduped_from', None)
-  result.setdefault('name', None)
-  result.setdefault('outputs_ref', None)
-  result.setdefault('server_versions', None)
-  result.setdefault('started_ts', None)
-  result.setdefault('tags', None)
-  result.setdefault('user', None)
-
-  # Convertion back to old API.
-  duration = result.pop('duration', None)
-  result['durations'] = [duration] if duration else []
-  exit_code = result.pop('exit_code', None)
-  result['exit_codes'] = [int(exit_code)] if exit_code else []
-  result['id'] = result.pop('task_id')
-  result['isolated_out'] = result.get('outputs_ref', None)
-  output = result.pop('output', None)
-  result['outputs'] = [output] if output else []
-  # server_version
-  # Endpoints result 'state' as string. For compatibility with old code, convert
-  # to int.
-  result['state'] = TaskState.from_enum(result['state'])
-  result['try_number'] = (
-      int(result['try_number']) if result.get('try_number') else None)
-  if 'bot_dimensions' in result:
-    result['bot_dimensions'] = {
-      i['key']: i.get('value', []) for i in result['bot_dimensions']
-    }
-  else:
-    result['bot_dimensions'] = None
-
-
 def yield_results(
     swarm_base_url, task_ids, timeout, max_threads, print_status_updates,
     output_collector, include_perf, fetch_stdout):
@@ -810,10 +765,6 @@ def collect(
   finally:
     summary = output_collector.finalize()
     if task_summary_json:
-      # TODO(maruel): Make this optional.
-      for i in summary['shards']:
-        if i:
-          convert_to_old_format(i)
       tools.write_json(task_summary_json, summary, False)
 
   if decorate and total_duration:
