@@ -226,11 +226,11 @@ void AXRemoteHost::Disable() {
 void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
                              ax::mojom::Event event_type) {
   DCHECK(aura_obj);
-  if (!enabled_ || !widget_)
+  // Early return when this host is disabled or only partially initialized.
+  // This roughly matches the behavior in AutomationManagerAura::SendEvent.
+  // Toggling ChromeVox off does not disable the host, etc: crbug.com/910224
+  if (!enabled_ || !widget_ || !tree_serializer_ || !tree_source_)
     return;
-
-  DCHECK(tree_source_);
-  DCHECK(tree_serializer_);
 
   ui::AXTreeUpdate update;
   if (!tree_serializer_->SerializeChanges(aura_obj, &update)) {
