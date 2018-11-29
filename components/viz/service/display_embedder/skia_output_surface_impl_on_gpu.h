@@ -78,6 +78,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                base::WaitableEvent* event);
   void FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
+      std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
       uint64_t sync_fence_release);
   void SwapBuffers(OutputSurfaceFrame frame);
   void FinishPaintRenderPass(

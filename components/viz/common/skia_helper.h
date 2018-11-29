@@ -26,6 +26,8 @@ class VIZ_COMMON_EXPORT SkiaHelper {
                                          SkIRect* subset,
                                          const gfx::PointF& origin,
                                          bool flush);
+
+  static sk_sp<SkColorFilter> MakeOverdrawColorFilter();
 };
 
 }  // namespace viz

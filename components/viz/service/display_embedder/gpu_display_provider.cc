@@ -130,7 +130,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     return nullptr;
 #else
     output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, synthetic_begin_frame_source);
+        gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
+        renderer_settings.show_overdraw_feedback);
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {

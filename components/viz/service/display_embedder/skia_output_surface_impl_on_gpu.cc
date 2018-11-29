@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -181,6 +182,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
+    std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
@@ -198,6 +200,21 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     gr_context()->flush();
   }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+
+  if (overdraw_ddl) {
+    sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
+        gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
+    overdraw_surface->draw(overdraw_ddl.get());
+
+    SkPaint paint;
+    sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
+
+    sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
+    paint.setColorFilter(colorFilter);
+    // TODO(xing.xu): move below to the thread where skia record happens.
+    sk_surface_->getCanvas()->drawImage(overdraw_image.get(), 0, 0, &paint);
+    gr_context()->flush();
+  }
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
