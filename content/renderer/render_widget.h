@@ -240,6 +240,20 @@ class CONTENT_EXPORT RenderWidget
   void SetIsFrozen(bool is_frozen);
   bool is_frozen() const { return is_frozen_; }
 
+  // When a RenderWidget is created, even if frozen, if we expect to unfreeze
+  // and use the RenderWidget imminently, then we want to pre-emptively start
+  // the process of getting the resources needed for the compositor. This helps
+  // to parallelize the critical path to first pixels with the loading process.
+  // This should only be called when the RenderWidget is frozen, otherwise it
+  // would be redundant at best. Non-frozen RenderWidgets will start to warmup
+  // immediately on their own.
+  void WarmupCompositor();
+  // If after calling WarmupCompositor() we can determine that the RenderWidget
+  // does not expect to be used shortly after all, call this to cancel the
+  // warmup process and release any unused resources that had been created by
+  // it.
+  void AbortWarmupCompositor();
+
   // This is true once a Close IPC has been received. The actual action of
   // closing must be done on another stack frame, in case the IPC receipt
   // is in a nested message loop and will unwind back up to javascript (from
@@ -752,6 +766,15 @@ class CONTENT_EXPORT RenderWidget
   // belongs to the frame tree associated with this RenderWidget.
   blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
 
+  // Called with the resulting frame sink from WarmupCompositor() since frame
+  // sink creation can be asynchronous.
+  void OnReplyForWarmupCompositor(std::unique_ptr<cc::LayerTreeFrameSink> sink);
+
+  // Common code shared to execute the creation of a LayerTreeFrameSink, shared
+  // by the warmup and standard request paths. Callers should verify they really
+  // want to do this before calling it as this method does no verification.
+  void DoRequestNewLayerTreeFrameSink(LayerTreeFrameSinkCallback callback);
+
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
   const int32_t routing_id_;
@@ -925,6 +948,18 @@ class CONTENT_EXPORT RenderWidget
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
+  // Set to true while a warmup is in progress. Set to false if the warmup is
+  // completed or aborted. If aborted, the reply callback is also cancelled by
+  // invalidating the |warmup_weak_ptr_factory_|.
+  bool warmup_frame_sink_request_pending_ = false;
+  // Set after warmup completes without being aborted. This frame sink will be
+  // returned on the next request for a frame sink instead of creating a new
+  // one.
+  std::unique_ptr<cc::LayerTreeFrameSink> warmup_frame_sink_;
+  // Set if a request for a frame sink arrives while a warmup is in progress.
+  // Then this stores the request to be satisfied once the warmup completes.
+  LayerTreeFrameSinkCallback after_warmup_callback_;
+
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
 
   // Indicates whether this widget has focus.
@@ -993,6 +1028,10 @@ class CONTENT_EXPORT RenderWidget
   base::Optional<bool> has_touch_handlers_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  // Used to generate a callback for the reply when making the warmup frame
+  // sink, and to cancel that callback if the warmup is aborted.
+  base::WeakPtrFactory<RenderWidget> warmup_weak_ptr_factory_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
