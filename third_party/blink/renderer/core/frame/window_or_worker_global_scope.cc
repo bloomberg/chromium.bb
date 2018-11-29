@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -250,6 +251,28 @@ void WindowOrWorkerGlobalScope::clearInterval(EventTarget& event_target,
                                               int timeout_id) {
   if (ExecutionContext* context = event_target.GetExecutionContext())
     DOMTimer::RemoveByID(context, timeout_id);
+}
+
+ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const ImageBitmapSourceUnion& bitmap_source,
+    const ImageBitmapOptions* options) {
+  return ImageBitmapFactories::CreateImageBitmap(script_state, event_target,
+                                                 bitmap_source, options);
+}
+
+ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    const ImageBitmapSourceUnion& bitmap_source,
+    int sx,
+    int sy,
+    int sw,
+    int sh,
+    const ImageBitmapOptions* options) {
+  return ImageBitmapFactories::CreateImageBitmap(
+      script_state, event_target, bitmap_source, sx, sy, sw, sh, options);
 }
 
 }  // namespace blink

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
-#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -139,7 +138,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
   return promise;
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(
+ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
@@ -150,11 +149,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
       ToImageBitmapSourceInternal(bitmap_source, options, false);
   if (!bitmap_source_internal)
     return ScriptPromise();
-  return createImageBitmap(script_state, event_target, bitmap_source_internal,
+  return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
                            base::Optional<IntRect>(), options);
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(
+ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
@@ -170,11 +169,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
   if (!bitmap_source_internal)
     return ScriptPromise();
   base::Optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
-  return createImageBitmap(script_state, event_target, bitmap_source_internal,
+  return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
                            crop_rect, options);
 }
 
-ScriptPromise ImageBitmapFactories::createImageBitmap(
+ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,

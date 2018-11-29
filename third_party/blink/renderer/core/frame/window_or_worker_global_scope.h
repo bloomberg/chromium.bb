@@ -33,6 +33,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_OR_WORKER_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WINDOW_OR_WORKER_GLOBAL_SCOPE_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/image_bitmap_source.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -41,9 +42,14 @@ namespace blink {
 
 class EventTarget;
 class ExceptionState;
+class ImageBitmapOptions;
+class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 class StringOrTrustedScript;
+
+typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
+    ImageBitmapSourceUnion;
 
 class WindowOrWorkerGlobalScope {
   STATIC_ONLY(WindowOrWorkerGlobalScope);
@@ -90,6 +96,19 @@ class WindowOrWorkerGlobalScope {
                                    const Vector<ScriptValue>&);
   static void clearTimeout(EventTarget&, int timeout_id);
   static void clearInterval(EventTarget&, int timeout_id);
+
+  static ScriptPromise createImageBitmap(ScriptState*,
+                                         EventTarget&,
+                                         const ImageBitmapSourceUnion&,
+                                         const ImageBitmapOptions*);
+  static ScriptPromise createImageBitmap(ScriptState*,
+                                         EventTarget&,
+                                         const ImageBitmapSourceUnion&,
+                                         int sx,
+                                         int sy,
+                                         int sw,
+                                         int sh,
+                                         const ImageBitmapOptions*);
 };
 
 }  // namespace blink
