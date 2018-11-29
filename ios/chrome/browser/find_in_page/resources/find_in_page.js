@@ -147,6 +147,11 @@ let matchId_ = 0;
  * each PartialMatch.
  */
 class PartialMatch {
+  /**
+   * @param {number} matchId ID of the Match to which this PartialMatch belongs.
+   * @param {number} begin Beginning index of partial match text in |allText_|.
+   * @param {number} end Ending index of partial match text in |allText_|.
+   */
   constructor(matchId, begin, end) {
     this.matchId = matchId;
     this.begin = begin;
@@ -169,8 +174,9 @@ let partialMatches_ = [];
  */
 class Replacement {
   /**
-   * @param {Node} The HTML Node containing search result.
-   * @param {Array<Node>} New HTML Nodes created for substitution of |oldNode|.
+   * @param {Node} oldNode The HTML Node containing search result.
+   * @param {Array<Node>} newNodes New HTML Nodes created for substitution of
+   *     |oldNode|.
    */
   constructor(oldNode, newNodes) {
     this.oldNode = oldNode;
@@ -338,11 +344,20 @@ const CSS_STYLE_ID = '__gCrWeb.findInPageStyle';
 const NO_RESULTS = '[0,[0,0,0]]';
 
 /**
+ * Result passed back to app to indicate pumpSearch has reached timeout.
+ * @type {string}
+ */
+const TIMEOUT = '[false]';
+
+/**
  * Regex to escape regex special characters in a string.
  * @type {RegExp}
  */
 const REGEX_ESCAPER = /([.?*+^$[\]\\(){}|-])/g;
 
+/**
+ * @return {Match} The currently selected Match.
+ */
 function getCurrentSelectedMatch_() {
   return __gCrWeb.findInPage.matches[__gCrWeb.findInPage.selectedMatchIndex];
 };
@@ -387,15 +402,12 @@ class Timer {
 __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
   if (__gCrWeb.findInPage.matches && __gCrWeb.findInPage.matches.length) {
     // Clean up a previous run.
-    clearHighlight_();
+    cleanUp_();
   }
   if (!findText) {
     // No searching for emptyness.
     return NO_RESULTS;
   }
-
-  // Node is what we are currently looking at.
-  __gCrWeb.findInPage.node = document.body;
 
   // Holds what nodes we have not processed yet.
   __gCrWeb.findInPage.stack = [];
@@ -405,6 +417,7 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
     let doc = frameDocs_[i];
     __gCrWeb.findInPage.stack.push(doc);
   }
+  __gCrWeb.findInPage.stack.push(document.body);
 
   // Number of visible elements found.
   __gCrWeb.findInPage.visibleFound = 0;
@@ -431,7 +444,7 @@ __gCrWeb.findInPage.highlightWord = function(findText, timeout) {
  *   4. Check the visibility of each Match;
  *   5. Call __gCrWeb.findInPage.goNext.
  *
- * If |timeout| has been reached, the function will return '[false]', and the
+ * If |timeout| has been reached, the function will return TIMEOUT, and the
  * caller need to call this function again to continue searching. This prevents
  * the Js thread from blocking the WebView's UI.
  *
@@ -447,8 +460,8 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
   let timer = new Timer(timeout);
 
   // Go through every node in DFS fashion.
-  while (__gCrWeb.findInPage.node) {
-    let node = __gCrWeb.findInPage.node;
+  while (__gCrWeb.findInPage.stack.length) {
+    let node = __gCrWeb.findInPage.stack.pop();
     let children = node.childNodes;
     if (children && children.length) {
       // add all (reasonable) children
@@ -469,13 +482,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
     }
 
     if (timer.overtime())
-      return '[false]';
-
-    if (__gCrWeb.findInPage.stack.length > 0) {
-      __gCrWeb.findInPage.node = __gCrWeb.findInPage.stack.pop();
-    } else {
-      __gCrWeb.findInPage.node = null;
-    }
+      return TIMEOUT;
   }
 
   // Do regex match in |allText_|, create |matches| and |replacements|. The
@@ -518,7 +525,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
       ++matchId_;
 
       if (timer.overtime())
-        return '[false]';
+        return TIMEOUT;
     }
     // Process remaining PartialMatches.
     processPartialMatchesInCurrentSection();
@@ -529,7 +536,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
   for (let i = replacementsIndex_; i < replacements_.length; ++i) {
     if (timer.overtime()) {
       replacementsIndex_ = i;
-      return __gCrWeb.stringify([false]);
+      return TIMEOUT;
     }
     replacements_[i].doSwap();
   }
@@ -541,7 +548,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
     let match = __gCrWeb.findInPage.matches[index];
     if (timer.overtime()) {
       __gCrWeb.findInPage.visibleIndex = index;
-      return __gCrWeb.stringify([false]);
+      return TIMEOUT;
     }
 
     // Stop after |maxVisible| elements.
@@ -567,22 +574,25 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 };
 
 /**
- * Removes all currently highlighted matches.
- * Note: It does not restore previous state, just removes the class name.
+ * Removes highlights of previous search and reset all global vars.
+ * @return {undefined}
  */
-function clearHighlight_() {
+function cleanUp_() {
   for (let i = 0; i < replacements_.length; ++i) {
     replacements_[i].undoSwap();
   }
-  replacements_ = [];
-  replacementsIndex_ = 0;
-  __gCrWeb.findInPage.matches = [];
-  __gCrWeb.findInPage.selectedMatchIndex = -1;
+
   allText_ = '';
   sections_ = [];
   sectionsIndex_ = 0;
+
+  __gCrWeb.findInPage.matches = [];
+  __gCrWeb.findInPage.selectedMatchIndex = -1;
   matchId_ = 0;
   partialMatches_ = [];
+
+  replacements_ = [];
+  replacementsIndex_ = 0;
 };
 
 /**
@@ -836,7 +846,7 @@ function removeDocumentStyle_(thisDocument) {
 __gCrWeb.findInPage.disable = function() {
   if (styleElement_) {
     removeStyle_();
-    window.setTimeout(clearHighlight_, 0);
+    window.setTimeout(cleanUp_, 0);
   }
   __gCrWeb.findInPage.hasInitialized = false;
 };
