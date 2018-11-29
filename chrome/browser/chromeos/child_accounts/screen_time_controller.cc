@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 
 #include "base/optional.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -44,6 +47,8 @@ void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
     : context_(context),
       pref_service_(Profile::FromBrowserContext(context)->GetPrefs()),
+      clock_(base::DefaultClock::GetInstance()),
+      next_state_timer_(std::make_unique<base::OneShotTimer>()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
@@ -67,6 +72,13 @@ base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
       ->GetChildScreenTime();
 }
 
+void ScreenTimeController::SetClocksForTesting(
+    const base::Clock* clock,
+    const base::TickClock* tick_clock) {
+  clock_ = clock;
+  next_state_timer_ = std::make_unique<base::OneShotTimer>(tick_clock);
+}
+
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   VLOG(1) << "Checking time limits (source=" << source << ")";
 
@@ -74,7 +86,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   ResetStateTimers();
   ResetInSessionTimers();
 
-  base::Time now = base::Time::Now();
+  base::Time now = clock_->Now();
   const icu::TimeZone& time_zone =
       system::TimezoneSettings::GetInstance()->GetTimezone();
   base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
@@ -132,7 +144,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   if (!next_get_state_time.is_null()) {
     VLOG(1) << "Scheduling state change timer in "
             << state.next_state_change_time - now;
-    next_state_timer_.Start(
+    next_state_timer_->Start(
         FROM_HERE, next_get_state_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
                             base::Unretained(this), "next_state_timer_"));
@@ -172,7 +184,7 @@ void ScreenTimeController::OnPolicyChanged() {
 
 void ScreenTimeController::ResetStateTimers() {
   VLOG(1) << "Stopping state timers";
-  next_state_timer_.Stop();
+  next_state_timer_->Stop();
 }
 
 void ScreenTimeController::ResetInSessionTimers() {

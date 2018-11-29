@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_SCREEN_TIME_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_SCREEN_TIME_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_notifier.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 #include "chromeos/dbus/system_clock_client.h"
@@ -16,6 +17,12 @@
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class Clock;
+class TickClock;
+class OneShotTimer;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -41,6 +48,9 @@ class ScreenTimeController : public KeyedService,
   // Returns the child's screen time duration. This is how long the child has
   // used the device today (since the last reset).
   base::TimeDelta GetScreenTimeDuration();
+
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
 
  private:
   // Call time limit processor for new state.
@@ -86,9 +96,12 @@ class ScreenTimeController : public KeyedService,
   content::BrowserContext* context_;
   PrefService* pref_service_;
 
+  // Points to the base::DefaultClock by default.
+  const base::Clock* clock_;
+
   // Timer scheduled for when the next lock screen state change event is
   // expected to happen, e.g. when bedtime is over or the usage limit ends.
-  base::OneShotTimer next_state_timer_;
+  std::unique_ptr<base::OneShotTimer> next_state_timer_;
 
   // Used to set up timers when a time limit is approaching.
   TimeLimitNotifier time_limit_notifier_;
