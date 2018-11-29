@@ -495,8 +495,12 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
   const std::string expected_url = {
       "https://clients1.google.com/v1/pages/"
       "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIWEgkNeuFP4BIAGgASCQ2cTkrQEgAaAA==?"
-      "alt=proto&key=dummykey"};
-  EXPECT_THAT(request->request.url, expected_url);
+      "alt=proto"};
+  EXPECT_EQ(request->request.url, expected_url);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
 
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, "dummy response");
@@ -558,8 +562,12 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   // default one used by the download manager. Request upload data is in the
   // payload when uploading.
   const std::string expected_url =
-      "https://clients1.google.com/v1/forms:vote?alt=proto&key=dummykey";
-  EXPECT_THAT(request->request.url, expected_url);
+      "https://clients1.google.com/v1/forms:vote?alt=proto";
+  EXPECT_EQ(request->request.url, expected_url);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
 
   // Assert some of the fields within the uploaded proto to make sure it was
   // filled with something else than default data.
