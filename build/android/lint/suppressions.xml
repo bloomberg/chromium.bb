@@ -119,6 +119,8 @@ Still reading?
     <ignore regexp="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxxhdpi"/>
+    <!-- This is intentional to reduce APK size. See: http://crrev/c/1352161 -->
+    <ignore regexp="chrome/android/java/res_autofill_assistant/drawable-*"/>
   </issue>
   <issue id="IconDipSize">
     <ignore regexp="chromecast/internal"/>
