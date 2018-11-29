@@ -83,11 +83,6 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 }
 
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
-#if DCHECK_IS_ON()
-  if (line_box_type_ == NGPhysicalLineBoxFragment::kEmptyLineBox)
-    DCHECK_EQ(children_.size(), 0u);
-#endif
-
   writing_mode_ = ToLineWritingMode(writing_mode_);
 
   if (!break_token_)

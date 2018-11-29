@@ -270,22 +270,24 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
   DCHECK(box->needs_box_fragment);
-
-  // The inline box should have the height of the font metrics without the
-  // line-height property. Compute from style because |box->metrics| includes
-  // the line-height property.
   DCHECK(box->style);
   const ComputedStyle& style = *box->style;
-  NGLineHeightMetrics metrics(style, baseline_type);
 
-  // Extend the block direction of the box by borders and paddings. Inline
-  // direction is already included into positions in NGLineBreaker.
-  NGLogicalOffset offset(
-      LayoutUnit(),
-      -metrics.ascent - (box->borders.line_over + box->padding.line_over));
-  NGLogicalSize size(
-      LayoutUnit(),
-      metrics.LineHeight() + box->borders.BlockSum() + box->padding.BlockSum());
+  NGLogicalOffset offset;
+  NGLogicalSize size;
+  if (!is_empty_line_) {
+    // The inline box should have the height of the font metrics without the
+    // line-height property. Compute from style because |box->metrics| includes
+    // the line-height property.
+    NGLineHeightMetrics metrics(style, baseline_type);
+
+    // Extend the block direction of the box by borders and paddings. Inline
+    // direction is already included into positions in NGLineBreaker.
+    offset.block_offset =
+        -metrics.ascent - (box->borders.line_over + box->padding.line_over);
+    size.block_size = metrics.LineHeight() + box->borders.BlockSum() +
+                      box->padding.BlockSum();
+  }
 
   unsigned fragment_end = line_box->size();
   DCHECK(box->item);

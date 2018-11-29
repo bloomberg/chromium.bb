@@ -239,6 +239,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
+  box_states_->SetIsEmptyLine(line_info->IsEmptyLine());
   NGInlineBoxState* box =
       box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
 #if DCHECK_IS_ON()
@@ -359,6 +360,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   // shouldn't trigger creation of a line. Exit now if that's the case.
   if (line_info->IsEmptyLine()) {
     container_builder_.SetIsEmptyLineBox();
+    container_builder_.AddChildren(line_box_);
     return;
   }
 
