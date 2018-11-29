@@ -1372,6 +1372,7 @@ Let's place this `geometry.typemap` file alongside our Mojom file:
 
 ```
 mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
+os_whitelist = [ "android" ]
 public_headers = [ "//ui/gfx/geometry/rect.h" ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
 sources = [
@@ -1389,6 +1390,8 @@ Let's look at each of the variables above:
 * `mojom`: Specifies the `mojom` file to which the typemap applies. Many
   typemaps may apply to the same `mojom` file, but any given typemap may only
   apply to a single `mojom` file.
+* `os_whitelist`: Optional list of specific platforms this typemap
+  should be constrained to.
 * `public_headers`: Additional headers required by any code which would depend
   on the Mojom definition of `gfx.mojom.Rect` now that the typemap is applied.
   Any headers required for the native target type definition should be listed
