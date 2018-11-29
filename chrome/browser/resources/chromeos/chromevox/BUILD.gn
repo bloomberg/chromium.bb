@@ -4,9 +4,9 @@
 
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
+import("//chrome/test/base/js2gtest.gni")
 import("//components/nacl/features.gni")
 import("//testing/test.gni")
-import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("run_jsbundler.gni")
 
@@ -31,6 +31,7 @@ chromevox_modules = [
   "braille/braille_table.js",
   "braille/braille_translator_manager.js",
   "braille/bluetooth_braille_display_manager.js",
+  "braille/bluetooth_braille_display_ui.js",
   "braille/expanding_braille_translator.js",
   "braille/liblouis.js",
   "braille/nav_braille.js",
@@ -559,6 +560,7 @@ js2gtest("chromevox_unitjs_tests") {
   test_type = "webui"
   sources = [
     "braille/bluetooth_braille_display_manager_test.unitjs",
+    "braille/bluetooth_braille_display_ui_test.unitjs",
     "braille/braille_display_manager_test.unitjs",
     "braille/braille_input_handler_test.unitjs",
     "braille/expanding_braille_translator_test.unitjs",
