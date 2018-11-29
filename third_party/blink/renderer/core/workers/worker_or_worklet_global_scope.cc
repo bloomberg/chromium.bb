@@ -28,7 +28,8 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     WorkerClients* worker_clients,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : worker_clients_(worker_clients),
+    : ExecutionContext(isolate),
+      worker_clients_(worker_clients),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),

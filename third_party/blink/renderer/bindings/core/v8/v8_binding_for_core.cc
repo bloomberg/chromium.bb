@@ -873,9 +873,15 @@ bool HasCallableIteratorSymbol(v8::Isolate* isolate,
 }
 
 v8::Isolate* ToIsolate(const ExecutionContext* context) {
+  if (!context)
+    return nullptr;
+
+  v8::Isolate* isolate;
   if (context && context->IsDocument())
-    return V8PerIsolateData::MainThreadIsolate();
-  return v8::Isolate::GetCurrent();
+    isolate = V8PerIsolateData::MainThreadIsolate();
+  isolate = v8::Isolate::GetCurrent();
+  DCHECK(context->GetIsolate() == isolate);
+  return context->GetIsolate();
 }
 
 v8::Isolate* ToIsolate(const LocalFrame* frame) {

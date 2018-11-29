@@ -255,11 +255,15 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   InterfaceInvalidator* GetInterfaceInvalidator() { return invalidator_.get(); }
 
+  v8::Isolate* GetIsolate() const { return isolate_; }
+
  protected:
-  ExecutionContext();
+  explicit ExecutionContext(v8::Isolate* isolate);
   ~ExecutionContext() override;
 
  private:
+  v8::Isolate* const isolate_;
+
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 
   unsigned circular_sequential_id_;

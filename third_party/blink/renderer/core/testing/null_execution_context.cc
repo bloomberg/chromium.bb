@@ -13,7 +13,9 @@
 namespace blink {
 
 NullExecutionContext::NullExecutionContext()
-    : tasks_need_pause_(false), is_secure_context_(true) {}
+    : ExecutionContext(v8::Isolate::GetCurrent()),
+      tasks_need_pause_(false),
+      is_secure_context_(true) {}
 
 void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
   is_secure_context_ = is_secure_context;
