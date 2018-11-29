@@ -115,11 +115,11 @@ Controller::Controller(
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
-      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
-                                                      /* listener= */ this)),
       parameters_(std::move(parameters)),
       memory_(std::make_unique<ClientMemory>()),
       touchable_element_area_(web_controller_.get()),
+      script_tracker_(std::make_unique<ScriptTracker>(/* delegate= */ this,
+                                                      /* listener= */ this)),
       weak_ptr_factory_(this) {
   DCHECK(parameters_);
 

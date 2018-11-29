@@ -102,6 +102,9 @@ UiControllerAndroid::~UiControllerAndroid() {}
 void UiControllerAndroid::Start(JNIEnv* env,
                                 const JavaParamRef<jobject>& jcaller,
                                 const JavaParamRef<jstring>& initialUrlString) {
+  if (!ui_delegate_)
+    return;
+
   GURL initialUrl =
       GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
   ui_delegate_->Start(initialUrl);
@@ -179,12 +182,18 @@ void UiControllerAndroid::ScrollBy(
     const base::android::JavaParamRef<jobject>& obj,
     float distanceX,
     float distanceY) {
+  if (!ui_delegate_)
+    return;
+
   ui_delegate_->ScrollBy(distanceX, distanceY);
 }
 
 void UiControllerAndroid::UpdateTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  if (!ui_delegate_)
+    return;
+
   ui_delegate_->UpdateTouchableArea();
 }
 
@@ -192,6 +201,9 @@ void UiControllerAndroid::OnScriptSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jscript_path) {
+  if (!ui_delegate_)
+    return;
+
   std::string script_path;
   base::android::ConvertJavaStringToUTF8(env, jscript_path, &script_path);
   ui_delegate_->OnScriptSelected(script_path);
@@ -447,6 +459,9 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
 }
 
 std::string UiControllerAndroid::GetDebugContext() const {
+  if (!ui_delegate_)
+    return "";
+
   return ui_delegate_->GetDebugContext();
 }
 

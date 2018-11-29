@@ -93,6 +93,10 @@ class BatchElementChecker {
   // |try_done| or |all_done| can delete their calling BatchElementChecker to
   // interrupt any future checks. If |try_done| deletes BatchElementChecker,
   // |all_done| will never be called.
+  //
+  // Sync |try_done| and |all_done| can be called after the element checker has
+  // been deleted, they should always be called with callbacks that use a weak
+  // ptr instead of Unretained(this), even from objects that own the checker.
   void Run(const base::TimeDelta& duration,
            base::RepeatingCallback<void()> try_done,
            base::OnceCallback<void()> all_done);
