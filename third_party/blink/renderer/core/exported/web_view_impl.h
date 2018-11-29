@@ -202,6 +202,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
   void SetDisplayMode(WebDisplayMode) override;
+  void AnimateDoubleTapZoom(const gfx::Point&,
+                            const WebRect& block_bounds) override;
 
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
@@ -365,7 +367,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableTapHighlightAtPoint(
       const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlights(HeapVector<Member<Node>>&);
-  void AnimateDoubleTapZoom(const IntPoint&, const WebRect& block_bounds);
 
   void EnableFakePageScaleAnimationForTesting(bool);
   bool FakeDoubleTapAnimationPendingForTesting() const {

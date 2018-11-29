@@ -60,6 +60,7 @@ struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebFloatSize;
 struct WebPluginAction;
+struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;
 
@@ -248,6 +249,9 @@ class WebView {
   // viewport. The returned size has the page zoom factor applied. The lifecycle
   // must be updated to at least layout before calling (see: |UpdateLifecycle|).
   virtual WebSize ContentsPreferredMinimumSize() = 0;
+
+  // Requests a page-scale animation based on the specified point/rect.
+  virtual void AnimateDoubleTapZoom(const gfx::Point&, const WebRect&) = 0;
 
   // Sets the display mode of the web app.
   virtual void SetDisplayMode(WebDisplayMode) = 0;

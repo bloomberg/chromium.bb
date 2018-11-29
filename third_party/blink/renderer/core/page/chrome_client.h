@@ -219,6 +219,8 @@ class CORE_EXPORT ChromeClient
   virtual void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const {}
 
+  virtual bool DoubleTapToZoomEnabled() const { return false; }
+
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
