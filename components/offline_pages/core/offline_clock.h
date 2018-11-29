@@ -15,7 +15,8 @@ namespace offline_pages {
 // can be called from any threads.
 base::Clock* OfflineClock();
 
-// Allows tests to override the clock returned by |OfflineClock()|.
+// Allows tests to override the clock returned by |OfflineClock()|. For safety,
+// use |TestScopedOfflineClock| instead if possible.
 void SetOfflineClockForTesting(base::Clock* clock);
 
 }  // namespace offline_pages
