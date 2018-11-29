@@ -20,11 +20,9 @@
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
+#include "components/previews/content/previews_user_data.h"
+#include "net/nqe/effective_connection_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-
-namespace previews {
-class PreviewsUserData;
-}
 
 namespace data_reduction_proxy {
 
@@ -92,11 +90,17 @@ class DataReductionProxyMetricsObserverTestBase
   void ResetTest();
 
   // Navigates and commits to |kDefaultTestUrl| and mocks a single timing
-  // update.
+  // update with the given data reduction proxy state.
   void RunTest(bool data_reduction_proxy_used,
                bool is_using_lite_page,
                bool opt_out_expected,
                bool black_listed);
+
+  // Navigates and commits to |kDefaultTestUrl| and mocks a single timing
+  // update with the given lite page redirect previews state.
+  void RunLitePageRedirectTest(
+      previews::PreviewsUserData::ServerLitePageInfo* preview_info,
+      net::EffectiveConnectionType ect);
 
   // The same as |RunTest| but also navigates to an untracked URL afterwards.
   void RunTestAndNavigateToUntrackedUrl(bool data_reduction_proxy_used,
@@ -120,6 +124,9 @@ class DataReductionProxyMetricsObserverTestBase
   // Validates the blacklist state in the pingback.
   void ValidateBlackListInPingback(bool black_listed);
 
+  // Validates the lite page redirect preview state in the pingback.
+  void ValidatePreviewsStateInPingback();
+
   // Validates the renderer crash state in the pingback.
   void ValidateRendererCrash(bool renderer_crashed);
 
@@ -133,6 +140,10 @@ class DataReductionProxyMetricsObserverTestBase
   bool cached_data_reduction_proxy_used() const {
     return cached_data_reduction_proxy_used_;
   }
+  previews::PreviewsUserData::ServerLitePageInfo* preview_info() const {
+    return preview_info_;
+  }
+  net::EffectiveConnectionType ect() const { return ect_; }
   bool data_reduction_proxy_used() const { return data_reduction_proxy_used_; }
   bool is_using_lite_page() const { return is_using_lite_page_; }
   bool opt_out_expected() const { return opt_out_expected_; }
@@ -144,6 +155,8 @@ class DataReductionProxyMetricsObserverTestBase
   bool cached_data_reduction_proxy_used_ = false;
 
  private:
+  previews::PreviewsUserData::ServerLitePageInfo* preview_info_;
+  net::EffectiveConnectionType ect_;
   bool data_reduction_proxy_used_;
   bool is_using_lite_page_;
   bool opt_out_expected_;

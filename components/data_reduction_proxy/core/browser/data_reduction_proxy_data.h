@@ -145,7 +145,8 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // file size image.
   bool client_lofi_requested_;
 
-  // Whether a lite page response was seen for the request or navigation.
+  // Whether a proxy-served lite page response was seen for the HTTP request or
+  // navigation.
   bool lite_page_received_;
 
   // Whether server Lo-Fi directive was received for this navigation. True if

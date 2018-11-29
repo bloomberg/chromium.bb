@@ -9,7 +9,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
-#include "components/previews/content/previews_user_data.h"
 #include "content/public/test/web_contents_tester.h"
 
 namespace data_reduction_proxy {
@@ -139,6 +138,16 @@ void DataReductionProxyMetricsObserverTestBase::
   NavigateToUntrackedUrl();
 }
 
+void DataReductionProxyMetricsObserverTestBase::RunLitePageRedirectTest(
+    previews::PreviewsUserData::ServerLitePageInfo* preview_info,
+    net::EffectiveConnectionType ect) {
+  preview_info_ = preview_info;
+  ect_ = ect;
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing_);
+  pingback_client_->Reset();
+}
+
 void DataReductionProxyMetricsObserverTestBase::SimulateRendererCrash() {
   observer()->RenderProcessGone(
       base::TerminationStatus::TERMINATION_STATUS_ABNORMAL_TERMINATION);
@@ -192,6 +201,17 @@ void DataReductionProxyMetricsObserverTestBase::ValidateBlackListInPingback(
   EXPECT_EQ(black_listed, pingback_client_->data().black_listed());
 }
 
+void DataReductionProxyMetricsObserverTestBase::
+    ValidatePreviewsStateInPingback() {
+  EXPECT_EQ(!!preview_info_, pingback_client_->send_pingback_called());
+  if (preview_info_) {
+    EXPECT_EQ(preview_info_->drp_session_key,
+              pingback_client_->data().session_key());
+    EXPECT_EQ(preview_info_->page_id, pingback_client_->data().page_id());
+    EXPECT_EQ(ect_, pingback_client_->data().effective_connection_type());
+  }
+}
+
 void DataReductionProxyMetricsObserverTestBase::ValidateRendererCrash(
     bool renderer_crashed) {
   EXPECT_TRUE(pingback_client_->send_pingback_called());
@@ -200,7 +220,7 @@ void DataReductionProxyMetricsObserverTestBase::ValidateRendererCrash(
 }
 
 void DataReductionProxyMetricsObserverTestBase::SetUp() {
-  page_load_metrics::PageLoadMetricsObserverTestHarness ::SetUp();
+  page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
   PreviewsUITabHelper::CreateForWebContents(web_contents());
 }
 
