@@ -78,6 +78,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
         manualFillAccessoryViewControllerDelegate {
   self = [super init];
   if (self) {
+    _paused = YES;
     _manualFillAccessoryViewControllerDelegate =
         manualFillAccessoryViewControllerDelegate;
     if (autofill::features::IsPasswordManualFallbackEnabled()) {
@@ -209,10 +210,9 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 - (void)restoreOriginalKeyboardView {
   [self.manualFillAccessoryViewController reset];
-  [self restoreOriginalInputAccessoryView];
+  [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
   self.keyboardReplacementView = nil;
-  self.paused = NO;
 }
 
 - (void)pauseCustomKeyboardView {
@@ -276,11 +276,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 - (void)removeCustomInputAccessoryView {
   [self.inputAccessoryView removeFromSuperview];
   [self.grayBackgroundView removeFromSuperview];
-}
-
-// Removes the custom input accessory views and clears the references.
-- (void)restoreOriginalInputAccessoryView {
-  [self removeCustomInputAccessoryView];
 }
 
 // This searches in a keyboard view hierarchy for the best candidate to

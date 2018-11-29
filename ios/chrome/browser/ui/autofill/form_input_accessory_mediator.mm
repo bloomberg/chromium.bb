@@ -51,6 +51,9 @@
 // The object that manages the currently-shown custom accessory view.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
+// YES if the first responder is a text input other than the web view.
+@property(nonatomic, assign) BOOL editingUIKitTextInput;
+
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
@@ -81,6 +84,10 @@
 
 // Whether suggestions are disabled.
 @property(nonatomic, assign) BOOL suggestionsDisabled;
+
+// YES if the latest form activity was made in a form that supports the
+// accessory.
+@property(nonatomic, assign) BOOL validActivityForAccessoryView;
 
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
@@ -227,10 +234,7 @@
 
 - (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
   self.hardwareKeyboard = isHardwareKeyboard;
-  if (self.lastSuggestions) {
-    [self updateWithProvider:self.lastProvider
-                 suggestions:self.lastSuggestions];
-  }
+  [self updateWithProvider:self.lastProvider suggestions:self.lastSuggestions];
 }
 
 - (void)keyboardDidStayOnScreen {
@@ -249,30 +253,54 @@
     didRegisterFormActivity:(const autofill::FormActivityParams&)params
                     inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
+  self.validActivityForAccessoryView = NO;
+
+  // Return early if |params| is not complete.
+  if (params.input_missing) {
+    return;
+  }
+
+  // Return early if the URL can't be verified.
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (params.input_missing ||
-      trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
-      !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+    return;
+  }
+
+  // Return early, pause and reset if the url is not HTML.
+  if (!web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+    [self pauseCustomKeyboardView];
     [self reset];
     return;
   }
 
+  // Return early and reset if messaging is enabled but frame is missing or
+  // can't call JS.
   if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
       (!frame || !frame->CanCallJavaScriptFunction())) {
     [self reset];
     return;
   }
 
+  self.validActivityForAccessoryView = YES;
+  [self continueCustomKeyboardView];
+
+  NSString* frameID;
+  if (frame) {
+    frameID = base::SysUTF8ToNSString(frame->GetFrameId());
+  } else {
+    frameID = base::SysUTF8ToNSString(params.frame_id);
+  }
+
+  [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
+  [self synchronizeNavigationControls];
+
+  // Don't look for suggestions in the next events.
   if (params.type == "blur" || params.type == "change" ||
       params.type == "form_changed") {
     return;
   }
 
-  [self.formInputAccessoryHandler
-      setLastFocusFormActivityWebFrameID:base::SysUTF8ToNSString(
-                                             params.frame_id)];
-  [self synchronizeNavigationControls];
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
@@ -296,7 +324,7 @@
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer continueCustomKeyboardView];
+  [self continueCustomKeyboardView];
 }
 
 - (void)webStateWasHidden:(web::WebState*)webState {
@@ -311,7 +339,7 @@
   if (IsIPadIdiom()) {
     [self reset];
   } else {
-    [self.consumer pauseCustomKeyboardView];
+    [self pauseCustomKeyboardView];
   }
 }
 
@@ -363,6 +391,32 @@
 
 #pragma mark - Private
 
+// Tells the consumer to pause the custom keyboard view.
+- (void)pauseCustomKeyboardView {
+  [self.consumer pauseCustomKeyboardView];
+}
+
+// Tells the consumer to continue the custom keyboard view if the last activity
+// is valid, the web state is visible, and there is no other text input.
+- (void)continueCustomKeyboardView {
+  // Return early if the form is not a supported one.
+  if (!self.validActivityForAccessoryView) {
+    return;
+  }
+
+  // Return early if the current webstate is not visible.
+  if (!self.webState || !self.webState->IsVisible()) {
+    return;
+  }
+
+  // Return early if the current text input is not the web view.
+  if (self.editingUIKitTextInput) {
+    return;
+  }
+
+  [self.consumer continueCustomKeyboardView];
+}
+
 // Update the status of the consumer form navigation buttons to match the
 // handler state.
 - (void)synchronizeNavigationControls {
@@ -407,6 +461,9 @@
 // Resets the current provider, the consumer view and the navigation handler. As
 // well as reenables suggestions.
 - (void)reset {
+  self.lastSuggestions = nil;
+  self.lastProvider = nil;
+
   [self.consumer restoreOriginalKeyboardView];
   [self.formInputAccessoryHandler reset];
 
@@ -511,13 +568,15 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
 // begins editing, pause the consumer so it doesn't present the custom view over
 // the keyboard.
 - (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
-  [self.consumer pauseCustomKeyboardView];
+  self.editingUIKitTextInput = YES;
+  [self pauseCustomKeyboardView];
 }
 
 // When any text field or text view (e.g. omnibox, settings, card unmask dialog)
 // ends editing, continue presenting.
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
-  [self.consumer continueCustomKeyboardView];
+  self.editingUIKitTextInput = NO;
+  [self continueCustomKeyboardView];
 }
 
 #pragma mark - PasswordFetcherDelegate
