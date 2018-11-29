@@ -28,7 +28,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "gpu/config/gpu_switches.h"
 #include "net/base/filename_util.h"
 

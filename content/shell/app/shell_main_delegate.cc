@@ -36,8 +36,8 @@
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
-#include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
+#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
 #include "gpu/config/gpu_switches.h"
 #include "ipc/ipc_buildflags.h"
@@ -453,7 +453,7 @@ ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
   renderer_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                             ? new LayoutTestContentRendererClient
+                             ? new WebTestContentRendererClient
                              : new ShellContentRendererClient);
 
   return renderer_client_.get();

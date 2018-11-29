@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_THREAD_OBSERVER_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_THREAD_OBSERVER_H_
 
 #include <memory>
 
@@ -23,12 +23,12 @@ class WebTestInterfaces;
 
 namespace content {
 
-class LayoutTestRenderThreadObserver : public RenderThreadObserver {
+class WebTestRenderThreadObserver : public RenderThreadObserver {
  public:
-  static LayoutTestRenderThreadObserver* GetInstance();
+  static WebTestRenderThreadObserver* GetInstance();
 
-  LayoutTestRenderThreadObserver();
-  ~LayoutTestRenderThreadObserver() override;
+  WebTestRenderThreadObserver();
+  ~WebTestRenderThreadObserver() override;
 
   // RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
@@ -44,9 +44,9 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
 
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderThreadObserver);
+  DISALLOW_COPY_AND_ASSIGN(WebTestRenderThreadObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_THREAD_OBSERVER_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_THREAD_OBSERVER_H_

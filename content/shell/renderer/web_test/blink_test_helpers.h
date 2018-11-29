@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_HELPERS_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_HELPERS_H_
 
 #include "third_party/blink/public/platform/web_url.h"
 
@@ -39,4 +39,4 @@ blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_HELPERS_H_

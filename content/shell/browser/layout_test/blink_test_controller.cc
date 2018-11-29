@@ -71,7 +71,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/layout_test/layout_test_utils.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"

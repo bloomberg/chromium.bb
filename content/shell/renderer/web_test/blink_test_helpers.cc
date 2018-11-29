@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -89,11 +89,9 @@ void ExportLayoutTestSpecificPreferences(
   to->allow_running_insecure_content = from.allow_running_of_insecure_content;
   to->should_respect_image_orientation = from.should_respect_image_orientation;
   to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;
-  to->web_security_enabled =
-      from.web_security_enabled;
+  to->web_security_enabled = from.web_security_enabled;
   to->disable_reading_from_canvas = from.disable_reading_from_canvas;
-  to->strict_mixed_content_checking =
-      from.strict_mixed_content_checking;
+  to->strict_mixed_content_checking = from.strict_mixed_content_checking;
   to->strict_powerful_feature_restrictions =
       from.strict_powerful_feature_restrictions;
   to->spatial_navigation_enabled = from.spatial_navigation_enabled;

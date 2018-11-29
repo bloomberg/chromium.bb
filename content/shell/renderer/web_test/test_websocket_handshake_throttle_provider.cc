@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/test_websocket_handshake_throttle_provider.h"
+#include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

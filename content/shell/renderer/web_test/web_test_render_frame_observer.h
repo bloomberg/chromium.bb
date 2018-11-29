@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
+#ifndef CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_FRAME_OBSERVER_H_
+#define CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_FRAME_OBSERVER_H_
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -12,11 +12,11 @@
 
 namespace content {
 
-class LayoutTestRenderFrameObserver : public RenderFrameObserver,
-                                      public mojom::LayoutTestControl {
+class WebTestRenderFrameObserver : public RenderFrameObserver,
+                                   public mojom::LayoutTestControl {
  public:
-  explicit LayoutTestRenderFrameObserver(RenderFrame* render_frame);
-  ~LayoutTestRenderFrameObserver() override;
+  explicit WebTestRenderFrameObserver(RenderFrame* render_frame);
+  ~WebTestRenderFrameObserver() override;
 
  private:
   // RenderFrameObserver implementation.
@@ -32,9 +32,9 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver,
   void BindRequest(mojom::LayoutTestControlAssociatedRequest request);
 
   mojo::AssociatedBinding<mojom::LayoutTestControl> binding_;
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);
+  DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
+#endif  // CONTENT_SHELL_RENDERER_WEB_TEST_WEB_TEST_RENDER_FRAME_OBSERVER_H_

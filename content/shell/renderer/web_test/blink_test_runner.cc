@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/blink_test_runner.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
 
 #include <stddef.h>
 
@@ -44,8 +44,8 @@
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
-#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/app_banner_service.h"
 #include "content/shell/test_runner/gamepad_controller.h"
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
@@ -93,19 +93,18 @@
 using blink::Platform;
 using blink::WebContextMenuData;
 using blink::WebElement;
-using blink::WebLocalFrame;
-using blink::WebHistoryItem;
 using blink::WebFrame;
+using blink::WebHistoryItem;
 using blink::WebLocalFrame;
 using blink::WebPoint;
 using blink::WebRect;
 using blink::WebScriptSource;
 using blink::WebSize;
 using blink::WebString;
+using blink::WebTestingSupport;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
-using blink::WebTestingSupport;
 using blink::WebVector;
 using blink::WebView;
 
@@ -174,8 +173,7 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
       is_main_window_(false),
       focus_on_next_commit_(false) {}
 
-BlinkTestRunner::~BlinkTestRunner() {
-}
+BlinkTestRunner::~BlinkTestRunner() {}
 
 // WebTestDelegate  -----------------------------------------------------------
 
@@ -211,14 +209,14 @@ WebString BlinkTestRunner::RegisterIsolatedFileSystem(
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
     files.push_back(blink::WebStringToFilePath(absolute_filenames[i]));
   std::string filesystem_id;
-  Send(new LayoutTestHostMsg_RegisterIsolatedFileSystem(
-      routing_id(), files, &filesystem_id));
+  Send(new LayoutTestHostMsg_RegisterIsolatedFileSystem(routing_id(), files,
+                                                        &filesystem_id));
   return WebString::FromUTF8(filesystem_id);
 }
 
 long long BlinkTestRunner::GetCurrentTimeInMillisecond() {
-  return base::TimeDelta(base::Time::Now() -
-                         base::Time::UnixEpoch()).ToInternalValue() /
+  return base::TimeDelta(base::Time::Now() - base::Time::UnixEpoch())
+             .ToInternalValue() /
          base::Time::kMicrosecondsPerMillisecond;
 }
 
@@ -240,8 +238,8 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
     return WebURL();
 
   std::string contents;
-  Send(new LayoutTestHostMsg_ReadFileToString(
-        routing_id(), local_path, &contents));
+  Send(new LayoutTestHostMsg_ReadFileToString(routing_id(), local_path,
+                                              &contents));
 
   std::string contents_base64;
   base::Base64Encode(contents, &contents_base64);
@@ -339,8 +337,8 @@ test_runner::WebWidgetTestProxyBase* BlinkTestRunner::GetWebWidgetTestProxyBase(
 }
 
 void BlinkTestRunner::EnableUseZoomForDSF() {
-  base::CommandLine::ForCurrentProcess()->
-      AppendSwitch(switches::kEnableUseZoomForDSF);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
 }
 
 bool BlinkTestRunner::IsUseZoomForDSFEnabled() {
@@ -415,7 +413,7 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
   // layout flag changes in either OnReplicateTestConfiguration or
   // OnSetTestConfiguration.
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestIsRunning())
     return;
 
@@ -425,7 +423,7 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
 
 void BlinkTestRunner::TestFinished() {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   // We might get multiple TestFinished calls, ensure to only process the dump
   // once.
   if (!interfaces->TestIsRunning())
@@ -481,7 +479,7 @@ void BlinkTestRunner::TestFinished() {
 void BlinkTestRunner::CaptureLocalAudioDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalAudioDump");
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestRunner()->ShouldDumpAsAudio())
     return;
 
@@ -492,7 +490,7 @@ void BlinkTestRunner::CaptureLocalAudioDump() {
 void BlinkTestRunner::CaptureLocalLayoutDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalLayoutDump");
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   if (interfaces->TestRunner()->ShouldDumpAsAudio())
     return;
@@ -514,7 +512,7 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
 bool BlinkTestRunner::CaptureLocalPixelsDump() {
   TRACE_EVENT0("shell", "BlinkTestRunner::CaptureLocalPixelsDump");
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestRunner()->ShouldGeneratePixelResults() ||
       interfaces->TestRunner()->ShouldDumpAsAudio()) {
     return false;
@@ -605,8 +603,7 @@ void BlinkTestRunner::Reload() {
 
 void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
                                       const std::string& frame_name) {
-  Send(new ShellViewHostMsg_LoadURLForFrame(
-      routing_id(), url, frame_name));
+  Send(new ShellViewHostMsg_LoadURLForFrame(routing_id(), url, frame_name));
 }
 
 bool BlinkTestRunner::AllowExternalPages() {
@@ -635,8 +632,8 @@ void BlinkTestRunner::SetPermission(const std::string& name,
     status = blink::mojom::PermissionStatus::DENIED;
   }
 
-  Send(new LayoutTestHostMsg_SetPermission(
-      routing_id(), name, status, origin, embedding_origin));
+  Send(new LayoutTestHostMsg_SetPermission(routing_id(), name, status, origin,
+                                           embedding_origin));
 }
 
 void BlinkTestRunner::ResetPermissions() {
@@ -797,7 +794,7 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
   DCHECK(!is_main_window_);
 
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
   ForceResizeRenderView(render_view(), WebSize(800, 600));
 }
@@ -805,7 +802,7 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
 void BlinkTestRunner::ApplyTestConfiguration(
     mojom::ShellTestConfigurationPtr params) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   test_config_ = params.Clone();
 
@@ -834,7 +831,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
   render_view()->UpdateBrowserControlsState(
       BROWSER_CONTROLS_STATE_BOTH, BROWSER_CONTROLS_STATE_HIDDEN, false);
 
-  LayoutTestRenderThreadObserver::GetInstance()
+  WebTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()
       ->SetFocus(render_view()->GetWebView(), true);
@@ -846,7 +843,7 @@ void BlinkTestRunner::OnReset() {
   WebLocalFrame* main_frame =
       render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
 
-  LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
+  WebTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer. We know that about:blank navigation will finish
@@ -861,7 +858,7 @@ void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
   // Avoid a situation where TestFinished is called twice, because
   // of a racey test finish in 2 secondary renderers.
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
   if (!interfaces->TestIsRunning())
     return;
 

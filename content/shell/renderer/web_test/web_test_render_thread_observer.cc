@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
+#include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -17,16 +17,15 @@
 namespace content {
 
 namespace {
-LayoutTestRenderThreadObserver* g_instance = nullptr;
+WebTestRenderThreadObserver* g_instance = nullptr;
 }
 
 // static
-LayoutTestRenderThreadObserver*
-LayoutTestRenderThreadObserver::GetInstance() {
+WebTestRenderThreadObserver* WebTestRenderThreadObserver::GetInstance() {
   return g_instance;
 }
 
-LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver() {
+WebTestRenderThreadObserver::WebTestRenderThreadObserver() {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
@@ -36,15 +35,15 @@ LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver() {
   test_interfaces_->ResetAll();
 }
 
-LayoutTestRenderThreadObserver::~LayoutTestRenderThreadObserver() {
+WebTestRenderThreadObserver::~WebTestRenderThreadObserver() {
   CHECK(g_instance == this);
   g_instance = nullptr;
 }
 
-bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
+bool WebTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderThreadObserver, message)
+  IPC_BEGIN_MESSAGE_MAP(WebTestRenderThreadObserver, message)
     IPC_MESSAGE_HANDLER(LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
                         OnReplicateLayoutTestRuntimeFlagsChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -53,7 +52,7 @@ bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
   return handled;
 }
 
-void LayoutTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
+void WebTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_layout_test_runtime_flags) {
   test_interfaces()->TestRunner()->ReplicateLayoutTestRuntimeFlagsChanges(
       changed_layout_test_runtime_flags);

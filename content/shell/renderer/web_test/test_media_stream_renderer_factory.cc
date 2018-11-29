@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
+#include "content/shell/renderer/web_test/test_media_stream_renderer_factory.h"
 
-#include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
+#include "content/shell/renderer/web_test/test_media_stream_video_renderer.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
