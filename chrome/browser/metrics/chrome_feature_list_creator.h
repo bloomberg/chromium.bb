@@ -5,10 +5,16 @@
 #ifndef CHROME_BROWSER_METRICS_CHROME_FEATURE_LIST_CREATOR_H_
 #define CHROME_BROWSER_METRICS_CHROME_FEATURE_LIST_CREATOR_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_service.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -44,6 +50,10 @@ class ChromeFeatureListCreator {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
   TakeChromeBrowserPolicyConnector();
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  std::unique_ptr<installer::MasterPreferences> TakeMasterPrefs();
+#endif
+
   // Passes ownership of the |pref_service_factory_| to the caller.
   std::unique_ptr<prefs::InProcessPrefServiceFactory> TakePrefServiceFactory();
 
@@ -62,6 +72,11 @@ class ChromeFeatureListCreator {
   void ConvertFlagsToSwitches();
   void SetupFieldTrials();
   void CreateMetricsServices();
+
+  // Imports variations master preference any preferences (to local state)
+  // needed for first run. This is always called and early outs if not
+  // first-run.
+  void SetupMasterPrefs();
 
   // If TakePrefService() is called, the caller will take the ownership
   // of this variable. Stop using this variable afterwards.
@@ -85,6 +100,10 @@ class ChromeFeatureListCreator {
       browser_policy_connector_;
 
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  std::unique_ptr<installer::MasterPreferences> installer_master_prefs_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFeatureListCreator);
 };
