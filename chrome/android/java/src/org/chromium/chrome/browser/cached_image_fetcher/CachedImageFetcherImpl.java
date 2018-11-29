@@ -13,6 +13,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import java.io.File;
+
 /**
  * Implementation that uses a disk cache.
  */
@@ -99,6 +101,10 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
     /** Wrapper function to decode a file for disk, useful for testing. */
     @VisibleForTesting
     Bitmap tryToLoadImageFromDisk(String filePath) {
-        return BitmapFactory.decodeFile(filePath, null);
+        if (new File(filePath).exists()) {
+            return BitmapFactory.decodeFile(filePath, null);
+        } else {
+            return null;
+        }
     }
 }
