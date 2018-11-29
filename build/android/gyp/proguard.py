@@ -130,14 +130,14 @@ def _CreateR8Command(options, map_output_path, output_dir):
   classpath = [
       p for p in set(options.classpath) if p not in options.input_paths
   ]
+
+  # TODO(smaier): Add back min-api once crbug.com/892644 is done.
+
   for lib in classpath:
     cmd += ['--lib', lib]
 
   for config_file in options.proguard_configs:
     cmd += ['--pg-conf', config_file]
-
-  if options.min_api:
-    cmd += ['--min-api', options.min_api]
 
   if options.main_dex_rules_path:
     for main_dex_rule in options.main_dex_rules_path:
