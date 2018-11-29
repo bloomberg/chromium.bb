@@ -441,7 +441,7 @@ def shorten_union_name(union_type):
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
         # modules/canvas/htmlcanvas/html_canvas_element_module.idl
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
-        # core/imagebitmap/ImageBitmapFactories.idl
+        # core/frame/window_or_worker_global_scope.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',

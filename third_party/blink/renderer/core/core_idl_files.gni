@@ -545,7 +545,6 @@ core_dependency_idl_files =
                     "fullscreen/document_fullscreen.idl",
                     "fullscreen/element_fullscreen.idl",
                     "html/html_hyperlink_element_utils.idl",
-                    "imagebitmap/image_bitmap_factories.idl",
                     "layout/custom/css_layout_worklet.idl",
                     "svg/svg_document.idl",
                     "svg/svg_filter_primitive_standard_attributes.idl",

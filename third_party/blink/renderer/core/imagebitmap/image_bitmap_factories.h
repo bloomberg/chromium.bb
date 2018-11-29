@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_FACTORIES_H_
 
 #include <memory>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/image_bitmap_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/window_or_worker_global_scope.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -56,9 +58,6 @@ class EventTarget;
 class ImageBitmapSource;
 class ImageBitmapOptions;
 
-typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
-    ImageBitmapSourceUnion;
-
 class ImageBitmapFactories final
     : public GarbageCollectedFinalized<ImageBitmapFactories>,
       public Supplement<LocalDOMWindow>,
@@ -69,11 +68,11 @@ class ImageBitmapFactories final
  public:
   static const char kSupplementName[];
 
-  static ScriptPromise createImageBitmap(ScriptState*,
+  static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
                                          const ImageBitmapOptions*);
-  static ScriptPromise createImageBitmap(ScriptState*,
+  static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
                                          int sx,
@@ -81,7 +80,7 @@ class ImageBitmapFactories final
                                          int sw,
                                          int sh,
                                          const ImageBitmapOptions*);
-  static ScriptPromise createImageBitmap(ScriptState*,
+  static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          ImageBitmapSource*,
                                          base::Optional<IntRect> crop_rect,

@@ -28,6 +28,16 @@
 // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
 // https://html.spec.whatwg.org/C/timers-and-user-prompts.html#timers
 
+// https://html.spec.whatwg.org/#imagebitmapsource
+typedef (HTMLImageElement or
+         SVGImageElement or
+         HTMLVideoElement or
+         HTMLCanvasElement or
+         Blob or
+         ImageData or
+         ImageBitmap or
+         OffscreenCanvas) ImageBitmapSource;
+
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
@@ -46,4 +56,10 @@
     [CallWith=ScriptState] long setInterval(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
     [CallWith=ScriptState, RaisesException] long setInterval(ScriptString handler, optional long timeout = 0, any... arguments);
     void clearInterval(optional long handle = 0);
+
+    // ImageBitmap
+    [CallWith=ScriptState] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, optional ImageBitmapOptions options);
+    [CallWith=ScriptState] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options);
 };
