@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -27,24 +28,43 @@ public class AutofillAssistantFacade {
     private static final String PARAMETER_ENABLED = "ENABLED";
 
     /** Returns true if all conditions are satisfied to start Autofill Assistant. */
-    public static boolean isConfigured(Bundle intentExtras) {
+    public static boolean isConfigured(@Nullable Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
                 && !AutofillAssistantStudy.getUrl().isEmpty()
-                && AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn();
+                && AutofillAssistantPreferencesUtil.canShowAutofillAssistant();
     }
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
+        if (!AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+            FirstRunScreen.show(activity, (result) -> {
+                if (result) initiateAutofillAssistant(activity, parameters);
+            });
+            return;
+        }
 
+        if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
+                && AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+            initiateAutofillAssistant(activity, parameters);
+        }
+        // We don't have consent to start Autofill Assistant and cannot show initial screen.
+        // Do nothing.
+    }
+
+    /**
+     * Instantiates all essential Autofill Assistant components and starts it.
+     */
+    private static void initiateAutofillAssistant(
+            ChromeActivity activity, Map<String, String> parameters) {
         AutofillAssistantUiController controller =
                 new AutofillAssistantUiController(activity, parameters);
         UiDelegateHolder delegateHolder = new UiDelegateHolder(
                 controller, new AutofillAssistantUiDelegate(activity, controller));
         initTabObservers(activity, delegateHolder);
 
-        controller.start(delegateHolder, Details.makeFromParameters(parameters));
+        controller.init(delegateHolder, Details.makeFromParameters(parameters));
     }
 
     private static void initTabObservers(ChromeActivity activity, UiDelegateHolder delegateHolder) {
@@ -74,16 +94,19 @@ public class AutofillAssistantFacade {
     }
 
     /** Return the value if the given boolean parameter from the extras. */
-    private static boolean getBooleanParameter(Bundle extras, String parameterName) {
-        return extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
+    private static boolean getBooleanParameter(@Nullable Bundle extras, String parameterName) {
+        return extras != null && extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
     }
 
     /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
-    private static Map<String, String> extractParameters(Bundle extras) {
+    private static Map<String, String> extractParameters(@Nullable Bundle extras) {
         Map<String, String> result = new HashMap<>();
-        for (String key : extras.keySet()) {
-            if (key.startsWith(INTENT_EXTRA_PREFIX)) {
-                result.put(key.substring(INTENT_EXTRA_PREFIX.length()), extras.get(key).toString());
+        if (extras != null) {
+            for (String key : extras.keySet()) {
+                if (key.startsWith(INTENT_EXTRA_PREFIX)) {
+                    result.put(key.substring(INTENT_EXTRA_PREFIX.length()),
+                            extras.get(key).toString());
+                }
             }
         }
         return result;
