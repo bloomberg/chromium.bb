@@ -15,11 +15,13 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -63,7 +65,7 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
   // For successful requests also record time from request to save.
   if (request_status == Offliner::RequestStatus::SAVED ||
       request_status == Offliner::RequestStatus::SAVED_ON_LAST_RETRY) {
-    base::TimeDelta duration = base::Time::Now() - request_creation_time;
+    base::TimeDelta duration = OfflineClock()->Now() - request_creation_time;
     base::UmaHistogramCustomCounts(
         AddHistogramSuffix(client_id, "OfflinePages.Background.TimeToSaved"),
         duration.InSeconds(), kMinDuration.InSeconds(),
@@ -98,7 +100,7 @@ void RecordStartTimeUMA(const SavePageRequest& request) {
     histogram_name += ".Svelte";
   }
 
-  base::TimeDelta duration = base::Time::Now() - request.creation_time();
+  base::TimeDelta duration = OfflineClock()->Now() - request.creation_time();
   base::UmaHistogramCustomTimes(
       AddHistogramSuffix(request.client_id(), histogram_name.c_str()), duration,
       base::TimeDelta::FromMilliseconds(100), base::TimeDelta::FromDays(7), 50);
@@ -108,7 +110,7 @@ void RecordCancelTimeUMA(const SavePageRequest& canceled_request) {
   // Using regular histogram (with dynamic suffix) rather than time-oriented
   // one to record samples in seconds rather than milliseconds.
   base::TimeDelta duration =
-      base::Time::Now() - canceled_request.creation_time();
+      OfflineClock()->Now() - canceled_request.creation_time();
   base::UmaHistogramCustomCounts(
       AddHistogramSuffix(canceled_request.client_id(),
                          "OfflinePages.Background.TimeToCanceled"),
@@ -259,7 +261,7 @@ int64_t RequestCoordinator::SavePageLater(
   // Build a SavePageRequest.
   offline_pages::SavePageRequest request(
       id, save_page_later_params.url, save_page_later_params.client_id,
-      base::Time::Now(), save_page_later_params.user_requested);
+      OfflineClock()->Now(), save_page_later_params.user_requested);
   request.set_original_url(save_page_later_params.original_url);
   request.set_request_origin(save_page_later_params.request_origin);
   pending_state_updater_.SetPendingState(request);
@@ -661,7 +663,7 @@ bool RequestCoordinator::StartProcessingInternal(
 
   // Mark the time at which we started processing so we can check our time
   // budget.
-  operation_start_time_ = base::Time::Now();
+  operation_start_time_ = OfflineClock()->Now();
 
   TryNextRequest(kStartOfProcessing);
 
@@ -775,7 +777,8 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   // will return to us at the next opportunity to run background tasks.
   if (connection_type ==
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE ||
-      (base::Time::Now() - operation_start_time_) > processing_time_budget) {
+      (OfflineClock()->Now() - operation_start_time_) >
+          processing_time_budget) {
     state_ = RequestCoordinatorState::IDLE;
 
     // If we were doing immediate processing, try to start it again
@@ -847,7 +850,7 @@ void RequestCoordinator::RequestNotPicked(
   } else if (!available_time.is_null()) {
     scheduler_->BackupSchedule(
         GetTriggerConditions(kUserRequest),
-        (available_time - base::Time::Now()).InSeconds() +
+        (available_time - OfflineClock()->Now()).InSeconds() +
             1 /*Add an extra second to avoid rounding down.*/);
   }
 
