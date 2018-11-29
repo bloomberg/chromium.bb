@@ -559,7 +559,7 @@ void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
       max_id = id;
 #if defined(OS_ANDROID)
     // On android, clean up cancelled and non resumable interrupted downloads.
-    if (ShouldClearDownloadFromDB(download->GetState(),
+    if (ShouldClearDownloadFromDB(download->GetURL(), download->GetState(),
                                   download->GetLastReason())) {
       cleared_download_guids_on_startup_.insert(download->GetGuid());
       DeleteDownloadedFileOnUIThread(download->GetFullPath());
@@ -953,7 +953,7 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   // Retrive the in-progress download if it exists. Notice that this also
   // removes it from |in_progress_downloads_|.
-  auto download = RetrieveInProgressDownload(id);
+  auto in_progress_download = RetrieveInProgressDownload(id);
 #if defined(OS_ANDROID)
   // On Android, there is no way to interact with cancelled or non-resumable
   // download. Simply returning null and don't store them in this class to
@@ -962,37 +962,32 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       cleared_download_guids_on_startup_.end()) {
     return nullptr;
   }
-  if (ShouldClearDownloadFromDB(state, interrupt_reason)) {
+  if (url_chain.empty() ||
+      ShouldClearDownloadFromDB(url_chain.back(), state, interrupt_reason)) {
     DeleteDownloadedFileOnUIThread(current_path);
     return nullptr;
   }
 #endif
-  if (download) {
-    // If a completed or cancelled download item is already in the history db,
-    // remove it from the in-progress db.
-    if (state == download::DownloadItem::COMPLETE ||
-        state == download::DownloadItem::CANCELLED) {
+  auto item = base::WrapUnique(item_factory_->CreatePersistedItem(
+      this, guid, id, current_path, target_path, url_chain, referrer_url,
+      site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
+      start_time, end_time, etag, last_modified, received_bytes, total_bytes,
+      hash, state, danger_type, interrupt_reason, opened, last_access_time,
+      transient, received_slices));
+  if (in_progress_download) {
+    // If the download item from history db is already in terminal state,
+    // remove it from the in-progress db. Otherwise, use the in-progress db one.
+    if (item->IsDone()) {
       in_progress_manager_->RemoveInProgressDownload(guid);
-      // Destroy |download| as we can create from the history instead.
-      download.reset();
+    } else {
+      item = std::move(in_progress_download);
+      item->SetDelegate(this);
     }
   }
-  download::DownloadItemImpl* item = download.get();
-  if (item) {
-    item->SetDelegate(this);
-    DownloadItemUtils::AttachInfo(item, GetBrowserContext(), nullptr);
-    OnDownloadCreated(std::move(download));
-  } else {
-    item = item_factory_->CreatePersistedItem(
-        this, guid, id, current_path, target_path, url_chain, referrer_url,
-        site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
-        start_time, end_time, etag, last_modified, received_bytes, total_bytes,
-        hash, state, danger_type, interrupt_reason, opened, last_access_time,
-        transient, received_slices);
-    DownloadItemUtils::AttachInfo(item, GetBrowserContext(), nullptr);
-    OnDownloadCreated(base::WrapUnique(item));
-  }
-  return item;
+  download::DownloadItemImpl* download = item.get();
+  DownloadItemUtils::AttachInfo(download, GetBrowserContext(), nullptr);
+  OnDownloadCreated(std::move(item));
+  return download;
 }
 
 void DownloadManagerImpl::OnDownloadCreated(
@@ -1346,6 +1341,7 @@ bool DownloadManagerImpl::IsNextIdInitialized() const {
 
 #if defined(OS_ANDROID)
 bool DownloadManagerImpl::ShouldClearDownloadFromDB(
+    const GURL& url,
     download::DownloadItem::DownloadState state,
     download::DownloadInterruptReason reason) {
   if (state == download::DownloadItem::CANCELLED) {
@@ -1353,7 +1349,7 @@ bool DownloadManagerImpl::ShouldClearDownloadFromDB(
     return true;
   }
   if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
-      download::GetDownloadResumeMode(reason, false /* restart_required */,
+      download::GetDownloadResumeMode(url, reason, false /* restart_required */,
                                       false /* user_action_required */) ==
           download::ResumeMode::INVALID) {
     ++interrupted_download_cleared_from_history_;

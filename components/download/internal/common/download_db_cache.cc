@@ -170,11 +170,10 @@ void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   // that are in the INTERRUPTED state for a long time.
   if (!base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads)) {
     // If history service is still managing in-progress download, we can safely
-    // remove a download from the in-progress DB whenever it is completed or
-    // cancelled. Otherwise, we need to propagate the completed download to
+    // remove a download from the in-progress DB whenever it is in the terminal
+    // state. Otherwise, we need to propagate the completed download to
     // history service before we can remove it.
-    if (download->GetState() == DownloadItem::COMPLETE ||
-        download->GetState() == DownloadItem::CANCELLED) {
+    if (download->IsDone()) {
       OnDownloadRemoved(download);
       return;
     }

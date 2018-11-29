@@ -951,11 +951,12 @@ public class DownloadUtils {
      * Get the resume mode based on the current fail state, to distinguish the case where download
      * cannot be resumed at all or can be resumed in the middle, or should be restarted from the
      * beginning.
+     * @param url URL of the download.
      * @param failState Why the download failed.
      * @return The resume mode for the current fail state.
      */
-    public static @ResumeMode int getResumeMode(@FailState int failState) {
-        return nativeGetResumeMode(failState);
+    public static @ResumeMode int getResumeMode(String url, @FailState int failState) {
+        return nativeGetResumeMode(url, failState);
     }
 
     /**
@@ -1186,5 +1187,5 @@ public class DownloadUtils {
     }
 
     private static native String nativeGetFailStateMessage(@FailState int failState);
-    private static native int nativeGetResumeMode(@FailState int failState);
+    private static native int nativeGetResumeMode(String url, @FailState int failState);
 }

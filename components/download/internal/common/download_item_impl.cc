@@ -684,27 +684,7 @@ bool DownloadItemImpl::CanResume() const {
 }
 
 bool DownloadItemImpl::IsDone() const {
-  switch (state_) {
-    case INITIAL_INTERNAL:
-    case COMPLETING_INTERNAL:
-    case RESUMING_INTERNAL:
-    case TARGET_PENDING_INTERNAL:
-    case INTERRUPTED_TARGET_PENDING_INTERNAL:
-    case TARGET_RESOLVED_INTERNAL:
-    case IN_PROGRESS_INTERNAL:
-      return false;
-
-    case COMPLETE_INTERNAL:
-    case CANCELLED_INTERNAL:
-      return true;
-
-    case INTERRUPTED_INTERNAL:
-      return !CanResume();
-
-    case MAX_DOWNLOAD_INTERNAL_STATE:
-      NOTREACHED();
-  }
-  return false;
+  return IsDownloadDone(GetURL(), GetState(), GetLastReason());
 }
 
 int64_t DownloadItemImpl::GetBytesWasted() const {
@@ -1076,10 +1056,6 @@ void DownloadItemImpl::SimulateErrorForTesting(DownloadInterruptReason reason) {
 ResumeMode DownloadItemImpl::GetResumeMode() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Only support resumption for HTTP(S).
-  if (!GetURL().SchemeIsHTTPOrHTTPS())
-    return ResumeMode::INVALID;
-
   // We can't continue without a handle on the intermediate file.
   // We also can't continue if we don't have some verifier to make sure
   // we're getting the same file.
@@ -1091,7 +1067,7 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
   bool user_action_required =
       (auto_resume_count_ >= kMaxAutoResumeAttempts || IsPaused());
 
-  return GetDownloadResumeMode(last_reason_, restart_required,
+  return GetDownloadResumeMode(GetURL(), last_reason_, restart_required,
                                user_action_required);
 }
 

@@ -82,9 +82,17 @@ COMPONENTS_DOWNLOAD_EXPORT uint64_t GetUniqueDownloadId();
 // Given the interrupt reason, and whether restart and user action are required,
 // determine the final ResomeMode.
 COMPONENTS_DOWNLOAD_EXPORT ResumeMode
-GetDownloadResumeMode(DownloadInterruptReason reason,
+GetDownloadResumeMode(const GURL& url,
+                      DownloadInterruptReason reason,
                       bool restart_required,
                       bool user_action_required);
+
+// Check if a download is in terminal state given its url, state and interrupt
+// reason.
+COMPONENTS_DOWNLOAD_EXPORT bool IsDownloadDone(
+    const GURL& url,
+    DownloadItem::DownloadState state,
+    DownloadInterruptReason reason);
 
 COMPONENTS_DOWNLOAD_EXPORT bool DeleteDownloadedFile(
     const base::FilePath& path);

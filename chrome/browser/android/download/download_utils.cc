@@ -28,11 +28,14 @@ static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
 static jint JNI_DownloadUtils_GetResumeMode(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jstring>& jurl,
     jint failState) {
+  std::string url = ConvertJavaStringToUTF8(env, jurl);
   auto reason = OfflineItemUtils::ConvertFailStateToDownloadInterruptReason(
       static_cast<offline_items_collection::FailState>(failState));
   return static_cast<jint>(download::GetDownloadResumeMode(
-      reason, false /* restart_required */, true /* user_action_required */));
+      GURL(std::move(url)), reason, false /* restart_required */,
+      true /* user_action_required */));
 }
 
 // static
