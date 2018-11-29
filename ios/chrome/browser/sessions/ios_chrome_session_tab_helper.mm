@@ -8,8 +8,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(IOSChromeSessionTabHelper);
-
 IOSChromeSessionTabHelper::IOSChromeSessionTabHelper(web::WebState* web_state)
     : session_id_(SessionID::NewUnique()),
       window_id_(SessionID::InvalidValue()) {}
