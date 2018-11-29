@@ -77,31 +77,36 @@ BooleanOrStringOrUnrestrictedDouble& BooleanOrStringOrUnrestrictedDouble::operat
 void BooleanOrStringOrUnrestrictedDouble::Trace(blink::Visitor* visitor) {
 }
 
-void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    BooleanOrStringOrUnrestrictedDouble& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (v8Value->IsBoolean()) {
-    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
+  if (v8_value->IsBoolean()) {
+    impl.SetBoolean(v8_value.As<v8::Boolean>()->Value());
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    double cpp_value = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetUnrestrictedDouble(cppValue);
+    impl.SetUnrestrictedDouble(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -122,9 +127,10 @@ v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::L
   return v8::Local<v8::Value>();
 }
 
-BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   BooleanOrStringOrUnrestrictedDouble impl;
-  V8BooleanOrStringOrUnrestrictedDouble::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8BooleanOrStringOrUnrestrictedDouble::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

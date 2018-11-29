@@ -60,31 +60,36 @@ LongOrBoolean& LongOrBoolean::operator=(const LongOrBoolean&) = default;
 void LongOrBoolean::Trace(blink::Visitor* visitor) {
 }
 
-void V8LongOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrBoolean& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8LongOrBoolean::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    LongOrBoolean& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (v8Value->IsBoolean()) {
-    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
+  if (v8_value->IsBoolean()) {
+    impl.SetBoolean(v8_value.As<v8::Boolean>()->Value());
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 }
@@ -103,9 +108,10 @@ v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creat
   return v8::Local<v8::Value>();
 }
 
-LongOrBoolean NativeValueTraits<LongOrBoolean>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+LongOrBoolean NativeValueTraits<LongOrBoolean>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   LongOrBoolean impl;
-  V8LongOrBoolean::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongOrBoolean::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

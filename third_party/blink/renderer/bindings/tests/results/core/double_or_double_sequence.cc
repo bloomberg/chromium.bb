@@ -60,34 +60,39 @@ DoubleOrDoubleSequence& DoubleOrDoubleSequence::operator=(const DoubleOrDoubleSe
 void DoubleOrDoubleSequence::Trace(blink::Visitor* visitor) {
 }
 
-void V8DoubleOrDoubleSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrDoubleSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8DoubleOrDoubleSequence::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    DoubleOrDoubleSequence& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<double> cppValue = NativeValueTraits<IDLSequence<IDLDouble>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    Vector<double> cpp_value = NativeValueTraits<IDLSequence<IDLDouble>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDoubleSequence(cppValue);
+    impl.SetDoubleSequence(cpp_value);
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDouble(cppValue);
+    impl.SetDouble(cpp_value);
     return;
   }
 
   {
-    double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetDouble(cppValue);
+    impl.SetDouble(cpp_value);
     return;
   }
 }
@@ -106,9 +111,10 @@ v8::Local<v8::Value> ToV8(const DoubleOrDoubleSequence& impl, v8::Local<v8::Obje
   return v8::Local<v8::Value>();
 }
 
-DoubleOrDoubleSequence NativeValueTraits<DoubleOrDoubleSequence>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+DoubleOrDoubleSequence NativeValueTraits<DoubleOrDoubleSequence>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   DoubleOrDoubleSequence impl;
-  V8DoubleOrDoubleSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8DoubleOrDoubleSequence::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

@@ -32,7 +32,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestConstants::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestConstants::DomTemplate,
     nullptr,
@@ -49,7 +49,7 @@ const WrapperTypeInfo V8TestConstants::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestConstants.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestConstants::wrapper_type_info_ = V8TestConstants::wrapperTypeInfo;
+const WrapperTypeInfo& TestConstants::wrapper_type_info_ = V8TestConstants::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -85,49 +85,51 @@ void V8TestConstants::MEASUREDCONSTANTConstantGetterCallback(v8::Local<v8::Name>
 static void InstallV8TestConstantsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestConstants::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestConstants::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestConstants::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
-  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestConstantsConstants[] = {
-      {"CONST_VALUE_ZERO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
-      {"CONST_VALUE_ONE", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
-      {"CONST_VALUE_TWO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(2)},
-      {"CONST_VALUE_NEGATIVE", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(-1)},
-      {"CONST_VALUE_32_BITS", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0xffffffff)},
-      {"CONST_VALUE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x01)},
-      {"CONST_VALUE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0X20)},
-      {"CONST_VALUE_HEX3", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x1abc)},
-      {"CONST_VALUE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(010)},
-      {"CONST_VALUE_NEGATIVE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-010)},
-      {"CONST_VALUE_NEGATIVE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0x1A)},
-      {"CONST_VALUE_NEGATIVE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0X1a)},
-      {"CONST_VALUE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(0.123)},
-      {"CONST_VALUE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(4e9)},
-      {"CONST_VALUE_DECIMAL3", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(3.4e5)},
-      {"CONST_VALUE_DECIMAL4", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(.123)},
-      {"CONST_VALUE_DECIMAL5", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(5E+4)},
-      {"CONST_VALUE_NEGATIVE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-1.3)},
-      {"CONST_VALUE_NEGATIVE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-4e-9)},
-      {"CONST_VALUE_FLOAT", V8DOMConfiguration::kConstantTypeFloat, static_cast<double>(1)},
-      {"CONST_JAVASCRIPT", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
-  };
-  V8DOMConfiguration::InstallConstants(
-      isolate, interfaceTemplate, prototypeTemplate,
-      V8TestConstantsConstants, base::size(V8TestConstantsConstants));
+  {
+    static constexpr V8DOMConfiguration::ConstantConfiguration kConstants[] = {
+        {"CONST_VALUE_ZERO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
+        {"CONST_VALUE_ONE", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
+        {"CONST_VALUE_TWO", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(2)},
+        {"CONST_VALUE_NEGATIVE", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(-1)},
+        {"CONST_VALUE_32_BITS", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0xffffffff)},
+        {"CONST_VALUE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x01)},
+        {"CONST_VALUE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0X20)},
+        {"CONST_VALUE_HEX3", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0x1abc)},
+        {"CONST_VALUE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(010)},
+        {"CONST_VALUE_NEGATIVE_OCT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-010)},
+        {"CONST_VALUE_NEGATIVE_HEX", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0x1A)},
+        {"CONST_VALUE_NEGATIVE_HEX2", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(-0X1a)},
+        {"CONST_VALUE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(0.123)},
+        {"CONST_VALUE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(4e9)},
+        {"CONST_VALUE_DECIMAL3", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(3.4e5)},
+        {"CONST_VALUE_DECIMAL4", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(.123)},
+        {"CONST_VALUE_DECIMAL5", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(5E+4)},
+        {"CONST_VALUE_NEGATIVE_DECIMAL", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-1.3)},
+        {"CONST_VALUE_NEGATIVE_DECIMAL2", V8DOMConfiguration::kConstantTypeDouble, static_cast<double>(-4e-9)},
+        {"CONST_VALUE_FLOAT", V8DOMConfiguration::kConstantTypeFloat, static_cast<double>(1)},
+        {"CONST_JAVASCRIPT", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
+    };
+    V8DOMConfiguration::InstallConstants(
+        isolate, interface_template, prototype_template,
+        kConstants, base::size(kConstants));
+  }
   V8DOMConfiguration::InstallConstantWithGetter(
-      isolate, interfaceTemplate, prototypeTemplate,
+      isolate, interface_template, prototype_template,
       "DEPRECATED_CONSTANT", V8TestConstants::DEPRECATEDCONSTANTConstantGetterCallback);
   V8DOMConfiguration::InstallConstantWithGetter(
-      isolate, interfaceTemplate, prototypeTemplate,
+      isolate, interface_template, prototype_template,
       "MEASURED_CONSTANT", V8TestConstants::MEASUREDCONSTANTConstantGetterCallback);
   static_assert(0 == TestConstants::kConstValueZero, "the value of TestConstants_kConstValueZero does not match with implementation");
   static_assert(1 == TestConstants::kConstValueOne, "the value of TestConstants_kConstValueOne does not match with implementation");
@@ -156,7 +158,7 @@ static void InstallV8TestConstantsTemplate(
   // Custom signature
 
   V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -172,88 +174,119 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
 
   // Register IDL constants, attributes and operations.
   if (RuntimeEnabledFeatures::FeatureName1Enabled()) {
-    static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
+    static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"FEATURE1_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(1)},
         {"FEATURE1_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(2)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, base::size(constant_configurations));
+        kConfigurations, base::size(kConfigurations));
   }
   if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
-    static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
+    static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"FEATURE2_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(3)},
         {"FEATURE2_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(4)},
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, base::size(constant_configurations));
+        kConfigurations, base::size(kConfigurations));
   }
 
   // Custom signature
 }
 
-void V8TestConstants::InstallFeatureName1(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
-  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(6)};
-  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);
-  const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(7)};
-  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst2Configuration);
+void V8TestConstants::InstallFeatureName1(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface) {
+  static constexpr V8DOMConfiguration::ConstantConfiguration
+  kFEATURE1ORIGINTRIALENABLEDCONST1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(6)};
+  V8DOMConfiguration::InstallConstant(
+      isolate, interface, prototype, kFEATURE1ORIGINTRIALENABLEDCONST1Configuration);
+  static constexpr V8DOMConfiguration::ConstantConfiguration
+  kFEATURE1ORIGINTRIALENABLEDCONST2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(7)};
+  V8DOMConfiguration::InstallConstant(
+      isolate, interface, prototype, kFEATURE1ORIGINTRIALENABLEDCONST2Configuration);
 }
 
-void V8TestConstants::InstallFeatureName1(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = scriptState->PerContextData();
-  v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestConstants::wrapperTypeInfo);
-  v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestConstants::wrapperTypeInfo);
+void V8TestConstants::InstallFeatureName1(
+    ScriptState* script_state, v8::Local<v8::Object> instance) {
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
+      &V8TestConstants::wrapper_type_info);
+  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
+      &V8TestConstants::wrapper_type_info);
   ALLOW_UNUSED_LOCAL(interface);
-  InstallFeatureName1(scriptState->GetIsolate(), scriptState->World(), instance, prototype, interface);
+  InstallFeatureName1(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestConstants::InstallFeatureName1(ScriptState* scriptState) {
-  InstallFeatureName1(scriptState, v8::Local<v8::Object>());
+void V8TestConstants::InstallFeatureName1(ScriptState* script_state) {
+  InstallFeatureName1(script_state, v8::Local<v8::Object>());
 }
 
-void V8TestConstants::InstallFeatureName2(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
-  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(8)};
-  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst1Configuration);
-  const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(9)};
-  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst2Configuration);
+void V8TestConstants::InstallFeatureName2(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface) {
+  static constexpr V8DOMConfiguration::ConstantConfiguration
+  kFEATURE2ORIGINTRIALENABLEDCONST1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(8)};
+  V8DOMConfiguration::InstallConstant(
+      isolate, interface, prototype, kFEATURE2ORIGINTRIALENABLEDCONST1Configuration);
+  static constexpr V8DOMConfiguration::ConstantConfiguration
+  kFEATURE2ORIGINTRIALENABLEDCONST2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", V8DOMConfiguration::kConstantTypeShort, static_cast<int>(9)};
+  V8DOMConfiguration::InstallConstant(
+      isolate, interface, prototype, kFEATURE2ORIGINTRIALENABLEDCONST2Configuration);
 }
 
-void V8TestConstants::InstallFeatureName2(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = scriptState->PerContextData();
-  v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestConstants::wrapperTypeInfo);
-  v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestConstants::wrapperTypeInfo);
+void V8TestConstants::InstallFeatureName2(
+    ScriptState* script_state, v8::Local<v8::Object> instance) {
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
+      &V8TestConstants::wrapper_type_info);
+  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
+      &V8TestConstants::wrapper_type_info);
   ALLOW_UNUSED_LOCAL(interface);
-  InstallFeatureName2(scriptState->GetIsolate(), scriptState->World(), instance, prototype, interface);
+  InstallFeatureName2(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestConstants::InstallFeatureName2(ScriptState* scriptState) {
-  InstallFeatureName2(scriptState, v8::Local<v8::Object>());
+void V8TestConstants::InstallFeatureName2(ScriptState* script_state) {
+  InstallFeatureName2(script_state, v8::Local<v8::Object>());
 }
 
-v8::Local<v8::FunctionTemplate> V8TestConstants::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestConstantsTemplate);
+v8::Local<v8::FunctionTemplate> V8TestConstants::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestConstantsTemplate);
 }
 
-bool V8TestConstants::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestConstants::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestConstants::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestConstants::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestConstants* V8TestConstants::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestConstants* V8TestConstants::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestConstants* NativeValueTraits<TestConstants>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestConstants* nativeValue = V8TestConstants::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestConstants* NativeValueTraits<TestConstants>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestConstants* native_value = V8TestConstants::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestConstants"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

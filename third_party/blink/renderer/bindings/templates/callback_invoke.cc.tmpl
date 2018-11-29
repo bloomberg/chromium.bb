@@ -154,7 +154,7 @@
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
   {
-    {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
+    {% set valid_enum_variables = 'kValid' + argument.name[0].upper() + argument.name[1:] + 'Values' %}
     {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | trim | indent(4)}}
     ExceptionState exception_state(GetIsolate(),
                                    ExceptionState::kExecutionContext,

@@ -33,7 +33,7 @@ void V8WritableStream::ConstructorCustom(
   auto* impl = MakeGarbageCollected<WritableStream>();
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
-      info.GetIsolate(), &V8WritableStream::wrapperTypeInfo, wrapper);
+      info.GetIsolate(), &V8WritableStream::wrapper_type_info, wrapper);
 
   if (num_args >= 1) {
     underlying_sink =

@@ -42,7 +42,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestTypedefs::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestTypedefs::DomTemplate,
     nullptr,
@@ -59,7 +59,7 @@ const WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestTypedefs.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestTypedefs::wrapper_type_info_ = V8TestTypedefs::wrapperTypeInfo;
+const WrapperTypeInfo& TestTypedefs::wrapper_type_info_ = V8TestTypedefs::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -84,7 +84,8 @@ static void ULongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
   V8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-static void ULongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void ULongLongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -93,14 +94,14 @@ static void ULongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestTypedefs", "uLongLongAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestTypedefs", "uLongLongAttribute");
 
   // Prepare the value to be set.
-  uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  if (exception_state.HadException())
     return;
 
-  impl->setULongLongAttribute(cppValue);
+  impl->setULongLongAttribute(cpp_value);
 }
 
 static void LongWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -111,7 +112,8 @@ static void LongWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo
   V8SetReturnValueInt(info, impl->longWithClampAttribute());
 }
 
-static void LongWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void LongWithClampAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -120,14 +122,14 @@ static void LongWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestTypedefs", "longWithClampAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestTypedefs", "longWithClampAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = NativeValueTraits<IDLLongClamp>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  int32_t cpp_value = NativeValueTraits<IDLLongClamp>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  if (exception_state.HadException())
     return;
 
-  impl->setLongWithClampAttribute(cppValue);
+  impl->setLongWithClampAttribute(cpp_value);
 }
 
 static void DOMStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -141,7 +143,8 @@ static void DOMStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCa
   V8SetReturnValue(info, result);
 }
 
-static void DOMStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void DOMStringOrDoubleOrNullAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -150,65 +153,65 @@ static void DOMStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
 
   // Prepare the value to be set.
-  StringOrDouble cppValue;
-  V8StringOrDouble::ToImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::kNullable, exceptionState);
-  if (exceptionState.HadException())
+  StringOrDouble cpp_value;
+  V8StringOrDouble::ToImpl(info.GetIsolate(), v8_value, cpp_value, UnionTypeConversionMode::kNullable, exception_state);
+  if (exception_state.HadException())
     return;
 
-  impl->setDomStringOrDoubleOrNullAttribute(cppValue);
+  impl->setDomStringOrDoubleOrNullAttribute(cpp_value);
 }
 
 static void VoidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodLongSequenceArg");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodLongSequenceArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
-  Vector<int32_t> longSequenceArg;
-  int numArgsPassed = info.Length();
-  while (numArgsPassed > 0) {
-    if (!info[numArgsPassed - 1]->IsUndefined())
+  Vector<int32_t> long_sequence_arg;
+  int num_args_passed = info.Length();
+  while (num_args_passed > 0) {
+    if (!info[num_args_passed - 1]->IsUndefined())
       break;
-    --numArgsPassed;
+    --num_args_passed;
   }
-  if (UNLIKELY(numArgsPassed <= 0)) {
+  if (UNLIKELY(num_args_passed <= 0)) {
     impl->voidMethodLongSequenceArg();
     return;
   }
-  longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  long_sequence_arg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
-  impl->voidMethodLongSequenceArg(longSequenceArg);
+  impl->voidMethodLongSequenceArg(long_sequence_arg);
 }
 
 static void VoidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodFloatArgStringArg");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodFloatArgStringArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 2)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
     return;
   }
 
-  float floatArg;
-  V8StringResource<> stringArg;
-  floatArg = NativeValueTraits<IDLFloat>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  float float_arg;
+  V8StringResource<> string_arg;
+  float_arg = NativeValueTraits<IDLFloat>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
-  stringArg = info[1];
-  if (!stringArg.Prepare())
+  string_arg = info[1];
+  if (!string_arg.Prepare())
     return;
 
-  impl->voidMethodFloatArgStringArg(floatArg, stringArg);
+  impl->voidMethodFloatArgStringArg(float_arg, string_arg);
 }
 
 static void VoidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodTestCallbackInterfaceTypeArg");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodTestCallbackInterfaceTypeArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
@@ -217,11 +220,11 @@ static void VoidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
     return;
   }
 
-  V8TestCallbackInterface* testCallbackInterfaceTypeArg;
+  V8TestCallbackInterface* test_callback_interface_type_arg;
   if (info[0]->IsObject()) {
-    testCallbackInterfaceTypeArg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!testCallbackInterfaceTypeArg) {
-      exceptionState.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
+    test_callback_interface_type_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
+    if (!test_callback_interface_type_arg) {
+      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
       return;
     }
   } else {
@@ -229,25 +232,25 @@ static void VoidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
     return;
   }
 
-  impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
+  impl->voidMethodTestCallbackInterfaceTypeArg(test_callback_interface_type_arg);
 }
 
 static void ULongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "uLongLongMethodTestInterfaceEmptyTypeSequenceArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
-  HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
-  testInterfaceEmptyTypeSequenceArg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  HeapVector<Member<TestInterfaceEmpty>> test_interface_empty_type_sequence_arg;
+  test_interface_empty_type_sequence_arg = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
-  V8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
+  V8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(test_interface_empty_type_sequence_arg)));
 }
 
 static void TestInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -267,72 +270,72 @@ static void DOMStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void ArrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "arrayOfStringsMethodArrayOfStringsArg");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "arrayOfStringsMethodArrayOfStringsArg");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
-  Vector<String> frozenStringArrayArg;
-  frozenStringArrayArg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  Vector<String> frozen_string_array_arg;
+  frozen_string_array_arg = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
-  V8SetReturnValue(info, FreezeV8Object(ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(frozenStringArrayArg), info.Holder(), info.GetIsolate()), info.GetIsolate()));
+  V8SetReturnValue(info, FreezeV8Object(ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(frozen_string_array_arg), info.Holder(), info.GetIsolate()), info.GetIsolate()));
 }
 
 static void MethodTakingRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingRecord");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingRecord");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   Vector<std::pair<String, int32_t>> arg;
-  arg = NativeValueTraits<IDLRecord<IDLByteString, IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  arg = NativeValueTraits<IDLRecord<IDLByteString, IDLLong>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
   impl->methodTakingRecord(arg);
 }
 
 static void MethodTakingOilpanValueRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingOilpanValueRecord");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "methodTakingOilpanValueRecord");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   HeapVector<std::pair<String, Member<TestObject>>> arg;
-  arg = NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  arg = NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
   impl->methodTakingOilpanValueRecord(arg);
 }
 
 static void UnionWithRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "unionWithRecordMethod");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "unionWithRecordMethod");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   ByteStringSequenceSequenceOrByteStringByteStringRecord arg;
-  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
-  if (exceptionState.HadException())
+  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exception_state);
+  if (exception_state.HadException())
     return;
 
   V8SetReturnValue(info, impl->unionWithRecordMethod(arg));
@@ -345,36 +348,36 @@ static void MethodThatReturnsRecordMethod(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void VoidMethodNestedUnionTypeMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodNestedUnionType");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodNestedUnionType");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord arg;
-  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exceptionState);
-  if (exceptionState.HadException())
+  V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNullable, exception_state);
+  if (exception_state.HadException())
     return;
 
   impl->voidMethodNestedUnionType(arg);
 }
 
 static void VoidMethodUnionWithTypedefMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodUnionWithTypedef");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodUnionWithTypedef");
 
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   UnsignedLongLongOrBooleanOrTestCallbackInterface arg;
-  V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exceptionState);
-  if (exceptionState.HadException())
+  V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exception_state);
+  if (exception_state.HadException())
     return;
 
   impl->voidMethodUnionWithTypedef(arg);
@@ -388,14 +391,14 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  V8StringResource<> stringArg;
-  stringArg = info[0];
-  if (!stringArg.Prepare())
+  V8StringResource<> string_arg;
+  string_arg = info[0];
+  if (!string_arg.Prepare())
     return;
 
-  TestTypedefs* impl = TestTypedefs::Create(stringArg);
+  TestTypedefs* impl = TestTypedefs::Create(string_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapper_type_info, wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -403,7 +406,9 @@ CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_Constructor");
 
   if (!info.IsConstructCall()) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestTypedefs"));
+    V8ThrowException::ThrowTypeError(
+        info.GetIsolate(),
+        ExceptionMessages::ConstructorNotCallableAsFunction("TestTypedefs"));
     return;
   }
 
@@ -423,12 +428,13 @@ void V8TestTypedefs::ULongLongAttributeAttributeGetterCallback(const v8::Functio
   test_typedefs_v8_internal::ULongLongAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::ULongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::ULongLongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_uLongLongAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_typedefs_v8_internal::ULongLongAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::ULongLongAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestTypedefs::LongWithClampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -437,18 +443,20 @@ void V8TestTypedefs::LongWithClampAttributeAttributeGetterCallback(const v8::Fun
   test_typedefs_v8_internal::LongWithClampAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::LongWithClampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::LongWithClampAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_longWithClampAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_typedefs_v8_internal::LongWithClampAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::LongWithClampAttributeAttributeSetter(v8_value, info);
 }
 
-void V8TestTypedefs::TAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::TAttributeConstructorGetterCallback(
+    v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_tAttribute_ConstructorGetterCallback");
 
-  V8ConstructorAttributeGetter(property, info, &V8TestInterface::wrapperTypeInfo);
+  V8ConstructorAttributeGetter(property, info, &V8TestInterface::wrapper_type_info);
 }
 
 void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -457,12 +465,13 @@ void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback(con
   test_typedefs_v8_internal::DOMStringOrDoubleOrNullAttributeAttributeGetter(info);
 }
 
-void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_domStringOrDoubleOrNullAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_typedefs_v8_internal::DOMStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
+  test_typedefs_v8_internal::DOMStringOrDoubleOrNullAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestTypedefs::VoidMethodLongSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -549,20 +558,20 @@ void V8TestTypedefs::VoidMethodUnionWithTypedefMethodCallback(const v8::Function
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
+static constexpr V8DOMConfiguration::AttributeConfiguration kV8TestTypedefsAttributes[] = {
     { "tAttribute", V8TestTypedefs::TAttributeConstructorGetterCallback, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kReplaceWithDataProperty, V8DOMConfiguration::kAllWorlds },
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestTypedefsAccessors[] = {
     { "uLongLongAttribute", V8TestTypedefs::ULongLongAttributeAttributeGetterCallback, V8TestTypedefs::ULongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "longWithClampAttribute", V8TestTypedefs::LongWithClampAttributeAttributeGetterCallback, V8TestTypedefs::LongWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
+static constexpr V8DOMConfiguration::MethodConfiguration kV8TestTypedefsMethods[] = {
     {"voidMethodLongSequenceArg", V8TestTypedefs::VoidMethodLongSequenceArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodFloatArgStringArg", V8TestTypedefs::VoidMethodFloatArgStringArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestCallbackInterfaceTypeArg", V8TestTypedefs::VoidMethodTestCallbackInterfaceTypeArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
@@ -581,34 +590,34 @@ static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
 static void InstallV8TestTypedefsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestTypedefs::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount);
-  interfaceTemplate->SetCallHandler(test_typedefs_v8_internal::ConstructorCallback);
-  interfaceTemplate->SetLength(1);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestTypedefs::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::kInternalFieldCount);
+  interface_template->SetCallHandler(test_typedefs_v8_internal::ConstructorCallback);
+  interface_template->SetLength(1);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAttributes(
-      isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestTypedefsAttributes, base::size(V8TestTypedefsAttributes));
+      isolate, world, instance_template, prototype_template,
+      kV8TestTypedefsAttributes, base::size(kV8TestTypedefsAttributes));
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestTypedefsAccessors, base::size(V8TestTypedefsAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestTypedefsAccessors, base::size(kV8TestTypedefsAccessors));
   V8DOMConfiguration::InstallMethods(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestTypedefsMethods, base::size(V8TestTypedefsMethods));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestTypedefsMethods, base::size(kV8TestTypedefsMethods));
 
   // Custom signature
 
   V8TestTypedefs::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestTypedefs::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -627,29 +636,36 @@ void V8TestTypedefs::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestTypedefs::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestTypedefsTemplate);
+v8::Local<v8::FunctionTemplate> V8TestTypedefs::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestTypedefsTemplate);
 }
 
-bool V8TestTypedefs::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestTypedefs::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestTypedefs::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestTypedefs::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestTypedefs* V8TestTypedefs::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestTypedefs* V8TestTypedefs::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestTypedefs* NativeValueTraits<TestTypedefs>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestTypedefs* nativeValue = V8TestTypedefs::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestTypedefs* NativeValueTraits<TestTypedefs>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestTypedefs* native_value = V8TestTypedefs::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestTypedefs"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

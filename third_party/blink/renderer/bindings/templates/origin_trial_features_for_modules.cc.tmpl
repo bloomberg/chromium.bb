@@ -34,7 +34,7 @@ void InstallOriginTrialFeaturesForModules(
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
   {% for interface in installers_by_interface %}
-  if (wrapper_type_info == &{{interface.v8_class}}::wrapperTypeInfo) {
+  if (wrapper_type_info == &{{interface.v8_class}}::wrapper_type_info) {
     {% if interface.is_global %}
     v8::Local<v8::Object> instance_object =
         script_state->GetContext()->Global();
@@ -73,7 +73,7 @@ void InstallPendingOriginTrialFeatureForModules(
         v8::Local<v8::Object>(), v8::Local<v8::Function>());
     {% else %}
     if (context_data->GetExistingConstructorAndPrototypeForType(
-            &{{installer.v8_class}}::wrapperTypeInfo, &prototype_object, &interface_object)) {
+            &{{installer.v8_class}}::wrapper_type_info, &prototype_object, &interface_object)) {
       {{installer.v8_class_or_partial}}::{{installer.install_method}}(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }

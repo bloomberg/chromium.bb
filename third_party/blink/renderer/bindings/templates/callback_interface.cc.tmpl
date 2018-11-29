@@ -20,7 +20,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = {
+const WrapperTypeInfo {{v8_class}}::wrapper_type_info = {
     gin::kEmbedderBlink,
     {{v8_class}}::DomTemplate,
     nullptr,
@@ -42,15 +42,14 @@ static void Install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(
       isolate, interface_template,
-      {{v8_class}}::wrapperTypeInfo.interface_name,
+      {{v8_class}}::wrapper_type_info.interface_name,
       v8::Local<v8::FunctionTemplate>(),
       kV8DefaultWrapperInternalFieldCount);
   interface_template->SetLength(0);
 
   // Register IDL constants.
-  {# |install_constants| requires |interfaceTemplate| and |prototypeTemplate|. #}
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = interface_template;
-  v8::Local<v8::ObjectTemplate> prototypeTemplate =
+  {# |install_constants| requires |interface_template| and |prototype_template|. #}
+  v8::Local<v8::ObjectTemplate> prototype_template =
       interface_template->PrototypeTemplate();
   {{install_constants() | trim | indent(2)}}
 }
@@ -60,7 +59,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, 
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
       world,
-      const_cast<WrapperTypeInfo*>(&wrapperTypeInfo),
+      const_cast<WrapperTypeInfo*>(&wrapper_type_info),
       Install{{v8_class}}Template);
 }
 {% endif %}{# is_legacy_callback_interface #}

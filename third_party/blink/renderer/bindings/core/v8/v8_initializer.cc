@@ -198,7 +198,7 @@ static String ExtractMessageForConsole(v8::Isolate* isolate,
   if (V8DOMWrapper::IsWrapper(isolate, data)) {
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(data);
     const WrapperTypeInfo* type = ToWrapperTypeInfo(obj);
-    if (V8DOMException::wrapperTypeInfo.IsSubclass(type)) {
+    if (V8DOMException::wrapper_type_info.IsSubclass(type)) {
       DOMException* exception = V8DOMException::ToImpl(obj);
       if (exception && !exception->MessageForConsole().IsEmpty())
         return exception->ToStringForConsole();

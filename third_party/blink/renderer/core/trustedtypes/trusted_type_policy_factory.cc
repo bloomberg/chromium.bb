@@ -88,7 +88,7 @@ bool TrustedTypePolicyFactory::isHTML(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedHTML::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedHTML::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isScript(ScriptState* script_state,
@@ -96,7 +96,7 @@ bool TrustedTypePolicyFactory::isScript(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedScript::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedScript::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
@@ -104,7 +104,7 @@ bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedScriptURL::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedScriptURL::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
@@ -112,7 +112,7 @@ bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedURL::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedURL::wrapper_type_info);
 }
 
 void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {

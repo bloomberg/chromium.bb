@@ -60,26 +60,31 @@ StringTreatNullAsEmptyStringOrLong& StringTreatNullAsEmptyStringOrLong::operator
 void StringTreatNullAsEmptyStringOrLong::Trace(blink::Visitor* visitor) {
 }
 
-void V8StringTreatNullAsEmptyStringOrLong::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringTreatNullAsEmptyStringOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8StringTreatNullAsEmptyStringOrLong::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    StringTreatNullAsEmptyStringOrLong& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 
   {
-    V8StringResource<kTreatNullAsEmptyString> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<kTreatNullAsEmptyString> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -98,9 +103,10 @@ v8::Local<v8::Value> ToV8(const StringTreatNullAsEmptyStringOrLong& impl, v8::Lo
   return v8::Local<v8::Value>();
 }
 
-StringTreatNullAsEmptyStringOrLong NativeValueTraits<StringTreatNullAsEmptyStringOrLong>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+StringTreatNullAsEmptyStringOrLong NativeValueTraits<StringTreatNullAsEmptyStringOrLong>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   StringTreatNullAsEmptyStringOrLong impl;
-  V8StringTreatNullAsEmptyStringOrLong::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8StringTreatNullAsEmptyStringOrLong::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

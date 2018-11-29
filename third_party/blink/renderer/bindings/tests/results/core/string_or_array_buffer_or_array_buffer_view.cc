@@ -80,32 +80,37 @@ void StringOrArrayBufferOrArrayBufferView::Trace(blink::Visitor* visitor) {
   visitor->Trace(array_buffer_view_);
 }
 
-void V8StringOrArrayBufferOrArrayBufferView::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8StringOrArrayBufferOrArrayBufferView::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    StringOrArrayBufferOrArrayBufferView& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (v8Value->IsArrayBuffer()) {
-    TestArrayBuffer* cppValue = V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetArrayBuffer(cppValue);
+  if (v8_value->IsArrayBuffer()) {
+    TestArrayBuffer* cpp_value = V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetArrayBuffer(cpp_value);
     return;
   }
 
-  if (v8Value->IsArrayBufferView()) {
-    NotShared<TestArrayBufferView> cppValue = ToNotShared<NotShared<TestArrayBufferView>>(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsArrayBufferView()) {
+    NotShared<TestArrayBufferView> cpp_value = ToNotShared<NotShared<TestArrayBufferView>>(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetArrayBufferView(cppValue);
+    impl.SetArrayBufferView(cpp_value);
     return;
   }
 
   {
-    V8StringResource<> cppValue = v8Value;
-    if (!cppValue.Prepare(exceptionState))
+    V8StringResource<> cpp_value = v8_value;
+    if (!cpp_value.Prepare(exception_state))
       return;
-    impl.SetString(cppValue);
+    impl.SetString(cpp_value);
     return;
   }
 }
@@ -126,9 +131,10 @@ v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::
   return v8::Local<v8::Value>();
 }
 
-StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   StringOrArrayBufferOrArrayBufferView impl;
-  V8StringOrArrayBufferOrArrayBufferView::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8StringOrArrayBufferOrArrayBufferView::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

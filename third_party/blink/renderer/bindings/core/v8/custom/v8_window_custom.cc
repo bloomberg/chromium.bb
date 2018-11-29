@@ -83,15 +83,15 @@ void V8Window::LocationAttributeGetterCustom(
   // cross-origin status changes by changing properties like |document.domain|.
   if (window->IsRemoteDOMWindow()) {
     DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
-    const auto* wrapper_type_info = location->GetWrapperTypeInfo();
+    const auto* location_wrapper_type = location->GetWrapperTypeInfo();
     v8::Local<v8::Object> new_wrapper =
-        wrapper_type_info->DomTemplate(isolate, world)
+        location_wrapper_type->DomTemplate(isolate, world)
             ->NewRemoteInstance()
             .ToLocalChecked();
 
     DCHECK(!DOMDataStore::ContainsWrapper(location, isolate));
     wrapper = V8DOMWrapper::AssociateObjectWithWrapper(
-        isolate, location, wrapper_type_info, new_wrapper);
+        isolate, location, location_wrapper_type, new_wrapper);
   } else {
     wrapper = ToV8(location, holder, isolate);
   }

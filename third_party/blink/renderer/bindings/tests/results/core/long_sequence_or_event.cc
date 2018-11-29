@@ -62,28 +62,33 @@ void LongSequenceOrEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_);
 }
 
-void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongSequenceOrEvent& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8LongSequenceOrEvent::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    LongSequenceOrEvent& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8Event::HasInstance(v8Value, isolate)) {
-    Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetEvent(cppValue);
+  if (V8Event::HasInstance(v8_value, isolate)) {
+    Event* cpp_value = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetEvent(cpp_value);
     return;
   }
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<int32_t> cppValue = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLongSequence(cppValue);
+    impl.SetLongSequence(cpp_value);
     return;
   }
 
-  exceptionState.ThrowTypeError("The provided value is not of type '(sequence<long> or Event)'");
+  exception_state.ThrowTypeError("The provided value is not of type '(sequence<long> or Event)'");
 }
 
 v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -100,9 +105,10 @@ v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object>
   return v8::Local<v8::Value>();
 }
 
-LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   LongSequenceOrEvent impl;
-  V8LongSequenceOrEvent::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongSequenceOrEvent::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

@@ -24,7 +24,7 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
  public:
   // Support of "legacy callback interface"
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static const WrapperTypeInfo wrapperTypeInfo;
+  static const WrapperTypeInfo wrapper_type_info;
   // Constants
   static constexpr uint16_t CONST_VALUE_USHORT_42 = 42;
 

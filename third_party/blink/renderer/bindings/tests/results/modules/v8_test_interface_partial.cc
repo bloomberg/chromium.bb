@@ -44,7 +44,8 @@ static void Partial4LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
   V8SetReturnValueInt(info, TestInterfacePartial4::partial4LongAttribute(*impl));
 }
 
-static void Partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Partial4LongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -53,35 +54,36 @@ static void Partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4LongAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4LongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  if (exception_state.HadException())
     return;
 
-  TestInterfacePartial4::setPartial4LongAttribute(*impl, cppValue);
+  TestInterfacePartial4::setPartial4LongAttribute(*impl, cpp_value);
 }
 
 static void Partial4StaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValueInt(info, TestInterfacePartial4::partial4StaticLongAttribute());
 }
 
-static void Partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void Partial4StaticLongAttributeAttributeSetter(
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
   v8::Local<v8::Object> holder = info.Holder();
   ALLOW_UNUSED_LOCAL(holder);
 
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4StaticLongAttribute");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestInterface", "partial4StaticLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState);
-  if (exceptionState.HadException())
+  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  if (exception_state.HadException())
     return;
 
-  TestInterfacePartial4::setPartial4StaticLongAttribute(cppValue);
+  TestInterfacePartial4::setPartial4StaticLongAttribute(cpp_value);
 }
 
 static void VoidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -96,7 +98,7 @@ static void VoidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
 }
 
 static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -108,13 +110,13 @@ static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidMethodPartialOverload");
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidMethodPartialOverload");
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void StaticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -127,7 +129,7 @@ static void StaticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInf
 }
 
 static void StaticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -139,23 +141,23 @@ static void StaticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticVoidMethodPartialOverload");
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticVoidMethodPartialOverload");
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void PromiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "promiseMethodPartialOverload");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "promiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // V8DOMConfiguration::kDoNotCheckHolder
   // Make sure that info.Holder() really points to an instance of the type.
   if (!V8TestInterface::HasInstance(info.Holder(), info.GetIsolate())) {
-    exceptionState.ThrowTypeError("Illegal invocation");
+    exception_state.ThrowTypeError("Illegal invocation");
     return;
   }
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
@@ -163,7 +165,7 @@ static void PromiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
   Document* document;
   document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
-    exceptionState.ThrowTypeError("parameter 1 is not of type 'Document'.");
+    exception_state.ThrowTypeError("parameter 1 is not of type 'Document'.");
     return;
   }
 
@@ -171,7 +173,7 @@ static void PromiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
 }
 
 static void PromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -183,30 +185,30 @@ static void PromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "promiseMethodPartialOverload");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "promiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void StaticPromiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   V8StringResource<> value;
   value = info[0];
-  if (!value.Prepare(exceptionState))
+  if (!value.Prepare(exception_state))
     return;
 
   V8SetReturnValue(info, TestInterfacePartial3Implementation::staticPromiseMethodPartialOverload(value).V8Value());
 }
 
 static void StaticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -218,14 +220,14 @@ static void StaticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void Partial2VoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -253,7 +255,7 @@ static void Partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 static void Partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -269,22 +271,22 @@ static void Partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidMethod");
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidMethod");
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void PartialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partialVoidTestEnumModulesArgMethod");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partialVoidTestEnumModulesArgMethod");
 
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
@@ -292,11 +294,11 @@ static void PartialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
   arg = info[0];
   if (!arg.Prepare())
     return;
-  const char* validArgValues[] = {
+  const char* kValidArgValues[] = {
       "EnumModulesValue1",
       "EnumModulesValue2",
   };
-  if (!IsValidEnum(arg, validArgValues, base::size(validArgValues), "TestEnumModules", exceptionState)) {
+  if (!IsValidEnum(arg, kValidArgValues, base::size(kValidArgValues), "TestEnumModules", exception_state)) {
     return;
   }
 
@@ -313,7 +315,7 @@ static void Partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
 }
 
 static void Partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  bool isArityError = false;
+  bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
     case 0:
@@ -325,28 +327,28 @@ static void Partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
       }
       break;
     default:
-      isArityError = true;
+      is_arity_error = true;
   }
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2StaticVoidMethod");
-  if (isArityError) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2StaticVoidMethod");
+  if (is_arity_error) {
   }
-  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
+  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
 static void Partial2VoidTestEnumModulesRecordMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidTestEnumModulesRecordMethod");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidTestEnumModulesRecordMethod");
 
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   Vector<std::pair<String, String>> arg;
-  arg = NativeValueTraits<IDLRecord<IDLString, IDLString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
-  if (exceptionState.HadException())
+  arg = NativeValueTraits<IDLRecord<IDLString, IDLString>>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
     return;
 
   TestInterfacePartial3Implementation::partial2VoidTestEnumModulesRecordMethod(*impl, arg);
@@ -384,12 +386,13 @@ void V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback(const 
   test_interface_implementation_partial_v8_internal::Partial4LongAttributeAttributeGetter(info);
 }
 
-void V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial4LongAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_interface_implementation_partial_v8_internal::Partial4LongAttributeAttributeSetter(v8Value, info);
+  test_interface_implementation_partial_v8_internal::Partial4LongAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -398,12 +401,13 @@ void V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback(
   test_interface_implementation_partial_v8_internal::Partial4StaticLongAttributeAttributeGetter(info);
 }
 
-void V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_partial4StaticLongAttribute_Setter");
 
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
 
-  test_interface_implementation_partial_v8_internal::Partial4StaticLongAttributeAttributeSetter(v8Value, info);
+  test_interface_implementation_partial_v8_internal::Partial4StaticLongAttributeAttributeSetter(v8_value, info);
 }
 
 void V8TestInterfacePartial::PartialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -442,7 +446,7 @@ void V8TestInterfacePartial::Partial4StaticVoidMethodMethodCallback(const v8::Fu
   test_interface_implementation_partial_v8_internal::Partial4StaticVoidMethodMethod(info);
 }
 
-static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
+static constexpr V8DOMConfiguration::MethodConfiguration kV8TestInterfaceMethods[] = {
     {"partialVoidTestEnumModulesArgMethod", V8TestInterfacePartial::PartialVoidTestEnumModulesArgMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"partial2VoidTestEnumModulesRecordMethod", V8TestInterfacePartial::Partial2VoidTestEnumModulesRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"unscopableVoidMethod", V8TestInterfacePartial::UnscopableVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
@@ -452,32 +456,34 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
 void V8TestInterfacePartial::InstallV8TestInterfaceTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8TestInterface::InstallV8TestInterfaceTemplate(isolate, world, interfaceTemplate);
+  V8TestInterface::InstallV8TestInterfaceTemplate(isolate, world, interface_template);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
-  static constexpr V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-      {"PARTIAL3_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
-  };
-  V8DOMConfiguration::InstallConstants(
-      isolate, interfaceTemplate, prototypeTemplate,
-      V8TestInterfaceConstants, base::size(V8TestInterfaceConstants));
+  {
+    static constexpr V8DOMConfiguration::ConstantConfiguration kConstants[] = {
+        {"PARTIAL3_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(0)},
+    };
+    V8DOMConfiguration::InstallConstants(
+        isolate, interface_template, prototype_template,
+        kConstants, base::size(kConstants));
+  }
   V8DOMConfiguration::InstallMethods(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceMethods, base::size(V8TestInterfaceMethods));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestInterfaceMethods, base::size(kV8TestInterfaceMethods));
 
   // Custom signature
 
   V8TestInterfacePartial::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestInterfacePartial::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -498,77 +504,104 @@ void V8TestInterfacePartial::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-void V8TestInterfacePartial::InstallOriginTrialPartialFeature(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.DomTemplate(isolate, world);
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface) {
+  v8::Local<v8::FunctionTemplate> interface_template =
+      V8TestInterface::wrapper_type_info.DomTemplate(isolate, world);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  ExecutionContext* executionContext = ToExecutionContext(isolate->GetCurrentContext());
-  bool isSecureContext = (executionContext && executionContext->IsSecureContext());
-  if (isSecureContext) {
-    static const V8DOMConfiguration::AccessorConfiguration accessorpartial4LongAttributeConfiguration[] = {
-      { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
+  ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
+  bool is_secure_context = (execution_context && execution_context->IsSecureContext());
+  if (is_secure_context) {
+    static constexpr V8DOMConfiguration::AccessorConfiguration
+    kpartial4LongAttributeConfigurations[] = {
+        { "partial4LongAttribute", V8TestInterfacePartial::Partial4LongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4LongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
     };
-    for (const auto& accessorConfig : accessorpartial4LongAttributeConfiguration)
-      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
+    for (const auto& config : kpartial4LongAttributeConfigurations) {
+      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
+                                          interface, signature, config);
+    }
   }
-  if (isSecureContext) {
-    static const V8DOMConfiguration::AccessorConfiguration accessorpartial4StaticLongAttributeConfiguration[] = {
-      { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
+  if (is_secure_context) {
+    static constexpr V8DOMConfiguration::AccessorConfiguration
+    kpartial4StaticLongAttributeConfigurations[] = {
+        { "partial4StaticLongAttribute", V8TestInterfacePartial::Partial4StaticLongAttributeAttributeGetterCallback, V8TestInterfacePartial::Partial4StaticLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds }
     };
-    for (const auto& accessorConfig : accessorpartial4StaticLongAttributeConfiguration)
-      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
+    for (const auto& config : kpartial4StaticLongAttributeConfigurations) {
+      V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype,
+                                          interface, signature, config);
+    }
   }
-  const V8DOMConfiguration::ConstantConfiguration constantPartial4UnsignedShortConfiguration = {"PARTIAL4_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(4)};
-  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantPartial4UnsignedShortConfiguration);
-  if (isSecureContext) {
-    static const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration[] = {
-      {"partial4StaticVoidMethod", V8TestInterfacePartial::Partial4StaticVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+  static constexpr V8DOMConfiguration::ConstantConfiguration
+  kPARTIAL4UNSIGNEDSHORTConfiguration = {"PARTIAL4_UNSIGNED_SHORT", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(4)};
+  V8DOMConfiguration::InstallConstant(
+      isolate, interface, prototype, kPARTIAL4UNSIGNEDSHORTConfiguration);
+  if (is_secure_context) {
+    static constexpr V8DOMConfiguration::MethodConfiguration
+    kPartial4StaticVoidMethodConfigurations[] = {
+        {"partial4StaticVoidMethod", V8TestInterfacePartial::Partial4StaticVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
     };
-    for (const auto& methodConfig : methodPartial4StaticvoidmethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
+    for (const auto& config : kPartial4StaticVoidMethodConfigurations) {
+      V8DOMConfiguration::InstallMethod(
+          isolate, world, instance, prototype,
+          interface, signature, config);
+    }
   }
-  if (isSecureContext) {
-    static const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration[] = {
-      {"partial4VoidMethod", V8TestInterfacePartial::Partial4VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+  if (is_secure_context) {
+    static constexpr V8DOMConfiguration::MethodConfiguration
+    kPartial4VoidMethodConfigurations[] = {
+        {"partial4VoidMethod", V8TestInterfacePartial::Partial4VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
     };
-    for (const auto& methodConfig : methodPartial4VoidmethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
+    for (const auto& config : kPartial4VoidMethodConfigurations) {
+      V8DOMConfiguration::InstallMethod(
+          isolate, world, instance, prototype,
+          interface, signature, config);
+    }
   }
 }
 
-void V8TestInterfacePartial::InstallOriginTrialPartialFeature(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = scriptState->PerContextData();
-  v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&V8TestInterface::wrapperTypeInfo);
-  v8::Local<v8::Function> interface = perContextData->ConstructorForType(&V8TestInterface::wrapperTypeInfo);
+void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
+    ScriptState* script_state, v8::Local<v8::Object> instance) {
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
+      &V8TestInterface::wrapper_type_info);
+  v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
+      &V8TestInterface::wrapper_type_info);
   ALLOW_UNUSED_LOCAL(interface);
-  InstallOriginTrialPartialFeature(scriptState->GetIsolate(), scriptState->World(), instance, prototype, interface);
+  InstallOriginTrialPartialFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestInterfacePartial::InstallOriginTrialPartialFeature(ScriptState* scriptState) {
-  InstallOriginTrialPartialFeature(scriptState, v8::Local<v8::Object>());
+void V8TestInterfacePartial::InstallOriginTrialPartialFeature(ScriptState* script_state) {
+  InstallOriginTrialPartialFeature(script_state, v8::Local<v8::Object>());
 }
 
 void V8TestInterfacePartial::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
     const DOMWrapperWorld& world,
-    v8::Local<v8::Object> instanceObject,
-    v8::Local<v8::Object> prototypeObject,
-    v8::Local<v8::Function> interfaceObject,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
-  CHECK(!interfaceTemplate.IsEmpty());
-  DCHECK((!prototypeObject.IsEmpty() && !interfaceObject.IsEmpty()) ||
-         !instanceObject.IsEmpty());
+    v8::Local<v8::Object> instance_object,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object,
+    v8::Local<v8::FunctionTemplate> interface_template) {
+  CHECK(!interface_template.IsEmpty());
+  DCHECK((!prototype_object.IsEmpty() && !interface_object.IsEmpty()) ||
+         !instance_object.IsEmpty());
   V8TestInterface::InstallConditionalFeatures(
-      context, world, instanceObject, prototypeObject, interfaceObject, interfaceTemplate);
+      context, world, instance_object, prototype_object, interface_object, interface_template);
 
   v8::Isolate* isolate = context->GetIsolate();
 
-  if (!prototypeObject.IsEmpty()) {
-    v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+  if (!prototype_object.IsEmpty()) {
+    v8::Local<v8::Name> unscopables_symbol(v8::Symbol::GetUnscopables(isolate));
     v8::Local<v8::Object> unscopables;
     bool has_unscopables;
-    if (prototypeObject->HasOwnProperty(context, unscopablesSymbol).To(&has_unscopables) && has_unscopables) {
-      unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+    if (prototype_object->HasOwnProperty(context, unscopables_symbol)
+        .To(&has_unscopables) && has_unscopables) {
+      unscopables = prototype_object->Get(context, unscopables_symbol)
+                    .ToLocalChecked().As<v8::Object>();
     } else {
       // Web IDL 3.6.3. Interface prototype object
       // https://heycam.github.io/webidl/#create-an-interface-prototype-object
@@ -580,7 +613,8 @@ void V8TestInterfacePartial::InstallConditionalFeatures(
     unscopables->CreateDataProperty(
         context, V8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate))
         .FromJust();
-    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
+    prototype_object->CreateDataProperty(
+        context, unscopables_symbol, unscopables).FromJust();
   }
 }
 

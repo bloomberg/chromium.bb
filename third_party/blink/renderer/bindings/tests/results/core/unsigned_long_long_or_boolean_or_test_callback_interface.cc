@@ -79,37 +79,42 @@ void UnsignedLongLongOrBooleanOrTestCallbackInterface::Trace(blink::Visitor* vis
   visitor->Trace(test_callback_interface_);
 }
 
-void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnsignedLongLongOrBooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    UnsignedLongLongOrBooleanOrTestCallbackInterface& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8TestCallbackInterface::HasInstance(v8Value, isolate)) {
-    V8TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetTestCallbackInterface(cppValue);
+  if (V8TestCallbackInterface::HasInstance(v8_value, isolate)) {
+    V8TestCallbackInterface* cpp_value = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetTestCallbackInterface(cpp_value);
     return;
   }
 
-  if (v8Value->IsBoolean()) {
-    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
+  if (v8_value->IsBoolean()) {
+    impl.SetBoolean(v8_value.As<v8::Boolean>()->Value());
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetUnsignedLongLong(cppValue);
+    impl.SetUnsignedLongLong(cpp_value);
     return;
   }
 
   {
-    uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+    uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetUnsignedLongLong(cppValue);
+    impl.SetUnsignedLongLong(cpp_value);
     return;
   }
 }
@@ -130,9 +135,10 @@ v8::Local<v8::Value> ToV8(const UnsignedLongLongOrBooleanOrTestCallbackInterface
   return v8::Local<v8::Value>();
 }
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface NativeValueTraits<UnsignedLongLongOrBooleanOrTestCallbackInterface>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+UnsignedLongLongOrBooleanOrTestCallbackInterface NativeValueTraits<UnsignedLongLongOrBooleanOrTestCallbackInterface>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   UnsignedLongLongOrBooleanOrTestCallbackInterface impl;
-  V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

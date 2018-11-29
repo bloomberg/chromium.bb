@@ -48,7 +48,7 @@ class V8TestObject {
     return ToScriptWrappable(object)->ToImpl<TestObject>();
   }
   CORE_EXPORT static TestObject* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
   static void CustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
   static void CustomCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
@@ -61,15 +61,15 @@ class V8TestObject {
   static void CustomImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomGetterImplementedAsLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomSetterImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   CORE_EXPORT static void InstallConditionalFeatures(
       v8::Local<v8::Context>,
       const DOMWrapperWorld&,
-      v8::Local<v8::Object> instanceObject,
-      v8::Local<v8::Object> prototypeObject,
-      v8::Local<v8::Function> interfaceObject,
-      v8::Local<v8::FunctionTemplate> interfaceTemplate);
+      v8::Local<v8::Object> instance_object,
+      v8::Local<v8::Object> prototype_object,
+      v8::Local<v8::Function> interface_object,
+      v8::Local<v8::FunctionTemplate> interface_template);
 
   static void InstallFeatureName(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
   static void InstallFeatureName(ScriptState*, v8::Local<v8::Object> instance);

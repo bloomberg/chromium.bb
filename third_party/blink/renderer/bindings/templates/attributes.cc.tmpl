@@ -9,9 +9,11 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
-  {% filter format_remove_duplicates(['ExceptionState exceptionState']) %}
+  {% filter format_remove_duplicates(['ExceptionState exception_state']) %}
   {% set define_exception_state -%}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", "{{attribute.name}}");
+  ExceptionState exception_state(
+      info.GetIsolate(), ExceptionState::kGetterContext,
+      "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
@@ -24,13 +26,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
   {{define_exception_state}}
-  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+  ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
   // so we have to manually check that info.Holder() really points to an
   // instance of the type.
   if (!{{v8_class}}::HasInstance(info.Holder(), info.GetIsolate())) {
-    exceptionState.ThrowTypeError("Illegal invocation");
+    exception_state.ThrowTypeError("Illegal invocation");
     return;
   }
   {% endif %}
@@ -49,9 +51,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   //   X(SameObject, {{same_object_private_key}})
   auto privateSameObject = V8PrivateProperty::GetSameObject{{same_object_private_key}}(info.GetIsolate());
   {
-    v8::Local<v8::Value> v8Value;
-    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
-      V8SetReturnValue(info, v8Value);
+    v8::Local<v8::Value> v8_value;
+    if (privateSameObject.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+      V8SetReturnValue(info, v8_value);
       return;
     }
   }
@@ -61,7 +63,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_getter %}
   {% if local_dom_window_only %}
   {% if attribute.is_check_security_for_receiver %}
-  {{cpp_class}}* uncheckedImpl = {{v8_class}}::ToImpl(holder);
+  {{cpp_class}}* unchecked_impl = {{v8_class}}::ToImpl(holder);
   {% else %}
   // Same-origin attribute getters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
@@ -75,13 +77,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
-  V8PrivateProperty::Symbol propertySymbol =
+  V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "{{cpp_class}}#{{attribute.camel_case_name}}");
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
-    v8::Local<v8::Value> v8Value;
-    if (propertySymbol.GetOrUndefined(holder).ToLocal(&v8Value) && !v8Value->IsUndefined()) {
-      V8SetReturnValue(info, v8Value);
+    v8::Local<v8::Value> v8_value;
+    if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+      V8SetReturnValue(info, v8_value);
       return;
     }
   }
@@ -91,15 +93,15 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Perform a security check for the receiver object.
   {{define_exception_state}}
   {% if local_dom_window_only %}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), unchecked_impl, exception_state)) {
   {% else %}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl, exception_state)) {
   {% endif %}{# local_dom_window_only #}
     V8SetReturnValueNull(info);
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(uncheckedImpl);
+  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 
@@ -116,17 +118,17 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_call_with_execution_context %}
   {% if attribute.is_static %}
-  ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+  ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
   {% else %}
-  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
+  ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
   {% if attribute.is_call_with_script_state %}
   {% if attribute.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
@@ -134,7 +136,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {{define_exception_state}}
   {% endif %}
   {% if attribute.is_explicit_nullable %}
-  bool isNull = false;
+  bool is_null = false;
   {% endif %}
 
   {% if attribute.cpp_value_original %}
@@ -147,7 +149,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.is_getter_raises_exception %}
-  if (UNLIKELY(exceptionState.HadException()))
+  if (UNLIKELY(exception_state.HadException()))
     return;
   {% endif %}
 
@@ -160,12 +162,12 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
-  v8::Local<v8::Value> v8Value({{attribute.cpp_value_to_v8_value}});
-  propertySymbol.Set(holder, v8Value);
+  v8::Local<v8::Value> v8_value({{attribute.cpp_value_to_v8_value}});
+  property_symbol.Set(holder, v8_value);
   {% endif %}
 
   {% if attribute.is_explicit_nullable %}
-  if (isNull) {
+  if (is_null) {
     V8SetReturnValueNull(info);
     return;
   }
@@ -176,10 +178,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // object is alive in order to save creation time of the wrapper object.
   if ({{attribute.cpp_value}} && DOMDataStore::SetReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value_to_script_wrappable}}))
     return;
-  v8::Local<v8::Value> v8Value(ToV8({{attribute.cpp_value_to_script_wrappable}}, holder, info.GetIsolate()));
+  v8::Local<v8::Value> v8_value(ToV8({{attribute.cpp_value_to_script_wrappable}}, holder, info.GetIsolate()));
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), "KeepAlive#{{interface_name}}#{{attribute.name}}")
-      .Set(holder, v8Value);
+      .Set(holder, v8_value);
   {% endif %}
 
   {% if world_suffix %}
@@ -255,17 +257,17 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
   {% if attribute.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
-  V8PerContextData* contextData = scriptState->PerContextData();
+  V8PerContextData* context_data = script_state->PerContextData();
   if (
   {%- if attribute.activity_logging_world_check -%}
-      scriptState->World().IsIsolatedWorld() && {# one space at the end #}
+      script_state->World().IsIsolatedWorld() && {# one space at the end #}
   {%- endif -%}
-      contextData && contextData->ActivityLogger()) {
-    contextData->ActivityLogger()->LogGetter("{{interface_name}}.{{attribute.name}}");
+      context_data && context_data->ActivityLogger()) {
+    context_data->ActivityLogger()->LogGetter("{{interface_name}}.{{attribute.name}}");
   }
   {% endif %}
 
@@ -280,7 +282,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
-void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCallback{{world_suffix}}(
+    v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.constructor_getter_callback_counter) }}
   {% if attribute.deprecate_as %}
   Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.deprecate_as}});
@@ -293,7 +296,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCall
   {% if attribute.is_named_constructor %}
   V8{{attribute.constructor_type}}::NamedConstructorAttributeGetter(property, info);
   {% else %}
-  V8ConstructorAttributeGetter(property, info, &V8{{attribute.constructor_type}}::wrapperTypeInfo);
+  V8ConstructorAttributeGetter(property, info, &V8{{attribute.constructor_type}}::wrapper_type_info);
   {% endif %}
 }
 {% endmacro %}
@@ -302,14 +305,14 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCall
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
 static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
-{%- if attribute.has_cross_origin_setter %}
-v8::Local<v8::Value> v8Value, const V8CrossOriginSetterInfo& info
-{%- elif attribute.is_data_type_property %}
-v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
-{%- else %}
-v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
-{%- endif %}) {
-  {% filter format_remove_duplicates(['ExceptionState exceptionState']) %}
+    {% if attribute.has_cross_origin_setter %}
+    v8::Local<v8::Value> v8_value, const V8CrossOriginSetterInfo& info
+    {% elif attribute.is_data_type_property %}
+    v8::Local<v8::Value> v8_value, const v8::PropertyCallbackInfo<void>& info
+    {% else %}
+    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info
+    {%- endif %}) {
+  {% filter format_remove_duplicates(['ExceptionState exception_state']) %}
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
 
@@ -317,7 +320,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   ALLOW_UNUSED_LOCAL(holder);
 
   {% set define_exception_state -%}
-  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "{{interface_name}}", "{{attribute.name}}");
+  ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
@@ -331,7 +334,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% set local_dom_window_only = interface_name == 'Window' and not attribute.has_cross_origin_setter %}
   {% if local_dom_window_only %}
   {% if attribute.is_check_security_for_receiver %}
-  {{cpp_class}}* uncheckedImpl = {{v8_class}}::ToImpl(holder);
+  {{cpp_class}}* unchecked_impl = {{v8_class}}::ToImpl(holder);
   {% else %}
   // Same-origin attributes setters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
@@ -347,15 +350,15 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // Perform a security check for the receiver object.
   {{define_exception_state}}
   {% if local_dom_window_only %}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), uncheckedImpl, exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), unchecked_impl, exception_state)) {
   {% else %}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), impl, exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), impl, exception_state)) {
   {% endif %}{# local_dom_window_only #}
-    V8SetReturnValue(info, v8Value);
+    V8SetReturnValue(info, v8_value);
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(uncheckedImpl);
+  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 
@@ -367,20 +370,26 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // [PutForwards] => {{attribute.name}}.{{attribute.target_attribute_name}}
   {{define_exception_state}}
   v8::Local<v8::Value> target;
-  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "{{attribute.name}}")).ToLocal(&target))
+  if (!holder->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "{{attribute.name}}"))
+      .ToLocal(&target)) {
     return;
+  }
   if (!target->IsObject()) {
-    exceptionState.ThrowTypeError("The attribute value is not an object");
+    exception_state.ThrowTypeError("The attribute value is not an object");
     return;
   }
   bool result;
-  if (!target.As<v8::Object>()->Set(isolate->GetCurrentContext(), V8AtomicString(isolate, "{{attribute.target_attribute_name}}"), v8Value).To(&result))
+  if (!target.As<v8::Object>()->Set(
+          isolate->GetCurrentContext(),
+          V8AtomicString(isolate, "{{attribute.target_attribute_name}}"),
+          v8_value).To(&result)) {
     return;
+  }
   if (!result)
     return;
   {% else %}{# attribute.is_put_forwards #}
   {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   {% endif %}
 
   {% if attribute.has_setter_exception_state %}
@@ -397,8 +406,8 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.has_type_checking_interface %}
   // Type check per: http://heycam.github.io/webidl/#es-interface
-  if (!cppValue{% if attribute.is_nullable %} && !IsUndefinedOrNull(v8Value){% endif %}) {
-    exceptionState.ThrowTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
+  if (!cpp_value{% if attribute.is_nullable %} && !IsUndefinedOrNull(v8_value){% endif %}) {
+    exception_state.ThrowTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
     return;
   }
   {% endif %}
@@ -406,39 +415,42 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.enum_values %}
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
-  DummyExceptionStateForTesting dummyExceptionState;
-  {{declare_enum_validation_variable(attribute.enum_values) | trim | indent(2)}}
-  if (!IsValidEnum(cppValue, validValues, base::size(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
-    ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               dummyExceptionState.Message()));
-    return;
+  DummyExceptionStateForTesting dummy_exception_state;
+  {
+    {{declare_enum_validation_variable(attribute.enum_values) | trim | indent(2)}}
+    if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
+                     "{{attribute.enum_type}}", dummy_exception_state)) {
+      ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 dummy_exception_state.Message()));
+      return;
+    }
   }
   {% endif %}
 
   {% if attribute.is_call_with_execution_context or
         attribute.is_setter_call_with_execution_context %}
   {% if attribute.is_static %}
-  ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+  ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
   {% else %}
-  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
+  ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
   {% if attribute.is_call_with_script_state or
   	attribute.is_setter_call_with_script_state %}
   {% if attribute.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
   {% endif %}
 
   {% if attribute.is_replaceable %}
-  v8::Local<v8::String> propertyName = V8AtomicString(isolate, "{{attribute.name}}");
+  v8::Local<v8::String> property_name = V8AtomicString(isolate, "{{attribute.name}}");
   {% endif %}
   {% if attribute.is_explicit_nullable %}
-  bool isNull = IsUndefinedOrNull(v8Value);
+  bool is_null = IsUndefinedOrNull(v8_value);
   {% endif %}
   {{attribute.cpp_setter | indent(2)}};
 
@@ -458,11 +470,11 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
 void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallback{{world_suffix}}(
-{%- if attribute.is_data_type_property %}
-v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
-{%- else %}
-const v8::FunctionCallbackInfo<v8::Value>& info
-{%- endif %}) {
+    {% if attribute.is_data_type_property %}
+    v8::Local<v8::Name>, v8::Local<v8::Value> v8_value, const v8::PropertyCallbackInfo<void>& info
+    {% else %}
+    const v8::FunctionCallbackInfo<v8::Value>& info
+    {%- endif %}) {
   {% if attribute.is_lenient_setter %}
   // Setter for {{attribute.name}} is no-op because [LenientSetter] is specified.
   {% else %}
@@ -473,7 +485,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if not attribute.is_data_type_property %}
-  v8::Local<v8::Value> v8Value = info[0];
+  v8::Local<v8::Value> v8_value = info[0];
   {% endif %}
 
   {% if attribute.deprecate_as %}
@@ -486,26 +498,27 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
   {% if attribute.is_static %}
-  ScriptState* scriptState = ScriptState::ForCurrentRealm(info);
+  ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}
-  V8PerContextData* contextData = scriptState->PerContextData();
+  V8PerContextData* context_data = script_state->PerContextData();
   if (
   {%- if attribute.activity_logging_world_check -%}
-      scriptState->World().IsIsolatedWorld() && {# one space at the end #}
+      script_state->World().IsIsolatedWorld() && {# one space at the end #}
   {%- endif -%}
-      contextData && contextData->ActivityLogger()) {
-    contextData->ActivityLogger()->LogSetter("{{interface_name}}.{{attribute.name}}", v8Value);
+      context_data && context_data->ActivityLogger()) {
+    context_data->ActivityLogger()->LogSetter("{{interface_name}}.{{attribute.name}}", v8_value);
   }
   {% endif %}
 
   {% if attribute.has_custom_setter %}
-  {{v8_class}}::{{attribute.camel_case_name}}AttributeSetterCustom(v8Value, info);
+  {{v8_class}}::{{attribute.camel_case_name}}AttributeSetterCustom(v8_value, info);
   {% elif attribute.has_cross_origin_setter %}
-  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter(
+      v8_value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
   {% else %}
-  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(v8Value, info);
+  {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(v8_value, info);
   {% endif %}
   {% endif %}{# attribute.is_lenient_setter #}
 }
@@ -606,7 +619,7 @@ static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[]
     {% endfor %}
 };
 V8DOMConfiguration::InstallAccessors(
-    isolate, world, instanceObject, prototypeObject, interfaceObject,
+    isolate, world, instance_object, prototype_object, interface_object,
     signature, accessor_configurations,
     base::size(accessor_configurations));
 {% endfilter %}{# runtime_enabled #}
@@ -632,7 +645,7 @@ static const V8DOMConfiguration::AttributeConfiguration attribute_configurations
     {% endfor %}
 };
 V8DOMConfiguration::InstallAttributes(
-    isolate, world, instanceObject, prototypeObject,
+    isolate, world, instance_object, prototype_object,
     attribute_configurations, base::size(attribute_configurations));
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}

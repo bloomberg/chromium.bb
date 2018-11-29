@@ -33,7 +33,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestCallbackFunctions::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestCallbackFunctions::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestCallbackFunctions::DomTemplate,
     nullptr,
@@ -50,7 +50,7 @@ const WrapperTypeInfo V8TestCallbackFunctions::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestCallbackFunctions.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestCallbackFunctions::wrapper_type_info_ = V8TestCallbackFunctions::wrapperTypeInfo;
+const WrapperTypeInfo& TestCallbackFunctions::wrapper_type_info_ = V8TestCallbackFunctions::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -95,15 +95,15 @@ static void VoidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo
     return;
   }
 
-  V8VoidCallbackFunction* voidCallbackFunctionArg;
+  V8VoidCallbackFunction* void_callback_function_arg;
   if (info[0]->IsFunction()) {
-    voidCallbackFunctionArg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
+    void_callback_function_arg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
     return;
   }
 
-  impl->voidMethodCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodCallbackFunctionInArg(void_callback_function_arg);
 }
 
 static void VoidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -114,15 +114,15 @@ static void VoidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInf
     return;
   }
 
-  V8AnyCallbackFunctionOptionalAnyArg* anyCallbackFunctionOptionalAnyArgArg;
+  V8AnyCallbackFunctionOptionalAnyArg* any_callback_function_optional_any_arg_arg;
   if (info[0]->IsFunction()) {
-    anyCallbackFunctionOptionalAnyArgArg = V8AnyCallbackFunctionOptionalAnyArg::Create(info[0].As<v8::Function>());
+    any_callback_function_optional_any_arg_arg = V8AnyCallbackFunctionOptionalAnyArg::Create(info[0].As<v8::Function>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
     return;
   }
 
-  impl->voidMethodCallbackFunctionInArg2(anyCallbackFunctionOptionalAnyArgArg);
+  impl->voidMethodCallbackFunctionInArg2(any_callback_function_optional_any_arg_arg);
 }
 
 static void VoidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -133,41 +133,41 @@ static void VoidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::Funct
     return;
   }
 
-  V8LongCallbackFunction* longCallbackFunctionArg;
+  V8LongCallbackFunction* long_callback_function_arg;
   if (info[0]->IsFunction()) {
-    longCallbackFunctionArg = V8LongCallbackFunction::Create(info[0].As<v8::Function>());
+    long_callback_function_arg = V8LongCallbackFunction::Create(info[0].As<v8::Function>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
     return;
   }
 
-  impl->voidMethodCallbackFunctionWithReturnValueInArg(longCallbackFunctionArg);
+  impl->voidMethodCallbackFunctionWithReturnValueInArg(long_callback_function_arg);
 }
 
 static void VoidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctions* impl = V8TestCallbackFunctions::ToImpl(info.Holder());
 
-  V8VoidCallbackFunction* voidCallbackFunctionArg;
-  int numArgsPassed = info.Length();
-  while (numArgsPassed > 0) {
-    if (!info[numArgsPassed - 1]->IsUndefined())
+  V8VoidCallbackFunction* void_callback_function_arg;
+  int num_args_passed = info.Length();
+  while (num_args_passed > 0) {
+    if (!info[num_args_passed - 1]->IsUndefined())
       break;
-    --numArgsPassed;
+    --num_args_passed;
   }
-  if (UNLIKELY(numArgsPassed <= 0)) {
+  if (UNLIKELY(num_args_passed <= 0)) {
     impl->voidMethodOptionalCallbackFunctionInArg();
     return;
   }
   if (info[0]->IsFunction()) {
-    voidCallbackFunctionArg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
+    void_callback_function_arg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
   } else if (info[0]->IsUndefined()) {
-    voidCallbackFunctionArg = nullptr;
+    void_callback_function_arg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
     return;
   }
 
-  impl->voidMethodOptionalCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodOptionalCallbackFunctionInArg(void_callback_function_arg);
 }
 
 static void VoidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -178,23 +178,23 @@ static void VoidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
     return;
   }
 
-  V8VoidCallbackFunction* voidCallbackFunctionArg;
+  V8VoidCallbackFunction* void_callback_function_arg;
   if (info[0]->IsFunction()) {
-    voidCallbackFunctionArg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
+    void_callback_function_arg = V8VoidCallbackFunction::Create(info[0].As<v8::Function>());
   } else if (info[0]->IsNullOrUndefined()) {
-    voidCallbackFunctionArg = nullptr;
+    void_callback_function_arg = nullptr;
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
     return;
   }
 
-  impl->voidMethodNullableCallbackFunctionInArg(voidCallbackFunctionArg);
+  impl->voidMethodNullableCallbackFunctionInArg(void_callback_function_arg);
 }
 
 static void CustomElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctions* impl = V8TestCallbackFunctions::ToImpl(info.Holder());
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   impl->customElementCallbacksMethod();
 }
@@ -255,11 +255,11 @@ void V8TestCallbackFunctions::CustomElementCallbacksMethodMethodCallback(const v
   test_callback_functions_v8_internal::CustomElementCallbacksMethodMethod(info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestCallbackFunctionsAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestCallbackFunctionsAccessors[] = {
     { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::CustomElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
 
-static const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMethods[] = {
+static constexpr V8DOMConfiguration::MethodConfiguration kV8TestCallbackFunctionsMethods[] = {
     {"returnCallbackFunctionMethod", V8TestCallbackFunctions::ReturnCallbackFunctionMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"returnCallbackFunctionMethod2", V8TestCallbackFunctions::ReturnCallbackFunctionMethod2MethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodCallbackFunctionInArg", V8TestCallbackFunctions::VoidMethodCallbackFunctionInArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
@@ -273,29 +273,29 @@ static const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMeth
 static void InstallV8TestCallbackFunctionsTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestCallbackFunctions::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestCallbackFunctions::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestCallbackFunctions::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestCallbackFunctions::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestCallbackFunctionsAccessors, base::size(V8TestCallbackFunctionsAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestCallbackFunctionsAccessors, base::size(kV8TestCallbackFunctionsAccessors));
   V8DOMConfiguration::InstallMethods(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestCallbackFunctionsMethods, base::size(V8TestCallbackFunctionsMethods));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestCallbackFunctionsMethods, base::size(kV8TestCallbackFunctionsMethods));
 
   // Custom signature
 
   V8TestCallbackFunctions::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestCallbackFunctions::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -314,29 +314,36 @@ void V8TestCallbackFunctions::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestCallbackFunctions::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestCallbackFunctionsTemplate);
+v8::Local<v8::FunctionTemplate> V8TestCallbackFunctions::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestCallbackFunctionsTemplate);
 }
 
-bool V8TestCallbackFunctions::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestCallbackFunctions::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestCallbackFunctions::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestCallbackFunctions::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestCallbackFunctions* V8TestCallbackFunctions::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestCallbackFunctions* V8TestCallbackFunctions::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestCallbackFunctions* nativeValue = V8TestCallbackFunctions::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestCallbackFunctions* native_value = V8TestCallbackFunctions::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestCallbackFunctions"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

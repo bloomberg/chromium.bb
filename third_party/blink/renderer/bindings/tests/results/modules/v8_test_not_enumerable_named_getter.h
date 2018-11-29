@@ -34,8 +34,8 @@ class V8TestNotEnumerableNamedGetter {
     return ToScriptWrappable(object)->ToImpl<TestNotEnumerableNamedGetter>();
   }
   MODULES_EXPORT static TestNotEnumerableNamedGetter* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  MODULES_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

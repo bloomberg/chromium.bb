@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestSpecialOperationsNotEnumerable::DomTemplate,
     nullptr,
@@ -45,7 +45,7 @@ const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestSpecialOperationsNotEnumerable.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::wrapper_type_info_ = V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo;
+const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::wrapper_type_info_ = V8TestSpecialOperationsNotEnumerable::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -62,7 +62,8 @@ static_assert(
 
 namespace test_special_operations_not_enumerable_v8_internal {
 
-static void NamedPropertyGetter(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void NamedPropertyGetter(const AtomicString& name,
+                                const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::ToImpl(info.Holder());
   String result = impl->AnonymousNamedGetter(name);
   if (result.IsNull())
@@ -70,13 +71,18 @@ static void NamedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void NamedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
-  const CString& nameInUtf8 = name.Utf8();
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperationsNotEnumerable", nameInUtf8.data());
+static void NamedPropertyQuery(
+    const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  const CString& name_in_utf8 = name.Utf8();
+  ExceptionState exception_state(
+      info.GetIsolate(),
+      ExceptionState::kGetterContext,
+      "TestSpecialOperationsNotEnumerable",
+      name_in_utf8.data());
 
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::ToImpl(info.Holder());
 
-  bool result = impl->NamedPropertyQuery(name, exceptionState);
+  bool result = impl->NamedPropertyQuery(name, exception_state);
   if (!result)
     return;
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
@@ -89,18 +95,23 @@ static void NamedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 }
 
 static void NamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestSpecialOperationsNotEnumerable");
+  ExceptionState exception_state(
+      info.GetIsolate(),
+      ExceptionState::kEnumerationContext,
+      "TestSpecialOperationsNotEnumerable");
 
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::ToImpl(info.Holder());
 
   Vector<String> names;
-  impl->NamedPropertyEnumerator(names, exceptionState);
-  if (exceptionState.HadException())
+  impl->NamedPropertyEnumerator(names, exception_state);
+  if (exception_state.HadException())
     return;
   V8SetReturnValue(info, ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
-static void IndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyGetter(
+    uint32_t index,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::ToImpl(info.Holder());
 
   // We assume that all the implementations support length() method, although
@@ -114,21 +125,22 @@ static void IndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-static void IndexedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+static void IndexedPropertyDescriptor(
+    uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // Steps 1.1 to 1.2.4 are covered here: we rely on indexedPropertyGetter() to
   // call the getter function and check that |index| is a valid property index,
   // in which case it will have set info.GetReturnValue() to something other
   // than undefined.
   V8TestSpecialOperationsNotEnumerable::IndexedPropertyGetterCallback(index, info);
-  v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
-  if (!getterValue->IsUndefined()) {
+  v8::Local<v8::Value> getter_value = info.GetReturnValue().Get();
+  if (!getter_value->IsUndefined()) {
     // 1.2.5. Let |desc| be a newly created Property Descriptor with no fields.
     // 1.2.6. Set desc.[[Value]] to the result of converting value to an
     //        ECMAScript value.
     // 1.2.7. If O implements an interface with an indexed property setter,
     //        then set desc.[[Writable]] to true, otherwise set it to false.
-    v8::PropertyDescriptor desc(getterValue, false);
+    v8::PropertyDescriptor desc(getter_value, false);
     // 1.2.8. Set desc.[[Enumerable]] and desc.[[Configurable]] to true.
     desc.set_enumerable(true);
     desc.set_configurable(true);
@@ -139,49 +151,57 @@ static void IndexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
 
 }  // namespace test_special_operations_not_enumerable_v8_internal
 
-void V8TestSpecialOperationsNotEnumerable::NamedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestSpecialOperationsNotEnumerable::NamedPropertyGetterCallback(
+    v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSpecialOperationsNotEnumerable_NamedPropertyGetter");
 
   if (!name->IsString())
     return;
-  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
+  const AtomicString& property_name = ToCoreAtomicString(name.As<v8::String>());
 
-  test_special_operations_not_enumerable_v8_internal::NamedPropertyGetter(propertyName, info);
+  test_special_operations_not_enumerable_v8_internal::NamedPropertyGetter(property_name, info);
 }
 
-void V8TestSpecialOperationsNotEnumerable::NamedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+void V8TestSpecialOperationsNotEnumerable::NamedPropertyQueryCallback(
+    v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSpecialOperationsNotEnumerable_NamedPropertyQuery");
 
   if (!name->IsString())
     return;
-  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
+  const AtomicString& property_name = ToCoreAtomicString(name.As<v8::String>());
 
-  test_special_operations_not_enumerable_v8_internal::NamedPropertyQuery(propertyName, info);
+  test_special_operations_not_enumerable_v8_internal::NamedPropertyQuery(property_name, info);
 }
 
-void V8TestSpecialOperationsNotEnumerable::NamedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+void V8TestSpecialOperationsNotEnumerable::NamedPropertyEnumeratorCallback(
+    const v8::PropertyCallbackInfo<v8::Array>& info) {
   test_special_operations_not_enumerable_v8_internal::NamedPropertyEnumerator(info);
 }
 
-void V8TestSpecialOperationsNotEnumerable::IndexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestSpecialOperationsNotEnumerable::IndexedPropertyGetterCallback(
+    uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSpecialOperationsNotEnumerable_IndexedPropertyGetter");
 
   test_special_operations_not_enumerable_v8_internal::IndexedPropertyGetter(index, info);
 }
 
-void V8TestSpecialOperationsNotEnumerable::IndexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestSpecialOperationsNotEnumerable::IndexedPropertyDescriptorCallback(
+    uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   test_special_operations_not_enumerable_v8_internal::IndexedPropertyDescriptor(index, info);
 }
 
-void V8TestSpecialOperationsNotEnumerable::IndexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void V8TestSpecialOperationsNotEnumerable::IndexedPropertySetterCallback(
+    uint32_t index,
+    v8::Local<v8::Value> v8_value,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
   // No indexed property setter defined.  Do not fall back to the default
   // setter.
   V8SetReturnValue(info, v8::Null(info.GetIsolate()));
   if (info.ShouldThrowOnError()) {
-    ExceptionState exceptionState(info.GetIsolate(),
-                                  ExceptionState::kIndexedSetterContext,
-                                  "TestSpecialOperationsNotEnumerable");
-    exceptionState.ThrowTypeError("Index property setter is not supported.");
+    ExceptionState exception_state(info.GetIsolate(),
+                                   ExceptionState::kIndexedSetterContext,
+                                   "TestSpecialOperationsNotEnumerable");
+    exception_state.ThrowTypeError("Index property setter is not supported.");
   }
 }
 
@@ -199,26 +219,26 @@ void V8TestSpecialOperationsNotEnumerable::IndexedPropertyDefinerCallback(
   // step 2.1. If P is an array index property name, return false.
   V8SetReturnValue(info, v8::Null(info.GetIsolate()));
   if (info.ShouldThrowOnError()) {
-    ExceptionState exceptionState(info.GetIsolate(),
-                                  ExceptionState::kIndexedSetterContext,
-                                  "TestSpecialOperationsNotEnumerable");
-    exceptionState.ThrowTypeError("Index property setter is not supported.");
+    ExceptionState exception_state(info.GetIsolate(),
+                                   ExceptionState::kIndexedSetterContext,
+                                   "TestSpecialOperationsNotEnumerable");
+    exception_state.ThrowTypeError("Index property setter is not supported.");
   }
 }
 
 static void InstallV8TestSpecialOperationsNotEnumerableTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestSpecialOperationsNotEnumerable::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::kInternalFieldCount);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
 
@@ -232,15 +252,15 @@ static void InstallV8TestSpecialOperationsNotEnumerableTemplate(
       V8TestSpecialOperationsNotEnumerable::IndexedPropertyDefinerCallback,
       v8::Local<v8::Value>(),
       v8::PropertyHandlerFlags::kNone);
-  instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
+  instance_template->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
   v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestSpecialOperationsNotEnumerable::NamedPropertyGetterCallback, nullptr, V8TestSpecialOperationsNotEnumerable::NamedPropertyQueryCallback, nullptr, V8TestSpecialOperationsNotEnumerable::NamedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
-  instanceTemplate->SetHandler(namedPropertyHandlerConfig);
+  instance_template->SetHandler(namedPropertyHandlerConfig);
 
   // Custom signature
 
   V8TestSpecialOperationsNotEnumerable::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestSpecialOperationsNotEnumerable::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -259,29 +279,36 @@ void V8TestSpecialOperationsNotEnumerable::InstallRuntimeEnabledFeaturesOnTempla
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestSpecialOperationsNotEnumerableTemplate);
+v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestSpecialOperationsNotEnumerableTemplate);
 }
 
-bool V8TestSpecialOperationsNotEnumerable::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestSpecialOperationsNotEnumerable::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestSpecialOperationsNotEnumerable::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestSpecialOperationsNotEnumerable::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestSpecialOperationsNotEnumerable* nativeValue = V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestSpecialOperationsNotEnumerable* native_value = V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestSpecialOperationsNotEnumerable"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

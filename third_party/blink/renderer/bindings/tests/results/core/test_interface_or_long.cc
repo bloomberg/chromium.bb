@@ -67,32 +67,37 @@ void TestInterfaceOrLong::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_interface_);
 }
 
-void V8TestInterfaceOrLong::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8TestInterfaceOrLong::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    TestInterfaceOrLong& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (V8TestInterface::HasInstance(v8Value, isolate)) {
-    TestInterfaceImplementation* cppValue = V8TestInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.SetTestInterface(cppValue);
+  if (V8TestInterface::HasInstance(v8_value, isolate)) {
+    TestInterfaceImplementation* cpp_value = V8TestInterface::ToImpl(v8::Local<v8::Object>::Cast(v8_value));
+    impl.SetTestInterface(cpp_value);
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 }
@@ -111,9 +116,10 @@ v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object>
   return v8::Local<v8::Value>();
 }
 
-TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   TestInterfaceOrLong impl;
-  V8TestInterfaceOrLong::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8TestInterfaceOrLong::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

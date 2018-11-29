@@ -31,12 +31,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8DataView::wrapperTypeInfo = {
+const WrapperTypeInfo V8DataView::wrapper_type_info = {
     gin::kEmbedderBlink,
     nullptr,
     nullptr,
     "DataView",
-    &V8ArrayBufferView::wrapperTypeInfo,
+    &V8ArrayBufferView::wrapper_type_info,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -48,7 +48,7 @@ const WrapperTypeInfo V8DataView::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestDataView.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestDataView::wrapper_type_info_ = V8DataView::wrapperTypeInfo;
+const WrapperTypeInfo& TestDataView::wrapper_type_info_ = V8DataView::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -65,37 +65,47 @@ static_assert(
 
 TestDataView* V8DataView::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsDataView());
-  ScriptWrappable* scriptWrappable = ToScriptWrappable(object);
-  if (scriptWrappable)
-    return scriptWrappable->ToImpl<TestDataView>();
+  ScriptWrappable* script_wrappable = ToScriptWrappable(object);
+  if (script_wrappable)
+    return script_wrappable->ToImpl<TestDataView>();
 
-  v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
-  v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
-  TestDataView* typedArray = nullptr;
-  if (arrayBuffer->IsArrayBuffer()) {
-    typedArray = TestDataView::Create(V8ArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
-  } else if (arrayBuffer->IsSharedArrayBuffer()) {
-    typedArray = TestDataView::Create(V8SharedArrayBuffer::ToImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+  v8::Local<v8::DataView> v8_view = object.As<v8::DataView>();
+  v8::Local<v8::Object> array_buffer = v8_view->Buffer();
+  TestDataView* typed_array = nullptr;
+  if (array_buffer->IsArrayBuffer()) {
+    typed_array = TestDataView::Create(
+        V8ArrayBuffer::ToImpl(array_buffer),
+        v8_view->ByteOffset(),
+        v8_view->ByteLength());
+  } else if (array_buffer->IsSharedArrayBuffer()) {
+    typed_array = TestDataView::Create(
+        V8SharedArrayBuffer::ToImpl(array_buffer),
+        v8_view->ByteOffset(),
+        v8_view->ByteLength());
   } else {
     NOTREACHED();
   }
-  v8::Local<v8::Object> associatedWrapper = typedArray->AssociateWithWrapper(v8::Isolate::GetCurrent(), typedArray->GetWrapperTypeInfo(), object);
-  DCHECK(associatedWrapper == object);
+  v8::Local<v8::Object> associated_wrapper =
+        typed_array->AssociateWithWrapper(
+            v8::Isolate::GetCurrent(), typed_array->GetWrapperTypeInfo(), object);
+  DCHECK(associated_wrapper == object);
 
-  return typedArray->ToImpl<TestDataView>();
+  return typed_array->ToImpl<TestDataView>();
 }
 
-TestDataView* V8DataView::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestDataView* V8DataView::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsDataView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestDataView* NativeValueTraits<TestDataView>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestDataView* nativeValue = V8DataView::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestDataView* NativeValueTraits<TestDataView>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestDataView* native_value = V8DataView::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "DataView"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

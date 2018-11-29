@@ -91,7 +91,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     prototype_ = v8::Object::New(script_state_->GetIsolate());
     v8::Local<v8::Object> base_prototype =
         script_state_->PerContextData()->PrototypeForType(
-            &V8HTMLElement::wrapperTypeInfo);
+            &V8HTMLElement::wrapper_type_info);
     if (!base_prototype.IsEmpty()) {
       bool set_prototype;
       if (!prototype_->SetPrototype(script_state_->GetContext(), base_prototype)
@@ -103,7 +103,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
   }
 
   AtomicString namespace_uri = html_names::xhtmlNamespaceURI;
-  if (HasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
+  if (HasValidPrototypeChainFor(&V8SVGElement::wrapper_type_info))
     namespace_uri = svg_names::kNamespaceURI;
 
   DCHECK(!try_catch.HasCaught());

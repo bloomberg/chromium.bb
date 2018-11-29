@@ -60,30 +60,35 @@ ByteStringSequenceSequenceOrByteStringByteStringRecord& ByteStringSequenceSequen
 void ByteStringSequenceSequenceOrByteStringByteStringRecord::Trace(blink::Visitor* visitor) {
 }
 
-void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringSequenceSequenceOrByteStringByteStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    ByteStringSequenceSequenceOrByteStringByteStringRecord& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (HasCallableIteratorSymbol(isolate, v8Value, exceptionState)) {
-    Vector<Vector<String>> cppValue = NativeValueTraits<IDLSequence<IDLSequence<IDLByteString>>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
+    Vector<Vector<String>> cpp_value = NativeValueTraits<IDLSequence<IDLSequence<IDLByteString>>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetByteStringSequenceSequence(cppValue);
+    impl.SetByteStringSequenceSequence(cpp_value);
     return;
   }
 
-  if (v8Value->IsObject()) {
-    Vector<std::pair<String, String>> cppValue = NativeValueTraits<IDLRecord<IDLByteString, IDLByteString>>::NativeValue(isolate, v8Value, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsObject()) {
+    Vector<std::pair<String, String>> cpp_value = NativeValueTraits<IDLRecord<IDLByteString, IDLByteString>>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetByteStringByteStringRecord(cppValue);
+    impl.SetByteStringByteStringRecord(cpp_value);
     return;
   }
 
-  exceptionState.ThrowTypeError("The provided value is not of type '(sequence<sequence<ByteString>> or record<ByteString, ByteString>)'");
+  exception_state.ThrowTypeError("The provided value is not of type '(sequence<sequence<ByteString>> or record<ByteString, ByteString>)'");
 }
 
 v8::Local<v8::Value> ToV8(const ByteStringSequenceSequenceOrByteStringByteStringRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
@@ -100,9 +105,10 @@ v8::Local<v8::Value> ToV8(const ByteStringSequenceSequenceOrByteStringByteString
   return v8::Local<v8::Value>();
 }
 
-ByteStringSequenceSequenceOrByteStringByteStringRecord NativeValueTraits<ByteStringSequenceSequenceOrByteStringByteStringRecord>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+ByteStringSequenceSequenceOrByteStringByteStringRecord NativeValueTraits<ByteStringSequenceSequenceOrByteStringByteStringRecord>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   ByteStringSequenceSequenceOrByteStringByteStringRecord impl;
-  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

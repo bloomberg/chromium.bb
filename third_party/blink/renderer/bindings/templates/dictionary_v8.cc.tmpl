@@ -23,28 +23,28 @@ static const v8::Eternal<v8::Name>* eternal{{v8_class}}Keys(v8::Isolate* isolate
 {% endif %}
 
 {% from 'utilities.cc.tmpl' import v8_value_to_local_cpp_value %}
-void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{cpp_class}}* impl, ExceptionState& exceptionState) {
-  if (IsUndefinedOrNull(v8Value)) {
+void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_value, {{cpp_class}}* impl, ExceptionState& exception_state) {
+  if (IsUndefinedOrNull(v8_value)) {
     {% if required_member_names %}
-    exceptionState.ThrowTypeError("Missing required member(s): {{required_member_names|join(', ')}}.");
+    exception_state.ThrowTypeError("Missing required member(s): {{required_member_names|join(', ')}}.");
     {% endif %}
     return;
   }
-  if (!v8Value->IsObject()) {
+  if (!v8_value->IsObject()) {
     {% if use_permissive_dictionary_conversion %}
     // Do nothing.
     return;
     {% else %}
-    exceptionState.ThrowTypeError("cannot convert to dictionary.");
+    exception_state.ThrowTypeError("cannot convert to dictionary.");
     return;
     {% endif %}
   }
-  v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
+  v8::Local<v8::Object> v8Object = v8_value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
   {% if parent_v8_class %}
-  {{parent_v8_class}}::ToImpl(isolate, v8Value, impl, exceptionState);
-  if (exceptionState.HadException())
+  {{parent_v8_class}}::ToImpl(isolate, v8_value, impl, exception_state);
+  if (exception_state.HadException())
     return;
 
   {% endif %}
@@ -66,12 +66,12 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {% for member in member_list %}
   v8::Local<v8::Value> {{member.v8_value}};
   if (!v8Object->Get(context, keys[{{members.index(member)}}].Get(isolate)).ToLocal(&{{member.v8_value}})) {
-    exceptionState.RethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return;
   }
   if ({{member.v8_value}}.IsEmpty() || {{member.v8_value}}->IsUndefined()) {
     {% if member.is_required %}
-    exceptionState.ThrowTypeError("required member {{member.name}} is undefined.");
+    exception_state.ThrowTypeError("required member {{member.name}} is undefined.");
     return;
     {% else %}
     // Do nothing.
@@ -87,17 +87,17 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {{v8_value_to_local_cpp_value(member) | trim | indent}}
     {% if member.is_interface_type %}
     if (!{{member.cpp_value}}) {
-      exceptionState.ThrowTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
+      exception_state.ThrowTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
       return;
     }
     {% endif %}
     {% if member.enum_values %}
     {{declare_enum_validation_variable(member.enum_values) | trim | indent}}
-    if (!IsValidEnum({{member.cpp_value}}, validValues, base::size(validValues), "{{member.enum_type}}", exceptionState))
+    if (!IsValidEnum({{member.cpp_value}}, kValidValues, base::size(kValidValues), "{{member.enum_type}}", exception_state))
       return;
     {% elif member.is_object %}
     if (!{{member.cpp_value}}.IsObject()) {
-      exceptionState.ThrowTypeError("member {{member.name}} is not an object.");
+      exception_state.ThrowTypeError("member {{member.name}} is not an object.");
       return;
     }
     {% endif %}
@@ -191,9 +191,9 @@ bool toV8{{cpp_class}}(const {{cpp_class}}* impl, v8::Local<v8::Object> dictiona
   return true;
 }
 
-{{cpp_class}}* NativeValueTraits<{{cpp_class}}>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+{{cpp_class}}* NativeValueTraits<{{cpp_class}}>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   {{cpp_class}}* impl = {{cpp_class}}::Create();
-  {{v8_class}}::ToImpl(isolate, value, impl, exceptionState);
+  {{v8_class}}::ToImpl(isolate, value, impl, exception_state);
   return impl;
 }
 

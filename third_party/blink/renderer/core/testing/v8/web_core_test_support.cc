@@ -92,7 +92,7 @@ void InstallOriginTrialFeaturesForTesting(
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
-  if (type == &V8OriginTrialsTest::wrapperTypeInfo) {
+  if (type == &V8OriginTrialsTest::wrapper_type_info) {
     if (origin_trials::OriginTrialsSampleAPIEnabled(execution_context)) {
       V8OriginTrialsTest::InstallOriginTrialsSampleAPI(
           script_state->GetIsolate(), script_state->World(),
@@ -136,7 +136,7 @@ void InstallPendingOriginTrialFeatureForTesting(
   if (feature == origin_trials::kOriginTrialsSampleAPITrialName) {
     if (script_state->PerContextData()
             ->GetExistingConstructorAndPrototypeForType(
-                &V8OriginTrialsTest::wrapperTypeInfo, &prototype_object,
+                &V8OriginTrialsTest::wrapper_type_info, &prototype_object,
                 &interface_object)) {
       V8OriginTrialsTest::InstallOriginTrialsSampleAPI(
           script_state->GetIsolate(), script_state->World(),
@@ -147,7 +147,7 @@ void InstallPendingOriginTrialFeatureForTesting(
   if (feature == origin_trials::kOriginTrialsSampleAPIImpliedTrialName) {
     if (script_state->PerContextData()
             ->GetExistingConstructorAndPrototypeForType(
-                &V8OriginTrialsTest::wrapperTypeInfo, &prototype_object,
+                &V8OriginTrialsTest::wrapper_type_info, &prototype_object,
                 &interface_object)) {
       V8OriginTrialsTest::InstallOriginTrialsSampleAPIImplied(
           script_state->GetIsolate(), script_state->World(),

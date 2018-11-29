@@ -187,7 +187,7 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
 bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                              ExceptionState& exception_state) {
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
-  if (wrapper_type_info == &V8Blob::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8Blob::wrapper_type_info) {
     Blob* blob = wrappable->ToImpl<Blob>();
     serialized_script_value_->BlobDataHandles().Set(blob->Uuid(),
                                                     blob->GetBlobDataHandle());
@@ -206,11 +206,11 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8File::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8File::wrapper_type_info) {
     WriteTag(blob_info_array_ ? kFileIndexTag : kFileTag);
     return WriteFile(wrappable->ToImpl<File>(), exception_state);
   }
-  if (wrapper_type_info == &V8FileList::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8FileList::wrapper_type_info) {
     // This does not presently deduplicate a File object and its entry in a
     // FileList, which is non-standard behavior.
     FileList* file_list = wrappable->ToImpl<FileList>();
@@ -223,7 +223,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8ImageBitmap::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8ImageBitmap::wrapper_type_info) {
     ImageBitmap* image_bitmap = wrappable->ToImpl<ImageBitmap>();
     if (image_bitmap->IsNeutered()) {
       exception_state.ThrowDOMException(
@@ -264,7 +264,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteRawBytes(pixels->Data(), pixels->length());
     return true;
   }
-  if (wrapper_type_info == &V8ImageData::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8ImageData::wrapper_type_info) {
     ImageData* image_data = wrappable->ToImpl<ImageData>();
     WriteTag(kImageDataTag);
     SerializedColorParams color_params(image_data->GetCanvasColorParams(),
@@ -283,7 +283,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteRawBytes(pixel_buffer->Data(), pixel_buffer_length);
     return true;
   }
-  if (wrapper_type_info == &V8DOMPoint::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMPoint::wrapper_type_info) {
     DOMPoint* point = wrappable->ToImpl<DOMPoint>();
     WriteTag(kDOMPointTag);
     WriteDouble(point->x());
@@ -292,7 +292,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == &V8DOMPointReadOnly::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMPointReadOnly::wrapper_type_info) {
     DOMPointReadOnly* point = wrappable->ToImpl<DOMPointReadOnly>();
     WriteTag(kDOMPointReadOnlyTag);
     WriteDouble(point->x());
@@ -301,7 +301,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == &V8DOMRect::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMRect::wrapper_type_info) {
     DOMRect* rect = wrappable->ToImpl<DOMRect>();
     WriteTag(kDOMRectTag);
     WriteDouble(rect->x());
@@ -310,7 +310,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == &V8DOMRectReadOnly::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMRectReadOnly::wrapper_type_info) {
     DOMRectReadOnly* rect = wrappable->ToImpl<DOMRectReadOnly>();
     WriteTag(kDOMRectReadOnlyTag);
     WriteDouble(rect->x());
@@ -319,7 +319,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == &V8DOMQuad::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMQuad::wrapper_type_info) {
     DOMQuad* quad = wrappable->ToImpl<DOMQuad>();
     WriteTag(kDOMQuadTag);
     for (const DOMPoint* point :
@@ -331,7 +331,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8DOMMatrix::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMMatrix::wrapper_type_info) {
     DOMMatrix* matrix = wrappable->ToImpl<DOMMatrix>();
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DTag);
@@ -362,7 +362,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8DOMMatrixReadOnly::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMMatrixReadOnly::wrapper_type_info) {
     DOMMatrixReadOnly* matrix = wrappable->ToImpl<DOMMatrixReadOnly>();
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DReadOnlyTag);
@@ -393,7 +393,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8MessagePort::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8MessagePort::wrapper_type_info) {
     MessagePort* message_port = wrappable->ToImpl<MessagePort>();
     size_t index = kNotFound;
     if (transferables_)
@@ -409,7 +409,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == &V8MojoHandle::wrapperTypeInfo &&
+  if (wrapper_type_info == &V8MojoHandle::wrapper_type_info &&
       RuntimeEnabledFeatures::MojoJSEnabled()) {
     MojoHandle* mojo_handle = wrappable->ToImpl<MojoHandle>();
     size_t index = kNotFound;
@@ -429,7 +429,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == &V8OffscreenCanvas::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8OffscreenCanvas::wrapper_type_info) {
     OffscreenCanvas* canvas = wrappable->ToImpl<OffscreenCanvas>();
     size_t index = kNotFound;
     if (transferables_)
@@ -462,7 +462,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(canvas->SinkId());
     return true;
   }
-  if (wrapper_type_info == &V8ReadableStream::wrapperTypeInfo &&
+  if (wrapper_type_info == &V8ReadableStream::wrapper_type_info &&
       RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
     ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
     size_t index = kNotFound;

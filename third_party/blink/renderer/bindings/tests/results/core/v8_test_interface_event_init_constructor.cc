@@ -31,12 +31,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceEventInitConstructor::DomTemplate,
     nullptr,
     "TestInterfaceEventInitConstructor",
-    &V8Event::wrapperTypeInfo,
+    &V8Event::wrapper_type_info,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -48,7 +48,7 @@ const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceEventInitConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceEventInitConstructor::wrapper_type_info_ = V8TestInterfaceEventInitConstructor::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceEventInitConstructor::wrapper_type_info_ = V8TestInterfaceEventInitConstructor::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -84,30 +84,30 @@ static void IsTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& 
 static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_ConstructorCallback");
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceEventInitConstructor");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceEventInitConstructor");
 
   if (UNLIKELY(info.Length() < 2)) {
-    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
+    exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(2, info.Length()));
     return;
   }
 
   V8StringResource<> type;
-  TestInterfaceEventInit* testInterfaceEventInit;
+  TestInterfaceEventInit* test_interface_event_init;
   type = info[0];
   if (!type.Prepare())
     return;
 
   if (!info[1]->IsNullOrUndefined() && !info[1]->IsObject()) {
-    exceptionState.ThrowTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
+    exception_state.ThrowTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
     return;
   }
-  testInterfaceEventInit = NativeValueTraits<TestInterfaceEventInit>::NativeValue(info.GetIsolate(), info[1], exceptionState);
-  if (exceptionState.HadException())
+  test_interface_event_init = NativeValueTraits<TestInterfaceEventInit>::NativeValue(info.GetIsolate(), info[1], exception_state);
+  if (exception_state.HadException())
     return;
 
-  TestInterfaceEventInitConstructor* impl = TestInterfaceEventInitConstructor::Create(type, testInterfaceEventInit);
+  TestInterfaceEventInitConstructor* impl = TestInterfaceEventInitConstructor::Create(type, test_interface_event_init);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventInitConstructor::wrapperTypeInfo, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventInitConstructor::wrapper_type_info, wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -115,7 +115,9 @@ CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceEventInitConstructor_Constructor");
 
   if (!info.IsConstructCall()) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
+    V8ThrowException::ThrowTypeError(
+        info.GetIsolate(),
+        ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceEventInitConstructor"));
     return;
   }
 
@@ -141,7 +143,7 @@ void V8TestInterfaceEventInitConstructor::IsTrustedAttributeGetterCallback(const
   test_interface_event_init_constructor_v8_internal::IsTrustedAttributeGetter(info);
 }
 
-static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitConstructorAccessors[] = {
+static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestInterfaceEventInitConstructorAccessors[] = {
     { "readonlyStringAttribute", V8TestInterfaceEventInitConstructor::ReadonlyStringAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "isTrusted", V8TestInterfaceEventInitConstructor::IsTrustedAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
 };
@@ -149,28 +151,28 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventInitC
 static void InstallV8TestInterfaceEventInitConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interface_name, V8Event::DomTemplate(isolate, world), V8TestInterfaceEventInitConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(test_interface_event_init_constructor_v8_internal::ConstructorCallback);
-  interfaceTemplate->SetLength(2);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceEventInitConstructor::wrapper_type_info.interface_name, V8Event::DomTemplate(isolate, world), V8TestInterfaceEventInitConstructor::kInternalFieldCount);
+  interface_template->SetCallHandler(test_interface_event_init_constructor_v8_internal::ConstructorCallback);
+  interface_template->SetLength(2);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
-      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceEventInitConstructorAccessors, base::size(V8TestInterfaceEventInitConstructorAccessors));
+      isolate, world, instance_template, prototype_template, interface_template,
+      signature, kV8TestInterfaceEventInitConstructorAccessors, base::size(kV8TestInterfaceEventInitConstructorAccessors));
 
   // Custom signature
 
   V8TestInterfaceEventInitConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestInterfaceEventInitConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -189,29 +191,36 @@ void V8TestInterfaceEventInitConstructor::InstallRuntimeEnabledFeaturesOnTemplat
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), InstallV8TestInterfaceEventInitConstructorTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestInterfaceEventInitConstructorTemplate);
 }
 
-bool V8TestInterfaceEventInitConstructor::HasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestInterfaceEventInitConstructor::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceEventInitConstructor::FindInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestInterfaceEventInitConstructor::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceEventInitConstructor* NativeValueTraits<TestInterfaceEventInitConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceEventInitConstructor* nativeValue = V8TestInterfaceEventInitConstructor::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestInterfaceEventInitConstructor* NativeValueTraits<TestInterfaceEventInitConstructor>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestInterfaceEventInitConstructor* native_value = V8TestInterfaceEventInitConstructor::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceEventInitConstructor"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink
