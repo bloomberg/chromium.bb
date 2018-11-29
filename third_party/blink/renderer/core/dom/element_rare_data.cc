@@ -108,6 +108,7 @@ ElementInternals& ElementRareData::EnsureElementInternals(HTMLElement& target) {
 void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(dataset_);
   visitor->Trace(class_list_);
+  visitor->Trace(part_);
   visitor->Trace(shadow_root_);
   visitor->Trace(attribute_map_);
   visitor->Trace(attr_node_list_);
