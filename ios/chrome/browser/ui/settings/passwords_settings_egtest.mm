@@ -22,7 +22,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -71,8 +73,7 @@ constexpr int kScrollAmount = 150;
 
 // Returns the GREYElementInteraction* for the item on the password list with
 // the given |matcher|. It scrolls in |direction| if necessary to ensure that
-// the matched item is interactable. The result can be used to perform user
-// actions or checks.
+// the matched item is interactable.
 GREYElementInteraction* GetInteractionForListItem(id<GREYMatcher> matcher,
                                                   GREYDirection direction) {
   return [[EarlGrey
@@ -84,8 +85,7 @@ GREYElementInteraction* GetInteractionForListItem(id<GREYMatcher> matcher,
 
 // Returns the GREYElementInteraction* for the cell on the password list with
 // the given |username|. It scrolls down if necessary to ensure that the matched
-// cell is interactable. The result can be used to perform user actions or
-// checks.
+// cell is interactable.
 GREYElementInteraction* GetInteractionForPasswordEntry(NSString* username) {
   return GetInteractionForListItem(ButtonWithAccessibilityLabel(username),
                                    kGREYDirectionDown);
@@ -93,16 +93,23 @@ GREYElementInteraction* GetInteractionForPasswordEntry(NSString* username) {
 
 // Returns the GREYElementInteraction* for the item on the detail view
 // identified with the given |matcher|. It scrolls down if necessary to ensure
-// that the matched cell is interactable. The result can be used to perform
-// user actions or checks.
+// that the matched cell is interactable.
 GREYElementInteraction* GetInteractionForPasswordDetailItem(
     id<GREYMatcher> matcher) {
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollAmount)
-      onElementWithMatcher:grey_accessibilityID(
-                               @"PasswordDetailsCollectionViewController")];
+      onElementWithMatcher:grey_accessibilityID(kPasswordDetailsTableViewId)];
+}
+
+// Returns the GREYElementInteraction* for the item on the deletion alert
+// identified with the given |matcher|.
+GREYElementInteraction* GetInteractionForPasswordDetailDeletionAlert(
+    id<GREYMatcher> matcher) {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
+      inRoot:grey_accessibilityID(kPasswordDetailsDeletionAlertViewId)];
 }
 
 // Matcher for a UITextField inside a SettingsSearchCell.
@@ -643,16 +650,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordDetailItem(DeleteButton())
       performAction:grey_tap()];
 
-  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
-  // differentiate against the above DeleteButton()-matching element, which is
-  // has UIAccessibilityTraitSelected.
-  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
-  // match the Delete button.
-  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
-      ButtonWithAccessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
-  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
+  [GetInteractionForPasswordDetailDeletionAlert(ButtonWithAccessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)))
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -713,16 +712,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordDetailItem(DeleteButton())
       performAction:grey_tap()];
 
-  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
-  // differentiate against the above DeleteButton()-matching element, which is
-  // has UIAccessibilityTraitSelected.
-  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
-  // match the Delete button.
-  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
-      ButtonWithAccessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
-  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
+  [GetInteractionForPasswordDetailDeletionAlert(ButtonWithAccessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)))
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -776,16 +767,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordDetailItem(DeleteButton())
       performAction:grey_tap()];
 
-  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
-  // differentiate against the above DeleteButton()-matching element, which is
-  // has UIAccessibilityTraitSelected.
-  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
-  // match the Delete button.
-  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
-      ButtonWithAccessibilityLabel(
-          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
-  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
+  [GetInteractionForPasswordDetailDeletionAlert(ButtonWithAccessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)))
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -981,7 +964,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
-  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
+  [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
       performAction:grey_tap()];
 
   // Make sure to capture the reauthentication module in a variable until the
@@ -1024,7 +1007,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
-  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
+  [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
       performAction:grey_tap()];
 
   // Make sure to capture the reauthentication module in a variable until the
@@ -1052,8 +1035,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Check that the password is masked again.
-  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
-      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
+      performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];

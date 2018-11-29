@@ -39,8 +39,8 @@
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -108,7 +108,7 @@ const CGFloat kSearchCellHeight = 44.0f;
 @implementation BlacklistedFormContentItem
 @end
 
-@protocol PasswordExportActivityViewControllerDelegate<NSObject>
+@protocol PasswordExportActivityViewControllerDelegate <NSObject>
 
 // Used to reset the export state when the activity view disappears.
 - (void)resetExport;
@@ -118,9 +118,9 @@ const CGFloat kSearchCellHeight = 44.0f;
 @interface PasswordExportActivityViewController : UIActivityViewController
 
 - (PasswordExportActivityViewController*)
-initWithActivityItems:(NSArray*)activityItems
-             delegate:
-                 (id<PasswordExportActivityViewControllerDelegate>)delegate;
+    initWithActivityItems:(NSArray*)activityItems
+                 delegate:
+                     (id<PasswordExportActivityViewControllerDelegate>)delegate;
 
 @end
 
@@ -129,9 +129,9 @@ initWithActivityItems:(NSArray*)activityItems
 }
 
 - (PasswordExportActivityViewController*)
-initWithActivityItems:(NSArray*)activityItems
-             delegate:
-                 (id<PasswordExportActivityViewControllerDelegate>)delegate {
+    initWithActivityItems:(NSArray*)activityItems
+                 delegate:(id<PasswordExportActivityViewControllerDelegate>)
+                              delegate {
   self = [super initWithActivityItems:activityItems applicationActivities:nil];
   if (self) {
     _weakDelegate = delegate;
@@ -147,9 +147,9 @@ initWithActivityItems:(NSArray*)activityItems
 
 @end
 
-@interface SavePasswordsCollectionViewController ()<
+@interface SavePasswordsCollectionViewController () <
     BooleanObserver,
-    PasswordDetailsCollectionViewControllerDelegate,
+    PasswordDetailsTableViewControllerDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
     SavePasswordsConsumerDelegate,
@@ -219,8 +219,8 @@ initWithActivityItems:(NSArray*)activityItems
   DCHECK(browserState);
   MDCCollectionViewFlowLayout* layout =
       [[AlphaAnimatedCollectionViewFlowLayout alloc] init];
-  self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+  self = [super initWithLayout:layout
+                         style:CollectionViewControllerStyleAppBar];
   if (self) {
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]
@@ -386,8 +386,8 @@ initWithActivityItems:(NSArray*)activityItems
 }
 
 - (BlacklistedFormContentItem*)
-blacklistedFormItemWithText:(NSString*)text
-                    forForm:(autofill::PasswordForm*)form {
+    blacklistedFormItemWithText:(NSString*)text
+                        forForm:(autofill::PasswordForm*)form {
   BlacklistedFormContentItem* passwordItem =
       [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
   passwordItem.text = text;
@@ -468,8 +468,8 @@ blacklistedFormItemWithText:(NSString*)text
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+  UICollectionViewCell* cell = [super collectionView:collectionView
+                              cellForItemAtIndexPath:indexPath];
 
   if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeSavePasswordsSwitch) {
@@ -684,8 +684,8 @@ blacklistedFormItemWithText:(NSString*)text
 #pragma mark UICollectionViewDelegate
 
 - (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
-  PasswordDetailsCollectionViewController* controller =
-      [[PasswordDetailsCollectionViewController alloc]
+  PasswordDetailsTableViewController* controller =
+      [[PasswordDetailsTableViewController alloc]
             initWithPasswordForm:form
                         delegate:self
           reauthenticationModule:reauthenticationModule_];
@@ -829,23 +829,24 @@ blacklistedFormItemWithText:(NSString*)text
     didDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
   // Remove empty sections.
   __weak SavePasswordsCollectionViewController* weakSelf = self;
-  [self.collectionView performBatchUpdates:^{
-    SavePasswordsCollectionViewController* strongSelf = weakSelf;
-    if (!strongSelf)
-      return;
-    // Delete in reverse order of section indexes (bottom up of section
-    // displayed), so that indexes in model matches those in the view.  if we
-    // don't we'll cause a crash.
-    [strongSelf
-        clearSectionWithIdentifier:SectionIdentifierBlacklist
-                           ifEmpty:strongSelf->blacklistedForms_.empty()];
-    [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
-                                   ifEmpty:strongSelf->savedForms_.empty()];
-    [strongSelf
-        clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
-                           ifEmpty:strongSelf->savedForms_.empty() &&
-                                   strongSelf->blacklistedForms_.empty()];
-  }
+  [self.collectionView
+      performBatchUpdates:^{
+        SavePasswordsCollectionViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        // Delete in reverse order of section indexes (bottom up of section
+        // displayed), so that indexes in model matches those in the view.  if
+        // we don't we'll cause a crash.
+        [strongSelf
+            clearSectionWithIdentifier:SectionIdentifierBlacklist
+                               ifEmpty:strongSelf->blacklistedForms_.empty()];
+        [strongSelf clearSectionWithIdentifier:SectionIdentifierSavedPasswords
+                                       ifEmpty:strongSelf->savedForms_.empty()];
+        [strongSelf
+            clearSectionWithIdentifier:SectionIdentifierSearchPasswordsBox
+                               ifEmpty:strongSelf->savedForms_.empty() &&
+                                       strongSelf->blacklistedForms_.empty()];
+      }
       completion:^(BOOL finished) {
         SavePasswordsCollectionViewController* strongSelf = weakSelf;
         if (!strongSelf)
@@ -858,9 +859,11 @@ blacklistedFormItemWithText:(NSString*)text
       }];
 }
 
-#pragma mark PasswordDetailsCollectionViewControllerDelegate
+#pragma mark PasswordDetailsTableViewControllerDelegate
 
-- (void)deletePassword:(const autofill::PasswordForm&)form {
+- (void)passwordDetailsTableViewController:
+            (PasswordDetailsTableViewController*)controller
+                            deletePassword:(const autofill::PasswordForm&)form {
   passwordStore_->RemoveLogin(form);
 
   std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =

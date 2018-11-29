@@ -5,7 +5,7 @@
 #include "ios/chrome/test/app/password_test_util.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller+testing.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -52,11 +52,10 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   SettingsNavigationController* settings_navigation_controller =
       base::mac::ObjCCastStrict<SettingsNavigationController>(
           top_view_controller::TopPresentedViewController());
-  PasswordDetailsCollectionViewController*
-      password_details_collection_view_controller =
-          base::mac::ObjCCastStrict<PasswordDetailsCollectionViewController>(
-              settings_navigation_controller.topViewController);
-  [password_details_collection_view_controller
+  PasswordDetailsTableViewController* password_details_table_view_controller =
+      base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
+          settings_navigation_controller.topViewController);
+  [password_details_table_view_controller
       setReauthenticationModule:mock_reauthentication_module];
   return mock_reauthentication_module;
 }

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SAVE_PASSWORDS_COLLECTION_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_SAVE_PASSWORDS_COLLECTION_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
 #include <memory>
@@ -31,8 +31,8 @@ class ChromeBrowserState;
 
 @end
 
-@interface SavePasswordsCollectionViewController (
-    Testing)<PasswordDetailsCollectionViewControllerDelegate>
+@interface SavePasswordsCollectionViewController (Testing) <
+    PasswordDetailsTableViewControllerDelegate>
 
 // Initializes the password exporter with a (fake) |reauthenticationModule|.
 - (void)setReauthenticationModuleForExporter:
