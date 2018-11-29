@@ -344,7 +344,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Populates and returns an AccountInfo object corresponding to |account_id|,
   // which must be an account with a refresh token.
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
-      std::string account_id) const;
+      const std::string& account_id) const;
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
