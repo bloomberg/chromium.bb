@@ -1901,6 +1901,7 @@ _FUNCTION_INFO = {
   },
   'ClearBufferuiv': {
     'type': 'PUT',
+    'use_count_func': True,
     'count': 4,
     'decoder_func': 'DoClearBufferuiv',
     'unit_test': False,

@@ -1023,6 +1023,11 @@ struct ClearBufferuivImmediate {
     return static_cast<uint32_t>(sizeof(GLuint) * 4);
   }
 
+  static uint32_t ComputeEffectiveDataSize(GLenum buffer) {
+    return static_cast<uint32_t>(
+        sizeof(GLuint) * GLES2Util::CalcClearBufferuivDataCount(buffer));
+  }
+
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
   }
@@ -1033,7 +1038,12 @@ struct ClearBufferuivImmediate {
     SetHeader();
     buffer = _buffer;
     drawbuffers = _drawbuffers;
-    memcpy(ImmediateDataAddress(this), _value, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _value,
+           ComputeEffectiveDataSize(buffer));
+    DCHECK_GE(ComputeDataSize(), ComputeEffectiveDataSize(buffer));
+    char* pointer = reinterpret_cast<char*>(ImmediateDataAddress(this)) +
+                    ComputeEffectiveDataSize(buffer);
+    memset(pointer, 0, ComputeDataSize() - ComputeEffectiveDataSize(buffer));
   }
 
   void* Set(void* cmd,
