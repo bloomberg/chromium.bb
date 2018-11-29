@@ -33,11 +33,8 @@ using web::WebThread;
 
 namespace {
 
-// Updates DownloadTaskImpl properties. |terminal_callback| is true if this is
-// the last update for this DownloadTaskImpl.
-using PropertiesBlock = void (^)(NSURLSessionTask*,
-                                 NSError*,
-                                 bool terminal_callback);
+// Updates DownloadTaskImpl properties.
+using PropertiesBlock = void (^)(NSURLSessionTask*, NSError*);
 // Writes buffer and calls |completionHandler| when done.
 using DataBlock = void (^)(scoped_refptr<net::IOBufferWithSize> buffer,
                            void (^completionHandler)());
@@ -117,8 +114,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
                              CRWURLSessionDelegate* strongSelf = weakSelf;
                              if (strongSelf.propertiesBlock)
-                               strongSelf.propertiesBlock(
-                                   task, error, /*terminal_callback=*/true);
+                               strongSelf.propertiesBlock(task, error);
                            }));
 }
 
@@ -148,8 +144,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
                              CRWURLSessionDelegate* strongSelf = weakSelf;
                              if (strongSelf.propertiesBlock)
-                               weakSelf.propertiesBlock(
-                                   task, nil, /*terminal_callback=*/false);
+                               weakSelf.propertiesBlock(task, nil);
                            }));
 }
 
@@ -343,8 +338,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
   DCHECK(identifier.length);
   base::WeakPtr<DownloadTaskImpl> weak_this = weak_factory_.GetWeakPtr();
   id<NSURLSessionDataDelegate> session_delegate = [[CRWURLSessionDelegate alloc]
-      initWithPropertiesBlock:^(NSURLSessionTask* task, NSError* error,
-                                BOOL terminal_callback) {
+      initWithPropertiesBlock:^(NSURLSessionTask* task, NSError* error) {
         if (!weak_this.get()) {
           return;
         }
@@ -367,7 +361,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
               static_cast<NSHTTPURLResponse*>(task.response).statusCode;
         }
 
-        if (!terminal_callback) {
+        if (task.state != NSURLSessionTaskStateCompleted) {
           OnDownloadUpdated();
           // Download is still in progress, nothing to do here.
           return;
