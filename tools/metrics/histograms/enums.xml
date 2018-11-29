@@ -20895,6 +20895,7 @@ Called by update_net_error_codes.py.-->
   <int value="2645" label="CSSSelectorNotWithValidList"/>
   <int value="2646" label="CSSSelectorNotWithInvalidList"/>
   <int value="2647" label="CSSSelectorNotWithPartiallyValidList"/>
+  <int value="2648" label="V8IDBFactory_Databases_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
