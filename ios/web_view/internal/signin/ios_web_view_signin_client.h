@@ -54,7 +54,6 @@ class IOSWebViewSigninClient : public SigninClient {
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
-  void OnSignedOut() override;
 
   // CWVSyncController setter/getter.
   void SetSyncController(CWVSyncController* sync_controller);

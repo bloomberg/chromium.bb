@@ -11,7 +11,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 
@@ -20,12 +19,10 @@ class ChromeBrowserState;
 }
 
 // Concrete implementation of SigninClient for //ios/chrome.
-class IOSChromeSigninClient : public SigninClient,
-                              public SigninErrorController::Observer {
+class IOSChromeSigninClient : public SigninClient {
  public:
   IOSChromeSigninClient(
       ios::ChromeBrowserState* browser_state,
-      SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map);
   ~IOSChromeSigninClient() override;
@@ -36,10 +33,6 @@ class IOSChromeSigninClient : public SigninClient,
   // SigninClient implementation.
   base::Time GetInstallDate() override;
   std::string GetProductVersion() override;
-  void OnSignedIn(const std::string& account_id,
-                  const std::string& gaia_id,
-                  const std::string& username,
-                  const std::string& password) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source,
@@ -57,10 +50,6 @@ class IOSChromeSigninClient : public SigninClient,
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
   void DelayNetworkCall(const base::Closure& callback) override;
-  void OnSignedOut() override;
-
-  // SigninErrorController::Observer implementation.
-  void OnErrorChanged() override;
 
  private:
 
@@ -68,8 +57,6 @@ class IOSChromeSigninClient : public SigninClient,
   std::unique_ptr<WaitForNetworkCallbackHelper> network_callback_helper_;
   // The browser state associated with this service.
   ios::ChromeBrowserState* browser_state_;
-  // Used to check for errors related to signing in.
-  SigninErrorController* signin_error_controller_;
   // Used to check if sign in cookies are allowed.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.

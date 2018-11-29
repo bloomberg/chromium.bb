@@ -228,7 +228,6 @@ void SigninManager::OnSignoutDecisionReached(
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
-  client_->OnSignedOut();
 
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {
@@ -433,9 +432,6 @@ void SigninManager::OnSignedIn() {
 
   if (!reauth_in_progress)
     FireGoogleSigninSucceeded();
-
-  client_->OnSignedIn(GetAuthenticatedAccountId(), gaia_id,
-                      GetAuthenticatedAccountInfo().email, password_);
 
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());

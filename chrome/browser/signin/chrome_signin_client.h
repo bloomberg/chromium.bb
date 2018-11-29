@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -31,12 +30,10 @@ class ChromeSigninClient
 #if !defined(OS_CHROMEOS)
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
 #endif
-      public SigninErrorController::Observer,
       public gaia::GaiaOAuthClient::Delegate,
       public OAuth2TokenService::Consumer {
  public:
-  explicit ChromeSigninClient(
-      Profile* profile, SigninErrorController* signin_error_controller);
+  explicit ChromeSigninClient(Profile* profile);
   ~ChromeSigninClient() override;
 
   void DoFinalInit() override;
@@ -49,7 +46,6 @@ class ChromeSigninClient
   void PreSignOut(
       base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
       signin_metrics::ProfileSignout signout_source_metric) override;
-  void OnSignedOut() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   bool IsFirstRun() const override;
@@ -70,16 +66,9 @@ class ChromeSigninClient
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   std::string GetProductVersion() override;
-  void OnSignedIn(const std::string& account_id,
-                  const std::string& gaia_id,
-                  const std::string& username,
-                  const std::string& password) override;
   void PostSignedIn(const std::string& account_id,
                     const std::string& username,
                     const std::string& password) override;
-
-  // SigninErrorController::Observer implementation.
-  void OnErrorChanged() override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetTokenInfoResponse(
@@ -121,8 +110,6 @@ class ChromeSigninClient
   void OnCloseBrowsersAborted(const base::FilePath& profile_path);
 
   Profile* profile_;
-
-  SigninErrorController* signin_error_controller_;
 
   // Stored callback from PreSignOut();
   base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached_;

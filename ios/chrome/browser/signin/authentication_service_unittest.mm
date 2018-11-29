@@ -66,7 +66,6 @@ class FakeSigninClient : public IOSChromeSigninClient {
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map)
       : IOSChromeSigninClient(browser_state,
-                              signin_error_controller,
                               cookie_settings,
                               host_content_settings_map) {}
   ~FakeSigninClient() override {}

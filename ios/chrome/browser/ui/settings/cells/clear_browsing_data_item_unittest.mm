@@ -8,9 +8,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/sync_preferences/pref_service_mock_factory.h"
-#include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
@@ -29,16 +26,7 @@ class ClearDataItemTest : public PlatformTest {
   void SetUp() override {
     // Setup identity services.
     TestChromeBrowserState::Builder builder;
-    builder.SetPrefService(CreatePrefService());
     browser_state_ = builder.Build();
-  }
-  std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
-    sync_preferences::PrefServiceMockFactory factory;
-    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-        new user_prefs::PrefRegistrySyncable);
-    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs =
-        factory.CreateSyncable(registry.get());
-    return prefs;
   }
 
   std::unique_ptr<TestChromeBrowserState> browser_state_;
