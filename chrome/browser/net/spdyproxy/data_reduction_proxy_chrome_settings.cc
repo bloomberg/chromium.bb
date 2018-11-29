@@ -220,6 +220,10 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
 
+  if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance()) {
+    data_use_measurement::ChromeDataUseMeasurement::CreateInstance(
+        g_browser_process->local_state());
+  }
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, request_context_getter, url_loader_factory,
