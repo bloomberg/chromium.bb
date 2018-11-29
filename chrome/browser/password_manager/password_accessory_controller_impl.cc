@@ -242,9 +242,12 @@ void PasswordAccessoryControllerImpl::GetFavicon(
     return;  // The favicon for this origin was already requested.
 
   favicon_service_->GetRawFaviconForPageURL(
-      origin.GetURL(), {favicon_base::IconType::kFavicon},
+      origin.GetURL(),
+      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+       favicon_base::IconType::kTouchPrecomposedIcon,
+       favicon_base::IconType::kWebManifestIcon},
       desired_size_in_pixel,
-      /* fallback_to_host = */ false,
+      /* fallback_to_host = */ true,
       base::BindRepeating(  // FaviconService doesn't support BindOnce yet.
           &PasswordAccessoryControllerImpl::OnImageFetched,
           base::AsWeakPtr<PasswordAccessoryControllerImpl>(this), origin),
