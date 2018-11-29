@@ -1,7 +1,6 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 'use strict';
 
 (function() {
@@ -13,16 +12,12 @@
  */
 function waitForPlaying(filename) {
   var caller = getCaller();
-  return repeatUntil(function() {
-    return videoPlayerApp.callRemoteTestUtil('isPlaying',
-                                             null,
-                                             [filename]).
-        then(function(result) {
-          if (result)
-            return true;
-          return pending(
-              caller, 'Window with the prefix %s is not found.', filename);
-        });
+  return repeatUntil(async () => {
+    if (await videoPlayerApp.callRemoteTestUtil(
+            'isPlaying', null, [filename])) {
+      return true;
+    }
+    return pending(caller, 'Window with the prefix %s is not found.', filename);
   });
 }
 
@@ -32,47 +27,26 @@ function waitForPlaying(filename) {
  *
  * @param {string} path Directory path to be tested.
  */
-function videoOpen(path) {
-  var appId;
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    function(results) {
-      appId = results.windowId;
-      // Select the song.
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['world.ogv'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      // Wait for the video player.
-      waitForPlaying('world.ogv').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil(
-          'getErrorCount', null, [], this.next);
-    },
-    function(errorCount) {
-      chrome.test.assertEq(errorCount, 0);
-      videoPlayerApp.callRemoteTestUtil(
-          'getErrorCount', null, [], this.next);
-    },
-    function(errorCount) {
-      chrome.test.assertEq(errorCount, 0);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+async function videoOpen(path) {
+  const {appId} = await setupAndWaitUntilReady(null, path, null);
+
+  // Open the video.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['world.ogv']));
+
+  // Wait for the video to start playing.
+  chrome.test.assertTrue(await waitForPlaying('world.ogv'));
+
+  chrome.test.assertEq(
+      0, await videoPlayerApp.callRemoteTestUtil('getErrorCount', null, []));
 }
 
 // Exports test functions.
 testcase.videoOpenDrive = function() {
-  videoOpen(RootPath.DRIVE);
+  return videoOpen(RootPath.DRIVE);
 };
 
 testcase.videoOpenDownloads = function() {
-  videoOpen(RootPath.DOWNLOADS);
+  return videoOpen(RootPath.DOWNLOADS);
 };
-
 })();
