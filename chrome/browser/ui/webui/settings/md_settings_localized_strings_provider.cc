@@ -1500,14 +1500,15 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
                                     IDS_SETTINGS_CREDIT_CARD_NONE);
   }
 
+  GURL google_password_manager_url = GetGooglePasswordManagerURL(
+      password_manager::ManagePasswordsReferrer::kChromeSettings);
   html_source->AddString(
       "managePasswordsLabel",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
-          base::UTF8ToUTF16(
-              GetGooglePasswordManagerURL(
-                  password_manager::ManagePasswordsReferrer::kChromeSettings)
-                  .spec())));
+          base::UTF8ToUTF16(google_password_manager_url.spec())));
+  html_source->AddString("googlePasswordManagerUrl",
+                         google_password_manager_url.spec());
   html_source->AddString("passwordManagerLearnMoreURL",
                          chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString("manageAddressesUrl",

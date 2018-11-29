@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -367,6 +368,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "autofillHomeEnabled",
       base::FeatureList::IsEnabled(password_manager::features::kAutofillHome));
+
+  html_source->AddBoolean(
+      "navigateToGooglePasswordManager",
+      ShouldManagePasswordsinGooglePasswordManager(profile));
 
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(

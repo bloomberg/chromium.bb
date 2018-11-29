@@ -190,6 +190,14 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
   return net::AppendQueryParameter(url, "utm_campaign", campaign);
 }
 
+bool ShouldManagePasswordsinGooglePasswordManager(Profile* profile) {
+  return base::FeatureList::IsEnabled(
+             password_manager::features::kGooglePasswordManager) &&
+         password_manager_util::GetPasswordSyncState(
+             ProfileSyncServiceFactory::GetForProfile(profile)) ==
+             password_manager::SYNCING_NORMAL_ENCRYPTION;
+}
+
 // Navigation is handled differently on Android.
 #if !defined(OS_ANDROID)
 void NavigateToGooglePasswordManager(Profile* profile,
@@ -202,11 +210,7 @@ void NavigateToGooglePasswordManager(Profile* profile,
 
 void NavigateToManagePasswordsPage(Browser* browser,
                                    ManagePasswordsReferrer referrer) {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kGooglePasswordManager) &&
-      password_manager_util::GetPasswordSyncState(
-          ProfileSyncServiceFactory::GetForProfile(browser->profile())) ==
-          password_manager::SYNCING_NORMAL_ENCRYPTION) {
+  if (ShouldManagePasswordsinGooglePasswordManager(browser->profile())) {
     NavigateToGooglePasswordManager(browser->profile(), referrer);
   } else {
     chrome::ShowPasswordManager(browser);

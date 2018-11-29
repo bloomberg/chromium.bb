@@ -311,12 +311,16 @@ Polymer({
   },
 
   /**
-   * Shows the manage passwords sub page.
+   * Shows a page to manage passwords. This is either the passwords sub page or
+   * the Google Password Manager page.
    * @param {!Event} event
    * @private
    */
   onPasswordsTap_: function(event) {
-    settings.navigateTo(settings.routes.MANAGE_PASSWORDS);
+    loadTimeData.getBoolean('navigateToGooglePasswordManager') ?
+        settings.PeopleBrowserProxyImpl.getInstance().openURL(
+            loadTimeData.getString('googlePasswordManagerUrl')) :
+        settings.navigateTo(settings.routes.MANAGE_PASSWORDS);
   },
 
   /**
