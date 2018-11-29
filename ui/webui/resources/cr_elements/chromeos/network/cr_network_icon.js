@@ -47,17 +47,17 @@ Polymer({
   getIconClass_: function() {
     if (!this.networkState)
       return '';
-    var type = this.networkState.Type;
+    const type = this.networkState.Type;
     if (type == CrOnc.Type.ETHERNET)
       return 'ethernet';
     if (type == CrOnc.Type.VPN)
       return 'vpn';
 
-    var prefix = (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) ?
+    const prefix = (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) ?
         'cellular-' :
         'wifi-';
     if (!this.isListItem && !this.networkState.GUID) {
-      var deviceState = this.deviceState;
+      const deviceState = this.deviceState;
       if (!deviceState || deviceState.State == 'Enabled' ||
           deviceState.State == 'Enabling') {
         return prefix + 'no-network';
@@ -65,7 +65,7 @@ Polymer({
       return prefix + 'off';
     }
 
-    var connectionState = this.networkState.ConnectionState;
+    const connectionState = this.networkState.ConnectionState;
     if (connectionState == CrOnc.ConnectionState.CONNECTING)
       return prefix + 'connecting';
 
@@ -75,7 +75,7 @@ Polymer({
       return prefix + 'not-connected';
     }
 
-    var strength = CrOnc.getSignalStrength(this.networkState);
+    const strength = CrOnc.getSignalStrength(this.networkState);
     return prefix + this.strengthToIndex_(strength).toString(10);
   },
 
@@ -103,14 +103,14 @@ Polymer({
    * @private
    */
   getTechnology_: function() {
-    var networkState = this.networkState;
+    const networkState = this.networkState;
     if (!networkState)
       return '';
-    var type = networkState.Type;
+    const type = networkState.Type;
     if (type == CrOnc.Type.WI_MAX)
       return 'network:4g';
     if (type == CrOnc.Type.CELLULAR && networkState.Cellular) {
-      var technology =
+      const technology =
           this.getTechnologyId_(networkState.Cellular.NetworkTechnology);
       if (technology != '')
         return 'network:' + technology;
@@ -153,7 +153,7 @@ Polymer({
    * @private
    */
   showSecure_: function() {
-    var networkState = this.networkState;
+    const networkState = this.networkState;
     if (!this.networkState)
       return false;
     if (networkState.Type != CrOnc.Type.WI_FI || !networkState.WiFi)
@@ -162,7 +162,7 @@ Polymer({
         networkState.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;
     }
-    var security = CrOnc.getStateOrActiveString(networkState.WiFi.Security);
+    const security = CrOnc.getStateOrActiveString(networkState.WiFi.Security);
     return !!security && security != 'None';
   },
 });

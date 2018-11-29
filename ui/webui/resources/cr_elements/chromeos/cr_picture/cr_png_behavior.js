@@ -12,44 +12,44 @@
  * PNG frame delay fraction numerator.
  * @const
  */
-var PNG_FRAME_DELAY_NUMERATOR = 1;
+const PNG_FRAME_DELAY_NUMERATOR = 1;
 
 /**
  * PNG frame delay fraction denominator.
  * @const
  */
-var PNG_FRAME_DELAY_DENOMINATOR = 20;
+const PNG_FRAME_DELAY_DENOMINATOR = 20;
 
 /**
  * PNG signature.
  * @const
  */
-var PNG_SIGNATURE = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+const PNG_SIGNATURE = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
 /**
  * PNG bit depth (8 = 32bpp).
  * @const
  */
-var PNG_BIT_DEPTH = 8;
+const PNG_BIT_DEPTH = 8;
 
 /**
  * PNG compression method (0 = deflate/inflate compression with a sliding
  * window PNG compression).
  * @const
  */
-var PNG_COMPRESSION_METHOD = 0;
+const PNG_COMPRESSION_METHOD = 0;
 
 /**
  * PNG filter method (0 = adaptive filtering with five basic filter types).
  * @const
  */
-var PNG_FILTER_METHOD = 0;
+const PNG_FILTER_METHOD = 0;
 
 /**
  * PNG interlace method (0 = no interlace).
  * @const
  */
-var PNG_INTERLACE_METHOD = 0;
+const PNG_INTERLACE_METHOD = 0;
 
 /**
  * CRC table for PNG encode.
@@ -69,7 +69,7 @@ var PNG_INTERLACE_METHOD = 0;
  *
  * @const
  */
-var PNG_CRC_TABLE = [
+const PNG_CRC_TABLE = [
   0x0,        0x77073096, 0xEE0E612C, 0x990951BA, 0x76DC419,  0x706AF48F,
   0xE963A535, 0x9E6495A3, 0xEDB8832,  0x79DCB8A4, 0xE0D5E91E, 0x97D2D988,
   0x9B64C2B,  0x7EB17CBD, 0xE7B82D07, 0x90BF1D91, 0x1DB71064, 0x6AB020F2,
@@ -126,10 +126,10 @@ var PNG_CRC_TABLE = [
  *   chunks: !Array<Uint8Array>
  * }}
  */
-var CrPngState;
+let CrPngState;
 
 /** @polymerBehavior */
-var CrPngBehavior = {
+const CrPngBehavior = {
   /**
    * Returns a data URL for an animated PNG image that is created
    * from a sequence of images.
@@ -137,7 +137,7 @@ var CrPngBehavior = {
    * @return {string} A data URL for an animated PNG image.
    */
   convertImageSequenceToPng: function(images) {
-    var png =
+    const png =
         /** @type {!CrPngState} */ ({frames: 0, sequences: 0, chunks: []});
 
     /** Append signature. */
@@ -154,7 +154,7 @@ var CrPngBehavior = {
      * Filter method       1 byte
      * Interlace method    1 byte
      */
-    var IHDR = new Uint8Array(12 + 13);
+    const IHDR = new Uint8Array(12 + 13);
     this.writeUInt32_(IHDR, 13, 0);
     this.writeFourCC_(IHDR, 'IHDR', 4);
     /** Write size at the end when known. */
@@ -172,7 +172,7 @@ var CrPngBehavior = {
      * Number of frames         4 bytes
      * Number of times to loop  4 bytes
      */
-    var acTL = new Uint8Array(12 + 8);
+    const acTL = new Uint8Array(12 + 8);
     this.writeUInt32_(acTL, 8, 0);
     this.writeFourCC_(acTL, 'acTL', 4);
     this.writeUInt32_(acTL, images.length, 8);
@@ -181,7 +181,7 @@ var CrPngBehavior = {
     png.chunks.push(acTL);
 
     /** Append each image as a PNG frame. */
-    for (var i = 0; i < images.length; ++i)
+    for (let i = 0; i < images.length; ++i)
       this.appendFrameFromDataURL_(images[i], png);
 
     /** Update IHDR now that size and colour is known. */
@@ -193,7 +193,7 @@ var CrPngBehavior = {
     /**
      * http://www.w3.org/TR/2003/REC-PNG-20031110/#11IEND
      */
-    var IEND = new Uint8Array(12);
+    const IEND = new Uint8Array(12);
     this.writeUInt32_(IEND, 0, 0);
     this.writeFourCC_(IEND, 'IEND', 4);
     this.writeUInt32_(IEND, this.getCRC_(IEND, 4, 8), 8);
@@ -228,8 +228,8 @@ var CrPngBehavior = {
    * @private
    */
   readString_: function(buffer, offset, length) {
-    var str = '';
-    for (var i = 0; i < length; i++) {
+    let str = '';
+    for (let i = 0; i < length; i++) {
       str += String.fromCharCode(buffer[offset + i]);
     }
     return str;
@@ -243,7 +243,7 @@ var CrPngBehavior = {
    * @private
    */
   writeBytes_: function(buffer, bytes, offset) {
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
       buffer[offset + i] = bytes[i] & 0xFF;
     }
   },
@@ -293,7 +293,7 @@ var CrPngBehavior = {
    * @private
    */
   writeString_: function(buffer, string, offset) {
-    for (var i = 0; i < string.length; i++) {
+    for (let i = 0; i < string.length; i++) {
       buffer[offset + i] = string.charCodeAt(i);
     }
   },
@@ -321,9 +321,9 @@ var CrPngBehavior = {
    * @private
    */
   getCRC_: function(buffer, start, end) {
-    var crc = 0xFFFFFFFF;
-    for (var i = start; i < end; i++) {
-      var crcTableIndex = (crc ^ (buffer[i])) & 0xFF;
+    let crc = 0xFFFFFFFF;
+    for (let i = start; i < end; i++) {
+      const crcTableIndex = (crc ^ (buffer[i])) & 0xFF;
       crc = PNG_CRC_TABLE[crcTableIndex] ^ (crc >>> 8);
     }
     return crc ^ 0xFFFFFFFF;
@@ -337,12 +337,12 @@ var CrPngBehavior = {
    */
   appendFrameFromDataURL_: function(dataURL, png) {
     /** Convert data URL to Uint8Array. */
-    var byteString = atob(dataURL.split(',')[1]);
-    var bytes = new Uint8Array(byteString.length);
+    const byteString = atob(dataURL.split(',')[1]);
+    const bytes = new Uint8Array(byteString.length);
     this.writeString_(bytes, byteString, 0);
 
     /** Check signature. */
-    var signature = bytes.subarray(0, PNG_SIGNATURE.length);
+    const signature = bytes.subarray(0, PNG_SIGNATURE.length);
     if (signature.toString() != PNG_SIGNATURE.toString()) {
       console.error('Bad PNG signature');
     }
@@ -360,7 +360,7 @@ var CrPngBehavior = {
      * Dispose op               1 bytes
      * Blend op                 1 bytes
      */
-    var fcTL = new Uint8Array(12 + 26);
+    const fcTL = new Uint8Array(12 + 26);
     this.writeUInt32_(fcTL, 26, 0);
     this.writeFourCC_(fcTL, 'fcTL', 4);
     this.writeUInt32_(fcTL, png.sequences, 8);
@@ -376,7 +376,7 @@ var CrPngBehavior = {
     png.chunks.push(fcTL);
 
     /** Append data chunks for frame. */
-    var i = PNG_SIGNATURE.length;
+    let i = PNG_SIGNATURE.length;
     while ((i + 12) <= bytes.length) {
       /**
        * http://www.w3.org/TR/2003/REC-PNG-20031110/#5Chunk-layout
@@ -386,9 +386,9 @@ var CrPngBehavior = {
        * chunk  =  length bytes
        * crc    =  4      bytes
        */
-      var length = this.readUInt32_(bytes, i);
-      var type = this.readString_(bytes, i + 4, 4);
-      var chunk = bytes.subarray(i + 8, i + 8 + length);
+      const length = this.readUInt32_(bytes, i);
+      const type = this.readString_(bytes, i + 4, 4);
+      const chunk = bytes.subarray(i + 8, i + 8 + length);
 
       /** We should have enough bytes left for length. */
       if (length != chunk.length) {
@@ -408,13 +408,13 @@ var CrPngBehavior = {
            * Filter method       1 byte
            * Interlace method    1 byte
            */
-          var width = this.readUInt32_(chunk, 0);
-          var height = this.readUInt32_(chunk, 4);
-          var depth = chunk[8];
-          var colour = chunk[9];
-          var compression = chunk[10];
-          var filter = chunk[11];
-          var interlace = chunk[12];
+          const width = this.readUInt32_(chunk, 0);
+          const height = this.readUInt32_(chunk, 4);
+          const depth = chunk[8];
+          const colour = chunk[9];
+          const compression = chunk[10];
+          const filter = chunk[11];
+          const interlace = chunk[12];
 
           /** Initialize size and colour if this is the first frame. */
           if (png.frames == 0) {
@@ -447,7 +447,7 @@ var CrPngBehavior = {
              *
              * Data                     X bytes
              */
-            var IDAT = new Uint8Array(12 + length);
+            const IDAT = new Uint8Array(12 + length);
             this.writeUInt32_(IDAT, length, 0);
             this.writeFourCC_(IDAT, 'IDAT', 4);
             this.writeBytes_(IDAT, chunk, 8);
@@ -461,7 +461,7 @@ var CrPngBehavior = {
              * Sequence number          4 bytes
              * Frame data               X bytes
              */
-            var fdAT = new Uint8Array(12 + 4 + length);
+            const fdAT = new Uint8Array(12 + 4 + length);
             this.writeUInt32_(fdAT, 4 + length, 0);
             this.writeFourCC_(fdAT, 'fdAT', 4);
             this.writeUInt32_(fdAT, png.sequences, 8);
@@ -478,7 +478,7 @@ var CrPngBehavior = {
            *
            * Palette data        X bytes
            */
-          var PLTE = new Uint8Array(12 + length);
+          const PLTE = new Uint8Array(12 + length);
           this.writeUInt32_(PLTE, length, 0);
           this.writeFourCC_(PLTE, 'PLTE', 4);
           this.writeBytes_(PLTE, chunk, 8);

@@ -106,7 +106,7 @@ Polymer({
 
     this.refreshNetworks();
 
-    /** @const */ var INTERVAL_MS = 10 * 1000;
+    /** @const */ const INTERVAL_MS = 10 * 1000;
     chrome.networkingPrivate.requestNetworkScan();
     this.scanIntervalId_ = window.setInterval(function() {
       chrome.networkingPrivate.requestNetworkScan();
@@ -137,9 +137,9 @@ Polymer({
    * @return {!CrOnc.NetworkStateProperties|undefined}
    */
   getDefaultNetwork: function() {
-    var defaultNetwork;
-    for (var i = 0; i < this.networkStateList_.length; ++i) {
-      var state = this.networkStateList_[i];
+    let defaultNetwork;
+    for (let i = 0; i < this.networkStateList_.length; ++i) {
+      const state = this.networkStateList_[i];
       if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
         defaultNetwork = state;
         break;
@@ -172,7 +172,7 @@ Polymer({
    * @private
    */
   getDeviceStatesCallback_: function(deviceStates) {
-    var filter = {
+    const filter = {
       networkType: chrome.networkingPrivate.NetworkType.ALL,
       visible: true,
       configured: false
@@ -196,7 +196,7 @@ Polymer({
     this.networkStateList_ = networkStates;
     this.fire('network-list-changed', networkStates);
 
-    var defaultNetwork = this.getDefaultNetwork();
+    const defaultNetwork = this.getDefaultNetwork();
 
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
@@ -224,11 +224,11 @@ Polymer({
       return;
     }
     // Add a Cellular network after the Ethernet network if it exists.
-    var idx = networkStates.length > 0 &&
+    const idx = networkStates.length > 0 &&
             networkStates[0].Type == CrOnc.Type.ETHERNET ?
         1 :
         0;
-    var cellular = {
+    const cellular = {
       GUID: '',
       Type: CrOnc.Type.CELLULAR,
       Cellular: {Scanning: this.cellularDeviceState_.Scanning}
@@ -242,7 +242,7 @@ Polymer({
    * @private
    */
   onNetworkListItemSelected_: function(e) {
-    var state = e.detail;
+    const state = e.detail;
     e.target.blur();
 
     if (!this.handleNetworkItemSelected) {
@@ -253,7 +253,7 @@ Polymer({
     // NOTE: This isn't used by OOBE (no handle-network-item-selected).
     // TODO(stevenjb): Remove custom OOBE handling.
     if (state.Type == CrOnc.Type.CELLULAR && this.cellularDeviceState_) {
-      var cellularDevice = this.cellularDeviceState_;
+      const cellularDevice = this.cellularDeviceState_;
       // If Cellular is not enabled and not SIM locked, enable Cellular.
       if (cellularDevice.State != CrOnc.DeviceState.ENABLED &&
           (!cellularDevice.SIMLockStatus ||
@@ -266,7 +266,7 @@ Polymer({
       return;
 
     chrome.networkingPrivate.startConnect(state.GUID, function() {
-      var lastError = chrome.runtime.lastError;
+      const lastError = chrome.runtime.lastError;
       if (lastError && lastError != 'connecting')
         console.error('networkingPrivate.startConnect error: ' + lastError);
     });

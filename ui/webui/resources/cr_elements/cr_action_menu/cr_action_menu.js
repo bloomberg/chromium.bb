@@ -16,7 +16,7 @@
  *   maxY: (number|undefined),
  * }}
  */
-var ShowAtConfig;
+let ShowAtConfig;
 
 /**
  * @typedef {{
@@ -32,13 +32,13 @@ var ShowAtConfig;
  *   maxY: (number|undefined),
  * }}
  */
-var ShowAtPositionConfig;
+let ShowAtPositionConfig;
 
 /**
  * @enum {number}
  * @const
  */
-var AnchorAlignment = {
+const AnchorAlignment = {
   BEFORE_START: -2,
   AFTER_START: -1,
   CENTER: 0,
@@ -47,7 +47,7 @@ var AnchorAlignment = {
 };
 
 /** @const {string} */
-var DROPDOWN_ITEM_CLASS = 'dropdown-item';
+const DROPDOWN_ITEM_CLASS = 'dropdown-item';
 
 (function() {
 /**
@@ -66,7 +66,7 @@ var DROPDOWN_ITEM_CLASS = 'dropdown-item';
  */
 function getStartPointWithAnchor(
     start, end, menuLength, anchorAlignment, min, max) {
-  var startPoint = 0;
+  let startPoint = 0;
   switch (anchorAlignment) {
     case AnchorAlignment.BEFORE_START:
       startPoint = -menuLength;
@@ -100,7 +100,7 @@ function getStartPointWithAnchor(
  * @return {!ShowAtPositionConfig}
  */
 function getDefaultShowConfig() {
-  var doc = document.scrollingElement;
+  const doc = document.scrollingElement;
   return {
     top: 0,
     left: 0,
@@ -240,7 +240,7 @@ Polymer({
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')
       return;
 
-    var nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : -1);
+    const nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : -1);
     if (nextOption) {
       if (!this.hasMousemoveListener_) {
         this.hasMousemoveListener_ = true;
@@ -262,9 +262,10 @@ Polymer({
   onMouseover_: function(e) {
     // TODO(scottchen): Using "focus" to determine selected item might mess
     // with screen readers in some edge cases.
-    var i = 0;
+    let i = 0;
+    let target;
     do {
-      var target = e.path[i++];
+      target = e.path[i++];
       if (target.classList && target.classList.contains('dropdown-item') &&
           !target.disabled) {
         target.focus();
@@ -286,11 +287,11 @@ Polymer({
   getNextOption_: function(step) {
     // Using a counter to ensure no infinite loop occurs if all elements are
     // hidden/disabled.
-    var counter = 0;
-    var nextOption = null;
-    var options = this.querySelectorAll('.dropdown-item');
-    var numOptions = options.length;
-    var focusedIndex =
+    let counter = 0;
+    let nextOption = null;
+    const options = this.querySelectorAll('.dropdown-item');
+    const numOptions = options.length;
+    let focusedIndex =
         Array.prototype.indexOf.call(options, getDeepActiveElement());
 
     // Handle case where nothing is focused and up is pressed.
@@ -333,7 +334,7 @@ Polymer({
     // accurate for where the menu should be shown.
     this.anchorElement_.scrollIntoViewIfNeeded();
 
-    var rect = this.anchorElement_.getBoundingClientRect();
+    const rect = this.anchorElement_.getBoundingClientRect();
     this.showAtPosition(/** @type {ShowAtPositionConfig} */ (Object.assign(
         {
           top: rect.top,
@@ -375,9 +376,9 @@ Polymer({
    */
   showAtPosition: function(config) {
     // Save the scroll position of the viewport.
-    var doc = document.scrollingElement;
-    var scrollLeft = doc.scrollLeft;
-    var scrollTop = doc.scrollTop;
+    const doc = document.scrollingElement;
+    const scrollLeft = doc.scrollLeft;
+    const scrollTop = doc.scrollTop;
 
     // Reset position so that layout isn't affected by the previous position,
     // and so that the dialog is positioned at the top-start corner of the
@@ -419,31 +420,31 @@ Polymer({
    */
   positionDialog_: function(config) {
     this.lastConfig_ = config;
-    var c = Object.assign(getDefaultShowConfig(), config);
+    const c = Object.assign(getDefaultShowConfig(), config);
 
-    var top = c.top;
-    var left = c.left;
-    var bottom = top + c.height;
-    var right = left + c.width;
+    const top = c.top;
+    const left = c.left;
+    const bottom = top + c.height;
+    const right = left + c.width;
 
     // Flip the X anchor in RTL.
-    var rtl = getComputedStyle(this).direction == 'rtl';
+    const rtl = getComputedStyle(this).direction == 'rtl';
     if (rtl)
       c.anchorAlignmentX *= -1;
 
     const offsetWidth = this.$.dialog.offsetWidth;
-    var menuLeft = getStartPointWithAnchor(
+    const menuLeft = getStartPointWithAnchor(
         left, right, offsetWidth, c.anchorAlignmentX, c.minX, c.maxX);
 
     if (rtl) {
-      var menuRight =
+      const menuRight =
           document.scrollingElement.clientWidth - menuLeft - offsetWidth;
       this.$.dialog.style.right = menuRight + 'px';
     } else {
       this.$.dialog.style.left = menuLeft + 'px';
     }
 
-    var menuTop = getStartPointWithAnchor(
+    const menuTop = getStartPointWithAnchor(
         top, bottom, this.$.dialog.offsetHeight, c.anchorAlignmentY, c.minY,
         c.maxY);
     this.$.dialog.style.top = menuTop + 'px';

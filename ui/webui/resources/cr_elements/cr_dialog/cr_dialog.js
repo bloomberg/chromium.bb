@@ -109,7 +109,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    var mutationObserverCallback = function() {
+    const mutationObserverCallback = function() {
       if (this.$.dialog.open) {
         this.addIntersectionObserver_();
         this.addKeydownListener_();
@@ -147,19 +147,19 @@ Polymer({
     if (this.intersectionObserver_)
       return;
 
-    var bodyContainer = this.$$('.body-container');
+    const bodyContainer = this.$$('.body-container');
 
-    var bottomMarker = this.$.bodyBottomMarker;
-    var topMarker = this.$.bodyTopMarker;
+    const bottomMarker = this.$.bodyBottomMarker;
+    const topMarker = this.$.bodyTopMarker;
 
-    var callback = function(entries) {
+    const callback = function(entries) {
       // In some rare cases, there could be more than one entry per observed
       // element, in which case the last entry's result stands.
-      for (var i = 0; i < entries.length; i++) {
-        var target = entries[i].target;
+      for (let i = 0; i < entries.length; i++) {
+        const target = entries[i].target;
         assert(target == bottomMarker || target == topMarker);
 
-        var classToToggle =
+        const classToToggle =
             target == bottomMarker ? 'bottom-scrollable' : 'top-scrollable';
 
         bodyContainer.classList.toggle(
@@ -309,7 +309,7 @@ Polymer({
     if (e.target != this && e.target.tagName != 'CR-INPUT')
       return;
 
-    var actionButton =
+    const actionButton =
         this.querySelector('.action-button:not([disabled]):not([hidden])');
     if (actionButton) {
       actionButton.click();

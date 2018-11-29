@@ -74,7 +74,7 @@ Polymer({
     if (!this.pref)
       return '';
 
-    var matches = this.pref && this.pref.value == this.pref.recommendedValue;
+    const matches = this.pref && this.pref.value == this.pref.recommendedValue;
     return this.getIndicatorTooltip(
         indicatorType, this.pref.controlledByName || '', matches);
   },

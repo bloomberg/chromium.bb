@@ -74,7 +74,7 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState)
       return;
-    var connectionState = this.networkState.ConnectionState;
+    const connectionState = this.networkState.ConnectionState;
     if (connectionState == this.connectionState_)
       return;
     this.connectionState_ = connectionState;
@@ -88,13 +88,13 @@ Polymer({
    */
   getItemName_: function() {
     if (this.item.hasOwnProperty('customItemName')) {
-      var item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
-      var name = item.customItemName || '';
+      const item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
+      let name = item.customItemName || '';
       if (CrOncStrings.hasOwnProperty(item.customItemName))
         name = CrOncStrings[item.customItemName];
       return name;
     }
-    var network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
+    const network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
     return CrOnc.getNetworkName(network);
   },
 
@@ -114,7 +114,7 @@ Polymer({
   getNetworkStateText_: function() {
     if (!this.networkState)
       return '';
-    var connectionState = this.networkState.ConnectionState;
+    const connectionState = this.networkState.ConnectionState;
     if (this.networkState.Type == CrOnc.Type.CELLULAR) {
       // For Cellular, an empty ConnectionState indicates that the device is
       // still initializing.

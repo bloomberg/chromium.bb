@@ -8,7 +8,7 @@
  * CrNetworkListItem.
  */
 
-var CrNetworkList = {};
+const CrNetworkList = {};
 
 /**
  * Generic managed property type. This should match any of the basic managed

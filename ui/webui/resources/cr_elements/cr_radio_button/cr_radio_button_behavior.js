@@ -7,7 +7,7 @@
  */
 
 /** @polymerBehavior */
-var CrRadioButtonBehaviorImpl = {
+const CrRadioButtonBehaviorImpl = {
   properties: {
     checked: {
       type: Boolean,
