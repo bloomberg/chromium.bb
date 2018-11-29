@@ -39,10 +39,9 @@
 namespace feature_engagement {
 
 namespace {
-const base::FilePath::CharType kEventDBStorageDir[] =
-    FILE_PATH_LITERAL("EventDB");
-const base::FilePath::CharType kAvailabilityDBStorageDir[] =
-    FILE_PATH_LITERAL("AvailabilityDB");
+const char kFeatureName[] = "FeatureEngagement";
+const char kEventDBName[] = "EventDB";
+const char kAvailabilityDBName[] = "AvailabilityDB";
 
 // Creates a TrackerImpl that is usable for a demo mode.
 std::unique_ptr<Tracker> CreateDemoModeTracker() {
@@ -98,9 +97,11 @@ Tracker* Tracker::Create(
   if (base::FeatureList::IsEnabled(kIPHDemoMode))
     return CreateDemoModeTracker().release();
 
-  base::FilePath event_storage_dir = storage_dir.Append(kEventDBStorageDir);
-  auto event_db =
-      db_provider->GetDB<Event>(event_storage_dir, background_task_runner);
+  base::FilePath event_storage_dir =
+      storage_dir.AppendASCII(std::string(kEventDBName));
+  auto event_db = db_provider->GetDB<Event>(
+      std::string(kFeatureName), std::string(kEventDBName), event_storage_dir,
+      background_task_runner);
 
   auto event_store =
       std::make_unique<PersistentEventStore>(std::move(event_db));
@@ -122,8 +123,9 @@ Tracker* Tracker::Create(
   auto time_provider = std::make_unique<SystemTimeProvider>();
 
   base::FilePath availability_storage_dir =
-      storage_dir.Append(kAvailabilityDBStorageDir);
+      storage_dir.AppendASCII(std::string(kAvailabilityDBName));
   auto availability_db = db_provider->GetDB<Availability>(
+      std::string(kFeatureName), std::string(kAvailabilityDBName),
       availability_storage_dir, background_task_runner);
   auto availability_store_loader = base::BindOnce(
       &PersistentAvailabilityStore::LoadAndUpdateStore,

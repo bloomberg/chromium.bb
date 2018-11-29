@@ -16,12 +16,16 @@ namespace leveldb_proto {
 // The ProtoDatabaseWrapper<T> owns a ProtoDatabase<T> instance, and allows the
 // underlying ProtoDatabase<T> implementation to change without users of the
 // wrapper needing to know.
+// This allows clients to request a DB instance without knowing whether or not
+// it's a UniqueDatabase<T> or a SharedProtoDatabaseClient<T>.
 template <typename T>
 class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
  public:
   using InitCallback = base::OnceCallback<void(bool success)>;
 
   ProtoDatabaseWrapper(
+      const std::string& client_namespace,
+      const std::string& type_prefix,
       const base::FilePath& db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
@@ -100,6 +104,8 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
                       InitCallback callback,
                       bool success);
 
+  std::string client_namespace_;
+  std::string type_prefix_;
   base::FilePath db_dir_;
   std::unique_ptr<ProtoDatabase<T>> db_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -118,9 +124,13 @@ void ProtoDatabaseWrapper<T>::RunCallbackOnCallingSequence(
 
 template <typename T>
 ProtoDatabaseWrapper<T>::ProtoDatabaseWrapper(
+    const std::string& client_namespace,
+    const std::string& type_prefix,
     const base::FilePath& db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : UniqueProtoDatabase<T>(task_runner) {
+  client_namespace_ = client_namespace;
+  type_prefix_ = type_prefix;
   db_dir_ = db_dir;
   db_ = nullptr;
   task_runner_ = task_runner;
@@ -154,7 +164,7 @@ void ProtoDatabaseWrapper<T>::Init(
     const std::string& client_name,
     typename ProtoDatabase<T>::InitCallback callback) {
   auto unique_db = std::make_unique<UniqueProtoDatabase<T>>(
-      db_dir_, CreateSimpleOptions(), task_runner_);
+      db_dir_, CreateSimpleOptions(), this->task_runner_);
   unique_db->Init(client_name,
                   base::BindOnce(&ProtoDatabaseWrapper<T>::OnInitUniqueDB,
                                  weak_ptr_factory_->GetWeakPtr(),

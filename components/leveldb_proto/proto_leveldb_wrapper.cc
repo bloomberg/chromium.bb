@@ -58,7 +58,7 @@ inline void LoadKeysFromTaskRunner(LevelDB* database,
   DCHECK(success);
   DCHECK(keys);
   keys->clear();
-  *success = database->LoadKeys(keys);
+  *success = database->LoadKeys(target_prefix, keys);
   ProtoLevelDBWrapperMetrics::RecordLoadKeys(client_id, *success);
 }
 
@@ -66,12 +66,16 @@ inline void LoadKeysFromTaskRunner(LevelDB* database,
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : task_runner_(task_runner) {}
+    : task_runner_(task_runner) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     LevelDB* db)
-    : task_runner_(task_runner), db_(db) {}
+    : task_runner_(task_runner), db_(db) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 ProtoLevelDBWrapper::~ProtoLevelDBWrapper() = default;
 
@@ -81,7 +85,7 @@ void ProtoLevelDBWrapper::InitWithDatabase(
     const leveldb_env::Options& options,
     bool destroy_on_corruption,
     typename ProtoLevelDBWrapper::InitCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!db_);
   DCHECK(database);
   db_ = database;
@@ -96,7 +100,7 @@ void ProtoLevelDBWrapper::InitWithDatabase(
 
 void ProtoLevelDBWrapper::Destroy(
     typename ProtoLevelDBWrapper::DestroyCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
 
   bool* success = new bool(false);
@@ -116,7 +120,7 @@ void ProtoLevelDBWrapper::LoadKeys(
 void ProtoLevelDBWrapper::LoadKeys(
     const std::string& target_prefix,
     typename ProtoLevelDBWrapper::LoadKeysCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto success = std::make_unique<bool>(false);
   auto keys = std::make_unique<std::vector<std::string>>();
   bool* success_ptr = success.get();
