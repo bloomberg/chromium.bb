@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -38,7 +40,7 @@ class MarkAttemptStartedTaskTest : public RequestQueueTaskTestBase {
 };
 
 void MarkAttemptStartedTaskTest::AddItemToStore() {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store_.AddRequest(request_1,
@@ -83,7 +85,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
                      base::Unretained(this)));
 
   // Current time for verification.
-  base::Time before_time = base::Time::Now();
+  base::Time before_time = OfflineClock()->Now();
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -94,7 +96,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
   EXPECT_EQ(1UL, last_result()->updated_items.size());
   EXPECT_LE(before_time,
             last_result()->updated_items.at(0).last_attempt_time());
-  EXPECT_GE(base::Time::Now(),
+  EXPECT_GE(OfflineClock()->Now(),
             last_result()->updated_items.at(0).last_attempt_time());
   EXPECT_EQ(1, last_result()->updated_items.at(0).started_attempt_count());
   EXPECT_EQ(SavePageRequest::RequestState::OFFLINING,
