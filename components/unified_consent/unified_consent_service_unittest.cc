@@ -40,6 +40,8 @@ class TestSyncService : public syncer::TestSyncService {
 
  private:
   syncer::SyncServiceObserver* observer_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };
 
 const char kSpellCheckDummyEnabled[] = "spell_check_dummy.enabled";
@@ -97,6 +99,8 @@ class FakeUnifiedConsentServiceClient : public UnifiedConsentServiceClient {
   static std::map<Service, bool> is_not_supported_;
 
   PrefService* pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeUnifiedConsentServiceClient);
 };
 
 std::map<Service, bool> FakeUnifiedConsentServiceClient::service_enabled_;
@@ -191,6 +195,8 @@ class UnifiedConsentServiceTest : public testing::Test {
   std::unique_ptr<FakeUnifiedConsentServiceClient> service_client_;
 
   std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnifiedConsentServiceTest);
 };
 
 TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
@@ -412,60 +418,6 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
             service_client_->GetServiceState(Service::kSpellCheck));
   EXPECT_NE(ServiceState::kEnabled,
             service_client_->GetServiceState(Service::kContextualSearch));
-}
-
-TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
-  base::HistogramTester histogram_tester;
-  // Disable all services.
-  sync_service_.GetUserSettings()->SetChosenDataTypes(false,
-                                                      syncer::ModelTypeSet());
-  CreateConsentService();
-
-  histogram_tester.ExpectUniqueSample(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kNone, 1);
-}
-
-TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
-  base::HistogramTester histogram_tester;
-  // Unified consent is given.
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-  pref_service_.SetInteger(
-      prefs::kUnifiedConsentMigrationState,
-      static_cast<int>(unified_consent::MigrationState::kCompleted));
-  pref_service_.SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
-  CreateConsentService(true);
-
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kNone, 0);
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kAllServicesWereEnabled, 1);
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting, 1);
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kSpellCheck, 1);
-  histogram_tester.ExpectTotalCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings", 4);
-}
-
-TEST_F(UnifiedConsentServiceTest, SettingsHistogram_NoUnifiedConsentGiven) {
-  base::HistogramTester histogram_tester;
-  // Unified consent is not given. Only spellcheck is enabled.
-  pref_service_.SetBoolean(kSpellCheckDummyEnabled, true);
-  CreateConsentService();
-
-  // kUserEvents should have no sample even though the sync preference is set,
-  // because the user is not signed in.
-  histogram_tester.ExpectUniqueSample(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kSpellCheck, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {

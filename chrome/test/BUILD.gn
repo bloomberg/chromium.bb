@@ -1161,7 +1161,10 @@ test("browser_tests") {
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
     if (enable_dice_support) {
-      sources += [ "../browser/signin/dice_browsertest.cc" ]
+      sources += [
+        "../browser/signin/dice_browsertest.cc",
+        "../browser/unified_consent/unified_consent_browsertest.cc",
+      ]
     }
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc" ]

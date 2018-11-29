@@ -8,6 +8,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -61,6 +62,10 @@ UnifiedConsentServiceFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForBrowserState(browser_state);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+
+  // Record settings for pre- and post-UnifiedConsent users.
+  unified_consent::metrics::RecordSettingsHistogram(service_client.get(),
+                                                    user_pref_service);
 
   if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
     unified_consent::UnifiedConsentService::RollbackIfNeeded(
