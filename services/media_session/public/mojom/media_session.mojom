@@ -4,7 +4,10 @@
 
 module media_session.mojom;
 
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+import "url/mojom/url.mojom";
 
 // Next MinVersion: 2
 
@@ -23,6 +26,23 @@ enum MediaSessionAction {
   kNextTrack,
   kSeekBackward,
   kSeekForward,
+};
+
+// Album art in MediaMetadata
+// Spec: https://wicg.github.io/mediasession/
+struct MediaImage {
+  url.mojom.Url src;
+  mojo_base.mojom.String16 type;
+  array<gfx.mojom.Size> sizes;
+};
+
+// MediaMetadata
+// Spec: https://wicg.github.io/mediasession/
+struct MediaMetadata {
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 artist;
+  mojo_base.mojom.String16 album;
+  array<MediaImage> artwork;
 };
 
 // Contains state information about a MediaSession.

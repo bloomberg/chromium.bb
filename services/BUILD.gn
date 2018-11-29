@@ -55,6 +55,7 @@ test("services_unittests") {
     deps += [
       "//services/data_decoder/public/cpp/android:safe_json_java",
       "//services/device:java",
+      "//services/media_session/public/cpp/android:media_session_java",
 
       # Some tests make network requests.
       "//net/android:net_java",
