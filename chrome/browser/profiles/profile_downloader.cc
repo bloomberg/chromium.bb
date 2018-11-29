@@ -291,7 +291,7 @@ void ProfileDownloader::OnDecodeImageFailed() {
 void ProfileDownloader::OnRefreshTokenUpdatedForAccount(
     const AccountInfo& account_info,
     bool is_valid) {
-  if (!is_valid || account_info.account_id != account_id_)
+  if (account_info.account_id != account_id_)
     return;
 
   identity_manager_observer_.Remove(identity_manager_);
