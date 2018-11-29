@@ -463,7 +463,7 @@ cr.define('omnibox_output', function() {
       // Reserve 1 more column if showing the additional properties column.
       cell.colSpan = OutputMatch.displayedProperties(showDetails).length +
           showAdditionalPropertiesColumn;
-      cell.textContent = this.matches[0].properties.providerName;
+      cell.textContent = this.matches[0].properties.providerName.value;
       row.appendChild(cell);
       head.appendChild(row);
       return head;
@@ -481,8 +481,7 @@ cr.define('omnibox_output', function() {
     constructor(match) {
       /** @dict */
       this.properties = {};
-      /** @dict */
-      this.additionalProperties = {};
+      let unconsumedProperties = {};
       Object.entries(match).forEach(propertyNameValueTuple => {
         // TODO(manukh) replace with destructuring when the styleguide is
         // updated
@@ -491,13 +490,16 @@ cr.define('omnibox_output', function() {
         const propertyValue = propertyNameValueTuple[1];
 
         if (PROPERTY_OUTPUT_ORDER.some(
-                displayProperty =>
-                    displayProperty.propertyName === propertyName)) {
-          this.properties[propertyName] = propertyValue;
+                property => property.propertyName === propertyName)) {
+          this.properties[propertyName] =
+              OutputProperty.constructProperty(propertyName, propertyValue);
         } else {
-          this.additionalProperties[propertyName] = propertyValue;
+          unconsumedProperties[propertyName] = propertyValue;
         }
       });
+      /** @type {!OutputProperty} */
+      this.additionalProperties = OutputProperty.constructProperty(
+          'additionalProperties', unconsumedProperties);
 
       /** @type {!Element} */
       this.associatedElement;
@@ -511,99 +513,14 @@ cr.define('omnibox_output', function() {
     render(showDetails) {
       const row = document.createElement('tr');
       OutputMatch.displayedProperties(showDetails)
-          .map(property => {
-            const value = this.properties[property.propertyName];
-            if (typeof value === 'boolean')
-              return OutputMatch.renderBooleanProperty_(value);
-            if (typeof value === 'object') {
-              // We check if the first element has key and value properties.
-              if (value && value[0] && value[0].key && value[0].value)
-                return OutputMatch.renderKeyValueTuples_(value);
-              else
-                return OutputMatch.renderJsonProperty_(value);
-            }
-            const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
-            if (LINK_REGEX.test(value))
-              return OutputMatch.renderLinkProperty_(value);
-            return OutputMatch.renderTextProperty_(value);
-          })
+          .map(property => this.properties[property.propertyName].render())
           .forEach(cell => row.appendChild(cell));
 
-      if (showDetails && this.hasAdditionalProperties) {
-        row.appendChild(
-            OutputMatch.renderJsonProperty_(this.additionalProperties));
-      }
+      if (showDetails && this.hasAdditionalProperties)
+        row.appendChild(this.additionalProperties.render());
+
       this.associatedElement = row;
       return this.associatedElement;
-    }
-
-    /**
-     * TODO(manukh) replace these static render_ functions with subclasses when
-     * rendering becomes more substantial
-     * @private
-     * @param {string} propertyValue
-     * @return {!Element}
-     */
-    static renderTextProperty_(propertyValue) {
-      const cell = document.createElement('td');
-      cell.textContent = propertyValue;
-      return cell;
-    }
-
-    /**
-     * @private
-     * @param {Object} propertyValue
-     * @return {!Element}
-     */
-    static renderJsonProperty_(propertyValue) {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      pre.textContent = JSON.stringify(propertyValue, null, 2);
-      cell.appendChild(pre);
-      return cell;
-    }
-
-    /**
-     * @private
-     * @param {boolean} propertyValue
-     * @return {!Element}
-     */
-    static renderBooleanProperty_(propertyValue) {
-      const cell = document.createElement('td');
-      const icon = document.createElement('div');
-      icon.className = propertyValue ? 'check-mark' : 'x-mark';
-      icon.textContent = propertyValue;
-      cell.appendChild(icon);
-      return cell;
-    }
-
-    /**
-     * @private
-     * @param {string} propertyValue
-     * @return {!Element}
-     */
-    static renderLinkProperty_(propertyValue) {
-      const cell = document.createElement('td');
-      const link = document.createElement('a');
-      link.textContent = propertyValue;
-      link.href = propertyValue;
-      cell.appendChild(link);
-      return cell;
-    }
-
-    /**
-     * @private
-     * @param {Array<{key: string, value: string}>} propertyValue
-     * @return {Element}
-     */
-    static renderKeyValueTuples_(propertyValue) {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      const text = propertyValue.reduce(
-          (prev, current) => `${prev}${current.key}: ${current.value}\n`, '');
-      pre.textContent = text;
-      cell.appendChild(pre);
-      return cell;
     }
 
     /**
@@ -629,8 +546,8 @@ cr.define('omnibox_output', function() {
     }
 
     /**
-     * @return {!Array<!PresentationInfoRecord>} Array representing which columns
-     * need to be displayed.
+     * @return {!Array<!PresentationInfoRecord>} Array representing which
+     * columns need to be displayed.
      */
     static displayedProperties(showDetails) {
       return showDetails ?
@@ -644,6 +561,138 @@ cr.define('omnibox_output', function() {
      */
     get hasAdditionalProperties() {
       return Object.keys(this.additionalProperties).length > 0;
+    }
+  }
+
+  /** @abstract */
+  class OutputProperty {
+    /**
+     * @param {string} name
+     * @param {*} value
+     */
+    constructor(name, value) {
+      /** @type {string} */
+      this.name = name;
+      /** @type {*} */
+      this.value = value;
+    }
+
+    /**
+     * @param {string} name
+     * @param {*} value
+     * @return {!OutputProperty}
+     */
+    static constructProperty(name, value) {
+      if (typeof value === 'boolean')
+        return new OutputBooleanProperty(name, value);
+      if (typeof value === 'object')
+        // We check if the first element has key and value properties.
+        if (value && value[0] && value[0].key && value[0].value)
+          return new OutputKeyValueTuplesProperty(name, value);
+        else
+          return new OutputJsonProperty(name, value);
+      const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
+      if (LINK_REGEX.test(value))
+        return new OutputLinkProperty(name, value);
+      return new OutputTextProperty(name, value);
+    }
+
+    /**
+     * @abstract
+     * @return {!Element}
+     */
+    render() {}
+
+    /** @return {string} */
+    get text() {
+      return this.value + '';
+    }
+  }
+
+  class OutputBooleanProperty extends OutputProperty {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    render() {
+      const cell = document.createElement('td');
+      const icon = document.createElement('div');
+      icon.className = this.value ? 'check-mark' : 'x-mark';
+      icon.textContent = this.value;
+      cell.appendChild(icon);
+      return cell;
+    }
+  }
+
+  class OutputKeyValueTuplesProperty extends OutputProperty {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    render() {
+      const cell = document.createElement('td');
+      const pre = document.createElement('pre');
+      pre.textContent = this.text;
+      cell.appendChild(pre);
+      return cell;
+    }
+
+    /**
+     * @override
+     * @return {string}
+     */
+    get text() {
+      return this.value.reduce(
+          (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
+    }
+  }
+
+  class OutputJsonProperty extends OutputProperty {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    render() {
+      const cell = document.createElement('td');
+      const pre = document.createElement('pre');
+      pre.textContent = this.text;
+      cell.appendChild(pre);
+      return cell;
+    }
+
+    /**
+     * @override
+     * @return {string}
+     */
+    get text() {
+      return JSON.stringify(this.value, null, 2);
+    }
+  }
+
+  class OutputLinkProperty extends OutputProperty {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    render() {
+      const cell = document.createElement('td');
+      const link = document.createElement('a');
+      link.textContent = this.value;
+      link.href = this.value;
+      cell.appendChild(link);
+      return cell;
+    }
+  }
+
+  class OutputTextProperty extends OutputProperty {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    render() {
+      const cell = document.createElement('td');
+      cell.textContent = this.value;
+      return cell;
     }
   }
 
