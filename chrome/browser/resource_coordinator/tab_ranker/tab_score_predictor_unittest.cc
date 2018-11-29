@@ -41,14 +41,14 @@ class TabScorePredictorTest : public testing::Test {
 // outside of Chrome.
 TEST_F(TabScorePredictorTest, KnownScore) {
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(-19.446667, ScoreTab(GetFullTabFeaturesForTesting()));
+  EXPECT_FLOAT_EQ(-10.076081, ScoreTab(GetFullTabFeaturesForTesting()));
 }
 
 // Checks the score for a different example that we have calculated a known
 // score for outside of Chrome. This example omits the optional features.
 TEST_F(TabScorePredictorTest, KnownScoreMissingOptionalFeatures) {
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(5.7347188, ScoreTab(GetPartialTabFeaturesForTesting()));
+  EXPECT_FLOAT_EQ(5.1401806, ScoreTab(GetPartialTabFeaturesForTesting()));
 }
 
 }  // namespace tab_ranker
