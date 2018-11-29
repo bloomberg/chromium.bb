@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -714,6 +715,8 @@ void WindowOcclusionTracker::OnWindowLayerRecreated(Window* window) {
 
 void WindowOcclusionTracker::OnOcclusionStateChanged(
     WindowTreeHost* host,
-    aura::Window::OcclusionState new_state) {}
+    aura::Window::OcclusionState new_state) {
+  UMA_HISTOGRAM_ENUMERATION("WindowOcclusionChanged", new_state);
+}
 
 }  // namespace aura
