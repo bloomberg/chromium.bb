@@ -2891,6 +2891,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       ('firmware-nocturne-10984.B', ['nocturne']),
       ('firmware-grunt-11031.B', ['grunt']),
       ('firmware-octopus-11297.B', ['octopus']),
+      ('firmware-rammus-11275.B', ['rammus']),
   ]
 
   for branch, boards in firmware_branch_builders:
