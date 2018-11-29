@@ -88,6 +88,7 @@ void RasterDecoderContextState::InitializeGrContext(
     GrContextOptions options;
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
+    options.fDisableCoverageCountingPaths = true;
     size_t max_resource_cache_bytes = 0u;
     raster::DetermineGrCacheLimitsFromAvailableMemory(
         &max_resource_cache_bytes, &glyph_cache_max_texture_bytes);
