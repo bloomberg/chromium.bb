@@ -42,19 +42,6 @@ extern void InitializeLocalState(
   // locale dll to load. This also causes local state prefs to be registered.
   PrefService* local_state = chrome_feature_list_creator->local_state();
   DCHECK(local_state);
-#if defined(OS_WIN)
-  if (first_run::IsChromeFirstRun()) {
-    // During first run we read the google_update registry key to find what
-    // language the user selected when downloading the installer. This
-    // becomes our default language in the prefs.
-    // Other platforms obey the system locale.
-    base::string16 install_lang;
-    if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
-      local_state->SetString(language::prefs::kApplicationLocale,
-                             base::UTF16ToASCII(install_lang));
-    }
-  }
-#endif  // defined(OS_WIN)
 
   // If the local state file for the current profile doesn't exist and the
   // parent profile command line flag is present, then we should inherit some
