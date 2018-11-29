@@ -10,6 +10,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
+#include "components/data_reduction_proxy/core/common/uma_util.h"
+#include "net/base/load_flags.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -34,6 +36,8 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
   url_chain_.clear();
   url_chain_.push_back(request->url);
   request_method_ = request->method;
+  is_main_frame_ = request->resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  final_load_flags_ = request->load_flags;
 
   MaybeSetAcceptTransformHeader(
       request->url, static_cast<content::ResourceType>(request->resource_type),
@@ -115,6 +119,19 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
   }
 }
 
+void DataReductionProxyURLLoaderThrottle::WillProcessResponse(
+    const GURL& response_url,
+    network::ResourceResponseHead* response_head,
+    bool* defer) {
+  base::Optional<DataReductionProxyTypeInfo> proxy_info =
+      manager_->FindConfiguredDataReductionProxy(response_head->proxy_server);
+  if (!proxy_info || (final_load_flags_ & net::LOAD_BYPASS_PROXY) != 0)
+    return;
+
+  LogSuccessfulProxyUMAs(proxy_info.value(), response_head->proxy_server,
+                         is_main_frame_);
+}
+
 void DataReductionProxyURLLoaderThrottle::MarkProxiesAsBad(
     const std::vector<net::ProxyServer>& bad_proxies,
     base::TimeDelta bypass_duration) {
@@ -156,6 +173,7 @@ void DataReductionProxyURLLoaderThrottle::DoPendingRestart() {
 
   pending_restart_ = false;
   pending_restart_load_flags_ = 0;
+  final_load_flags_ |= load_flags;
 
   delegate_->RestartWithFlags(load_flags);
 }

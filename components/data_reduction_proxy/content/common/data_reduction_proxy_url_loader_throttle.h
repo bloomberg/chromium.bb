@@ -42,6 +42,9 @@ class DataReductionProxyURLLoaderThrottle : public content::URLLoaderThrottle {
       const GURL& response_url,
       const network::ResourceResponseHead& response_head,
       bool* defer) override;
+  void WillProcessResponse(const GURL& response_url,
+                           network::ResourceResponseHead* response_head,
+                           bool* defer) override;
 
  private:
   // Marks |bad_proxies| to be bypassed for |bypass_duration|. Once that action
@@ -69,6 +72,12 @@ class DataReductionProxyURLLoaderThrottle : public content::URLLoaderThrottle {
 
   // Set to true while waiting for OnMarkProxiesAsBadComplete to run.
   bool waiting_for_mark_proxies_ = false;
+
+  // Whether this throttle is intercepting a main frame request.
+  bool is_main_frame_ = false;
+
+  // The final load flags used to complete the request.
+  int final_load_flags_ = 0;
 };
 
 }  // namespace data_reduction_proxy

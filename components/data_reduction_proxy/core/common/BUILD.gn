@@ -35,6 +35,8 @@ template("common_tmpl") {
       "lofi_decider.h",
       "lofi_ui_service.h",
       "resource_type_provider.h",
+      "uma_util.cc",
+      "uma_util.h",
     ]
 
     public_deps = [
