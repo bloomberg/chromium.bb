@@ -21,9 +21,13 @@ import java.util.Set;
 public class ServiceManagerStartupUtils {
     public static final String TASK_TAG = "Servicification Startup Task";
 
+    // Master flag that gates all features that depend on starting the service manager early.
+    private static final String EARLY_START_FLAG =
+            ChromeFeatureList.ALLOW_STARTING_SERVICE_MANAGER_ONLY;
+
     // List of features that supports starting ServiceManager on startup.
     private static final String[] SERVICE_MANAGER_FEATURES = {
-            ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD};
+            EARLY_START_FLAG, ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD};
     // Key in the SharedPreferences for storing all features that will start ServiceManager.
     private static final String SERVICE_MANAGER_FEATURES_KEY = "ServiceManagerFeatures";
 
@@ -35,7 +39,8 @@ public class ServiceManagerStartupUtils {
     public static boolean canStartServiceManager(String featureName) {
         Set<String> features = ContextUtils.getAppSharedPreferences().getStringSet(
                 SERVICE_MANAGER_FEATURES_KEY, null);
-        return features != null && features.contains(featureName);
+        return features != null && features.contains(EARLY_START_FLAG)
+                && features.contains(featureName);
     }
 
     /**
