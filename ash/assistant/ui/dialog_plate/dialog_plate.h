@@ -41,7 +41,7 @@ enum class DialogPlateButtonId {
 
 // DialogPlateObserver ---------------------------------------------------------
 
-class DialogPlateObserver {
+class DialogPlateObserver : public base::CheckedObserver {
  public:
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(DialogPlateButtonId id) {}
@@ -50,7 +50,7 @@ class DialogPlateObserver {
   virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
 
  protected:
-  virtual ~DialogPlateObserver() = default;
+  ~DialogPlateObserver() override = default;
 };
 
 // DialogPlate -----------------------------------------------------------------
@@ -124,7 +124,7 @@ class DialogPlate : public views::View,
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
   std::unique_ptr<AssistantQueryHistory::Iterator> query_history_iterator_;
 
-  base::ObserverList<DialogPlateObserver>::Unchecked observers_;
+  base::ObserverList<DialogPlateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };

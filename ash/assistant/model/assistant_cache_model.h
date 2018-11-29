@@ -44,7 +44,7 @@ class AssistantCacheModel {
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
 
-  base::ObserverList<AssistantCacheModelObserver>::Unchecked observers_;
+  base::ObserverList<AssistantCacheModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCacheModel);
 };
