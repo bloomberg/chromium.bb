@@ -142,16 +142,6 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
   return result;
 }
 
-bool ScriptController::ShouldBypassMainWorldCSP() {
-  v8::HandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Context> context = GetIsolate()->GetCurrentContext();
-  if (context.IsEmpty() || !ToLocalDOMWindow(context))
-    return false;
-  DOMWrapperWorld& world = DOMWrapperWorld::Current(GetIsolate());
-  return world.IsIsolatedWorld() ? world.IsolatedWorldHasContentSecurityPolicy()
-                                 : false;
-}
-
 TextPosition ScriptController::EventHandlerPosition() const {
   ScriptableDocumentParser* parser =
       GetFrame()->GetDocument()->GetScriptableDocumentParser();

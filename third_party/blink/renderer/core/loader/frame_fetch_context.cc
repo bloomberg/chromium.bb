@@ -1163,7 +1163,8 @@ bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
   if (IsDetached())
     return false;
 
-  return GetFrame()->GetScriptController().ShouldBypassMainWorldCSP();
+  return ContentSecurityPolicy::ShouldBypassMainWorld(
+      GetFrame()->GetDocument());
 }
 
 bool FrameFetchContext::IsSVGImageChromeClient() const {

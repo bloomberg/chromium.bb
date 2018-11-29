@@ -123,8 +123,7 @@ void StyleElement::ClearSheet(Element& owner_element) {
 
 static bool ShouldBypassMainWorldCSP(const Element& element) {
   // Main world CSP is bypassed within an isolated world.
-  LocalFrame* frame = element.GetDocument().GetFrame();
-  if (frame && frame->GetScriptController().ShouldBypassMainWorldCSP())
+  if (ContentSecurityPolicy::ShouldBypassMainWorld(&element.GetDocument()))
     return true;
 
   // Main world CSP is bypassed for style elements in user agent shadow DOM.

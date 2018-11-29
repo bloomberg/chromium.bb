@@ -154,7 +154,7 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
 
   if (script && !IsExternal()) {
     bool should_bypass_main_world_csp =
-        frame->GetScriptController().ShouldBypassMainWorldCSP();
+        ContentSecurityPolicy::ShouldBypassMainWorld(&element_->GetDocument());
 
     AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&

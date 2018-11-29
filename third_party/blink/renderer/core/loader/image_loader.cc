@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -108,13 +109,10 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
   DCHECK(loader);
   DCHECK(loader->GetElement());
-  if (loader->GetElement()->GetDocument().GetFrame() &&
-      loader->GetElement()
-          ->GetDocument()
-          .GetFrame()
-          ->GetScriptController()
-          .ShouldBypassMainWorldCSP())
+  if (ContentSecurityPolicy::ShouldBypassMainWorld(
+          &loader->GetElement()->GetDocument())) {
     return ImageLoader::kBypassMainWorldCSP;
+  }
   return ImageLoader::kDoNotBypassMainWorldCSP;
 }
 

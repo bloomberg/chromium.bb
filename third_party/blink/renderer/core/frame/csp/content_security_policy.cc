@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -73,6 +75,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -1677,16 +1680,23 @@ const String& ContentSecurityPolicy::GetSelfProtocol() const {
   return self_protocol_;
 }
 
+// static
 bool ContentSecurityPolicy::ShouldBypassMainWorld(
     const ExecutionContext* context) {
-  if (const auto* document = DynamicTo<Document>(context)) {
-    if (document->GetFrame()) {
-      return document->GetFrame()
-          ->GetScriptController()
-          .ShouldBypassMainWorldCSP();
-    }
-  }
-  return false;
+  if (!context)
+    return false;
+
+  v8::Isolate* isolate = ToIsolate(context);
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+  if (v8_context.IsEmpty())
+    return false;
+
+  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
+  if (!world.IsIsolatedWorld())
+    return false;
+
+  return world.IsolatedWorldHasContentSecurityPolicy();
 }
 
 bool ContentSecurityPolicy::ShouldSendViolationReport(
