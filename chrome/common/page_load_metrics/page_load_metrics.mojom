@@ -180,7 +180,7 @@ struct ResourceDataUpdate {
   int64 received_data_length = 0;
 
   // The length of the response body for the resource before removing any
-  // content encodings.
+  // content encodings. Only set for complete resources.
   int64 encoded_body_length = 0;
 
   // Whether this resource load has completed.
