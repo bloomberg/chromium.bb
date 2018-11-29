@@ -50,9 +50,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public views::TextfieldController,
                                   public SplitViewController::Observer {
  public:
-  // Returns true if the window can be selected in overview mode.
-  static bool IsSelectable(const aura::Window* window);
-
   enum Direction { LEFT, UP, RIGHT, DOWN };
 
   enum class OverviewTransition {

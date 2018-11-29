@@ -127,26 +127,7 @@ MruWindowTracker::WindowList MruWindowTracker::BuildWindowListIgnoreModal()
 
 MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleList() const {
   MruWindowTracker::WindowList window_list = BuildMruWindowList();
-  // Exclude windows:
-  // - non user positionable windows, such as extension popups.
-  // - windows being dragged
-  // - the AppList window, which will hide as soon as cycling starts
-  //   anyway. It doesn't make sense to count it as a "switchable" window, yet
-  //   a lot of code relies on the MRU list returning the app window. If we
-  //   don't manually remove it, the window cycling UI won't crash or misbehave,
-  //   but there will be a flicker as the target window changes. Also exclude
-  //   unselectable windows such as extension popups.
-  auto window_is_ineligible = [](aura::Window* window) {
-    wm::WindowState* state = wm::GetWindowState(window);
-    return !state->IsUserPositionable() || state->is_dragged() ||
-           window->GetRootWindow()
-               ->GetChildById(kShellWindowId_AppListContainer)
-               ->Contains(window) ||
-           window->GetProperty(kHideInOverviewKey);
-  };
-  window_list.erase(std::remove_if(window_list.begin(), window_list.end(),
-                                   window_is_ineligible),
-                    window_list.end());
+  base::EraseIf(window_list, wm::ShouldExcludeForCycleList);
   return window_list;
 }
 
