@@ -8411,6 +8411,42 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesRequestPriority) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest, HostResolverRequestReprioritizedOnSetPriority) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_, privacy_mode_, MAXIMUM_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_->last_request_priority());
+  EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_->request_priority(1));
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(
+                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url2_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->last_request_priority());
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
+
+  request.SetPriority(LOWEST);
+  EXPECT_EQ(LOWEST, host_resolver_->request_priority(1));
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
+}
+
 // Passes |max_time_before_crypto_handshake_seconds| and
 // |max_idle_time_before_crypto_handshake_seconds| to QuicStreamFactory, then
 // checks that its internal quic::QuicConfig is correct.

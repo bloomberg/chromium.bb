@@ -715,6 +715,18 @@ size_t SpdyStreamRequest::EstimateMemoryUsage() const {
   return base::trace_event::EstimateItemMemoryUsage(url_);
 }
 
+void SpdyStreamRequest::SetPriority(RequestPriority priority) {
+  if (priority_ == priority)
+    return;
+
+  if (stream_)
+    stream_->SetPriority(priority);
+  if (session_)
+    session_->ChangeStreamRequestPriority(weak_ptr_factory_.GetWeakPtr(),
+                                          priority);
+  priority_ = priority;
+}
+
 void SpdyStreamRequest::OnRequestCompleteSuccess(
     const base::WeakPtr<SpdyStream>& stream) {
   DCHECK(session_);
@@ -1622,7 +1634,7 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   return OK;
 }
 
-void SpdySession::CancelStreamRequest(
+bool SpdySession::CancelStreamRequest(
     const base::WeakPtr<SpdyStreamRequest>& request) {
   DCHECK(request);
   RequestPriority priority = request->priority();
@@ -1653,6 +1665,20 @@ void SpdySession::CancelStreamRequest(
     // present, should not be pending completion.
     DCHECK(std::find_if(it, queue->end(), RequestEquals(request)) ==
            queue->end());
+    return true;
+  }
+  return false;
+}
+
+void SpdySession::ChangeStreamRequestPriority(
+    const base::WeakPtr<SpdyStreamRequest>& request,
+    RequestPriority priority) {
+  // |request->priority()| is updated by the caller after this returns.
+  // |request| needs to still have its old priority in order for
+  // CancelStreamRequest() to find it in the correct queue.
+  DCHECK_NE(priority, request->priority());
+  if (CancelStreamRequest(request)) {
+    pending_create_stream_queues_[priority].push_back(request);
   }
 }
 

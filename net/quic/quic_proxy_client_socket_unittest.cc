@@ -299,13 +299,14 @@ class QuicProxyClientSocketTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectRequestPacket(
-      quic::QuicPacketNumber packet_number) {
+      quic::QuicPacketNumber packet_number,
+      RequestPriority request_priority = LOWEST) {
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
         packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
-        ConvertRequestPriorityToQuicPriority(LOWEST), std::move(block), 0,
-        nullptr, &header_stream_offset_);
+        ConvertRequestPriorityToQuicPriority(request_priority),
+        std::move(block), 0, nullptr, &header_stream_offset_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectAuthRequestPacket(
@@ -769,7 +770,21 @@ TEST_P(QuicProxyClientSocketTest, GetTotalReceivedBytes) {
   EXPECT_EQ((int64_t)kLen333, sock_->GetTotalReceivedBytes());
 }
 
-// ----------- Write
+TEST_P(QuicProxyClientSocketTest, SetStreamPriority) {
+  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
+  mock_quic_data_.AddWrite(SYNCHRONOUS,
+                           ConstructConnectRequestPacket(2, HIGHEST));
+  mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
+  mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  mock_quic_data_.AddWrite(
+      SYNCHRONOUS,
+      ConstructAckAndRstPacket(3, quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+
+  Initialize();
+
+  sock_->SetStreamPriority(HIGHEST);
+  AssertConnectSucceeds();
+}
 
 TEST_P(QuicProxyClientSocketTest, WriteSendsDataInDataFrame) {
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));

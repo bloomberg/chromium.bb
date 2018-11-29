@@ -153,6 +153,10 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob() const;
 
+  // If host resolution is underway, changes the priority of the host resolver
+  // request.
+  void SetPriority(RequestPriority priority);
+
   // Releases the handle to the QUIC session retrieved as a result of Request().
   std::unique_ptr<QuicChromiumClientSession::Handle> ReleaseSessionHandle();
 
@@ -294,6 +298,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
+
+  // Sets priority of a request.
+  void SetRequestPriority(QuicStreamRequest* request, RequestPriority priority);
 
   // Closes all current sessions with specified network, QUIC error codes.
   // It sends connection close packet when closing connections.

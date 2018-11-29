@@ -63,6 +63,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   int RestartWithAuth(CompletionOnceCallback callback) override;
   bool IsUsingSpdy() const override;
   NextProto GetProxyNegotiatedProtocol() const override;
+  void SetStreamPriority(RequestPriority priority) override;
 
   // StreamSocket implementation.
   int Connect(CompletionOnceCallback callback) override;

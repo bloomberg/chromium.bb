@@ -2003,6 +2003,48 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(SpdySessionTest, ChangeStreamRequestPriority) {
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING)  // Stall forever.
+  };
+
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  set_max_concurrent_streams(1);
+
+  TestCompletionCallback callback1;
+  SpdyStreamRequest request1;
+  ASSERT_EQ(OK, request1.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                      test_url_, LOWEST, SocketTag(),
+                                      NetLogWithSource(), callback1.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
+  TestCompletionCallback callback2;
+  SpdyStreamRequest request2;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                  test_url_, LOWEST, SocketTag(),
+                                  NetLogWithSource(), callback2.callback(),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  request1.SetPriority(HIGHEST);
+  request2.SetPriority(MEDIUM);
+
+  ASSERT_EQ(0u, pending_create_stream_queue_size(HIGHEST));
+  // Priority of queued request is changed.
+  ASSERT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
+  ASSERT_EQ(0u, pending_create_stream_queue_size(LOWEST));
+
+  base::WeakPtr<SpdyStream> stream1 = request1.ReleaseStream();
+  // Priority of stream is updated if request has been fulfilled.
+  ASSERT_EQ(HIGHEST, stream1->priority());
+}
+
 TEST_F(SpdySessionTest, Initialize) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF

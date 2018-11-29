@@ -222,6 +222,10 @@ class HttpProxyClientSocketPoolTest
     return transport_socket_pool_.last_request_priority();
   }
 
+  RequestPriority GetTransportRequestPriority(size_t index) const {
+    return transport_socket_pool_.requests()[index]->priority();
+  }
+
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   TestNetworkQualityEstimator* estimator() { return &estimator_; }
@@ -293,6 +297,26 @@ TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
                              CompletionOnceCallback(), pool_.get(),
                              NetLogWithSource()));
   EXPECT_EQ(HIGHEST, GetLastTransportRequestPriority());
+  EXPECT_EQ(HIGHEST, GetTransportRequestPriority(0));
+}
+
+TEST_P(HttpProxyClientSocketPoolTest, SetPriority) {
+  data_ = std::make_unique<SequencedSocketData>();
+  data_->set_connect_data(MockConnect(ASYNC, OK));
+
+  socket_factory()->AddSocketDataProvider(data_.get());
+
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback_.callback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle_.is_initialized());
+  EXPECT_FALSE(handle_.socket());
+
+  EXPECT_EQ(LOW, GetTransportRequestPriority(0));
+
+  handle_.SetPriority(HIGHEST);
+  EXPECT_EQ(HIGHEST, GetTransportRequestPriority(0));
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
@@ -425,15 +449,14 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
 }
 
 // Make sure that HttpProxyConnectJob passes on its priority to its
-// SPDY session's socket request on Init (if applicable).
-TEST_P(HttpProxyClientSocketPoolTest,
-       SetSpdySessionSocketRequestPriorityOnInit) {
+// SPDY session's socket request on Init, and on SetPriority.
+TEST_P(HttpProxyClientSocketPoolTest, SetSpdySessionSocketRequestPriority) {
   if (GetParam() != SPDY)
     return;
 
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, MEDIUM,
-                                      HostPortPair("www.google.com", 443)));
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      kAuthHeaders, kAuthHeadersSize, 1, HIGHEST,
+      HostPortPair("www.google.com", 443)));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
   spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
   MockRead spdy_reads[] = {CreateMockRead(resp, 1, ASYNC),
@@ -449,7 +472,10 @@ TEST_P(HttpProxyClientSocketPoolTest,
                    ClientSocketPool::RespectLimits::ENABLED,
                    callback_.callback(), pool_.get(), NetLogWithSource()));
   EXPECT_EQ(MEDIUM, GetLastTransportRequestPriority());
+  EXPECT_EQ(MEDIUM, GetTransportRequestPriority(0));
 
+  handle_.SetPriority(HIGHEST);
+  // Expect frame with HIGHEST priority, not MEDIUM.
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 }
 

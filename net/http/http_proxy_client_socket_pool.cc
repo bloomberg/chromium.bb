@@ -174,6 +174,11 @@ int HttpProxyConnectJob::ConnectInternal() {
   return HandleConnectResult(result);
 }
 
+void HttpProxyConnectJob::ChangePriorityInternal(RequestPriority priority) {
+  if (client_socket_)
+    client_socket_->SetPriority(priority);
+}
+
 void HttpProxyConnectJob::OnConnectComplete(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   result = HandleConnectResult(result);
