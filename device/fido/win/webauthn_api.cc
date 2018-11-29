@@ -4,13 +4,19 @@
 
 #include "device/fido/win/webauthn_api.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/native_library.h"
 #include "base/no_destructor.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "device/fido/features.h"
 
 namespace device {
@@ -24,7 +30,9 @@ constexpr uint32_t kMinWinWebAuthnApiVersion = WEBAUTHN_API_VERSION_1;
 // attempts to load webauthn.dll on intialization.
 class WinWebAuthnApiImpl : public WinWebAuthnApi {
  public:
-  WinWebAuthnApiImpl() : is_bound_(false) {
+  WinWebAuthnApiImpl()
+      : is_bound_(false),
+        thread_(std::make_unique<base::Thread>("WindowsWebAuthnAPIRequest")) {
     static HMODULE webauthn_dll = LoadLibraryA("webauthn.dll");
     if (!webauthn_dll) {
       return;
@@ -65,6 +73,7 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     BIND_FN(get_api_version_number_, webauthn_dll,
             "WebAuthNGetApiVersionNumber");
     api_version_ = get_api_version_number_ ? get_api_version_number_() : 0;
+    thread_->Start();
   }
 
   ~WinWebAuthnApiImpl() override {}
@@ -81,36 +90,43 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     return is_user_verifying_platform_authenticator_available_(result);
   }
 
-  HRESULT AuthenticatorMakeCredential(
+  void AuthenticatorMakeCredential(
       HWND h_wnd,
       const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
       const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
       const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
-      ScopedCredentialAttestation* credential_attestation) override {
+      AuthenticatorMakeCredentialCallback callback) override {
     DCHECK(is_bound_);
-    WEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr;
-    HRESULT hresult = authenticator_make_credential_(
-        h_wnd, rp_information, user_information, pub_key_cred_params,
-        client_data, options, &credential_attestation_ptr);
-    *credential_attestation = ScopedCredentialAttestation(
-        credential_attestation_ptr, free_credential_attestation_);
-    return hresult;
+    base::PostTaskAndReplyWithResult(
+        thread_->task_runner().get(), FROM_HERE,
+        base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorMakeCredentialBlocking,
+                       base::Unretained(this),  // |thread_| is owned by this.
+                       h_wnd, rp_information, user_information,
+                       pub_key_cred_params, client_data, options),
+        base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorMakeCredentialDone,
+                       base::Unretained(this),
+                       base::SequencedTaskRunnerHandle::Get(),
+                       std::move(callback)));
   }
 
-  HRESULT AuthenticatorGetAssertion(
+  void AuthenticatorGetAssertion(
       HWND h_wnd,
       const wchar_t* rp_id_utf16,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
-      ScopedAssertion* assertion) override {
+      AuthenticatorGetAssertionCallback callback) override {
     DCHECK(is_bound_);
-    WEBAUTHN_ASSERTION* assertion_ptr;
-    HRESULT hresult = authenticator_get_assertion_(
-        h_wnd, rp_id_utf16, client_data, options, &assertion_ptr);
-    *assertion = ScopedAssertion(assertion_ptr, free_assertion_);
-    return hresult;
+    base::PostTaskAndReplyWithResult(
+        thread_->task_runner().get(), FROM_HERE,
+        base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorGetAssertionBlocking,
+                       base::Unretained(this),  // |thread_| is owned by this.
+                       h_wnd, rp_id_utf16, client_data, options),
+        base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorGetAssertionDone,
+                       base::Unretained(this),
+                       base::SequencedTaskRunnerHandle::Get(),
+                       std::move(callback)));
   }
 
   HRESULT CancelCurrentOperation(GUID* cancellation_id) override {
@@ -123,6 +139,53 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
   };
 
  private:
+  std::pair<HRESULT, ScopedCredentialAttestation>
+  AuthenticatorMakeCredentialBlocking(
+      HWND h_wnd,
+      const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
+      const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
+      const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
+      const WEBAUTHN_CLIENT_DATA* client_data,
+      const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options) {
+    WEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr = nullptr;
+    HRESULT hresult = authenticator_make_credential_(
+        h_wnd, rp_information, user_information, pub_key_cred_params,
+        client_data, options, &credential_attestation_ptr);
+    return std::make_pair(
+        hresult, ScopedCredentialAttestation(credential_attestation_ptr,
+                                             free_credential_attestation_));
+  }
+
+  std::pair<HRESULT, ScopedAssertion> AuthenticatorGetAssertionBlocking(
+      HWND h_wnd,
+      const wchar_t* rp_id_utf16,
+      const WEBAUTHN_CLIENT_DATA* client_data,
+      const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options) {
+    WEBAUTHN_ASSERTION* assertion_ptr = nullptr;
+    HRESULT hresult = authenticator_get_assertion_(
+        h_wnd, rp_id_utf16, client_data, options, &assertion_ptr);
+    return std::make_pair(hresult,
+                          ScopedAssertion(assertion_ptr, free_assertion_));
+  }
+
+  void AuthenticatorMakeCredentialDone(
+      scoped_refptr<base::SequencedTaskRunner> callback_runner,
+      AuthenticatorMakeCredentialCallback callback,
+      std::pair<HRESULT, ScopedCredentialAttestation> result) {
+    callback_runner->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(callback), result.first,
+                                             std::move(result.second)));
+  }
+
+  void AuthenticatorGetAssertionDone(
+      scoped_refptr<base::SequencedTaskRunner> callback_runner,
+      AuthenticatorGetAssertionCallback callback,
+      std::pair<HRESULT, ScopedAssertion> result) {
+    callback_runner->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(callback), result.first,
+                                             std::move(result.second)));
+  }
+
   decltype(&WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable)
       is_user_verifying_platform_authenticator_available_ = nullptr;
   decltype(
@@ -141,6 +204,8 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 
   bool is_bound_ = false;
   uint32_t api_version_ = 0;
+
+  std::unique_ptr<base::Thread> thread_;
 };
 
 static WinWebAuthnApi* kDefaultForTesting = nullptr;

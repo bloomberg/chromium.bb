@@ -4,6 +4,7 @@
 
 #ifndef DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
 #define DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
+
 #include "base/macros.h"
 #include "device/fido/win/webauthn_api.h"
 
@@ -25,20 +26,20 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
   // The following methods all return E_NOTIMPL immediately.
   HRESULT IsUserVerifyingPlatformAuthenticatorAvailable(
       BOOL* available) override;
-  HRESULT AuthenticatorMakeCredential(
+  void AuthenticatorMakeCredential(
       HWND h_wnd,
       const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
       const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
       const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
-      ScopedCredentialAttestation* credential_attestation) override;
-  HRESULT AuthenticatorGetAssertion(
+      AuthenticatorMakeCredentialCallback callback) override;
+  void AuthenticatorGetAssertion(
       HWND h_wnd,
       const wchar_t* rp_id_utf16,
       const WEBAUTHN_CLIENT_DATA* client_data,
       const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
-      ScopedAssertion* assertion) override;
+      AuthenticatorGetAssertionCallback callback) override;
   HRESULT CancelCurrentOperation(GUID* cancellation_id) override;
   // Returns L"not implemented".
   const wchar_t* GetErrorName(HRESULT hr) override;

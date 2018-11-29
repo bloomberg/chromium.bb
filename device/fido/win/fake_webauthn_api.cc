@@ -5,6 +5,7 @@
 #include "device/fido/win/fake_webauthn_api.h"
 
 #include "base/logging.h"
+#include "base/optional.h"
 
 namespace device {
 
@@ -22,26 +23,24 @@ HRESULT FakeWinWebAuthnApi::IsUserVerifyingPlatformAuthenticatorAvailable(
   return S_OK;
 }
 
-HRESULT FakeWinWebAuthnApi::AuthenticatorMakeCredential(
+void FakeWinWebAuthnApi::AuthenticatorMakeCredential(
     HWND h_wnd,
     const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
     const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
     const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
     const WEBAUTHN_CLIENT_DATA* client_data,
     const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
-    ScopedCredentialAttestation* credential_attestation) {
+    AuthenticatorMakeCredentialCallback callback) {
   DCHECK(is_available_);
-  return E_NOTIMPL;
 }
 
-HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
+void FakeWinWebAuthnApi::AuthenticatorGetAssertion(
     HWND h_wnd,
     const wchar_t* rp_id_utf16,
     const WEBAUTHN_CLIENT_DATA* client_data,
     const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
-    ScopedAssertion* assertion) {
+    AuthenticatorGetAssertionCallback callback) {
   DCHECK(is_available_);
-  return E_NOTIMPL;
 }
 
 HRESULT FakeWinWebAuthnApi::CancelCurrentOperation(GUID* cancellation_id) {

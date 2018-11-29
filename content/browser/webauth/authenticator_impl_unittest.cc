@@ -1963,9 +1963,10 @@ TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
         SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
 
         base::test::ScopedFeatureList scoped_feature_list;
-        if (enable_feature_flag)
+        if (enable_feature_flag) {
           scoped_feature_list.InitAndEnableFeature(
               device::kWebAuthUseNativeWinApi);
+        }
         device::ScopedFakeWinWebAuthnApi fake_api;
         fake_api.set_available(enable_win_webauthn_api);
         fake_api.set_is_uvpaa(is_uvpaa);
