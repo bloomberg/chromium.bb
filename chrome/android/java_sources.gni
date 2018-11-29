@@ -1725,6 +1725,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/FadingEdgeScrollView.java",
   "java/src/org/chromium/chrome/browser/widget/FadingShadow.java",
   "java/src/org/chromium/chrome/browser/widget/FadingShadowView.java",
+  "java/src/org/chromium/chrome/browser/widget/FeatureHighlightProvider.java",
   "java/src/org/chromium/chrome/browser/widget/FullscreenControlContainer.java",
   "java/src/org/chromium/chrome/browser/widget/ListMenuButton.java",
   "java/src/org/chromium/chrome/browser/widget/LoadingView.java",
