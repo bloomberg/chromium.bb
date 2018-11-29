@@ -32,11 +32,30 @@ class AppRegistryCache {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    ~Observer() override {}
-
     // The apps::AppUpdate argument shouldn't be accessed after OnAppUpdate
     // returns.
     virtual void OnAppUpdate(const AppUpdate& update) = 0;
+
+   protected:
+    // Use this constructor when the object is tied to a single
+    // AppRegistryCache for its entire lifetime.
+    explicit Observer(AppRegistryCache* cache);
+
+    // Use this constructor when the object wants to observe a AppRegistryCache
+    // for part of its lifetime. It can then call Observe() to start and stop
+    // observing.
+    Observer();
+
+    ~Observer() override;
+
+    // Start observing a different AppRegistryCache; used with the default
+    // constructor.
+    void Observe(AppRegistryCache* cache);
+
+   private:
+    AppRegistryCache* cache_ = nullptr;
+
+    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   AppRegistryCache();

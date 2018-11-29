@@ -3152,6 +3152,10 @@ jumbo_split_static_library("ui") {
     if (is_chromeos) {
       sources += [
         "app_icon_loader_delegate.h",
+        "app_list/app_service_app_item.cc",
+        "app_list/app_service_app_item.h",
+        "app_list/app_service_app_model_builder.cc",
+        "app_list/app_service_app_model_builder.h",
         "app_list/arc/arc_app_context_menu.cc",
         "app_list/arc/arc_app_context_menu.h",
         "app_list/arc/arc_app_dialog.h",
@@ -3269,7 +3273,10 @@ jumbo_split_static_library("ui") {
         "views/crostini/crostini_upgrade_view.cc",
         "views/crostini/crostini_upgrade_view.h",
       ]
-      deps += [ "//mash/common" ]
+      deps += [
+        "//chrome/services/app_service/public/cpp:app_update",
+        "//mash/common",
+      ]
     }
   }
 
