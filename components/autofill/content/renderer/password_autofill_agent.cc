@@ -673,6 +673,20 @@ void PasswordAutofillAgent::SetPasswordGenerationAgent(
   password_generation_agent_ = generation_agent;
 }
 
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo() = default;
+
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
+    const FormStructureInfo& other) = default;
+
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
+    FormStructureInfo&& other) = default;
+
+PasswordAutofillAgent::FormStructureInfo::~FormStructureInfo() = default;
+
+PasswordAutofillAgent::FormStructureInfo&
+PasswordAutofillAgent::FormStructureInfo::operator=(
+    PasswordAutofillAgent::FormStructureInfo&& other) = default;
+
 PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
     PasswordAutofillAgent* agent)
     : was_fillable_(false), was_password_field_(false), agent_(agent) {}
@@ -1183,9 +1197,11 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     if (logger)
       logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD, *password_form);
 
-    const FormData& form_data = password_form->form_data;
-    if (only_visible || WasFormStructureChanged(form_data)) {
-      forms_structure_cache_[form_data.unique_renderer_id] = form_data;
+    FormStructureInfo form_structure_info =
+        ExtractFormStructureInfo(password_form->form_data);
+    if (only_visible || WasFormStructureChanged(form_structure_info)) {
+      forms_structure_cache_[form_structure_info.unique_renderer_id] =
+          std::move(form_structure_info);
 
       password_forms.push_back(std::move(*password_form));
       continue;
@@ -2030,23 +2046,42 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
 }
 
-bool PasswordAutofillAgent::WasFormStructureChanged(
-    const FormData& form_data) const {
-  if (form_data.unique_renderer_id == FormData::kNotSetFormRendererId)
-    return true;
-
-  auto cached_form = forms_structure_cache_.find(form_data.unique_renderer_id);
-  if (cached_form == forms_structure_cache_.end())
-    return true;
-
-  const FormData& cached_form_data = cached_form->second;
-
-  if (form_data.fields.size() != cached_form_data.fields.size())
-    return true;
+PasswordAutofillAgent::FormStructureInfo
+PasswordAutofillAgent::ExtractFormStructureInfo(const FormData& form_data) {
+  FormStructureInfo result;
+  result.unique_renderer_id = form_data.unique_renderer_id;
+  result.fields.resize(form_data.fields.size());
 
   for (size_t i = 0; i < form_data.fields.size(); ++i) {
     const FormFieldData& form_field = form_data.fields[i];
-    const FormFieldData& cached_form_field = cached_form_data.fields[i];
+
+    FormFieldInfo& field_info = result.fields[i];
+    field_info.unique_renderer_id = form_field.unique_renderer_id;
+    field_info.form_control_type = form_field.form_control_type;
+    field_info.autocomplete_attribute = form_field.autocomplete_attribute;
+    field_info.is_focusable = form_field.is_focusable;
+  }
+
+  return result;
+}
+
+bool PasswordAutofillAgent::WasFormStructureChanged(
+    const FormStructureInfo& form_info) const {
+  if (form_info.unique_renderer_id == FormData::kNotSetFormRendererId)
+    return true;
+
+  auto cached_form = forms_structure_cache_.find(form_info.unique_renderer_id);
+  if (cached_form == forms_structure_cache_.end())
+    return true;
+
+  const FormStructureInfo& cached_form_info = cached_form->second;
+
+  if (form_info.fields.size() != cached_form_info.fields.size())
+    return true;
+
+  for (size_t i = 0; i < form_info.fields.size(); ++i) {
+    const FormFieldInfo& form_field = form_info.fields[i];
+    const FormFieldInfo& cached_form_field = cached_form_info.fields[i];
 
     if (form_field.unique_renderer_id != cached_form_field.unique_renderer_id)
       return true;

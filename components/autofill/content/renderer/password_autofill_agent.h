@@ -221,6 +221,27 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   using PasswordToLoginMap =
       std::map<blink::WebInputElement, blink::WebInputElement>;
 
+  // Stores information about form field structure.
+  struct FormFieldInfo {
+    uint32_t unique_renderer_id = FormFieldData::kNotSetFormControlRendererId;
+    std::string form_control_type;
+    std::string autocomplete_attribute;
+    bool is_focusable = false;
+  };
+
+  // Stores information about form structure.
+  struct FormStructureInfo {
+    FormStructureInfo();
+    FormStructureInfo(const FormStructureInfo& other);
+    FormStructureInfo(FormStructureInfo&& other);
+    ~FormStructureInfo();
+
+    FormStructureInfo& operator=(FormStructureInfo&& other);
+
+    uint32_t unique_renderer_id = FormData::kNotSetFormRendererId;
+    std::vector<FormFieldInfo> fields;
+  };
+
   // This class ensures that the driver will only receive relevant signals by
   // caching the parameters of the last message sent to the driver.
   class FocusStateNotifier {
@@ -386,9 +407,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // |form_data|.
   void MaybeStoreFallbackData(const PasswordFormFillData& form_data);
 
+  // Extracts information about form structure.
+  static FormStructureInfo ExtractFormStructureInfo(const FormData& form_data);
   // Checks whether the form structure (amount of elements, element types etc)
   // was changed.
-  bool WasFormStructureChanged(const FormData& form_data) const;
+  bool WasFormStructureChanged(const FormStructureInfo& form_data) const;
   // Tries to restore |control_elements| values with cached values.
   void TryFixAutofilledForm(
       std::vector<blink::WebFormControlElement>* control_elements) const;
@@ -469,7 +492,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Keeps forms structure (amount of elements, element types etc).
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.
-  std::map<unsigned /*unique renderer element id*/, FormData>
+  std::map<unsigned /*unique renderer element id*/, FormStructureInfo>
       forms_structure_cache_;
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };
