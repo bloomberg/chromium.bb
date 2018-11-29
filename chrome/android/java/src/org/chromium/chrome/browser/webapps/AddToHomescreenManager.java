@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -93,8 +94,13 @@ public class AddToHomescreenManager implements AddToHomescreenDialog.Delegate {
     }
 
     @CalledByNative
-    private void onIconAvailable(Bitmap icon) {
-        mDialog.onIconAvailable(icon);
+    private void onIconAvailable(Bitmap icon, boolean iconAdaptable) {
+        if (iconAdaptable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mDialog.onAdaptableIconAvailable(icon);
+        } else {
+            assert !iconAdaptable : "Adaptive icons should not be provided pre-Android O.";
+            mDialog.onIconAvailable(icon);
+        }
     }
 
     private native long nativeInitializeAndStart(WebContents webContents);
