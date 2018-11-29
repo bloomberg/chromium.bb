@@ -32,6 +32,7 @@ import unittest
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests.port.base import Port
 from blinkpy.web_tests.port.driver import Driver
+from blinkpy.web_tests.port.driver import coalesce_repeated_switches
 from blinkpy.web_tests.port.server_process_mock import MockServerProcess
 
 
@@ -248,3 +249,45 @@ class DriverTest(unittest.TestCase):
         driver = Driver(port, 0)
         driver.start([], None)
         self.assertTrue(driver._server_process.started)
+
+
+class CoalesceRepeatedSwitchesTest(unittest.TestCase):
+    def _assert_coalesced_switches(self, input_switches,
+                                   expected_coalesced_switches):
+        output_switches = coalesce_repeated_switches(input_switches)
+        self.assertEquals(output_switches, expected_coalesced_switches)
+
+    def test_no_dupes(self):
+        self._assert_coalesced_switches(['--a', '--b', '--c'],
+                                        ['--a', '--b', '--c'])
+
+    def test_unknown_duplicates(self):
+        self._assert_coalesced_switches(['--a', '--b', '--a'],
+                                        ['--a', '--b', '--a'])
+
+    def test_simple_repeated_enable_features(self):
+        self._assert_coalesced_switches(
+            ['--A', '--enable-features=Y', '--X', '--enable-features=X'],
+            ['--A', '--X', '--enable-features=X,Y'])
+
+    def test_multiple_enable_features(self):
+        self._assert_coalesced_switches(
+            [ '--A', '--enable-features=Z,X',
+              '--enable-features=Y', '--X', '--enable-features=X,Y',
+              '--enable-features=X', '--enable-features=X,X'],
+            ['--A', '--X', '--enable-features=X,Y,Z'])
+
+    def test_multiple_disable_features(self):
+        self._assert_coalesced_switches(
+            [ '--A', '--disable-features=Z,X',
+              '--disable-features=Y', '--X', '--disable-features=X,Y',
+              '--disable-features=X', '--disable-features=X,X'],
+            ['--A', '--X', '--disable-features=X,Y,Z'])
+
+    def test_enable_and_disable_features(self):
+        # The coalescing of --enable-features and --disable-features is
+        # independent (may both enable and disable the same feature).
+        self._assert_coalesced_switches(
+            [ '--A', '--disable-features=Z','--disable-features=E,X',
+              '--enable-features=Y', '--X', '--enable-features=X,Y'],
+            ['--A', '--X', '--enable-features=X,Y', '--disable-features=E,X,Z'])
