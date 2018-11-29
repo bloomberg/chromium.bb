@@ -1831,6 +1831,29 @@ function testCaptureVisibleRegion() {
 
 function captureVisibleRegionDoCapture() {}
 
+// Ensure we use the closed encapsulation mode for the guest view shadow DOM
+// to prevent script from interfering with our internal elements and producing
+// unexpected behaviour.
+function testClosedShadowRoot() {
+  // Script could overwrite attachShadow to ignore the provided encapsulation
+  // mode. Ensure this does not happen when creating the guest view shadow
+  // DOM.
+  Element.prototype.realAttachShadow = Element.prototype.attachShadow;
+  Element.prototype.attachShadow = function() {
+    window.console.log('Tainted attachShadow was called.');
+    embedder.test.fail();
+    return this.realAttachShadow({mode: 'open'});
+  };
+
+  var webview = document.createElement('webview');
+  webview.src = 'data:text/html,webview test'
+  webview.addEventListener('loadstop', () => {
+    embedder.test.assertFalse(webview.shadowRoot);
+    embedder.test.succeed();
+  });
+  document.body.appendChild(webview);
+}
+
 // Tests end.
 
 embedder.test.testList = {
@@ -1905,7 +1928,8 @@ embedder.test.testList = {
   'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
-  'testCaptureVisibleRegion': testCaptureVisibleRegion
+  'testCaptureVisibleRegion': testCaptureVisibleRegion,
+  'testClosedShadowRoot': testClosedShadowRoot,
 };
 
 onload = function() {

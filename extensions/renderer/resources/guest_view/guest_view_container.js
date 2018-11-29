@@ -32,7 +32,7 @@ function GuestViewContainer(element, viewType) {
   this.setupAttributes();
 
   this.internalElement = this.createInternalElement$();
-  this.shadowRoot = $Element.attachShadow(this.element, {mode: 'open'});
+  this.shadowRoot = $Element.attachShadow(this.element, {mode: 'closed'});
   $Node.appendChild(this.shadowRoot, this.internalElement);
 
   GuestViewInternalNatives.RegisterView(this.viewInstanceId, this, viewType);
