@@ -271,23 +271,6 @@ int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
          EstimateOriginalBodySize(request, lofi_decider);
 }
 
-ProxyScheme ConvertNetProxySchemeToProxyScheme(
-    net::ProxyServer::Scheme scheme) {
-  switch (scheme) {
-    case net::ProxyServer::SCHEME_HTTP:
-      return PROXY_SCHEME_HTTP;
-    case net::ProxyServer::SCHEME_HTTPS:
-      return PROXY_SCHEME_HTTPS;
-    case net::ProxyServer::SCHEME_QUIC:
-      return PROXY_SCHEME_QUIC;
-    case net::ProxyServer::SCHEME_DIRECT:
-      return PROXY_SCHEME_DIRECT;
-    default:
-      NOTREACHED() << scheme;
-      return PROXY_SCHEME_UNKNOWN;
-  }
-}
-
 const char* GetSiteBreakdownOtherHostName() {
   return kOtherHostName;
 }

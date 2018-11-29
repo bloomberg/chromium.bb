@@ -21,6 +21,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
 #include "net/socket/socket_test_util.h"
@@ -214,8 +215,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
       "DataReductionProxy.WarmupURL.HasViaHeader", 0, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.ProxySchemeUsed",
-      util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
-      1);
+      ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT), 1);
 
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT,
@@ -268,8 +268,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
       "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.ProxySchemeUsed",
-      util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
-      1);
+      ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT), 1);
 
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT,
@@ -321,8 +320,7 @@ TEST(WarmupURLFetcherTest,
       "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.ProxySchemeUsed",
-      util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
-      1);
+      ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT), 1);
 
   // The callback should be run.
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
@@ -458,8 +456,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
       "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.ProxySchemeUsed",
-      util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
-      1);
+      ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT), 1);
 
   EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT,

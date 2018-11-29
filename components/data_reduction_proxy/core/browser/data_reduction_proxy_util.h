@@ -48,16 +48,6 @@ enum class Client {
   CHROME_QNX,
 };
 
-// Scheme of the proxy used.
-enum ProxyScheme {
-  PROXY_SCHEME_UNKNOWN = 0,
-  PROXY_SCHEME_HTTP,
-  PROXY_SCHEME_HTTPS,
-  PROXY_SCHEME_QUIC,
-  PROXY_SCHEME_DIRECT,
-  PROXY_SCHEME_MAX
-};
-
 namespace util {
 
 // Returns the version of Chromium that is being used, e.g. "1.2.3.4".
@@ -118,9 +108,6 @@ int64_t EstimateOriginalBodySize(const net::URLRequest& request,
 // received directly from the origin without any data saver optimizations.
 int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
                                       const LoFiDecider* lofi_decider);
-
-// Converts net::ProxyServer::Scheme to type ProxyScheme.
-ProxyScheme ConvertNetProxySchemeToProxyScheme(net::ProxyServer::Scheme scheme);
 
 // Returns the hostname used for the other bucket to record datause not scoped
 // to a page load such as chrome-services traffic, service worker, Downloads.

@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -246,7 +247,7 @@ void WarmupURLFetcher::OnURLLoadComplete(
                                        nullptr /* has_intermediary */));
     UMA_HISTOGRAM_ENUMERATION(
         "DataReductionProxy.WarmupURL.ProxySchemeUsed",
-        util::ConvertNetProxySchemeToProxyScheme(proxy_server_.scheme()),
+        ConvertNetProxySchemeToProxyScheme(proxy_server_.scheme()),
         PROXY_SCHEME_MAX);
   }
 
