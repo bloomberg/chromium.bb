@@ -1675,7 +1675,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_STATUS_PERCENT_COMPLETE_ACCESSIBLE_ALERT"
                desc="The title of a download notification: the current download status is in progress and time remaining is known. This message is for screen reader users.">
-               Downloading, <ph name="PERCENT_REMAINING">$1<ex>33</ex>% remaining</ph>
+               Downloading, <ph name="PERCENT_REMAINING">$1<ex>33</ex></ph>% remaining
       </message>
       <message name="IDS_DOWNLOAD_STATUS_TIME_REMAINING_ACCESSIBLE_ALERT"
                desc="The title of a download notification: the current download status is in progress and time remaining is known. This message is for screen reader users.">
@@ -1687,11 +1687,11 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_CANCELLED_ACCESSIBLE_ALERT"
                desc="The title of a download notification: the current download status is cancelled. This message is for screen reader users.">
-               Download cancelled: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>.</ph>
+               Download cancelled: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT"
                desc="The title of a download notification: the current download status is finished successufully. This message is for screen reader users.">
-               Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>. Press Shift+F6 to cycle to the downloads bar area.</ph>
+               Download complete: <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex>></ph>. Press Shift+F6 to cycle to the downloads bar area.
       </message>
 
       <!-- Download Notification Labels -->
