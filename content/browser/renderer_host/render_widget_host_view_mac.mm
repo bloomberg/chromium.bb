@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -18,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
@@ -225,6 +227,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
 
+  // When Viz Display Compositor is not active, RenderWidgetHostViewMac is
+  // responsible for handling BeginFrames.
+  //
   // Because of the way Mac pumps messages during resize, SetNeedsBeginFrame
   // messages are not delayed on Mac.  This leads to creation-time raciness
   // where renderer sends a SetNeedsBeginFrame(true) before the renderer host is
@@ -233,8 +238,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // Any renderer that will produce frames needs to have begin frames sent to
   // it. So unless it is never visible, start this value at true here to avoid
   // startup raciness and decrease latency.
-  needs_begin_frames_ = needs_begin_frames;
-  UpdateNeedsBeginFramesInternal();
+  if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    needs_begin_frames_ = needs_begin_frames;
+    UpdateNeedsBeginFramesInternal();
+  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
