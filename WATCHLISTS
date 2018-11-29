@@ -820,7 +820,12 @@
     },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
-                  'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
+                  'chrome/android/java/src/org/chromium/chrome/browser/browseractions/|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/browserservices/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/browseractions/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/browserservices/|'\
+                  'chrome/browser/android/customtabs/',
     },
     'dbus': {
       'filepath': 'dbus/',
@@ -2140,7 +2145,10 @@
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
-    'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org'],
+    'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org',
+                    'peconn@chromium.org',
+                    'peter@chromium.org',
+                    'pshmakov@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org',
