@@ -155,6 +155,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool did_defer_on_writing_ = false;
   bool did_defer_on_redirect_ = false;
   bool did_defer_on_response_started_ = false;
+  bool did_check_for_intermediary_buffer_ = false;
 
   int64_t total_written_bytes_ = 0;
 
