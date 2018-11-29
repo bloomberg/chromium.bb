@@ -31,4 +31,15 @@ interface MultiUserWindowManagerClient {
                             signin.mojom.AccountId account_id,
                             bool was_minimized,
                             bool teleported);
+
+  // Called when the active account changes. This is followed by
+  // OnTransitionUserShelfToNewAccount() and OnDidSwitchActiveAccount().
+  OnWillSwitchActiveAccount(signin.mojom.AccountId account_id);
+
+  // Called at the time when the user's shelf should transition to the account
+  // supplied to OnWillSwitchActiveAccount().
+  OnTransitionUserShelfToNewAccount();
+
+  // Called when the active account change is complete.
+  OnDidSwitchActiveAccount();
 };

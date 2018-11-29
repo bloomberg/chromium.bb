@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_mus.h"
@@ -131,13 +132,24 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppObserver);
 };
 
+// Used only in classic mode. In classic mode a mojo Binding is used that
+// results in the delegate being notified async. Doing this gives the same
+// async delay seen when the WindowService is used.
+struct MultiUserWindowManagerChromeOS::ClassicSupport {
+  explicit ClassicSupport(MultiUserWindowManagerChromeOS* host)
+      : binding(host) {}
+
+  ash::mojom::MultiUserWindowManagerClientPtr client_ptr;
+  mojo::Binding<ash::mojom::MultiUserWindowManagerClient> binding;
+};
+
 MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     const AccountId& current_account_id)
-    : current_account_id_(current_account_id),
-      ash_multi_user_window_manager_(
-          std::make_unique<ash::MultiUserWindowManager>(this,
-                                                        current_account_id)) {
+    : current_account_id_(current_account_id) {
+  ash::mojom::MultiUserWindowManagerClient* client = nullptr;
   if (features::IsUsingWindowService()) {
+    // This path doesn't set |client| as it'll be wired up in ash when it
+    // sees the MultiUserWindowManagerClient registration.
     multi_user_window_manager_mojom_ =
         views::MusClient::Get()
             ->window_tree_client()
@@ -145,6 +157,16 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     ash::mojom::MultiUserWindowManagerClientAssociatedPtrInfo ptr_info;
     client_binding_.Bind(mojo::MakeRequest(&ptr_info));
     multi_user_window_manager_mojom_->SetClient(std::move(ptr_info));
+  } else {
+    classic_support_ = std::make_unique<ClassicSupport>(this);
+    classic_support_->binding.Bind(
+        mojo::MakeRequest(&classic_support_->client_ptr));
+    client = classic_support_->client_ptr.get();
+  }
+  if (!features::IsMultiProcessMash()) {
+    ash_multi_user_window_manager_ =
+        std::make_unique<ash::MultiUserWindowManager>(client, this,
+                                                      current_account_id);
   }
 }
 
@@ -225,6 +247,9 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
           window_mus->server_id(), account_id, show_for_current_user);
     }  // else case can happen during shutdown, or for child windows.
   } else {
+    // If there is a non-MUS window, then we must have created
+    // |ash_multi_user_window_manager_|.
+    DCHECK(ash_multi_user_window_manager_);
     ash_multi_user_window_manager_->SetWindowOwner(window, account_id,
                                                    show_for_current_user);
   }
@@ -432,4 +457,9 @@ void MultiUserWindowManagerChromeOS::OnWindowOwnerEntryChanged(
 
   OnOwnerEntryChanged(widget->GetNativeWindow(), account_id, was_minimized,
                       teleported);
+}
+
+void MultiUserWindowManagerChromeOS::FlushForTesting() {
+  DCHECK(!features::IsUsingWindowService());
+  classic_support_->binding.FlushForTesting();
 }

@@ -9,19 +9,21 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/multi_user_window_manager.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
+#include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/transient_window_observer.h"
 
 namespace ash {
 
-class MultiUserWindowManagerDelegate;
-class MultiUserWindowManagerWindowDelegate;
+class MultiUserWindowManagerDelegateClassic;
 class UserSwitchAnimator;
 
 // MultiUserWindowManager associates windows with users and ensures the
@@ -34,6 +36,12 @@ class UserSwitchAnimator;
 // with when the account is active. Typically the 'shown' account and 'owning'
 // account are the same, but the user may choose to show a window from an other
 // account, in which case the 'shown' account changes.
+//
+// MultiUserWindowManager makes use of the following client/delegate interfaces
+// mojom::MultiUserWindowManagerClient: used for windows created by the window
+// service, as well as major state changes (such as animation changing).
+// MultiUserWindowManagerDelegateClassic: used for all other windows. See
+// MultiUserWindowManagerDelegateClassic for details on what this means.
 //
 // Note:
 // - aura::Window::Hide() is currently hiding the window and all owned transient
@@ -55,24 +63,32 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     ANIMATION_SPEED_DISABLED  // Unit tests which do not require animations.
   };
 
-  MultiUserWindowManager(MultiUserWindowManagerDelegate* delegate,
-                         const AccountId& account_id);
+  MultiUserWindowManager(
+      mojom::MultiUserWindowManagerClient* client,
+      MultiUserWindowManagerDelegateClassic* classic_delegate,
+      const AccountId& account_id);
   ~MultiUserWindowManager() override;
 
   static MultiUserWindowManager* Get();
 
+  // Resets the client. This is called when running in mash. In single-process
+  // mash, the browser creates this class (with no client) and
+  // MultiUserWindowManagerBridge sets the client (as the client is provided
+  // over mojom). In multi-process mash, MultiUserWindowManagerBridge creates
+  // this and sets the client. This function is only necessary until
+  // multi-process mash is the default.
+  void SetClient(mojom::MultiUserWindowManagerClient* client);
+
   // Associates a window with a particular account. This may result in hiding
   // |window|. This should *not* be called more than once with a different
   // account. If |show_for_current_user| is true, this sets the 'shown'
-  // account to the current account. If |delegate| is non-null, it is notified
-  // of changes rather than MultiUserWindowManagerDelegate.
+  // account to the current account. If |window_id| is valid, changes to
+  // |window| are notified through MultiUserWindowManagerClient. If |window_id|
+  // is empty, MultiUserWindowManagerDelegateClassic is used.
   void SetWindowOwner(aura::Window* window,
                       const AccountId& account_id,
                       bool show_for_current_user,
-                      MultiUserWindowManagerWindowDelegate* delegate = nullptr);
-
-  // Removes all references to |delegate|.
-  void RemoveWindowDelegate(MultiUserWindowManagerWindowDelegate* delegate);
+                      base::Optional<ws::Id> window_id = base::nullopt);
 
   // Sets the 'shown' account for a window. See class description for details on
   // what the 'shown' account is. This function may trigger changing the active
@@ -106,13 +122,14 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
   // Returns the current user for unit tests.
   const AccountId& GetCurrentUserForTest() const;
 
- protected:
+ private:
+  friend class MultiUserWindowManagerChromeOSTest;
+  friend class UserSwitchAnimator;
+
   class WindowEntry {
    public:
-    WindowEntry(const AccountId& account_id,
-                MultiUserWindowManagerWindowDelegate* delegate)
-        : owner_(account_id), show_for_user_(account_id), delegate_(delegate) {}
-    ~WindowEntry() {}
+    WindowEntry(const AccountId& account_id, base::Optional<ws::Id> window_id);
+    ~WindowEntry();
 
     // Returns the owner of this window. This cannot be changed.
     const AccountId& owner() const { return owner_; }
@@ -132,8 +149,15 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     // Sets if the window gets shown for the active user or not.
     void set_show(bool show) { show_ = show; }
 
-    void clear_delegate() { delegate_ = nullptr; }
-    MultiUserWindowManagerWindowDelegate* delegate() { return delegate_; }
+    // True if this window was created by the window service.
+    bool from_window_service() const { return from_window_service_; }
+
+    // Unsets the |window_id|. This does not effect whether the window is
+    // from the window-service, only the stored id. Resetting the id happens
+    // when the client changes. This is necessary as the id is generally unique
+    // to a client.
+    void reset_window_id() { window_id_.reset(); }
+    const base::Optional<ws::Id> window_id() const { return window_id_; }
 
    private:
     // The user id of the owner of this window.
@@ -142,13 +166,18 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     // The user id of the user on which desktop the window gets shown.
     AccountId show_for_user_;
 
-    MultiUserWindowManagerWindowDelegate* delegate_;
-
     // True if the window should be visible for the user which shows the window.
     bool show_ = true;
 
+    // The id assigned to the window by the WindowService.
+    base::Optional<ws::Id> window_id_;
+
+    const bool from_window_service_;
+
     DISALLOW_COPY_AND_ASSIGN(WindowEntry);
   };
+
+  using TransientWindowToVisibility = base::flat_map<aura::Window*, bool>;
 
   using WindowToEntryMap =
       std::map<aura::Window*, std::unique_ptr<WindowEntry>>;
@@ -185,12 +214,6 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
 
   const WindowToEntryMap& window_to_entry() { return window_to_entry_; }
 
- private:
-  friend class MultiUserWindowManagerChromeOSTest;
-  friend class UserSwitchAnimator;
-
-  using TransientWindowToVisibility = base::flat_map<aura::Window*, bool>;
-
   // Show the window and its transient children. However - if a transient child
   // was turned invisible by some other operation, it will stay invisible.
   // |animation_time| is the amount of time to animate.
@@ -219,7 +242,9 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
   // Returns the time for an animation.
   base::TimeDelta GetAdjustedAnimationTime(base::TimeDelta default_time) const;
 
-  MultiUserWindowManagerDelegate* delegate_;
+  mojom::MultiUserWindowManagerClient* client_;
+
+  MultiUserWindowManagerDelegateClassic* classic_delegate_;
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.

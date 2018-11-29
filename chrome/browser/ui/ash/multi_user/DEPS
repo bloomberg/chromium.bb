@@ -2,7 +2,7 @@ specific_include_rules = {
   # https://crbug.com/756085
   "multi_user_window_manager_chromeos\.*": [
     "+ash/multi_user/multi_user_window_manager.h",
-    "+ash/multi_user/multi_user_window_manager_delegate.h",
+    "+ash/multi_user/multi_user_window_manager_delegate_classic.h",
   ],
   # https://crbug.com/875111
   "multi_user_window_manager_chromeos_unittest\.cc": [

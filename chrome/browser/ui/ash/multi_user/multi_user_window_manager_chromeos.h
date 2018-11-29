@@ -8,7 +8,7 @@
 #include <map>
 #include <memory>
 
-#include "ash/multi_user/multi_user_window_manager_delegate.h"
+#include "ash/multi_user/multi_user_window_manager_delegate_classic.h"
 #include "ash/public/interfaces/multi_user_window_manager.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -46,7 +46,7 @@ class Window;
 // a mojom. https://crbug.com/875111.
 class MultiUserWindowManagerChromeOS
     : public MultiUserWindowManager,
-      public ash::MultiUserWindowManagerDelegate,
+      public ash::MultiUserWindowManagerDelegateClassic,
       public ash::mojom::MultiUserWindowManagerClient,
       public aura::WindowObserver,
       public content::NotificationObserver {
@@ -82,20 +82,19 @@ class MultiUserWindowManagerChromeOS
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ash::MultiUserWindowManagerDelegate overrides:
+  // ash::MultiUserWindowManagerDelegateClassic overrides:
   void OnOwnerEntryChanged(aura::Window* window,
                            const AccountId& account_id,
                            bool was_minimized,
                            bool teleported) override;
-  void OnWillSwitchActiveAccount(const AccountId& account_id) override;
-  void OnTransitionUserShelfToNewAccount() override;
-  void OnDidSwitchActiveAccount() override;
 
   // Returns the current user for unit tests.
   const AccountId& GetCurrentUserForTest() const;
 
  private:
   friend class ash::MultiUserWindowManagerChromeOSTest;
+
+  struct ClassicSupport;
 
   class WindowEntry {
    public:
@@ -130,6 +129,11 @@ class MultiUserWindowManagerChromeOS
                                  const AccountId& account_id,
                                  bool was_minimized,
                                  bool teleported) override;
+  void OnWillSwitchActiveAccount(const AccountId& account_id) override;
+  void OnTransitionUserShelfToNewAccount() override;
+  void OnDidSwitchActiveAccount() override;
+
+  void FlushForTesting();
 
   using AccountIdToAppWindowObserver = std::map<AccountId, AppObserver*>;
 
@@ -138,6 +142,8 @@ class MultiUserWindowManagerChromeOS
 
   // Add a browser window to the system so that the owner can be remembered.
   void AddBrowserWindow(Browser* browser);
+
+  std::unique_ptr<ClassicSupport> classic_support_;
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.

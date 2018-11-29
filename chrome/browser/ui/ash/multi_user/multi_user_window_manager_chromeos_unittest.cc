@@ -185,6 +185,8 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
     fake_user_manager_->SwitchActiveUser(id);
     ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(id);
     FlushWindowTreeClientMessages();
+    if (!features::IsUsingWindowService())
+      multi_user_window_manager_->FlushForTesting();
   }
 
   // Set up the test environment for this many windows.
