@@ -23,7 +23,7 @@ CSSColorValue* CSSColorValue::Create(RGBA32 color) {
   CSSValuePool::ColorValueCache::AddResult entry =
       CssValuePool().GetColorCacheEntry(color);
   if (entry.is_new_entry)
-    entry.stored_value->value = new CSSColorValue(color);
+    entry.stored_value->value = MakeGarbageCollected<CSSColorValue>(color);
   return entry.stored_value->value;
 }
 

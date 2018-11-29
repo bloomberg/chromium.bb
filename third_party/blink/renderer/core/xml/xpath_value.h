@@ -39,22 +39,17 @@ struct EvaluationContext;
 
 class ValueData : public GarbageCollectedFinalized<ValueData> {
  public:
-  static ValueData* Create() { return new ValueData; }
+  static ValueData* Create() { return MakeGarbageCollected<ValueData>(); }
   static ValueData* Create(const NodeSet& node_set) {
-    return new ValueData(node_set);
+    return MakeGarbageCollected<ValueData>(node_set);
   }
   static ValueData* Create(NodeSet* node_set) {
-    return new ValueData(node_set);
+    return MakeGarbageCollected<ValueData>(node_set);
   }
   static ValueData* Create(const String& string) {
-    return new ValueData(string);
+    return MakeGarbageCollected<ValueData>(string);
   }
-  void Trace(blink::Visitor*);
-  NodeSet& GetNodeSet() { return *node_set_; }
 
-  String string_;
-
- private:
   ValueData() : node_set_(NodeSet::Create()) {}
   explicit ValueData(const NodeSet& node_set)
       : node_set_(NodeSet::Create(node_set)) {}
@@ -62,6 +57,12 @@ class ValueData : public GarbageCollectedFinalized<ValueData> {
   explicit ValueData(const String& string)
       : string_(string), node_set_(NodeSet::Create()) {}
 
+  void Trace(blink::Visitor*);
+  NodeSet& GetNodeSet() { return *node_set_; }
+
+  String string_;
+
+ private:
   Member<NodeSet> node_set_;
 };
 

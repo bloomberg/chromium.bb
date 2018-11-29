@@ -16,18 +16,23 @@ class XRInputSourceEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XRInputSourceEvent* Create() { return new XRInputSourceEvent; }
+  static XRInputSourceEvent* Create() {
+    return MakeGarbageCollected<XRInputSourceEvent>();
+  }
   static XRInputSourceEvent* Create(const AtomicString& type,
                                     XRFrame* frame,
                                     XRInputSource* input_source) {
-    return new XRInputSourceEvent(type, frame, input_source);
+    return MakeGarbageCollected<XRInputSourceEvent>(type, frame, input_source);
   }
 
   static XRInputSourceEvent* Create(const AtomicString& type,
                                     const XRInputSourceEventInit* initializer) {
-    return new XRInputSourceEvent(type, initializer);
+    return MakeGarbageCollected<XRInputSourceEvent>(type, initializer);
   }
 
+  XRInputSourceEvent();
+  XRInputSourceEvent(const AtomicString& type, XRFrame*, XRInputSource*);
+  XRInputSourceEvent(const AtomicString&, const XRInputSourceEventInit*);
   ~XRInputSourceEvent() override;
 
   XRFrame* frame() const { return frame_.Get(); }
@@ -38,10 +43,6 @@ class XRInputSourceEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  XRInputSourceEvent();
-  XRInputSourceEvent(const AtomicString& type, XRFrame*, XRInputSource*);
-  XRInputSourceEvent(const AtomicString&, const XRInputSourceEventInit*);
-
   Member<XRFrame> frame_;
   Member<XRInputSource> input_source_;
 };

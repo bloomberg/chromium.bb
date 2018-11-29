@@ -214,9 +214,9 @@ void XRDevice::OnRequestSessionReturned(
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  XRSession* session =
-      new XRSession(this, std::move(session_ptr->client_request), immersive,
-                    environment_integration, output_context, blend_mode);
+  XRSession* session = MakeGarbageCollected<XRSession>(
+      this, std::move(session_ptr->client_request), immersive,
+      environment_integration, output_context, blend_mode);
   session->SetXRDisplayInfo(std::move(session_ptr->display_info));
   sessions_.insert(session);
 
@@ -253,7 +253,7 @@ bool XRDevice::IsFrameFocused() {
 
 XRFrameProvider* XRDevice::frameProvider() {
   if (!frame_provider_) {
-    frame_provider_ = new XRFrameProvider(this);
+    frame_provider_ = MakeGarbageCollected<XRFrameProvider>(this);
   }
 
   return frame_provider_;

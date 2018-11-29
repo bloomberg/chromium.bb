@@ -87,7 +87,7 @@ TEST(MultipartResponseTest, NoStartBoundary) {
   response.SetMimeType("multipart/x-mixed-replace");
   response.SetHTTPHeaderField("Foo", "Bar");
   response.SetHTTPHeaderField("Content-type", "text/plain");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -115,7 +115,7 @@ TEST(MultipartResponseTest, NoEndBoundary) {
   response.SetMimeType("multipart/x-mixed-replace");
   response.SetHTTPHeaderField("Foo", "Bar");
   response.SetHTTPHeaderField("Content-type", "text/plain");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -141,7 +141,7 @@ TEST(MultipartResponseTest, NoStartAndEndBoundary) {
   response.SetMimeType("multipart/x-mixed-replace");
   response.SetHTTPHeaderField("Foo", "Bar");
   response.SetHTTPHeaderField("Content-type", "text/plain");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -168,7 +168,7 @@ TEST(MultipartResponseTest, MalformedBoundary) {
   response.SetMimeType("multipart/x-mixed-replace");
   response.SetHTTPHeaderField("Foo", "Bar");
   response.SetHTTPHeaderField("Content-type", "text/plain");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("--bound", 7);
 
@@ -216,7 +216,7 @@ void VariousChunkSizesTest(const TestChunk chunks[],
 
   ResourceResponse response(NullURL());
   response.SetMimeType("multipart/x-mixed-replace");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -321,7 +321,7 @@ TEST(MultipartResponseTest, SmallChunk) {
   ResourceResponse response(NullURL());
   response.SetMimeType("multipart/x-mixed-replace");
   response.SetHTTPHeaderField("Content-type", "text/plain");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -357,7 +357,7 @@ TEST(MultipartResponseTest, MultipleBoundaries) {
   // Test multiple boundaries back to back
   ResourceResponse response(NullURL());
   response.SetMimeType("multipart/x-mixed-replace");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -376,7 +376,7 @@ TEST(MultipartResponseTest, MultipleBoundaries) {
 TEST(MultipartResponseTest, EatLeadingLF) {
   ResourceResponse response(NullURL());
   response.SetMimeType("multipart/x-mixed-replace");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 
@@ -407,7 +407,7 @@ TEST(MultipartResponseTest, EatLeadingLF) {
 TEST(MultipartResponseTest, EatLeadingCRLF) {
   ResourceResponse response(NullURL());
   response.SetMimeType("multipart/x-mixed-replace");
-  MockClient* client = new MockClient;
+  MockClient* client = MakeGarbageCollected<MockClient>();
   Vector<char> boundary;
   boundary.Append("bound", 5);
 

@@ -162,23 +162,10 @@ class CSSLinearGradientValue final : public CSSGradientValue {
       const CSSPrimitiveValue* angle,
       CSSGradientRepeat repeat,
       CSSGradientType gradient_type = kCSSLinearGradient) {
-    return new CSSLinearGradientValue(first_x, first_y, second_x, second_y,
-                                      angle, repeat, gradient_type);
+    return MakeGarbageCollected<CSSLinearGradientValue>(
+        first_x, first_y, second_x, second_y, angle, repeat, gradient_type);
   }
 
-  String CustomCSSText() const;
-
-  // Create the gradient for a given size.
-  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                         const FloatSize&,
-                                         const Document&,
-                                         const ComputedStyle&) const;
-
-  bool Equals(const CSSLinearGradientValue&) const;
-
-  void TraceAfterDispatch(blink::Visitor*);
-
- private:
   CSSLinearGradientValue(const CSSValue* first_x,
                          const CSSValue* first_y,
                          const CSSValue* second_x,
@@ -193,6 +180,19 @@ class CSSLinearGradientValue final : public CSSGradientValue {
         second_y_(second_y),
         angle_(angle) {}
 
+  String CustomCSSText() const;
+
+  // Create the gradient for a given size.
+  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
+                                         const FloatSize&,
+                                         const Document&,
+                                         const ComputedStyle&) const;
+
+  bool Equals(const CSSLinearGradientValue&) const;
+
+  void TraceAfterDispatch(blink::Visitor*);
+
+ private:
   // Any of these may be null.
   Member<const CSSValue> first_x_;
   Member<const CSSValue> first_y_;
@@ -214,9 +214,9 @@ class CSSRadialGradientValue final : public CSSGradientValue {
       const CSSPrimitiveValue* second_radius,
       CSSGradientRepeat repeat,
       CSSGradientType gradient_type = kCSSRadialGradient) {
-    return new CSSRadialGradientValue(first_x, first_y, first_radius, second_x,
-                                      second_y, second_radius, nullptr, nullptr,
-                                      nullptr, nullptr, repeat, gradient_type);
+    return MakeGarbageCollected<CSSRadialGradientValue>(
+        first_x, first_y, first_radius, second_x, second_y, second_radius,
+        nullptr, nullptr, nullptr, nullptr, repeat, gradient_type);
   }
 
   static CSSGradientValue* Create(const CSSValue* center_x,
@@ -227,32 +227,11 @@ class CSSRadialGradientValue final : public CSSGradientValue {
                                   const CSSPrimitiveValue* vertical_size,
                                   CSSGradientRepeat repeat,
                                   CSSGradientType gradient_type) {
-    return new CSSRadialGradientValue(
+    return MakeGarbageCollected<CSSRadialGradientValue>(
         center_x, center_y, nullptr, center_x, center_y, nullptr, shape,
         sizing_behavior, horizontal_size, vertical_size, repeat, gradient_type);
   }
 
-  String CustomCSSText() const;
-
-  void SetShape(CSSIdentifierValue* val) { shape_ = val; }
-  void SetSizingBehavior(CSSIdentifierValue* val) { sizing_behavior_ = val; }
-
-  void SetEndHorizontalSize(CSSPrimitiveValue* val) {
-    end_horizontal_size_ = val;
-  }
-  void SetEndVerticalSize(CSSPrimitiveValue* val) { end_vertical_size_ = val; }
-
-  // Create the gradient for a given size.
-  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                         const FloatSize&,
-                                         const Document&,
-                                         const ComputedStyle&) const;
-
-  bool Equals(const CSSRadialGradientValue&) const;
-
-  void TraceAfterDispatch(blink::Visitor*);
-
- private:
   CSSRadialGradientValue(const CSSValue* first_x,
                          const CSSValue* first_y,
                          const CSSPrimitiveValue* first_radius,
@@ -277,6 +256,27 @@ class CSSRadialGradientValue final : public CSSGradientValue {
         end_horizontal_size_(horizontal_size),
         end_vertical_size_(vertical_size) {}
 
+  String CustomCSSText() const;
+
+  void SetShape(CSSIdentifierValue* val) { shape_ = val; }
+  void SetSizingBehavior(CSSIdentifierValue* val) { sizing_behavior_ = val; }
+
+  void SetEndHorizontalSize(CSSPrimitiveValue* val) {
+    end_horizontal_size_ = val;
+  }
+  void SetEndVerticalSize(CSSPrimitiveValue* val) { end_vertical_size_ = val; }
+
+  // Create the gradient for a given size.
+  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
+                                         const FloatSize&,
+                                         const Document&,
+                                         const ComputedStyle&) const;
+
+  bool Equals(const CSSRadialGradientValue&) const;
+
+  void TraceAfterDispatch(blink::Visitor*);
+
+ private:
   // Any of these may be null.
   Member<const CSSValue> first_x_;
   Member<const CSSValue> first_y_;
@@ -304,8 +304,18 @@ class CSSConicGradientValue final : public CSSGradientValue {
                                   const CSSValue* y,
                                   const CSSPrimitiveValue* from_angle,
                                   CSSGradientRepeat repeat) {
-    return new CSSConicGradientValue(x, y, from_angle, repeat);
+    return MakeGarbageCollected<CSSConicGradientValue>(x, y, from_angle,
+                                                       repeat);
   }
+
+  CSSConicGradientValue(const CSSValue* x,
+                        const CSSValue* y,
+                        const CSSPrimitiveValue* from_angle,
+                        CSSGradientRepeat repeat)
+      : CSSGradientValue(kConicGradientClass, repeat, kCSSConicGradient),
+        x_(x),
+        y_(y),
+        from_angle_(from_angle) {}
 
   String CustomCSSText() const;
 
@@ -320,15 +330,6 @@ class CSSConicGradientValue final : public CSSGradientValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSConicGradientValue(const CSSValue* x,
-                        const CSSValue* y,
-                        const CSSPrimitiveValue* from_angle,
-                        CSSGradientRepeat repeat)
-      : CSSGradientValue(kConicGradientClass, repeat, kCSSConicGradient),
-        x_(x),
-        y_(y),
-        from_angle_(from_angle) {}
-
   // Any of these may be null.
   Member<const CSSValue> x_;
   Member<const CSSValue> y_;

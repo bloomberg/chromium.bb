@@ -33,9 +33,13 @@ class CSSCursorImageValue : public CSSValue {
   static const CSSCursorImageValue* Create(const CSSValue& image_value,
                                            bool hot_spot_specified,
                                            const IntPoint& hot_spot) {
-    return new CSSCursorImageValue(image_value, hot_spot_specified, hot_spot);
+    return MakeGarbageCollected<CSSCursorImageValue>(
+        image_value, hot_spot_specified, hot_spot);
   }
 
+  CSSCursorImageValue(const CSSValue& image_value,
+                      bool hot_spot_specified,
+                      const IntPoint& hot_spot);
   ~CSSCursorImageValue();
 
   bool HotSpotSpecified() const { return hot_spot_specified_; }
@@ -49,10 +53,6 @@ class CSSCursorImageValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSCursorImageValue(const CSSValue& image_value,
-                      bool hot_spot_specified,
-                      const IntPoint& hot_spot);
-
   Member<const CSSValue> image_value_;
   IntPoint hot_spot_;
   bool hot_spot_specified_;

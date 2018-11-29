@@ -101,8 +101,9 @@ XRSession::XRSession(
       environment_integration_(environment_integration),
       output_context_(output_context),
       client_binding_(this, std::move(client_request)),
-      callback_collection_(new XRFrameRequestCallbackCollection(
-          device->xr()->GetExecutionContext())) {
+      callback_collection_(
+          MakeGarbageCollected<XRFrameRequestCallbackCollection>(
+              device->xr()->GetExecutionContext())) {
   blurred_ = !HasAppropriateFocus();
 
   // When an output context is provided, monitor it for resize events.
@@ -110,12 +111,14 @@ XRSession::XRSession(
     HTMLCanvasElement* canvas = outputContext()->canvas();
     if (canvas) {
       resize_observer_ = ResizeObserver::Create(
-          canvas->GetDocument(), new XRSessionResizeObserverDelegate(this));
+          canvas->GetDocument(),
+          MakeGarbageCollected<XRSessionResizeObserverDelegate>(this));
       resize_observer_->observe(canvas);
 
       // Begin processing input events on the output context's canvas.
       if (!immersive_) {
-        canvas_input_provider_ = new XRCanvasInputProvider(this, canvas);
+        canvas_input_provider_ =
+            MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
       }
 
       // Get the initial canvas dimensions
@@ -192,17 +195,19 @@ ScriptPromise XRSession::requestFrameOfReference(
 
   XRFrameOfReference* frameOfRef = nullptr;
   if (type == "head-model") {
-    frameOfRef =
-        new XRFrameOfReference(this, XRFrameOfReference::kTypeHeadModel);
+    frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
+        this, XRFrameOfReference::kTypeHeadModel);
   } else if (type == "eye-level") {
-    frameOfRef =
-        new XRFrameOfReference(this, XRFrameOfReference::kTypeEyeLevel);
+    frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
+        this, XRFrameOfReference::kTypeEyeLevel);
   } else if (type == "stage") {
     if (!options->disableStageEmulation()) {
-      frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
+      frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
+          this, XRFrameOfReference::kTypeStage);
       frameOfRef->UseEmulatedHeight(options->stageEmulationHeight());
     } else if (display_info_ && display_info_->stageParameters) {
-      frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
+      frameOfRef = MakeGarbageCollected<XRFrameOfReference>(
+          this, XRFrameOfReference::kTypeStage);
     } else {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -343,15 +348,16 @@ void XRSession::OnHitTestResults(
 
   HeapVector<Member<XRHitResult>> hit_results;
   for (const auto& mojom_result : results.value()) {
-    XRHitResult* hit_result = new XRHitResult(TransformationMatrix::Create(
-        mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
-        mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
-        mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
-        mojom_result->hit_matrix[6], mojom_result->hit_matrix[7],
-        mojom_result->hit_matrix[8], mojom_result->hit_matrix[9],
-        mojom_result->hit_matrix[10], mojom_result->hit_matrix[11],
-        mojom_result->hit_matrix[12], mojom_result->hit_matrix[13],
-        mojom_result->hit_matrix[14], mojom_result->hit_matrix[15]));
+    XRHitResult* hit_result =
+        MakeGarbageCollected<XRHitResult>(TransformationMatrix::Create(
+            mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
+            mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
+            mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
+            mojom_result->hit_matrix[6], mojom_result->hit_matrix[7],
+            mojom_result->hit_matrix[8], mojom_result->hit_matrix[9],
+            mojom_result->hit_matrix[10], mojom_result->hit_matrix[11],
+            mojom_result->hit_matrix[12], mojom_result->hit_matrix[13],
+            mojom_result->hit_matrix[14], mojom_result->hit_matrix[15]));
     hit_results.push_back(hit_result);
   }
   resolver->Resolve(hit_results);
@@ -530,7 +536,7 @@ void XRSession::LogGetPose() const {
 }
 
 XRFrame* XRSession::CreatePresentationFrame() {
-  XRFrame* presentation_frame = new XRFrame(this);
+  XRFrame* presentation_frame = MakeGarbageCollected<XRFrame>(this);
   if (base_pose_matrix_) {
     presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
   }
@@ -583,7 +589,8 @@ void XRSession::OnInputStateChange(
   for (const auto& input_state : input_states) {
     XRInputSource* input_source = input_sources_.at(input_state->source_id);
     if (!input_source) {
-      input_source = new XRInputSource(this, input_state->source_id);
+      input_source =
+          MakeGarbageCollected<XRInputSource>(this, input_state->source_id);
       input_sources_.Set(input_state->source_id, input_source);
       devices_changed = true;
     }
@@ -761,8 +768,8 @@ const HeapVector<Member<XRView>>& XRSession::views() {
     if (immersive_) {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
-        views_.push_back(new XRView(this, XRView::kEyeLeft));
-        views_.push_back(new XRView(this, XRView::kEyeRight));
+        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
+        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeRight));
       }
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
@@ -774,7 +781,7 @@ const HeapVector<Member<XRView>>& XRSession::views() {
                                   depth_far_);
     } else {
       if (views_.IsEmpty()) {
-        views_.push_back(new XRView(this, XRView::kEyeLeft));
+        views_.push_back(MakeGarbageCollected<XRView>(this, XRView::kEyeLeft));
         views_[XRView::kEyeLeft]->UpdateOffset(0, 0, 0);
       }
 

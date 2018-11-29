@@ -264,9 +264,10 @@ XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
 
   XMLHttpRequest* xml_http_request =
       world.IsIsolatedWorld()
-          ? new XMLHttpRequest(context, isolate, true,
-                               world.IsolatedWorldSecurityOrigin())
-          : new XMLHttpRequest(context, isolate, false, nullptr);
+          ? MakeGarbageCollected<XMLHttpRequest>(
+                context, isolate, true, world.IsolatedWorldSecurityOrigin())
+          : MakeGarbageCollected<XMLHttpRequest>(context, isolate, false,
+                                                 nullptr);
   xml_http_request->PauseIfNeeded();
   return xml_http_request;
 }
@@ -276,7 +277,7 @@ XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
   CHECK(isolate);
 
   XMLHttpRequest* xml_http_request =
-      new XMLHttpRequest(context, isolate, false, nullptr);
+      MakeGarbageCollected<XMLHttpRequest>(context, isolate, false, nullptr);
   xml_http_request->PauseIfNeeded();
   return xml_http_request;
 }

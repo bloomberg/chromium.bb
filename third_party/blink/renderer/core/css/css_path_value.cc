@@ -16,7 +16,8 @@ namespace cssvalue {
 CSSPathValue* CSSPathValue::Create(
     scoped_refptr<StylePath> style_path,
     PathSerializationFormat serialization_format) {
-  return new CSSPathValue(std::move(style_path), serialization_format);
+  return MakeGarbageCollected<CSSPathValue>(std::move(style_path),
+                                            serialization_format);
 }
 
 CSSPathValue* CSSPathValue::Create(

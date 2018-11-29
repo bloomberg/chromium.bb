@@ -110,8 +110,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  return new XRWebGLLayer(session, webgl_context, std::move(drawing_buffer),
-                          framebuffer, framebuffer_scale);
+  return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context,
+                                            std::move(drawing_buffer),
+                                            framebuffer, framebuffer_scale);
 }
 
 XRWebGLLayer::XRWebGLLayer(XRSession* session,
@@ -196,13 +197,13 @@ void XRWebGLLayer::UpdateViewports() {
   viewports_dirty_ = false;
 
   if (session()->immersive()) {
-    left_viewport_ =
-        new XRViewport(0, 0, framebuffer_width * 0.5 * viewport_scale_,
-                       framebuffer_height * viewport_scale_);
-    right_viewport_ =
-        new XRViewport(framebuffer_width * 0.5 * viewport_scale_, 0,
-                       framebuffer_width * 0.5 * viewport_scale_,
-                       framebuffer_height * viewport_scale_);
+    left_viewport_ = MakeGarbageCollected<XRViewport>(
+        0, 0, framebuffer_width * 0.5 * viewport_scale_,
+        framebuffer_height * viewport_scale_);
+    right_viewport_ = MakeGarbageCollected<XRViewport>(
+        framebuffer_width * 0.5 * viewport_scale_, 0,
+        framebuffer_width * 0.5 * viewport_scale_,
+        framebuffer_height * viewport_scale_);
 
     session()->device()->frameProvider()->UpdateWebGLLayerViewports(this);
 
@@ -243,8 +244,9 @@ void XRWebGLLayer::UpdateViewports() {
                                         FloatPoint(right, bottom));
     }
   } else {
-    left_viewport_ = new XRViewport(0, 0, framebuffer_width * viewport_scale_,
-                                    framebuffer_height * viewport_scale_);
+    left_viewport_ = MakeGarbageCollected<XRViewport>(
+        0, 0, framebuffer_width * viewport_scale_,
+        framebuffer_height * viewport_scale_);
   }
 }
 

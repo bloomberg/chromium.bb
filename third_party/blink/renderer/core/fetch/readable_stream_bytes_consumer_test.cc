@@ -38,10 +38,9 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
   MOCK_METHOD0(OnStateChange, void());
   String DebugName() const override { return "MockClient"; }
 
-  void Trace(blink::Visitor* visitor) override {}
-
- protected:
   MockClient() = default;
+
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 TEST(ReadableStreamBytesConsumerTest, Create) {
