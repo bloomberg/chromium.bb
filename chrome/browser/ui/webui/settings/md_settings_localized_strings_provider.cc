@@ -983,9 +983,13 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
           .spec();
   html_source->AddString("chromeCleanupLearnMoreUrl", cleanup_learn_more_url);
 
-  const base::string16 powered_by_html =
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_RESET_CLEANUP_FOOTER_POWERED_BY,
-                                 L"<span id='powered-by-logo'></span>");
+  // The "powered by" footer contains an HTML fragment with the SVG logo of the partner. The logo
+  // is added to the DOM using <embed>, rather than as an <img> src, to make sure that screen
+  // readers can find accessibility tags inside the svg.
+  const base::string16 powered_by_html = l10n_util::GetStringFUTF16(
+      IDS_SETTINGS_RESET_CLEANUP_FOOTER_POWERED_BY,
+      L"<embed type='image/svg+xml' id='powered-by-logo' "
+      L"src='chrome://settings/partner-logo.svg'></embed>");
   html_source->AddString("chromeCleanupPoweredByHtml", powered_by_html);
 
   const base::string16 cleanup_details_explanation =
