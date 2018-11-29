@@ -1,7 +1,6 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 'use strict';
 
 /**
@@ -11,146 +10,101 @@
  * @param {string} path Path to be tested, Downloads or Drive.
  * @param {Array<TestEntryInfo>} defaultEntries Default file entries.
  */
-function fileDisplay(path, defaultEntries) {
-  var appId;
-
+async function fileDisplay(path, defaultEntries) {
   const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
 
-  StepsRunner.run([
-    // Open Files app on the given |path| with default file entries.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next);
-    },
-    // Verify the default file list is present in |result|.
-    function(result) {
-      appId = result.windowId;
-      chrome.test.assertEq(defaultList, result.fileList);
-      this.next();
-    },
-    // Add new file entries.
-    function() {
-      addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Verify the newly added entries appear in the file list.
-    function() {
-      const expectedList =
-          defaultList.concat([ENTRIES.newlyAdded.getExpectedRow()]);
-      remoteCall.waitForFiles(appId, expectedList).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files app on the given |path| with default file entries.
+  const {appId, fileList} = await setupAndWaitUntilReady(null, path, null);
+
+  // Verify the default file list is present in |result|.
+  chrome.test.assertEq(defaultList, fileList);
+
+  // Add new file entries.
+  await addEntries(['local', 'drive'], [ENTRIES.newlyAdded]);
+
+  // Verify the newly added entries appear in the file list.
+  const expectedList =
+      defaultList.concat([ENTRIES.newlyAdded.getExpectedRow()]);
+  await remoteCall.waitForFiles(appId, expectedList);
 }
 
 /**
  * Tests files display in Downloads.
  */
 testcase.fileDisplayDownloads = function() {
-  fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
+  return fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
  * Tests files display in Google Drive.
  */
 testcase.fileDisplayDrive = function() {
-  fileDisplay(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET);
+  return fileDisplay(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
  * Tests file display rendering in offline Google Drive.
  */
-testcase.fileDisplayDriveOffline = function() {
-  var appId;
-
+testcase.fileDisplayDriveOffline = async function() {
   const driveFiles =
       [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos, ENTRIES.testDocument];
 
-  StepsRunner.run([
-    // Open Files app on Drive with the given test files.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], driveFiles);
-    },
-    // Retrieve all file list entries that could be rendered 'offline'.
-    function(result) {
-      appId = result.windowId;
-      const offlineEntry = '#file-list .table-row.file.dim-offline';
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, [offlineEntry, ['opacity']], this.next);
-    },
-    // Check: the hello.txt file only should be rendered 'offline'.
-    function(elements) {
-      chrome.test.assertEq(1, elements.length);
-      chrome.test.assertEq(0, elements[0].text.indexOf('hello.txt'));
-      this.next(elements[0].styles);
-    },
-    // Check: hello.txt must have 'offline' CSS render style (opacity).
-    function(style) {
-      chrome.test.assertEq('0.4', style.opacity);
-      this.next();
-    },
-    // Retrieve file entries that are 'available offline' (not dimmed).
-    function() {
-      const availableEntry = '#file-list .table-row:not(.dim-offline)';
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, [availableEntry, ['opacity']], this.next);
-    },
-    // Check: these files should have 'available offline' CSS style.
-    function(elements) {
-      chrome.test.assertEq(3, elements.length);
+  // Open Files app on Drive with the given test files.
+  const {appId} =
+      await setupAndWaitUntilReady(null, RootPath.DRIVE, null, [], driveFiles);
 
-      function checkRenderedInAvailableOfflineStyle(element, fileName) {
-        chrome.test.assertEq(0, element.text.indexOf(fileName));
-        chrome.test.assertEq('1', element.styles.opacity);
-      }
+  // Retrieve all file list entries that could be rendered 'offline'.
+  const offlineEntry = '#file-list .table-row.file.dim-offline';
+  let elements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, [offlineEntry, ['opacity']]);
 
-      // Directories are shown as 'available offline'.
-      checkRenderedInAvailableOfflineStyle(elements[0], 'photos');
+  // Check: the hello.txt file only should be rendered 'offline'.
+  chrome.test.assertEq(1, elements.length);
+  chrome.test.assertEq(0, elements[0].text.indexOf('hello.txt'));
 
-      // Hosted documents are shown as 'available offline'.
-      checkRenderedInAvailableOfflineStyle(elements[1], 'Test Document.gdoc');
+  // Check: hello.txt must have 'offline' CSS render style (opacity).
+  chrome.test.assertEq('0.4', elements[0].styles.opacity);
 
-      // Pinned files are shown as 'available offline'.
-      checkRenderedInAvailableOfflineStyle(elements[2], 'pinned');
+  // Retrieve file entries that are 'available offline' (not dimmed).
+  const availableEntry = '#file-list .table-row:not(.dim-offline)';
+  elements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, [availableEntry, ['opacity']]);
 
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Check: these files should have 'available offline' CSS style.
+  chrome.test.assertEq(3, elements.length);
+
+  function checkRenderedInAvailableOfflineStyle(element, fileName) {
+    chrome.test.assertEq(0, element.text.indexOf(fileName));
+    chrome.test.assertEq('1', element.styles.opacity);
+  }
+
+  // Directories are shown as 'available offline'.
+  checkRenderedInAvailableOfflineStyle(elements[0], 'photos');
+
+  // Hosted documents are shown as 'available offline'.
+  checkRenderedInAvailableOfflineStyle(elements[1], 'Test Document.gdoc');
+
+  // Pinned files are shown as 'available offline'.
+  checkRenderedInAvailableOfflineStyle(elements[2], 'pinned');
 };
 
 /**
  * Tests file display rendering in online Google Drive.
  */
-testcase.fileDisplayDriveOnline = function() {
-  var appId;
+testcase.fileDisplayDriveOnline = async function() {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET);
 
-  StepsRunner.run([
-    // Open Files app on Drive.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET);
-    },
-    // Retrieve all file list row entries.
-    function(result) {
-      appId = result.windowId;
-      const fileEntry = '#file-list .table-row';
-      remoteCall.callRemoteTestUtil(
-          'queryAllElements', appId, [fileEntry, ['opacity']], this.next);
-    },
-    // Check: all files must have 'online' CSS style (not dimmed).
-    function(elements) {
-      chrome.test.assertEq(BASIC_DRIVE_ENTRY_SET.length, elements.length);
-      for (let i = 0; i < elements.length; ++i)
-        chrome.test.assertEq('1', elements[i].styles.opacity);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Retrieve all file list row entries.
+  const fileEntry = '#file-list .table-row';
+  const elements = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, [fileEntry, ['opacity']]);
+
+  // Check: all files must have 'online' CSS style (not dimmed).
+  chrome.test.assertEq(BASIC_DRIVE_ENTRY_SET.length, elements.length);
+  for (let i = 0; i < elements.length; ++i)
+    chrome.test.assertEq('1', elements[i].styles.opacity);
 };
 
 /**
@@ -158,119 +112,70 @@ testcase.fileDisplayDriveOnline = function() {
  * we can navigate to folders inside /Computers also has the side effect of
  * testing that the breadcrumbs are working.
  */
-testcase.fileDisplayComputers = function() {
-  let appId;
+testcase.fileDisplayComputers = async function() {
+  // Open Files app on Drive with Computers registered.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [], COMPUTERS_ENTRY_SET);
 
-  StepsRunner.run([
-    // Open Files app on Drive with Computers registered.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [], COMPUTERS_ENTRY_SET);
-    },
-    function(result) {
-      appId = result.windowId;
-      // Navigate to Comuter Grand Root.
-      return remoteCall
-          .navigateWithDirectoryTree(appId, '/Computers', 'Computers')
-          .then(this.next);
-    },
-    function() {
-      // Navigiate to a Computer Root.
-      return remoteCall
-          .navigateWithDirectoryTree(
-              appId, '/Computers/Computer A', 'Computers')
-          .then(this.next);
-    },
-    function() {
-      // Navigiate to a subdirectory under a Computer Root.
-      return remoteCall
-          .navigateWithDirectoryTree(
-              appId, '/Computers/Computer A/A', 'Computers')
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Navigate to Comuter Grand Root.
+  await remoteCall.navigateWithDirectoryTree(appId, '/Computers', 'Computers');
+
+  // Navigiate to a Computer Root.
+  await remoteCall.navigateWithDirectoryTree(
+      appId, '/Computers/Computer A', 'Computers');
+
+  // Navigiate to a subdirectory under a Computer Root.
+  await remoteCall.navigateWithDirectoryTree(
+      appId, '/Computers/Computer A/A', 'Computers');
 };
 
 
 /**
  * Tests files display in an MTP volume.
  */
-testcase.fileDisplayMtp = function() {
-  var appId;
-
+testcase.fileDisplayMtp = async function() {
   const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
-  StepsRunner.run([
-    // Open Files app on local downloads.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Mount MTP volume in the Downloads window.
-    function(results) {
-      appId = results.windowId;
-      sendTestMessage({name: 'mountFakeMtp'}).then(this.next);
-    },
-    // Wait for the MTP mount.
-    function() {
-      remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
-    },
-    // Click to open the MTP volume.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
-    },
-    // Verify the MTP file list.
-    function() {
-      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
-      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files app on local downloads.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+
+  // Mount MTP volume in the Downloads window.
+  await sendTestMessage({name: 'mountFakeMtp'});
+
+  // Wait for the MTP mount.
+  await remoteCall.waitForElement(appId, MTP_VOLUME_QUERY);
+
+  // Click to open the MTP volume.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, [MTP_VOLUME_QUERY]);
+
+  // Verify the MTP file list.
+  const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 };
 
 /**
  * Tests files display in a removable USB volume.
  */
-testcase.fileDisplayUsb = function() {
-  var appId;
-
+testcase.fileDisplayUsb = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
-  StepsRunner.run([
-    // Open Files app on local downloads.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Mount USB volume in the Downloads window.
-    function(results) {
-      appId = results.windowId;
-      sendTestMessage({name: 'mountFakeUsb'}).then(this.next);
-    },
-    // Wait for the USB mount.
-    function() {
-      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
-    },
-    // Click to open the USB volume.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [USB_VOLUME_QUERY], this.next);
-    },
-    // Verify the USB file list.
-    function() {
-      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
-      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files app on local downloads.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+
+  // Mount USB volume in the Downloads window.
+  await sendTestMessage({name: 'mountFakeUsb'});
+
+  // Wait for the USB mount.
+  await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
+
+  // Click to open the USB volume.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, [USB_VOLUME_QUERY]);
+
+  // Verify the USB file list.
+  const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 };
 
 /**
@@ -281,178 +186,115 @@ testcase.fileDisplayUsb = function() {
  * @param {Array<Object>} expectedResults The results set.
  *
  */
-function searchDownloads(searchTerm, expectedResults) {
-  var appId;
+async function searchDownloads(searchTerm, expectedResults) {
+  // Open Files app on local downloads.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
 
-  StepsRunner.run([
-    // Open Files app on local downloads.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Focus the search box.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
-    },
-    // Input a text.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil(
-          'inputText', appId, ['#search-box cr-input', searchTerm], this.next);
-    },
-    // Notify the element of the input.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall
-          .waitForFiles(appId, TestEntryInfo.getExpectedRows(expectedResults))
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Focus the search box.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box cr-input', 'focus']));
+
+  // Input a text.
+  await remoteCall.callRemoteTestUtil(
+      'inputText', appId, ['#search-box cr-input', searchTerm]);
+
+  // Notify the element of the input.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box cr-input', 'input']));
+
+
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(expectedResults));
 }
 
 /**
  * Tests case-senstive search for an entry in Downloads.
  */
 testcase.fileSearch = function() {
-  searchDownloads('hello', [ENTRIES.hello]);
+  return searchDownloads('hello', [ENTRIES.hello]);
 };
 
 /**
  * Tests case-insenstive search for an entry in Downloads.
  */
 testcase.fileSearchCaseInsensitive = function() {
-  searchDownloads('HELLO', [ENTRIES.hello]);
+  return searchDownloads('HELLO', [ENTRIES.hello]);
 };
 
 /**
  * Tests searching for a string doesn't match anything in Downloads and that
  * there are no displayed items that match the search string.
  */
-testcase.fileSearchNotFound = function() {
-  var appId;
+testcase.fileSearchNotFound = async function() {
   var searchTerm = 'blahblah';
 
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Focus the search box.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
-    },
-    // Input a text.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil(
-          'inputText', appId, ['#search-box cr-input', searchTerm], this.next);
-    },
-    // Notify the element of the input.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
-    },
-    function(result) {
-      remoteCall.waitForElement(appId, ['#empty-folder-label b']).
-          then(this.next);
-    },
-    function(element) {
-      chrome.test.assertEq(element.text, '\"' + searchTerm + '\"');
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+
+  // Focus the search box.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box cr-input', 'focus']));
+
+  // Input a text.
+  await remoteCall.callRemoteTestUtil(
+      'inputText', appId, ['#search-box cr-input', searchTerm]);
+
+  // Notify the element of the input.
+  await remoteCall.callRemoteTestUtil(
+      'fakeEvent', appId, ['#search-box cr-input', 'input']);
+  const element =
+      await remoteCall.waitForElement(appId, ['#empty-folder-label b']);
+  chrome.test.assertEq(element.text, '\"' + searchTerm + '\"');
 };
 
 /**
  * Tests Files app opening without errors when there isn't Downloads which is
  * the default volume.
  */
-testcase.fileDisplayWithoutDownloadsVolume = function() {
-  let appId = null;
+testcase.fileDisplayWithoutDownloadsVolume = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount Downloads volume which the default volume.
-    function() {
-      sendTestMessage({name: 'unmountDownloads'}).then(this.next);
-    },
-    // Wait until all volumes are removed.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 2, args)
-          .then(this.next);
-    },
-    // Open Files app without specifying the initial directory/root.
-    function() {
-      openNewWindow(null, null, this.next);
-    },
-    // Wait for Files app to finish loading.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'failed to open new window');
-      appId = result;
-      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount Downloads volume which the default volume.
+  await sendTestMessage({name: 'unmountDownloads'});
+
+  // Wait until all volumes are removed.
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 2, args);
+
+  // Open Files app without specifying the initial directory/root.
+  const appId = await openNewWindow(null, null);
+  chrome.test.assertTrue(!!appId, 'failed to open new window');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
 };
 
 /**
  * Tests Files app opening without errors when there are no volumes at all.
  */
-testcase.fileDisplayWithoutVolumes = function() {
-  let appId = null;
+testcase.fileDisplayWithoutVolumes = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount all default volumes.
-    function() {
-      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
-    },
-    // Wait until all volumes are removed.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 0, args)
-          .then(this.next);
-    },
-    // Open Files app without specifying the initial directory/root.
-    function() {
-      openNewWindow(null, null, this.next);
-    },
-    // Wait for Files app to finish loading.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'failed to open new window');
-      appId = result;
-      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount all default volumes.
+  await sendTestMessage({name: 'unmountAllVolumes'});
+
+  // Wait until all volumes are removed.
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 0, args);
+
+  // Open Files app without specifying the initial directory/root.
+  const appId = await openNewWindow(null, null);
+  chrome.test.assertTrue(!!appId, 'failed to open new window');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
 };
 
 /**
@@ -460,60 +302,37 @@ testcase.fileDisplayWithoutVolumes = function() {
  * then mounting Downloads volume which should appear and be able to display its
  * files.
  */
-testcase.fileDisplayWithoutVolumesThenMountDownloads = function() {
-  let appId = null;
+testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount all default volumes.
-    function() {
-      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
-    },
-    // Wait until all volumes are removed.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 0, args)
-          .then(this.next);
-    },
-    // Open Files app without specifying the initial directory/root.
-    function() {
-      openNewWindow(null, null, this.next);
-    },
-    // Wait for Files app to finish loading.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'failed to open new window');
-      appId = result;
-      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
-    },
-    // Remount Downloads.
-    function() {
-      sendTestMessage({name: 'mountDownloads'}).then(this.next);
-    },
-    // Downloads should appear in My files in the directory tree.
-    function() {
-      remoteCall.waitForElement(appId, '[volume-type-icon="downloads"]')
-          .then(this.next);
-    },
-    function() {
-      const downloadsRow = ['Downloads', '--', 'Folder'];
-      const crostiniRow = ['Linux files', '--', 'Folder'];
-      remoteCall
-          .waitForFiles(
-              appId, [downloadsRow, crostiniRow],
-              {ignoreFileSize: true, ignoreLastModifiedTime: true})
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount all default volumes.
+  await sendTestMessage({name: 'unmountAllVolumes'});
+
+  // Wait until all volumes are removed.
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 0, args);
+
+  // Open Files app without specifying the initial directory/root.
+  const appId = await openNewWindow(null, null);
+  chrome.test.assertTrue(!!appId, 'failed to open new window');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Remount Downloads.
+  await sendTestMessage({name: 'mountDownloads'});
+
+  // Downloads should appear in My files in the directory tree.
+  await remoteCall.waitForElement(appId, '[volume-type-icon="downloads"]');
+  const downloadsRow = ['Downloads', '--', 'Folder'];
+  const crostiniRow = ['Linux files', '--', 'Folder'];
+  await remoteCall.waitForFiles(
+      appId, [downloadsRow, crostiniRow],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
 };
 
 /**
@@ -521,322 +340,202 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = function() {
  * then mounting Drive volume which should appear and be able to display its
  * files.
  */
-testcase.fileDisplayWithoutVolumesThenMountDrive = function() {
-  let appId = null;
+testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount all default volumes.
-    function() {
-      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
-    },
-    // Wait until all volumes are removed.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 0, args)
-          .then(this.next);
-    },
-    // Open Files app without specifying the initial directory/root.
-    function() {
-      openNewWindow(null, null, this.next);
-    },
-    // Wait for Files app to finish loading.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'failed to open new window');
-      appId = result;
-      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
-    },
-    // Navigate to the Drive FakeItem.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
-    },
-    // The fake Google Drive should be empty.
-    function() {
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
-    // Remount Drive. The curent directory should be changed from the Google
-    // Drive FakeItem to My Drive.
-    function() {
-      sendTestMessage({name: 'mountDrive'}).then(this.next);
-    },
-    // Add an entry to Drive.
-    function() {
-      addEntries(['drive'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait for "My Drive" files to display in the file list.
-    function() {
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount all default volumes.
+  await sendTestMessage({name: 'unmountAllVolumes'});
+
+  // Wait until all volumes are removed.
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 0, args);
+
+  // Open Files app without specifying the initial directory/root.
+  const appId = await openNewWindow(null, null);
+  chrome.test.assertTrue(!!appId, 'failed to open new window');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Navigate to the Drive FakeItem.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[root-type-icon=\'drive\']']);
+
+  // The fake Google Drive should be empty.
+  await remoteCall.waitForFiles(appId, []);
+
+  // Remount Drive. The curent directory should be changed from the Google
+  // Drive FakeItem to My Drive.
+  await sendTestMessage({name: 'mountDrive'});
+
+  // Add an entry to Drive.
+  await addEntries(['drive'], [ENTRIES.newlyAdded]);
+
+  // Wait for "My Drive" files to display in the file list.
+  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
 };
 
 /**
  * Tests Files app opening without Drive mounted.
  */
-testcase.fileDisplayWithoutDrive = function() {
-  let appId = null;
+testcase.fileDisplayWithoutDrive = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount all default volumes.
-    function() {
-      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
-    },
-    // Remount Downloads.
-    function() {
-      sendTestMessage({name: 'mountDownloads'}).then(this.next);
-    },
-    // Wait until downloads is re-added
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 1, args)
-          .then(this.next);
-    },
-    // Open the files app.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.newlyAdded], []);
-    },
-    // Wait for the loading indicator blink to finish.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.waitForElement(appId, '#list-container paper-progress[hidden]')
-          .then(this.next);
-    },
-    // Navigate to Drive.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
-    },
-    function() {
-      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Google Drive')
-          .then(this.next);
-    },
-    // The fake Google Drive should be empty.
-    function() {
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
-    // The loading indicator should be visible and remain visible forever.
-    function() {
-      remoteCall
-          .waitForElement(appId, '#list-container paper-progress:not([hidden])')
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount all default volumes.
+  await sendTestMessage({name: 'unmountAllVolumes'});
+
+  // Remount Downloads.
+  await sendTestMessage({name: 'mountDownloads'});
+
+  // Wait until downloads is re-added
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 1, args);
+
+  // Open the files app.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.newlyAdded], []);
+
+  // Wait for the loading indicator blink to finish.
+  await remoteCall.waitForElement(
+      appId, '#list-container paper-progress[hidden]');
+
+  // Navigate to Drive.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[root-type-icon=\'drive\']']);
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Google Drive');
+
+  // The fake Google Drive should be empty.
+  await remoteCall.waitForFiles(appId, []);
+
+  // The loading indicator should be visible and remain visible forever.
+  await remoteCall.waitForElement(
+      appId, '#list-container paper-progress:not([hidden])');
 };
 
 /**
  * Tests Files app opening without Drive mounted and then disabling and
  * re-enabling Drive.
  */
-testcase.fileDisplayWithoutDriveThenDisable = function() {
-  let appId = null;
+testcase.fileDisplayWithoutDriveThenDisable = async function() {
+  // Wait for the Files app background page to mount the default volumes.
+  const args = [];
 
-  StepsRunner.run([
-    // Wait for the Files app background page to mount the default volumes.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 3, args)
-          .then(this.next);
-    },
-    // Unmount all default volumes.
-    function() {
-      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
-    },
-    // Remount Downloads.
-    function() {
-      sendTestMessage({name: 'mountDownloads'}).then(this.next);
-    },
-    // Add a file to Downloads.
-    function() {
-      addEntries(['local'], [ENTRIES.newlyAdded], this.next);
-    },
-    // Wait until all volumes are removed.
-    function() {
-      const args = [];
-      // appId is still null, but isn't needed for getVolumesCount.
-      remoteCall.waitFor('getVolumesCount', appId, (count) => count === 1, args)
-          .then(this.next);
-    },
-    // Open Files app without specifying the initial directory/root.
-    function() {
-      openNewWindow(null, null, this.next);
-    },
-    // Wait for Files app to finish loading.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'failed to open new window');
-      appId = result;
-      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
-    },
-    // Ensure Downloads has loaded.
-    function() {
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
-          .then(this.next);
-    },
-    // Navigate to Drive.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['[root-type-icon=\'drive\']'], this.next);
-    },
-    // The fake Google Drive should be empty.
-    function() {
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
-    // Disable Drive.
-    function() {
-      sendTestMessage({name: 'setDriveEnabled', enabled: false})
-          .then(this.next);
-    },
-    // The current directory should change to the default (Downloads).
-    function() {
-      remoteCall
-          .waitUntilCurrentDirectoryIsChanged(appId, '/My files/Downloads')
-          .then(this.next);
-    },
-    // Ensure Downloads has loaded.
-    function() {
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
-          .then(this.next);
-    },
-    // Re-enabled Drive.
-    function() {
-      sendTestMessage({name: 'setDriveEnabled', enabled: true}).then(this.next);
-    },
-    // Wait for the fake drive to reappear.
-    function() {
-      remoteCall.waitForElement(appId, ['[root-type-icon=\'drive\']'])
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 3, args);
+
+  // Unmount all default volumes.
+  await sendTestMessage({name: 'unmountAllVolumes'});
+
+  // Remount Downloads.
+  await sendTestMessage({name: 'mountDownloads'});
+
+  // Add a file to Downloads.
+  await addEntries(['local'], [ENTRIES.newlyAdded]);
+
+  // Wait until all volumes are removed.
+  await remoteCall.waitFor(
+      'getVolumesCount', null, (count) => count === 1, args);
+
+  // Open Files app without specifying the initial directory/root.
+  const appId = await openNewWindow(null, null);
+  chrome.test.assertTrue(!!appId, 'failed to open new window');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Ensure Downloads has loaded.
+  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+
+  // Navigate to Drive.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[root-type-icon=\'drive\']']);
+
+  // The fake Google Drive should be empty.
+  await remoteCall.waitForFiles(appId, []);
+
+  // Disable Drive.
+  await sendTestMessage({name: 'setDriveEnabled', enabled: false});
+
+  // The current directory should change to the default (Downloads).
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My files/Downloads');
+
+  // Ensure Downloads has loaded.
+  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+
+  // Re-enabled Drive.
+  await sendTestMessage({name: 'setDriveEnabled', enabled: true});
+
+  // Wait for the fake drive to reappear.
+  await remoteCall.waitForElement(appId, ['[root-type-icon=\'drive\']']);
 };
 
 /**
  * Tests Files app resisting the urge to switch to Downloads when mounts change.
  * re-enabling Drive.
  */
-testcase.fileDisplayMountWithFakeItemSelected = function() {
-  let appId = null;
+testcase.fileDisplayMountWithFakeItemSelected = async function() {
+  // Open Files app on Drive with the given test files.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.newlyAdded], []);
 
-  StepsRunner.run([
-    // Open Files app on Drive with the given test files.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.newlyAdded], []);
-    },
-    // Ensure Downloads has loaded.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
-          .then(this.next);
-    },
-    // Navigate to My files.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['[root-type-icon=\'my_files\']'],
-          this.next);
-    },
-    // Wait for the navigation to complete.
-    function() {
-      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files')
-          .then(this.next);
-    },
-    // Mount a USB drive.
-    function() {
-      sendTestMessage({name: 'mountFakeUsbEmpty'}).then(this.next);
-    },
-    // Wait for the mount to appear.
-    function() {
-      remoteCall
-          .waitForElement(
-              appId, ['#directory-tree [volume-type-icon="removable"]'])
-          .then(this.next);
-    },
-    function() {
-      remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, [])
-          .then(this.next);
-    },
-    function(path) {
-      chrome.test.assertEq('/My files', path);
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Ensure Downloads has loaded.
+  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+
+  // Navigate to My files.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[root-type-icon=\'my_files\']']);
+
+  // Wait for the navigation to complete.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
+
+  // Mount a USB drive.
+  await sendTestMessage({name: 'mountFakeUsbEmpty'});
+
+  // Wait for the mount to appear.
+  await remoteCall.waitForElement(
+      appId, ['#directory-tree [volume-type-icon="removable"]']);
+  chrome.test.assertEq(
+      '/My files',
+      await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []));
 };
 
 /**
  * Tests Files app switching away from Drive virtual folders when Drive is
  * unmounted.
  */
-testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = function() {
-  let appId = null;
+testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async function() {
+  // Open Files app on Drive with the given test files.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [ENTRIES.newlyAdded],
+      [ENTRIES.testSharedDocument, ENTRIES.hello]);
 
-  StepsRunner.run([
-    // Open Files app on Drive with the given test files.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [ENTRIES.newlyAdded],
-          [ENTRIES.testSharedDocument, ENTRIES.hello]);
-    },
-    // Navigate to Shared with me.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId,
-          ['[volume-type-icon=\'drive_shared_with_me\']'], this.next);
-    },
-    // Wait for the navigation to complete.
-    function() {
-      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me')
-          .then(this.next);
-    },
-    // Check that the file is visible.
-    function() {
-      remoteCall
-          .waitForFiles(appId, [ENTRIES.testSharedDocument.getExpectedRow()])
-          .then(this.next);
-    },
-    // Unmount drive.
-    function() {
-      sendTestMessage({name: 'unmountDrive'}).then(this.next);
-    },
-    // We should navigate to Downloads.
-    function() {
-      remoteCall
-          .waitUntilCurrentDirectoryIsChanged(appId, '/My files/Downloads')
-          .then(this.next);
-    },
-    // Which should contain a file.
-    function() {
-      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Navigate to Shared with me.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[volume-type-icon=\'drive_shared_with_me\']']);
+
+  // Wait for the navigation to complete.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me');
+
+  // Check that the file is visible.
+  await remoteCall.waitForFiles(
+      appId, [ENTRIES.testSharedDocument.getExpectedRow()]);
+
+  // Unmount drive.
+  await sendTestMessage({name: 'unmountDrive'});
+
+  // We should navigate to Downloads.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My files/Downloads');
+
+  // Which should contain a file.
+  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
 };
