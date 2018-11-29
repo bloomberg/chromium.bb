@@ -1220,11 +1220,13 @@ void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
   // network. See https://crbug.com/386606 for details.
   user_context.SetPasswordKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
-      (user_context.GetUserType() !=
-       user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {
-    LOG(FATAL) << "Incorrect Active Directory user type "
-               << user_context.GetUserType();
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
+    if (user_context.GetUserType() !=
+        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY) {
+      LOG(FATAL) << "Incorrect Active Directory user type "
+                 << user_context.GetUserType();
+    }
+    user_context.SetIsUsingOAuth(false);
   }
 
   delegate_->Login(user_context, SigninSpecifics());
