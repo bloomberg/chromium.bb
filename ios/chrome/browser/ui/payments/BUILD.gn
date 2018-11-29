@@ -214,6 +214,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser",
+    "//components/leveldb_proto:leveldb_proto",
     "//components/payments/core",
     "//components/payments/core:test_support",
     "//components/payments/mojom",

@@ -396,44 +396,21 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
             popupDelegate:
                 (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                     delegate {
-  NSMutableArray* formSuggestions = [[NSMutableArray alloc] init];
-  for (const auto& suggestion : suggestions) {
-    NSString* value = nil;
-    NSString* displayDescription = nil;
-    // frontend_id is greater than 0 for Autofill suggestions.
-    if (suggestion.frontend_id > 0) {
-      value = base::SysUTF16ToNSString(suggestion.value);
-      displayDescription = base::SysUTF16ToNSString(suggestion.label);
-    }
-
-    // Suggestions without values are typically special suggestions such as
-    // Autocomplete, clear form, or go to autofill settings. They are not
-    // supported by CWVAutofillController.
-    if (!value) {
-      continue;
-    }
-
-    NSString* icon = base::SysUTF16ToNSString(suggestion.icon);
-    NSInteger identifier = suggestion.frontend_id;
-
-    FormSuggestion* formSuggestion =
-        [FormSuggestion suggestionWithValue:value
-                         displayDescription:displayDescription
-                                       icon:icon
-                                 identifier:identifier];
-    [formSuggestions addObject:formSuggestion];
-  }
-
-  [_autofillAgent onSuggestionsReady:formSuggestions popupDelegate:delegate];
-  if (delegate) {
-    delegate->OnPopupShown();
-  }
+  // frontend_id is > 0 for Autofill suggestions, == 0 for Autocomplete
+  // suggestions, and < 0 for special suggestions such as clear form, or go to
+  // autofill settings which are not supported by CWVAutofillController.
+  std::vector<autofill::Suggestion> filtered_suggestions;
+  std::copy_if(suggestions.begin(), suggestions.end(),
+               std::back_inserter(filtered_suggestions),
+               [](autofill::Suggestion suggestion) {
+                 return suggestion.frontend_id > 0;
+               });
+  [_autofillAgent showAutofillPopup:filtered_suggestions
+                      popupDelegate:delegate];
 }
 
 - (void)hideAutofillPopup {
-  [_autofillAgent
-      onSuggestionsReady:@[]
-           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
+  [_autofillAgent hideAutofillPopup];
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
@@ -492,19 +469,14 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 #pragma mark - AutofillDriverIOSBridge
 
-- (void)onFormDataFilled:(uint16_t)query_id
-                 inFrame:(web::WebFrame*)frame
-                  result:(const autofill::FormData&)result {
-  [_autofillAgent onFormDataFilled:result inFrame:frame];
-  autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
-  if (manager) {
-    manager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());
-  }
+- (void)fillFormData:(const autofill::FormData&)form
+             inFrame:(web::WebFrame*)frame {
+  [_autofillAgent fillFormData:form inFrame:frame];
 }
 
-- (void)sendAutofillTypePredictionsToRenderer:
+- (void)fillFormDataPredictions:
             (const std::vector<autofill::FormDataPredictions>&)forms
-                                      toFrame:(web::WebFrame*)frame {
+                        inFrame:(web::WebFrame*)frame {
   // Not supported.
 }
 
@@ -600,7 +572,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   _formActivityObserverBridge.reset();
-  [_autofillAgent detachFromWebState];
   _autofillClient.reset();
   _webState->RemoveObserver(_webStateObserverBridge.get());
   _webStateObserverBridge.reset();

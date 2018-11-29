@@ -18,7 +18,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/autofill/autofill_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
