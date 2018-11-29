@@ -158,7 +158,7 @@ InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
 }  // namespace
 
 void InitializeTsfForInputScopes() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   // Thread safety is not required because this function is under UI thread.
   if (!g_get_proc_done) {
     g_get_proc_done = true;

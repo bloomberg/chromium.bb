@@ -35,7 +35,7 @@ class CertDatabase::Notifier {
         registered_(false),
         called_shutdown_(false) {
     // Ensure an associated CFRunLoop.
-    DCHECK(base::MessageLoopForUI::IsCurrent());
+    DCHECK(base::MessageLoopCurrentForUI::IsSet());
     DCHECK(task_runner_->BelongsToCurrentThread());
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Notifier::Init,

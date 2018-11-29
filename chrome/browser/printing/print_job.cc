@@ -43,7 +43,7 @@ PrintJob::PrintJob()
     : is_job_pending_(false),
       is_canceling_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 }
 
 PrintJob::~PrintJob() {

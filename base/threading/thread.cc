@@ -302,7 +302,7 @@ void Thread::ThreadMain() {
 #if defined(OS_POSIX) && !defined(OS_NACL)
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher API.
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher;
-  if (MessageLoopForIO::IsCurrent()) {
+  if (MessageLoopCurrentForIO::IsSet()) {
     file_descriptor_watcher.reset(
         new FileDescriptorWatcher(message_loop_->task_runner()));
   }

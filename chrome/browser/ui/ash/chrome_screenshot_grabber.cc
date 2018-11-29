@@ -335,7 +335,7 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
                     scoped_refptr<base::RefCountedMemory> png_data,
                     ScreenshotFileResult result,
                     const base::FilePath& local_path) {
-  DCHECK(!base::MessageLoopForUI::IsCurrent());
+  DCHECK(!base::MessageLoopCurrentForUI::IsSet());
   DCHECK(!screenshot_path.empty());
 
   ScreenshotResult screenshot_result = ScreenshotResult::SUCCESS;
@@ -369,7 +369,7 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
 void EnsureLocalDirectoryExists(
     const base::FilePath& path,
     ChromeScreenshotGrabber::FileCallback callback) {
-  DCHECK(!base::MessageLoopForUI::IsCurrent());
+  DCHECK(!base::MessageLoopCurrentForUI::IsSet());
   DCHECK(!path.empty());
 
   if (!base::CreateDirectory(path.DirName())) {

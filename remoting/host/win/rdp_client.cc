@@ -139,7 +139,7 @@ void RdpClient::Core::Connect(const ScreenResolution& resolution,
     return;
   }
 
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   DCHECK(!rdp_client_window_);
   DCHECK(!self_.get());
 

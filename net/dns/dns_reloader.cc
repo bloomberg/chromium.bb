@@ -49,7 +49,7 @@ class DnsReloader : public NetworkChangeNotifier::DNSObserver {
 
   // NetworkChangeNotifier::DNSObserver:
   void OnDNSChanged() override {
-    DCHECK(base::MessageLoopForIO::IsCurrent());
+    DCHECK(base::MessageLoopCurrentForIO::IsSet());
     base::AutoLock lock(lock_);
     resolver_generation_++;
   }

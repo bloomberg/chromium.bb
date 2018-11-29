@@ -422,7 +422,7 @@ Clipboard* Clipboard::Create() {
 
 // ClipboardWin implementation.
 ClipboardWin::ClipboardWin() {
-  if (base::MessageLoopForUI::IsCurrent())
+  if (base::MessageLoopCurrentForUI::IsSet())
     clipboard_owner_.reset(new base::win::MessageWindow());
 }
 

@@ -39,7 +39,7 @@ void PendingLogsService::ScheduleLogsUploadTask(
     const ChromeCleanerReport& chrome_cleaner_report,
     base::FilePath* log_file,
     RegistryLogger* registry_logger) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   DCHECK(log_file);
   DCHECK(registry_logger);
   // This can happen when we fail while retrying. The logging service is not
@@ -123,7 +123,7 @@ void PendingLogsService::ClearPendingLogFile(
 }
 
 PendingLogsService::PendingLogsService() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 }
 
 PendingLogsService::~PendingLogsService() = default;

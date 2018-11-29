@@ -226,7 +226,7 @@ void MediaClient::OnRequestUpdate(int render_process_id,
                                   int render_frame_id,
                                   content::MediaStreamType stream_type,
                                   const content::MediaRequestState state) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   // The PostTask is necessary because the state of MediaStreamCaptureIndicator
   // gets updated after this.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
