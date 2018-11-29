@@ -168,10 +168,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
   NGInlineBoxState* box = OnOpenTag(*item.Style(), line_box);
   box->item = &item;
 
-  if (item.ShouldCreateBoxFragment()) {
-    box->SetNeedsBoxFragment(
-        ContainingLayoutObjectForAbsolutePositionObjects());
-  }
+  if (item.ShouldCreateBoxFragment())
+    box->SetNeedsBoxFragment();
 
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
@@ -252,13 +250,10 @@ void NGInlineLayoutStateStack::EndBoxState(
     parent_box.metrics.Unite(box->metrics);
 }
 
-void NGInlineBoxState::SetNeedsBoxFragment(
-    const LayoutObject* inline_container) {
+void NGInlineBoxState::SetNeedsBoxFragment() {
   DCHECK(item);
   DCHECK(!needs_box_fragment);
   needs_box_fragment = true;
-  DCHECK(!this->inline_container);
-  this->inline_container = inline_container;
 }
 
 // Crete a placeholder for a box fragment.
@@ -294,7 +289,6 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   BoxData& box_data = box_data_list_.emplace_back(
       box->fragment_start, fragment_end, box->item, size);
   box_data.padding = box->padding;
-  box_data.inline_container = box->inline_container;
   if (box->has_start_edge) {
     box_data.has_line_left_edge = true;
     box_data.margin_line_left = box->margin_inline_start;
@@ -338,7 +332,7 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     box_data.size.inline_size =
         advance - box_data.margin_line_left - box_data.margin_line_right;
     line_box->AddChild(box_data.CreateBoxFragment(line_box), offset, advance,
-                       0);
+                       /* bidi_level */ 0);
     box_data_list_.pop_back();
   }
 }
@@ -619,7 +613,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     // NGInlineLayoutAlgorithm can handle them later.
     DCHECK(!child.HasInFlowFragment());
   }
-  box.MoveOutOfFlowDescendantCandidatesToDescendants(inline_container);
+
+  box.MoveOutOfFlowDescendantCandidatesToDescendants();
   return box.ToInlineBoxFragment();
 }
 
@@ -804,7 +799,6 @@ void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
   DCHECK_EQ(fragment_start, other.fragment_start);
   DCHECK_EQ(item, other.item);
   DCHECK_EQ(style, other.style);
-  DCHECK_EQ(inline_container, other.inline_container);
 
   DCHECK_EQ(metrics, other.metrics);
   DCHECK_EQ(text_metrics, other.text_metrics);

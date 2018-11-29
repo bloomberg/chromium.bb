@@ -83,8 +83,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                              UBiDiLevel,
                              NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
-                                      NGInlineItemResult*,
-                                      const NGLineInfo&);
+                                      const NGLineInfo&,
+                                      NGInlineItemResult*);
   void PlaceLayoutResult(NGInlineItemResult*,
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());

@@ -52,8 +52,24 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
     for (const NGOutOfFlowPositionedDescendant& descendant :
          out_of_flow_descendants) {
-      oof_positioned_candidates_.push_back(
-          NGOutOfFlowPositionedCandidate{descendant, top_left_offset});
+      // If we are inside the inline algorithm, (and creating a fragment for a
+      // <span> or similar), we may add a child (e.g. an atomic-inline) which
+      // has OOF descandants.
+      //
+      // This checks if the object creating this box will be the container for
+      // the given descendant.
+      if (layout_object_ && layout_object_->IsLayoutInline() &&
+          layout_object_->CanContainOutOfFlowPositionedElement(
+              descendant.node.Style().GetPosition()) &&
+          !descendant.inline_container) {
+        NGOutOfFlowPositionedDescendant descendant_copy(descendant);
+        descendant_copy.inline_container = layout_object_;
+        oof_positioned_candidates_.push_back(
+            NGOutOfFlowPositionedCandidate(descendant_copy, top_left_offset));
+      } else {
+        oof_positioned_candidates_.push_back(
+            NGOutOfFlowPositionedCandidate{descendant, top_left_offset});
+      }
     }
   }
 
@@ -190,16 +206,10 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.Shrink(0);
 }
 
-void NGContainerFragmentBuilder::MoveOutOfFlowDescendantCandidatesToDescendants(
-    const LayoutObject* inline_container) {
+void NGContainerFragmentBuilder::
+    MoveOutOfFlowDescendantCandidatesToDescendants() {
   GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
                                            nullptr);
-  if (inline_container) {
-    for (auto& descendant : oof_positioned_descendants_) {
-      if (!descendant.inline_container)
-        descendant.inline_container = inline_container;
-    }
-  }
 }
 
 #ifndef NDEBUG
