@@ -7,6 +7,8 @@ source_set("fakes") {
   testonly = true
 
   sources = [
+    "fake_ar_quick_look_tab_helper_delegate.h",
+    "fake_ar_quick_look_tab_helper_delegate.mm",
     "fake_contained_presenter.h",
     "fake_contained_presenter.mm",
     "fake_document_interaction_controller.h",
