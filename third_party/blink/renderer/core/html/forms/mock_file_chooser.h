@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
