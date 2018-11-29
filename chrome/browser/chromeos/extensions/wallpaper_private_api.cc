@@ -723,7 +723,7 @@ WallpaperPrivateGetLocalImagePathsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetLocalImagePathsFunction::Run() {
-  base::FilePath path = file_manager::util::GetDownloadsFolderForProfile(
+  base::FilePath path = file_manager::util::GetMyFilesFolderForProfile(
       Profile::FromBrowserContext(browser_context()));
   base::PostTaskAndReplyWithResult(
       WallpaperFunctionBase::GetNonBlockingTaskRunner(), FROM_HERE,
