@@ -54,6 +54,11 @@ namespace {
 using testing::MockFunction;
 using testing::_;
 
+// Special sentinel values used for testing GetSizeEstimate() interception.
+const char kTestSizeEstimateData[] = "test_value";
+constexpr void* kTestSizeEstimateAddress = (void*)kTestSizeEstimateData;
+constexpr size_t kTestSizeEstimate = 1234;
+
 class AllocatorShimTest : public testing::Test {
  public:
   static const size_t kMaxSizeTracked = 2 * base::kSystemPageSize;
@@ -131,6 +136,9 @@ class AllocatorShimTest : public testing::Test {
   static size_t MockGetSizeEstimate(const AllocatorDispatch* self,
                                     void* address,
                                     void* context) {
+    // Special testing values for GetSizeEstimate() interception.
+    if (address == kTestSizeEstimateAddress)
+      return kTestSizeEstimate;
     return self->next->get_size_estimate_function(self->next, address, context);
   }
 
@@ -459,6 +467,24 @@ TEST_F(AllocatorShimTest, NewHandlerConcurrency) {
 #if defined(OS_WIN) && BUILDFLAG(USE_ALLOCATOR_SHIM)
 TEST_F(AllocatorShimTest, ShimReplacesCRTHeapWhenEnabled) {
   ASSERT_NE(::GetProcessHeap(), reinterpret_cast<HANDLE>(_get_heap_handle()));
+}
+
+TEST_F(AllocatorShimTest, ShimReplacesMsizeWhenEnabled) {
+  InsertAllocatorDispatch(&g_mock_dispatch);
+  EXPECT_EQ(_msize(kTestSizeEstimateAddress), kTestSizeEstimate);
+  RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
+}
+
+TEST_F(AllocatorShimTest, ShimDoesntChangeMsizeWhenEnabled) {
+  void* alloc = malloc(16);
+  size_t sz = _msize(alloc);
+  EXPECT_GE(sz, 16U);
+
+  InsertAllocatorDispatch(&g_mock_dispatch);
+  EXPECT_EQ(_msize(alloc), sz);
+  RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
+
+  free(alloc);
 }
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_ALLOCATOR_SHIM)
 

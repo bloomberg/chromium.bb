@@ -65,6 +65,11 @@ __declspec(restrict) void* calloc(size_t n, size_t size) {
   return ShimCalloc(n, size, nullptr);
 }
 
+// _msize() is the Windows equivalent of malloc_size().
+size_t _msize(void* memblock) {
+  return ShimGetSizeEstimate(memblock, nullptr);
+}
+
 // The symbols
 //   * __acrt_heap
 //   * __acrt_initialize_heap
@@ -88,13 +93,5 @@ bool __acrt_uninitialize_heap() {
 intptr_t _get_heap_handle(void) {
   return reinterpret_cast<intptr_t>(__acrt_heap);
 }
-
-// The default dispatch translation unit has to define also the following
-// symbols (unless they are ultimately routed to the system symbols):
-//   void malloc_stats(void);
-//   int mallopt(int, int);
-//   struct mallinfo mallinfo(void);
-//   size_t malloc_size(void*);
-//   size_t malloc_usable_size(const void*);
 
 }  // extern "C"
