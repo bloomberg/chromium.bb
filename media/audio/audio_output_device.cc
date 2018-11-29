@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -22,6 +23,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_output_device_thread_callback.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -64,6 +66,17 @@ void AudioOutputDevice::InitializeOnIOThread(const AudioParameters& params,
 }
 
 AudioOutputDevice::~AudioOutputDevice() {
+  {
+    // Abort any pending callbacks. Technically we don't need to acquire the
+    // lock here since ther eshould be no other calls outstanding, but because
+    // we've used the GUARDED_BY compiler syntax, we'll get an error without it.
+    base::AutoLock auto_lock(device_info_lock_);
+    if (pending_device_info_cb_) {
+      std::move(pending_device_info_cb_)
+          .Run(OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
+    }
+  }
+
 #if DCHECK_IS_ON()
   // Make sure we've stopped the stream properly before destructing |this|.
   DCHECK(audio_thread_lock_.Try());
@@ -97,7 +110,6 @@ void AudioOutputDevice::Stop() {
     audio_thread_.reset();
     stopping_hack_ = true;
   }
-
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioOutputDevice::ShutDownOnIOThread, this));
 }
@@ -128,13 +140,29 @@ bool AudioOutputDevice::SetVolume(double volume) {
 OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo() {
   TRACE_EVENT0("audio", "AudioOutputDevice::GetOutputDeviceInfo");
   DCHECK(!io_task_runner_->BelongsToCurrentThread());
-
   did_receive_auth_.Wait();
-  return OutputDeviceInfo(AudioDeviceDescription::UseSessionIdToSelectDevice(
-                              session_id_, device_id_)
-                              ? matched_device_id_
-                              : device_id_,
-                          device_status_, output_params_);
+  return GetOutputDeviceInfo_Signaled();
+}
+
+void AudioOutputDevice::GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) {
+  {
+    // Hold the lock while checking the signal and setting the pending callback
+    // to avoid racing with authorization completion on the IO thread.
+    base::AutoLock auto_lock(device_info_lock_);
+    if (!did_receive_auth_.IsSignaled()) {
+      DCHECK(!pending_device_info_cb_);
+      pending_device_info_cb_ = BindToCurrentLoop(std::move(info_cb));
+      return;
+    }
+  }
+
+  // Always post to avoid the caller being reentrant. Local testing shows even
+  // on a powerful desktop, we haven't received device authorization by this
+  // point when AOD construction and GetOutputDeviceInfoAsync() happen back to
+  // back (which is the most common use case).
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(info_cb), GetOutputDeviceInfo_Signaled()));
 }
 
 bool AudioOutputDevice::IsOptimizedForHardwareParameters() {
@@ -307,7 +335,7 @@ void AudioOutputDevice::OnDeviceAuthorized(
                << ", device_id: " << device_id_
                << ", matched_device_id: " << matched_device_id_;
 
-      did_receive_auth_.Signal();
+      OnAuthSignal();
     }
   } else {
     TRACE_EVENT1("audio", "AudioOutputDevice not authorized", "auth status",
@@ -378,8 +406,39 @@ void AudioOutputDevice::OnIPCClosed() {
   ipc_.reset();
   state_ = IDLE;
 
-  // Signal to unblock any blocked threads waiting for parameters
+  OnAuthSignal();
+}
+
+OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo_Signaled() {
+  DCHECK(did_receive_auth_.IsSignaled());
+  return OutputDeviceInfo(AudioDeviceDescription::UseSessionIdToSelectDevice(
+                              session_id_, device_id_)
+                              ? matched_device_id_
+                              : device_id_,
+                          device_status_, output_params_);
+}
+
+void AudioOutputDevice::OnAuthSignal() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  // This lock is held while signaling to avoid any thread safety issues while
+  // GetOutputDeviceInfoAsync() may be checking the signal and modifying the
+  // |pending_device_info_cb_| on another thread.
+  //
+  // We might be able to get away with signaling outside of the lock, but this
+  // requires more careful construction for anyone checking the signal and
+  // using the result to set or get the pending callback value. The failure
+  // mode is also more subtle, callbacks will be lost versus a thread hang which
+  // is more easily detectable in the production population.
+  base::AutoLock auto_lock(device_info_lock_);
+
+  // Signal to unblock any blocked threads waiting for parameters.
   did_receive_auth_.Signal();
+
+  // The callback is always posted by way media::BindToCurrentLoop() usage upon
+  // receipt, so this is safe to run under the lock.
+  if (pending_device_info_cb_)
+    std::move(pending_device_info_cb_).Run(GetOutputDeviceInfo_Signaled());
 }
 
 void AudioOutputDevice::NotifyRenderCallbackOfError() {

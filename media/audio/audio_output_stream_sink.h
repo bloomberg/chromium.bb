@@ -42,6 +42,7 @@ class MEDIA_EXPORT AudioOutputStreamSink
   void Play() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
   bool IsOptimizedForHardwareParameters() override;
   bool CurrentThreadIsRenderingThread() override;
 

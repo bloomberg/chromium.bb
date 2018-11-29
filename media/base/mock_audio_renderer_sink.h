@@ -32,6 +32,7 @@ class MockAudioRendererSink : public SwitchableAudioRendererSink {
   MOCK_METHOD0(CurrentThreadIsRenderingThread, bool());
 
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
 
   bool IsOptimizedForHardwareParameters() override;
 

@@ -21,14 +21,9 @@ AudioRendererMixerInput::AudioRendererMixerInput(
     const std::string& device_id,
     AudioLatency::LatencyType latency)
     : mixer_pool_(mixer_pool),
-      started_(false),
-      playing_(false),
-      volume_(1.0f),
       owner_id_(owner_id),
       device_id_(device_id),
       latency_(latency),
-      mixer_(nullptr),
-      callback_(nullptr),
       error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
                            base::Unretained(this))) {
   DCHECK(mixer_pool_);
@@ -112,6 +107,12 @@ OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
                       owner_id_, 0 /* session_id */, device_id_);
 }
 
+void AudioRendererMixerInput::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  // TODO(dalecurtis): Implement this for https://crbug.com/905506.
+  NOTREACHED();
+}
+
 bool AudioRendererMixerInput::IsOptimizedForHardwareParameters() {
   return true;
 }
@@ -173,8 +174,8 @@ double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
 
   // AudioConverter expects unfilled frames to be zeroed.
   if (frames_filled < audio_bus->frames()) {
-    audio_bus->ZeroFramesPartial(
-        frames_filled, audio_bus->frames() - frames_filled);
+    audio_bus->ZeroFramesPartial(frames_filled,
+                                 audio_bus->frames() - frames_filled);
   }
 
   // We're reading |volume_| from the audio device thread and must avoid racing

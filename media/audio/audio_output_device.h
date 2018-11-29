@@ -110,6 +110,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   void Pause() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
   bool IsOptimizedForHardwareParameters() override;
   bool CurrentThreadIsRenderingThread() override;
 
@@ -171,6 +172,9 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   void NotifyRenderCallbackOfError();
 
+  OutputDeviceInfo GetOutputDeviceInfo_Signaled();
+  void OnAuthSignal();
+
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   AudioParameters audio_parameters_;
@@ -225,6 +229,14 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   const base::TimeDelta auth_timeout_;
   std::unique_ptr<base::OneShotTimer> auth_timeout_action_;
+
+  // Pending callback for OutputDeviceInfo if it has not been received by the
+  // time a call to GetGetOutputDeviceInfoAsync() is called.
+  //
+  // Lock for use ONLY with |pending_device_info_cb_| and |did_receive_auth_|,
+  // if you add more usage of this lock ensure you have not added a deadlock.
+  base::Lock device_info_lock_;
+  OutputDeviceInfoCB pending_device_info_cb_ GUARDED_BY(device_info_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);
 };

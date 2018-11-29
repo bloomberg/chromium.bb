@@ -47,6 +47,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void Pause() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
+
   bool IsOptimizedForHardwareParameters() override;
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
@@ -74,9 +76,9 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // SetVolume().
   base::Lock volume_lock_;
 
-  bool started_;
-  bool playing_;
-  double volume_ GUARDED_BY(volume_lock_);
+  bool started_ = false;
+  bool playing_ = false;
+  double volume_ GUARDED_BY(volume_lock_) = 1.0;
 
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
@@ -90,10 +92,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // AudioRendererMixer obtained from mixer pool during Initialize(),
   // guaranteed to live (at least) until it is returned to the pool.
-  AudioRendererMixer* mixer_;
+  AudioRendererMixer* mixer_ = nullptr;
 
   // Source of audio data which is provided to the mixer.
-  AudioRendererSink::RenderCallback* callback_;
+  AudioRendererSink::RenderCallback* callback_ = nullptr;
 
   // Error callback for handing to AudioRendererMixer.
   const base::Closure error_cb_;
