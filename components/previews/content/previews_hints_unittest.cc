@@ -4,11 +4,14 @@
 
 #include "components/previews/content/previews_hints.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -32,17 +35,18 @@ class TestHostFilter : public previews::HostFilter {
 
 class PreviewsHintsTest : public testing::Test {
  public:
-  explicit PreviewsHintsTest() : previews_hints_(nullptr) {}
+  PreviewsHintsTest() : previews_hints_(nullptr) {}
 
   ~PreviewsHintsTest() override {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void ParseConfig(const optimization_guide::proto::Configuration& config) {
-    optimization_guide::ComponentInfo info(
+    optimization_guide::HintsComponentInfo info(
         base::Version("1.0"),
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
-    previews_hints_ = PreviewsHints::CreateFromConfig(config, info);
+    ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
+    previews_hints_ = PreviewsHints::CreateFromHintsComponent(info);
     previews_hints_->Initialize();
   }
 
@@ -53,6 +57,15 @@ class PreviewsHintsTest : public testing::Test {
   }
 
  private:
+  void WriteConfigToFile(const optimization_guide::proto::Configuration& config,
+                         const base::FilePath& filePath) {
+    std::string serialized_config;
+    ASSERT_TRUE(config.SerializeToString(&serialized_config));
+    ASSERT_EQ(static_cast<int32_t>(serialized_config.length()),
+              base::WriteFile(filePath, serialized_config.data(),
+                              serialized_config.length()));
+  }
+
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<PreviewsHints> previews_hints_;
 };
