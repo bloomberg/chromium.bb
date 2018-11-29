@@ -42,7 +42,8 @@
       }
     </style>
 
-    <paper-button class$="[[getClass_(actionButton)]]" disabled="[[enforced_]]">
+    <paper-button class$="[[getClass_(actionButton)]]"
+      disabled="[[!buttonEnabled_(enforced_, disabled)]]">
       [[label]]
     </paper-button>
 

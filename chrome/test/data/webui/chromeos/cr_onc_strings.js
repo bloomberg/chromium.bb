@@ -89,9 +89,10 @@ CrOncTest.overrideCrOncStrings = function() {
 /**
  * Converts an unmanaged ONC dictionary into a managed dictionary by
  * setting properties 'Active' values to values from unmanaged dictionary.
- * NOTE: Because of having not only managed variables in ManagedProperty (e.g.
- * 'GUID', 'Source', 'Type', etc) this function can handle only simple
- * dictionaries such as provided in network_config_test.js.
+ * NOTE: Unmanaged properties inside ManagedProperties (e.g. 'GUID',
+ * 'Source', 'Type', etc) need to be specified here to avoid treating them
+ * as managed.
+ * The full list of ManagedProperties is found in networking_private.idl
  * @param {!Object|undefined} properties An unmanaged ONC dictionary
  * @return {!Object|undefined} A managed version of |properties|.
  */
@@ -105,7 +106,11 @@ CrOncTest.convertToManagedProperties = function(properties) {
     return {Active: properties};
   for (var i = 0; i < keys.length; ++i) {
     var k = keys[i];
-    if (['GUID', 'Source', 'Type'].includes(k))
+    const unmanagedProperties = [
+      'ConnectionState', 'GUID',
+      /* ManagedCellularProperties.SIMLockStatus */ 'LockType', 'Source', 'Type'
+    ];
+    if (unmanagedProperties.includes(k))
       result[k] = properties[k];
     else
       result[k] = this.convertToManagedProperties(properties[k]);

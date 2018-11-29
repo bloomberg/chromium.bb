@@ -24,6 +24,12 @@ Polymer({
 
     label: String,
 
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     /** @private */
     enforced_: {
       type: Boolean,
@@ -50,4 +56,14 @@ Polymer({
   getClass_: function(actionButton) {
     return actionButton ? "action-button" : "";
   },
+
+  /**
+   * @param {!boolean} enforced
+   * @param {!boolean} disabled
+   * @return {boolean} True if the button should be enabled.
+   * @private
+   */
+  buttonEnabled_(enforced, disabled) {
+    return !enforced && !disabled;
+  }
 });
