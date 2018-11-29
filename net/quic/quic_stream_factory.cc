@@ -795,7 +795,17 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
       UMA_HISTOGRAM_BOOLEAN(
           "Net.QuicStreamFactory.AttemptMigrationBeforeHandshake",
           connection_retried_);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.QuicStreamFactory.AttemptMigrationBeforeHandshake."
+          "FailedConnectionType",
+          NetworkChangeNotifier::GetNetworkConnectionType(
+              factory_->default_network()),
+          NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
       if (connection_retried_) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.QuicStreamFactory.MigrationBeforeHandshake.NewConnectionType",
+            NetworkChangeNotifier::GetNetworkConnectionType(network_),
+            NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
         net_log_.AddEvent(
             NetLogEventType::
                 QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK);
