@@ -597,38 +597,8 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulationSetFromCountryID(
   size_t num_engines;
   // If you add a new country make sure to update the unit test for coverage.
   switch (country_id) {
-#define CHAR_A 'A'
-#define CHAR_B 'B'
-#define CHAR_C 'C'
-#define CHAR_D 'D'
-#define CHAR_E 'E'
-#define CHAR_F 'F'
-#define CHAR_G 'G'
-#define CHAR_H 'H'
-#define CHAR_I 'I'
-#define CHAR_J 'J'
-#define CHAR_K 'K'
-#define CHAR_L 'L'
-#define CHAR_M 'M'
-#define CHAR_N 'N'
-#define CHAR_O 'O'
-#define CHAR_P 'P'
-#define CHAR_Q 'Q'
-#define CHAR_R 'R'
-#define CHAR_S 'S'
-#define CHAR_T 'T'
-#define CHAR_U 'U'
-#define CHAR_V 'V'
-#define CHAR_W 'W'
-#define CHAR_X 'X'
-#define CHAR_Y 'Y'
-#define CHAR_Z 'Z'
-#define CHAR(ch) CHAR_##ch
-#define CODE_TO_ID(code1, code2)\
-    (CHAR(code1) << 8 | CHAR(code2))
-
-#define UNHANDLED_COUNTRY(code1, code2)\
-    case CODE_TO_ID(code1, code2):
+#define UNHANDLED_COUNTRY(code1, code2) \
+  case country_codes::CountryCharsToCountryID((#code1)[0], (#code2)[0]):
 #define END_UNHANDLED_COUNTRIES(code1, code2)\
       engines = engines_##code1##code2;\
       num_engines = arraysize(engines_##code1##code2);\

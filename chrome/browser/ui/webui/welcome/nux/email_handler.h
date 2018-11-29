@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_EMAIL_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_EMAIL_HANDLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -14,6 +16,8 @@ class WebUIDataSource;
 }  // namespace content
 
 namespace nux {
+
+struct BookmarkItem;
 
 extern const char* kEmailInteractionHistogram;
 
@@ -40,6 +44,9 @@ class EmailHandler : public content::WebUIMessageHandler {
 
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source);
+
+ private:
+  const std::vector<BookmarkItem> email_providers_;
 
   DISALLOW_COPY_AND_ASSIGN(EmailHandler);
 };

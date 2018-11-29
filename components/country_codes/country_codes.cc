@@ -28,10 +28,6 @@ namespace country_codes {
 
 namespace {
 
-int CountryCharsToCountryID(char c1, char c2) {
-  return c1 << 8 | c2;
-}
-
 // TODO(scottchen): remove this function after confirming if it only pertains
 // to obsolete OSes.
 int CountryCharsToCountryIDWithUpdate(char c1, char c2) {

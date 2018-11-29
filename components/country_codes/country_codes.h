@@ -29,6 +29,12 @@ extern const char kCountryIDAtInstall[];
 
 const int kCountryIDUnknown = -1;
 
+// Takes in each of the two characters of a ISO 3166-1 country code, and
+// converts it into an int value to be used as a reference to that country.
+constexpr int CountryCharsToCountryID(char c1, char c2) {
+  return c1 << 8 | c2;
+}
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 // Returns the identifier for the user current country. Used to update the list
