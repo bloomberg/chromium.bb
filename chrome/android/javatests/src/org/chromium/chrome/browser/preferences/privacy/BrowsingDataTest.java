@@ -67,7 +67,7 @@ public class BrowsingDataTest {
         BrowsingDataCounterBridge[] counter = {null};
         CallbackHelper helper = new CallbackHelper();
         BrowsingDataCounterBridge.BrowsingDataCounterCallback callback = (result) -> {
-            if (result.equals("Calculating...")) return;
+            if (result.equals("Calculating…")) return;
             out[0] = result;
             helper.notifyCalled();
         };
