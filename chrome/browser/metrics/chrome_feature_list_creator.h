@@ -48,6 +48,14 @@ class ChromeFeatureListCreator {
   std::unique_ptr<prefs::InProcessPrefServiceFactory> TakePrefServiceFactory();
 
   PrefService* local_state() { return local_state_.get(); }
+  policy::ChromeBrowserPolicyConnector* browser_policy_connector() {
+    return browser_policy_connector_.get();
+  }
+  const std::string& actual_locale() { return actual_locale_; }
+
+  void SetApplicationLocale(const std::string& locale) {
+    actual_locale_ = locale;
+  }
 
  private:
   void CreatePrefService();
@@ -58,6 +66,10 @@ class ChromeFeatureListCreator {
   // If TakePrefService() is called, the caller will take the ownership
   // of this variable. Stop using this variable afterwards.
   std::unique_ptr<PrefService> local_state_;
+
+  // The locale used by the application. It is set when initializing the
+  // ResouceBundle.
+  std::string actual_locale_;
 
   // This is owned by |metrics_services_manager_| but we need to expose it.
   ChromeMetricsServicesManagerClient* metrics_services_manager_client_;

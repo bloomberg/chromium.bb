@@ -114,8 +114,7 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   printing::BackgroundPrintingManager* background_printing_manager() override;
   const std::string& GetApplicationLocale() override;
-  void SetApplicationLocale(const std::string& actual_locale,
-                            const std::string& preferred_locale) override;
+  void SetApplicationLocale(const std::string& actual_locale) override;
   DownloadStatusUpdater* download_status_updater() override;
   DownloadRequestLimiter* download_request_limiter() override;
 

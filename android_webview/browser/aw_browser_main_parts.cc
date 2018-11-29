@@ -23,7 +23,6 @@
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
-#include "base/android/locale_utils.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/base_paths_android.h"
 #include "base/command_line.h"
@@ -62,9 +61,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_bundle_android.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
@@ -169,23 +165,6 @@ int AwBrowserMainParts::PreEarlyInitialization() {
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
-  ui::SetLocalePaksStoredInApk(true);
-  std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
-      base::android::GetDefaultLocaleString(), NULL,
-      ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  if (locale.empty()) {
-    LOG(WARNING) << "Failed to load locale .pak from the apk. "
-        "Bringing up WebView without any locale";
-  }
-  base::i18n::SetICUDefaultLocale(locale);
-
-  // Try to directly mmap the resources.pak from the apk. Fall back to load
-  // from file, using PATH_SERVICE, otherwise.
-  base::FilePath pak_file_path;
-  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
-  pak_file_path = pak_file_path.AppendASCII("resources.pak");
-  ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
-
   base::android::MemoryPressureListenerAndroid::Initialize(
       base::android::AttachCurrentThread());
   ::crash_reporter::ChildExitObserver::Create();

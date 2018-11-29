@@ -849,15 +849,10 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
 }
 
 void BrowserProcessImpl::SetApplicationLocale(
-    const std::string& actual_locale,
-    const std::string& preferred_locale) {
+    const std::string& actual_locale) {
   // NOTE: this is called before any threads have been created in non-test
   // environments.
   locale_ = actual_locale;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extension_l10n_util::SetProcessLocale(actual_locale);
-  extension_l10n_util::SetPreferredLocale(preferred_locale);
-#endif
   ChromeContentBrowserClient::SetApplicationLocale(actual_locale);
   translate::TranslateDownloadManager::GetInstance()->set_application_locale(
       actual_locale);
@@ -1096,6 +1091,12 @@ void BrowserProcessImpl::ResourceDispatcherHostCreated() {
       base::Bind(&BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy,
                  base::Unretained(this)));
   ApplyAllowCrossOriginAuthPromptPolicy();
+}
+
+std::string BrowserProcessImpl::actual_locale() {
+  return chrome_feature_list_creator_
+             ? chrome_feature_list_creator_->actual_locale()
+             : std::string();
 }
 
 void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {

@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/chrome_resource_bundle_helper.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -505,9 +506,15 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-void ChromeMainDelegate::PostEarlyInitialization() {
+void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   DCHECK(chrome_feature_list_creator_);
   chrome_feature_list_creator_->CreateFeatureList();
+
+  // Initializes the resouce bundle and determines the locale.
+  std::string actual_locale =
+      LoadLocalState(chrome_feature_list_creator_.get(), is_running_tests);
+  chrome_feature_list_creator_->SetApplicationLocale(actual_locale);
+
   tracing_sampler_profiler_->OnMessageLoopStarted();
 }
 

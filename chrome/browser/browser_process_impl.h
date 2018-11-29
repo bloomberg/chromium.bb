@@ -168,8 +168,7 @@ class BrowserProcessImpl : public BrowserProcess,
   printing::BackgroundPrintingManager* background_printing_manager() override;
   IntranetRedirectDetector* intranet_redirect_detector() override;
   const std::string& GetApplicationLocale() override;
-  void SetApplicationLocale(const std::string& actual_locale,
-                            const std::string& preferred_locale) override;
+  void SetApplicationLocale(const std::string& actual_locale) override;
   DownloadStatusUpdater* download_status_updater() override;
   DownloadRequestLimiter* download_request_limiter() override;
   BackgroundModeManager* background_mode_manager() override;
@@ -202,6 +201,9 @@ class BrowserProcessImpl : public BrowserProcess,
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // The locale used by the application.
+  std::string actual_locale();
 
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;

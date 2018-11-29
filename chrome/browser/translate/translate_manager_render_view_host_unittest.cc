@@ -585,7 +585,7 @@ class TranslateManagerRenderViewHostInvalidLocaleTest
   const std::string original_locale_;
 
   void SetApplicationLocale(const std::string& locale) {
-    g_browser_process->SetApplicationLocale(locale, locale);
+    g_browser_process->SetApplicationLocale(locale);
     translate::TranslateDownloadManager::GetInstance()->set_application_locale(
         g_browser_process->GetApplicationLocale());
   }

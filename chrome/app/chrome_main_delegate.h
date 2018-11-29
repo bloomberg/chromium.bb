@@ -65,7 +65,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   service_manager::ProcessType OverrideProcessType() override;
   void PreCreateMainMessageLoop() override;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  void PostEarlyInitialization() override;
+  void PostEarlyInitialization(bool is_running_tests) override;
   bool ShouldCreateFeatureList() override;
 #endif
 

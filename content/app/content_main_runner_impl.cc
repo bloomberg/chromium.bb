@@ -886,7 +886,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
       field_trial_list_ = SetUpFieldTrialsAndFeatureList();
     }
 
-    delegate_->PostEarlyInitialization();
+    delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
       // The FeatureList needs to create before starting the TaskScheduler.

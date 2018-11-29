@@ -218,11 +218,8 @@ class BrowserProcess {
   // defined in BCP 47. The region subtag is not included when it adds no
   // distinguishing information to the language tag (e.g. both "en-US" and "fr"
   // are correct here).
-  // When setting the locale, |preferred_locale| is the original desired locale.
-  // The actual application locale may differ.
   virtual const std::string& GetApplicationLocale() = 0;
-  virtual void SetApplicationLocale(const std::string& actual_locale,
-                                    const std::string& preferred_locale) = 0;
+  virtual void SetApplicationLocale(const std::string& actual_locale) = 0;
 
   virtual DownloadStatusUpdater* download_status_updater() = 0;
   virtual DownloadRequestLimiter* download_request_limiter() = 0;

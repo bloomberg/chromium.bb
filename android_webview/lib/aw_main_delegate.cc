@@ -22,11 +22,14 @@
 #include "android_webview/utility/aw_content_utility_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
+#include "base/android/locale_utils.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
+#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
@@ -51,6 +54,9 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_bundle_android.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -309,6 +315,25 @@ bool AwMainDelegate::ShouldCreateFeatureList() {
   // AwBrowserMainParts::PreCreateThreads() to
   // AwMainDelegate::PostEarlyInitialization().
   return false;
+}
+
+void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+  ui::SetLocalePaksStoredInApk(true);
+  std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
+      base::android::GetDefaultLocaleString(), NULL,
+      ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  if (locale.empty()) {
+    LOG(WARNING) << "Failed to load locale .pak from the apk. "
+                    "Bringing up WebView without any locale";
+  }
+  base::i18n::SetICUDefaultLocale(locale);
+
+  // Try to directly mmap the resources.pak from the apk. Fall back to load
+  // from file, using PATH_SERVICE, otherwise.
+  base::FilePath pak_file_path;
+  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
+  pak_file_path = pak_file_path.AppendASCII("resources.pak");
+  ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
 }
 
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
