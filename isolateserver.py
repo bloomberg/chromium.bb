@@ -1278,8 +1278,9 @@ def _enqueue_dir(dirpath, blacklist, tempdir, hash_algo, hash_algo_name):
   files = {}
   for item, relpath, meta in _directory_to_metadata(
       dirpath, hash_algo, blacklist):
+    # item is None for a symlink.
     files[relpath] = meta
-    if item.digest:
+    if item:
       yield item
 
   data = {
