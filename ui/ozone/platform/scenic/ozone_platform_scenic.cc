@@ -41,7 +41,7 @@ constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
     /*needs_view_token=*/true,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
-    /*requires_mojo=*/false};
+    /*requires_mojo=*/true};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
