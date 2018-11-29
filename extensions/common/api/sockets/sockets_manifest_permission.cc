@@ -265,40 +265,37 @@ std::unique_ptr<base::Value> SocketsManifestPermission::ToValue() const {
   return std::unique_ptr<base::Value>(sockets.ToValue().release());
 }
 
-ManifestPermission* SocketsManifestPermission::Diff(
+std::unique_ptr<ManifestPermission> SocketsManifestPermission::Diff(
     const ManifestPermission* rhs) const {
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  std::unique_ptr<SocketsManifestPermission> result(
-      new SocketsManifestPermission());
+  auto result = std::make_unique<SocketsManifestPermission>();
   result->permissions_ = base::STLSetDifference<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
-  return result.release();
+  return result;
 }
 
-ManifestPermission* SocketsManifestPermission::Union(
+std::unique_ptr<ManifestPermission> SocketsManifestPermission::Union(
     const ManifestPermission* rhs) const {
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  std::unique_ptr<SocketsManifestPermission> result(
-      new SocketsManifestPermission());
+  auto result = std::make_unique<SocketsManifestPermission>();
   result->permissions_ = base::STLSetUnion<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
-  return result.release();
+  return result;
 }
 
-ManifestPermission* SocketsManifestPermission::Intersect(
+std::unique_ptr<ManifestPermission> SocketsManifestPermission::Intersect(
     const ManifestPermission* rhs) const {
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  std::unique_ptr<SocketsManifestPermission> result(
-      new SocketsManifestPermission());
+  auto result = std::make_unique<SocketsManifestPermission>();
   result->permissions_ = base::STLSetIntersection<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
-  return result.release();
+  return result;
 }
 
 void SocketsManifestPermission::AddPermission(

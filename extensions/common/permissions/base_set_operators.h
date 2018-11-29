@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 
 namespace extensions {
 
@@ -97,7 +96,7 @@ class BaseSetOperators {
     const_iterator it = rhs.begin();
     const const_iterator end = rhs.end();
     while (it != end) {
-      insert(base::WrapUnique(it->Clone()));
+      insert(it->Clone());
       ++it;
     }
     return *static_cast<T*>(this);
@@ -155,21 +154,21 @@ class BaseSetOperators {
 
     while (it1 != end1 && it2 != end2) {
       if (it1->id() < it2->id()) {
-        set3->insert(base::WrapUnique(it1->Clone()));
+        set3->insert(it1->Clone());
         ++it1;
       } else if (it1->id() > it2->id()) {
         ++it2;
       } else {
-        ElementType* p = it1->Diff(*it2);
+        std::unique_ptr<ElementType> p = it1->Diff(*it2);
         if (p)
-          set3->insert(base::WrapUnique(p));
+          set3->insert(std::move(p));
         ++it1;
         ++it2;
       }
     }
 
     while (it1 != end1) {
-      set3->insert(base::WrapUnique(it1->Clone()));
+      set3->insert(it1->Clone());
       ++it1;
     }
   }
@@ -189,9 +188,9 @@ class BaseSetOperators {
       } else if (it1->id() > it2->id()) {
         ++it2;
       } else {
-        ElementType* p = it1->Intersect(*it2);
+        std::unique_ptr<ElementType> p = it1->Intersect(*it2);
         if (p)
-          set3->insert(base::WrapUnique(p));
+          set3->insert(std::move(p));
         ++it1;
         ++it2;
       }
@@ -210,26 +209,26 @@ class BaseSetOperators {
     while (true) {
       if (it1 == end1) {
         while (it2 != end2) {
-          set3->insert(base::WrapUnique(it2->Clone()));
+          set3->insert(it2->Clone());
           ++it2;
         }
         break;
       }
       if (it2 == end2) {
         while (it1 != end1) {
-          set3->insert(base::WrapUnique(it1->Clone()));
+          set3->insert(it1->Clone());
           ++it1;
         }
         break;
       }
       if (it1->id() < it2->id()) {
-        set3->insert(base::WrapUnique(it1->Clone()));
+        set3->insert(it1->Clone());
         ++it1;
       } else if (it1->id() > it2->id()) {
-        set3->insert(base::WrapUnique(it2->Clone()));
+        set3->insert(it2->Clone());
         ++it2;
       } else {
-        set3->insert(base::WrapUnique(it1->Union(*it2)));
+        set3->insert(it1->Union(*it2));
         ++it1;
         ++it2;
       }

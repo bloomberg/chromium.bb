@@ -325,16 +325,19 @@ class APIPermission {
   virtual std::unique_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
-  virtual APIPermission* Clone() const = 0;
+  virtual std::unique_ptr<APIPermission> Clone() const = 0;
 
   // Returns a new API permission which equals this - |rhs|.
-  virtual APIPermission* Diff(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Diff(
+      const APIPermission* rhs) const = 0;
 
   // Returns a new API permission which equals the union of this and |rhs|.
-  virtual APIPermission* Union(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Union(
+      const APIPermission* rhs) const = 0;
 
   // Returns a new API permission which equals the intersect of this and |rhs|.
-  virtual APIPermission* Intersect(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const = 0;
 
   // IPC functions
   // Writes this into the given IPC message |m|.

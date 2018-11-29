@@ -63,40 +63,42 @@ class SetDisjunctionPermission : public APIPermission {
     return data_set_ == perm->data_set_;
   }
 
-  APIPermission* Clone() const override {
-    SetDisjunctionPermission* result = new DerivedType(info());
+  std::unique_ptr<APIPermission> Clone() const override {
+    auto result = std::make_unique<DerivedType>(info());
     result->data_set_ = data_set_;
     return result;
   }
 
-  APIPermission* Diff(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Diff(const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetDifference<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
-    return result->data_set_.empty() ? NULL : result.release();
+    return result->data_set_.empty() ? nullptr : std::move(result);
   }
 
-  APIPermission* Union(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Union(
+      const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetUnion<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
-    return result.release();
+    return result;
   }
 
-  APIPermission* Intersect(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const override {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
     std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetIntersection<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
-    return result->data_set_.empty() ? NULL : result.release();
+    return result->data_set_.empty() ? nullptr : std::move(result);
   }
 
   bool FromValue(

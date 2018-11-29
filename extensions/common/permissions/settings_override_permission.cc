@@ -57,26 +57,29 @@ std::unique_ptr<base::Value> SettingsOverrideAPIPermission::ToValue() const {
   return std::make_unique<base::Value>(setting_value_);
 }
 
-APIPermission* SettingsOverrideAPIPermission::Clone() const {
-  return new SettingsOverrideAPIPermission(info(), setting_value_);
+std::unique_ptr<APIPermission> SettingsOverrideAPIPermission::Clone() const {
+  return std::make_unique<SettingsOverrideAPIPermission>(info(),
+                                                         setting_value_);
 }
 
-APIPermission* SettingsOverrideAPIPermission::Diff(
+std::unique_ptr<APIPermission> SettingsOverrideAPIPermission::Diff(
     const APIPermission* rhs) const {
   CHECK_EQ(info(), rhs->info());
-  return NULL;
+  return nullptr;
 }
 
-APIPermission* SettingsOverrideAPIPermission::Union(
+std::unique_ptr<APIPermission> SettingsOverrideAPIPermission::Union(
     const APIPermission* rhs) const {
   CHECK_EQ(info(), rhs->info());
-  return new SettingsOverrideAPIPermission(info(), setting_value_);
+  return std::make_unique<SettingsOverrideAPIPermission>(info(),
+                                                         setting_value_);
 }
 
-APIPermission* SettingsOverrideAPIPermission::Intersect(
+std::unique_ptr<APIPermission> SettingsOverrideAPIPermission::Intersect(
     const APIPermission* rhs) const {
   CHECK_EQ(info(), rhs->info());
-  return new SettingsOverrideAPIPermission(info(), setting_value_);
+  return std::make_unique<SettingsOverrideAPIPermission>(info(),
+                                                         setting_value_);
 }
 
 void SettingsOverrideAPIPermission::Write(base::Pickle* m) const {}

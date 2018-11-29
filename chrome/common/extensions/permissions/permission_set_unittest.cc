@@ -358,7 +358,7 @@ TEST(PermissionsTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  apis1.insert(base::WrapUnique(permission->Clone()));
+  apis1.insert(permission->Clone());
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
   expected_apis.insert(std::move(permission));

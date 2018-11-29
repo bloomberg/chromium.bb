@@ -53,7 +53,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kAudioCapture);
   apis1.insert(APIPermission::kDns);
-  apis1.insert(base::WrapUnique(permission->Clone()));
+  apis1.insert(permission->Clone());
   expected_apis.insert(APIPermission::kAudioCapture);
   expected_apis.insert(APIPermission::kDns);
   expected_apis.insert(std::move(permission));

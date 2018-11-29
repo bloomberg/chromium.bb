@@ -55,11 +55,14 @@ class AutomationManifestPermission : public ManifestPermission {
 
   std::unique_ptr<base::Value> ToValue() const override;
 
-  ManifestPermission* Diff(const ManifestPermission* rhs) const override;
+  std::unique_ptr<ManifestPermission> Diff(
+      const ManifestPermission* rhs) const override;
 
-  ManifestPermission* Union(const ManifestPermission* rhs) const override;
+  std::unique_ptr<ManifestPermission> Union(
+      const ManifestPermission* rhs) const override;
 
-  ManifestPermission* Intersect(const ManifestPermission* rhs) const override;
+  std::unique_ptr<ManifestPermission> Intersect(
+      const ManifestPermission* rhs) const override;
 
  private:
   std::unique_ptr<const AutomationInfo> automation_info_;
@@ -112,7 +115,7 @@ std::unique_ptr<base::Value> AutomationManifestPermission::ToValue() const {
   return AutomationInfo::ToValue(*automation_info_);
 }
 
-ManifestPermission* AutomationManifestPermission::Diff(
+std::unique_ptr<ManifestPermission> AutomationManifestPermission::Diff(
     const ManifestPermission* rhs) const {
   const AutomationManifestPermission* other =
       static_cast<const AutomationManifestPermission*>(rhs);
@@ -122,11 +125,11 @@ ManifestPermission* AutomationManifestPermission::Diff(
       automation_info_->interact && !other->automation_info_->interact;
   URLPatternSet matches = URLPatternSet::CreateDifference(
       automation_info_->matches, other->automation_info_->matches);
-  return new AutomationManifestPermission(
+  return std::make_unique<AutomationManifestPermission>(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
 
-ManifestPermission* AutomationManifestPermission::Union(
+std::unique_ptr<ManifestPermission> AutomationManifestPermission::Union(
     const ManifestPermission* rhs) const {
   const AutomationManifestPermission* other =
       static_cast<const AutomationManifestPermission*>(rhs);
@@ -136,11 +139,11 @@ ManifestPermission* AutomationManifestPermission::Union(
       automation_info_->interact || other->automation_info_->interact;
   URLPatternSet matches = URLPatternSet::CreateUnion(
       automation_info_->matches, other->automation_info_->matches);
-  return new AutomationManifestPermission(
+  return std::make_unique<AutomationManifestPermission>(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
 
-ManifestPermission* AutomationManifestPermission::Intersect(
+std::unique_ptr<ManifestPermission> AutomationManifestPermission::Intersect(
     const ManifestPermission* rhs) const {
   const AutomationManifestPermission* other =
       static_cast<const AutomationManifestPermission*>(rhs);
@@ -151,7 +154,7 @@ ManifestPermission* AutomationManifestPermission::Intersect(
   URLPatternSet matches = URLPatternSet::CreateIntersection(
       automation_info_->matches, other->automation_info_->matches,
       URLPatternSet::IntersectionBehavior::kStringComparison);
-  return new AutomationManifestPermission(
+  return std::make_unique<AutomationManifestPermission>(
       base::WrapUnique(new const AutomationInfo(desktop, matches, interact)));
 }
 
