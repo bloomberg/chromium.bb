@@ -627,46 +627,6 @@ ServiceManagerContext::ServiceManagerContext(
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  service_manager::EmbeddedServiceInfo device_info;
-
-  // This task runner may be used by some device service implementation bits to
-  // interface with dbus client code, which in turn imposes some subtle thread
-  // affinity on the clients. We therefore require a single-thread runner.
-  scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
-  java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
-  DCHECK(!java_nfc_delegate.is_null());
-
-  // See the comments on wake_lock_context_host.h, content_browser_client.h and
-  // ContentNfcDelegate.java respectively for comments on those parameters.
-  device_info.factory = base::Bind(
-      &device::CreateDeviceService, device_blocking_task_runner,
-      service_manager_thread_task_runner_,
-      base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
-      GetContentClient()->browser()->GetGeolocationApiKey(),
-      GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
-      base::Bind(&WakeLockContextHost::GetNativeViewForContext),
-      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
-                 base::Unretained(GetContentClient()->browser())),
-      std::move(java_nfc_delegate));
-#else
-  device_info.factory = base::Bind(
-      &device::CreateDeviceService, device_blocking_task_runner,
-      service_manager_thread_task_runner_,
-      base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
-      GetContentClient()->browser()->GetGeolocationApiKey(),
-      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
-                 base::Unretained(GetContentClient()->browser())));
-#endif
-  device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
-                                                    device_info);
-
   service_manager::EmbeddedServiceInfo resource_coordinator_info;
   resource_coordinator_info.factory =
       base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
@@ -884,6 +844,47 @@ ServiceManagerContext::GetAudioServiceRunner() {
 void ServiceManagerContext::OnUnhandledServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
+  if (service_name == device::mojom::kServiceName) {
+    // This task runner may be used by some device service implementation bits
+    // to interface with dbus client code, which in turn imposes some subtle
+    // thread affinity on the clients. We therefore require a single-thread
+    // runner.
+    scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+#if defined(OS_ANDROID)
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
+    java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
+    DCHECK(!java_nfc_delegate.is_null());
+
+    // See the comments on wake_lock_context_host.h, content_browser_client.h
+    // and ContentNfcDelegate.java respectively for comments on those
+    // parameters.
+    auto service = device::CreateDeviceService(
+        device_blocking_task_runner, service_manager_thread_task_runner_,
+        base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        GetContentClient()->browser()->GetGeolocationApiKey(),
+        GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
+        base::BindRepeating(&WakeLockContextHost::GetNativeViewForContext),
+        base::BindRepeating(
+            &ContentBrowserClient::OverrideSystemLocationProvider,
+            base::Unretained(GetContentClient()->browser())),
+        std::move(java_nfc_delegate), std::move(request));
+#else
+    auto service = device::CreateDeviceService(
+        device_blocking_task_runner, service_manager_thread_task_runner_,
+        base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        GetContentClient()->browser()->GetGeolocationApiKey(),
+        base::BindRepeating(
+            &ContentBrowserClient::OverrideSystemLocationProvider,
+            base::Unretained(GetContentClient()->browser())),
+        std::move(request));
+#endif
+    service_manager::Service::RunUntilTermination(std::move(service));
+    return;
+  }
+
   GetContentClient()->browser()->HandleServiceRequest(service_name,
                                                       std::move(request));
 }
