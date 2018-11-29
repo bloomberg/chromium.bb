@@ -127,6 +127,8 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   // The code below handles mouse move events within the shelf window.
   if (event->type() != ui::ET_MOUSE_MOVED ||
       event->target() != shelf_view_->GetWidget()->GetNativeWindow()) {
+    // Don't show delayed tooltips if the mouse is being active elsewhere.
+    timer_.Stop();
     return;
   }
 
