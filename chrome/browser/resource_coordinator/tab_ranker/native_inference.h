@@ -15,7 +15,7 @@ namespace tab_ranker {
 namespace tfnative_model {
 
 constexpr int DNN_RANK = 2;
-constexpr int FEATURES_SIZE = 281;
+constexpr int FEATURES_SIZE = 275;
 constexpr int DNN_BIASES_SIZE = 40;
 constexpr int DNN_WEIGHTS_SIZE = FEATURES_SIZE * DNN_BIASES_SIZE;
 
