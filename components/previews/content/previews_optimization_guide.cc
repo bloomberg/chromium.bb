@@ -8,12 +8,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_constants.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -125,13 +122,14 @@ void PreviewsOptimizationGuide::LogHintCacheMatch(
   hints_->LogHintCacheMatch(url, is_committed, ect);
 }
 
-void PreviewsOptimizationGuide::OnHintsComponentAvailable(
-    const optimization_guide::HintsComponentInfo& info) {
+void PreviewsOptimizationGuide::OnHintsProcessed(
+    const optimization_guide::proto::Configuration& config,
+    const optimization_guide::ComponentInfo& info) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&PreviewsHints::CreateFromHintsComponent, info),
+      base::BindOnce(&PreviewsHints::CreateFromConfig, config, info),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -140,15 +138,8 @@ void PreviewsOptimizationGuide::UpdateHints(
     std::unique_ptr<PreviewsHints> hints) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
-  if (hints_) {
+  if (hints_)
     hints_->Initialize();
-  }
-
-  // Record the result of updating the hints. This is used as a signal for the
-  // hints being fully processed in testing.
-  LOCAL_HISTOGRAM_BOOLEAN(
-      kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-      hints_ != NULL);
 }
 
 }  // namespace previews

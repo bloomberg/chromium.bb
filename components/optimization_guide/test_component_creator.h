@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OPTIMIZATION_GUIDE_TEST_HINTS_COMPONENT_CREATOR_H_
-#define COMPONENTS_OPTIMIZATION_GUIDE_TEST_HINTS_COMPONENT_CREATOR_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_TEST_COMPONENT_CREATOR_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_TEST_COMPONENT_CREATOR_H_
 
 #include <string>
 #include <vector>
@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
 namespace testing {
@@ -24,31 +23,31 @@ static const char kFooExperimentName[] = "foo_experiment";
 //
 // All temporary files and paths are cleaned up when this instance goes out of
 // scope.
-class TestHintsComponentCreator {
+class TestComponentCreator {
  public:
-  TestHintsComponentCreator();
-  ~TestHintsComponentCreator();
+  TestComponentCreator();
+  ~TestComponentCreator();
 
   // Creates component data based on |whitelisted_host_suffixes| with page hints
   // for type |optimization_type| blocking resources specified by
-  // |resource_patterns|, and returns the HintsComponentInfo for it.
-  optimization_guide::HintsComponentInfo CreateHintsComponentInfoWithPageHints(
+  // |resource_patterns|, and returns the ComponentInfo for it.
+  optimization_guide::ComponentInfo CreateComponentInfoWithPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
       const std::vector<std::string>& whitelisted_host_suffixes,
       const std::vector<std::string>& resource_patterns);
 
   // Creates component data based on |whitelisted_host_suffixes| with page hints
   // for type |optimization_type| blocking resources specified by
-  // |experimental_resource_patterns|, and returns the HintsComponentInfo for
-  // it. The loading hints are set as experimental with experiment name set to
+  // |experimental_resource_patterns|, and returns the ComponentInfo for it.
+  // The loading hints are set as experimental with experiment name set to
   // kFooExperimentName.
 
   // Creates component data for testing with experimental optimizations. It
   // creates a PageHint (with page pattern "*" for each key in
   // |whitelisted_host_suffixes| that each has resource blocking patterns from
   // |experimental_resource_patterns|.
-  optimization_guide::HintsComponentInfo
-  CreateHintsComponentInfoWithExperimentalPageHints(
+  optimization_guide::ComponentInfo
+  CreateComponentInfoWithExperimentalPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
       const std::vector<std::string>& whitelisted_host_suffixes,
       const std::vector<std::string>& experimental_resource_patterns);
@@ -58,8 +57,7 @@ class TestHintsComponentCreator {
   // |whitelisted_host_suffixes| that each has resource blocking patterns from
   // |default_resource_patterns| and |experimental_resource_patterns|. The
   // experimental hints are guarded behind experiment kFooExperimentName.
-  optimization_guide::HintsComponentInfo
-  CreateHintsComponentInfoWithMixPageHints(
+  optimization_guide::ComponentInfo CreateComponentInfoWithMixPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
       const std::vector<std::string>& whitelisted_host_suffixes,
       const std::vector<std::string>& experimental_resource_patterns,
@@ -77,18 +75,17 @@ class TestHintsComponentCreator {
       const optimization_guide::proto::Configuration& config);
 
   // Writes a configuration of hints to the file path and returns the
-  // HintsComponentInfo for it.
-  optimization_guide::HintsComponentInfo
-  WriteConfigToFileAndReturnHintsComponentInfo(
+  // ComponentInfo for it.
+  optimization_guide::ComponentInfo WriteConfigToFileAndReturnComponentInfo(
       const optimization_guide::proto::Configuration& config);
 
   std::unique_ptr<base::ScopedTempDir> scoped_temp_dir_;
   int next_component_version_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestHintsComponentCreator);
+  DISALLOW_COPY_AND_ASSIGN(TestComponentCreator);
 };
 
 }  // namespace testing
 }  // namespace optimization_guide
 
-#endif  // COMPONENTS_OPTIMIZATION_GUIDE_TEST_HINTS_COMPONENT_CREATOR_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_TEST_COMPONENT_CREATOR_H_

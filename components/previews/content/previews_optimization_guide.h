@@ -13,16 +13,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
-struct HintsComponentInfo;
-class OptimizationGuideService;
 namespace proto {
-class Hint;
+class Configuration;
 }  // namespace proto
 }  // namespace optimization_guide
 
@@ -76,8 +75,9 @@ class PreviewsOptimizationGuide
                          net::EffectiveConnectionType ect) const;
 
   // optimization_guide::OptimizationGuideServiceObserver implementation:
-  void OnHintsComponentAvailable(
-      const optimization_guide::HintsComponentInfo& info) override;
+  void OnHintsProcessed(
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override;
 
  private:
   // Updates the hints to the latest hints sent by the Component Updater.

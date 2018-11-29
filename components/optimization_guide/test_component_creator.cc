@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/optimization_guide/test_component_creator.h"
 
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace optimization_guide {
 namespace testing {
 
-TestHintsComponentCreator::TestHintsComponentCreator()
+TestComponentCreator::TestComponentCreator()
     : scoped_temp_dir_(std::make_unique<base::ScopedTempDir>()),
       next_component_version_(1) {}
 
-TestHintsComponentCreator::~TestHintsComponentCreator() {
+TestComponentCreator::~TestComponentCreator() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   scoped_temp_dir_.reset();
 }
 
-optimization_guide::HintsComponentInfo
-TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
+optimization_guide::ComponentInfo
+TestComponentCreator::CreateComponentInfoWithPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
     const std::vector<std::string>& page_hint_host_suffixes,
     const std::vector<std::string>& resource_blocking_patterns) {
@@ -49,11 +50,11 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     }
   }
 
-  return WriteConfigToFileAndReturnHintsComponentInfo(config);
+  return WriteConfigToFileAndReturnComponentInfo(config);
 }
 
-optimization_guide::HintsComponentInfo
-TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
+optimization_guide::ComponentInfo
+TestComponentCreator::CreateComponentInfoWithExperimentalPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
     const std::vector<std::string>& page_hint_host_suffixes,
     const std::vector<std::string>& experimental_resource_patterns) {
@@ -80,11 +81,11 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
     }
   }
 
-  return WriteConfigToFileAndReturnHintsComponentInfo(config);
+  return WriteConfigToFileAndReturnComponentInfo(config);
 }
 
-optimization_guide::HintsComponentInfo
-TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
+optimization_guide::ComponentInfo
+TestComponentCreator::CreateComponentInfoWithMixPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
     const std::vector<std::string>& page_hint_host_suffixes,
     const std::vector<std::string>& experimental_resource_patterns,
@@ -129,18 +130,17 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
     }
   }
 
-  return WriteConfigToFileAndReturnHintsComponentInfo(config);
+  return WriteConfigToFileAndReturnComponentInfo(config);
 }
 
-base::FilePath TestHintsComponentCreator::GetFilePath(
-    std::string file_path_suffix) {
+base::FilePath TestComponentCreator::GetFilePath(std::string file_path_suffix) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(scoped_temp_dir_->IsValid() ||
               scoped_temp_dir_->CreateUniqueTempDir());
   return scoped_temp_dir_->GetPath().AppendASCII(file_path_suffix);
 }
 
-void TestHintsComponentCreator::WriteConfigToFile(
+void TestComponentCreator::WriteConfigToFile(
     const base::FilePath& file_path,
     const optimization_guide::proto::Configuration& config) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -153,14 +153,14 @@ void TestHintsComponentCreator::WriteConfigToFile(
                             serialized_config.length()));
 }
 
-optimization_guide::HintsComponentInfo
-TestHintsComponentCreator::WriteConfigToFileAndReturnHintsComponentInfo(
+optimization_guide::ComponentInfo
+TestComponentCreator::WriteConfigToFileAndReturnComponentInfo(
     const optimization_guide::proto::Configuration& config) {
   std::string version_string = base::IntToString(next_component_version_++);
   base::FilePath file_path = GetFilePath(version_string);
   WriteConfigToFile(file_path, config);
-  return optimization_guide::HintsComponentInfo(base::Version(version_string),
-                                                file_path);
+  return optimization_guide::ComponentInfo(base::Version(version_string),
+                                           file_path);
 }
 
 }  // namespace testing

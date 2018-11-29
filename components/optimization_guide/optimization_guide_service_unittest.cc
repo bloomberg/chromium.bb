@@ -5,51 +5,47 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 
 #include <memory>
-#include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/version.h"
-#include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace optimization_guide {
 
-const base::FilePath::CharType kFileName1[] = FILE_PATH_LITERAL("somefile1.pb");
-const base::FilePath::CharType kFileName2[] = FILE_PATH_LITERAL("somefile2.pb");
+const base::FilePath::CharType kFileName[] = FILE_PATH_LITERAL("somefile.pb");
 
 class TestObserver : public OptimizationGuideServiceObserver {
  public:
-  TestObserver()
-      : hints_component_notification_count_(0),
-        hints_component_version_("0.0.0.0") {}
+  TestObserver() : received_notification_(false) {}
 
   ~TestObserver() override {}
 
-  void OnHintsComponentAvailable(const HintsComponentInfo& info) override {
-    ++hints_component_notification_count_;
-    hints_component_version_ = info.version;
-    hints_component_path_ = info.path;
+  void OnHintsProcessed(
+      const proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override {
+    received_notification_ = true;
+    received_config_ = config;
+    received_version_ = component_info.hints_version;
   }
 
-  int hints_component_notification_count() const {
-    return hints_component_notification_count_;
-  }
-  const base::Version& hints_component_version() const {
-    return hints_component_version_;
-  }
-  const base::FilePath& hints_component_path() const {
-    return hints_component_path_;
-  }
+  bool received_notification() const { return received_notification_; }
+
+  proto::Configuration received_config() const { return received_config_; }
+
+  base::Version received_version() const { return received_version_; }
 
  private:
-  int hints_component_notification_count_;
-  base::Version hints_component_version_;
-  base::FilePath hints_component_path_;
+  bool received_notification_;
+  proto::Configuration received_config_;
+  base::Version received_version_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -80,13 +76,28 @@ class OptimizationGuideServiceTest : public testing::Test {
     optimization_guide_service_->RemoveObserver(observer());
   }
 
-  void MaybeUpdateHintsComponent(const HintsComponentInfo& info) {
-    optimization_guide_service_->MaybeUpdateHintsComponent(info);
-    scoped_task_environment_.RunUntilIdle();
-    base::RunLoop().RunUntilIdle();
+  void UpdateHints(const base::Version& version,
+                   const base::FilePath& filePath) {
+    ComponentInfo info(version, filePath);
+    optimization_guide_service_->ProcessHints(info);
+  }
+
+  void WriteConfigToFile(const base::FilePath& filePath,
+                         const proto::Configuration& config) {
+    std::string serialized_config;
+    ASSERT_TRUE(config.SerializeToString(&serialized_config));
+    ASSERT_EQ(static_cast<int32_t>(serialized_config.length()),
+              base::WriteFile(filePath, serialized_config.data(),
+                              serialized_config.length()));
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
+
+ protected:
+  void RunUntilIdle() {
+    scoped_task_environment_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -98,65 +109,128 @@ class OptimizationGuideServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceTest);
 };
 
-TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
+TEST_F(OptimizationGuideServiceTest, ProcessHintsInvalidVersionIgnored) {
+  base::HistogramTester histogram_tester;
   AddObserver();
+  UpdateHints(base::Version(""), base::FilePath(kFileName));
 
-  HintsComponentInfo component_info(base::Version("1.0.0.0"),
-                                    temp_dir().Append(kFileName1));
+  RunUntilIdle();
 
-  MaybeUpdateHintsComponent(component_info);
-
-  EXPECT_EQ(observer()->hints_component_notification_count(), 1);
-  EXPECT_EQ(component_info.version, observer()->hints_component_version());
-  EXPECT_EQ(component_info.path, observer()->hints_component_path());
-}
-
-TEST_F(OptimizationGuideServiceTest, ProcessHintsNewVersionProcessed) {
-  AddObserver();
-
-  HintsComponentInfo component_info_1(base::Version("1.0.0.0"),
-                                      temp_dir().Append(kFileName1));
-  HintsComponentInfo component_info_2(base::Version("2.0.0.0"),
-                                      temp_dir().Append(kFileName2));
-
-  MaybeUpdateHintsComponent(component_info_1);
-  MaybeUpdateHintsComponent(component_info_2);
-
-  EXPECT_EQ(observer()->hints_component_notification_count(), 2);
-  EXPECT_EQ(component_info_2.version, observer()->hints_component_version());
-  EXPECT_EQ(component_info_2.path, observer()->hints_component_path());
+  EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_PARAMETERS),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsPastVersionIgnored) {
   AddObserver();
+  optimization_guide_service()->SetLatestProcessedVersionForTesting(
+      base::Version("2.0.0"));
 
-  HintsComponentInfo component_info_1(base::Version("2.0.0.0"),
-                                      temp_dir().Append(kFileName1));
-  HintsComponentInfo component_info_2(base::Version("1.0.0.0"),
-                                      temp_dir().Append(kFileName2));
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  proto::Configuration config;
+  proto::Hint* hint = config.add_hints();
+  hint->set_key("google.com");
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
 
-  MaybeUpdateHintsComponent(component_info_1);
-  MaybeUpdateHintsComponent(component_info_2);
+  UpdateHints(base::Version("1.0.0"), filePath);
 
-  EXPECT_EQ(observer()->hints_component_notification_count(), 1);
-  EXPECT_EQ(component_info_1.version, observer()->hints_component_version());
-  EXPECT_EQ(component_info_1.path, observer()->hints_component_path());
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer()->received_notification());
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsSameVersionIgnored) {
   AddObserver();
+  const base::Version version("1.0.0");
+  optimization_guide_service()->SetLatestProcessedVersionForTesting(version);
 
-  HintsComponentInfo component_info_1(base::Version("2.0.0.0"),
-                                      temp_dir().Append(kFileName1));
-  HintsComponentInfo component_info_2(base::Version("2.0.0.0"),
-                                      temp_dir().Append(kFileName2));
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  proto::Configuration config;
+  proto::Hint* hint = config.add_hints();
+  hint->set_key("google.com");
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
 
-  MaybeUpdateHintsComponent(component_info_1);
-  MaybeUpdateHintsComponent(component_info_2);
+  UpdateHints(version, filePath);
 
-  EXPECT_EQ(observer()->hints_component_notification_count(), 1);
-  EXPECT_EQ(component_info_1.version, observer()->hints_component_version());
-  EXPECT_EQ(component_info_1.path, observer()->hints_component_path());
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer()->received_notification());
+}
+
+TEST_F(OptimizationGuideServiceTest, ProcessHintsEmptyFileNameIgnored) {
+  base::HistogramTester histogram_tester;
+  AddObserver();
+  UpdateHints(base::Version("1.0.0"), base::FilePath(FILE_PATH_LITERAL("")));
+
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_PARAMETERS),
+      1);
+}
+
+TEST_F(OptimizationGuideServiceTest, ProcessHintsInvalidFileIgnored) {
+  base::HistogramTester histogram_tester;
+  AddObserver();
+  UpdateHints(base::Version("1.0.0"), base::FilePath(kFileName));
+
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          OptimizationGuideService::ProcessHintsResult::FAILED_READING_FILE),
+      1);
+}
+
+TEST_F(OptimizationGuideServiceTest, ProcessHintsNotAConfigInFileIgnored) {
+  base::HistogramTester histogram_tester;
+  AddObserver();
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  ASSERT_EQ(static_cast<int32_t>(3), base::WriteFile(filePath, "boo", 3));
+
+  UpdateHints(base::Version("1.0.0"), filePath);
+
+  RunUntilIdle();
+
+  EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_CONFIGURATION),
+      1);
+}
+
+TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
+  base::HistogramTester histogram_tester;
+  AddObserver();
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  proto::Configuration config;
+  proto::Hint* hint = config.add_hints();
+  hint->set_key("google.com");
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
+
+  base::Version hints_version("1.0.0");
+  UpdateHints(hints_version, filePath);
+
+  RunUntilIdle();
+
+  EXPECT_TRUE(observer()->received_notification());
+  proto::Configuration received_config = observer()->received_config();
+  ASSERT_EQ(1, received_config.hints_size());
+  ASSERT_EQ("google.com", received_config.hints()[0].key());
+  EXPECT_EQ(0, observer()->received_version().CompareTo(hints_version));
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::SUCCESS),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest,
@@ -165,26 +239,17 @@ TEST_F(OptimizationGuideServiceTest,
   AddObserver();
   RemoveObserver();
 
-  HintsComponentInfo component_info(base::Version("1.0.0.0"),
-                                    temp_dir().Append(kFileName1));
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  proto::Configuration config;
+  proto::Hint* hint = config.add_hints();
+  hint->set_key("google.com");
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
 
-  MaybeUpdateHintsComponent(component_info);
+  UpdateHints(base::Version("1.0.0"), filePath);
 
-  EXPECT_EQ(observer()->hints_component_notification_count(), 0);
-}
+  RunUntilIdle();
 
-TEST_F(OptimizationGuideServiceTest,
-       RegisteredObserverReceivesNotificationForCurrentComponent) {
-  HintsComponentInfo component_info(base::Version("1.0.0.0"),
-                                    temp_dir().Append(kFileName1));
-
-  MaybeUpdateHintsComponent(component_info);
-
-  AddObserver();
-
-  EXPECT_EQ(observer()->hints_component_notification_count(), 1);
-  EXPECT_EQ(component_info.version, observer()->hints_component_version());
-  EXPECT_EQ(component_info.path, observer()->hints_component_path());
+  EXPECT_FALSE(observer()->received_notification());
 }
 
 }  // namespace optimization_guide
