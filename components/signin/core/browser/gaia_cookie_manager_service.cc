@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -24,6 +25,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -73,7 +75,7 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
     0.2,  // 20%
 
     // Maximum amount of time we are willing to delay our request in ms.
-    1000 * 60 * 60 * 4,  // 4 hours.
+    1000 * 60 * 15,  // 15 minutes.
 
     // Time to keep an entry from being discarded even when it
     // has no significant state, -1 to never discard.
@@ -114,6 +116,30 @@ void RecordLogoutRequestState(LogoutRequestState logout_state) {
 void RecordMultiloginFinished(GoogleServiceAuthError error) {
   UMA_HISTOGRAM_ENUMERATION("Signin.MultiloginFinished", error.state(),
                             GoogleServiceAuthError::NUM_STATES);
+}
+
+// Record ListAccounts errors for individual retries.
+void RecordListAccountsRetryResult(GoogleServiceAuthError error,
+                                   int retry_attempt_number) {
+  int net_error = net::OK;
+  switch (error.state()) {
+    case GoogleServiceAuthError::NONE:
+      net_error = net::OK;
+      break;
+    case GoogleServiceAuthError::CONNECTION_FAILED:
+      net_error = error.network_error();
+      break;
+    case GoogleServiceAuthError::REQUEST_CANCELED:
+      net_error = net::ERR_ABORTED;
+      break;
+    default:
+      return;  // There is an error not related to network.
+  }
+
+  std::string histogram_name =
+      base::StringPrintf("Gaia.AuthFetcher.ListAccounts.NetErrorCodes.Retry_%i",
+                         retry_attempt_number);
+  base::UmaHistogramSparse(histogram_name, -net_error);
 }
 
 }  // namespace
@@ -854,12 +880,16 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
           data, &listed_accounts_, &signed_out_accounts_)) {
     listed_accounts_.clear();
     signed_out_accounts_.clear();
-    OnListAccountsFailure(GoogleServiceAuthError(
-        GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
+    GoogleServiceAuthError error(
+        GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
+    RecordListAccountsFailure(error.state());
+    OnListAccountsFailure(error);
     return;
   }
 
   RecordListAccountsFailure(GoogleServiceAuthError::NONE);
+  RecordListAccountsRetryResult(GoogleServiceAuthError::AuthErrorNone(),
+                                fetcher_retries_);
 
   for (gaia::ListedAccount& account : listed_accounts_) {
     DCHECK(account.id.empty());
@@ -885,6 +915,8 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   VLOG(1) << "ListAccounts failed";
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::LIST_ACCOUNTS);
+  RecordListAccountsRetryResult(error, fetcher_retries_);
+
   if (++fetcher_retries_ < signin::kMaxFetcherRetries &&
       error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
