@@ -269,16 +269,21 @@ void AutofillWalletSyncBridge::SetSyncData(
   PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
                                   &customer_data);
 
-  wallet_data_changed |= SetWalletCards(std::move(wallet_cards));
-  wallet_data_changed |= SetWalletAddresses(std::move(wallet_addresses));
-  wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
+  bool should_log_diff;
+  wallet_data_changed |=
+      SetPaymentsCustomerData(std::move(customer_data), &should_log_diff);
+  wallet_data_changed |=
+      SetWalletCards(std::move(wallet_cards), should_log_diff);
+  wallet_data_changed |=
+      SetWalletAddresses(std::move(wallet_addresses), should_log_diff);
 
   if (web_data_backend_ && wallet_data_changed)
     web_data_backend_->NotifyOfMultipleAutofillChanges();
 }
 
 bool AutofillWalletSyncBridge::SetWalletCards(
-    std::vector<CreditCard> wallet_cards) {
+    std::vector<CreditCard> wallet_cards,
+    bool log_diff) {
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
   // server. To preserve user's preferred billing address and most recent use
@@ -295,12 +300,11 @@ bool AutofillWalletSyncBridge::SetWalletCards(
   AutofillWalletDiff<CreditCard> diff =
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
 
-  // Record only local changes that correspond to changes in the payments
-  // backend and not local changes due to initial sync.
-  if (initial_sync_done_) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAdded", diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsRemoved", diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCardsAddedOrRemoved",
+  if (log_diff) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Added", diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Removed",
+                             diff.items_removed);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.AddedOrRemoved",
                              diff.items_added + diff.items_removed);
   }
 
@@ -314,7 +318,8 @@ bool AutofillWalletSyncBridge::SetWalletCards(
 }
 
 bool AutofillWalletSyncBridge::SetWalletAddresses(
-    std::vector<AutofillProfile> wallet_addresses) {
+    std::vector<AutofillProfile> wallet_addresses,
+    bool log_diff) {
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
@@ -325,13 +330,12 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
   AutofillWalletDiff<AutofillProfile> diff =
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
-  // Record only local changes that correspond to changes in the payments
-  // backend and not local changes due to initial sync.
-  if (initial_sync_done_) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAdded", diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesRemoved",
+  if (log_diff) {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Added",
+                             diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Removed",
                              diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddressesAddedOrRemoved",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.AddedOrRemoved",
                              diff.items_added + diff.items_removed);
   }
 
@@ -345,11 +349,8 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
 }
 
 bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
-    std::vector<PaymentsCustomerData> customer_data) {
-  // In the common case, the database won't have changed. Committing an update
-  // to the database will require at least one DB page write and will schedule
-  // a fsync. To avoid this I/O, it should be more efficient to do a read and
-  // only do the writes if something changed.
+    std::vector<PaymentsCustomerData> customer_data,
+    bool* should_log_diff) {
   AutofillTable* table = GetAutofillTable();
   std::unique_ptr<PaymentsCustomerData> existing_entry;
   table->GetPaymentsCustomerData(&existing_entry);
@@ -365,6 +366,15 @@ bool AutofillWalletSyncBridge::SetPaymentsCustomerData(
                   << " payments-customer-data entries; expected 0 or 1.";
   }
 #endif  // DCHECK_IS_ON()
+
+  // We report the diff to metrics only if this is an incremental change where
+  // the user had sync set-up (having PaymentsCustomerData is a pre-requisite
+  // for having any other data) and continues to have sync set-up (continuing
+  // having a PaymentsCustomerData entity). As a side effect, this excludes
+  // reporting diffs for users that newly got a GPay account and sync
+  // PaymentsCustomerData for the first time but this is the best we can do to
+  // have the metrics consistent with Directory implementation.
+  *should_log_diff = existing_entry && new_entry;
 
   if (!new_entry && existing_entry) {
     // Clear the existing entry in the DB.
