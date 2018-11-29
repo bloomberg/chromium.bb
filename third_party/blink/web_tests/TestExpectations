@@ -5754,3 +5754,11 @@ crbug.com/908347 [ Mac ] media/autoplay/webaudio-audio-context-resume.html [ Fai
 
 # Sheriff 2018-11-29
 crbug.com/905772 [ Linux ] inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Failure Pass ]
+crbug.com/910263 [ Mac ] css1/font_properties/font.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] css1/font_properties/font_family.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] css2.1/t1503-c522-font-family-00-b.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] css2.1/t1508-c527-font-03-b.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] fast/block/float/016.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] fast/text/international/complex-character-based-fallback.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] fonts/cursive.html [ Pass Crash Failure ]
+crbug.com/910263 [ Mac ] svg/text/ligature-queries.html [ Pass Crash Failure ]
