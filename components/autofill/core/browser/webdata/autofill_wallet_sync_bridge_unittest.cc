@@ -253,41 +253,42 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
   }
 
   void ExpectAddressesDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddressesAdded",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddressesRemoved",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
     histogram_tester_.ExpectUniqueSample(
-        "Autofill.WalletAddressesAddedOrRemoved",
+        "Autofill.WalletAddresses.AddedOrRemoved",
         /*bucket=*/added + removed,
         /*count=*/1);
   }
 
   void ExpectNoHistogramsForAddressesDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddressesAdded", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddressesRemoved", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddressesAddedOrRemoved",
-                                       0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Removed", 0);
+    histogram_tester_.ExpectTotalCount(
+        "Autofill.WalletAddresses.AddedOrRemoved", 0);
   }
 
   void ExpectCardsDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCardsAdded",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCardsRemoved",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCardsAddedOrRemoved",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.AddedOrRemoved",
                                          /*bucket=*/added + removed,
                                          /*count=*/1);
   }
 
   void ExpectNoHistogramsForCardsDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCardsAdded", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCardsRemoved", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCardsAddedOrRemoved", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Removed", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.AddedOrRemoved",
+                                       0);
   }
 
   EntityData SpecificsToEntity(const AutofillWalletSpecifics& specifics) {
@@ -549,8 +550,9 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
   StartSyncing({});
 
   EXPECT_TRUE(GetAllLocalData().empty());
-  ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/1);
-  ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/1);
+  // No diff metrics reported when new data is empty.
+  ExpectNoHistogramsForAddressesDiff();
+  ExpectNoHistogramsForCardsDiff();
 }
 
 // Test that when the server sends the same address and card as the client has,
@@ -597,6 +599,8 @@ TEST_F(AutofillWalletSyncBridgeTest,
   table()->SetServerProfiles({profile, profile2});
   CreditCard card = test::GetMaskedServerCard();
   table()->SetServerCreditCards({card});
+  PaymentsCustomerData customer_data{/*customer_id=*/kCustomerDataId};
+  table()->SetPaymentsCustomerData(&customer_data);
 
   // Create one of the same profiles and a different card on the server.
   AutofillWalletSpecifics profile_specifics;
@@ -605,6 +609,9 @@ TEST_F(AutofillWalletSyncBridgeTest,
   CreditCard card2 = test::GetMaskedServerCardAmex();
   AutofillWalletSpecifics card2_specifics;
   SetAutofillWalletSpecificsFromServerCard(card2, &card2_specifics);
+  AutofillWalletSpecifics customer_data_specifics;
+  SetAutofillWalletSpecificsFromPaymentsCustomerData(customer_data,
+                                                     &customer_data_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   EXPECT_CALL(*backend(),
@@ -612,12 +619,13 @@ TEST_F(AutofillWalletSyncBridgeTest,
   EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(RemoveChange(card.guid())));
   EXPECT_CALL(*backend(),
               NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
-  StartSyncing({profile_specifics, card2_specifics});
+  StartSyncing({profile_specifics, card2_specifics, customer_data_specifics});
 
   // Make sure that the client only has the data from the server.
   EXPECT_THAT(GetAllLocalData(),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics),
-                                   EqualsSpecifics(card2_specifics)));
+                                   EqualsSpecifics(card2_specifics),
+                                   EqualsSpecifics(customer_data_specifics)));
   ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/1);
   ExpectCardsDiffInHistograms(/*added=*/1, /*removed=*/1);
 }
@@ -744,8 +752,9 @@ TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
       std::make_unique<syncer::InMemoryMetadataChangeList>());
 
   EXPECT_TRUE(GetAllLocalData().empty());
-  ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/1);
-  ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/1);
+  // No diff metrics reported when clearing data.
+  ExpectNoHistogramsForAddressesDiff();
+  ExpectNoHistogramsForCardsDiff();
 }
 
 TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {

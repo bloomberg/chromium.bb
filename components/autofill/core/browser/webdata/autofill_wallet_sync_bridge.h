@@ -88,19 +88,23 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // about added/deleted data.
   void SetSyncData(const syncer::EntityChangeList& entity_data);
 
+  // Sets |customer_data| to this client and returns whether any change has been
+  // applied (i.e., whether |customer_data| was different from local data) and
+  // whether we |should_log_diff|, i.e. metrics for diffs in counts of addresses
+  // and cards.
+  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data,
+                               bool* should_log_diff);
+
   // Sets |wallet_cards| to this client, records metrics about added/deleted
-  // data and returns whether any change has been applied (i.e., whether
-  // |wallet_cards| was different from local data).
-  bool SetWalletCards(std::vector<CreditCard> wallet_cards);
+  // data (if |log_diff| is true) and returns whether any change has been
+  // applied (i.e., whether |wallet_cards| was different from local data).
+  bool SetWalletCards(std::vector<CreditCard> wallet_cards, bool log_diff);
 
   // Sets |wallet_addresses| to this client, records metrics about added/deleted
-  // data and returns whether any change has been applied (i.e., whether
-  // |wallet_addresses| was different from local data).
-  bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses);
-
-  // Sets |customer_data| to this client and returns whether any change has been
-  // applied (i.e., whether |customer_data| was different from local data).
-  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data);
+  // data (if |log_diff| is true) and returns whether any change has been
+  // applied (i.e., whether |wallet_addresses| was different from local data).
+  bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses,
+                          bool log_diff);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for
