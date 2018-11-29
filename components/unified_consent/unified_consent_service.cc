@@ -42,8 +42,6 @@ UnifiedConsentService::UnifiedConsentService(
 
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
-
-  RecordSettingsHistogram();
 }
 
 UnifiedConsentService::~UnifiedConsentService() {}
@@ -272,27 +270,6 @@ bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
       return false;
   }
   return true;
-}
-
-void UnifiedConsentService::RecordSettingsHistogram() {
-  bool metric_recorded = false;
-
-  metric_recorded |= RecordSettingsHistogramFromPref(
-      prefs::kAllUnifiedConsentServicesWereEnabled, pref_service_,
-      metrics::SettingsHistogramValue::kAllServicesWereEnabled);
-  metric_recorded |= RecordSettingsHistogramFromPref(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service_,
-      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
-  metric_recorded |= RecordSettingsHistogramFromService(
-      service_client_.get(),
-      UnifiedConsentServiceClient::Service::kSafeBrowsingExtendedReporting,
-      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting);
-  metric_recorded |= RecordSettingsHistogramFromService(
-      service_client_.get(), UnifiedConsentServiceClient::Service::kSpellCheck,
-      metrics::SettingsHistogramValue::kSpellCheck);
-
-  if (!metric_recorded)
-    RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kNone);
 }
 
 void UnifiedConsentService::CheckConsentBumpEligibility() {

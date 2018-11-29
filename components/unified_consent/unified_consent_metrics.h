@@ -70,6 +70,11 @@ void RecordConsentBumpMetric(UnifiedConsentBumpAction action);
 // be called at startup.
 void RecordConsentBumpEligibility(bool eligible);
 
+// Records settings entries in the kSyncAndGoogleServicesSettingsHistogram.
+// kNone is recorded when none of the settings is enabled.
+void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
+                             PrefService* pref_service);
+
 // Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
 // function to avoid code size issues caused by histogram macros.
 void RecordSettingsHistogramSample(SettingsHistogramValue value);

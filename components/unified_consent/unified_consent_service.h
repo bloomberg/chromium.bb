@@ -104,10 +104,6 @@ class UnifiedConsentService : public KeyedService,
   // Checks if all on-by-default non-personalized services are on.
   bool AreAllOnByDefaultPrivacySettingsOn();
 
-  // Records a sample for each bucket enabled by the user (except kNone).
-  // kNone is recorded when none of the other buckets are recorded.
-  void RecordSettingsHistogram();
-
   // This method is called on startup to check the eligibility criteria for
   // showing the consent bump. The check is only done when the profile was
   // eligible before. If the user is not eligible anymore, the
