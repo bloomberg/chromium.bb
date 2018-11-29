@@ -208,8 +208,8 @@
   },
   {
     "name": "ash-keyboard-shortcut-viewer-app",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "msw" ],
+    "expiry_milestone": 73
   },
   {
     "name": "ash-shelf-color",
