@@ -544,7 +544,7 @@ class CbuildbotLaunchTestStage(generic_stages.BuilderStage):
 
 
 class ChromiteTestStage(generic_stages.BuilderStage):
-  """Stage that runs Chromite tests, including network tests."""
+  """Stage that runs Chromite tests, excluding network tests."""
 
   category = constants.CI_INFRA_STAGE
 
