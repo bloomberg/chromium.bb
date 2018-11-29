@@ -28,6 +28,8 @@ static const char* MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM =
     "Media.Audible.MaxConcurrentTabsInSession";
 static const char* CONCURRENT_TABS_TIME_HISTOGRAM =
     "Media.Audible.ConcurrentTabsTime";
+static const char* CLOSE_NEWEST_TAB_HISTOGRAM =
+    "Media.Audible.CloseNewestToExitConcurrentPlayback";
 
 class AudibleMetricsTest : public RenderViewHostTestHarness {
  public:
@@ -427,6 +429,95 @@ TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_NotMuted) {
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
   media_observer.MaybeUpdateAudibleState();
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
+}
+
+TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_IgnoreNotAudible) {
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(0, samples->TotalCount());
+  }
+}
+
+TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Newest) {
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_2);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(0, samples->TotalCount());
+    EXPECT_EQ(
+        0, samples->GetCount(static_cast<int>(
+               AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
+  }
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_1);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
+  }
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
+  }
+}
+
+TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Old) {
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_1);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(0, samples->TotalCount());
+    EXPECT_EQ(0, samples->GetCount(0));
+    EXPECT_EQ(0, samples->GetCount(static_cast<int>(
+                     AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
+  }
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                     AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
+  }
+
+  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_2);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(1, samples->GetCount(static_cast<int>(
+                     AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
+  }
 }
 
 }  // namespace content
