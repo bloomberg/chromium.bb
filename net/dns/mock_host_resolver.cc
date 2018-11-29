@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
@@ -108,6 +109,22 @@ class MockHostResolverBase::RequestImpl
   const base::Optional<AddressList>& GetAddressResults() const override {
     DCHECK(complete_);
     return address_results_;
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
   }
 
   void set_address_results(const AddressList& address_results) {
@@ -738,6 +755,16 @@ class HangingHostResolver::RequestImpl
   }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    IMMEDIATE_CRASH();
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
     IMMEDIATE_CRASH();
   }
 
