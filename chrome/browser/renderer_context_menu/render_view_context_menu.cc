@@ -2541,8 +2541,9 @@ void RenderViewContextMenu::ExecPlayPause() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
 
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      WebMediaPlayerAction(WebMediaPlayerAction::kPlay, play));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPlay, play));
 }
 
 void RenderViewContextMenu::ExecMute() {
@@ -2552,15 +2553,16 @@ void RenderViewContextMenu::ExecMute() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
 
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      WebMediaPlayerAction(WebMediaPlayerAction::kMute, mute));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kMute, mute));
 }
 
 void RenderViewContextMenu::ExecLoop() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kLoop,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kLoop,
                            !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
 }
 
@@ -2568,7 +2570,7 @@ void RenderViewContextMenu::ExecControls() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kControls,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kControls,
                            !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
 }
 
@@ -2700,7 +2702,7 @@ void RenderViewContextMenu::ExecPictureInPicture() {
 
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kPictureInPicture,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
                            !picture_in_picture_active));
 }
 

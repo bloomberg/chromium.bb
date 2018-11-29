@@ -141,7 +141,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
-                          blink::WebMediaPlayerAction::Type::kTypeLast)
+                          blink::WebMediaPlayerAction::Type::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
                           content::WasActivatedOption::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,

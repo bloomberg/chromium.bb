@@ -2498,23 +2498,23 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 
   HTMLMediaElement* media_element = ToHTMLMediaElement(node);
   switch (action.type) {
-    case WebMediaPlayerAction::kPlay:
+    case WebMediaPlayerAction::Type::kPlay:
       if (action.enable)
         media_element->Play();
       else
         media_element->pause();
       break;
-    case WebMediaPlayerAction::kMute:
+    case WebMediaPlayerAction::Type::kMute:
       media_element->setMuted(action.enable);
       break;
-    case WebMediaPlayerAction::kLoop:
+    case WebMediaPlayerAction::Type::kLoop:
       media_element->SetLoop(action.enable);
       break;
-    case WebMediaPlayerAction::kControls:
+    case WebMediaPlayerAction::Type::kControls:
       media_element->SetBooleanAttribute(html_names::kControlsAttr,
                                          action.enable);
       break;
-    case WebMediaPlayerAction::kPictureInPicture:
+    case WebMediaPlayerAction::Type::kPictureInPicture:
       DCHECK(media_element->IsHTMLVideoElement());
       if (action.enable) {
         PictureInPictureController::From(node->GetDocument())
@@ -2524,8 +2524,6 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
             .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
       }
       break;
-    default:
-      NOTREACHED();
   }
 }
 
