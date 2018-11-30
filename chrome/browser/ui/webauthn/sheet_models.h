@@ -233,6 +233,7 @@ class AuthenticatorBlePairingBeginSheetModel
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
 };
 
 class AuthenticatorBleEnterPairingModeSheetModel
