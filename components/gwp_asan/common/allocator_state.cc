@@ -102,7 +102,19 @@ AllocatorState::ErrorType AllocatorState::GetErrorType(uintptr_t addr,
   if (addr > last_page_addr)
     return ErrorType::kBufferOverflow;
   const uintptr_t offset = addr - first_page_addr;
-  DCHECK_NE((offset >> base::bits::Log2Floor(page_size)) % 2, 0ULL);
+
+  // If we hit this condition, it means we crashed on accessing an allocation
+  // even though it's currently allocated [there is a if(deallocated) return
+  // earlier.] This can happen when a use-after-free causes a crash and another
+  // thread manages to allocate the page in another thread before it's stopped.
+  // This can happen with low sampling frequencies and high parallel allocator
+  // usage.
+  if ((offset >> base::bits::Log2Floor(page_size)) % 2 == 0) {
+    LOG(WARNING) << "Hit impossible error condition, likely caused by a racy "
+                    "use-after-free";
+    return ErrorType::kUnknown;
+  }
+
   const size_t kHalfPageSize = page_size / 2;
   return (offset >> base::bits::Log2Floor(kHalfPageSize)) % 2 == 0
              ? ErrorType::kBufferOverflow
