@@ -426,12 +426,6 @@ void ProfileImpl::RegisterProfilePrefs(
 #if BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #if defined(OS_CHROMEOS)
-  registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
-  registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);
-  registry->RegisterListPref(prefs::kPrintingAllowedPageSizes);
-  registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
-  registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
-  registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
   registry->RegisterBooleanPref(
       prefs::kOobeMarketingOptInScreenFinished, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

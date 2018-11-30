@@ -15009,6 +15009,7 @@ Called by update_net_error_codes.py.-->
   <int value="503" label="PluginVmAllowed"/>
   <int value="504" label="PluginVmImage"/>
   <int value="505" label="CloudManagementEnrollmentMandatory"/>
+  <int value="506" label="PrintingSendUsernameAndFilenameEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

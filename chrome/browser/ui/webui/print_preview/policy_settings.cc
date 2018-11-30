@@ -13,6 +13,16 @@ namespace printing {
 void PolicySettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPrintHeaderFooter, true);
+#if defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
+  registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);
+  registry->RegisterListPref(prefs::kPrintingAllowedPageSizes);
+  registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
+  registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
+  registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
+  registry->RegisterBooleanPref(prefs::kPrintingSendUsernameAndFilenameEnabled,
+                                false);
+#endif
 }
 
 }  // namespace printing

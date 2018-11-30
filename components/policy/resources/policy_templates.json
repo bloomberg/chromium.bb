@@ -1826,6 +1826,23 @@
       'desc': '''Overrides default printing page size. If the page size is unavailable this policy is ignored.''',
     },
     {
+      'name': 'PrintingSendUsernameAndFilenameEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:72-'],
+      'future': True,
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 506,
+      'caption': '''Send username and filename to native printers''',
+      'tags': [],
+      'desc': '''Send username and filename to native printers server with every print job. The default is not to send.''',
+    },
+    {
       'name': 'ForceSafeSearch',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -14095,5 +14112,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 505
+  'highest_id_currently_used': 506,
 }

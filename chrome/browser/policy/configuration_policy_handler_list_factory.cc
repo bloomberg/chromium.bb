@@ -698,6 +698,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNTLMShareAuthenticationEnabled,
     prefs::kNTLMShareAuthenticationEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kPrintingSendUsernameAndFilenameEnabled,
+    prefs::kPrintingSendUsernameAndFilenameEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

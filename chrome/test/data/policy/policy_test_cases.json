@@ -356,6 +356,14 @@
     ]
   },
 
+  "PrintingSendUsernameAndFilenameEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "PrintingSendUsernameAndFilenameEnabled": true },
+    "pref_mappings": [
+      { "pref": "printing.send_username_and_filename_enabled" }
+    ]
+  },
+
   "CloudPrintSubmitEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "CloudPrintSubmitEnabled": false },
