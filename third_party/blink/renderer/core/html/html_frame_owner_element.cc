@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/lazy_load_frame_observer.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -407,6 +408,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   if ((RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
        RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) &&
+      GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetLazyLoadEnabled() &&
       !lazy_load_frame_observer_ &&
       // Only http:// or https:// URLs are eligible for lazy loading, excluding
       // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.

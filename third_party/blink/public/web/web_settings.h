@@ -287,6 +287,7 @@ class WebSettings {
   virtual void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) = 0;
   virtual void SetMediaDownloadInProductHelpEnabled(bool) = 0;
   virtual void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) = 0;
+  virtual void SetLazyLoadEnabled(bool) = 0;
   virtual void SetLazyFrameLoadingDistanceThresholdPxUnknown(int) = 0;
   virtual void SetLazyFrameLoadingDistanceThresholdPxOffline(int) = 0;
   virtual void SetLazyFrameLoadingDistanceThresholdPxSlow2G(int) = 0;
