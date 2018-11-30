@@ -3101,6 +3101,43 @@ TEST_F(WindowSelectorTest, DraggingFromTopAnimation) {
             window_selector()->enter_exit_overview_type());
 }
 
+// Tests the grid bounds are as expected with different shelf auto hide
+// behaviors and alignments.
+TEST_F(WindowSelectorTest, GridBounds) {
+  UpdateDisplay("600x600");
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+
+  // Test that with the bottom shelf, the grid should take up the entire display
+  // minus the shelf area on the bottom regardless of auto hide behavior.
+  ToggleOverview();
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 544), GetGridBounds());
+  ToggleOverview();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ToggleOverview();
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 544), GetGridBounds());
+  ToggleOverview();
+
+  // Test that with the right shelf, the grid should take up the entire display
+  // minus the shelf area on the right regardless of auto hide behavior.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  ToggleOverview();
+  EXPECT_EQ(gfx::Rect(0, 0, 544, 600), GetGridBounds());
+  ToggleOverview();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ToggleOverview();
+  EXPECT_EQ(gfx::Rect(0, 0, 544, 600), GetGridBounds());
+  ToggleOverview();
+}
+
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
  public:
   SplitViewWindowSelectorTest() = default;

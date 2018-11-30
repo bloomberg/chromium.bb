@@ -17,6 +17,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -139,8 +140,31 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  const gfx::Rect work_area =
+  gfx::Rect work_area =
       split_view_controller->GetDisplayWorkAreaBoundsInScreen(root_window);
+
+  // If the shelf is in auto hide, overview will force it to be in auto hide
+  // shown, but we want to place the thumbnails as if the shelf was shown, so
+  // manually update the work area.
+  if (Shelf::ForWindow(root_window)->GetVisibilityState() == SHELF_AUTO_HIDE) {
+    const int inset = kShelfSize;
+    switch (Shelf::ForWindow(root_window)->alignment()) {
+      case SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        work_area.Inset(0, 0, 0, inset);
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        work_area.Inset(inset, 0, 0, 0);
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        work_area.Inset(0, 0, inset, 0);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
   if (!split_view_controller->IsSplitViewModeActive())
     return work_area;
 
