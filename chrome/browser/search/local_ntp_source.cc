@@ -32,6 +32,9 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
+#include "chrome/browser/search/promos/promo_data.h"
+#include "chrome/browser/search/promos/promo_service.h"
+#include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -87,6 +90,7 @@ const char kNtpBackgroundCollectionScriptFilename[] =
     "ntp-background-collections.js";
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
+const char kPromoScriptFilename[] = "promo.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 
@@ -114,6 +118,7 @@ const struct Resource{
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
     {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
+    {kPromoScriptFilename, kLocalResource, "text/javascript"},
     {kDoodleScriptFilename, kLocalResource, "text/javascript"},
     // Image may not be a jpeg but the .jpg extension here still works for other
     // filetypes. Special handling for different extensions isn't worth the
@@ -667,6 +672,8 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
       one_google_bar_service_(
           OneGoogleBarServiceFactory::GetForProfile(profile_)),
       one_google_bar_service_observer_(this),
+      promo_service_(PromoServiceFactory::GetForProfile(profile_)),
+      promo_service_observer_(this),
       logo_service_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -680,6 +687,11 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   // disabled.
   if (one_google_bar_service_)
     one_google_bar_service_observer_.Add(one_google_bar_service_);
+
+  // |promo_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (promo_service_)
+    promo_service_observer_.Add(promo_service_);
 
   if (base::FeatureList::IsEnabled(features::kDoodlesOnLocalNtp)) {
     logo_service_ = LogoServiceFactory::GetForProfile(profile_);
@@ -799,9 +811,20 @@ void LocalNtpSource::StartDataRequest(
     }
 
     one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
-    // TODO(treib): Figure out if there are cases where we can safely serve
-    // cached data. crbug.com/742937
     one_google_bar_service_->Refresh();
+
+    return;
+  }
+
+  if (stripped_path == kPromoScriptFilename) {
+    if (!promo_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+
+    // TODO(crbug/909931): There's no need to fetch the promo on each load,
+    // we can sometimes use cached data.
+    promo_service_->Refresh();
 
     return;
   }
@@ -1124,6 +1147,17 @@ void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
 
   one_google_bar_service_observer_.RemoveAll();
   one_google_bar_service_ = nullptr;
+}
+
+void LocalNtpSource::OnPromoDataUpdated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+void LocalNtpSource::OnPromoServiceShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  promo_service_observer_.RemoveAll();
+  promo_service_ = nullptr;
 }
 
 void LocalNtpSource::ServeOneGoogleBar(

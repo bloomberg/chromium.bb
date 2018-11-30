@@ -3166,6 +3166,7 @@ test("unit_tests") {
       "../browser/search/instant_unittest_base.h",
       "../browser/search/one_google_bar/one_google_bar_loader_impl_unittest.cc",
       "../browser/search/one_google_bar/one_google_bar_service_unittest.cc",
+      "../browser/search/promos/promo_service_unittest.cc",
       "../browser/search/search_engine_base_url_tracker_unittest.cc",
       "../browser/search/search_unittest.cc",
       "../browser/sessions/persistent_tab_restore_service_unittest.cc",
