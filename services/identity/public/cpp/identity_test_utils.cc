@@ -352,10 +352,11 @@ std::string GetTestGaiaIdForEmail(const std::string& email) {
   return gaia_id;
 }
 
-void SetAccountWithRefreshTokenInPersistentErrorState(
+void UpdatePersistentErrorOfRefreshTokenForAccount(
     IdentityManager* identity_manager,
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
+  DCHECK(identity_manager->HasAccountWithRefreshToken(account_id));
   identity_manager->GetTokenService()->GetDelegate()->UpdateAuthError(
       account_id, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                       GoogleServiceAuthError::InvalidGaiaCredentialsReason::

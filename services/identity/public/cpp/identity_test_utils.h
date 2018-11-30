@@ -128,7 +128,9 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
 
 std::string GetTestGaiaIdForEmail(const std::string& email);
 
-void SetAccountWithRefreshTokenInPersistentErrorState(
+// Updates the persistent auth error set on |account_id| which must be a known
+// account, i.e., an account with a refresh token.
+void UpdatePersistentErrorOfRefreshTokenForAccount(
     IdentityManager* identity_manager,
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error);
