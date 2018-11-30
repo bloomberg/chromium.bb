@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -33,7 +34,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
 void ElementInternals::setFormValue(const FileOrUSVString& value,
                                     FormData* entry_source,
                                     ExceptionState& exception_state) {
-  if (!Target().IsFormAssociatedCustomElement()) {
+  if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The target element is not a form-associated custom element.");
@@ -49,7 +50,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
 }
 
 HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
-  if (!Target().IsFormAssociatedCustomElement()) {
+  if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The target element is not a form-associated custom element.");
@@ -76,6 +77,22 @@ void ElementInternals::DidUpgrade() {
   }
 }
 
+bool ElementInternals::IsTargetFormAssociated() const {
+  if (Target().IsFormAssociatedCustomElement())
+    return true;
+  if (Target().GetCustomElementState() != CustomElementState::kUndefined)
+    return false;
+  // An element is in "undefined" state in its constructor JavaScript code.
+  // ElementInternals needs to handle elements to be form-associated same as
+  // form-associated custom elements because web authors want to call
+  // form-related operations of ElementInternals in constructors.
+  CustomElementRegistry* registry = CustomElement::Registry(Target());
+  if (!registry)
+    return false;
+  auto* definition = registry->DefinitionForName(Target().localName());
+  return definition && definition->IsFormAssociated();
+}
+
 bool ElementInternals::IsFormControlElement() const {
   return false;
 }
@@ -89,6 +106,8 @@ bool ElementInternals::IsEnumeratable() const {
 }
 
 void ElementInternals::AppendToFormData(FormData& form_data) {
+  if (Target().IsDisabledFormControl())
+    return;
   const AtomicString& name = Target().FastGetAttribute(html_names::kNameAttr);
   if (!entry_source_ || entry_source_->size() == 0u) {
     if (name.IsNull())

@@ -116,6 +116,9 @@ class CORE_EXPORT HTMLElement : public Element {
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);
 
+  bool SupportsFocus() const override;
+  bool IsDisabledFormControl() const override;
+  bool MatchesEnabledPseudoClass() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
 

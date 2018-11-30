@@ -34,6 +34,8 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   HTMLFormElement* form(ExceptionState& exception_state) const;
 
  private:
+  bool IsTargetFormAssociated() const;
+
   // ListedElement overrides:
   bool IsFormControlElement() const override;
   bool IsElementInternals() const override;
