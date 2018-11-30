@@ -112,7 +112,7 @@ MessagePortImpl::MessagePortImpl(mojo::ScopedMessagePipeHandle mojo_port)
   connector_->set_connection_error_handler(
       base::BindOnce(&MessagePortImpl::OnDisconnected, base::Unretained(this)));
   binding_.set_error_handler([this](zx_status_t status) {
-    if (status != ZX_OK)
+    if (status != ZX_OK && status != ZX_ERR_PEER_CLOSED)
       ZX_DLOG(INFO, status) << "Disconnected";
 
     OnDisconnected();
@@ -135,6 +135,7 @@ void MessagePortImpl::PostMessage(chromium::web::WebMessage message,
     return;
   }
   CHECK(connector_->Accept(&mojo_message));
+  callback(true);
 }
 
 void MessagePortImpl::ReceiveMessage(ReceiveMessageCallback callback) {
@@ -148,7 +149,8 @@ void MessagePortImpl::MaybeDeliverToClient() {
   if (!pending_client_read_cb_ || message_queue_.empty())
     return;
 
-  std::move(pending_client_read_cb_)(std::move(message_queue_.front()));
+  base::ResetAndReturn(&pending_client_read_cb_)(
+      std::move(message_queue_.front()));
   message_queue_.pop_front();
 }
 
