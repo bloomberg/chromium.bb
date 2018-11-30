@@ -12,12 +12,9 @@ Tests that the WebXR API is not present if the flag to enable it is not set.
     <script src="../resources/webxr_e2e.js"></script>
   </body>
   <script>
-    var t = async_test("WebXR API is not visible");
     if (navigator.xr) {
-      t.step( () => {
-        assert_unreached("API is visible");
-      });
+      assert_unreached("API is visible");
     }
-    t.done();
+    done();
   </script>
 </html>

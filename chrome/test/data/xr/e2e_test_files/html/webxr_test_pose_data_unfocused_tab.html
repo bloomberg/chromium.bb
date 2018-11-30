@@ -12,7 +12,6 @@ Tests that WebXR doesn't update frame data when the tab is not focused
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Test pose data in unfocused tab");
       var pose = null;
       let counter = 0;
 
@@ -28,12 +27,10 @@ Tests that WebXR doesn't update frame data when the tab is not focused
           }
           onMagicWindowXRFrameCallback = null;
           pose = frame.getDevicePose(sessionInfos[sessionTypes.MAGIC_WINDOW].currentFrameOfRef);
-          t.step( () => {
-            assert_true(pose != null,
-                "getDevicePose returned a non-null object");
-            assert_true(pose instanceof XRDevicePose,
-                "getDevicePose returned an XRDevicePose")
-          });
+          assert_true(pose != null,
+              "getDevicePose returned a non-null object");
+          assert_true(pose instanceof XRDevicePose,
+              "getDevicePose returned an XRDevicePose")
           finishJavaScriptStep();
         }
         // Make sure at least one rAF call has happened so we get valid data
@@ -43,12 +40,10 @@ Tests that WebXR doesn't update frame data when the tab is not focused
       function stepCheckFrameDataWhileNonFocusedTab() {
         // Unlike WebVR, WebXR doesn't fire rAFs when in a different tab
         onMagicWindowXRFrameCallback = function() {
-          t.step( () => {
-            assert_unreached("Magic window fired rAF while in a different tab");
-          });
+          assert_unreached("Magic window fired rAF while in a different tab");
         }
         window.setTimeout( () => {
-          t.done();
+          done();
         }, 1000);
       }
     </script>

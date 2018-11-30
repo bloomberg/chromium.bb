@@ -13,8 +13,6 @@ presentation on Windows/desktop
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("window.rAF keeps firing while presenting");
-
       function stepVerifyBeforePresent() {
         window.requestAnimationFrame( () => {
           finishJavaScriptStep();
@@ -29,7 +27,7 @@ presentation on Windows/desktop
 
       function stepVerifyAfterPresent() {
         window.requestAnimationFrame( () => {
-          t.done();
+          done();
         });
       }
     </script>

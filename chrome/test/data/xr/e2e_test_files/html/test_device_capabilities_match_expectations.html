@@ -42,23 +42,20 @@ Tests that the reported device capabilities match expectations.
           }
         },
       }
-      var t = async_test("Device capabilities match expectations");
       function stepCheckDeviceCapabilities(device) {
         if (!(device in expectations)) {
-          t.step_func_done( () => {
-            assert_unreached("Given device " + device + " not in expectations");
-          })();
+          assert_unreached("Given device " + device + " not in expectations");
+          done();
           return;
         }
         let expectation = expectations[device];
-        t.step_func_done( () => {
-          assert_equals(vrDisplay["isPresenting"], expectation["isPresenting"]);
-          for (var capability in expectation["capabilities"]) {
-            assert_equals(vrDisplay["capabilities"][capability],
-                          expectation["capabilities"][capability],
-                          capability);
-          }
-        })();
+        assert_equals(vrDisplay["isPresenting"], expectation["isPresenting"]);
+        for (var capability in expectation["capabilities"]) {
+          assert_equals(vrDisplay["capabilities"][capability],
+                        expectation["capabilities"][capability],
+                        capability);
+        }
+        done();
       }
     </script>
   </body>

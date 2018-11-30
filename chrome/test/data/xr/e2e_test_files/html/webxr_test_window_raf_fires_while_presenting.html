@@ -13,8 +13,6 @@ immersive session on Windows/desktop
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("window.rAF keeps firing while in immersive session");
-
       function stepVerifyBeforePresent() {
         window.requestAnimationFrame( () => {
           finishJavaScriptStep();
@@ -29,7 +27,7 @@ immersive session on Windows/desktop
 
       function stepVerifyAfterPresent() {
         window.requestAnimationFrame( () => {
-          t.done();
+          done();
         });
       }
     </script>
