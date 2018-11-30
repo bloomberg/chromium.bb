@@ -37,8 +37,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
 
-  // AutofillClient implementation.
+  // AutofillClient:
   PersonalDataManager* GetPersonalDataManager() override;
+  scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
@@ -77,8 +78,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
-  void LoadRiskData(
-      base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowAutofillPopup(
@@ -87,22 +86,25 @@ class WebViewAutofillClientIOS : public AutofillClient {
       const std::vector<Suggestion>& suggestions,
       bool /*unused_autoselect_first_suggestion*/,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
-  void HideAutofillPopup() override;
-  bool IsAutocompleteEnabled() override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
+  void HideAutofillPopup() override;
+  bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
-  scoped_refptr<AutofillWebDataService> GetDatabase() override;
   void DidInteractWithNonsecureCreditCardInput() override;
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+
+  // RiskDataLoader:
+  void LoadRiskData(
+      base::OnceCallback<void(const std::string&)> callback) override;
 
  private:
   PrefService* pref_service_;

@@ -63,6 +63,10 @@ PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
+scoped_refptr<AutofillWebDataService> WebViewAutofillClientIOS::GetDatabase() {
+  return autofill_web_data_service_;
+}
+
 PrefService* WebViewAutofillClientIOS::GetPrefs() {
   return pref_service_;
 }
@@ -173,11 +177,6 @@ void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     base::OnceClosure callback) {}
 
-void WebViewAutofillClientIOS::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  [bridge_ loadRiskData:std::move(callback)];
-}
-
 bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
@@ -196,18 +195,18 @@ void WebViewAutofillClientIOS::ShowAutofillPopup(
   [bridge_ showAutofillPopup:suggestions popupDelegate:delegate];
 }
 
+void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  NOTREACHED();
+}
+
 void WebViewAutofillClientIOS::HideAutofillPopup() {
   [bridge_ hideAutofillPopup];
 }
 
 bool WebViewAutofillClientIOS::IsAutocompleteEnabled() {
   return prefs::IsAutocompleteEnabled(GetPrefs());
-}
-
-void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  NOTREACHED();
 }
 
 void WebViewAutofillClientIOS::PropagateAutofillPredictions(
@@ -220,10 +219,6 @@ void WebViewAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-scoped_refptr<AutofillWebDataService> WebViewAutofillClientIOS::GetDatabase() {
-  return autofill_web_data_service_;
-}
-
 void WebViewAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {}
 
 bool WebViewAutofillClientIOS::IsContextSecure() {
@@ -234,12 +229,17 @@ bool WebViewAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }
 
+bool WebViewAutofillClientIOS::AreServerCardsSupported() {
+  return true;
+}
+
 void WebViewAutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool WebViewAutofillClientIOS::AreServerCardsSupported() {
-  return true;
+void WebViewAutofillClientIOS::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  [bridge_ loadRiskData:std::move(callback)];
 }
 
 }  // namespace autofill
