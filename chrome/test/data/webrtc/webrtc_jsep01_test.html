@@ -11,6 +11,13 @@
   <script type="text/javascript" src="indexeddb.js"></script>
   <script type="text/javascript" src="peerconnection_getstats.js"></script>
   <script type="text/javascript" src="peerconnection_replacetrack.js"></script>
+  <script type="text/javascript">
+    function showVideo() {
+      // For debugging by humans.
+      document.getElementById('local-view').style.display = "inline";
+      document.getElementById('remote-view').style.display = "inline";
+    }
+  </script>
 </head>
 <body>
   <table border="0">
@@ -20,6 +27,9 @@
       <td><canvas id="redCanvas" width="10" height="10" style="background-color:#FF0000"/></td>
       <td><canvas id="blueCanvas" width="10" height="10" style="background-color:#0000FF"/></td>
       <td><canvas id="whiteCanvas" width="10" height="10" style="background-color:#FFFFFF"/></td>
+    </tr>
+    <tr>
+      <td><button onclick="showVideo()">Click here to show video</button></td>
     </tr>
   </table>
 </body>
