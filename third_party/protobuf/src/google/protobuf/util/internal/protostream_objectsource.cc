@@ -737,7 +737,8 @@ void ProtoStreamObjectSource::DeleteRendererMap() {
 // static
 ProtoStreamObjectSource::TypeRenderer*
 ProtoStreamObjectSource::FindTypeRenderer(const string& type_url) {
-  ::google::protobuf::GoogleOnceInit(&source_renderers_init_, &InitRendererMap);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(source_renderers_init_), &InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 

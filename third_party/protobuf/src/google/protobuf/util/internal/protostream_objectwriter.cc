@@ -1194,7 +1194,8 @@ void ProtoStreamObjectWriter::DeleteRendererMap() {
 
 ProtoStreamObjectWriter::TypeRenderer*
 ProtoStreamObjectWriter::FindTypeRenderer(const string& type_url) {
-  ::google::protobuf::GoogleOnceInit(&writer_renderers_init_, &InitRendererMap);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(writer_renderers_init_), &InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 

@@ -97,7 +97,8 @@ void InitRegistry() {
 // safety.
 void Register(const MessageLite* containing_type,
               int number, ExtensionInfo info) {
-  ::google::protobuf::GoogleOnceInit(&registry_init_, &InitRegistry);
+  ::google::protobuf::GoogleOnceInit(&GOOGLE_PROTOBUF_GET_ONCE(registry_init_),
+                                     &InitRegistry);
 
   if (!InsertIfNotPresent(registry_, std::make_pair(containing_type, number),
                           info)) {

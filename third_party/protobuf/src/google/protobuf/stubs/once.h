@@ -119,8 +119,16 @@ class GoogleOnceDynamic {
 };
 
 #define GOOGLE_PROTOBUF_ONCE_TYPE ::google::protobuf::ProtobufOnceType
-#define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME) \
-  ::google::protobuf::ProtobufOnceType NAME
+#define GOOGLE_PROTOBUF_DECLARE_ONCE(NAME)                  \
+  ::google::protobuf::ProtobufOnceType& get_once_##NAME() { \
+    static ::google::protobuf::ProtobufOnceType once;       \
+    return once;                                            \
+  }
+
+#define GOOGLE_PROTOBUF_FORWARD_ONCE(NAME) \
+  ::google::protobuf::ProtobufOnceType& get_once_##NAME();
+
+#define GOOGLE_PROTOBUF_GET_ONCE(NAME) (get_once_##NAME())
 
 }  // namespace protobuf
 }  // namespace google

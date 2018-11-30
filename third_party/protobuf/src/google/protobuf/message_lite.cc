@@ -401,7 +401,8 @@ void SetProto3PreserveUnknownsDefault(bool preserve) {
 }
 
 const ::std::string& GetEmptyString() {
-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(empty_string_once_init_), &InitEmptyString);
   return GetEmptyStringAlreadyInited();
 }
 
