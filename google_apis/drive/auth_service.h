@@ -52,8 +52,8 @@ class AuthService : public AuthServiceInterface,
   void ClearRefreshToken() override;
 
   // Overridden from IdentityManager::Observer
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
 
  private:

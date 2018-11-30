@@ -236,9 +236,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   const AccountInfo& account_from_refresh_token_updated_callback() {
     return account_from_refresh_token_updated_callback_;
   }
-  bool validity_from_refresh_token_updated_callback() {
-    return validity_from_refresh_token_updated_callback_;
-  }
   const std::string& account_from_refresh_token_removed_callback() {
     return account_from_refresh_token_removed_callback_;
   }
@@ -280,12 +277,11 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     if (on_primary_account_signin_failed_callback_)
       std::move(on_primary_account_signin_failed_callback_).Run();
   }
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override {
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override {
     EXPECT_TRUE(is_inside_batch_);
     batch_change_records_.rbegin()->emplace_back(account_info.account_id);
     account_from_refresh_token_updated_callback_ = account_info;
-    validity_from_refresh_token_updated_callback_ = is_valid;
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_).Run();
   }
@@ -330,7 +326,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountInfo primary_account_from_set_callback_;
   AccountInfo primary_account_from_cleared_callback_;
   AccountInfo account_from_refresh_token_updated_callback_;
-  bool validity_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
   std::vector<AccountInfo> accounts_from_cookie_change_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
@@ -1577,9 +1572,6 @@ TEST_F(IdentityManagerTest,
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
-
-  EXPECT_TRUE(identity_manager_observer()
-                  ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest,
@@ -1593,9 +1585,6 @@ TEST_F(IdentityManagerTest,
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
-
-  EXPECT_FALSE(identity_manager_observer()
-                   ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
@@ -1621,9 +1610,6 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
   EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
   EXPECT_EQ(expected_account_info.email, account_info.email);
-
-  EXPECT_TRUE(identity_manager_observer()
-                  ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest,
@@ -1641,9 +1627,6 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
   EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
   EXPECT_EQ(expected_account_info.email, account_info.email);
-
-  EXPECT_FALSE(identity_manager_observer()
-                   ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
@@ -1679,9 +1662,6 @@ TEST_F(
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
   EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
   EXPECT_EQ(expected_account_info.email, account_info.email);
-
-  EXPECT_TRUE(identity_manager_observer()
-                  ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(
@@ -1706,9 +1686,6 @@ TEST_F(
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
   EXPECT_EQ(expected_account_info.gaia, account_info.gaia);
   EXPECT_EQ(expected_account_info.email, account_info.email);
-
-  EXPECT_FALSE(identity_manager_observer()
-                   ->validity_from_refresh_token_updated_callback());
 }
 
 TEST_F(IdentityManagerTest,

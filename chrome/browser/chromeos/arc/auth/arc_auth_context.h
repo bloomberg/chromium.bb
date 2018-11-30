@@ -51,8 +51,8 @@ class ArcAuthContext : public UbertokenConsumer,
       identity::AccessTokenFetcher::TokenCallback callback);
 
   // identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
   void OnRefreshTokensLoaded() override;
 
   // UbertokenConsumer:

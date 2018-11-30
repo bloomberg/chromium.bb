@@ -303,20 +303,8 @@ void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   AccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
 
-  // Compute the validity of the new refresh token: PO2TS sets an account's
-  // refresh token to be invalid (error CREDENTIALS_REJECTED_BY_CLIENT) if the
-  // user signs out of that account on the web.
-  // TODO(blundell): Hide this logic inside PO2TS.
-  bool is_valid = true;
-  GoogleServiceAuthError token_error = token_service_->GetAuthError(account_id);
-  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                             CREDENTIALS_REJECTED_BY_CLIENT)) {
-    is_valid = false;
-  }
-
   for (auto& observer : observer_list_) {
-    observer.OnRefreshTokenUpdatedForAccount(account_info, is_valid);
+    observer.OnRefreshTokenUpdatedForAccount(account_info);
   }
 }
 

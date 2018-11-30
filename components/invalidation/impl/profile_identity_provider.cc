@@ -110,8 +110,7 @@ void ProfileIdentityProvider::InvalidateAccessToken(
 }
 
 void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   ProcessRefreshTokenUpdateForAccount(account_info.account_id);
 }
 

@@ -63,8 +63,8 @@ class ChromeCryptAuthService
  private:
   // identity::IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
 
   void OnAuthenticationStateChanged();
   void PerformEnrollmentAndDeviceSyncIfPossible();

@@ -257,8 +257,7 @@ void SyncAuthManager::OnPrimaryAccountCleared(
 }
 
 void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   if (UpdateSyncAccountIfNecessary()) {
     // If the syncing account was updated as a result of this, then all that's
     // necessary has been handled; nothing else to be done here.
@@ -274,9 +273,6 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
   // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
   // the web.
   // TODO(blundell): Hide this logic inside IdentityManager.
-  // NOTE: We don't use |is_valid| because we will shortly be eliminating that
-  // parameter. TODO(https://crbug.com/908412): Eliminate that parameter and
-  // this comment.
   bool is_refresh_token_valid = true;
   GoogleServiceAuthError token_error =
       identity_manager_->GetErrorStateOfRefreshTokenForAccount(
