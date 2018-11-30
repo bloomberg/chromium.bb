@@ -333,7 +333,13 @@ bool VADisplayState::InitializeOnce() {
   DVLOG(1) << "VAAPI version: " << major_version << "." << minor_version << " "
            << va_vendor_string_;
 
-  if (major_version != VA_MAJOR_VERSION || minor_version != VA_MINOR_VERSION) {
+  // The VAAPI version is determined from what is loaded on the system by
+  // calling vaInitialize(). We want a runtime evaluation of libva version,
+  // of what is loaded on the system, with, what browser is compiled with.
+  // Also since the libva is now ABI-compatible, relax the version check
+  // which helps in upgrading the libva, without breaking any existing
+  // functionality.
+  if (!VA_CHECK_VERSION(major_version, minor_version, 0)) {
     LOG(ERROR) << "This build of Chromium requires VA-API version "
                << VA_MAJOR_VERSION << "." << VA_MINOR_VERSION
                << ", system version: " << major_version << "." << minor_version;
