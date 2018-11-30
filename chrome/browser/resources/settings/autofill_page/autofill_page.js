@@ -60,7 +60,7 @@ Polymer({
    */
   onPasswordsClick_: function() {
     loadTimeData.getBoolean('navigateToGooglePasswordManager') ?
-        settings.AutofillBrowserProxyImpl.getInstance().openURL(
+        settings.OpenWindowProxyImpl.getInstance().openURL(
             loadTimeData.getString('googlePasswordManagerUrl')) :
         settings.navigateTo(settings.routes.PASSWORDS);
   },

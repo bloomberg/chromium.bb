@@ -3614,6 +3614,9 @@
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
   </message>
+  <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
+    Manage your Google Account
+  </message>
   <message name="IDS_SETTINGS_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing apps between multiple browser instances.">
     Apps
   </message>

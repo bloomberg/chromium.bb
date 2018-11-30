@@ -157,6 +157,7 @@ js_library("people_page") {
     ":profile_info_browser_proxy",
     ":signout_dialog",
     ":sync_browser_proxy",
+    "..:open_window_proxy",
     "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",
