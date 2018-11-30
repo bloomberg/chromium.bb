@@ -22,18 +22,26 @@ void SharedCorsOriginAccessListImpl::SetForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
     base::OnceClosure closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SharedCorsOriginAccessListImpl::SetForOriginOnIOThread,
-                     base::RetainedRef(this), source_origin,
-                     std::move(allow_patterns), std::move(block_patterns)),
-      std::move(closure));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
+    origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
+    std::move(closure).Run();
+  } else {
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&SharedCorsOriginAccessListImpl::SetForOriginOnIOThread,
+                       base::RetainedRef(this), source_origin,
+                       std::move(allow_patterns), std::move(block_patterns)),
+        std::move(closure));
+  }
 }
 
 const network::cors::OriginAccessList&
 SharedCorsOriginAccessListImpl::GetOriginAccessList() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  else
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return origin_access_list_;
 }
 
@@ -44,6 +52,7 @@ void SharedCorsOriginAccessListImpl::SetForOriginOnIOThread(
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
   origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
 }

@@ -33,12 +33,14 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 
 #if defined(OS_CHROMEOS)
@@ -485,6 +487,14 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     }
   }
 #endif
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Should be initialized with existing per-profile CORS access lists.
+    network_context_params->cors_origin_access_list =
+        content::BrowserContext::GetSharedCorsOriginAccessList(profile_)
+            ->GetOriginAccessList()
+            .CreateCorsOriginAccessPatternsList();
+  }
 
   return network_context_params;
 }

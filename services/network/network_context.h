@@ -412,6 +412,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnSetExpectCTTestReportFailure();
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+  void InitializeCorsOriginAccessList();
+
   NetworkService* const network_service_;
 
   mojom::NetworkContextClientPtr client_;
