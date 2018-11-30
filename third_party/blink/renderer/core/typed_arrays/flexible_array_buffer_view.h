@@ -19,7 +19,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   FlexibleArrayBufferView() : small_data_(nullptr), small_length_(0) {}
 
   void SetFull(DOMArrayBufferView* full) { full_ = full; }
-  void SetSmall(void* data, size_t length) {
+  void SetSmall(void* data, uint32_t length) {
     small_data_ = data;
     small_length_ = length;
   }
@@ -62,7 +62,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   Member<DOMArrayBufferView> full_;
 
   void* small_data_;
-  size_t small_length_;
+  uint32_t small_length_;
   DISALLOW_COPY_AND_ASSIGN(FlexibleArrayBufferView);
 };
 

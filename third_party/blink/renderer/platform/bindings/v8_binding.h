@@ -276,9 +276,9 @@ inline v8::Local<v8::String> V8String(v8::Isolate* isolate,
   DCHECK(isolate);
   if (!string || string[0] == '\0')
     return v8::String::Empty(isolate);
-  return v8::String::NewFromOneByte(isolate,
-                                    reinterpret_cast<const uint8_t*>(string),
-                                    v8::NewStringType::kNormal, strlen(string))
+  return v8::String::NewFromOneByte(
+             isolate, reinterpret_cast<const uint8_t*>(string),
+             v8::NewStringType::kNormal, static_cast<int>(strlen(string)))
       .ToLocalChecked();
 }
 
@@ -324,7 +324,7 @@ inline v8::Local<v8::String> V8AtomicString(v8::Isolate* isolate,
     return v8::String::Empty(isolate);
   return v8::String::NewFromOneByte(
              isolate, reinterpret_cast<const uint8_t*>(string),
-             v8::NewStringType::kInternalized, strlen(string))
+             v8::NewStringType::kInternalized, static_cast<int>(strlen(string)))
       .ToLocalChecked();
 }
 

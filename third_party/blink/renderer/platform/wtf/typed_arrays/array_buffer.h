@@ -253,7 +253,10 @@ const void* ArrayBuffer::DataMaybeShared() const {
 }
 
 unsigned ArrayBuffer::ByteLength() const {
-  return contents_.DataLength();
+  // TODO(dtapuska): Revisit this cast. ArrayBufferContents
+  // uses size_t for storing data. Whereas ArrayBuffer IDL is
+  // only uint32_t based.
+  return static_cast<unsigned>(contents_.DataLength());
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(int begin, int end) const {
