@@ -334,7 +334,6 @@ group("gn_all") {
         "//components/cronet/android:cronet_perf_test_apk",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",
-        "//components/cronet/android:cronet_test_apk",
         "//components/cronet/android:cronet_test_instrumentation_apk",
         "//components/cronet/android:cronet_unittests_android",
       ]
