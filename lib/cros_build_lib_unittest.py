@@ -1435,19 +1435,20 @@ class TestGetHostname(cros_test_lib.MockTestCase):
 class GetImageDiskPartitionInfoTests(cros_test_lib.RunCommandTestCase):
   """Tests the GetImageDiskPartitionInfo function."""
 
-  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
-11:0.03MB:8.42MB:8.39MB::RWFW:;
-6:8.42MB:8.42MB:0.00MB::KERN-C:;
-7:8.42MB:8.42MB:0.00MB::ROOT-C:;
-9:8.42MB:8.42MB:0.00MB::reserved:;
-10:8.42MB:8.42MB:0.00MB::reserved:;
-2:10.5MB:27.3MB:16.8MB::KERN-A:;
-4:27.3MB:44.0MB:16.8MB::KERN-B:;
-8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
-12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
-5:145MB:2292MB:2147MB::ROOT-B:;
-3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
-1:4440MB:7661MB:3221MB:ext4:STATE:;
+  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:\
+2271240192B:file:512:512:gpt::;
+11:32768B:8421375B:8388608B::RWFW:;
+6:8421376B:8421887B:512B::KERN-C:;
+7:8421888B:8422399B:512B::ROOT-C:;
+9:8422400B:8422911B:512B::reserved:;
+10:8422912B:8423423B:512B::reserved:;
+2:10485760B:27262975B:16777216B::KERN-A:;
+4:27262976B:44040191B:16777216B::KERN-B:;
+8:44040192B:60817407B:16777216B:ext4:OEM:msftdata;
+12:127926272B:161480703B:33554432B:fat16:EFI-SYSTEM:boot, esp;
+5:161480704B:163577855B:2097152B::ROOT-B:;
+3:163577856B:2260729855B:2097152000B:ext2:ROOT-A:;
+1:2260729856B:2271215615B:10485760B:ext2:STATE:msftdata;
 """
 
   SAMPLE_CGPT = """
@@ -1503,7 +1504,7 @@ EEC571FFB6E1)
     """Tests that we can list all partitions with `cgpt` correctly."""
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('...', unit='B')
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('...')
     self.assertEqual(partitions['STATE'].start, 983564288)
     self.assertEqual(partitions['STATE'].size, 1073741824)
     self.assertEqual(partitions['STATE'].number, 1)
@@ -1522,7 +1523,7 @@ EEC571FFB6E1)
     # Because "reserved" is duplicated, we only have 11 key-value pairs.
     self.assertEqual(11, len(partitions))
     self.assertEqual(1, partitions['STATE'].number)
-    self.assertEqual(2147, partitions['ROOT-A'].size)
+    self.assertEqual(2097152000, partitions['ROOT-A'].size)
 
   def testKeyedByNumber(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
@@ -1532,39 +1533,16 @@ EEC571FFB6E1)
     )
     self.assertEqual(12, len(partitions))
     self.assertEqual('STATE', partitions[1].name)
-    self.assertEqual(2147, partitions[3].size)
+    self.assertEqual(2097152000, partitions[3].size)
     self.assertEqual('reserved', partitions[9].name)
     self.assertEqual('reserved', partitions[10].name)
-
-  def testChangeUnitOutsideChroot(self):
-
-    def changeUnit(unit):
-      cros_build_lib.GetImageDiskPartitionInfo('_ignored', unit)
-      self.assertCommandContains(
-          ['-m', '_ignored', 'unit', unit, 'print'],
-      )
-
-    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
-    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
-    # We must use 2-char units here because the mocked output is in 'MB'.
-    changeUnit('MB')
-    changeUnit('KB')
 
   def testChangeUnitInsideChroot(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'B')
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
     self.assertEqual(partitions['STATE'].start, 983564288)
     self.assertEqual(partitions['STATE'].size, 1073741824)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'KB')
-    self.assertEqual(partitions['STATE'].start, 983564288 / 1000.0)
-    self.assertEqual(partitions['STATE'].size, 1073741824 / 1000.0)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'MB')
-    self.assertEqual(partitions['STATE'].start, 983564288 / 10.0**6)
-    self.assertEqual(partitions['STATE'].size, 1073741824 / 10.0**6)
-
-    self.assertRaises(KeyError, cros_build_lib.GetImageDiskPartitionInfo,
-                      '_ignored', 'PB')
 
 
 class DummyOutput(object):

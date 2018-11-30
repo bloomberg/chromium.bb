@@ -1802,7 +1802,7 @@ PartitionInfo = collections.namedtuple(
 )
 
 
-def _ParseParted(lines, unit='MB'):
+def _ParseParted(lines):
   """Returns partition information from `parted print` output."""
   ret = []
   # Sample output (partition #, start, end, size, file system, name, flags):
@@ -1828,12 +1828,12 @@ def _ParseParted(lines, unit='MB'):
       if d['number'].isdigit():
         d['number'] = int(d['number'])
         for key in ['start', 'end', 'size']:
-          d[key] = float(d[key][:-len(unit)])
+          d[key] = float(d[key][:-1])
         ret.append(PartitionInfo(**d))
   return ret
 
 
-def _ParseCgpt(lines, unit='MB'):
+def _ParseCgpt(lines):
   """Returns partition information from `cgpt show` output."""
   #   start        size    part  contents
   # 1921024     2097152       1  Label: "STATE"
@@ -1858,17 +1858,6 @@ def _ParseCgpt(lines, unit='MB'):
     start = int(start) * 512
     size = int(size) * 512
     end = start + size
-    # Parted uses 1000, not 1024.
-    divisors = {
-        'B': 1.0,
-        'KB': 1000.0,
-        'MB': 1000000.0,
-        'GB': 1000000000.0,
-    }
-    divisor = divisors[unit]
-    start = start / divisor
-    end = end / divisor
-    size = size / divisor
 
     ret.append(PartitionInfo(number=number, start=start, end=end, size=size,
                              name=label, file_system='', flags=''))
@@ -1876,13 +1865,11 @@ def _ParseCgpt(lines, unit='MB'):
   return ret
 
 
-def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
+def GetImageDiskPartitionInfo(image_path, key_selector='name'):
   """Returns the disk partition table of an image.
 
   Args:
     image_path: Path to the image file.
-    unit: The unit to display (e.g., 'B', 'KB', 'MB', 'GB').
-      See `parted` documentation for more info.
     key_selector: The value of the partition that will be used as the key for
       that partition in this function's returned dictionary.
 
@@ -1896,14 +1883,14 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
     func = _ParseCgpt
   else:
     # Outside chroot, use `parted`.
-    cmd = ['parted', '-m', image_path, 'unit', unit, 'print']
+    cmd = ['parted', '-m', image_path, 'unit', 'B', 'print']
     func = _ParseParted
 
   lines = RunCommand(
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True).output.splitlines()
-  infos = func(lines, unit)
+  infos = func(lines)
   selector = operator.attrgetter(key_selector)
   return dict((selector(x), x) for x in infos)
 

@@ -1082,7 +1082,7 @@ def MountImagePartition(image_file, part_id, destination, gpt_table=None,
 
   If there is a GPT table (GetImageDiskPartitionInfo), it will be used for
   start offset and size of the selected partition. Otherwise, the GPT will
-  be read again from |image_file|. The GPT table MUST have unit of "B".
+  be read again from |image_file|.
 
   The mount option will be:
 
@@ -1101,7 +1101,7 @@ def MountImagePartition(image_file, part_id, destination, gpt_table=None,
   """
 
   if gpt_table is None:
-    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file, 'B',
+    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file,
                                                          key_selector='number')
 
   matcher = operator.attrgetter('name')
@@ -1171,7 +1171,7 @@ class MountImageContext(object):
     """
     self._image_file = image_file
     self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(
-        self._image_file, 'B', key_selector='number'
+        self._image_file, key_selector='number'
     )
     # Target dir is absolute path so that we do not have to worry about
     # CWD being changed later.

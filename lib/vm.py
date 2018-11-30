@@ -55,7 +55,7 @@ def VMIsUpdatable(path):
   Returns:
     True if VM is updatable; False otherwise.
   """
-  table = cros_build_lib.GetImageDiskPartitionInfo(path, unit='MB')
+  table = cros_build_lib.GetImageDiskPartitionInfo(path)
   # Assume if size of the two root partitions match, the image
   # is updatable.
   return table['ROOT-B'].size == table['ROOT-A'].size
