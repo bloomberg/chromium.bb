@@ -164,28 +164,6 @@ void WinWebAuthnApiAuthenticator::MakeCredentialDone(
     return;
   }
 
-  if (request.hmac_secret()) {
-    bool hmac_secret_extension_ok = false;
-    base::span<const WEBAUTHN_EXTENSION* const> extensions(
-        &credential_attestation->Extensions.pExtensions,
-        credential_attestation->Extensions.cExtensions);
-    for (const WEBAUTHN_EXTENSION* extension : extensions) {
-      if (extension->pwszExtensionIdentifier ==
-              WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET &&
-          extension->cbExtension == sizeof(BOOL) &&
-          *(static_cast<BOOL*>(extension->pvExtension)) == TRUE) {
-        hmac_secret_extension_ok = true;
-        break;
-      }
-    }
-    if (!hmac_secret_extension_ok) {
-      DLOG(ERROR) << "missing hmacSecret extension";
-      std::move(callback).Run(
-          CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension, base::nullopt);
-      return;
-    }
-  }
-
   std::move(callback).Run(status, std::move(response));
 }
 
