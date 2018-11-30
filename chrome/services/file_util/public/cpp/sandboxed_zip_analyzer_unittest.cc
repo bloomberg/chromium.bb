@@ -383,9 +383,6 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
                   "mach_o/zipped-app-two-executables-one-signed.zip"),
               &results);
 
-  EXPECT_THAT(histograms.GetAllSamples(kAppInZipHistogramName),
-              testing::ElementsAre(base::Bucket(/*bucket=*/true, /*count=*/1)));
-
   EXPECT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
