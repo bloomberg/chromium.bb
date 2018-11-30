@@ -153,7 +153,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       Step next_step = ShouldShowBlePairingUI(
                            previously_paired_with_bluetooth_authenticator_,
                            pair_with_new_device_for_bluetooth_low_energy)
-                           ? Step::kBleDeviceSelection
+                           ? Step::kBlePairingBegin
                            : Step::kBleActivate;
       EnsureBleAdapterIsPoweredBeforeContinuingWithStep(next_step);
       break;

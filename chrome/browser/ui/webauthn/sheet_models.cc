@@ -438,6 +438,11 @@ base::string16 AuthenticatorBlePairingBeginSheetModel::GetAcceptButtonLabel()
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_NEXT);
 }
 
+void AuthenticatorBlePairingBeginSheetModel::OnAccept() {
+  dialog_model()->SetCurrentStep(
+      AuthenticatorRequestDialogModel::Step::kBleDeviceSelection);
+}
+
 // AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
 
 gfx::ImageSkia*

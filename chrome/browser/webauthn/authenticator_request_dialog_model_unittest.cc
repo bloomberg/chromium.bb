@@ -371,7 +371,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BlePairingFlow) {
     Step expected_final_step;
   } kTestCases[] = {
       {AuthenticatorTransport::kBluetoothLowEnergy, nullptr,
-       Step::kBleDeviceSelection},
+       Step::kBlePairingBegin},
       {AuthenticatorTransport::kBluetoothLowEnergy, &test_paired_device_list_,
        Step::kBleActivate},
   };
