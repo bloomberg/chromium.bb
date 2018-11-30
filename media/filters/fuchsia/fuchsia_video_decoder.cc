@@ -7,13 +7,16 @@
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <zircon/rights.h>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -436,7 +439,10 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
             GetMaxDecodeRequests());
 
   if (!codec_) {
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    // Post the callback to the current sequence as DecoderStream doesn't expect
+    // Decode() to complete synchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
