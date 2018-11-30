@@ -422,6 +422,8 @@ class TestConnectJob : public ConnectJob {
     }
   }
 
+  void ChangePriorityInternal(RequestPriority priority) override {}
+
   int DoConnect(bool succeed, bool was_async, bool recoverable) {
     int result = OK;
     if (succeed) {

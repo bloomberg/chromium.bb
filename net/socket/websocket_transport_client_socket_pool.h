@@ -107,6 +107,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
+  void ChangePriorityInternal(RequestPriority priority) override;
+
   scoped_refptr<TransportSocketParams> params_;
   HostResolver* resolver_;
   std::unique_ptr<HostResolver::Request> request_;

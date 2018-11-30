@@ -283,6 +283,13 @@ int WebSocketTransportConnectJob::ConnectInternal() {
   return DoLoop(OK);
 }
 
+// Nothing to do here because WebSocket priorities are not changed and
+// stalled_request_{queue, map} don't take priority into account anyway.
+// TODO(chlily): If that ever changes, make the host resolver request reflect
+// the new priority.
+void WebSocketTransportConnectJob::ChangePriorityInternal(
+    RequestPriority priority) {}
+
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
@@ -406,11 +413,11 @@ void WebSocketTransportClientSocketPool::SetPriority(
     RequestPriority priority) {
   // Since sockets requested by RequestSocket are bound early and
   // stalled_request_{queue,map} don't take priorities into account, there's
-  // nothing to do within the pool to change priority or the request.
+  // nothing to do within the pool to change priority of the request.
   // TODO(rdsmith, ricea): Make stalled_request_{queue,map} take priorities
   // into account.
-  // TODO(rdsmith): Investigate plumbing the reprioritization request to the
-  // connect job.
+  // TODO(rdsmith, chlily): Investigate plumbing the reprioritization request to
+  // the connect job.
 }
 
 void WebSocketTransportClientSocketPool::CancelRequest(
