@@ -1052,8 +1052,12 @@ Polymer({
     }
 
     if (certId) {
+      // |certId| is in the format |slot:id| for EAP and IPSec and |id| for
+      // OpenVPN certs.
+      // |userCerts_[i].PKCS11Id| is always in the format |slot:id|.
+      // Use a substring comparison to support both |certId| formats.
       const userCert = this.userCerts_.find(function(cert) {
-        return cert.PKCS11Id == certId;
+        return cert.PKCS11Id.indexOf(/** @type {string} */ (certId)) >= 0;
       });
       if (userCert)
         this.selectedUserCertHash_ = userCert.hash;
@@ -1091,8 +1095,13 @@ Polymer({
       if (eap && eap.UseSystemCAs === false)
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
     }
-    if (!this.selectedServerCaHash_ && this.serverCaCerts_[0])
-      this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+    if (!this.selectedServerCaHash_) {
+      // For unconfigured networks only, default to the first CA if available.
+      if (!this.guid && this.serverCaCerts_[0])
+        this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+      else
+        this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
+    }
 
     if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_))
       this.selectedUserCertHash_ = undefined;
