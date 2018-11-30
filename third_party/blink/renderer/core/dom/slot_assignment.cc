@@ -273,7 +273,8 @@ void SlotAssignment::RecalcAssignment() {
     if (slot) {
       slot->AppendAssignedNode(child);
     } else {
-      child.ClearFlatTreeNodeData();
+      if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
+        child.ClearFlatTreeNodeData();
       child.LazyReattachIfAttached();
     }
   }
