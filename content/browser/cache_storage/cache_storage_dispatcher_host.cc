@@ -29,8 +29,8 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

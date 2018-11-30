@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/gfx/favicon_size.h"

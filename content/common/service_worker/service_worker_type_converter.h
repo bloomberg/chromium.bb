@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace mojo {
 // TODO(https://crbug.com/789854) Remove these converters once

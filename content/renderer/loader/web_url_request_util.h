@@ -13,7 +13,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 

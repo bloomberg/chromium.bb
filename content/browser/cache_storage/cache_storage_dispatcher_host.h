@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace url {
 class Origin;

@@ -21,7 +21,7 @@
 #include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 

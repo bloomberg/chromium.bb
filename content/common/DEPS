@@ -53,7 +53,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h",
   "+third_party/blink/public/platform/modules/device_orientation/WebDeviceMotionData.h",
   "+third_party/blink/public/platform/modules/device_orientation/WebDeviceOrientationData.h",
-  "+third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h",
   "+third_party/blink/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
   "+third_party/blink/public/platform/modules/permissions/permission.mojom.h",
