@@ -54,8 +54,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
             intent.setPackage(mActivity.getPackageName());
             mActivity.getWebappInfo().setWebappIntentExtras(intent);
 
-            intent.putExtra(
-                    ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, startUrl));
+            intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(startUrl));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
         }

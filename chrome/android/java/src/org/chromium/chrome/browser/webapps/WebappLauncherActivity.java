@@ -59,17 +59,16 @@ public class WebappLauncherActivity extends Activity {
         super.onCreate(savedInstanceState);
         long createTimestamp = SystemClock.elapsedRealtime();
 
-        Context appContext = getApplicationContext();
         ChromeWebApkHost.init();
         Intent intent = getIntent();
-        WebappInfo webappInfo = tryCreateWebappInfo(appContext, intent);
+        WebappInfo webappInfo = tryCreateWebappInfo(intent);
 
         if (shouldRelaunchWebApk(intent, webappInfo)) {
             relaunchWebApk(this, intent, webappInfo);
             return;
         }
 
-        if (shouldLaunchWebapp(appContext, intent, webappInfo)) {
+        if (shouldLaunchWebapp(intent, webappInfo)) {
             launchWebapp(this, intent, webappInfo, createTimestamp);
             return;
         }
@@ -77,8 +76,7 @@ public class WebappLauncherActivity extends Activity {
         launchInTab(this, intent, webappInfo);
     }
 
-    private static boolean shouldLaunchWebapp(
-            Context appContext, Intent intent, WebappInfo webappInfo) {
+    private static boolean shouldLaunchWebapp(Intent intent, WebappInfo webappInfo) {
         // {@link WebApkInfo#create()} and {@link WebappInfo#create()} return null if the intent
         // does not specify required values such as the uri.
         if (webappInfo == null) return false;
@@ -86,7 +84,7 @@ public class WebappLauncherActivity extends Activity {
         String webappUrl = webappInfo.uri().toString();
         String webappMac = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_MAC);
 
-        return (webappInfo.isForWebApk() || isValidMacForUrl(appContext, webappUrl, webappMac)
+        return (webappInfo.isForWebApk() || isValidMacForUrl(webappUrl, webappMac)
                 || wasIntentFromChrome(intent));
     }
 
@@ -176,7 +174,7 @@ public class WebappLauncherActivity extends Activity {
     /** Extracts start URL from source intent and launches URL in Chrome tab. */
     private static void launchInTab(
             Activity launchingActivity, Intent sourceIntent, WebappInfo webappInfo) {
-        Context appContext = launchingActivity.getApplicationContext();
+        Context appContext = ContextUtils.getApplicationContext();
         String webappUrl = IntentUtils.safeGetStringExtra(sourceIntent, ShortcutHelper.EXTRA_URL);
         int webappSource = (webappInfo == null) ? ShortcutSource.UNKNOWN : webappInfo.source();
 
@@ -202,14 +200,13 @@ public class WebappLauncherActivity extends Activity {
      * The MAC is used to prevent malicious apps from launching Chrome into a full screen
      * Activity for phishing attacks (among other reasons).
      *
-     * @param context
      * @param url The URL for the web app.
      * @param mac MAC to compare the URL against.  See {@link WebappAuthenticator}.
      * @return Whether the MAC is valid for the URL.
      */
-    private static boolean isValidMacForUrl(Context context, String url, String mac) {
+    private static boolean isValidMacForUrl(String url, String mac) {
         return mac != null
-                && WebappAuthenticator.isUrlValid(context, url, Base64.decode(mac, Base64.DEFAULT));
+                && WebappAuthenticator.isUrlValid(url, Base64.decode(mac, Base64.DEFAULT));
     }
 
     private static boolean wasIntentFromChrome(Intent intent) {
@@ -315,14 +312,15 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /** Tries to create WebappInfo/WebApkInfo for the intent. */
-    private static WebappInfo tryCreateWebappInfo(Context appContext, Intent intent) {
+    private static WebappInfo tryCreateWebappInfo(Intent intent) {
         // Builds WebApkInfo for the intent if the WebAPK package specified in the intent is a valid
         // WebAPK and the URL specified in the intent can be fulfilled by the WebAPK.
         String webApkPackage =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
         if (!TextUtils.isEmpty(webApkPackage) && !TextUtils.isEmpty(url)
-                && WebApkValidator.canWebApkHandleUrl(appContext, webApkPackage, url)) {
+                && WebApkValidator.canWebApkHandleUrl(
+                        ContextUtils.getApplicationContext(), webApkPackage, url)) {
             return WebApkInfo.create(intent);
         }
 
