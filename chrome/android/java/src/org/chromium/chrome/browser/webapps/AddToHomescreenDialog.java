@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Icon;
-import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -232,27 +229,13 @@ public class AddToHomescreenDialog implements View.OnClickListener {
 
     /**
      * Called when the home screen icon is available. Must be called after onUserTitleAvailable().
-     * @param icon that will be used in the launcher.
+     * @param icon Icon to use in the launcher.
      */
     public void onIconAvailable(Bitmap icon) {
-        mIconView.setImageBitmap(icon);
-        setIconAvailable();
-    }
-
-    /**
-     * Called when the home screen icon is available and was generated to be an Android adaptable
-     * icon. Must be called after onUserTitleAvailable().
-     * @param icon that will be used in the launcher.
-     */
-    @TargetApi(Build.VERSION_CODES.O)
-    public void onAdaptableIconAvailable(Bitmap icon) {
-        mIconView.setImageIcon(Icon.createWithAdaptiveBitmap(icon));
-        setIconAvailable();
-    }
-
-    private void setIconAvailable() {
         mProgressBarView.setVisibility(View.GONE);
         mIconView.setVisibility(View.VISIBLE);
+        mIconView.setImageBitmap(icon);
+
         mHasIcon = true;
         updateAddButtonEnabledState();
     }

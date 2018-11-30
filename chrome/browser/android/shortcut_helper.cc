@@ -79,7 +79,6 @@ void GetHomescreenIconAndSplashImageSizes() {
 void AddWebappWithSkBitmap(const ShortcutInfo& info,
                            const std::string& webapp_id,
                            const SkBitmap& icon_bitmap,
-                           bool is_icon_maskable,
                            const base::Closure& splash_image_callback) {
   // Send the data to the Java side to create the shortcut.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -114,8 +113,8 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
 
   Java_ShortcutHelper_addWebapp(
       env, java_webapp_id, java_url, java_scope_url, java_user_title, java_name,
-      java_short_name, java_best_primary_icon_url, java_bitmap,
-      is_icon_maskable, info.display, info.orientation, info.source,
+      java_short_name, java_best_primary_icon_url, java_bitmap, info.display,
+      info.orientation, info.source,
       OptionalSkColorToJavaColor(info.theme_color),
       OptionalSkColorToJavaColor(info.background_color), java_splash_screen_url,
       callback_pointer);
@@ -124,8 +123,7 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
 // Adds a shortcut which opens in a browser tab to the launcher.
 void AddShortcutWithSkBitmap(const ShortcutInfo& info,
                              const std::string& id,
-                             const SkBitmap& icon_bitmap,
-                             bool is_icon_maskable) {
+                             const SkBitmap& icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_id =
       base::android::ConvertUTF8ToJavaString(env, id);
@@ -138,7 +136,7 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
-                                  java_bitmap, is_icon_maskable, info.source);
+                                  java_bitmap, info.source);
 }
 
 }  // anonymous namespace
@@ -173,20 +171,19 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
 void ShortcutHelper::AddToLauncherWithSkBitmap(
     content::WebContents* web_contents,
     const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap,
-    bool is_icon_maskable) {
+    const SkBitmap& icon_bitmap) {
   std::string webapp_id = base::GenerateGUID();
   if (info.display == blink::kWebDisplayModeStandalone ||
       info.display == blink::kWebDisplayModeFullscreen ||
       info.display == blink::kWebDisplayModeMinimalUi) {
     AddWebappWithSkBitmap(
-        info, webapp_id, icon_bitmap, is_icon_maskable,
+        info, webapp_id, icon_bitmap,
         base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents,
                    info.splash_image_url, info.ideal_splash_image_size_in_px,
                    info.minimum_splash_image_size_in_px, webapp_id));
     return;
   }
-  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap, is_icon_maskable);
+  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {
@@ -258,7 +255,6 @@ void ShortcutHelper::StoreWebappSplashImage(const std::string& webapp_id,
 // static
 SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
     const SkBitmap& bitmap,
-    bool is_icon_maskable,
     const GURL& url,
     bool* is_generated) {
   base::AssertLongCPUWorkAllowed();
@@ -272,8 +268,8 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
                                                          bitmap.height())) {
       ScopedJavaLocalRef<jobject> java_bitmap =
           gfx::ConvertToJavaBitmap(&bitmap);
-      result = Java_ShortcutHelper_createHomeScreenIconFromWebIcon(
-          env, java_bitmap, is_icon_maskable);
+      result =
+          Java_ShortcutHelper_createHomeScreenIconFromWebIcon(env, java_bitmap);
     }
   }
 

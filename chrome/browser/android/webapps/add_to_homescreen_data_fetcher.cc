@@ -46,8 +46,10 @@ GURL GetShortcutUrl(content::WebContents* web_contents) {
 }
 
 bool DoesAndroidSupportMaskableIcons() {
+  // TODO(peconn): Enable once Chrome on Android correctly handles maskable
+  // icons (https://crbug.com/904354).
   return base::android::BuildInfo::GetInstance()->sdk_int() >=
-         base::android::SDK_VERSION_OREO;
+         base::android::SDK_VERSION_OREO && false;
 }
 
 InstallableParams ParamsToPerformManifestAndIconFetch() {
@@ -75,11 +77,10 @@ InstallableParams ParamsToPerformInstallableCheck() {
 // - the generated icon
 // - whether |icon| was used in generating the launcher icon
 std::pair<SkBitmap, bool> CreateLauncherIconInBackground(const GURL& start_url,
-                                                         const SkBitmap& icon,
-                                                         bool maskable) {
+                                                         const SkBitmap& icon) {
   bool is_generated = false;
   SkBitmap primary_icon = ShortcutHelper::FinalizeLauncherIconInBackground(
-      icon, maskable, start_url, &is_generated);
+      icon, start_url, &is_generated);
   return std::make_pair(primary_icon, is_generated);
 }
 
@@ -98,8 +99,7 @@ std::pair<SkBitmap, bool> CreateLauncherIconFromFaviconInBackground(
     gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
                           bitmap_result.bitmap_data->size(), &decoded);
   }
-  return CreateLauncherIconInBackground(start_url, decoded,
-                                        /* maskable */ false);
+  return CreateLauncherIconInBackground(start_url, decoded);
 }
 
 void RecordAddToHomescreenDialogDuration(base::TimeDelta duration) {
@@ -238,7 +238,6 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
   }
 
   raw_primary_icon_ = *data.primary_icon;
-  has_maskable_primary_icon_ = data.has_maskable_primary_icon;
   shortcut_info_.best_primary_icon_url = data.primary_icon_url;
 
   // Save the splash screen URL for the later download.
@@ -347,8 +346,7 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& icon) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&CreateLauncherIconInBackground, shortcut_info_.url, icon,
-                     has_maskable_primary_icon_),
+      base::BindOnce(&CreateLauncherIconInBackground, shortcut_info_.url, icon),
       base::BindOnce(&AddToHomescreenDataFetcher::NotifyObserver,
                      weak_ptr_factory_.GetWeakPtr()));
 }
