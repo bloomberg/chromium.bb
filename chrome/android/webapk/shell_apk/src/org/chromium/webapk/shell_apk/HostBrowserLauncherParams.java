@@ -43,13 +43,21 @@ public class HostBrowserLauncherParams {
 
         int hostBrowserMajorChromiumVersion = HostBrowserUtils.queryHostBrowserMajorChromiumVersion(
                 context, hostBrowserPackageName);
+        long intentLaunchTimeMs = intent.getLongExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, -1);
+        if (intentLaunchTimeMs > 0) {
+            launchTimeMs = intentLaunchTimeMs;
+        }
 
         String startUrl = null;
         int source = WebApkConstants.SHORTCUT_SOURCE_UNKNOWN;
         boolean forceNavigation = false;
 
+        // If the intent was from the WebAPK relaunching itself or from the host browser relaunching
+        // the WebAPK via {@link H2OLauncher#requestRelaunchFromHostBrowser()}, we cannot determine
+        // whether the intent is a share intent from the intent's action.
         String selectedShareTargetActivityClassName = intent.getStringExtra(
                 WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+
         if (Intent.ACTION_SEND.equals(intent.getAction())
                 || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             selectedShareTargetActivityClassName = intent.getComponent().getClassName();
