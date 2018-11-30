@@ -389,6 +389,7 @@ crbug.com/865262 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/tex
 crbug.com/876050 [ Mac ] virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
 crbug.com/910627 webexposed/global-interface-listing-shared-worker.html [ Slow ]
+crbug.com/910627 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ Slow ]
 
 ### virtual/gpu/fast/canvas/ blending layout tests are slow
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
