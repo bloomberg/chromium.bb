@@ -45,10 +45,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // not if the lock is empty or applies to an entire scheme (e.g., file://).
   static bool IsOriginLockASite(const GURL& lock_url);
 
-  // See SiteInstance::IsSameWebSite.
-  // This version allows comparing URLs without converting them to effective
-  // URLs first, which is useful for avoiding OOPIFs when otherwise same-site
-  // URLs may look cross-site via their effective URLs.
+  // Return whether both URLs are part of the same web site, for the purpose of
+  // assigning them to processes accordingly.  The decision is currently based
+  // on the registered domain of the URLs (google.com, bbc.co.uk), as well as
+  // the scheme (https, http).  Note that if the destination is a blank page,
+  // we consider that to be part of the same web site for the purposes for
+  // process assignment.  |should_compare_effective_urls| allows comparing URLs
+  // without converting them to effective URLs first.  This is useful for
+  // avoiding OOPIFs when otherwise same-site URLs may look cross-site via
+  // their effective URLs.
   static bool IsSameWebSite(content::BrowserContext* browser_context,
                             const GURL& src_url,
                             const GURL& dest_url,
@@ -64,6 +69,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
+  bool IsSameSiteWithURL(const GURL& url) override;
 
   // The policy to apply when selecting a RenderProcessHost for the
   // SiteInstance. If no suitable RenderProcessHost for the SiteInstance exists

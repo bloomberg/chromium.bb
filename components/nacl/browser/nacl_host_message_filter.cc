@@ -171,12 +171,8 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
     GURL gurl(original_request_list[i].resource_url);
     // Important security check: Do the same check as OpenNaClExecutable()
     // in nacl_file_host.cc.
-    if (!content::SiteInstance::IsSameWebSite(
-            site_instance->GetBrowserContext(),
-            site_instance->GetSiteURL(),
-            gurl)) {
+    if (!site_instance->IsSameSiteWithURL(gurl))
       continue;
-    }
     safe_launch_params.resource_prefetch_request_list.push_back(
         original_request_list[i]);
   }

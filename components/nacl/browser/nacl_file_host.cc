@@ -245,9 +245,7 @@ void OpenNaClExecutable(
     return;
   }
   content::SiteInstance* site_instance = rvh->GetSiteInstance();
-  if (!content::SiteInstance::IsSameWebSite(site_instance->GetBrowserContext(),
-                                            site_instance->GetSiteURL(),
-                                            file_url)) {
+  if (!site_instance->IsSameSiteWithURL(file_url)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }

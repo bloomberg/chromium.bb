@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -764,9 +765,10 @@ class CrossSiteDocumentBlockingServiceWorkerTest : public ContentBrowserTest {
     // Sanity check of test setup - the 2 https servers should be cross-site
     // (the second server should have a different hostname because of the call
     // to SetSSLConfig with CERT_COMMON_NAME_IS_DOMAIN argument).
-    ASSERT_FALSE(SiteInstance::IsSameWebSite(
+    ASSERT_FALSE(SiteInstanceImpl::IsSameWebSite(
         shell()->web_contents()->GetBrowserContext(),
-        GetURLOnServiceWorkerServer("/"), GetURLOnCrossOriginServer("/")));
+        GetURLOnServiceWorkerServer("/"), GetURLOnCrossOriginServer("/"),
+        true /* should_use_effective_urls */));
   }
 
   GURL GetURLOnServiceWorkerServer(const std::string& path) {
