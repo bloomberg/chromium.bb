@@ -4901,8 +4901,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());
   auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
-  extra_data->set_visibility_state(
-      render_view_->GetWebView()->VisibilityState());
+  extra_data->set_is_preprerendering(
+      GetContentClient()->renderer()->IsPrerenderingFrame(this));
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
@@ -7073,11 +7073,6 @@ void RenderFrameImpl::BubbleLogicalScrollInParentFrame(
   DCHECK(!IsMainFrame());
   Send(new FrameHostMsg_BubbleLogicalScrollInParentFrame(routing_id_, direction,
                                                          granularity));
-}
-
-bool RenderFrameImpl::ShouldOverrideVisibilityAsPrerender() const {
-  return GetContentClient()->renderer()->ShouldOverrideVisibilityAsPrerender(
-      this);
 }
 
 bool RenderFrameImpl::IsBrowserSideNavigationPending() {

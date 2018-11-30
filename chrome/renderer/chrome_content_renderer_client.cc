@@ -1362,7 +1362,7 @@ ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
 }
 
-bool ChromeContentRendererClient::ShouldOverrideVisibilityAsPrerender(
+bool ChromeContentRendererClient::IsPrerenderingFrame(
     const content::RenderFrame* render_frame) {
   return prerender::PrerenderHelper::IsPrerendering(render_frame);
 }

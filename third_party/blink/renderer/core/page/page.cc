@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page_overlay.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -175,7 +176,7 @@ Page::Page(PageClients& page_clients)
       tab_key_cycles_through_elements_(true),
       paused_(false),
       device_scale_factor_(1),
-      visibility_state_(mojom::PageVisibilityState::kVisible),
+      is_hidden_(false),
       page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
       subframe_count_(0),
@@ -450,16 +451,15 @@ void Page::VisitedStateChanged(LinkHash link_hash) {
   }
 }
 
-void Page::SetVisibilityState(mojom::PageVisibilityState visibility_state,
-                              bool is_initial_state) {
-  if (visibility_state_ == visibility_state)
+void Page::SetIsHidden(bool hidden, bool is_initial_state) {
+  if (is_hidden_ == hidden)
     return;
-  visibility_state_ = visibility_state;
+  is_hidden_ = hidden;
 
   if (is_initial_state)
     return;
-  NotifyPageVisibilityChanged();
 
+  NotifyPageVisibilityChanged();
   if (main_frame_) {
     if (IsPageVisible())
       RestoreSVGImageAnimations();
@@ -467,12 +467,8 @@ void Page::SetVisibilityState(mojom::PageVisibilityState visibility_state,
   }
 }
 
-mojom::PageVisibilityState Page::VisibilityState() const {
-  return visibility_state_;
-}
-
 bool Page::IsPageVisible() const {
-  return VisibilityState() == mojom::PageVisibilityState::kVisible;
+  return !is_hidden_;
 }
 
 void Page::SetLifecycleState(PageLifecycleState state) {

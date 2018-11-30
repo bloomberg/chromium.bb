@@ -767,11 +767,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Visibility ----------------------------------------------------------
 
-  // Returns the current visibility of the WebFrame.
-  virtual mojom::PageVisibilityState VisibilityState() const {
-    return mojom::PageVisibilityState::kVisible;
-  }
-
   // Overwrites the given URL to use an HTML5 embed if possible.
   // An empty URL is returned if the URL is not overriden.
   virtual WebURL OverrideFlashEmbedWithHTML(const WebURL& url) {

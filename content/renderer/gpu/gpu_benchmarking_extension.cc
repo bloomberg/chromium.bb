@@ -1200,8 +1200,8 @@ void GpuBenchmarking::Freeze() {
     return;
   // TODO(fmeawad): Instead of forcing a visibility change, only allow
   // freezing a page if it was already hidden.
-  context.web_view()->SetVisibilityState(
-      blink::mojom::PageVisibilityState::kHidden, false);
+  context.web_view()->SetIsHidden(/*hidden=*/true,
+                                  /*is_initial_state=*/false);
   context.web_view()->SetPageFrozen(true);
 }
 

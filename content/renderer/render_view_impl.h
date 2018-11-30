@@ -166,11 +166,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
     return page_zoom_level_;
   }
 
-  // Returns the latest hidden state of the Page as given by the browser. The
-  // real visibility can be seen on the WebView, which may have been overridden
-  // by the renderer.
-  bool browser_specified_page_is_hidden() { return page_is_hidden_; }
-
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.
   void SetFocus(bool enable);
@@ -279,7 +274,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
   blink::WebFrameWidget* GetWebFrameWidget() override;
-  void ResetVisibilityState() override;
   bool GetContentStateImmediately() const override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
@@ -320,12 +314,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Do not delete directly.  This class is reference counted.
   ~RenderViewImpl() override;
 
-  // Called when Page visibility is changed, with the final visibility state to
-  // be used. This is separate from the IPC handlers as they may inject logic to
-  // choose a visibility state, and tests may call this directly to skip past
-  // that logic and test a given state directly.
-  void ApplyPageVisibility(blink::mojom::PageVisibilityState visibility_state,
-                           bool initial_setting);
+  // Called when Page visibility is changed, to update the View/Page in blink.
+  // This is separate from the IPC handlers as tests may call this and need to
+  // be able to specify |initial_setting| where IPC handlers do not.
+  void ApplyPageHidden(bool hidden, bool initial_setting);
 
  private:
   // For unit tests.
@@ -580,12 +572,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   int history_list_length_ = 0;
 
   // UI state ------------------------------------------------------------------
-
-  // The browser tells us to mark the Page as shown or hidden, and this mirrors
-  // the last set value from the browser. We must remember this state as the
-  // renderer may override the value and we need the capability to reset back
-  // to what the browser last gave.
-  bool page_is_hidden_;
 
   // The state of our target_url transmissions. When we receive a request to
   // send a URL to the browser, we set this to TARGET_INFLIGHT until an ACK

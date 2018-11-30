@@ -99,10 +99,6 @@ unsigned long long PerformanceNavigationTiming::GetDecodedBodySize() const {
 AtomicString PerformanceNavigationTiming::GetNavigationType(
     WebNavigationType type,
     const Document* document) {
-  if (document && document->GetPageVisibilityState() ==
-                      mojom::PageVisibilityState::kPrerender) {
-    return "prerender";
-  }
   switch (type) {
     case kWebNavigationTypeReload:
       return "reload";

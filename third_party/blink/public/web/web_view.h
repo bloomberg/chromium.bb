@@ -82,11 +82,11 @@ class WebView {
   // as appropriate. It is legal to modify settings before completing
   // initialization.
   //
-  // client may be null, while PageVisibilityState defines the initial
-  // visibility of the page.
+  // clients may be null, but should both be null or not together.
+  // |is_hidden| defines the initial visibility of the page.
   BLINK_EXPORT static WebView* Create(WebViewClient*,
                                       WebWidgetClient*,
-                                      mojom::PageVisibilityState,
+                                      bool is_hidden,
                                       WebView* opener);
 
   // Initializes the various client interfaces.
@@ -371,9 +371,8 @@ class WebView {
   // Visibility -----------------------------------------------------------
 
   // Sets the visibility of the WebView.
-  virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state,
-                                  bool is_initial_state) {}
-  virtual mojom::PageVisibilityState VisibilityState() = 0;
+  virtual void SetIsHidden(bool hidden, bool is_initial_state) = 0;
+  virtual bool IsHidden() = 0;
 
   // PageOverlay ----------------------------------------------------------
 

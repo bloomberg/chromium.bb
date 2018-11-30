@@ -72,7 +72,7 @@ TEST_F(CanvasFontCacheTest, CacheHardLimit) {
 TEST_F(CanvasFontCacheTest, PageVisibilityChange) {
   Context2d()->setFont("10px sans-serif");
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  GetPage().SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   EXPECT_FALSE(Cache()->IsInCache("10px sans-serif"));
 
   Context2d()->setFont("15px sans-serif");
@@ -83,7 +83,7 @@ TEST_F(CanvasFontCacheTest, PageVisibilityChange) {
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
   EXPECT_FALSE(Cache()->IsInCache("15px sans-serif"));
 
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  GetPage().SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   Context2d()->setFont("15px sans-serif");
   Context2d()->setFont("10px sans-serif");
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));

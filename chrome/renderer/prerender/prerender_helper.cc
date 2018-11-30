@@ -14,23 +14,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
-using content::DocumentState;
-
-namespace {
-
-// Updates the visibility state of the RenderFrame.  Must be called whenever
-// prerendering starts or finishes and the page is about to be show.  At both
-// those times, the RenderFrame is hidden.
-void UpdateVisibilityState(content::RenderFrame* render_frame) {
-  // TODO(jam): until the prerendering code works on frames instead of views, we
-  // have to do this awkward check.
-  content::RenderView* render_view = render_frame->GetRenderView();
-  if (render_view->GetMainRenderFrame() == render_frame)
-    render_view->ResetVisibilityState();
-}
-
-}  // namespace
-
 namespace prerender {
 
 PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame,
@@ -41,10 +24,9 @@ PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame,
       prerender_mode_(prerender_mode),
       histogram_prefix_(histogram_prefix) {
   DCHECK_NE(prerender_mode_, NO_PRERENDER);
-  UpdateVisibilityState(render_frame);
 }
 
-PrerenderHelper::~PrerenderHelper() {}
+PrerenderHelper::~PrerenderHelper() = default;
 
 void PrerenderHelper::AddThrottle(
     const base::WeakPtr<PrerenderURLLoaderThrottle>& throttle) {
@@ -86,7 +68,6 @@ void PrerenderHelper::OnSetIsPrerendering(PrerenderMode mode,
 
   auto throttles = std::move(throttles_);
 
-  content::RenderFrame* frame = render_frame();
   // |this| must be deleted so PrerenderHelper::IsPrerendering returns false
   // when the visibility state is updated, so the visibility state string will
   // not be "prerendered".
@@ -96,8 +77,6 @@ void PrerenderHelper::OnSetIsPrerendering(PrerenderMode mode,
     if (resource)
       resource->PrerenderUsed();
   }
-
-  UpdateVisibilityState(frame);
 }
 
 void PrerenderHelper::OnDestruct() {

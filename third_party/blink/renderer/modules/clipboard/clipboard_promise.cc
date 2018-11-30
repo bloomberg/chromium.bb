@@ -39,7 +39,6 @@ namespace blink {
 
 using mojom::blink::PermissionStatus;
 using mojom::blink::PermissionService;
-using mojom::PageVisibilityState;
 
 ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise =

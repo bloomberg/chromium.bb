@@ -819,7 +819,7 @@ void NFC::PageVisibilityChanged() {
 
   // NFC operations should be suspended.
   // https://w3c.github.io/web-nfc/#nfc-suspended
-  if (GetPage()->VisibilityState() == mojom::PageVisibilityState::kVisible)
+  if (GetPage()->IsPageVisible())
     nfc_->ResumeNFCOperations();
   else
     nfc_->SuspendNFCOperations();

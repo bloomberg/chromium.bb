@@ -664,7 +664,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr, /*widget_client=*/nullptr,
-      blink::mojom::PageVisibilityState::kVisible,
+      /*is_hidden=*/false,
       /*opener=*/nullptr);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
@@ -932,7 +932,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/this, /*widget_client=*/this,
-      blink::mojom::PageVisibilityState::kVisible,
+      /*is_hidden=*/false,
       /*opener=*/nullptr);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);

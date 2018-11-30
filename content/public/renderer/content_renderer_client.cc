@@ -150,7 +150,7 @@ ContentRendererClient::GetPrescientNetworking() {
   return nullptr;
 }
 
-bool ContentRendererClient::ShouldOverrideVisibilityAsPrerender(
+bool ContentRendererClient::IsPrerenderingFrame(
     const RenderFrame* render_frame) {
   return false;
 }

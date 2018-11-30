@@ -34,7 +34,6 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -103,8 +102,8 @@ void TestRunnerForSpecificView::Reset() {
     // LayerTreeView.
     main_frame_render_widget()->layer_tree_view()->SetVisible(true);
   }
-  web_view_test_proxy_->ApplyPageVisibility(
-      blink::mojom::PageVisibilityState::kVisible, /*initial_setting=*/true);
+  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/false,
+                                        /*initial_setting=*/true);
 }
 
 bool TestRunnerForSpecificView::RequestPointerLock() {
@@ -479,18 +478,13 @@ void TestRunnerForSpecificView::ForceRedSelectionColors() {
 
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
-  blink::mojom::PageVisibilityState visibility_state;
+  bool hidden;
   if (new_visibility == "visible")
-    visibility_state = blink::mojom::PageVisibilityState::kVisible;
+    hidden = false;
   else if (new_visibility == "hidden")
-    visibility_state = blink::mojom::PageVisibilityState::kHidden;
-  else if (new_visibility == "prerender")
-    visibility_state = blink::mojom::PageVisibilityState::kPrerender;
+    hidden = true;
   else
     return;
-
-  bool visible =
-      visibility_state == blink::mojom::PageVisibilityState::kVisible;
 
   // As would the browser via IPC, set visibility on the RenderWidget then on
   // the Page.
@@ -498,9 +492,9 @@ void TestRunnerForSpecificView::SetPageVisibility(
   // main frame.
   // TODO(danakj): This should set visible on the RenderWidget not just the
   // LayerTreeView.
-  main_frame_render_widget()->layer_tree_view()->SetVisible(visible);
-  web_view_test_proxy_->ApplyPageVisibility(visibility_state,
-                                            /*initial_setting=*/false);
+  main_frame_render_widget()->layer_tree_view()->SetVisible(!hidden);
+  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/hidden,
+                                        /*initial_setting=*/false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(
