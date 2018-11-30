@@ -59,6 +59,13 @@ class TestStrikeDatabase : public StrikeDatabase {
     NOTIMPLEMENTED();
     return 0;
   }
+
+  // Do not use. This virtual function needed to be implemented but
+  // TestStrikeDatabase is not a project class.
+  long long GetExpiryTimeMicros() override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 };
 
 }  // anonymous namespace

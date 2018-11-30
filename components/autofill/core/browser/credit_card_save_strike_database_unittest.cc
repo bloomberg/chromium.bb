@@ -13,7 +13,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_credit_card_save_strike_database.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -42,6 +44,11 @@ class CreditCardSaveStrikeDatabaseTest : public ::testing::Test {
 TEST_F(CreditCardSaveStrikeDatabaseTest, GetKeyForCreditCardSaveTest) {
   const std::string last_four = "1234";
   EXPECT_EQ("CreditCardSave__1234", strike_database_.GetKey(last_four));
+}
+
+TEST_F(CreditCardSaveStrikeDatabaseTest, GetIdForCreditCardSaveTest) {
+  const std::string key = "CreditCardSave__1234";
+  EXPECT_EQ("1234", strike_database_.GetIdPartFromKey(key));
 }
 
 TEST_F(CreditCardSaveStrikeDatabaseTest, MaxStrikesLimitReachedTest) {
@@ -100,6 +107,49 @@ TEST_F(CreditCardSaveStrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
   const std::string last_four = "1234";
   strike_database_.ClearStrikes(last_four);
   EXPECT_EQ(0, strike_database_.GetStrikes(last_four));
+}
+
+TEST_F(CreditCardSaveStrikeDatabaseTest, RemoveExpiredStrikesOnLoadTest) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(AutofillClock::Now());
+  const std::string last_four1 = "1234";
+  const std::string last_four2 = "9876";
+
+  StrikeData data1;
+  data1.set_num_strikes(2);
+  data1.set_last_update_timestamp(
+      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  // Advance clock to past |data1|'s expiry time.
+  test_clock.Advance(base::TimeDelta::FromMicroseconds(
+      strike_database_.GetExpiryTimeMicros() + 1));
+
+  StrikeData data2;
+  data2.set_num_strikes(2);
+  data2.set_last_update_timestamp(
+      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  std::map<std::string, StrikeData> entries;
+  entries[strike_database_.GetKey(last_four1)] = data1;
+  entries[strike_database_.GetKey(last_four2)] = data2;
+
+  // |data1| should have its most recent strike expire, but |data2| should not.
+  strike_database_.OnDatabaseLoadKeysAndEntries(
+      true, std::make_unique<std::map<std::string, StrikeData>>(entries));
+
+  EXPECT_EQ(1, strike_database_.GetStrikes(last_four1));
+  EXPECT_EQ(2, strike_database_.GetStrikes(last_four2));
+
+  // Advance clock to past both |data1| andd |data2|'s expiry time.
+  test_clock.Advance(base::TimeDelta::FromMicroseconds(
+      strike_database_.GetExpiryTimeMicros() + 1));
+
+  // |data1| and |data2| should both have its most recent strike expire.
+  strike_database_.OnDatabaseLoadKeysAndEntries(
+      true, std::make_unique<std::map<std::string, StrikeData>>(entries));
+
+  EXPECT_EQ(0, strike_database_.GetStrikes(last_four1));
+  EXPECT_EQ(1, strike_database_.GetStrikes(last_four2));
 }
 
 }  // namespace autofill
