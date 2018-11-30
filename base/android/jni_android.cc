@@ -58,7 +58,7 @@ JNIEnv* AttachCurrentThread() {
     }
 
     ret = g_jvm->AttachCurrentThread(&env, &args);
-    DCHECK_EQ(JNI_OK, ret);
+    CHECK_EQ(JNI_OK, ret);
   }
   return env;
 }
@@ -71,7 +71,7 @@ JNIEnv* AttachCurrentThreadWithName(const std::string& thread_name) {
   args.group = NULL;
   JNIEnv* env = NULL;
   jint ret = g_jvm->AttachCurrentThread(&env, &args);
-  DCHECK_EQ(JNI_OK, ret);
+  CHECK_EQ(JNI_OK, ret);
   return env;
 }
 
