@@ -19,6 +19,12 @@ issues]].
   of diacritics working
 - Fixes to Latvian braille table thanks to Gatis Grintals and Artis
   Raugulis.
+- Update Bopomofo-based Chinese Braille to version 2018-11 thanks to
+  Bo-Cheng Jhan
+    - Correct the default braille pattern of many Chinese characters
+    - Add various Chinese phrases involving exceptions of braille
+      patterns
+    - Modify dot patterns of dashes for readability reasons
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
