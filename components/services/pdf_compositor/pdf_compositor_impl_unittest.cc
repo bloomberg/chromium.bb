@@ -23,7 +23,7 @@ struct TestRequestData {
 
 class MockPdfCompositorImpl : public PdfCompositorImpl {
  public:
-  MockPdfCompositorImpl() : PdfCompositorImpl("unittest", nullptr) {}
+  MockPdfCompositorImpl() : PdfCompositorImpl(nullptr) {}
   ~MockPdfCompositorImpl() override {}
 
   MOCK_METHOD2(OnFulfillRequest, void(uint64_t, int));
@@ -95,7 +95,7 @@ class PdfCompositorImplCrashKeyTest : public PdfCompositorImplTest {
 };
 
 TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
-  PdfCompositorImpl impl("unittest", nullptr);
+  PdfCompositorImpl impl(nullptr);
   // Frame 2 and 3 are painted.
   impl.AddSubframeContent(2, CreateTestData(2, -1), ContentToFrameMap());
   impl.AddSubframeContent(3, CreateTestData(3, -1), ContentToFrameMap());
@@ -131,7 +131,7 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
 }
 
 TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
-  PdfCompositorImpl impl("unittest", nullptr);
+  PdfCompositorImpl impl(nullptr);
   // Frame 3 has content 1 which refers to subframe 1.
   ContentToFrameMap subframe_content_map = {{1, 1}};
   impl.AddSubframeContent(3, CreateTestData(3, -1), subframe_content_map);
@@ -171,7 +171,7 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
 }
 
 TEST_F(PdfCompositorImplTest, DependencyLoop) {
-  PdfCompositorImpl impl("unittest", nullptr);
+  PdfCompositorImpl impl(nullptr);
   // Frame 3 has content 1, which refers to frame 1.
   // Frame 1 has content 3, which refers to frame 3.
   ContentToFrameMap subframe_content_map = {{3, 3}};
@@ -304,7 +304,7 @@ TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
 }
 
 TEST_F(PdfCompositorImplCrashKeyTest, SetCrashKey) {
-  PdfCompositorImpl impl("unittest", nullptr);
+  PdfCompositorImpl impl(nullptr);
   std::string url_str("https://www.example.com/");
   GURL url(url_str);
   impl.SetWebContentsURL(url);

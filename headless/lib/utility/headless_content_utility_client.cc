@@ -38,8 +38,7 @@ HeadlessContentUtilityClient::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
   if (service_name == printing::mojom::kServiceName) {
-    return printing::CreatePdfCompositorService(user_agent_,
-                                                std::move(request));
+    return printing::CreatePdfCompositorService(std::move(request));
   }
 #endif
 

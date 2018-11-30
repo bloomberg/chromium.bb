@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_UTILS_H_
 #define COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_UTILS_H_
 
+#include <string>
+
 struct PrintMsg_Print_Params;
 
 namespace content {
@@ -19,7 +21,8 @@ bool IsOopifEnabled();
 
 // Check on the current feature settings to decide whether we need to
 // create a PDF compositor client for this |web_contents|.
-void CreateCompositeClientIfNeeded(content::WebContents* web_contents);
+void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
+                                   const std::string& user_agent);
 
 // Converts given settings to Print_Params and stores them in the output
 // parameter |params|.

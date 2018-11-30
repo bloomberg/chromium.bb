@@ -261,6 +261,7 @@ mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
   mojom::PdfCompositorPtr compositor;
   connector_->BindInterface(mojom::kServiceName, &compositor);
   compositor->SetWebContentsURL(web_contents()->GetLastCommittedURL());
+  compositor->SetUserAgent(user_agent_);
   return compositor;
 }
 
