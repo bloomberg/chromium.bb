@@ -13,10 +13,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/push_client_channel.h"
@@ -444,7 +444,7 @@ class SyncInvalidationListenerTest : public testing::Test {
   ObjectIdSet registered_ids_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   notifier::FakePushClient* const fake_push_client_;
 
  protected:

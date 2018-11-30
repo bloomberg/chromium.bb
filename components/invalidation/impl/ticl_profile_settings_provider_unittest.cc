@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
@@ -40,7 +40,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
 
   TiclInvalidationService::InvalidationNetworkChannel GetNetworkChannel();
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> net_config_helper_;
   gcm::FakeGCMDriver gcm_driver_;
 
