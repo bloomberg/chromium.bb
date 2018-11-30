@@ -159,6 +159,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                  'cups'}),
     GroupEntry(group='tun', gid=413, users={'crosvm', 'shill'}),
     GroupEntry(group='gpio', gid=414, users={'modem'}),
+    GroupEntry(group='suzy-q', gid=415, users={'chronos', 'rma_fw_keeper'}),
     GroupEntry(group='shill', gid=20104, users={'shill', 'ipsec'}),
     GroupEntry(group='fuse-drivefs', gid=304, users={'chronos'}),
     GroupEntry(group='password-viewers', gid=611, users={'shill'}),
