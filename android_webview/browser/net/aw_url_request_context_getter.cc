@@ -85,6 +85,7 @@ bool g_check_cleartext_permitted = false;
 
 
 const char kProxyServerSwitch[] = "proxy-server";
+const char kProxyBypassListSwitch[] = "proxy-bypass-list";
 
 void ApplyCmdlineOverridesToHostResolver(
     net::MappedHostResolver* host_resolver) {
@@ -292,9 +293,17 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kProxyServerSwitch)) {
     std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy);
+    if (command_line.HasSwitch(kProxyBypassListSwitch)) {
+      std::string bypass_list =
+          command_line.GetSwitchValueASCII(kProxyBypassListSwitch);
+      proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
+    }
+
     builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixed(proxy,
-                                                 NO_TRAFFIC_ANNOTATION_YET));
+        net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
+            proxy_config, NO_TRAFFIC_ANNOTATION_YET)));
   } else {
     // Retain a pointer to the config proxy service before ownership is passed
     // on.
