@@ -182,6 +182,55 @@ void RenderFrameDevToolsAgentHost::WebContentsCreated(
   }
 }
 
+// static
+void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
+    RenderFrameHostImpl* old_rfh,
+    RenderFrameHostImpl* new_rfh) {
+  DCHECK_NE(old_rfh, new_rfh);
+  RenderProcessHost* old_rph = old_rfh ? old_rfh->GetProcess() : nullptr;
+  RenderProcessHost* new_rph = new_rfh ? new_rfh->GetProcess() : nullptr;
+  if (old_rph == new_rph)
+    return;
+  std::set<url::Origin> old_process_origins;
+  std::set<url::Origin> new_process_origins;
+  for (const auto& entry : g_agent_host_instances.Get()) {
+    RenderFrameHostImpl* frame_host = entry.second->frame_host_;
+    if (!frame_host)
+      continue;
+    // Do not skip the nodes if they're about to get attached.
+    if (!entry.second->IsAttached() &&
+        (!new_rfh || entry.first != new_rfh->frame_tree_node())) {
+      continue;
+    }
+    RenderProcessHost* process_host = frame_host->GetProcess();
+    if (process_host == old_rph)
+      old_process_origins.insert(frame_host->GetLastCommittedOrigin());
+    else if (process_host == new_rph)
+      new_process_origins.insert(frame_host->GetLastCommittedOrigin());
+  }
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (old_rph && old_process_origins.empty()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
+          old_rph->GetID());
+    }
+    if (new_rph && !new_process_origins.empty()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+          new_rph->GetID());
+    }
+    return;
+  }
+  if (old_rph) {
+    GetNetworkService()->SetRawHeadersAccess(
+        old_rph->GetID(), std::vector<url::Origin>(old_process_origins.begin(),
+                                                   old_process_origins.end()));
+  }
+  if (new_rph) {
+    GetNetworkService()->SetRawHeadersAccess(
+        new_rph->GetID(), std::vector<url::Origin>(new_process_origins.begin(),
+                                                   new_process_origins.end()));
+  }
+}
+
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     FrameTreeNode* frame_tree_node)
     : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
@@ -266,7 +315,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
     if (!use_video_capture_api)
       frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
-    GrantPolicy();
+    UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
 #endif
@@ -278,7 +327,7 @@ void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (sessions().empty()) {
     frame_trace_recorder_.reset();
-    RevokePolicy();
+    UpdateRawHeadersAccess(frame_host_, nullptr);
 #if defined(OS_ANDROID)
     GetWakeLock()->CancelWakeLock();
 #endif
@@ -371,10 +420,10 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     return;
   }
 
-  if (IsAttached())
-    RevokePolicy();
-
+  RenderFrameHostImpl* old_host = frame_host_;
   frame_host_ = frame_host;
+  if (IsAttached())
+    UpdateRawHeadersAccess(old_host, frame_host);
 
   std::vector<DevToolsSession*> restricted_sessions;
   for (DevToolsSession* session : sessions()) {
@@ -390,44 +439,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
       inspector->TargetReloadedAfterCrash();
   }
 
-  if (IsAttached())
-    GrantPolicy();
   UpdateRendererChannel(IsAttached());
-}
-
-void RenderFrameDevToolsAgentHost::GrantPolicy() {
-  if (!frame_host_)
-    return;
-  uint32_t process_id = frame_host_->GetProcess()->GetID();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    GetNetworkService()->SetRawHeadersAccess(process_id, true);
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-      process_id);
-}
-
-void RenderFrameDevToolsAgentHost::RevokePolicy() {
-  if (!frame_host_)
-    return;
-
-  bool process_has_agents = false;
-  RenderProcessHost* process_host = frame_host_->GetProcess();
-  for (const auto& ftn_agent : g_agent_host_instances.Get()) {
-    RenderFrameDevToolsAgentHost* agent = ftn_agent.second;
-    if (!agent->IsAttached())
-      continue;
-    if (agent->frame_host_ && agent->frame_host_ != frame_host_ &&
-        agent->frame_host_->GetProcess() == process_host) {
-      process_has_agents = true;
-    }
-  }
-
-  // We are the last to disconnect from the renderer -> revoke permissions.
-  if (!process_has_agents) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      GetNetworkService()->SetRawHeadersAccess(process_host->GetID(), false);
-    ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-        process_host->GetID());
-  }
 }
 
 void RenderFrameDevToolsAgentHost::DidStartNavigation(
@@ -472,9 +484,10 @@ void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
 
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
-  if (IsAttached())
-    RevokePolicy();
-  ForceDetachAllSessions();
+  if (IsAttached()) {
+    ForceDetachAllSessions();
+    UpdateRawHeadersAccess(frame_host_, nullptr);
+  }
   frame_host_ = nullptr;
   UpdateRendererChannel(IsAttached());
   SetFrameTreeNode(nullptr);

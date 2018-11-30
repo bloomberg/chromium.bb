@@ -90,6 +90,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
+
+  static void UpdateRawHeadersAccess(RenderFrameHostImpl* old_rfh,
+                                     RenderFrameHostImpl* new_rfh);
+
   explicit RenderFrameDevToolsAgentHost(FrameTreeNode*);
   ~RenderFrameDevToolsAgentHost() override;
 
@@ -118,8 +122,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
-  void GrantPolicy();
-  void RevokePolicy();
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
 
   bool ShouldAllowSession(DevToolsSession* session);

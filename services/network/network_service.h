@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -158,7 +159,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
   void ConfigureHttpAuthPrefs(
       mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
-  void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
+  void SetRawHeadersAccess(uint32_t process_id,
+                           const std::vector<url::Origin>& origins) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
   void GetNetworkQualityEstimatorManager(
@@ -192,7 +194,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnBeforeURLRequest();
 
   bool quic_disabled() const { return quic_disabled_; }
-  bool HasRawHeadersAccess(uint32_t process_id) const;
+  bool HasRawHeadersAccess(uint32_t process_id, const GURL& resource_url) const;
 
   mojom::NetworkServiceClient* client() { return client_.get(); }
   net::NetworkQualityEstimator* network_quality_estimator() {
@@ -296,7 +298,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // this with |owned_network_contexts_|.
   std::set<NetworkContext*> network_contexts_;
 
-  std::set<uint32_t> processes_with_raw_headers_access_;
+  // A per-process_id map of origins that are white-listed to allow
+  // them to request raw headers for resources they request.
+  std::map<uint32_t, base::flat_set<url::Origin>>
+      raw_headers_access_origins_by_pid_;
 
   bool quic_disabled_ = false;
 

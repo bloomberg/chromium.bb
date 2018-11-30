@@ -426,20 +426,27 @@ void NetworkService::ConfigureHttpAuthPrefs(
 #endif
 }
 
-void NetworkService::SetRawHeadersAccess(uint32_t process_id, bool allow) {
+void NetworkService::SetRawHeadersAccess(
+    uint32_t process_id,
+    const std::vector<url::Origin>& origins) {
   DCHECK(process_id);
-  if (allow)
-    processes_with_raw_headers_access_.insert(process_id);
-  else
-    processes_with_raw_headers_access_.erase(process_id);
+  if (!origins.size()) {
+    raw_headers_access_origins_by_pid_.erase(process_id);
+  } else {
+    raw_headers_access_origins_by_pid_[process_id] =
+        base::flat_set<url::Origin>(origins.begin(), origins.end());
+  }
 }
 
-bool NetworkService::HasRawHeadersAccess(uint32_t process_id) const {
+bool NetworkService::HasRawHeadersAccess(uint32_t process_id,
+                                         const GURL& resource_url) const {
   // Allow raw headers for browser-initiated requests.
   if (!process_id)
     return true;
-  return processes_with_raw_headers_access_.find(process_id) !=
-         processes_with_raw_headers_access_.end();
+  auto it = raw_headers_access_origins_by_pid_.find(process_id);
+  if (it == raw_headers_access_origins_by_pid_.end())
+    return false;
+  return it->second.find(url::Origin::Create(resource_url)) != it->second.end();
 }
 
 net::NetLog* NetworkService::net_log() const {

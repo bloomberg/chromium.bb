@@ -22,9 +22,6 @@ crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Pass ]
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 
-crbug.com/898306 http/tests/inspector-protocol/network/raw-headers-for-protected-document.js [ Failure ]
-crbug.com/898306 http/tests/inspector-protocol/network/security-info-on-response.js [ Failure ]
-
 # Reports aren't allowed under content_shell NS
 crbug.com/910212 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-404.https.html [ Failure ]
 crbug.com/910212 virtual/network-error-logging/external/wpt/network-error-logging/sends-report-on-cache-validation.https.html [ Failure ]

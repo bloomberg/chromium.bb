@@ -59,9 +59,9 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
     OnLostConnectionToClient(impl);
   }
 
-  bool CanReadRawCookies() override {
+  bool CanReadRawCookies(const GURL& url) override {
     return factory_->context_->network_service()->HasRawHeadersAccess(
-        process_id_);
+        process_id_, url);
   }
 
   void OnCreateURLRequest(int child_id,
