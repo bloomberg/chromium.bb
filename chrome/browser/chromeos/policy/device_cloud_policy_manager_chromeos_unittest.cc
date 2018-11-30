@@ -47,6 +47,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"

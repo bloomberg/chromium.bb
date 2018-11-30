@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -82,7 +83,14 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   // Functions for configuring the job. These should only be called before
   // Start()ing the job, but never afterwards.
   void SetClientID(const std::string& client_id);
+
+  // Sets authorization data that will be passed in 'Authorization' header of
+  // the request. This method does not accept OAuth token. Use
+  // SetOAuthTokenParameter() to pass OAuth token.
   void SetAuthData(std::unique_ptr<DMAuth> auth);
+
+  // Sets OAuth token that will be passed as a request query parameter.
+  void SetOAuthTokenParameter(const std::string& oauth_token);
 
   // Sets the critical request parameter, which is used to differentiate regular
   // DMServer requests (like scheduled policy fetches) from time-sensitive ones
@@ -118,7 +126,14 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   JobType type_;
   ParameterMap query_params_;
 
+  // Auth data that will be passed as 'Authorization' header. Both |auth_data_|
+  // and |oauth_token_| can be specified for one request.
   std::unique_ptr<DMAuth> auth_data_;
+
+  // OAuth token that will be passed as a query parameter. Both |auth_data_|
+  // and |oauth_token_| can be specified for one request.
+  base::Optional<std::string> oauth_token_;
+
   enterprise_management::DeviceManagementRequest request_;
   RetryCallback retry_callback_;
 

@@ -203,19 +203,19 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                                  em::DeviceRegisterRequest::Flavor flavor,
                                  em::DeviceRegisterRequest::Lifetime lifetime,
                                  em::LicenseType::LicenseTypeEnum license_type,
-                                 std::unique_ptr<DMAuth> auth,
+                                 const std::string& oauth_token,
                                  const std::string& client_id,
                                  const std::string& requisition,
                                  const std::string& current_state_key) {
   DCHECK(service_);
-  DCHECK(auth->has_oauth_token());
+  DCHECK(!oauth_token.empty());
   DCHECK(!is_registered());
 
   SetClientId(client_id);
 
   policy_fetch_request_job_.reset(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REGISTRATION, GetURLLoaderFactory()));
-  policy_fetch_request_job_->SetAuthData(std::move(auth));
+  policy_fetch_request_job_->SetOAuthTokenParameter(oauth_token);
   policy_fetch_request_job_->SetClientID(client_id_);
 
   em::DeviceRegisterRequest* request =
@@ -662,7 +662,11 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
       DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
       GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  if (auth->has_oauth_token()) {
+    request_job->SetOAuthTokenParameter(auth->oauth_token());
+  } else {
+    request_job->SetAuthData(std::move(auth));
+  }
   request_job->SetClientID(client_id_);
 
   request_job->GetRequest()->
@@ -688,7 +692,11 @@ void CloudPolicyClient::UpdateDeviceAttributes(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE,
                           GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  if (auth->has_oauth_token()) {
+    request_job->SetOAuthTokenParameter(auth->oauth_token());
+  } else {
+    request_job->SetAuthData(std::move(auth));
+  }
   request_job->SetClientID(client_id_);
 
   em::DeviceAttributeUpdateRequest* request =
@@ -706,15 +714,15 @@ void CloudPolicyClient::UpdateDeviceAttributes(
 }
 
 void CloudPolicyClient::RequestAvailableLicenses(
-    std::unique_ptr<DMAuth> auth,
+    const std::string& oauth_token,
     const LicenseRequestCallback& callback) {
-  DCHECK(auth->has_oauth_token());
+  DCHECK(!oauth_token.empty());
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REQUEST_LICENSE_TYPES,
       GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  request_job->SetOAuthTokenParameter(oauth_token);
   request_job->GetRequest()->mutable_check_device_license_request();
 
   const DeviceManagementRequestJob::Callback job_callback =

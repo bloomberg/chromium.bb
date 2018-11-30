@@ -218,7 +218,7 @@ void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   available_licenses_callback_ = license_callback;
   client_->RequestAvailableLicenses(
-      dm_auth_->Clone(),
+      dm_auth_->oauth_token(),
       base::Bind(&EnrollmentHandlerChromeOS::HandleAvailableLicensesResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -439,7 +439,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        dm_auth_->Clone(), client_id_, requisition_, current_state_key_);
+        dm_auth_->oauth_token(), client_id_, requisition_, current_state_key_);
   }
 }
 

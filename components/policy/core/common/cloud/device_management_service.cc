@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,11 +30,6 @@ namespace policy {
 namespace {
 
 const char kPostContentType[] = "application/protobuf";
-
-const char kAuthHeader[] = "Authorization";
-const char kServiceTokenAuthHeaderPrefix[] = "GoogleLogin auth=";
-const char kDMTokenAuthHeaderPrefix[] = "GoogleDMToken token=";
-const char kEnrollmentTokenAuthHeaderPrefix[] = "GoogleEnrollmentToken token=";
 
 // Number of times to retry on ERR_NETWORK_CHANGED errors.
 const int kMaxRetries = 3;
@@ -414,21 +408,27 @@ void DeviceManagementRequestJobImpl::ConfigureRequest(
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DISABLE_CACHE | (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0);
-  CHECK(auth_data_);
+  CHECK(auth_data_ || oauth_token_);
+  if (!auth_data_)
+    return;
+
   if (!auth_data_->gaia_token().empty()) {
     resource_request->headers.SetHeader(
-        kAuthHeader,
-        std::string(kServiceTokenAuthHeaderPrefix) + auth_data_->gaia_token());
+        dm_protocol::kAuthHeader,
+        std::string(dm_protocol::kServiceTokenAuthHeaderPrefix) +
+            auth_data_->gaia_token());
   }
   if (!auth_data_->dm_token().empty()) {
     resource_request->headers.SetHeader(
-        kAuthHeader,
-        std::string(kDMTokenAuthHeaderPrefix) + auth_data_->dm_token());
+        dm_protocol::kAuthHeader,
+        std::string(dm_protocol::kDMTokenAuthHeaderPrefix) +
+            auth_data_->dm_token());
   }
   if (!auth_data_->enrollment_token().empty()) {
     resource_request->headers.SetHeader(
-        kAuthHeader, std::string(kEnrollmentTokenAuthHeaderPrefix) +
-                         auth_data_->enrollment_token());
+        dm_protocol::kAuthHeader,
+        std::string(dm_protocol::kEnrollmentTokenAuthHeaderPrefix) +
+            auth_data_->enrollment_token());
   }
 }
 
@@ -498,9 +498,14 @@ void DeviceManagementRequestJobImpl::ReportError(DeviceManagementStatus code) {
 DeviceManagementRequestJob::~DeviceManagementRequestJob() {}
 
 void DeviceManagementRequestJob::SetAuthData(std::unique_ptr<DMAuth> auth) {
+  CHECK(!auth->has_oauth_token()) << "This method does not accept OAuth2";
   auth_data_ = std::move(auth);
-  if (auth_data_->has_oauth_token())
-    AddParameter(dm_protocol::kParamOAuthToken, auth_data_->oauth_token());
+}
+
+void DeviceManagementRequestJob::SetOAuthTokenParameter(
+    const std::string& oauth_token) {
+  oauth_token_ = oauth_token;
+  AddParameter(dm_protocol::kParamOAuthToken, *oauth_token_);
 }
 
 void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
