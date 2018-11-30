@@ -19,6 +19,16 @@ issues]].
   of diacritics working
 - Fixes to Latvian braille table thanks to Gatis Grintals and Artis
   Raugulis.
+- Improvements to traditional Mainland Chinese braille and two-cell
+  Chinese Braille thanks to Sunian Loomee.
+- Update Bopomofo-based Chinese Braille to version 2018-11 thanks to
+  Bo-Cheng Jhan
+    - Correct the default braille pattern of many Chinese characters
+    - Add various Chinese phrases involving exceptions of braille
+      patterns
+    - Modify dot patterns of dashes for readability reasons
+- Added a table for Turkish grade 2 thanks to ugurgurbuz39 and Simon
+  Aittamaa
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
@@ -33,6 +43,7 @@ issues]].
 
 ** New, renamed or removed tables
 *** New
+- tr-g2.ctb
 *** Renamed
 *** Removed
 
@@ -82,7 +93,7 @@ issues]].
   three Braille Symbols, consonants, vowels and tones. The second
   table is for Chinese double spelling Braille, commonly known as the
   new Braille where Chinese character is composed of two Braille
-  Symbols, consonants and vowels and the tones are included in vowels.
+  Symbols, consonants and vowels, ( the tones are included in vowels ).
 - Major update to the Urdu tables thanks to Jake Kyle.
 - Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
   and Swedish has been fixed thanks to Bue Vester-Andersen.

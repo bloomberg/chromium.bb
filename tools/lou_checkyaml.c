@@ -92,7 +92,7 @@ const char *event_names[] = { "YAML_NO_EVENT", "YAML_STREAM_START_EVENT",
 const char *encoding_names[] = { "YAML_ANY_ENCODING", "YAML_UTF8_ENCODING",
 	"YAML_UTF16LE_ENCODING", "YAML_UTF16BE_ENCODING" };
 
-const char *inline_table_prefix = "checkyaml_inline_";
+const char *inline_table_prefix = "checkyaml_inline_table_at_line_";
 
 char *file_name;
 
@@ -208,7 +208,7 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display
 			// If the scalar ends with a newline, assume it is a block
 			// scalar, so treat as an inline table. (Is there a proper way
 			// to check for a block scalar?)
-			sprintf(table, "%s%d", inline_table_prefix, rand());
+			sprintf(table, "%s%d", inline_table_prefix, start_event->start_mark.line + 1);
 			p = event.data.scalar.value;
 			yaml_char_t *line_start = p;
 			int line_len = 0;
