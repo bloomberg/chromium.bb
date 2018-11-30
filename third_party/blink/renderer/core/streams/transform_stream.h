@@ -29,7 +29,8 @@ class WritableStream;
 // defined in C++. Provides access to the readable and writable streams.
 //
 // On-heap references to this class must always be via a TraceWrapperMember, and
-// must always have an ancestor in the V8 heap, or |stream_| will be lost.
+// must always have an ancestor in the V8 heap, or the internal JavaScript
+// objects owned by |readable_| and |writable_| will be lost.
 //
 // To ensure that the JS TransformStream is always referenced, this class uses
 // two-stage construction. After calling the constructor, store the reference
@@ -40,6 +41,11 @@ class CORE_EXPORT TransformStream final : public ScriptWrappable {
 
  public:
   TransformStream();
+
+  // This constructor produces a TransformStream from an existing {readable,
+  // writable} pair. It cannot fail and does not require calling Init().
+  TransformStream(ReadableStream*, WritableStream*);
+
   ~TransformStream() override;
 
   // |Create| functions internally call Init().
@@ -76,11 +82,10 @@ class CORE_EXPORT TransformStream final : public ScriptWrappable {
   class FlushAlgorithm;
   class TransformAlgorithm;
 
-  void InitInternal(ScriptState*,
+  bool InitInternal(ScriptState*,
                     v8::Local<v8::Object> stream,
                     ExceptionState&);
 
-  TraceWrapperV8Reference<v8::Value> stream_;
   TraceWrapperMember<ReadableStream> readable_;
   TraceWrapperMember<WritableStream> writable_;
 
