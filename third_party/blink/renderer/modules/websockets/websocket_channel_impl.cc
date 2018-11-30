@@ -278,11 +278,9 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
 
 void WebSocketChannelImpl::Send(const CString& message) {
   NETWORK_DVLOG(1) << this << " Send(" << message << ") (CString argument)";
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
-  probe::didSendWebSocketFrame(execution_context_, identifier_,
-                               WebSocketOpCode::kOpCodeText, true,
-                               message.data(), message.length());
+  probe::didSendWebSocketMessage(execution_context_, identifier_,
+                                 WebSocketOpCode::kOpCodeText, true,
+                                 message.data(), message.length());
   messages_.push_back(MakeGarbageCollected<Message>(message));
   ProcessSendQueue();
 }
@@ -293,13 +291,11 @@ void WebSocketChannelImpl::Send(
                    << blob_data_handle->GetType() << ", "
                    << blob_data_handle->size() << ") "
                    << "(BlobDataHandle argument)";
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
   // FIXME: We can't access the data here.
   // Since Binary data are not displayed in Inspector, this does not
   // affect actual behavior.
-  probe::didSendWebSocketFrame(execution_context_, identifier_,
-                               WebSocketOpCode::kOpCodeBinary, true, "", 0);
+  probe::didSendWebSocketMessage(execution_context_, identifier_,
+                                 WebSocketOpCode::kOpCodeBinary, true, "", 0);
   messages_.push_back(
       MakeGarbageCollected<Message>(std::move(blob_data_handle)));
   ProcessSendQueue();
@@ -311,9 +307,7 @@ void WebSocketChannelImpl::Send(const DOMArrayBuffer& buffer,
   NETWORK_DVLOG(1) << this << " Send(" << buffer.Data() << ", " << byte_offset
                    << ", " << byte_length << ") "
                    << "(DOMArrayBuffer argument)";
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
-  probe::didSendWebSocketFrame(
+  probe::didSendWebSocketMessage(
       execution_context_, identifier_, WebSocketOpCode::kOpCodeBinary, true,
       static_cast<const char*>(buffer.Data()) + byte_offset, byte_length);
   // buffer.slice copies its contents.
@@ -329,11 +323,9 @@ void WebSocketChannelImpl::SendTextAsCharVector(
   NETWORK_DVLOG(1) << this << " SendTextAsCharVector("
                    << static_cast<void*>(data.get()) << ", " << data->size()
                    << ")";
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
-  probe::didSendWebSocketFrame(execution_context_, identifier_,
-                               WebSocketOpCode::kOpCodeText, true, data->data(),
-                               data->size());
+  probe::didSendWebSocketMessage(execution_context_, identifier_,
+                                 WebSocketOpCode::kOpCodeText, true,
+                                 data->data(), data->size());
   messages_.push_back(MakeGarbageCollected<Message>(
       std::move(data), kMessageTypeTextAsCharVector));
   ProcessSendQueue();
@@ -344,11 +336,9 @@ void WebSocketChannelImpl::SendBinaryAsCharVector(
   NETWORK_DVLOG(1) << this << " SendBinaryAsCharVector("
                    << static_cast<void*>(data.get()) << ", " << data->size()
                    << ")";
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
-  probe::didSendWebSocketFrame(execution_context_, identifier_,
-                               WebSocketOpCode::kOpCodeBinary, true,
-                               data->data(), data->size());
+  probe::didSendWebSocketMessage(execution_context_, identifier_,
+                                 WebSocketOpCode::kOpCodeBinary, true,
+                                 data->data(), data->size());
   messages_.push_back(MakeGarbageCollected<Message>(
       std::move(data), kMessageTypeBinaryAsCharVector));
   ProcessSendQueue();
@@ -367,7 +357,8 @@ void WebSocketChannelImpl::Fail(const String& reason,
                                 MessageLevel level,
                                 std::unique_ptr<SourceLocation> location) {
   NETWORK_DVLOG(1) << this << " Fail(" << reason << ")";
-  probe::didReceiveWebSocketFrameError(execution_context_, identifier_, reason);
+  probe::didReceiveWebSocketMessageError(execution_context_, identifier_,
+                                         reason);
   const String message =
       "WebSocket connection to '" + url_.ElidedString() + "' failed: " + reason;
 
@@ -659,14 +650,12 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   if (!fin) {
     return;
   }
-  // FIXME: Change the inspector API to show the entire message instead
-  // of individual frames.
   auto opcode = receiving_message_type_is_text_
                     ? WebSocketOpCode::kOpCodeText
                     : WebSocketOpCode::kOpCodeBinary;
-  probe::didReceiveWebSocketFrame(execution_context_, identifier_, opcode,
-                                  false, receiving_message_data_.data(),
-                                  receiving_message_data_.size());
+  probe::didReceiveWebSocketMessage(execution_context_, identifier_, opcode,
+                                    false, receiving_message_data_.data(),
+                                    receiving_message_data_.size());
   if (receiving_message_type_is_text_) {
     String message = receiving_message_data_.IsEmpty()
                          ? g_empty_string

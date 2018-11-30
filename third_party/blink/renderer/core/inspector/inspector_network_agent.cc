@@ -1257,11 +1257,11 @@ void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
       CurrentTimeTicksInSeconds());
 }
 
-void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
-                                                     int op_code,
-                                                     bool masked,
-                                                     const char* payload,
-                                                     size_t payload_length) {
+void InspectorNetworkAgent::DidReceiveWebSocketMessage(unsigned long identifier,
+                                                       int op_code,
+                                                       bool masked,
+                                                       const char* payload,
+                                                       size_t payload_length) {
   std::unique_ptr<protocol::Network::WebSocketFrame> frame_object =
       protocol::Network::WebSocketFrame::create()
           .setOpcode(op_code)
@@ -1274,11 +1274,11 @@ void InspectorNetworkAgent::DidReceiveWebSocketFrame(unsigned long identifier,
       CurrentTimeTicksInSeconds(), std::move(frame_object));
 }
 
-void InspectorNetworkAgent::DidSendWebSocketFrame(unsigned long identifier,
-                                                  int op_code,
-                                                  bool masked,
-                                                  const char* payload,
-                                                  size_t payload_length) {
+void InspectorNetworkAgent::DidSendWebSocketMessage(unsigned long identifier,
+                                                    int op_code,
+                                                    bool masked,
+                                                    const char* payload,
+                                                    size_t payload_length) {
   std::unique_ptr<protocol::Network::WebSocketFrame> frame_object =
       protocol::Network::WebSocketFrame::create()
           .setOpcode(op_code)
@@ -1291,7 +1291,7 @@ void InspectorNetworkAgent::DidSendWebSocketFrame(unsigned long identifier,
       CurrentTimeTicksInSeconds(), std::move(frame_object));
 }
 
-void InspectorNetworkAgent::DidReceiveWebSocketFrameError(
+void InspectorNetworkAgent::DidReceiveWebSocketMessageError(
     unsigned long identifier,
     const String& error_message) {
   GetFrontend()->webSocketFrameError(
