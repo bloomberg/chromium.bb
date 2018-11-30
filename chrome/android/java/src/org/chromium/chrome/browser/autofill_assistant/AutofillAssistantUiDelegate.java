@@ -256,7 +256,7 @@ class AutofillAssistantUiDelegate {
                                  .findViewById(R.id.autofill_assistant);
         // TODO(crbug.com/806868): Set hint text on overlay.
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
-        mBottomBar = mFullContainer.findViewById(R.id.bottombar);
+        mBottomBar = mFullContainer.findViewById(R.id.autofill_assistant_bottombar);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());
