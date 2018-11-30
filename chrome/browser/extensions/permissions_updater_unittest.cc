@@ -159,7 +159,10 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
       ExtensionBuilder("permissions")
           .AddPermissions({"management", "http://a.com/*"})
           .SetManifestKey("optional_permissions",
-                          ListBuilder().Append("http://*.c.com/*").Build())
+                          ListBuilder()
+                              .Append("http://*.c.com/*")
+                              .Append("notifications")
+                              .Build())
           .Build();
 
   APIPermissionSet default_apis;
@@ -184,12 +187,10 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
   apis.insert(APIPermission::kNotifications);
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
-  URLPatternSet scriptable_hosts;
-  AddPattern(&scriptable_hosts, "http://*.example.com/*");
 
   {
     PermissionSet delta(apis, empty_manifest_permissions, hosts,
-                        scriptable_hosts);
+                        URLPatternSet());
 
     PermissionsUpdaterListener listener;
     PermissionsUpdater(profile_.get())
@@ -223,7 +224,7 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
     // just added except for 'notifications'.
     apis.erase(APIPermission::kNotifications);
     PermissionSet delta(apis, empty_manifest_permissions, hosts,
-                        scriptable_hosts);
+                        URLPatternSet());
 
     PermissionsUpdaterListener listener;
     PermissionsUpdater(profile_.get())
@@ -631,8 +632,8 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissionsWithRuntimeHostPermissions) {
 
     // Revoke the test site permission. The extension should no longer have
     // access to test site, and the revokable permissions should be empty.
-    permissions_test_util::RevokeOptionalPermissionsAndWaitForCompletion(
-        profile(), *extension, permission_set, PermissionsUpdater::REMOVE_HARD);
+    permissions_test_util::RevokeRuntimePermissionsAndWaitForCompletion(
+        profile(), *extension, permission_set);
     EXPECT_FALSE(extension->permissions_data()
                      ->active_permissions()
                      .HasExplicitAccessToOrigin(kOrigin));

@@ -237,12 +237,10 @@ void PermissionsUpdater::GrantOptionalPermissions(
     const Extension& extension,
     const PermissionSet& permissions,
     base::OnceClosure completion_callback) {
-  // TODO(devlin): Ideally, we'd have this CHECK in place, but unit tests are
-  // currently violating it.
-  // CHECK(PermissionsParser::GetOptionalPermissions(&extension).Contains(
-  //     permissions))
-  //     << "Cannot add optional permissions that are not "
-  //     << "specified in the manifest.";
+  CHECK(PermissionsParser::GetOptionalPermissions(&extension)
+            .Contains(permissions))
+      << "Cannot add optional permissions that are not "
+      << "specified in the manifest.";
 
   // Granted optional permissions are stored in both the granted permissions (so
   // we don't later disable the extension when we check the active permissions
@@ -304,10 +302,10 @@ void PermissionsUpdater::RevokeOptionalPermissions(
     base::OnceClosure completion_callback) {
   // TODO(devlin): Ideally, we'd have this CHECK in place, but unit tests are
   // currently violating it.
-  // CHECK(PermissionsParser::GetOptionalPermissions(&extension).Contains(
-  //     permissions))
-  //     << "Cannot remove optional permissions that are not "
-  //     << "specified in the manifest.";
+  CHECK(PermissionsParser::GetOptionalPermissions(&extension)
+            .Contains(permissions))
+      << "Cannot remove optional permissions that are not "
+      << "specified in the manifest.";
 
   // Revoked optional permissions are removed from granted and runtime-granted
   // permissions only if the user, and not the extension, removed them. This
