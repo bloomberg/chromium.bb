@@ -92,28 +92,17 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
 
   results_.type = download_type_util::GetDownloadType(target_path_);
 
-  if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
+  DownloadFileType::InspectionType inspection_type =
+      FileTypePolicies::GetInstance()
+          ->PolicyForFile(target_path_)
+          .inspection_type();
+
+  if (inspection_type == DownloadFileType::ZIP) {
     StartExtractZipFeatures();
-  } else if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".rar"))) {
+  } else if (inspection_type == DownloadFileType::RAR) {
     StartExtractRarFeatures();
 #if defined(OS_MACOSX)
-  } else if (target_path_.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".img")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".iso")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".smi")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".cdr")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".dart")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".dc42")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".diskcopy42")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".dmgpart")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".dvdr")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".imgpart")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".ndif")) ||
-             target_path_.MatchesExtension(
-                 FILE_PATH_LITERAL(".sparsebundle")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".sparseimage")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".toast")) ||
-             target_path_.MatchesExtension(FILE_PATH_LITERAL(".udif"))) {
+  } else if (inspection_type == DownloadFileType::DMG) {
     StartExtractDmgFeatures();
 #endif
   } else {
@@ -195,6 +184,16 @@ void FileAnalyzer::OnZipAnalysisFinished(
                       base::TimeTicks::Now() - zip_analysis_start_time_);
   for (const auto& file_name : archive_results.archived_archive_filenames)
     RecordArchivedArchiveFileExtensionType(file_name);
+
+  int64_t uma_file_type =
+      FileTypePolicies::GetInstance()->UmaValueForFile(target_path_);
+  if (archive_results.success) {
+    base::UmaHistogramSparse("SBClientDownload.ZipFileSuccessByType",
+                             uma_file_type);
+  } else {
+    base::UmaHistogramSparse("SBClientDownload.ZipFileFailureByType",
+                             uma_file_type);
+  }
 
   if (!results_.archived_executable) {
     if (archive_results.has_archive) {
