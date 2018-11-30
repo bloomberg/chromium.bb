@@ -100,7 +100,8 @@ LayoutRect CaretDisplayItemClient::ComputeCaretRect(
   if (caret_position.IsNull())
     return LayoutRect();
 
-  DCHECK(caret_position.AnchorNode()->GetLayoutObject());
+  if (!caret_position.AnchorNode()->GetLayoutObject())
+    return LayoutRect();
 
   // First compute a rect local to the layoutObject at the selection start.
   const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
