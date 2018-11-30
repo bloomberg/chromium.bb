@@ -136,7 +136,7 @@ size_t GuardedPageAllocator::ReserveSlot() {
   uint64_t rot = base::RandGenerator(AllocatorState::kGpaMaxPages);
   BitMap rotated_bitmap = (free_pages_ << rot) |
                           (free_pages_ >> (AllocatorState::kGpaMaxPages - rot));
-  int rotated_selection = CountTrailingZeroBits64(rotated_bitmap);
+  int rotated_selection = base::bits::CountTrailingZeroBits(rotated_bitmap);
   size_t selection = (rotated_selection - rot + AllocatorState::kGpaMaxPages) %
                      AllocatorState::kGpaMaxPages;
   DCHECK_LT(selection, AllocatorState::kGpaMaxPages);
