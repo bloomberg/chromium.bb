@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
@@ -210,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
   // If the network service crashes, basic auth should still be enabled.
   for (bool crash_network_service : {false, true}) {
     if (crash_network_service) {
-      // Can't crash the network service if it isn't enabled.
-      if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+      // Can't crash the network service if it isn't running out of process.
+      if (!content::IsOutOfProcessNetworkService())
         return;
 
       SimulateNetworkServiceCrash();
@@ -1605,8 +1606,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuthDisabled) {
   // If the network service crashes, basic auth should still be disabled.
   for (bool crash_network_service : {false, true}) {
     // Crash the network service if it is enabled.
-    if (crash_network_service &&
-        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (crash_network_service && content::IsOutOfProcessNetworkService()) {
       SimulateNetworkServiceCrash();
       // Flush the network interface to make sure it notices the crash.
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())

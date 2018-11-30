@@ -7090,7 +7090,7 @@ void SetRequireCTDelegateOnIOThread(
 }
 
 void SetShouldNotRequireCTForTesting() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     network::mojom::NetworkServiceTestPtr network_service_test;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
@@ -7842,7 +7842,7 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (content::IsOutOfProcessNetworkService()) {
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       network::mojom::NetworkServiceTestPtr network_service_test;
@@ -7861,6 +7861,14 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   void EnableStaticPins(int reporting_port) {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+      content::StoragePartition* partition =
+          content::BrowserContext::GetDefaultStoragePartition(
+              browser()->profile());
+      partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
+    }
+
+    if (content::IsOutOfProcessNetworkService()) {
+      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       network::mojom::NetworkServiceTestPtr network_service_test;
       content::ServiceManagerConnection::GetForProcess()
@@ -7868,11 +7876,6 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
           ->BindInterface(content::mojom::kNetworkServiceName,
                           &network_service_test);
       network_service_test->SetTransportSecurityStateSource(reporting_port);
-
-      content::StoragePartition* partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              browser()->profile());
-      partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
       return;
     }
     RunOnIOThreadBlocking(base::BindOnce(

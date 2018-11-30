@@ -57,6 +57,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
@@ -899,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
 // after the crash.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        ClearCacheAndNetworkServiceCrashes) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   // Clear the cached data with a task posted to crash the network service.
