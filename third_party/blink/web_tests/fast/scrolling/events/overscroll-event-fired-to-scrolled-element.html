@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+<style>
+#scrollableDiv {
+  width: 200px;
+  height: 200px;
+  overflow: scroll;
+}
+
+#innerDiv {
+  width: 400px;
+  height: 400px;
+}
+</style>
+
+<body style="margin:0">
+<div id="scrollableDiv">
+  <div id="innerDiv">
+  </div>
+</div>
+</body>
+
+<script>
+if (window.internals)
+  internals.runtimeFlags.overscrollCustomizationEnabled = true;
+
+var scrolling_div = document.getElementById('scrollableDiv');
+var rect = scrolling_div.getBoundingClientRect();
+var x = rect.left + rect.width / 2;
+var y = rect.top + rect.height / 2;
+function scrollRight() {
+  return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "right");
+}
+
+function scrollDown() {
+  return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "down");
+}
+
+var overscrolled_x_delta = 0;
+var overscrolled_y_delta = 0;
+function onOverscroll(event) {
+  assert_false(event.cancelable);
+  assert_false(event.bubbles);
+  overscrolled_x_delta = event.deltaX;
+  overscrolled_y_delta = event.deltaY;
+}
+scrolling_div.addEventListener("overscroll", onOverscroll);
+
+promise_test (async (t) => {
+  // Make sure that no overscroll event is sent to document.
+  document.addEventListener("overscroll",
+      t.unreached_func("Document got unexpected overscroll event."));
+
+  await waitForCompositorCommit();
+
+  // Do a horizontal scroll and wait for overscroll event.
+  await scrollRight();
+  await waitFor(() => { return overscrolled_x_delta > 0; },
+      'Scroller did not receive overscroll event after horizontal scroll.');
+  assert_equals(scrolling_div.scrollWidth - scrolling_div.scrollLeft,
+              scrolling_div.clientWidth);
+
+  overscrolled_x_delta = 0;
+  overscrolled_y_delta = 0;
+
+  // Do a vertical scroll and wait for overscroll event.
+  await scrollDown();
+  await waitFor(() => { return overscrolled_y_delta > 0; },
+      'Scroller did not receive overscroll event after vertical scroll.');
+  assert_equals(scrolling_div.scrollHeight - scrolling_div.scrollTop,
+              scrolling_div.clientHeight);
+}, 'Tests that the scrolled element gets overscroll event after fully scrolling.');
+</script>

@@ -350,6 +350,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/message_event.idl",
     "events/mouse_event.idl",
     "events/mutation_event.idl",
+    "events/overscroll_event.idl",
     "events/page_transition_event.idl",
     "events/picture_in_picture_control_event.idl",
     "events/pointer_event.idl",

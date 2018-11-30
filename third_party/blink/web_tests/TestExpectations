@@ -348,6 +348,14 @@ crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 display-lock [ Skip ]
 
+# These tests will pass when the cc side of overscroll customization is implemeneted.
+crbug.com/907601 virtual/threaded/fast/scrolling/events/overscroll-event-fired-to-document.html [ Skip ]
+crbug.com/907601 virtual/threaded/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Skip ]
+crbug.com/907601 virtual/threaded/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Skip ]
+crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-document.html [ Skip ]
+crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-element-with-overscroll-behavior.html [ Skip ]
+crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Skip ]
+
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 crbug.com/846747 virtual/outofblink-cors/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
