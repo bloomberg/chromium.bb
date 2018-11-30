@@ -12,6 +12,8 @@ v8::JitCodeEventHandler g_jit_code_event_handler = NULL;
 #if defined(OS_WIN)
 Debug::CodeRangeCreatedCallback g_code_range_created_callback = NULL;
 Debug::CodeRangeDeletedCallback g_code_range_deleted_callback = NULL;
+Debug::DebugBreakCallback g_debug_break_callback = NULL;
+Debug::DebugResumeCallback g_debug_resume_callback = NULL;
 #endif
 }  // namespace
 
@@ -35,6 +37,16 @@ void Debug::SetCodeRangeCreatedCallback(CodeRangeCreatedCallback callback) {
 void Debug::SetCodeRangeDeletedCallback(CodeRangeDeletedCallback callback) {
   g_code_range_deleted_callback = callback;
 }
+
+// static
+void Debug::SetDebugBreakCallback(DebugBreakCallback callback) {
+  g_debug_break_callback = callback;
+}
+
+// static
+void Debug::SetDebugResumeCallback(DebugResumeCallback callback) {
+  g_debug_resume_callback = callback;
+}
 #endif
 
 // static
@@ -56,6 +68,16 @@ Debug::CodeRangeCreatedCallback DebugImpl::GetCodeRangeCreatedCallback() {
 // static
 Debug::CodeRangeDeletedCallback DebugImpl::GetCodeRangeDeletedCallback() {
   return g_code_range_deleted_callback;
+}
+
+// static
+Debug::DebugBreakCallback Debug::GetDebugBreakCallback() {
+  return g_debug_break_callback;
+}
+
+// static
+Debug::DebugResumeCallback Debug::GetDebugResumeCallback() {
+  return g_debug_resume_callback;
 }
 #endif
 
