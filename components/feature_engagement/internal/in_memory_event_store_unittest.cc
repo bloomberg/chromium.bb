@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {
@@ -33,7 +33,7 @@ class InMemoryEventStoreTest : public ::testing::Test {
   bool load_callback_has_been_invoked_;
   bool last_result_;
   std::unique_ptr<std::vector<Event>> loaded_events_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 }  // namespace
 
