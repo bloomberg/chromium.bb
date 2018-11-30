@@ -67,6 +67,7 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -806,7 +807,8 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
     url_sanitizer.ClearPassword();
     const GURL& initiator_url = initiator->GetLastCommittedURL();
     settings->SetString(printing::kSettingHeaderFooterURL,
-                        initiator_url.ReplaceComponents(url_sanitizer).spec());
+                        url_formatter::FormatUrl(
+                            initiator_url.ReplaceComponents(url_sanitizer)));
   }
 
   VLOG(1) << "Print preview request start";
