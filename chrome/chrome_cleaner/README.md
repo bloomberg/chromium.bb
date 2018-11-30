@@ -43,4 +43,4 @@ directory.
 ## Contact
 
 csharp@chromium.org
-joenotcharles@chromium.org
+joenotcharles@google.com
