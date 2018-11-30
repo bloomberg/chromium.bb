@@ -1070,6 +1070,53 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_FALSE(IsElementVisible(*panel));
 }
 
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       ControlsHideAfterFocusedAndMouseMovement) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  // Controls start out visible
+  EXPECT_TRUE(IsElementVisible(*panel));
+  platform()->RunForPeriodSeconds(1);
+
+  // Mouse move while focused
+  MediaControls().DispatchEvent(*Event::Create("focusin"));
+  MediaControls().MediaElement().SetFocused(true,
+                                            WebFocusType::kWebFocusTypeNone);
+  MediaControls().DispatchEvent(*Event::Create("pointermove"));
+
+  // Controls should remain visible
+  platform()->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  // Controls should hide after being inactive for 4 seconds.
+  platform()->RunForPeriodSeconds(2);
+  EXPECT_FALSE(IsElementVisible(*panel));
+}
+
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       ControlsHideAfterFocusedAndMouseMoveout) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  // Controls start out visible
+  EXPECT_TRUE(IsElementVisible(*panel));
+  platform()->RunForPeriodSeconds(1);
+
+  // Mouse move out while focused, controls should hide
+  MediaControls().DispatchEvent(*Event::Create("focusin"));
+  MediaControls().MediaElement().SetFocused(true,
+                                            WebFocusType::kWebFocusTypeNone);
+  MediaControls().DispatchEvent(*Event::Create("pointerout"));
+  EXPECT_FALSE(IsElementVisible(*panel));
+}
+
 TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   EnsureSizing();
 

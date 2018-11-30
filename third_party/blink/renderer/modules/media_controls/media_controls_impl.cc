@@ -1556,13 +1556,22 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
     if (!ContainsRelatedTarget(event)) {
       is_mouse_over_controls_ = false;
       StopHideMediaControlsTimer();
+
+      // When we get a mouse out, if video is playing and control should
+      // hide regardless of focus, hide the control.
+      // This will fix the issue that when mouse out event happen while video is
+      // focused, control never hides.
+      if (!MediaElement().paused() && ShouldHideMediaControls(kIgnoreFocus))
+        MakeTransparent();
     }
   } else if (event->type() == event_type_names::kPointermove) {
     // When we get a mouse move, show the media controls, and start a timer
     // that will hide the media controls after a 3 seconds without a mouse move.
     is_mouse_over_controls_ = true;
     MakeOpaqueFromPointerEvent();
-    if (ShouldHideMediaControls(kIgnoreVideoHover))
+
+    // Start the timer regardless of focus state
+    if (ShouldHideMediaControls(kIgnoreVideoHover | kIgnoreFocus))
       StartHideMediaControlsTimer();
   }
 }
