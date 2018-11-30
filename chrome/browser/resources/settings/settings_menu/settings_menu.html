@@ -203,6 +203,7 @@
       </iron-collapse>
       <div id="menuSeparator"></div>
       <a id="extensionsLink" href="chrome://extensions" target="_blank"
+          hidden="[[!pageVisibility.extensions]]"
           on-click="onExtensionsLinkClick_"
           title="$i18n{extensionsLinkTooltip}">
         <span>$i18n{extensionsPageTitle}</span>

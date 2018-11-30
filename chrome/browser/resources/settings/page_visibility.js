@@ -72,6 +72,7 @@ cr.define('settings', function() {
       appearance: false,
       defaultBrowser: false,
       advancedSettings: false,
+      extensions: false,
     };
     // </if>
     // <if expr="chromeos">
@@ -96,6 +97,7 @@ cr.define('settings', function() {
         googleDrive: false,
       },
       multidevice: false,
+      extensions: false,
     };
     // </if>
   } else {
@@ -123,6 +125,7 @@ cr.define('settings', function() {
         googleDrive: true,
       },
       multidevice: true,
+      extensions: true,
     };
     // </if>
   }
