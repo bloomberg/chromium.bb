@@ -87,6 +87,11 @@
     "expiry_milestone": 74
   },
   {
+    "name": "allow-starting-service-manager-only",
+    "owners": [ "hanxi", "hnakashima" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "allow-sxg-certs-without-extension",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
