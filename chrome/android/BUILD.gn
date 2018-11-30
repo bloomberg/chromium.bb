@@ -1486,10 +1486,8 @@ template("chrome_public_apk_or_module_tmpl") {
     load_library_from_apk = _is_modern && chromium_linker_supported
 
     version_name = chrome_version_name
-    if (experimental_use_r8 == 0) {
+    if (!experimental_use_r8) {
       enable_multidex = true
-    } else {
-      use_r8 = true
     }
   }
 }
@@ -1584,10 +1582,8 @@ template("monochrome_public_apk_or_module_tmpl") {
         (!defined(use_trichrome_library) || !use_trichrome_library)
 
     version_name = chrome_version_name
-    if (experimental_use_r8 == 0) {
+    if (!experimental_use_r8) {
       enable_multidex = true
-    } else {
-      use_r8 = true
     }
   }
 }
@@ -1890,10 +1886,8 @@ android_app_bundle("chrome_modern_public_bundle") {
   base_module_target = ":chrome_modern_public_base_module"
   if (!is_java_debug) {
     proguard_enabled = true
-    if (experimental_use_r8 == 0) {
+    if (!experimental_use_r8) {
       enable_multidex = true
-    } else {
-      use_r8 = true
     }
   }
   enable_language_splits = enable_chrome_language_splits
@@ -1912,10 +1906,8 @@ android_app_bundle("monochrome_public_bundle") {
   base_module_target = ":monochrome_public_base_module"
   if (!is_java_debug) {
     proguard_enabled = true
-    if (experimental_use_r8 == 0) {
+    if (!experimental_use_r8) {
       enable_multidex = true
-    } else {
-      use_r8 = true
     }
     proguard_android_sdk_dep = webview_framework_dep
   }
