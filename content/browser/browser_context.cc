@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -138,9 +139,6 @@ class CorsOriginPatternSetter
                        base::RetainedRef(this)));
   }
 
- private:
-  friend class base::RefCounted<CorsOriginPatternSetter>;
-
   static std::vector<network::mojom::CorsOriginPatternPtr> ClonePatterns(
       const std::vector<network::mojom::CorsOriginPatternPtr>& patterns) {
     std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
@@ -149,6 +147,9 @@ class CorsOriginPatternSetter
       cloned_patterns.push_back(item.Clone());
     return cloned_patterns;
   }
+
+ private:
+  friend class base::RefCounted<CorsOriginPatternSetter>;
 
   ~CorsOriginPatternSetter() { std::move(closure_).Run(); }
 
@@ -730,12 +731,21 @@ void BrowserContext::SetCorsOriginAccessListsForOrigin(
         ->SetForOrigin(source_origin, std::move(allow_patterns),
                        std::move(block_patterns), std::move(closure));
   } else {
+    auto barrier_closure = BarrierClosure(2, std::move(closure));
     auto setter = base::MakeRefCounted<CorsOriginPatternSetter>(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        std::move(closure));
+        source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+        CorsOriginPatternSetter::ClonePatterns(block_patterns),
+        barrier_closure);
     ForEachStoragePartition(
         browser_context, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
                                              base::RetainedRef(setter.get())));
+
+    // Keeps per-profile access lists in the browser process to make all
+    // NetworkContext belonging to the profile to be synchronized.
+    UserDataAdapter<SharedCorsOriginAccessList>::Get(
+        browser_context, kSharedCorsOriginAccessListKey)
+        ->SetForOrigin(source_origin, std::move(allow_patterns),
+                       std::move(block_patterns), barrier_closure);
   }
 }
 

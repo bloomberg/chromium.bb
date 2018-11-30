@@ -21,6 +21,7 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
@@ -181,14 +182,21 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   // The WeakPtr of the filter must be created on the IO thread. So sets the
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
-  url_loader_factory_ = std::make_unique<network::cors::CorsURLLoaderFactory>(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity),
-      std::make_unique<URLLoaderFactoryImpl>(requester_info_),
-      base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
-                          base::Unretained(ResourceDispatcherHostImpl::Get()),
-                          requester_info_->child_id()),
-      &shared_cors_origin_access_list_->GetOriginAccessList());
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // ResourceMessageFilter should not be used if NetworkService is enabled,
+    // but still some tests rely on it.
+    url_loader_factory_ =
+        std::make_unique<URLLoaderFactoryImpl>(requester_info_);
+  } else {
+    url_loader_factory_ = std::make_unique<network::cors::CorsURLLoaderFactory>(
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableWebSecurity),
+        std::make_unique<URLLoaderFactoryImpl>(requester_info_),
+        base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
+                            base::Unretained(ResourceDispatcherHostImpl::Get()),
+                            requester_info_->child_id()),
+        &shared_cors_origin_access_list_->GetOriginAccessList());
+  }
 
   std::vector<network::mojom::URLLoaderFactoryRequest> requests =
       std::move(queued_clone_requests_);
