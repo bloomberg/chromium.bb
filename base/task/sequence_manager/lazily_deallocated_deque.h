@@ -32,7 +32,7 @@ namespace internal {
 // MaybeShrinkQueue to avoid unnecessary churn.
 //
 // NB this queue isn't by itself thread safe.
-template <typename T>
+template <typename T, TimeTicks (*now_source)() = TimeTicks::Now>
 class LazilyDeallocatedDeque {
  public:
   enum {
@@ -168,7 +168,7 @@ class LazilyDeallocatedDeque {
     DCHECK_GE(max_size_, size_);
 
     // Rate limit how often we shrink the queue because it's somewhat expensive.
-    TimeTicks current_time = TimeTicks::Now();
+    TimeTicks current_time = now_source();
     if (current_time < next_resize_time_)
       return;
 
