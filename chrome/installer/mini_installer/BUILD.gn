@@ -91,6 +91,7 @@ group("chrome_runtime_deps") {
   write_runtime_deps = chrome_runtime_deps
   data_deps = [
     "//chrome",
+    "//chrome/chrome_proxy",
   ]
 }
 
