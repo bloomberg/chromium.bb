@@ -307,7 +307,6 @@ URLLoader::URLLoader(
     mojom::URLLoaderRequest url_loader_request,
     int32_t options,
     const ResourceRequest& request,
-    bool report_raw_headers,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const mojom::URLLoaderFactoryParams* factory_params,
@@ -336,7 +335,8 @@ URLLoader::URLLoader(
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                   base::SequencedTaskRunnerHandle::Get()),
-      report_raw_headers_(report_raw_headers),
+      want_raw_headers_(request.report_raw_headers),
+      report_raw_headers_(false),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
@@ -358,13 +358,12 @@ URLLoader::URLLoader(
         << "disabled, as that skips security checks in ResourceDispatcherHost. "
         << "The only acceptable usage is the browser using SimpleURLLoader.";
   }
-  if (report_raw_headers_) {
+  if (want_raw_headers_) {
     options_ |= mojom::kURLLoadOptionSendSSLInfoWithResponse |
                 mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   }
   binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
-
   url_request_ = url_request_context_->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
@@ -416,7 +415,7 @@ URLLoader::URLLoader(
     url_request_->set_allow_credentials(false);
   }
 
-  if (report_raw_headers_) {
+  if (want_raw_headers_) {
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,
                    base::Unretained(&raw_request_headers_)));
@@ -1021,6 +1020,10 @@ uint32_t URLLoader::GetRenderFrameId() const {
 
 uint32_t URLLoader::GetProcessId() const {
   return factory_params_->process_id;
+}
+
+void URLLoader::SetAllowReportingRawHeaders(bool allow) {
+  report_raw_headers_ = want_raw_headers_ && allow;
 }
 
 // static
