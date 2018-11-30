@@ -136,7 +136,8 @@ void PromiseWriterHelper(const DropData& drop_data,
               forType:type];
 
   // URL.
-  } else if ([type isEqualToString:NSURLPboardType]) {
+  } else if ([type isEqualToString:NSURLPboardType] ||
+             [type isEqualToString:base::mac::CFToNSCast(kUTTypeURL)]) {
     DCHECK(dropData_->url.is_valid());
     NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
@@ -345,7 +346,9 @@ void PromiseWriterHelper(const DropData& drop_data,
 
   // URL (and title).
   if (dropData_->url.is_valid()) {
-    [pasteboard_ addTypes:@[ NSURLPboardType, ui::kUTTypeURLName ]
+    [pasteboard_ addTypes:@[
+      NSURLPboardType, ui::kUTTypeURLName, base::mac::CFToNSCast(kUTTypeURL)
+    ]
                     owner:contentsView_];
   }
 
