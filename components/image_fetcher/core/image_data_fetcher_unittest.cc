@@ -9,8 +9,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -51,7 +52,7 @@ class ImageDataFetcherTest : public testing::Test {
                void(const std::string&, const RequestMetadata&));
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
