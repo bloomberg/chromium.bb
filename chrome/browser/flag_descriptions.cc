@@ -3355,6 +3355,12 @@ const char kEnableGoogleAssistantDspDescription[] =
     "for Assistant. Only a limited number of devices have this type of "
     "hardware support.";
 
+const char kEnableGoogleAssistantStereoInputName[] =
+    "Enable Google Assistant with stereo audio input";
+const char kEnableGoogleAssistantStereoInputDescription[] =
+    "Enable an experimental feature that uses stereo audio input for hotword "
+    "and voice to text detection in Google Assistant.";
+
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";

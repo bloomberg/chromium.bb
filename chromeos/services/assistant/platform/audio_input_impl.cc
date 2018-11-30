@@ -20,9 +20,28 @@ namespace assistant {
 
 namespace {
 
-constexpr assistant_client::BufferFormat kFormat{
+constexpr assistant_client::BufferFormat kFormatMono{
     16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 1 /* channels */
 };
+
+constexpr assistant_client::BufferFormat kFormatStereo{
+    16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 2 /* channels */
+};
+
+assistant_client::BufferFormat g_current_format = kFormatMono;
+
+media::ChannelLayout GetChannelLayout(
+    const assistant_client::BufferFormat& format) {
+  switch (format.num_channels) {
+    case 1:
+      return media::ChannelLayout::CHANNEL_LAYOUT_MONO;
+    case 2:
+      return media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
+    default:
+      NOTREACHED();
+      return media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
+  }
+}
 
 class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
  public:
@@ -100,7 +119,9 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
   ~AudioInputBufferImpl() override = default;
 
   // assistant_client::AudioBuffer overrides:
-  assistant_client::BufferFormat GetFormat() const override { return kFormat; }
+  assistant_client::BufferFormat GetFormat() const override {
+    return g_current_format;
+  }
   const void* GetData() const override { return data_; }
   void* GetWritableData() override {
     NOTREACHED();
@@ -128,6 +149,11 @@ AudioInputImpl::AudioInputImpl(service_manager::Connector* connector)
   } else {
     state_manager_ = std::make_unique<HotwordStateManager>();
   }
+
+  if (features::IsStereoAudioInputEnabled())
+    g_current_format = kFormatStereo;
+  else
+    g_current_format = kFormatMono;
 }
 
 AudioInputImpl::~AudioInputImpl() {
@@ -140,11 +166,12 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
                              int audio_delay_milliseconds,
                              double volume,
                              bool key_pressed) {
-  DCHECK_EQ(kFormat.num_channels, audio_source->channels());
+  DCHECK_EQ(g_current_format.num_channels, audio_source->channels());
 
   state_manager_->OnCaptureDataArrived();
 
-  std::vector<int32_t> buffer(kFormat.num_channels * audio_source->frames());
+  std::vector<int32_t> buffer(audio_source->channels() *
+                              audio_source->frames());
   audio_source->ToInterleaved<media::SignedInt32SampleTypeTraits>(
       audio_source->frames(), buffer.data());
   int64_t time = base::TimeTicks::Now().since_origin().InMilliseconds() -
@@ -180,7 +207,7 @@ void AudioInputImpl::OnCaptureMuted(bool is_muted) {}
 
 // Run on LibAssistant thread.
 assistant_client::BufferFormat AudioInputImpl::GetFormat() const {
-  return kFormat;
+  return g_current_format;
 }
 
 // Run on LibAssistant thread.
@@ -265,9 +292,9 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
       connector_->Clone(), media::AudioDeviceDescription::kDefaultDeviceId);
   // AUDIO_PCM_LINEAR and AUDIO_PCM_LOW_LATENCY are the same on CRAS.
   auto param = media::AudioParameters(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, media::CHANNEL_LAYOUT_MONO,
-      kFormat.sample_rate,
-      kFormat.sample_rate / 10 /* buffer size for 100 ms */);
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      GetChannelLayout(g_current_format), g_current_format.sample_rate,
+      g_current_format.sample_rate / 10 /* buffer size for 100 ms */);
 
   if (use_dsp)
     param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);

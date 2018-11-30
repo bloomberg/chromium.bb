@@ -2018,6 +2018,9 @@ extern const char kEnableGoogleAssistantDescription[];
 extern const char kEnableGoogleAssistantDspName[];
 extern const char kEnableGoogleAssistantDspDescription[];
 
+extern const char kEnableGoogleAssistantStereoInputName[];
+extern const char kEnableGoogleAssistantStereoInputDescription[];
+
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
