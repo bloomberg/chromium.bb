@@ -22,6 +22,24 @@ extern NSString* const kSideSwipeWillStartNotification;
 // Notification sent when the user finishes a side swipe (on tablet).
 extern NSString* const kSideSwipeDidStopNotification;
 
+// A protocol for the Side Swipe controller sources.
+@protocol SideSwipeContentProvider
+// Returns whether this source can provide content for a back/forward side swipe
+// gesture.
+- (BOOL)canGoBack;
+- (BOOL)canGoForward;
+
+// Called on completion of a back/forward gesture.
+- (void)goBack:(web::WebState*)webState;
+- (void)goForward:(web::WebState*)webState;
+
+// The icon to display in the side panel.
+- (UIImage*)paneIcon;
+
+// Whether the icon is oriented and should be reflected on forward pane.
+- (BOOL)rotateForwardIcon;
+@end
+
 @protocol SideSwipeControllerDelegate
 @required
 // Called when the horizontal stack view is done and should be removed.
