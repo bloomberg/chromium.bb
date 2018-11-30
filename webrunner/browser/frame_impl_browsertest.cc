@@ -101,8 +101,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
   frame->GetNavigationController(controller.NewRequest());
 
   CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
@@ -112,8 +110,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
   frame->GetNavigationController(controller.NewRequest());
 
   CheckLoadUrl(kDataUrl, kDataUrl, controller.get());
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, FrameDeletedBeforeContext) {
@@ -416,8 +412,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
                                  Field(&NavigationDetails::url, IsSet()))))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   CheckRunWithTimeout(&run_loop);
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
@@ -437,8 +431,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
   CheckLoadUrl(url.spec(), "hello", controller.get());
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
@@ -462,8 +454,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   // script with a replacement title.
   CheckLoadUrl(url.spec(), "Welcome to Stan the Offline Dino's Homepage",
                controller.get());
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
@@ -491,8 +481,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   // still be picked up by the wildcard.
   GURL alt_url = embedded_test_server()->GetURL("localhost", kDynamicTitlePath);
   CheckLoadUrl(alt_url.spec(), "hello", controller.get());
-
-  frame.Unbind();
 }
 
 // Test that consecutive scripts are executed in order by computing a cumulative
@@ -517,8 +505,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
   CheckLoadUrl(url.spec(), "hello there", controller.get());
-
-  frame.Unbind();
 }
 
 // Test that we can inject scripts before and after RenderFrame creation.
@@ -550,8 +536,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
 
   // Navigate back and see if both scripts are working.
   CheckLoadUrl(url.spec(), "hello there", controller.get());
-
-  frame.Unbind();
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
@@ -577,8 +561,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
                              run_loop.Quit();
                            });
   CheckRunWithTimeout(&run_loop);
-
-  frame.Unbind();
 }
 
 // Verifies that a Frame will handle navigation observer disconnection events
@@ -756,31 +738,6 @@ std::string ReadFromBufferOrDie(const fuchsia::mem::Buffer& buffer) {
   return output;
 }
 
-// Stores an asynchronously generated value for later retrieval.
-template <typename T>
-class AsyncValueReceiver {
- public:
-  explicit AsyncValueReceiver(
-      base::RepeatingClosure on_capture = base::DoNothing())
-      : on_capture_(std::move(on_capture)) {}
-  ~AsyncValueReceiver() = default;
-
-  fit::function<void(T)> GetReceiveClosure() {
-    return [this](T value) {
-      captured_ = std::move(value);
-      on_capture_.Run();
-    };
-  }
-
-  T& captured() { return captured_; }
-
- private:
-  T captured_;
-  base::RepeatingClosure on_capture_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncValueReceiver<T>);
-};
-
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
   chromium::web::FramePtr frame = CreateFrame();
 
@@ -794,9 +751,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
 
   chromium::web::WebMessage message;
   message.data = MemBufferFromString(kPage1Path);
-  AsyncValueReceiver<bool> post_result;
+  Promise<bool> post_result;
   frame->PostMessage(std::move(message), post_message_url.GetOrigin().spec(),
-                     post_result.GetReceiveClosure());
+                     post_result.GetReceiveCallback());
   base::RunLoop run_loop;
   EXPECT_CALL(navigation_observer_,
               MockableOnNavigationStateChanged(
@@ -804,9 +761,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
                                  Field(&NavigationDetails::url, IsSet()))))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   CheckRunWithTimeout(&run_loop);
-  EXPECT_TRUE(post_result.captured());
-
-  frame.Unbind();
+  EXPECT_TRUE(*post_result);
 }
 
 // Send a MessagePort to the content, then perform bidirectional messaging
@@ -828,32 +783,28 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
     msg.data = MemBufferFromString("hi");
-    AsyncValueReceiver<bool> post_result;
+    Promise<bool> post_result;
     frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       post_result.GetReceiveClosure());
+                       post_result.GetReceiveCallback());
 
     base::RunLoop run_loop;
-    AsyncValueReceiver<chromium::web::WebMessage> receiver(
-        run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveClosure());
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver.captured().data));
+    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
   }
 
   {
     msg.data = MemBufferFromString("ping");
-    AsyncValueReceiver<bool> post_result;
-    message_port->PostMessage(std::move(msg), post_result.GetReceiveClosure());
+    Promise<bool> post_result;
+    message_port->PostMessage(std::move(msg), post_result.GetReceiveCallback());
     base::RunLoop run_loop;
-    AsyncValueReceiver<chromium::web::WebMessage> receiver(
-        run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveClosure());
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver.captured().data));
-    EXPECT_TRUE(post_result.captured());
+    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver->data));
+    EXPECT_TRUE(*post_result);
   }
-
-  frame.Unbind();
 }
 
 // Send a MessagePort to the content, then perform bidirectional messaging
@@ -875,17 +826,16 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
     msg.data = MemBufferFromString("hi");
-    AsyncValueReceiver<bool> post_result;
+    Promise<bool> post_result;
     frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       post_result.GetReceiveClosure());
+                       post_result.GetReceiveCallback());
 
     base::RunLoop run_loop;
-    AsyncValueReceiver<chromium::web::WebMessage> receiver(
-        run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveClosure());
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver.captured().data));
-    EXPECT_TRUE(post_result.captured());
+    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_TRUE(*post_result);
   }
 
   // Navigating off-page should tear down the Mojo channel, thereby causing the
@@ -893,12 +843,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
   {
     base::RunLoop run_loop;
     message_port.set_error_handler(
-        [&run_loop](zx_status_t status) { run_loop.Quit(); });
+        [&run_loop](zx_status_t) { run_loop.Quit(); });
     controller->LoadUrl(url::kAboutBlankURL, nullptr);
     CheckRunWithTimeout(&run_loop);
   }
-
-  frame.Unbind();
 }
 
 // Send a MessagePort to the content, and through that channel, receive a
@@ -922,39 +870,112 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
     msg.data = MemBufferFromString("hi");
-    AsyncValueReceiver<bool> post_result;
-    frame->PostMessage(std::move(msg), "*", post_result.GetReceiveClosure());
+    Promise<bool> post_result;
+    frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
 
     base::RunLoop run_loop;
-    AsyncValueReceiver<chromium::web::WebMessage> receiver(
-        run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveClosure());
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver.captured().data));
-    incoming_message_port =
-        receiver.captured().incoming_transfer->message_port().Bind();
-    EXPECT_TRUE(post_result.captured());
+    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    incoming_message_port = receiver->incoming_transfer->message_port().Bind();
+    EXPECT_TRUE(*post_result);
   }
 
-  {
-    AsyncValueReceiver<bool> post_result;
+  // Get the content to send three 'ack ping' messages, which will accumulate in
+  // the MessagePortImpl buffer.
+  for (int i = 0; i < 3; ++i) {
+    base::RunLoop run_loop;
+    Promise<bool> post_result(run_loop.QuitClosure());
     msg.data = MemBufferFromString("ping");
     incoming_message_port->PostMessage(std::move(msg),
-                                       post_result.GetReceiveClosure());
-    base::RunLoop run_loop;
-    AsyncValueReceiver<chromium::web::WebMessage> receiver(
-        run_loop.QuitClosure());
-    incoming_message_port->ReceiveMessage(receiver.GetReceiveClosure());
-    CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver.captured().data));
-    EXPECT_TRUE(post_result.captured());
+                                       post_result.GetReceiveCallback());
+    run_loop.Run();
+    EXPECT_TRUE(*post_result);
   }
 
-  frame.Unbind();
+  // Receive another acknowledgement from content on a side channel to ensure
+  // that all the "ack pings" are ready to be consumed.
+  {
+    chromium::web::MessagePortPtr ack_message_port;
+    chromium::web::WebMessage msg;
+    msg.outgoing_transfer =
+        std::make_unique<chromium::web::OutgoingTransferable>();
+    msg.outgoing_transfer->set_message_port(ack_message_port.NewRequest());
+    msg.data = MemBufferFromString("hi");
+
+    // Quit the runloop only after we've received a WebMessage AND a PostMessage
+    // result.
+    Promise<bool> post_result;
+    frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
+    base::RunLoop run_loop;
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    ack_message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    CheckRunWithTimeout(&run_loop);
+    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_TRUE(*post_result);
+  }
+
+  // Pull the three 'ack ping's from the buffer.
+  for (int i = 0; i < 3; ++i) {
+    base::RunLoop run_loop;
+    Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+    incoming_message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    CheckRunWithTimeout(&run_loop);
+    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver->data));
+  }
 }
 
-// TODO BEFORE SUBMITTING(kmarshall): bad origin tests, multiple buffered
-// messages, perhaps a proof-of-concept test with injected bindings *and*
-// message i/o.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(post_message_url.spec(), "messageport", controller.get());
+
+  chromium::web::MessagePortPtr bad_origin_incoming_message_port;
+  chromium::web::WebMessage msg;
+
+  // PostMessage() to invalid origins should be ignored. We pass in a
+  // MessagePort but nothing should happen to it.
+  chromium::web::MessagePortPtr unused_message_port;
+  msg.outgoing_transfer =
+      std::make_unique<chromium::web::OutgoingTransferable>();
+  msg.outgoing_transfer->set_message_port(unused_message_port.NewRequest());
+  msg.data = MemBufferFromString("bad origin, bad!");
+  Promise<bool> unused_post_result;
+  frame->PostMessage(std::move(msg), "https://example.com",
+                     unused_post_result.GetReceiveCallback());
+  Promise<chromium::web::WebMessage> unused_message_read;
+  bad_origin_incoming_message_port->ReceiveMessage(
+      unused_message_read.GetReceiveCallback());
+
+  // PostMessage() with a valid origin should succeed.
+  // Verify it by looking for an ack message on the MessagePort we passed in.
+  // Since message events are handled in order, observing the result of this
+  // operation will verify whether the previous PostMessage() was received but
+  // discarded.
+  chromium::web::MessagePortPtr incoming_message_port;
+  chromium::web::MessagePortPtr message_port;
+  msg.outgoing_transfer =
+      std::make_unique<chromium::web::OutgoingTransferable>();
+  msg.outgoing_transfer->set_message_port(message_port.NewRequest());
+  msg.data = MemBufferFromString("good origin");
+  Promise<bool> post_result;
+  frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
+  base::RunLoop run_loop;
+  Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
+  message_port->ReceiveMessage(receiver.GetReceiveCallback());
+  CheckRunWithTimeout(&run_loop);
+  EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+  incoming_message_port = receiver->incoming_transfer->message_port().Bind();
+  EXPECT_TRUE(*post_result);
+
+  // Verify that the first PostMessage() call wasn't handled.
+  EXPECT_FALSE(unused_message_read.has_value());
+}
 
 }  // namespace webrunner
