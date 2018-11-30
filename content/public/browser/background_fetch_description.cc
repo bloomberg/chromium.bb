@@ -13,8 +13,8 @@ BackgroundFetchDescription::BackgroundFetchDescription(
     SkBitmap icon,
     int completed_parts,
     int total_parts,
-    int completed_parts_size,
-    int total_parts_size,
+    uint64_t completed_parts_size,
+    uint64_t total_parts_size,
     std::vector<std::string> outstanding_guids,
     bool start_paused)
     : job_unique_id(job_unique_id),

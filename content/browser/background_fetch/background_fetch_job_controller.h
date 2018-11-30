@@ -79,18 +79,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // created with member fields.
   std::unique_ptr<BackgroundFetchRegistration> NewRegistration() const;
 
-  // Returns the options with which this job is fetching data.
-  const BackgroundFetchOptions& options() const { return options_; }
-
-  // Returns total downloaded bytes.
-  int downloaded() const { return complete_requests_downloaded_bytes_cache_; }
-
-  // Returns total size of downloads, as indicated by the developer.
-  int download_total() const { return total_downloads_size_; }
-
-  // Returns the number of requests that comprise the whole job.
-  int total_downloads() const { return total_downloads_; }
-
   const BackgroundFetchRegistrationId& registration_id() const {
     return registration_id_;
   }
@@ -170,9 +158,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Cache of downloaded byte count stored by the DataManager, to enable
   // delivering progress events without having to read from the database.
   uint64_t complete_requests_downloaded_bytes_cache_;
-
-  // Total downloads size, as indicated by the developer.
-  int total_downloads_size_ = 0;
 
   // Callback run each time download progress updates.
   ProgressCallback progress_callback_;
