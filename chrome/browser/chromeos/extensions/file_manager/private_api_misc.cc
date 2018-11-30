@@ -703,6 +703,34 @@ void FileManagerPrivateInternalSharePathsWithCrostiniFunction::
 }
 
 ExtensionFunction::ResponseAction
+FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
+  using extensions::api::file_manager_private_internal::
+      UnsharePathWithCrostini::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile, render_frame_host());
+  storage::FileSystemURL cracked =
+      file_system_context->CrackURL(GURL(params->url));
+  crostini::CrostiniSharePath::GetForProfile(profile)->UnsharePath(
+      crostini::kCrostiniDefaultVmName, cracked.path(),
+      base::BindOnce(
+          &FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
+              UnsharePathCallback,
+          this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
+    UnsharePathCallback(bool success, std::string failure_reason) {
+  Respond(success ? NoArguments() : Error(failure_reason));
+}
+
+ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
 

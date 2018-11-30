@@ -1150,13 +1150,20 @@ interface Functions {
   // |callback|
   static void mountCrostini(SimpleCallback callback);
 
-  // Shares directory with crostini container.
+  // Shares paths with crostini container.
   // |entries| Entries of the files or directories to share.
   // |persist| If true, shares will persist across restarts.
   // |callback|
   [nocompile]
   static void sharePathsWithCrostini(
       [instanceof=Entry] object[] entries, boolean persist, SimpleCallback callback);
+
+  // Unshares path with crostini container.
+  // |entry| Entry of the file or directory to unshare.
+  // |callback|
+  [nocompile]
+  static void unsharePathWithCrostini(
+      [instanceof=Entry] object entry, SimpleCallback callback);
 
   // Returns list of paths shared with crostini container.
   [nocompile]

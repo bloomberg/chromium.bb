@@ -106,6 +106,7 @@ namespace fileManagerPrivateInternal {
                                GetRecentFilesCallback callback);
     static void sharePathsWithCrostini(DOMString[] urls, boolean persist,
                                       SimpleCallback callback);
+    static void unsharePathWithCrostini(DOMString url, SimpleCallback callback);
     static void getCrostiniSharedPaths(
         GetCrostiniSharedPathsCallback callback);
     static void getLinuxPackageInfo(DOMString url,

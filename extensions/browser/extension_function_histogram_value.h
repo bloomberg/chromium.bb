@@ -1357,6 +1357,7 @@ enum HistogramValue {
   CRYPTOTOKENPRIVATE_CANPROXYTOWEBAUTHN = 1294,
   INPUTMETHODPRIVATE_GETSETTING = 1295,
   INPUTMETHODPRIVATE_SETSETTING = 1296,
+  FILEMANAGERPRIVATEINTERNAL_UNSHAREPATHWITHCROSTINI = 1297,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

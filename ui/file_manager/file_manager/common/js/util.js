@@ -1506,6 +1506,31 @@ util.readEntriesRecursively = function(
 };
 
 /**
+ * Do not remove or modify.  Used in vm.CrostiniFiles tast tests at:
+ * https://chromium.googlesource.com/chromiumos/platform/tast-tests
+ *
+ * Get all entries for the given volume.
+ * @param {!VolumeInfo} volumeInfo
+ * @return {!Promise<Object<Entry>>} all entries keyed by fullPath.
+ */
+util.getEntries = function(volumeInfo) {
+  const root = volumeInfo.fileSystem.root;
+  return new Promise((resolve, reject) => {
+    const allEntries = {'/': root};
+    function entriesCallback(someEntries) {
+      someEntries.forEach(entry => {
+        allEntries[entry.fullPath] = entry;
+      });
+    }
+    function successCallback() {
+      resolve(allEntries);
+    }
+    util.readEntriesRecursively(
+        root, entriesCallback, successCallback, reject, () => false);
+  });
+};
+
+/**
  * Executes a functions only when the context is not the incognito one in a
  * regular session.
  * @param {function()} callback
