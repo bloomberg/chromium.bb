@@ -14,7 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/account_id/account_id.h"
 #endif

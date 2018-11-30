@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_stub.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_info.h"

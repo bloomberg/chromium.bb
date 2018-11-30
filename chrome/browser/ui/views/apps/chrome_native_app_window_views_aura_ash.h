@@ -13,7 +13,7 @@
 #include "ash/wm/window_state_observer.h"  // mash-ok
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
