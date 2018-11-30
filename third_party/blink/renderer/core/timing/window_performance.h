@@ -71,7 +71,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   bool ShouldBufferEventTiming();
 
-  bool FirstInputDetected() const { return first_input_detected_; }
+  bool FirstInputDetected() const { return !!first_input_timing_; }
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
@@ -119,10 +119,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // dispatch has been completed but the swap promise used to determine
   // |duration| has not been resolved.
   HeapVector<Member<PerformanceEventTiming>> event_timings_;
-  // We use a bool separate from |first_input_timing_| because if the first
-  // input does not happen before onload then |first_input_timing_| will never
-  // be populated since it should not be accessible from the performance buffer.
-  bool first_input_detected_ = false;
   Member<PerformanceEventTiming> first_pointer_down_event_timing_;
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
