@@ -1289,13 +1289,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// Checks that the visibility API works.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
-  PrerenderTestURL("/prerender/prerender_visibility.html", FINAL_STATUS_USED,
-                   1);
-  NavigateToDestURL();
-}
-
 // Checks that the prerendering of a page is canceled correctly if we try to
 // swap it in before it commits.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
