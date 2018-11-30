@@ -7,6 +7,8 @@
 # Silverlight). These scenarios simply exercise the Chromium code in particular
 # ways. The metrics that are produced are calculated in a separate step.
 
+import abc
+
 from telemetry.page import page as page_module
 from telemetry.page import traffic_setting as traffic_setting_module
 from telemetry import story
@@ -44,6 +46,7 @@ _PAGE_TAGS_LIST = [
     'src',
     'mse'
 ]
+
 
 # A list of traffic setting names to append to page names when used.
 # Traffic settings is a way to constrain the network to match real-world
@@ -201,139 +204,164 @@ class _MSEPage(_MediaPage):
       raise RuntimeError(action_runner.EvaluateJavaScript('window.__testError'))
 
 
-class MediaCasesStorySet(story.StorySet):
+def _GetMediaPages(page_set):
+  return [
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd.ogg&type=audio',
+          page_set=page_set,
+          tags=['vorbis', 'audio_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd1080.webm',
+          page_set=page_set,
+          tags=['is_50fps', 'vp8', 'vorbis', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
+          page_set=page_set,
+          tags=['vorbis', 'audio_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio',
+          page_set=page_set,
+          tags=['pcm', 'audio_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd1080.mp4',
+          page_set=page_set,
+          tags=['is_50fps', 'h264', 'aac', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
+          page_set=page_set,
+          tags=['mp3', 'audio_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.mp4',
+          page_set=page_set,
+          tags=['h264', 'aac', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
+          page_set=page_set,
+          tags=['aac', 'audio_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=garden2_10s.webm',
+          page_set=page_set,
+          tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=garden2_10s.mp4',
+          page_set=page_set,
+          tags=['is_4k', 'h264', 'aac', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
+          page_set=page_set,
+          tags=['vp9', 'opus', 'audio_video'],
+          traffic_setting=traffic_setting_module.WIFI),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
+          page_set=page_set,
+          tags=['vp9', 'opus', 'audio_video']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
+          page_set=page_set,
+          tags=['vp9', 'video_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=crowd720_vp9.webm',
+          page_set=page_set,
+          tags=['vp9', 'video_only']),
+      _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
+          page_set=page_set,
+          tags=['h264', 'aac', 'audio_video', 'busyjs']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio&seek',
+          page_set=page_set,
+          tags=['vorbis', 'audio_only']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio&seek',
+          page_set=page_set,
+          tags=['pcm', 'audio_only']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio&seek',
+          page_set=page_set,
+          tags=['mp3', 'audio_only']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip2.mp4&seek',
+          page_set=page_set,
+          tags=['h264', 'aac', 'audio_video']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=garden2_10s.webm&seek',
+          page_set=page_set,
+          tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=garden2_10s.mp4&seek',
+          page_set=page_set,
+          tags=['is_4k', 'h264', 'aac', 'audio_video']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&seek',
+          page_set=page_set,
+          tags=['vp9', 'opus', 'audio_video']),
+      _SeekPage(
+          url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm&seek',
+          page_set=page_set,
+          tags=['vp9', 'video_only', 'seek']),
+      _SeekPage(
+          url=(_URL_BASE + 'video.html?src='
+               'smpte_3840x2160_60fps_vp9.webm&seek'),
+          page_set=page_set,
+          tags=['is_4k', 'vp9', 'video_only'],
+          action_timeout_in_seconds=120),
+      _BackgroundPlaybackPage(
+          url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&background',
+          page_set=page_set,
+          tags=['vp9', 'opus', 'audio_video']),
+      _MSEPage(
+          url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
+          page_set=page_set,
+          tags=['h264', 'aac', 'audio_video']),
+      _MSEPage(
+          url=(_URL_BASE + 'mse.html?'
+               'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
+          page_set=page_set,
+          tags=['h264', 'aac', 'audio_video']),
+      _MSEPage(
+          url=_URL_BASE + 'mse.html?media=aac_audio.mp4',
+          page_set=page_set,
+          tags=['aac', 'audio_only']),
+      _MSEPage(
+          url=_URL_BASE + 'mse.html?media=h264_video.mp4',
+          page_set=page_set,
+          tags=['h264', 'video_only']),
+      ]
+
+
+class _MediaCasesStorySet(story.StorySet):
+  """Abstract Media Cases Story Set to be overriden."""
+  def __init__(self, measure_memory=False):
+    super(_MediaCasesStorySet, self).__init__(
+            cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.measure_memory = measure_memory
+    for page in self._BuildPages():
+      self.AddStory(page)
+
+  @abc.abstractmethod
+  def _BuildPages(self):
+    """Subclasses should implement this to return an iterator of pages."""
+
+
+class MediaCasesDesktopStorySet(_MediaCasesStorySet):
   """
   Description: Video Stack Perf pages that report time_to_play, seek time and
   many other media-specific and generic metrics.
   """
-  def __init__(self, measure_memory=False):
-    super(MediaCasesStorySet, self).__init__(
-            cloud_storage_bucket=story.PARTNER_BUCKET)
+  def _BuildPages(self):
+    return iter(_GetMediaPages(self))
 
-    self.measure_memory = measure_memory
 
-    pages = [
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd.ogg&type=audio',
-            page_set=self,
-            tags=['vorbis', 'audio_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd1080.webm',
-            page_set=self,
-            tags=['is_50fps', 'vp8', 'vorbis', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
-            page_set=self,
-            tags=['vorbis', 'audio_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio',
-            page_set=self,
-            tags=['pcm', 'audio_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd1080.mp4',
-            page_set=self,
-            tags=['is_50fps', 'h264', 'aac', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
-            page_set=self,
-            tags=['mp3', 'audio_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.mp4',
-            page_set=self,
-            tags=['h264', 'aac', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
-            page_set=self,
-            tags=['aac', 'audio_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=garden2_10s.webm',
-            page_set=self,
-            tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=garden2_10s.mp4',
-            page_set=self,
-            tags=['is_4k', 'h264', 'aac', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
-            page_set=self,
-            tags=['vp9', 'opus', 'audio_video'],
-            traffic_setting=traffic_setting_module.WIFI),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
-            page_set=self,
-            tags=['vp9', 'opus', 'audio_video']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
-            page_set=self,
-            tags=['vp9', 'video_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=crowd720_vp9.webm',
-            page_set=self,
-            tags=['vp9', 'video_only']),
-        _BeginningToEndPlayPage(
-            url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
-            page_set=self,
-            tags=['h264', 'aac', 'audio_video', 'busyjs']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio&seek',
-            page_set=self,
-            tags=['vorbis', 'audio_only']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio&seek',
-            page_set=self,
-            tags=['pcm', 'audio_only']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio&seek',
-            page_set=self,
-            tags=['mp3', 'audio_only']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=tulip2.mp4&seek',
-            page_set=self,
-            tags=['h264', 'aac', 'audio_video']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=garden2_10s.webm&seek',
-            page_set=self,
-            tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=garden2_10s.mp4&seek',
-            page_set=self,
-            tags=['is_4k', 'h264', 'aac', 'audio_video']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&seek',
-            page_set=self,
-            tags=['vp9', 'opus', 'audio_video']),
-        _SeekPage(
-            url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm&seek',
-            page_set=self,
-            tags=['vp9', 'video_only', 'seek']),
-        _SeekPage(
-            url=(_URL_BASE + 'video.html?src='
-                 'smpte_3840x2160_60fps_vp9.webm&seek'),
-            page_set=self,
-            tags=['is_4k', 'vp9', 'video_only'],
-            action_timeout_in_seconds=120),
-        _BackgroundPlaybackPage(
-            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&background',
-            page_set=self,
-            tags=['vp9', 'opus', 'audio_video']),
-        _MSEPage(
-            url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
-            page_set=self,
-            tags=['h264', 'aac', 'audio_video']),
-        _MSEPage(
-            url=(_URL_BASE + 'mse.html?'
-                 'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
-            page_set=self,
-            tags=['h264', 'aac', 'audio_video']),
-        _MSEPage(
-            url=_URL_BASE + 'mse.html?media=aac_audio.mp4',
-            page_set=self,
-            tags=['aac', 'audio_only']),
-        _MSEPage(
-            url=_URL_BASE + 'mse.html?media=h264_video.mp4',
-            page_set=self,
-            tags=['h264', 'video_only']),
-    ]
+class MediaCasesMobileStorySet(_MediaCasesStorySet):
+  """
+  Description: Video Stack Perf pages that report time_to_play, seek time and
+  many other media-specific and generic metrics.
 
-    for page in pages:
-      self.AddStory(page)
+  The mobile story set removes stories that are too difficult for mobile
+  devices.
+  """
+  def _BuildPages(self):
+    for page in _GetMediaPages(self):
+      if 'is_4k' in page.tags or 'is_50fps' in page.tags:
+        continue
+      yield page

@@ -28,9 +28,6 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
   """Base class for TBMv2-based media benchmarks (MediaDesktop and
   MediaMobile)."""
 
-  def CreateStorySet(self, options):
-    return page_sets.MediaCasesStorySet(measure_memory=True)
-
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
 
@@ -68,6 +65,9 @@ class MediaDesktop(_MediaBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
+  def CreateStorySet(self, options):
+    return page_sets.MediaCasesDesktopStorySet(measure_memory=True)
+
   @classmethod
   def Name(cls):
     return 'media.desktop'
@@ -79,9 +79,10 @@ class MediaDesktop(_MediaBenchmark):
 class MediaMobile(_MediaBenchmark):
   """Obtains media performance for key user scenarios on mobile devices."""
 
-  tag = 'android'
-  options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
   SUPPORTED_PLATFORMS = [story.expectations.ANDROID_NOT_WEBVIEW]
+
+  def CreateStorySet(self, options):
+    return page_sets.MediaCasesMobileStorySet(measure_memory=True)
 
   @classmethod
   def Name(cls):
