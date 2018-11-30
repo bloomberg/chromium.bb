@@ -1018,16 +1018,6 @@
     "args": ["--disable-site-isolation-trials"]
   },
   {
-    "prefix": "not-site-per-process",
-    "base": "http/tests/xmlhttprequest/origin-whitelisting-all.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
-    "base": "http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
     "prefix": "transferable-streams",
     "base": "http/tests/streams/transferable",
     "args": ["--enable-blink-features=TransferableStreams"]

@@ -132,10 +132,6 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 # Tests temporarily disabled with Site Isolation - test issues or test harness
 # issues (e.g. missing OOPIF support in the test harness).
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
-crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
