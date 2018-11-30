@@ -406,22 +406,27 @@ base::RepeatingCallback<void()> CreatePromptCallback(
       mode, choice, base::Unretained(model), base::Unretained(browser));
 }
 
-std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
-                                                 float z_offset,
-                                                 const base::string16& text,
-                                                 Model* model) {
+typedef VectorBinding<ControllerModel, Controller> ControllerSetBinding;
+typedef typename ControllerSetBinding::ElementBinding ControllerBinding;
+
+std::unique_ptr<UiElement> CreateControllerLabel(
+    UiElementName name,
+    float z_offset,
+    const base::string16& text,
+    Model* model,
+    ControllerBinding* element_binding) {
   auto layout = Create<LinearLayout>(name, kPhaseNone, LinearLayout::kLeft);
   layout->set_margin(kControllerLabelLayoutMargin);
   layout->SetTranslate(0, 0, z_offset);
   layout->set_contributes_to_parent_bounds(false);
   layout->AddBinding(VR_BIND_FUNC(
-      LayoutAlignment, Model, model,
-      model->controller.handedness == ControllerModel::kRightHanded ? LEFT
-                                                                    : RIGHT,
+      LayoutAlignment, ControllerBinding, element_binding,
+      model->model()->handedness == ControllerModel::kRightHanded ? LEFT
+                                                                  : RIGHT,
       LinearLayout, layout.get(), set_x_centering));
   layout->AddBinding(
-      VR_BIND_FUNC(LinearLayout::Direction, Model, model,
-                   model->controller.handedness == ControllerModel::kRightHanded
+      VR_BIND_FUNC(LinearLayout::Direction, ControllerBinding, element_binding,
+                   model->model()->handedness == ControllerModel::kRightHanded
                        ? LinearLayout::kRight
                        : LinearLayout::kLeft,
                    LinearLayout, layout.get(), set_direction));
@@ -457,13 +462,16 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   return layout;
 }
 
-std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
+std::unique_ptr<UiElement> CreateControllerElement(
+    Model* model,
+    ControllerBinding* element_binding) {
   auto controller = Create<Controller>(kController, kPhaseForeground);
-  controller->AddBinding(VR_BIND_FUNC(gfx::Transform, Model, model,
-                                      model->controller.transform, Controller,
+  controller->AddBinding(VR_BIND_FUNC(gfx::Transform, ControllerBinding,
+                                      element_binding,
+                                      model->model()->transform, Controller,
                                       controller.get(), set_local_transform));
-  controller->AddBinding(VR_BIND_FUNC(float, Model, model,
-                                      model->controller.opacity, Controller,
+  controller->AddBinding(VR_BIND_FUNC(float, ControllerBinding, element_binding,
+                                      model->model()->opacity, Controller,
                                       controller.get(), SetOpacity));
 
   auto touchpad_button =
@@ -475,13 +483,21 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
                                 -(kControllerLength - kControllerWidth) / 2);
   touchpad_button->SetCornerRadii({kControllerWidth / 2, kControllerWidth / 2,
                                    kControllerWidth / 2, kControllerWidth / 2});
-  touchpad_button->AddBinding(
-      VR_BIND_FUNC(SkColor, Model, model,
-                   model->controller.touchpad_button_state ==
+  touchpad_button->AddBinding(std::make_unique<Binding<SkColor>>(
+      VR_BIND_LAMBDA(
+          [](ControllerBinding* m, Model* model) {
+            return m->model()->touchpad_button_state ==
                            ControllerModel::ButtonState::kDown
                        ? model->color_scheme().controller_button_down
-                       : model->color_scheme().controller_button,
-                   Rect, touchpad_button.get(), SetColor));
+                       : model->color_scheme().controller_button;
+          },
+          base::Unretained(element_binding), base::Unretained(model)),
+      VR_BIND_LAMBDA(
+          [](Rect* touchpad_button, const SkColor& value) {
+            touchpad_button->SetColor(value);
+          },
+          base::Unretained(touchpad_button.get()))));
+
   controller->AddChild(std::move(touchpad_button));
 
   auto app_button =
@@ -491,12 +507,19 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   app_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   app_button->SetTranslate(0.0f, 0.0f, kControllerAppButtonZ);
-  app_button->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model,
-      model->controller.app_button_state == ControllerModel::ButtonState::kDown
-          ? model->color_scheme().controller_button_down
-          : model->color_scheme().controller_button,
-      VectorIcon, app_button.get(), SetColor));
+  app_button->AddBinding(std::make_unique<Binding<SkColor>>(
+      VR_BIND_LAMBDA(
+          [](ControllerBinding* m, Model* model) {
+            return m->model()->app_button_state ==
+                           ControllerModel::ButtonState::kDown
+                       ? model->color_scheme().controller_button_down
+                       : model->color_scheme().controller_button;
+          },
+          base::Unretained(element_binding), base::Unretained(model)),
+      VR_BIND_LAMBDA([](VectorIcon* app_button,
+                        const SkColor& value) { app_button->SetColor(value); },
+                     base::Unretained(app_button.get()))));
+
   controller->AddChild(std::move(app_button));
 
   auto home_button =
@@ -506,12 +529,19 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   home_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   home_button->SetTranslate(0.0f, 0.0f, kControllerHomeButtonZ);
-  home_button->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model,
-      model->controller.home_button_state == ControllerModel::ButtonState::kDown
-          ? model->color_scheme().controller_button_down
-          : model->color_scheme().controller_button,
-      VectorIcon, home_button.get(), SetColor));
+  home_button->AddBinding(std::make_unique<Binding<SkColor>>(
+      VR_BIND_LAMBDA(
+          [](ControllerBinding* m, Model* model) {
+            return m->model()->home_button_state ==
+                           ControllerModel::ButtonState::kDown
+                       ? model->color_scheme().controller_button_down
+                       : model->color_scheme().controller_button;
+          },
+          base::Unretained(element_binding), base::Unretained(model)),
+      VR_BIND_LAMBDA([](VectorIcon* home_button,
+                        const SkColor& value) { home_button->SetColor(value); },
+                     base::Unretained(home_button.get()))));
+
   controller->AddChild(std::move(home_button));
 
   auto battery_layout =
@@ -529,12 +559,12 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
 
     battery_dot->AddBinding(std::make_unique<Binding<SkColor>>(
         VR_BIND_LAMBDA(
-            [](Model* model, int index) {
-              return model->controller.battery_level > index
+            [](ControllerBinding* m, Model* model, int index) {
+              return m->model()->battery_level > index
                          ? model->color_scheme().controller_battery_full
                          : model->color_scheme().controller_battery_empty;
             },
-            base::Unretained(model), i),
+            base::Unretained(element_binding), base::Unretained(model), i),
         VR_BIND_LAMBDA(
             [](Rect* battery_dot, const SkColor& value) {
               battery_dot->SetColor(value);
@@ -546,7 +576,77 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
 
   controller->AddChild(std::move(battery_layout));
 
+  element_binding->set_view(controller.get());
+
   return controller;
+}
+
+void OnControllerModelAdded(UiScene* scene,
+                            Model* model,
+                            ControllerBinding* element_binding) {
+  auto controller = CreateControllerElement(model, element_binding);
+
+  auto callout_group = Create<UiElement>(kNone, kPhaseNone);
+  callout_group->SetVisible(false);
+  callout_group->SetTransitionedProperties({OPACITY});
+  callout_group->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kControllerLabelTransitionDurationMs));
+  callout_group->AddBinding(
+      VR_BIND_FUNC(bool, ControllerBinding, element_binding,
+                   model->model()->resting_in_viewport, UiElement,
+                   callout_group.get(), SetVisible));
+
+  auto trackpad_button =
+      CreateControllerLabel(kControllerTrackpadLabel, kControllerTrackpadOffset,
+                            l10n_util::GetStringUTF16(IDS_VR_BUTTON_TRACKPAD),
+                            model, element_binding);
+  trackpad_button->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, !model->reposition_window_enabled(),
+                   UiElement, trackpad_button.get(), SetVisible));
+  callout_group->AddChild(std::move(trackpad_button));
+
+  auto reposition_button = CreateControllerLabel(
+      kControllerTrackpadRepositionLabel, kControllerTrackpadOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_TRACKPAD_REPOSITION), model,
+      element_binding);
+  reposition_button->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, model->reposition_window_enabled(),
+                   UiElement, reposition_button.get(), SetVisible));
+  callout_group->AddChild(std::move(reposition_button));
+
+  auto exit_button_label = CreateControllerLabel(
+      kControllerExitButtonLabel, kControllerExitButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_EXIT), model, element_binding);
+  exit_button_label->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, model->fullscreen_enabled(), UiElement,
+                   exit_button_label.get(), SetVisible));
+  callout_group->AddChild(std::move(exit_button_label));
+
+  auto back_button_label = CreateControllerLabel(
+      kControllerBackButtonLabel, kControllerBackButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model, element_binding);
+  back_button_label->AddBinding(VR_BIND_FUNC(
+      bool, Model, model,
+      model->omnibox_editing_enabled() || model->voice_search_enabled(),
+      UiElement, back_button_label.get(), SetVisible));
+  callout_group->AddChild(std::move(back_button_label));
+
+  auto reposition_finish_button = CreateControllerLabel(
+      kControllerRepositionFinishLabel, kControllerBackButtonOffset,
+      l10n_util::GetStringUTF16(IDS_VR_BUTTON_APP_REPOSITION), model,
+      element_binding);
+  reposition_finish_button->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, model->reposition_window_enabled(),
+                   UiElement, reposition_finish_button.get(), SetVisible));
+  callout_group->AddChild(std::move(reposition_finish_button));
+
+  controller->AddChild(std::move(callout_group));
+
+  scene->AddUiElement(kControllerGroup, std::move(controller));
+}
+
+void OnControllerModelRemoved(UiScene* scene, ControllerBinding* binding) {
+  scene->RemoveUiElement(binding->view()->id());
 }
 
 EventHandlers CreateRepositioningHandlers(Model* model, UiScene* scene) {
@@ -885,7 +985,7 @@ void UiSceneCreator::CreateScene() {
   CreateContentRepositioningAffordance();
   CreateWebVrSubtree();
   CreateKeyboard();
-  CreateController();
+  CreateControllers();
 }
 
 void UiSceneCreator::Create2dBrowsingHostedUi() {
@@ -919,12 +1019,13 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   repositioner->AddBinding(
       VR_BIND_FUNC(bool, Model, model_, model->reposition_window_enabled(),
                    Repositioner, repositioner.get(), SetEnabled));
-  repositioner->AddBinding(VR_BIND_FUNC(
-      gfx::Vector3dF, Model, model_, model->controller.laser_direction,
-      Repositioner, repositioner.get(), set_laser_direction));
   repositioner->AddBinding(
-      VR_BIND(bool, Model, model_, model->controller.recentered, Repositioner,
-              repositioner.get(), if (value) { view->Reset(); }));
+      VR_BIND_FUNC(gfx::Vector3dF, Model, model_,
+                   model->primary_controller().laser_direction, Repositioner,
+                   repositioner.get(), set_laser_direction));
+  repositioner->AddBinding(VR_BIND(
+      bool, Model, model_, model->primary_controller().recentered, Repositioner,
+      repositioner.get(), if (value) { view->Reset(); }));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
 
   auto hider = Create<UiElement>(k2dBrowsingVisibiltyHider, kPhaseNone);
@@ -1116,12 +1217,13 @@ void UiSceneCreator::CreateContentQuad() {
   resizer->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                    model->reposition_window_enabled(), Resizer,
                                    resizer.get(), SetEnabled));
-  resizer->AddBinding(VR_BIND_FUNC(gfx::PointF, Model, model_,
-                                   model->controller.touchpad_touch_position,
-                                   Resizer, resizer.get(), set_touch_position));
-  resizer->AddBinding(VR_BIND_FUNC(bool, Model, model_,
-                                   model->controller.touching_touchpad, Resizer,
-                                   resizer.get(), SetTouchingTouchpad));
+  resizer->AddBinding(
+      VR_BIND_FUNC(gfx::PointF, Model, model_,
+                   model->primary_controller().touchpad_touch_position, Resizer,
+                   resizer.get(), set_touch_position));
+  resizer->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_, model->primary_controller().touching_touchpad,
+      Resizer, resizer.get(), SetTouchingTouchpad));
 
   auto main_content = std::make_unique<ContentElement>(
       content_input_delegate_,
@@ -1767,7 +1869,7 @@ void UiSceneCreator::CreateContentRepositioningAffordance() {
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hit_plane));
 }
 
-void UiSceneCreator::CreateController() {
+void UiSceneCreator::CreateControllers() {
   auto root = std::make_unique<UiElement>();
   root->SetName(kControllerRoot);
   VR_BIND_VISIBILITY(root, model->browsing_enabled() ||
@@ -1775,54 +1877,20 @@ void UiSceneCreator::CreateController() {
                                model->hosted_platform_ui.hosted_ui_enabled);
   scene_->AddUiElement(kRoot, std::move(root));
 
-  auto group = std::make_unique<UiElement>();
+  auto group = Create<UiElement>(kNone, kPhaseNone);
   group->SetName(kControllerGroup);
+
+  // Set up the vector binding to manage controllers dynamically.
+  ControllerSetBinding::ModelAddedCallback added_callback =
+      base::BindRepeating(&OnControllerModelAdded, base::Unretained(scene_),
+                          base::Unretained(model_));
+  ControllerSetBinding::ModelRemovedCallback removed_callback =
+      base::BindRepeating(&OnControllerModelRemoved, base::Unretained(scene_));
+
+  group->AddBinding(std::make_unique<ControllerSetBinding>(
+      &model_->controllers, added_callback, removed_callback));
+
   scene_->AddUiElement(kControllerRoot, std::move(group));
-
-  auto controller = CreateControllerElement(model_);
-
-  auto callout_group = Create<UiElement>(kNone, kPhaseNone);
-  callout_group->SetVisible(false);
-  callout_group->SetTransitionedProperties({OPACITY});
-  callout_group->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kControllerLabelTransitionDurationMs));
-  VR_BIND_VISIBILITY(callout_group, model->controller.resting_in_viewport);
-
-  auto trackpad_button = CreateControllerLabel(
-      kControllerTrackpadLabel, kControllerTrackpadOffset,
-      l10n_util::GetStringUTF16(IDS_VR_BUTTON_TRACKPAD), model_);
-  VR_BIND_VISIBILITY(trackpad_button, !model->reposition_window_enabled());
-  callout_group->AddChild(std::move(trackpad_button));
-
-  auto reposition_button = CreateControllerLabel(
-      kControllerTrackpadRepositionLabel, kControllerTrackpadOffset,
-      l10n_util::GetStringUTF16(IDS_VR_BUTTON_TRACKPAD_REPOSITION), model_);
-  VR_BIND_VISIBILITY(reposition_button, model->reposition_window_enabled());
-  callout_group->AddChild(std::move(reposition_button));
-
-  auto exit_button_label = CreateControllerLabel(
-      kControllerExitButtonLabel, kControllerExitButtonOffset,
-      l10n_util::GetStringUTF16(IDS_VR_BUTTON_EXIT), model_);
-  VR_BIND_VISIBILITY(exit_button_label, model->fullscreen_enabled());
-  callout_group->AddChild(std::move(exit_button_label));
-
-  auto back_button_label = CreateControllerLabel(
-      kControllerBackButtonLabel, kControllerBackButtonOffset,
-      l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model_);
-  VR_BIND_VISIBILITY(back_button_label, model->omnibox_editing_enabled() ||
-                                            model->voice_search_enabled());
-  callout_group->AddChild(std::move(back_button_label));
-
-  auto reposition_finish_button = CreateControllerLabel(
-      kControllerRepositionFinishLabel, kControllerBackButtonOffset,
-      l10n_util::GetStringUTF16(IDS_VR_BUTTON_APP_REPOSITION), model_);
-  VR_BIND_VISIBILITY(reposition_finish_button,
-                     model->reposition_window_enabled());
-  callout_group->AddChild(std::move(reposition_finish_button));
-
-  controller->AddChild(std::move(callout_group));
-
-  scene_->AddUiElement(kControllerGroup, std::move(controller));
 
   auto reticle_laser_group = Create<UiElement>(kReticleLaserGroup, kPhaseNone);
   reticle_laser_group->SetTransitionedProperties({OPACITY});
@@ -1833,8 +1901,8 @@ void UiSceneCreator::CreateController() {
   auto laser = std::make_unique<Laser>(model_);
   laser->SetDrawPhase(kPhaseForeground);
   laser->AddBinding(VR_BIND_FUNC(float, Model, model_,
-                                 model->controller.opacity, Laser, laser.get(),
-                                 SetOpacity));
+                                 model->primary_controller().opacity, Laser,
+                                 laser.get(), SetOpacity));
 
   auto reticle = std::make_unique<Reticle>(scene_, model_);
   reticle->SetDrawPhase(kPhaseForeground);
@@ -1887,8 +1955,8 @@ void UiSceneCreator::CreateKeyboard() {
       VR_BIND_LAMBDA(
           [](Model* m) {
             return std::pair<bool, gfx::PointF>(
-                m->controller.touching_touchpad,
-                m->controller.touchpad_touch_position);
+                m->primary_controller().touching_touchpad,
+                m->primary_controller().touchpad_touch_position);
           },
           base::Unretained(model_)),
       VR_BIND_LAMBDA(

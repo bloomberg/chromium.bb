@@ -73,7 +73,7 @@ void Laser::Render(UiElementRenderer* renderer,
                    const CameraModel& model) const {
   // Find the length of the beam (from hand to target).
   const float laser_length =
-      std::sqrt(model_->controller.laser_origin.SquaredDistanceTo(
+      std::sqrt(model_->primary_controller().laser_origin.SquaredDistanceTo(
           model_->reticle.target_point));
 
   // Build a beam, originating from the origin.
@@ -90,7 +90,7 @@ void Laser::Render(UiElementRenderer* renderer,
   mat = rotation_mat * mat;
 
   const gfx::Vector3dF beam_direction =
-      model_->reticle.target_point - model_->controller.laser_origin;
+      model_->reticle.target_point - model_->primary_controller().laser_origin;
 
   gfx::Transform beam_direction_mat(
       gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f), beam_direction));
@@ -106,9 +106,10 @@ void Laser::Render(UiElementRenderer* renderer,
     face_transform = beam_direction_mat * gfx::Transform(rot) * mat;
 
     // Move the beam origin to the hand.
-    face_transform.matrix().postTranslate(model_->controller.laser_origin.x(),
-                                          model_->controller.laser_origin.y(),
-                                          model_->controller.laser_origin.z());
+    face_transform.matrix().postTranslate(
+        model_->primary_controller().laser_origin.x(),
+        model_->primary_controller().laser_origin.y(),
+        model_->primary_controller().laser_origin.z());
     transform =
         model.view_proj_matrix * world_space_transform() * face_transform;
     renderer->DrawLaser(computed_opacity(), transform);

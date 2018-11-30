@@ -453,7 +453,9 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
   controller_model.laser_origin = laser_origin + local_offset;
   controller_model.handedness = handedness_;
 
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  std::vector<ControllerModel> controllers;
+  controllers.push_back(controller_model);
+  ui_->OnControllersUpdated(controllers, reticle_model);
 
   return controller_model;
 }

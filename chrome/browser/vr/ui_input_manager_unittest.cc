@@ -601,9 +601,12 @@ TEST_F(UiInputManagerContentTest, ControllerRestingInViewport) {
   // The controller is initially not in the viewport.
   EXPECT_FALSE(input_manager_->ControllerRestingInViewport());
 
+  std::vector<ControllerModel> controllers;
+
   input_manager_->HandleInput(MsToTicks(1), render_info, controller_model,
                               &reticle_model, &input_event_list);
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  controllers.push_back(controller_model);
+  ui_->OnControllersUpdated(controllers, reticle_model);
   scene_->OnBeginFrame(base::TimeTicks(), head_pose_);
 
   // Although we are currently looking at the controller, it is not focused yet.
@@ -612,17 +615,19 @@ TEST_F(UiInputManagerContentTest, ControllerRestingInViewport) {
 
   input_manager_->HandleInput(MsToTicks(50000), render_info, controller_model,
                               &reticle_model, &input_event_list);
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  controllers[0] = controller_model;
+  ui_->OnControllersUpdated(controllers, reticle_model);
   scene_->OnBeginFrame(base::TimeTicks(), head_pose_);
 
   // Since the controller has been in the viewport for a long time (50s), it
   // must report that it is focused.
   EXPECT_TRUE(input_manager_->ControllerRestingInViewport());
 
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  controllers[0] = controller_model;
+  ui_->OnControllersUpdated(controllers, reticle_model);
   scene_->OnBeginFrame(base::TimeTicks(), head_pose_);
 
-  EXPECT_TRUE(model_->controller.resting_in_viewport);
+  EXPECT_TRUE(model_->controllers[0].resting_in_viewport);
 
   EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
 }

@@ -440,12 +440,15 @@ void Ui::OnMenuButtonClicked() {
   }
 }
 
-void Ui::OnControllerUpdated(const ControllerModel& controller_model,
-                             const ReticleModel& reticle_model) {
-  model_->controller = controller_model;
+void Ui::OnControllersUpdated(
+    const std::vector<ControllerModel>& controller_models,
+    const ReticleModel& reticle_model) {
+  model_->controllers = controller_models;
   model_->reticle = reticle_model;
-  model_->controller.resting_in_viewport =
-      input_manager_->ControllerRestingInViewport();
+  for (auto& controller : model_->controllers) {
+    controller.resting_in_viewport =
+        input_manager_->ControllerRestingInViewport();
+  }
 }
 
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
@@ -591,6 +594,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
   model_->use_new_incognito_strings =
       ui_initial_state.use_new_incognito_strings;
+  model_->controllers.push_back(ControllerModel());
 }
 
 void Ui::AcceptDoffPromptForTesting() {

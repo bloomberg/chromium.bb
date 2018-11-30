@@ -63,8 +63,9 @@ class UiInterface {
       float width_percentage,
       float height_percentage) = 0;
   virtual void OnPause() = 0;
-  virtual void OnControllerUpdated(const ControllerModel& controller_model,
-                                   const ReticleModel& reticle_model) = 0;
+  virtual void OnControllersUpdated(
+      const std::vector<ControllerModel>& controller_models,
+      const ReticleModel& reticle_model) = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
   virtual void AcceptDoffPromptForTesting() = 0;
   virtual gfx::Point3F GetTargetPointForTesting(
