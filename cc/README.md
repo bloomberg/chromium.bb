@@ -42,6 +42,10 @@ composited browser contents into a backbuffer or a bitmap, respectively.
 Design documents for the graphics stack can be found at
 [chromium-graphics](https://www.chromium.org/developers/design-documents/chromium-graphics).
 
+## Other Docs
+
+* [How cc Works](https://docs.google.com/document/d/1yjzOWrPfFGviEd1nru3yzqxSHETC-zsEBSt9C8SvV-Q/edit)
+
 ## Glossaries
 
 ### Active CompositorFrame
