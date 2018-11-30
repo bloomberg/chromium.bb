@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"

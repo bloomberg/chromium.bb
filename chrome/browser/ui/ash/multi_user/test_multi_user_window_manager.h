@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 
 class Browser;
