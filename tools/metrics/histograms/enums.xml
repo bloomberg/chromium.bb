@@ -4992,6 +4992,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="On Battery"/>
 </enum>
 
+<enum name="BooleanOpened">
+  <int value="0" label="Not opened"/>
+  <int value="1" label="Opened"/>
+</enum>
+
 <enum name="BooleanOriginHeaderSameAsRequestOrigin">
   <int value="0" label="Headers differ"/>
   <int value="1" label="Headers match"/>
@@ -38689,6 +38694,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="BGRA"/>
   <int value="1" label="YUY2"/>
   <int value="2" label="NV12"/>
+</enum>
+
+<enum name="OverlayPanel.StateChangeReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Reset"/>
+  <int value="2" label="Back press"/>
+  <int value="3" label="Text select tap"/>
+  <int value="4" label="Text select long-press"/>
+  <int value="5" label="Invalid selection"/>
+  <int value="6" label="Cleared selection"/>
+  <int value="7" label="Base page tap"/>
+  <int value="8" label="Base page scroll"/>
+  <int value="9" label="Search bar tap"/>
+  <int value="10" label="Overlay content navigation"/>
+  <int value="11" label="Tab promotion"/>
+  <int value="12" label="Click"/>
+  <int value="13" label="Swipe"/>
+  <int value="14" label="Fling"/>
+  <int value="15" label="Opt-in"/>
+  <int value="16" label="Opt-out"/>
+  <int value="17" label="Close button"/>
+  <int value="18" label="Panel Suppress"/>
+  <int value="19" label="Panel Unsuppress"/>
+  <int value="20" label="Tap Suppress"/>
 </enum>
 
 <enum name="OverlayStrategies">

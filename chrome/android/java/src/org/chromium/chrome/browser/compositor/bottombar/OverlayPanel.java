@@ -96,6 +96,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         int PANEL_SUPPRESS = 18;
         int PANEL_UNSUPPRESS = 19;
         int TAP_SUPPRESS = 20;
+        // Always update MAX_VALUE to match the last StateChangeReason in the list.
+        int MAX_VALUE = 20;
     }
 
     /** The activity this panel is in. */
