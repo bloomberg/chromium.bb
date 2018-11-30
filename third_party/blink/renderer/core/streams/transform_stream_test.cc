@@ -443,5 +443,16 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   EXPECT_TRUE(writableTypeErrorThrown);
 }
 
+TEST_F(TransformStreamTest, CreateFromReadableWritablePair) {
+  V8TestingScope scope;
+  ReadableStream* readable =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  WritableStream* writable =
+      WritableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  TransformStream transform(readable, writable);
+  EXPECT_EQ(readable, transform.Readable());
+  EXPECT_EQ(writable, transform.Writable());
+}
+
 }  // namespace
 }  // namespace blink

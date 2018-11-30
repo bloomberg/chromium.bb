@@ -49,11 +49,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_transform_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
@@ -386,14 +388,22 @@ void SerializedScriptValue::TransferReadableStreams(
     ExceptionState& exception_state) {
   auto* execution_context = ExecutionContext::From(script_state);
   for (ReadableStream* readable_stream : readable_streams) {
-    mojo::MessagePipe pipe;
-    MessagePort* local_port = MessagePort::Create(*execution_context);
-    local_port->Entangle(std::move(pipe.handle0));
-    readable_stream->Serialize(script_state, local_port, exception_state);
+    TransferReadableStream(script_state, execution_context, readable_stream,
+                           exception_state);
     if (exception_state.HadException())
       return;
-    stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
   }
+}
+
+void SerializedScriptValue::TransferReadableStream(
+    ScriptState* script_state,
+    ExecutionContext* execution_context,
+    ReadableStream* readable_stream,
+    ExceptionState& exception_state) {
+  MessagePort* local_port = AddStreamChannel(execution_context);
+  readable_stream->Serialize(script_state, local_port, exception_state);
+  if (exception_state.HadException())
+    return;
 }
 
 void SerializedScriptValue::TransferWritableStreams(
@@ -402,14 +412,50 @@ void SerializedScriptValue::TransferWritableStreams(
     ExceptionState& exception_state) {
   auto* execution_context = ExecutionContext::From(script_state);
   for (WritableStream* writable_stream : writable_streams) {
-    mojo::MessagePipe pipe;
-    MessagePort* local_port = MessagePort::Create(*execution_context);
-    local_port->Entangle(std::move(pipe.handle0));
-    writable_stream->Serialize(script_state, local_port, exception_state);
+    TransferWritableStream(script_state, execution_context, writable_stream,
+                           exception_state);
     if (exception_state.HadException())
       return;
-    stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
   }
+}
+
+void SerializedScriptValue::TransferWritableStream(
+    ScriptState* script_state,
+    ExecutionContext* execution_context,
+    WritableStream* writable_stream,
+    ExceptionState& exception_state) {
+  MessagePort* local_port = AddStreamChannel(execution_context);
+  writable_stream->Serialize(script_state, local_port, exception_state);
+  if (exception_state.HadException())
+    return;
+}
+
+void SerializedScriptValue::TransferTransformStreams(
+    ScriptState* script_state,
+    const TransformStreamArray& transform_streams,
+    ExceptionState& exception_state) {
+  auto* execution_context = ExecutionContext::From(script_state);
+  for (TransformStream* transform_stream : transform_streams) {
+    TransferReadableStream(script_state, execution_context,
+                           transform_stream->Readable(), exception_state);
+    if (exception_state.HadException())
+      return;
+    TransferWritableStream(script_state, execution_context,
+                           transform_stream->Writable(), exception_state);
+    if (exception_state.HadException())
+      return;
+  }
+}
+
+// Creates an entangled pair of channels. Adds one end to |stream_channels_| as
+// a MessagePortChannel, and returns the other end as a MessagePort.
+MessagePort* SerializedScriptValue::AddStreamChannel(
+    ExecutionContext* execution_context) {
+  mojo::MessagePipe pipe;
+  MessagePort* local_port = MessagePort::Create(*execution_context);
+  local_port->Entangle(std::move(pipe.handle0));
+  stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
+  return local_port;
 }
 
 void SerializedScriptValue::TransferArrayBuffers(
@@ -592,6 +638,18 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.writable_streams.push_back(stream);
+    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+               V8TransformStream::HasInstance(transferable_object, isolate)) {
+      TransformStream* stream = V8TransformStream::ToImpl(
+          v8::Local<v8::Object>::Cast(transferable_object));
+      if (transferables.transform_streams.Contains(stream)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "TransformStream at index " + String::Number(i) +
+                " is a duplicate of an earlier TransformStream.");
+        return false;
+      }
+      transferables.transform_streams.push_back(stream);
     } else {
       exception_state.ThrowTypeError("Value at index " + String::Number(i) +
                                      " does not have a transferable type.");

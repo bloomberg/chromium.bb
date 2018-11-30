@@ -53,6 +53,8 @@ namespace blink {
 class BlobDataHandle;
 class DOMSharedArrayBuffer;
 class ExceptionState;
+class ExecutionContext;
+class MessagePort;
 class ScriptValue;
 class SharedBuffer;
 class StaticBitmapImage;
@@ -295,9 +297,22 @@ class CORE_EXPORT SerializedScriptValue
   void TransferReadableStreams(ScriptState*,
                                const ReadableStreamArray&,
                                ExceptionState&);
+  void TransferReadableStream(ScriptState* script_state,
+                              ExecutionContext* execution_context,
+                              ReadableStream* readable_streams,
+                              ExceptionState& exception_state);
   void TransferWritableStreams(ScriptState*,
                                const WritableStreamArray&,
                                ExceptionState&);
+  void TransferWritableStream(ScriptState* script_state,
+                              ExecutionContext* execution_context,
+                              WritableStream* writable_streams,
+                              ExceptionState& exception_state);
+  void TransferTransformStreams(ScriptState*,
+                                const TransformStreamArray&,
+                                ExceptionState&);
+  MessagePort* AddStreamChannel(ExecutionContext*);
+
   void CloneSharedArrayBuffers(SharedArrayBufferArray&);
   DataBufferPtr data_buffer_;
   size_t data_buffer_size_ = 0;

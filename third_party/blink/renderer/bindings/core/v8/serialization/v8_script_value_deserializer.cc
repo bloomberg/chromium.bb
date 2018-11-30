@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
@@ -535,6 +536,28 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return WritableStream::Deserialize(
           script_state_, (*transferred_stream_ports_)[index].Get(),
           exception_state);
+    }
+    case kTransformStreamTransferTag: {
+      if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+        return nullptr;
+      uint32_t index = 0;
+      if (!ReadUint32(&index) || !transferred_stream_ports_ ||
+          index + 1 >= transferred_stream_ports_->size()) {
+        return nullptr;
+      }
+      ReadableStream* readable = ReadableStream::Deserialize(
+          script_state_, (*transferred_stream_ports_)[index].Get(),
+          exception_state);
+      if (!readable)
+        return nullptr;
+
+      WritableStream* writable = WritableStream::Deserialize(
+          script_state_, (*transferred_stream_ports_)[index + 1].Get(),
+          exception_state);
+      if (!writable)
+        return nullptr;
+
+      return MakeGarbageCollected<TransformStream>(readable, writable);
     }
     default:
       break;
