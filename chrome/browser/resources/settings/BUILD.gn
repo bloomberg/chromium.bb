@@ -112,6 +112,7 @@ js_type_check("settings_resources") {
     ":focus_row_behavior",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
+    ":open_window_proxy",
     ":page_visibility",
     ":route",
     ":search_settings",
@@ -152,6 +153,12 @@ js_library("lifetime_browser_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("open_window_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
 }
 
 js_library("route") {

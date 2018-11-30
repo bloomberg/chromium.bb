@@ -55,6 +55,14 @@ Polymer({
       },
     },
 
+    // <if expr="not chromeos">
+    /**
+     * Stored accounts to the system, supplied by SyncBrowserProxy.
+     * @type {?Array<!settings.StoredAccount>}
+     */
+    storedAccounts: Object,
+    // </if>
+
     /**
      * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
@@ -80,6 +88,14 @@ Polymer({
     profileName_: String,
 
     // <if expr="not chromeos">
+    /** @private {boolean} */
+    shouldShowGoogleAccount_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowGoogleAccount_(storedAccounts, syncStatus,' +
+          'storedAccounts.length, syncStatus.signedIn, syncStatus.hasError)',
+    },
+
     /** @private */
     showImportDataDialog_: {
       type: Boolean,
@@ -192,7 +208,14 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+
     // <if expr="not chromeos">
+    const handleStoredAccounts = accounts => {
+      this.storedAccounts = accounts;
+    };
+    this.syncBrowserProxy_.getStoredAccounts().then(handleStoredAccounts);
+    this.addWebUIListener('stored-accounts-updated', handleStoredAccounts);
+
     this.addWebUIListener('sync-settings-saved', () => {
       /** @type {!CrToastElement} */ (this.$.toast).show();
     });
@@ -277,6 +300,20 @@ Polymer({
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
     }
   },
+
+  // <if expr="not chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowGoogleAccount_: function() {
+    if (this.storedAccounts === undefined || this.syncStatus === undefined)
+      return false;
+
+    return (this.storedAccounts.length > 0 || !!this.syncStatus.signedIn) &&
+        !this.syncStatus.hasError;
+  },
+  // </if>
 
   /** @private */
   onProfileTap_: function() {
@@ -415,6 +452,15 @@ Polymer({
   onImportDataDialogClosed_: function() {
     settings.navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
+  },
+
+  /**
+   * Open URL for managing your Google Account.
+   * @private
+   */
+  openGoogleAccount_: function() {
+    settings.OpenWindowProxyImpl.getInstance().openURL(
+        loadTimeData.getString('googleAccountUrl'));
   },
 
   /**

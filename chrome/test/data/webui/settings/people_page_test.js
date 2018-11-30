@@ -440,14 +440,80 @@ cr.define('settings_people_page', function() {
             syncSystemEnabled: true,
           });
           assertEquals(
-              window.getComputedStyle(accountControl)['display'], 'none');
+              'none', window.getComputedStyle(accountControl)['display']);
 
           sync_test_util.simulateSyncStatus({
             signinAllowed: true,
             syncSystemEnabled: false,
           });
           assertEquals(
-              window.getComputedStyle(accountControl)['display'], 'none');
+              'none', window.getComputedStyle(accountControl)['display']);
+
+          const manageGoogleAccount = peoplePage.$$('#manage-google-account');
+
+          // Do not show Google Account when stored accounts or sync status
+          // could not be retrieved.
+          sync_test_util.simulateStoredAccounts(undefined);
+          sync_test_util.simulateSyncStatus(undefined);
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
+
+          sync_test_util.simulateStoredAccounts([]);
+          sync_test_util.simulateSyncStatus(undefined);
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
+
+          sync_test_util.simulateStoredAccounts(undefined);
+          sync_test_util.simulateSyncStatus({});
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
+
+          sync_test_util.simulateStoredAccounts([]);
+          sync_test_util.simulateSyncStatus({});
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
+
+          // A stored account with sync off but no error should result in the
+          // Google Account being shown.
+          sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+          sync_test_util.simulateSyncStatus({
+            signedIn: false,
+            hasError: false,
+          });
+          assertTrue(
+              window.getComputedStyle(manageGoogleAccount)['display'] !=
+              'none');
+
+          // A stored account with sync off and error should not result in the
+          // Google Account being shown.
+          sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+          sync_test_util.simulateSyncStatus({
+            signedIn: false,
+            hasError: true,
+          });
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
+
+          // A stored account with sync on but no error should result in the
+          // Google Account being shown.
+          sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+          sync_test_util.simulateSyncStatus({
+            signedIn: true,
+            hasError: false,
+          });
+          assertTrue(
+              window.getComputedStyle(manageGoogleAccount)['display'] !=
+              'none');
+
+          // A stored account with sync on but with error should not result in
+          // the Google Account being shown.
+          sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+          sync_test_util.simulateSyncStatus({
+            signedIn: true,
+            hasError: true,
+          });
+          assertEquals(
+              'none', window.getComputedStyle(manageGoogleAccount)['display']);
         });
       });
 

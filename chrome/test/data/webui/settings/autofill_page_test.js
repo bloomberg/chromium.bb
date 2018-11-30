@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('settings_autofill_page', function() {
-  /** @implements {settings.AutofillBrowserProxy} */
-  class TestAutofillBrowserProxy extends TestBrowserProxy {
+  /** @implements {settings.OpenWindowProxy} */
+  class TestOpenWindowProxy extends TestBrowserProxy {
     constructor() {
       super([
         'openURL',
@@ -20,8 +20,8 @@ cr.define('settings_autofill_page', function() {
   suite('PasswordsUITest', function() {
     /** @type {SettingsAutofillPageElement} */
     let autofillPage = null;
-    /** @type {settings.AutofillBrowserProxy} */
-    let browserProxy = null;
+    /** @type {settings.OpenWindowProxy} */
+    let openWindowProxy = null;
 
     suiteSetup(function() {
       // Forces navigation to Google Password Manager to be off by default.
@@ -31,8 +31,8 @@ cr.define('settings_autofill_page', function() {
     });
 
     setup(function() {
-      browserProxy = new TestAutofillBrowserProxy();
-      settings.AutofillBrowserProxyImpl.instance_ = browserProxy;
+      openWindowProxy = new TestOpenWindowProxy();
+      settings.OpenWindowProxyImpl.instance_ = openWindowProxy;
 
       PolymerTest.clearBody();
       autofillPage = document.createElement('settings-autofill-page');
@@ -67,7 +67,7 @@ cr.define('settings_autofill_page', function() {
       autofillPage.$$('#passwordManagerButton').click();
       Polymer.dom.flush();
 
-      return browserProxy.whenCalled('openURL').then(url => {
+      return openWindowProxy.whenCalled('openURL').then(url => {
         assertEquals(googlePasswordManagerUrl, url);
       });
     });

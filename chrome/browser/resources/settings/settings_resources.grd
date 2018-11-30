@@ -691,12 +691,6 @@
       <structure name="IDR_SETTINGS_MEDIA_PICKER_JS"
                  file="site_settings/media_picker.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_AUTOFILL_BROWSER_PROXY_HTML"
-                 file="autofill_page/autofill_browser_proxy.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_AUTOFILL_BROWSER_PROXY_JS"
-                 file="autofill_page/autofill_browser_proxy.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_AUTOFILL_PAGE_HTML"
                  file="autofill_page/autofill_page.html"
                  type="chrome_html" />
@@ -942,6 +936,12 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_LOCAL_DATA_BROWSER_PROXY_JS"
                  file="site_settings/local_data_browser_proxy.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_OPEN_WINDOW_PROXY_HTML"
+                 file="open_window_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_OPEN_WINDOW_PROXY_JS"
+                 file="open_window_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PAGE_VISIBILITY_HTML"
                  file="page_visibility.html"
