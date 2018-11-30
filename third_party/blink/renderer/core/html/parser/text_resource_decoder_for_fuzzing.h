@@ -51,8 +51,7 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
     // Note: Charsets can be long (see the various encodings in
     // wtf/text). For instance: "unicode-1-1-utf-8". To ensure good coverage,
     // set a generous max limit for these sizes (32 bytes should be good).
-    return WTF::TextEncoding(
-        String::FromUTF8(fuzzed_data.ConsumeBytesInRange(0, 32)));
+    return WTF::TextEncoding(fuzzed_data.ConsumeRandomLengthString(32));
   }
 };
 

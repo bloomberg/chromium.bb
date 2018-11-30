@@ -8,6 +8,7 @@
 #include "base/test/fuzzed_data_provider.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -19,10 +20,8 @@ class FuzzedDataProvider {
  public:
   FuzzedDataProvider(const uint8_t* bytes, size_t num_bytes);
 
-  // Returns a string with length between minBytes and maxBytes. If the
-  // length is greater than the length of the remaining data this is
-  // equivalent to ConsumeRemainingBytes().
-  CString ConsumeBytesInRange(uint32_t min_bytes, uint32_t max_bytes);
+  // Returns a string with length between 0 and max_length.
+  String ConsumeRandomLengthString(size_t max_length);
 
   // Returns a String containing all remaining bytes of the input data.
   CString ConsumeRemainingBytes();
