@@ -1414,6 +1414,8 @@ jumbo_split_static_library("browser") {
     "signin/about_signin_internals_factory.h",
     "signin/account_consistency_mode_manager.cc",
     "signin/account_consistency_mode_manager.h",
+    "signin/account_consistency_mode_manager_factory.cc",
+    "signin/account_consistency_mode_manager_factory.h",
     "signin/account_fetcher_service_factory.cc",
     "signin/account_fetcher_service_factory.h",
     "signin/account_investigator_factory.cc",
