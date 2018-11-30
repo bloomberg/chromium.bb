@@ -10,7 +10,6 @@ Description:
   (src/camino/src/extensions):
 
     NSPasteboard+Utils.h/mm
-    NSScreen+Utils.h/m
     NSString+Utils.h/m
     NSURL+Utils.h/m
     NSWorkspace+Utils.h/m
