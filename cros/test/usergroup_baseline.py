@@ -115,6 +115,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                       'chaps', 'cros-disks', 'imageloaderd'}),
     GroupEntry(group='tss', gid=207, users={'root', 'attestation',
                                             'bootlockboxd', 'chaps',
+                                            'oobe_config_restore',
+                                            'oobe_config_save',
                                             'tpm_manager', 'trunks'}),
     GroupEntry(group='pkcs11', gid=208, users={'root', 'ipsec', 'chronos',
                                                'chaps', 'wpa', 'attestation'}),
