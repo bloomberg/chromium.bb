@@ -7,11 +7,6 @@
 (function() {
 
 /**
- * Files app windowId.
- */
-var appId;
-
-/**
  * Returns provider name of the given testing provider manifest viz., the
  * the value of the name field in the |manifest| file.
  * @param {string} manifest Testing provider manifest file name.
@@ -31,118 +26,75 @@ function getProviderNameForTest(manifest) {
 }
 
 /**
- * Returns steps for initializing test cases.
+ * Initializes the provider extension.
  * @param {string} manifest The manifest name of testing provider extension
  *     to launch for the test case.
- * @return {!Array<function>}
  */
-function getSetupSteps(manifest) {
-  return [
-    function() {
-      sendTestMessage({
-          name: 'launchProviderExtension',
-          manifest: manifest,
-      }).then(this.next);
-    },
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    function(results) {
-      appId = results.windowId;
-      this.next();
-    }
-  ];
+async function setUpProvider(manifest) {
+  await sendTestMessage({name: 'launchProviderExtension', manifest: manifest});
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  return appId;
 }
 
 /**
- * Returns steps for clicking on the "gear menu".
- * @return {!Array<function>}
+ * Clicks on the gear menu.
  */
-function clickGearMenu() {
+async function clickGearMenu(appId) {
   const newServiceMenuItem = '#gear-menu-newservice:not([hidden])';
-  return [
-    // Open the gear menu by clicking the gear button.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-button'], this.next);
-    },
-    // Wait for Add new service menu item to appear in the gear menu.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      remoteCall.waitForElement(appId, newServiceMenuItem).then(this.next);
-    },
-  ];
+
+  // Open the gear menu by clicking the gear button.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button']),
+      'fakeMouseClick failed');
+
+  // Wait for Add new service menu item to appear in the gear menu.
+  return remoteCall.waitForElement(appId, newServiceMenuItem);
 }
 
 /**
- * Returns steps for clicking on the "Add new services" menu button.
- * @return {!Array<function>}
+ * Clicks on the "Add new services" menu button.
  */
-function showProvidersMenuSteps() {
+async function showProvidersMenu(appId) {
   const newServiceMenuItem = '#gear-menu-newservice:not([hidden])';
-  return [
-    // Open the gear menu by clicking the gear button.
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-button'], this.next);
-    },
-    // Wait for Add new service menu item to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      remoteCall.waitForElement(appId, newServiceMenuItem).then(this.next);
-    },
-    // Click the menu item.
-    function(result) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [newServiceMenuItem], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      this.next();
-    },
-  ];
+
+  // Open the gear menu by clicking the gear button.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button']),
+      'fakeMouseClick failed');
+
+  // Wait for Add new service menu item to appear.
+  await remoteCall.waitForElement(appId, newServiceMenuItem);
+
+  // Click the menu item.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [newServiceMenuItem]),
+      'fakeMouseClick failed');
 }
 
 /**
- * Returns steps for confirming that a provided volume is mounted.
- * @return {!Array<function>}
+ * Confirms that a provided volume is mounted.
  */
-function getConfirmVolumeSteps(ejectExpected) {
-  return [
-    function() {
-      remoteCall.waitForElement(
-          appId,
-          '.tree-row .icon[volume-type-icon="provided"]')
-          .then(this.next);
-    },
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick',
-          appId,
-          ['.tree-row .icon[volume-type-icon="provided"]'],
-          this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      remoteCall.waitForElement(
-          appId,
-          '.tree-row[selected] .icon[volume-type-icon="provided"]')
-          .then(this.next);
-    },
-    function() {
-      if (ejectExpected) {
-        remoteCall.waitForElement(
-            appId,
-            '.tree-row[selected] .root-eject')
-            .then(this.next);
-      } else {
-        remoteCall.waitForElementLost(
-            appId,
-            '.tree-row[selected] .root-eject')
-            .then(this.next);
-      }
-    },
-  ];
+async function confirmVolume(appId, ejectExpected) {
+  await remoteCall.waitForElement(
+      appId, '.tree-row .icon[volume-type-icon="provided"]');
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId,
+          ['.tree-row .icon[volume-type-icon="provided"]']),
+      'fakeMouseClick failed');
+
+
+  await remoteCall.waitForElement(
+      appId, '.tree-row[selected] .icon[volume-type-icon="provided"]');
+  if (ejectExpected) {
+    await remoteCall.waitForElement(appId, '.tree-row[selected] .root-eject');
+  } else {
+    await remoteCall.waitForElementLost(
+        appId, '.tree-row[selected] .root-eject');
+  }
 }
 
 /**
@@ -154,62 +106,46 @@ function getConfirmVolumeSteps(ejectExpected) {
  * @param {string} manifest Name of the manifest file for the providing
  *     extension.
  */
-function requestMountInternal(multipleMounts, manifest) {
+async function requestMountInternal(multipleMounts, manifest) {
   const providerName = getProviderNameForTest(manifest);
+  const appId = await setUpProvider(manifest);
+  await showProvidersMenu(appId);
 
-  StepsRunner.runGroups([
-    getSetupSteps(manifest),
-    showProvidersMenuSteps(),
-    [
-      // Wait for providers menu and new service menu item to appear.
-      function() {
-        remoteCall.waitForElement(
-            appId,
-            '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
-                'span')
-            .then(this.next);
-      },
-      // Click to install test provider.
-      function(result) {
-        chrome.test.assertEq(providerName, result.text);
-        remoteCall.callRemoteTestUtil(
-            'fakeMouseClick',
-            appId,
-            ['#add-new-services-menu cr-menu-item:first-child span'],
-            this.next);
-      },
-      function(result) {
-        chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-        this.next();
-      },
-    ],
-    getConfirmVolumeSteps(false /* ejectExpected */),
-    // If multipleMounts we display the providers menu, otherwise we display the
-    // gear menu and check the "add new service" menu item.
-    multipleMounts ? showProvidersMenuSteps() : clickGearMenu(),
-    [
-      function() {
-        // When multiple mounts are supported, then the "new service" menu item
-        // should open the providers menu. Otherwise it should go directly to
-        // install-new-extension, however install-new-service command uses
-        // webview which doesn't work in the integration tests.
-        var selector = multipleMounts ?
-            '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
-                'span' :
-            '#gear-menu:not([hidden]) ' +
-                'cr-menu-item[command="#install-new-extension"]';
-        remoteCall.waitForElement(
-            appId,
-            selector)
-            .then(this.next);
-      },
-      function(result) {
-        if (multipleMounts)
-          chrome.test.assertEq(providerName, result.text);
-        checkIfNoErrorsOccured(this.next);
-      }
-    ]
-  ]);
+  // Wait for providers menu and new service menu item to appear.
+  let result = await remoteCall.waitForElement(
+      appId,
+      '#add-new-services-menu:not([hidden]) cr-menu-item:first-child span');
+
+  // Click to install test provider.
+  chrome.test.assertEq(providerName, result.text);
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId,
+          ['#add-new-services-menu cr-menu-item:first-child span']),
+      'fakeMouseClick failed');
+
+  await confirmVolume(appId, false /* ejectExpected */);
+
+  // If multipleMounts we display the providers menu, otherwise we display the
+  // gear menu and check the "add new service" menu item.
+  if (multipleMounts) {
+    await showProvidersMenu(appId);
+  } else {
+    await clickGearMenu(appId);
+  }
+
+  // When multiple mounts are supported, then the "new service" menu item should
+  // open the providers menu. Otherwise it should go directly to
+  // install-new-extension, however install-new-service command uses webview
+  // which doesn't work in the integration tests.
+  var selector = multipleMounts ?
+      '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
+          'span' :
+      '#gear-menu:not([hidden]) ' +
+          'cr-menu-item[command="#install-new-extension"]';
+  result = await remoteCall.waitForElement(appId, selector);
+  if (multipleMounts)
+    chrome.test.assertEq(providerName, result.text);
 }
 
 /**
@@ -219,26 +155,16 @@ function requestMountInternal(multipleMounts, manifest) {
  * @param {string} manifest Name of the manifest file for the providing
  *     extension.
  */
-function requestMountNotInMenuInternal(manifest) {
-  StepsRunner.runGroups([
-    getSetupSteps(manifest),
-    getConfirmVolumeSteps(true /* ejectExpected */),
-    clickGearMenu(),
-    [
-      function(element) {
-        // clickGearMenu returns the "Add new service" menu item.
-        // Here we only check these attributes because the menu item calls
-        // Webstore using webview which doesn't work in the integration test.
-        chrome.test.assertEq('Install new service', element.text);
-        chrome.test.assertEq(
-            '#install-new-extension', element.attributes.command);
-        this.next();
-      },
-      function() {
-        checkIfNoErrorsOccured(this.next);
-      }
-    ]
-  ]);
+async function requestMountNotInMenuInternal(manifest) {
+  const appId = await setUpProvider(manifest);
+  await confirmVolume(appId, true /* ejectExpected */);
+  const element = await clickGearMenu(appId);
+
+  // clickGearMenu returns the "Add new service" menu item.
+  // Here we only check these attributes because the menu item calls
+  // Webstore using webview which doesn't work in the integration test.
+  chrome.test.assertEq('Install new service', element.text);
+  chrome.test.assertEq('#install-new-extension', element.attributes.command);
 }
 
 /**
@@ -246,7 +172,7 @@ function requestMountNotInMenuInternal(manifest) {
  */
 testcase.requestMount = function() {
   const multipleMounts = false;
-  requestMountInternal(multipleMounts, 'manifest.json');
+  return requestMountInternal(multipleMounts, 'manifest.json');
 };
 
 /**
@@ -254,60 +180,54 @@ testcase.requestMount = function() {
  */
 testcase.requestMountMultipleMounts = function() {
   const multipleMounts = true;
-  requestMountInternal(multipleMounts, 'manifest_multiple_mounts.json');
+  return requestMountInternal(multipleMounts, 'manifest_multiple_mounts.json');
 };
 
 /**
  * Tests mounting a device not present in the button menu.
  */
 testcase.requestMountSourceDevice = function() {
-  requestMountNotInMenuInternal('manifest_source_device.json');
+  return requestMountNotInMenuInternal('manifest_source_device.json');
 };
 
 /**
  * Tests mounting a file not present in the button menu.
  */
 testcase.requestMountSourceFile = function() {
-  requestMountNotInMenuInternal('manifest_source_file.json');
+  return requestMountNotInMenuInternal('manifest_source_file.json');
 };
 
 /**
  * Tests that pressing the eject button on a FSP adds a message to screen
  * reader.
  */
-testcase.providerEject = function() {
+testcase.providerEject = async function() {
   const manifest = 'manifest_source_file.json';
-  const steps = getSetupSteps(manifest).concat([
-    // Click to eject Test (1) provider/volume.
-    function() {
-      const ejectQuery =
-          ['#directory-tree [volume-type-for-testing="provided"] .root-eject'];
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ejectQuery, this.next);
-    },
-    // Wait a11y-msg to have some text.
-    function(result) {
-      chrome.test.assertTrue(result, 'click eject failed');
-      remoteCall.waitForElement(appId, '#a11y-msg:not(:empty)').then(this.next);
-    },
-    // Fetch A11y messages.
-    function() {
-      remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, [])
-          .then(this.next);
-    },
-    // Check that opening the file was announced to screen reader.
-    function(a11yMessages) {
-      chrome.test.assertTrue(a11yMessages instanceof Array);
-      chrome.test.assertEq(1, a11yMessages.length);
-      chrome.test.assertEq('Test (1) has been ejected.', a11yMessages[0]);
-      this.next();
-      // Note: We don't run checkIfNoErrorsOccured because sometimes there are
-      // JS errors due to volume related actions performed while volume is
-      // ejected.
-    },
-  ]);
+  const appId = await setUpProvider(manifest);
 
-  StepsRunner.run(steps);
+  // Click to eject Test (1) provider/volume.
+  const ejectQuery =
+      ['#directory-tree [volume-type-for-testing="provided"] .root-eject'];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, ejectQuery),
+      'click eject failed');
+
+  // Wait a11y-msg to have some text.
+  await remoteCall.waitForElement(appId, '#a11y-msg:not(:empty)');
+
+  // Fetch A11y messages.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+
+  // Check that opening the file was announced to screen reader.
+  chrome.test.assertTrue(a11yMessages instanceof Array);
+  chrome.test.assertEq(1, a11yMessages.length);
+  chrome.test.assertEq('Test (1) has been ejected.', a11yMessages[0]);
+
+  // Note: We disable app error checking because sometimes there are
+  // JS errors due to volume related actions performed while volume is
+  // ejected.
+  return IGNORE_APP_ERRORS;
 };
 
 })();
