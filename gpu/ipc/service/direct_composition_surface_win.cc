@@ -135,6 +135,20 @@ OverlaySupportInfo g_overlay_support_info[] = {
     {OverlayFormat::kBGRA, DXGI_FORMAT_B8G8R8A8_UNORM, 0},
 };
 
+const char* ProtectedVideoTypeToString(ui::ProtectedVideoType type) {
+  switch (type) {
+    case ui::ProtectedVideoType::kClear:
+      return "Clear";
+    case ui::ProtectedVideoType::kSoftwareProtected:
+      if (g_supports_overlays)
+        return "SoftwareProtected.HasOverlaySupport";
+      else
+        return "SoftwareProtected.NoOverlaySupport";
+    case ui::ProtectedVideoType::kHardwareProtected:
+      return "HardwareProtected";
+  }
+}
+
 void InitializeHardwareOverlaySupport() {
   if (g_overlay_support_initialized)
     return;
@@ -1267,6 +1281,11 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
   const std::string kSwapChainCreationResultUmaPrefix =
       "GPU.DirectComposition.SwapChainCreationResult.";
+  const std::string kSwapChainCreationResultUmaPrefix3 =
+      "GPU.DirectComposition.SwapChainCreationResult3.";
+  const std::string protected_video_type_string =
+      ProtectedVideoTypeToString(protected_video_type);
+
   is_yuv_swapchain_ = false;
 
   if (use_yuv_swap_chain) {
@@ -1285,6 +1304,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                   << " with error 0x" << std::hex << hr
                   << "\nFalling back to BGRA";
     }
+    base::UmaHistogramSparse(
+        kSwapChainCreationResultUmaPrefix3 + protected_video_type_string, hr);
   }
 
   if (!is_yuv_swapchain_) {
@@ -1300,6 +1321,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     base::UmaHistogramBoolean(kSwapChainCreationResultUmaPrefix +
                                   OverlayFormatToString(OverlayFormat::kBGRA),
                               SUCCEEDED(hr));
+    base::UmaHistogramSparse(
+        kSwapChainCreationResultUmaPrefix3 + protected_video_type_string, hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to create BGRA swap chain of size "
                   << swap_chain_size.ToString() << " with error 0x" << std::hex
