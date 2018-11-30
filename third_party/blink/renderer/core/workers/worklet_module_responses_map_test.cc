@@ -169,7 +169,7 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
 TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
   const KURL kEmptyURL;
   ASSERT_TRUE(kEmptyURL.IsEmpty());
-  ClientImpl* client1 = new ClientImpl;
+  ClientImpl* client1 = MakeGarbageCollected<ClientImpl>();
   Fetch(kEmptyURL, client1);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client1->GetResult());
@@ -177,7 +177,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
 
   const KURL kNullURL = NullURL();
   ASSERT_TRUE(kNullURL.IsNull());
-  ClientImpl* client2 = new ClientImpl;
+  ClientImpl* client2 = MakeGarbageCollected<ClientImpl>();
   Fetch(kNullURL, client2);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client2->GetResult());
@@ -185,7 +185,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
 
   const KURL kInvalidURL;
   ASSERT_FALSE(kInvalidURL.IsValid());
-  ClientImpl* client3 = new ClientImpl;
+  ClientImpl* client3 = MakeGarbageCollected<ClientImpl>();
   Fetch(kInvalidURL, client3);
   RunUntilIdle();
   EXPECT_EQ(ClientImpl::Result::kFailed, client3->GetResult());

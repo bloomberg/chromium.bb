@@ -37,8 +37,10 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
  public:
   TeeHelper(ExecutionContext* execution_context, BytesConsumer* consumer)
       : src_(consumer),
-        destination1_(new Destination(execution_context, this)),
-        destination2_(new Destination(execution_context, this)) {
+        destination1_(
+            MakeGarbageCollected<Destination>(execution_context, this)),
+        destination2_(
+            MakeGarbageCollected<Destination>(execution_context, this)) {
     consumer->SetClient(this);
     // As no client is set to either destinations, Destination::notify() is
     // no-op in this function.
@@ -63,7 +65,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       }
       Chunk* chunk = nullptr;
       if (result == Result::kOk) {
-        chunk = new Chunk(buffer, SafeCast<wtf_size_t>(available));
+        chunk = MakeGarbageCollected<Chunk>(buffer,
+                                            SafeCast<wtf_size_t>(available));
         result = src_->EndRead(available);
       }
       switch (result) {
@@ -367,22 +370,24 @@ void BytesConsumer::Tee(ExecutionContext* execution_context,
   if (blob_data_handle) {
     // Register a client in order to be consistent.
     src->SetClient(new NoopClient);
-    *dest1 = new BlobBytesConsumer(execution_context, blob_data_handle);
-    *dest2 = new BlobBytesConsumer(execution_context, blob_data_handle);
+    *dest1 = MakeGarbageCollected<BlobBytesConsumer>(execution_context,
+                                                     blob_data_handle);
+    *dest2 = MakeGarbageCollected<BlobBytesConsumer>(execution_context,
+                                                     blob_data_handle);
     return;
   }
 
-  TeeHelper* tee = new TeeHelper(execution_context, src);
+  TeeHelper* tee = MakeGarbageCollected<TeeHelper>(execution_context, src);
   *dest1 = tee->Destination1();
   *dest2 = tee->Destination2();
 }
 
 BytesConsumer* BytesConsumer::CreateErrored(const BytesConsumer::Error& error) {
-  return new ErroredBytesConsumer(error);
+  return MakeGarbageCollected<ErroredBytesConsumer>(error);
 }
 
 BytesConsumer* BytesConsumer::CreateClosed() {
-  return new ClosedBytesConsumer();
+  return MakeGarbageCollected<ClosedBytesConsumer>();
 }
 
 }  // namespace blink

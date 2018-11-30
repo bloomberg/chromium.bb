@@ -399,16 +399,16 @@ class PaymentResponseFunction : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         ScriptValue* out_value) {
     PaymentResponseFunction* self =
-        new PaymentResponseFunction(script_state, out_value);
+        MakeGarbageCollected<PaymentResponseFunction>(script_state, out_value);
     return self->BindToV8Function();
   }
 
- private:
   PaymentResponseFunction(ScriptState* script_state, ScriptValue* out_value)
       : ScriptFunction(script_state), value_(out_value) {
     DCHECK(value_);
   }
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     DCHECK(!value.IsEmpty());
     *value_ = value;

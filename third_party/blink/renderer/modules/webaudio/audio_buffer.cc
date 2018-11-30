@@ -47,8 +47,8 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
       !number_of_channels || !number_of_frames)
     return nullptr;
 
-  AudioBuffer* buffer =
-      new AudioBuffer(number_of_channels, number_of_frames, sample_rate);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(
+      number_of_channels, number_of_frames, sample_rate);
 
   if (!buffer->CreatedSuccessfully(number_of_channels))
     return nullptr;
@@ -119,8 +119,8 @@ AudioBuffer* AudioBuffer::CreateUninitialized(unsigned number_of_channels,
       !number_of_channels || !number_of_frames)
     return nullptr;
 
-  AudioBuffer* buffer = new AudioBuffer(number_of_channels, number_of_frames,
-                                        sample_rate, kDontInitialize);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(
+      number_of_channels, number_of_frames, sample_rate, kDontInitialize);
 
   if (!buffer->CreatedSuccessfully(number_of_channels))
     return nullptr;
@@ -134,7 +134,7 @@ AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
   scoped_refptr<AudioBus> bus =
       CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
   if (bus) {
-    AudioBuffer* buffer = new AudioBuffer(bus.get());
+    AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(bus.get());
     if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
       return buffer;
   }
@@ -145,7 +145,7 @@ AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
 AudioBuffer* AudioBuffer::CreateFromAudioBus(AudioBus* bus) {
   if (!bus)
     return nullptr;
-  AudioBuffer* buffer = new AudioBuffer(bus);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(bus);
   if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
     return buffer;
   return nullptr;

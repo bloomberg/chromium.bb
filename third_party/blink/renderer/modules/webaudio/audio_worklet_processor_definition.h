@@ -32,6 +32,10 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
       v8::Local<v8::Object> constructor,
       v8::Local<v8::Function> process);
 
+  AudioWorkletProcessorDefinition(v8::Isolate*,
+                                  const String& name,
+                                  v8::Local<v8::Object> constructor,
+                                  v8::Local<v8::Function> process);
   virtual ~AudioWorkletProcessorDefinition();
 
   const String& GetName() const { return name_; }
@@ -57,12 +61,6 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   }
 
  private:
-  AudioWorkletProcessorDefinition(
-      v8::Isolate*,
-      const String& name,
-      v8::Local<v8::Object> constructor,
-      v8::Local<v8::Function> process);
-
   const String name_;
   bool is_synchronized_ = false;
 

@@ -23,7 +23,8 @@ AudioWorkletProcessor* AudioWorkletProcessor::Create(
 
   MessagePort* port = MessagePort::Create(*global_scope);
   port->Entangle(std::move(params->PortChannel()));
-  return new AudioWorkletProcessor(global_scope, params->Name(), port);
+  return MakeGarbageCollected<AudioWorkletProcessor>(global_scope,
+                                                     params->Name(), port);
 }
 
 AudioWorkletProcessor::AudioWorkletProcessor(

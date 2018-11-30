@@ -282,7 +282,7 @@ void Headers::Trace(blink::Visitor* visitor) {
 PairIterable<String, String>::IterationSource* Headers::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new HeadersIterationSource(header_list_);
+  return MakeGarbageCollected<HeadersIterationSource>(header_list_);
 }
 
 }  // namespace blink

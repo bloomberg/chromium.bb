@@ -256,25 +256,29 @@ bool CustomElementDefinition::HasStyleAttributeChangedCallback() const {
 void CustomElementDefinition::EnqueueUpgradeReaction(
     Element* element,
     bool upgrade_invisible_elements) {
-  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(
-                                      this, upgrade_invisible_elements));
+  CustomElement::Enqueue(element,
+                         MakeGarbageCollected<CustomElementUpgradeReaction>(
+                             this, upgrade_invisible_elements));
 }
 
 void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {
-  CustomElement::Enqueue(element,
-                         new CustomElementConnectedCallbackReaction(this));
+  CustomElement::Enqueue(
+      element,
+      MakeGarbageCollected<CustomElementConnectedCallbackReaction>(this));
 }
 
 void CustomElementDefinition::EnqueueDisconnectedCallback(Element* element) {
-  CustomElement::Enqueue(element,
-                         new CustomElementDisconnectedCallbackReaction(this));
+  CustomElement::Enqueue(
+      element,
+      MakeGarbageCollected<CustomElementDisconnectedCallbackReaction>(this));
 }
 
 void CustomElementDefinition::EnqueueAdoptedCallback(Element* element,
                                                      Document* old_document,
                                                      Document* new_document) {
-  CustomElementReaction* reaction = new CustomElementAdoptedCallbackReaction(
-      this, old_document, new_document);
+  CustomElementReaction* reaction =
+      MakeGarbageCollected<CustomElementAdoptedCallbackReaction>(
+          this, old_document, new_document);
   CustomElement::Enqueue(element, reaction);
 }
 
@@ -283,9 +287,10 @@ void CustomElementDefinition::EnqueueAttributeChangedCallback(
     const QualifiedName& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
-  CustomElement::Enqueue(element,
-                         new CustomElementAttributeChangedCallbackReaction(
-                             this, name, old_value, new_value));
+  CustomElement::Enqueue(
+      element,
+      MakeGarbageCollected<CustomElementAttributeChangedCallbackReaction>(
+          this, name, old_value, new_value));
 }
 
 void CustomElementDefinition::EnqueueAttributeChangedCallbackForAllAttributes(

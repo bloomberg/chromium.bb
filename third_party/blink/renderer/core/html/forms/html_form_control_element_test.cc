@@ -117,7 +117,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
 TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   SetHtmlInnerHTML("<body><input required id=input></body>");
   ValidationMessageClient* validation_message_client =
-      new MockFormValidationMessageClient();
+      MakeGarbageCollected<MockFormValidationMessageClient>();
   GetPage().SetValidationMessageClientForTesting(validation_message_client);
   Page::OrdinaryPages().insert(&GetPage());
 
@@ -137,7 +137,8 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
   auto* const optgroup =
       GetDocument().CreateRawElement(html_names::kOptgroupTag);
-  auto* validation_client = new MockFormValidationMessageClient();
+  auto* validation_client =
+      MakeGarbageCollected<MockFormValidationMessageClient>();
   GetDocument().GetPage()->SetValidationMessageClientForTesting(
       validation_client);
 

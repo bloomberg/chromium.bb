@@ -96,11 +96,13 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaExitPictureInPictureButton:
     case kMediaDisplayCutoutFullscreenButton:
     case kMediaAnimatedArrowContainer:
-      return new AccessibilityMediaControl(layout_object, ax_object_cache);
+      return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
+                                                             ax_object_cache);
   }
 
   NOTREACHED();
-  return new AccessibilityMediaControl(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
+                                                         ax_object_cache);
 }
 
 MediaControlElementType AccessibilityMediaControl::ControlType() const {
@@ -356,7 +358,8 @@ AccessibilityMediaTimeline::AccessibilityMediaTimeline(
 AXObject* AccessibilityMediaTimeline::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
-  return new AccessibilityMediaTimeline(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AccessibilityMediaTimeline>(layout_object,
+                                                          ax_object_cache);
 }
 
 String AccessibilityMediaTimeline::Description(
@@ -410,7 +413,8 @@ AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(
 AXObject* AccessibilityMediaTimeDisplay::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
-  return new AccessibilityMediaTimeDisplay(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AccessibilityMediaTimeDisplay>(layout_object,
+                                                             ax_object_cache);
 }
 
 bool AccessibilityMediaTimeDisplay::ComputeAccessibilityIsIgnored(

@@ -47,13 +47,13 @@ Attr::Attr(Document& document,
       standalone_value_or_attached_local_name_(standalone_value) {}
 
 Attr* Attr::Create(Element& element, const QualifiedName& name) {
-  return new Attr(element, name);
+  return MakeGarbageCollected<Attr>(element, name);
 }
 
 Attr* Attr::Create(Document& document,
                    const QualifiedName& name,
                    const AtomicString& value) {
-  return new Attr(document, name, value);
+  return MakeGarbageCollected<Attr>(document, name, value);
 }
 
 Attr::~Attr() = default;
@@ -94,7 +94,7 @@ void Attr::setNodeValue(const String& v) {
 }
 
 Node* Attr::Clone(Document& factory, CloneChildrenFlag) const {
-  return new Attr(factory, name_, value());
+  return MakeGarbageCollected<Attr>(factory, name_, value());
 }
 
 void Attr::DetachFromElementWithValue(const AtomicString& value) {

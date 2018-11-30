@@ -77,7 +77,7 @@ ColorInputType::ColorInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
 
 InputType* ColorInputType::Create(HTMLInputElement& element) {
-  return new ColorInputType(element);
+  return MakeGarbageCollected<ColorInputType>(element);
 }
 
 ColorInputType::~ColorInputType() = default;

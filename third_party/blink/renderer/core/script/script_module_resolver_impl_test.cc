@@ -120,7 +120,7 @@ class ScriptModuleResolverImplTest : public testing::Test {
 
 void ScriptModuleResolverImplTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-  modulator_ = new ScriptModuleResolverImplTestModulator();
+  modulator_ = MakeGarbageCollected<ScriptModuleResolverImplTestModulator>();
 }
 
 TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {

@@ -260,7 +260,7 @@ scoped_refptr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
 PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new URLSearchParamsIterationSource(this);
+  return MakeGarbageCollected<URLSearchParamsIterationSource>(this);
 }
 
 }  // namespace blink

@@ -108,7 +108,7 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new BiquadFilterNode(context);
+  return MakeGarbageCollected<BiquadFilterNode>(context);
 }
 
 BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,

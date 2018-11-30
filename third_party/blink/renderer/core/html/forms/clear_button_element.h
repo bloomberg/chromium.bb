@@ -42,12 +42,14 @@ class ClearButtonElement final : public HTMLDivElement {
   };
 
   static ClearButtonElement* Create(Document&, ClearButtonOwner&);
+
+  ClearButtonElement(Document&, ClearButtonOwner&);
+
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  ClearButtonElement(Document&, ClearButtonOwner&);
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   bool IsMouseFocusable() const override { return false; }
   void DefaultEventHandler(Event&) override;

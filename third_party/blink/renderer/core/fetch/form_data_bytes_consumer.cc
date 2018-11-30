@@ -159,8 +159,8 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
       if (!simple_consumer_) {
         scoped_refptr<EncodedFormData> simple_data =
             EncodedFormData::Create(iter_->data_);
-        simple_consumer_ =
-            new SimpleFormDataBytesConsumer(std::move(simple_data));
+        simple_consumer_ = MakeGarbageCollected<SimpleFormDataBytesConsumer>(
+            std::move(simple_data));
         if (client_)
           simple_consumer_->SetClient(client_);
       }
@@ -435,7 +435,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
     blob_data->SetContentType(AtomicString("multipart/form-data; boundary=") +
                               form_data_->Boundary().data());
     auto size = blob_data->length();
-    blob_bytes_consumer_ = new BlobBytesConsumer(
+    blob_bytes_consumer_ = MakeGarbageCollected<BlobBytesConsumer>(
         execution_context, BlobDataHandle::Create(std::move(blob_data), size));
   }
 
@@ -491,8 +491,9 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
 }  // namespace
 
 FormDataBytesConsumer::FormDataBytesConsumer(const String& string)
-    : impl_(new SimpleFormDataBytesConsumer(EncodedFormData::Create(
-          UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
+    : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(
+          EncodedFormData::Create(
+              UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
     : FormDataBytesConsumer(buffer->Data(), buffer->ByteLength()) {}
@@ -501,7 +502,7 @@ FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
     : FormDataBytesConsumer(view->BaseAddress(), view->byteLength()) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
-    : impl_(new SimpleFormDataBytesConsumer(
+    : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(
           EncodedFormData::Create(data, size))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(
@@ -525,13 +526,14 @@ BytesConsumer* FormDataBytesConsumer::GetImpl(
   DCHECK(form_data);
   switch (GetType(form_data.get())) {
     case FormDataType::kSimple:
-      return new SimpleFormDataBytesConsumer(std::move(form_data));
+      return MakeGarbageCollected<SimpleFormDataBytesConsumer>(
+          std::move(form_data));
     case FormDataType::kComplex:
-      return new ComplexFormDataBytesConsumer(
+      return MakeGarbageCollected<ComplexFormDataBytesConsumer>(
           execution_context, std::move(form_data), consumer_for_testing);
     case FormDataType::kDataPipeAndDataOnly:
-      return new DataPipeAndDataBytesConsumer(execution_context,
-                                              form_data.get());
+      return MakeGarbageCollected<DataPipeAndDataBytesConsumer>(
+          execution_context, form_data.get());
   }
   return nullptr;
 }

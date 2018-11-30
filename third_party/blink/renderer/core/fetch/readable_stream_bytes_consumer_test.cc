@@ -35,10 +35,11 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
 
  public:
   static MockClient* Create() { return new StrictMock<MockClient>(); }
-  MOCK_METHOD0(OnStateChange, void());
-  String DebugName() const override { return "MockClient"; }
 
   MockClient() = default;
+
+  MOCK_METHOD0(OnStateChange, void());
+  String DebugName() const override { return "MockClient"; }
 
   void Trace(blink::Visitor* visitor) override {}
 };

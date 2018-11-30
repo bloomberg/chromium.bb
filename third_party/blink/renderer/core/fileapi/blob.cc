@@ -100,7 +100,8 @@ Blob* Blob::Create(
                    normalize_line_endings_to_native);
 
   long long blob_size = blob_data->length();
-  return new Blob(BlobDataHandle::Create(std::move(blob_data), blob_size));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
 
 Blob* Blob::Create(const unsigned char* data,
@@ -113,7 +114,8 @@ Blob* Blob::Create(const unsigned char* data,
   blob_data->AppendBytes(data, bytes);
   long long blob_size = blob_data->length();
 
-  return new Blob(BlobDataHandle::Create(std::move(blob_data), blob_size));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
 
 // static

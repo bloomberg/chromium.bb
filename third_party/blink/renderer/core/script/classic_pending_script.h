@@ -47,6 +47,11 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                                             ScriptSourceLocationType,
                                             const ScriptFetchOptions&);
 
+  ClassicPendingScript(ScriptElementBase*,
+                       const TextPosition&,
+                       ScriptSourceLocationType,
+                       const ScriptFetchOptions&,
+                       bool is_external);
   ~ClassicPendingScript() override;
 
   // ScriptStreamer callbacks.
@@ -84,11 +89,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
     kErrorOccurred,
   };
 
-  ClassicPendingScript(ScriptElementBase*,
-                       const TextPosition&,
-                       ScriptSourceLocationType,
-                       const ScriptFetchOptions&,
-                       bool is_external);
   ClassicPendingScript() = delete;
 
   // Advances the current state of the script, reporting to the client if

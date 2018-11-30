@@ -201,7 +201,7 @@ AnalyserNode* AnalyserNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new AnalyserNode(context);
+  return MakeGarbageCollected<AnalyserNode>(context);
 }
 
 AnalyserNode* AnalyserNode::Create(BaseAudioContext* context,

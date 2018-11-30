@@ -242,7 +242,7 @@ AudioWorkletNode::AudioWorkletNode(
       }
     }
   }
-  parameter_map_ = new AudioParamMap(audio_param_map);
+  parameter_map_ = MakeGarbageCollected<AudioParamMap>(audio_param_map);
 
   SetHandler(AudioWorkletHandler::Create(*this,
                                          context.sampleRate(),
@@ -320,10 +320,10 @@ AudioWorkletNode* AudioWorkletNode::Create(
       MessageChannel::Create(context->GetExecutionContext());
   MessagePortChannel processor_port_channel = channel->port2()->Disentangle();
 
-  AudioWorkletNode* node =
-      new AudioWorkletNode(*context, name, options,
-          context->audioWorklet()->GetParamInfoListForProcessor(name),
-          channel->port1());
+  AudioWorkletNode* node = MakeGarbageCollected<AudioWorkletNode>(
+      *context, name, options,
+      context->audioWorklet()->GetParamInfoListForProcessor(name),
+      channel->port1());
 
   if (!node) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

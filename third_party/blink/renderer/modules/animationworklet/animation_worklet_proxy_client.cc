@@ -129,7 +129,7 @@ AnimationWorkletProxyClient* AnimationWorkletProxyClient::FromDocument(
           document->GetWorkletAnimationController()
               .EnsureMainThreadMutatorDispatcher(&main_thread_host_queue);
 
-  return new AnimationWorkletProxyClient(
+  return MakeGarbageCollected<AnimationWorkletProxyClient>(
       scope_id, std::move(compositor_mutator_dispatcher),
       std::move(compositor_host_queue),
       std::move(main_thread_mutator_dispatcher),

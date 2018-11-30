@@ -47,6 +47,10 @@ class CORE_EXPORT ConsoleMessage final
                                           std::unique_ptr<SourceLocation>,
                                           WorkerThread*);
 
+  ConsoleMessage(MessageSource,
+                 MessageLevel,
+                 const String& message,
+                 std::unique_ptr<SourceLocation>);
   ~ConsoleMessage();
 
   SourceLocation* Location() const;
@@ -63,11 +67,6 @@ class CORE_EXPORT ConsoleMessage final
   void Trace(blink::Visitor*);
 
  private:
-  ConsoleMessage(MessageSource,
-                 MessageLevel,
-                 const String& message,
-                 std::unique_ptr<SourceLocation>);
-
   MessageSource source_;
   MessageLevel level_;
   String message_;

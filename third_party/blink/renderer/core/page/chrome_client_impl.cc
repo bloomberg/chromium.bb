@@ -157,7 +157,7 @@ ChromeClientImpl::~ChromeClientImpl() {
 }
 
 ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
-  return new ChromeClientImpl(web_view);
+  return MakeGarbageCollected<ChromeClientImpl>(web_view);
 }
 
 void ChromeClientImpl::Trace(Visitor* visitor) {

@@ -36,7 +36,8 @@ ConsoleMessage* ConsoleMessage::Create(
     MessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
-  return new ConsoleMessage(source, level, message, std::move(location));
+  return MakeGarbageCollected<ConsoleMessage>(source, level, message,
+                                              std::move(location));
 }
 
 // static

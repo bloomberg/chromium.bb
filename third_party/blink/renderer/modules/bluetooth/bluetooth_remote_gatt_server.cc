@@ -27,7 +27,7 @@ BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
 BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::Create(
     ExecutionContext* context,
     BluetoothDevice* device) {
-  return new BluetoothRemoteGATTServer(context, device);
+  return MakeGarbageCollected<BluetoothRemoteGATTServer>(context, device);
 }
 
 void BluetoothRemoteGATTServer::ContextDestroyed(ExecutionContext*) {

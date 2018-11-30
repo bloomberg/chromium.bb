@@ -29,7 +29,7 @@ inline CDATASection::CDATASection(Document& document, const String& data)
     : Text(document, data, kCreateText) {}
 
 CDATASection* CDATASection::Create(Document& document, const String& data) {
-  return new CDATASection(document, data);
+  return MakeGarbageCollected<CDATASection>(document, data);
 }
 
 String CDATASection::nodeName() const {

@@ -295,8 +295,8 @@ void VRDisplay::RequestVSync() {
     non_immersive_provider_->GetFrameData(WTF::Bind(
         &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
     pending_non_immersive_vsync_ = true;
-    pending_non_immersive_vsync_id_ =
-        doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
+    pending_non_immersive_vsync_id_ = doc->RequestAnimationFrame(
+        MakeGarbageCollected<VRDisplayFrameRequestCallback>(this));
     DVLOG(2) << __FUNCTION__ << " done: pending_non_immersive_vsync_="
              << pending_non_immersive_vsync_;
   }

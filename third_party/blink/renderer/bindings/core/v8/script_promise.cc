@@ -53,7 +53,18 @@ class PromiseAllHandler final
     if (promises.IsEmpty())
       return ScriptPromise::Cast(script_state,
                                  v8::Array::New(script_state->GetIsolate()));
-    return (new PromiseAllHandler(script_state, promises))->resolver_.Promise();
+    return (MakeGarbageCollected<PromiseAllHandler>(script_state, promises))
+        ->resolver_.Promise();
+  }
+
+  PromiseAllHandler(ScriptState* script_state, Vector<ScriptPromise> promises)
+      : number_of_pending_promises_(promises.size()), resolver_(script_state) {
+    DCHECK(!promises.IsEmpty());
+    values_.resize(promises.size());
+    for (wtf_size_t i = 0; i < promises.size(); ++i) {
+      promises[i].Then(CreateFulfillFunction(script_state, i),
+                       CreateRejectFunction(script_state));
+    }
   }
 
   virtual void Trace(blink::Visitor* visitor) {}
@@ -70,17 +81,11 @@ class PromiseAllHandler final
                                           ResolveType resolve_type,
                                           wtf_size_t index,
                                           PromiseAllHandler* handler) {
-      AdapterFunction* self =
-          new AdapterFunction(script_state, resolve_type, index, handler);
+      AdapterFunction* self = MakeGarbageCollected<AdapterFunction>(
+          script_state, resolve_type, index, handler);
       return self->BindToV8Function();
     }
 
-    void Trace(blink::Visitor* visitor) override {
-      visitor->Trace(handler_);
-      ScriptFunction::Trace(visitor);
-    }
-
-   private:
     AdapterFunction(ScriptState* script_state,
                     ResolveType resolve_type,
                     wtf_size_t index,
@@ -90,6 +95,12 @@ class PromiseAllHandler final
           index_(index),
           handler_(handler) {}
 
+    void Trace(blink::Visitor* visitor) override {
+      visitor->Trace(handler_);
+      ScriptFunction::Trace(visitor);
+    }
+
+   private:
     ScriptValue Call(ScriptValue value) override {
       if (resolve_type_ == kFulfilled)
         handler_->OnFulfilled(index_, value);
@@ -103,15 +114,6 @@ class PromiseAllHandler final
     const wtf_size_t index_;
     Member<PromiseAllHandler> handler_;
   };
-
-  PromiseAllHandler(ScriptState* script_state, Vector<ScriptPromise> promises)
-      : number_of_pending_promises_(promises.size()), resolver_(script_state) {
-    DCHECK(!promises.IsEmpty());
-    values_.resize(promises.size());
-    for (wtf_size_t i = 0; i < promises.size(); ++i)
-      promises[i].Then(CreateFulfillFunction(script_state, i),
-                       CreateRejectFunction(script_state));
-  }
 
   v8::Local<v8::Function> CreateFulfillFunction(ScriptState* script_state,
                                                 wtf_size_t index) {

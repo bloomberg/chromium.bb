@@ -34,6 +34,9 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   static Cache* Create(GlobalFetch::ScopedFetcher*,
                        mojom::blink::CacheStorageCacheAssociatedPtrInfo);
 
+  Cache(GlobalFetch::ScopedFetcher*,
+        mojom::blink::CacheStorageCacheAssociatedPtrInfo);
+
   // From Cache.idl:
   ScriptPromise match(ScriptState*,
                       const RequestInfo&,
@@ -72,8 +75,6 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   class CodeCacheHandleCallbackForPut;
   class FetchResolvedForAdd;
   friend class FetchResolvedForAdd;
-  Cache(GlobalFetch::ScopedFetcher*,
-        mojom::blink::CacheStorageCacheAssociatedPtrInfo);
 
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,

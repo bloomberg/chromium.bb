@@ -161,7 +161,7 @@ Page::Page(PageClients& page_clients)
       page_scale_constraints_set_(PageScaleConstraintsSet::Create(this)),
       pointer_lock_controller_(PointerLockController::Create(this)),
       browser_controls_(BrowserControls::Create(*this)),
-      console_message_storage_(new ConsoleMessageStorage()),
+      console_message_storage_(MakeGarbageCollected<ConsoleMessageStorage>()),
       global_root_scroller_controller_(
           TopDocumentRootScrollerController::Create(*this)),
       visual_viewport_(VisualViewport::Create(*this)),

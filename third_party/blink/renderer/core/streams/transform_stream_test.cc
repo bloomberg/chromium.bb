@@ -45,7 +45,7 @@ class TransformStreamTest : public ::testing::Test {
   void Init(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state) {
-    holder_ = new Holder(script_state);
+    holder_ = MakeGarbageCollected<Holder>(script_state);
     holder_->Stream()->Init(transformer, script_state, exception_state);
   }
 
@@ -135,13 +135,15 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
 // If this doesn't work then nothing else will.
 TEST_F(TransformStreamTest, Construct) {
   V8TestingScope scope;
-  Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), scope.GetScriptState(),
+       ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(Stream());
 }
 
 TEST_F(TransformStreamTest, Accessors) {
   V8TestingScope scope;
-  Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), scope.GetScriptState(),
+       ASSERT_NO_EXCEPTION);
   ReadableStream* readable = Stream()->Readable();
   WritableStream* writable = Stream()->Writable();
   EXPECT_TRUE(readable);
@@ -189,14 +191,14 @@ TEST_F(TransformStreamTest, FlushIsCalled) {
 class ExpectNotReached : public ScriptFunction {
  public:
   static v8::Local<v8::Function> Create(ScriptState* script_state) {
-    auto* self = new ExpectNotReached(script_state);
+    auto* self = MakeGarbageCollected<ExpectNotReached>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit ExpectNotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue) override {
     ADD_FAILURE() << "ExpectNotReached was reached";
     return ScriptValue();
@@ -210,16 +212,17 @@ class ExpectChunkIsString : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         const String& expected,
                                         bool* called) {
-    auto* self = new ExpectChunkIsString(script_state, expected, called);
+    auto* self = MakeGarbageCollected<ExpectChunkIsString>(script_state,
+                                                           expected, called);
     return self->BindToV8Function();
   }
 
- private:
   ExpectChunkIsString(ScriptState* script_state,
                       const String& expected,
                       bool* called)
       : ScriptFunction(script_state), expected_(expected), called_(called) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     *called_ = true;
     if (!value.IsObject()) {
@@ -248,16 +251,17 @@ class ExpectTypeError : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         const String& message,
                                         bool* called) {
-    auto* self = new ExpectTypeError(script_state, message, called);
+    auto* self =
+        MakeGarbageCollected<ExpectTypeError>(script_state, message, called);
     return self->BindToV8Function();
   }
 
- private:
   ExpectTypeError(ScriptState* script_state,
                   const String& message,
                   bool* called)
       : ScriptFunction(script_state), message_(message), called_(called) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     *called_ = true;
     EXPECT_TRUE(IsTypeError(GetScriptState(), value, message_));
@@ -298,7 +302,8 @@ class ExpectTypeError : public ScriptFunction {
 TEST_F(TransformStreamTest, EnqueueFromTransform) {
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new IdentityTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 
@@ -337,8 +342,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new EnqueueFromFlushTransformer(scope.GetContext()->Global(),
-                                       scope.GetIsolate()),
+  Init(MakeGarbageCollected<EnqueueFromFlushTransformer>(
+           scope.GetContext()->Global(), scope.GetIsolate()),
        script_state, ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
@@ -370,7 +375,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new ThrowFromTransformTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<ThrowFromTransformTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 
@@ -410,7 +416,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new ThrowFromFlushTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<ThrowFromFlushTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 

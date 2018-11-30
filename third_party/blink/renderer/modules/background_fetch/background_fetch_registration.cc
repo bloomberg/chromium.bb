@@ -248,7 +248,8 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
     BackgroundFetchRecord* record = nullptr;
     if (iter == records_.end()) {
       Request* request = Request::Create(script_state, *(fetch->request));
-      auto* new_record = new BackgroundFetchRecord(request, script_state);
+      auto* new_record =
+          MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
       DCHECK(new_record);
       records_.Set(request->url(), new_record);
 

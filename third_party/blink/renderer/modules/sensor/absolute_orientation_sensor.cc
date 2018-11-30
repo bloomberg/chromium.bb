@@ -12,8 +12,8 @@ AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
     ExecutionContext* execution_context,
     const SpatialSensorOptions* options,
     ExceptionState& exception_state) {
-  return new AbsoluteOrientationSensor(execution_context, options,
-                                       exception_state);
+  return MakeGarbageCollected<AbsoluteOrientationSensor>(
+      execution_context, options, exception_state);
 }
 
 // static

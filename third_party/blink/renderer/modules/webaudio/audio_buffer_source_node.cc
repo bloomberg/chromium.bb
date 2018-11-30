@@ -682,7 +682,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
     return nullptr;
   }
 
-  return new AudioBufferSourceNode(context);
+  return MakeGarbageCollected<AudioBufferSourceNode>(context);
 }
 
 AudioBufferSourceNode* AudioBufferSourceNode::Create(

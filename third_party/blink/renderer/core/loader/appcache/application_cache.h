@@ -44,8 +44,10 @@ class ApplicationCache final : public EventTargetWithInlineData,
 
  public:
   static ApplicationCache* Create(LocalFrame* frame) {
-    return new ApplicationCache(frame);
+    return MakeGarbageCollected<ApplicationCache>(frame);
   }
+
+  explicit ApplicationCache(LocalFrame*);
   ~ApplicationCache() override = default;
 
   unsigned short status() const;
@@ -72,8 +74,6 @@ class ApplicationCache final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ApplicationCache(LocalFrame*);
-
   void RecordAPIUseType() const;
 
   ApplicationCacheHost* GetApplicationCacheHost() const;

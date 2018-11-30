@@ -25,6 +25,8 @@ class ColdModeSpellCheckRequester
  public:
   static ColdModeSpellCheckRequester* Create(LocalFrame&);
 
+  explicit ColdModeSpellCheckRequester(LocalFrame&);
+
   void SetNeedsMoreInvocationForTesting() {
     needs_more_invocation_for_testing_ = true;
   }
@@ -37,8 +39,6 @@ class ColdModeSpellCheckRequester
   void Trace(blink::Visitor*);
 
  private:
-  explicit ColdModeSpellCheckRequester(LocalFrame&);
-
   LocalFrame& GetFrame() const { return *frame_; }
   SpellCheckRequester& GetSpellCheckRequester() const;
 

@@ -11,7 +11,7 @@ AuthenticatorAssertionResponse* AuthenticatorAssertionResponse::Create(
     DOMArrayBuffer* authenticator_data,
     DOMArrayBuffer* signature,
     DOMArrayBuffer* user_handle) {
-  return new AuthenticatorAssertionResponse(
+  return MakeGarbageCollected<AuthenticatorAssertionResponse>(
       client_data_json, authenticator_data, signature, user_handle);
 }
 

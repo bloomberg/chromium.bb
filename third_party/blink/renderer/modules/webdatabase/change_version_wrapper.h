@@ -41,8 +41,10 @@ class ChangeVersionWrapper final : public SQLTransactionWrapper {
  public:
   static ChangeVersionWrapper* Create(const String& old_version,
                                       const String& new_version) {
-    return new ChangeVersionWrapper(old_version, new_version);
+    return MakeGarbageCollected<ChangeVersionWrapper>(old_version, new_version);
   }
+
+  ChangeVersionWrapper(const String& old_version, const String& new_version);
 
   bool PerformPreflight(SQLTransactionBackend*) override;
   bool PerformPostflight(SQLTransactionBackend*) override;
@@ -50,8 +52,6 @@ class ChangeVersionWrapper final : public SQLTransactionWrapper {
   void HandleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
 
  private:
-  ChangeVersionWrapper(const String& old_version, const String& new_version);
-
   String old_version_;
   String new_version_;
   std::unique_ptr<SQLErrorData> sql_error_;

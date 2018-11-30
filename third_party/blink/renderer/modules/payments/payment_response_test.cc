@@ -57,7 +57,8 @@ TEST(PaymentResponseTest, DataCopiedOver) {
   input->payer->name = "Jon Doe";
   input->payer->email = "abc@gmail.com";
   input->payer->phone = "0123";
-  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
+  MockPaymentStateResolver* complete_callback =
+      MakeGarbageCollected<MockPaymentStateResolver>();
 
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), nullptr, complete_callback,
@@ -90,7 +91,8 @@ TEST(PaymentResponseTest,
   payments::mojom::blink::PaymentResponsePtr input =
       BuildPaymentResponseForTest();
   input->stringified_details = "transactionId";
-  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
+  MockPaymentStateResolver* complete_callback =
+      MakeGarbageCollected<MockPaymentStateResolver>();
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), nullptr, complete_callback,
       "id");
@@ -113,7 +115,8 @@ TEST(PaymentResponseTest, PaymentResponseDetailsRetrunsTheSameObject) {
       BuildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
-  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
+  MockPaymentStateResolver* complete_callback =
+      MakeGarbageCollected<MockPaymentStateResolver>();
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), nullptr, complete_callback,
       "id");
@@ -127,7 +130,8 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
       BuildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
-  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
+  MockPaymentStateResolver* complete_callback =
+      MakeGarbageCollected<MockPaymentStateResolver>();
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), nullptr, complete_callback,
       "id");
@@ -144,7 +148,8 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure) {
       BuildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
-  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
+  MockPaymentStateResolver* complete_callback =
+      MakeGarbageCollected<MockPaymentStateResolver>();
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), nullptr, complete_callback,
       "id");

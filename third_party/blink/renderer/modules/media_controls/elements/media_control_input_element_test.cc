@@ -64,7 +64,8 @@ class MediaControlInputElementTest : public PageTestBase {
     media_controls_ =
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     ASSERT_NE(media_controls_, nullptr);
-    control_input_element_ = new MediaControlInputElementImpl(*media_controls_);
+    control_input_element_ =
+        MakeGarbageCollected<MediaControlInputElementImpl>(*media_controls_);
   }
 
  protected:
@@ -181,7 +182,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayFallback) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          new MediaControlInputElementImpl(MediaControls()));
+          MakeGarbageCollected<MediaControlInputElementImpl>(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(false);
@@ -198,7 +199,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayRequiresWanted) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          new MediaControlInputElementImpl(MediaControls()));
+          MakeGarbageCollected<MediaControlInputElementImpl>(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(false);
@@ -220,7 +221,7 @@ TEST_F(MediaControlInputElementTest, OverflowElement_DisplayAfterInline) {
 
   Persistent<HTMLElement> overflow_container =
       ControlInputElement().CreateOverflowElement(
-          new MediaControlInputElementImpl(MediaControls()));
+          MakeGarbageCollected<MediaControlInputElementImpl>(MediaControls()));
 
   ControlInputElement().SetIsWanted(true);
   ControlInputElement().SetDoesFit(true);

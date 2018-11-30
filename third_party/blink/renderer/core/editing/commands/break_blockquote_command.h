@@ -33,11 +33,12 @@ namespace blink {
 class BreakBlockquoteCommand final : public CompositeEditCommand {
  public:
   static BreakBlockquoteCommand* Create(Document& document) {
-    return new BreakBlockquoteCommand(document);
+    return MakeGarbageCollected<BreakBlockquoteCommand>(document);
   }
 
- private:
   explicit BreakBlockquoteCommand(Document&);
+
+ private:
   void DoApply(EditingState*) override;
 };
 

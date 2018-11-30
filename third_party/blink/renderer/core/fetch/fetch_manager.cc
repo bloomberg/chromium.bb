@@ -534,15 +534,17 @@ void FetchManager::Loader::DidReceiveResponse(
   FetchResponseData* response_data = nullptr;
   SRIBytesConsumer* sri_consumer = nullptr;
   if (fetch_request_data_->Integrity().IsEmpty()) {
-    response_data = FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
-        script_state,
-        new BytesConsumerForDataConsumerHandle(
-            ExecutionContext::From(script_state), std::move(handle)),
-        signal_));
-  } else {
-    sri_consumer = new SRIBytesConsumer();
     response_data = FetchResponseData::CreateWithBuffer(
-        new BodyStreamBuffer(script_state, sri_consumer, signal_));
+        MakeGarbageCollected<BodyStreamBuffer>(
+            script_state,
+            MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
+                ExecutionContext::From(script_state), std::move(handle)),
+            signal_));
+  } else {
+    sri_consumer = MakeGarbageCollected<SRIBytesConsumer>();
+    response_data = FetchResponseData::CreateWithBuffer(
+        MakeGarbageCollected<BodyStreamBuffer>(script_state, sri_consumer,
+                                               signal_));
   }
   response_data->SetStatus(response.HttpStatusCode());
   if (response.Url().ProtocolIsAbout() || response.Url().ProtocolIsData() ||

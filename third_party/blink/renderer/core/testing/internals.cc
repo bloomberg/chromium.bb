@@ -3067,14 +3067,14 @@ namespace {
 class AddOneFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    AddOneFunction* self = new AddOneFunction(script_state);
+    AddOneFunction* self = MakeGarbageCollected<AddOneFunction>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit AddOneFunction(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     v8::Local<v8::Value> v8_value = value.V8Value();
     DCHECK(v8_value->IsNumber());
@@ -3389,8 +3389,9 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  loader->GetUseCounter().AddObserver(new UseCounterObserverImpl(
-      resolver, static_cast<WebFeature>(use_counter_feature)));
+  loader->GetUseCounter().AddObserver(
+      MakeGarbageCollected<UseCounterObserverImpl>(
+          resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }
 

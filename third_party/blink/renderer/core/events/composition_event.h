@@ -36,19 +36,24 @@ class CompositionEvent final : public UIEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CompositionEvent* Create() { return new CompositionEvent; }
+  static CompositionEvent* Create() {
+    return MakeGarbageCollected<CompositionEvent>();
+  }
 
   static CompositionEvent* Create(const AtomicString& type,
                                   AbstractView* view,
                                   const String& data) {
-    return new CompositionEvent(type, view, data);
+    return MakeGarbageCollected<CompositionEvent>(type, view, data);
   }
 
   static CompositionEvent* Create(const AtomicString& type,
                                   const CompositionEventInit* initializer) {
-    return new CompositionEvent(type, initializer);
+    return MakeGarbageCollected<CompositionEvent>(type, initializer);
   }
 
+  CompositionEvent();
+  CompositionEvent(const AtomicString& type, AbstractView*, const String&);
+  CompositionEvent(const AtomicString& type, const CompositionEventInit*);
   ~CompositionEvent() override;
 
   void initCompositionEvent(const AtomicString& type,
@@ -66,10 +71,6 @@ class CompositionEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  CompositionEvent();
-  CompositionEvent(const AtomicString& type, AbstractView*, const String&);
-  CompositionEvent(const AtomicString& type, const CompositionEventInit*);
-
   String data_;
 };
 

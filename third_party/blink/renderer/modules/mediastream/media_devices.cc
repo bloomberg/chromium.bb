@@ -33,9 +33,11 @@ namespace {
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
   static PromiseResolverCallbacks* Create(ScriptPromiseResolver* resolver) {
-    return new PromiseResolverCallbacks(resolver);
+    return MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
   }
 
+  explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
+      : resolver_(resolver) {}
   ~PromiseResolverCallbacks() override = default;
 
   void OnSuccess(ScriptWrappable* callback_this_value,
@@ -53,9 +55,6 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
   }
 
  private:
-  explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
   Member<ScriptPromiseResolver> resolver_;
 };
 

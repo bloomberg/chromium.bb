@@ -30,14 +30,14 @@ namespace {
 class NotReached : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    NotReached* self = new NotReached(script_state);
+    NotReached* self = MakeGarbageCollected<NotReached>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit NotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue) override;
 };
 
@@ -51,16 +51,17 @@ class StubFunction : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 ScriptValue& value,
                                                 size_t& call_count) {
-    StubFunction* self = new StubFunction(script_state, value, call_count);
+    StubFunction* self =
+        MakeGarbageCollected<StubFunction>(script_state, value, call_count);
     return self->BindToV8Function();
   }
 
- private:
   StubFunction(ScriptState* script_state,
                ScriptValue& value,
                size_t& call_count)
       : ScriptFunction(script_state), value_(value), call_count_(call_count) {}
 
+ private:
   ScriptValue Call(ScriptValue arg) override {
     value_ = arg;
     call_count_++;

@@ -39,8 +39,9 @@ class ButtonInputType final : public BaseButtonInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   ButtonInputType(HTMLInputElement& element) : BaseButtonInputType(element) {}
+
+ private:
   const AtomicString& FormControlType() const override;
   bool SupportsValidation() const override;
   bool IsTextButton() const override;

@@ -232,17 +232,19 @@ ScopedFocusNavigation::ScopedFocusNavigation(
     : current_(current) {
   if (HTMLSlotElement* slot = ToHTMLSlotElementOrNull(scoping_root_node)) {
     if (slot->AssignedNodes().IsEmpty()) {
-      navigation_ = new FocusNavigation(scoping_root_node, *slot, owner_map);
+      navigation_ = MakeGarbageCollected<FocusNavigation>(scoping_root_node,
+                                                          *slot, owner_map);
     } else {
       // Here, slot->AssignedNodes() are non null, so the slot must be inside
       // the shadow tree.
       DCHECK(scoping_root_node.ContainingShadowRoot());
-      navigation_ =
-          new FocusNavigation(scoping_root_node.ContainingShadowRoot()->host(),
-                              ToHTMLSlotElement(scoping_root_node), owner_map);
+      navigation_ = MakeGarbageCollected<FocusNavigation>(
+          scoping_root_node.ContainingShadowRoot()->host(),
+          ToHTMLSlotElement(scoping_root_node), owner_map);
     }
   } else {
-    navigation_ = new FocusNavigation(scoping_root_node, owner_map);
+    navigation_ =
+        MakeGarbageCollected<FocusNavigation>(scoping_root_node, owner_map);
   }
   DCHECK(navigation_);
 }

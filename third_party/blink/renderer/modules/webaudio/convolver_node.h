@@ -98,13 +98,14 @@ class MODULES_EXPORT ConvolverNode final : public AudioNode {
                                const ConvolverOptions*,
                                ExceptionState&);
 
+  ConvolverNode(BaseAudioContext&);
+
   AudioBuffer* buffer() const;
   void setBuffer(AudioBuffer*, ExceptionState&);
   bool normalize() const;
   void setNormalize(bool);
 
  private:
-  ConvolverNode(BaseAudioContext&);
   ConvolverHandler& GetConvolverHandler() const;
 
   FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);

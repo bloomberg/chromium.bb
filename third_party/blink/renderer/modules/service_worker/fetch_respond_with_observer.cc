@@ -335,7 +335,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 
     // Load the Response as a mojo::DataPipe.  The resulting pipe consumer
     // handle will be passed to the FetchLoaderClient on start.
-    FetchLoaderClient* fetch_loader_client = new FetchLoaderClient();
+    FetchLoaderClient* fetch_loader_client =
+        MakeGarbageCollected<FetchLoaderClient>();
     buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(task_runner_),
                          fetch_loader_client, exception_state);
     if (exception_state.HadException()) {

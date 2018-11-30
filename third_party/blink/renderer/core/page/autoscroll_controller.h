@@ -67,6 +67,9 @@ class CORE_EXPORT AutoscrollController final
     : public GarbageCollected<AutoscrollController> {
  public:
   static AutoscrollController* Create(Page&);
+
+  explicit AutoscrollController(Page&);
+
   void Trace(blink::Visitor*);
 
   // Selection and drag-and-drop autoscroll.
@@ -96,8 +99,6 @@ class CORE_EXPORT AutoscrollController final
   bool MiddleClickAutoscrollInProgress() const;
 
  private:
-  explicit AutoscrollController(Page&);
-
   // For test.
   bool IsAutoscrolling() const;
 

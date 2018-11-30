@@ -52,15 +52,16 @@ class BarProp final : public ScriptWrappable, public DOMWindowClient {
   };
 
   static BarProp* Create(LocalFrame* frame, Type type) {
-    return new BarProp(frame, type);
+    return MakeGarbageCollected<BarProp>(frame, type);
   }
+
+  BarProp(LocalFrame*, Type);
 
   bool visible() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  BarProp(LocalFrame*, Type);
   Type type_;
 };
 

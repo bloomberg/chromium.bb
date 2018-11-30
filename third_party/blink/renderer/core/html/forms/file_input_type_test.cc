@@ -127,7 +127,7 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
 TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  auto* chrome_client = new WebKitDirectoryChromeClient;
+  auto* chrome_client = MakeGarbageCollected<WebKitDirectoryChromeClient>();
   page_clients.chrome_client = chrome_client;
   auto page_holder = DummyPageHolder::Create(IntSize(), &page_clients);
   Document& doc = page_holder->GetDocument();

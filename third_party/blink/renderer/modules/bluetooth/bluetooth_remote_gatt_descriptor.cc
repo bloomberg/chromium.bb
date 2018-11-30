@@ -25,7 +25,8 @@ BluetoothRemoteGATTDescriptor* BluetoothRemoteGATTDescriptor::Create(
 
     BluetoothRemoteGATTCharacteristic* characteristic) {
   BluetoothRemoteGATTDescriptor* result =
-      new BluetoothRemoteGATTDescriptor(std::move(descriptor), characteristic);
+      MakeGarbageCollected<BluetoothRemoteGATTDescriptor>(std::move(descriptor),
+                                                          characteristic);
   return result;
 }
 

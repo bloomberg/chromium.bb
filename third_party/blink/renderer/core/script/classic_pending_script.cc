@@ -41,9 +41,10 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   FetchParameters params = options.CreateFetchParameters(
       url, element_document.GetSecurityOrigin(), cross_origin, encoding, defer);
 
-  ClassicPendingScript* pending_script = new ClassicPendingScript(
-      element, TextPosition(), ScriptSourceLocationType::kExternalFile, options,
-      true /* is_external */);
+  ClassicPendingScript* pending_script =
+      MakeGarbageCollected<ClassicPendingScript>(
+          element, TextPosition(), ScriptSourceLocationType::kExternalFile,
+          options, true /* is_external */);
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -72,8 +73,9 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options) {
   ClassicPendingScript* pending_script =
-      new ClassicPendingScript(element, starting_position, source_location_type,
-                               options, false /* is_external */);
+      MakeGarbageCollected<ClassicPendingScript>(element, starting_position,
+                                                 source_location_type, options,
+                                                 false /* is_external */);
   pending_script->CheckState();
   return pending_script;
 }

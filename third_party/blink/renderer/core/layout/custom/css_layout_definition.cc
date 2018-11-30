@@ -120,9 +120,10 @@ bool CSSLayoutDefinition::Instance::Layout(
     fixed_block_size = computed_values.extent_;
   }
 
-  CustomLayoutConstraints* constraints = new CustomLayoutConstraints(
-      layout_custom.LogicalWidth(), fixed_block_size,
-      layout_custom.GetConstraintData(), isolate);
+  CustomLayoutConstraints* constraints =
+      MakeGarbageCollected<CustomLayoutConstraints>(
+          layout_custom.LogicalWidth(), fixed_block_size,
+          layout_custom.GetConstraintData(), isolate);
 
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.

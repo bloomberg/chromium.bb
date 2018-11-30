@@ -138,8 +138,8 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
   DCHECK(!observer);
   if (id.IsEmpty())
     return nullptr;
-  observer =
-      new SVGElementReferenceObserver(tree_scope, id, std::move(closure));
+  observer = MakeGarbageCollected<SVGElementReferenceObserver>(
+      tree_scope, id, std::move(closure));
   return tree_scope.getElementById(id);
 }
 

@@ -26,6 +26,8 @@ class BatteryManager final : public EventTargetWithInlineData,
 
  public:
   static BatteryManager* Create(ExecutionContext*);
+
+  explicit BatteryManager(ExecutionContext*);
   ~BatteryManager() override;
 
   // Returns a promise object that will be resolved with this BatteryManager.
@@ -67,8 +69,6 @@ class BatteryManager final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit BatteryManager(ExecutionContext*);
-
   using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>,
                                                 Member<BatteryManager>,
                                                 Member<DOMException>>;

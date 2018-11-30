@@ -54,6 +54,8 @@ class ChildListMutationAccumulator final
  public:
   static ChildListMutationAccumulator* GetOrCreate(Node&);
 
+  ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);
+
   void ChildAdded(Node*);
   void WillRemoveChild(Node*);
 
@@ -67,8 +69,6 @@ class ChildListMutationAccumulator final
   void Trace(blink::Visitor*);
 
  private:
-  ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);
-
   void EnqueueMutationRecord();
   bool IsEmpty();
   bool IsAddedNodeInOrder(Node*);

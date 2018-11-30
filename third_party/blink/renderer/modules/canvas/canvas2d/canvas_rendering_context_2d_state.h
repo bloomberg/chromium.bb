@@ -52,7 +52,7 @@ class CanvasRenderingContext2DState final
   static CanvasRenderingContext2DState* Create(
       const CanvasRenderingContext2DState& other,
       ClipListCopyMode mode) {
-    return new CanvasRenderingContext2DState(other, mode);
+    return MakeGarbageCollected<CanvasRenderingContext2DState>(other, mode);
   }
 
   // FontSelectorClient implementation

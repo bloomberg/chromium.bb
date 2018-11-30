@@ -26,6 +26,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
  public:
   static AudioWorklet* Create(BaseAudioContext*);
 
+  explicit AudioWorklet(BaseAudioContext*);
   ~AudioWorklet() override = default;
 
   void CreateProcessor(scoped_refptr<AudioWorkletHandler>,
@@ -55,8 +56,6 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit AudioWorklet(BaseAudioContext*);
-
   // Implements Worklet
   bool NeedsToCreateGlobalScope() final;
   WorkletGlobalScopeProxy* CreateGlobalScope() final;

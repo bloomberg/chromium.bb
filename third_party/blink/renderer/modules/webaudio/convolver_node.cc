@@ -273,7 +273,7 @@ ConvolverNode* ConvolverNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new ConvolverNode(context);
+  return MakeGarbageCollected<ConvolverNode>(context);
 }
 
 ConvolverNode* ConvolverNode::Create(BaseAudioContext* context,

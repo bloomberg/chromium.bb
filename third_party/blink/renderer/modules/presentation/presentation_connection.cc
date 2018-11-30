@@ -235,7 +235,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
   DCHECK(controller);
   DCHECK(request);
 
-  auto* connection = new ControllerPresentationConnection(
+  auto* connection = MakeGarbageCollected<ControllerPresentationConnection>(
       *controller->GetFrame(), controller, presentation_info.id,
       presentation_info.url);
   controller->RegisterConnection(connection);

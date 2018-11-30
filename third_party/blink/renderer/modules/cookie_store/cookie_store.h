@@ -34,6 +34,9 @@ class CookieStore final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
 
  public:
+  CookieStore(ExecutionContext*,
+              network::mojom::blink::RestrictedCookieManagerPtr backend,
+              blink::mojom::blink::CookieStorePtr subscription_backend);
   // Needed because of the network::mojom::blink::RestrictedCookieManagerPtr
   ~CookieStore() override;
 
@@ -41,8 +44,8 @@ class CookieStore final : public EventTargetWithInlineData,
       ExecutionContext* execution_context,
       network::mojom::blink::RestrictedCookieManagerPtr backend,
       blink::mojom::blink::CookieStorePtr subscription_backend) {
-    return new CookieStore(execution_context, std::move(backend),
-                           std::move(subscription_backend));
+    return MakeGarbageCollected<CookieStore>(
+        execution_context, std::move(backend), std::move(subscription_backend));
   }
 
   ScriptPromise getAll(ScriptState*, const String& name, ExceptionState&);
@@ -101,10 +104,6 @@ class CookieStore final : public EventTargetWithInlineData,
  private:
   using DoReadBackendResultConverter =
       void (*)(ScriptPromiseResolver*, const Vector<WebCanonicalCookie>&);
-
-  CookieStore(ExecutionContext*,
-              network::mojom::blink::RestrictedCookieManagerPtr backend,
-              blink::mojom::blink::CookieStorePtr subscription_backend);
 
   // Common code in CookieStore::{get,getAll}.
   //

@@ -136,7 +136,8 @@ uint32_t RTCStatsReport::size() const {
 
 PairIterable<String, v8::Local<v8::Value>>::IterationSource*
 RTCStatsReport::StartIteration(ScriptState*, ExceptionState&) {
-  return new RTCStatsReportIterationSource(report_->CopyHandle());
+  return MakeGarbageCollected<RTCStatsReportIterationSource>(
+      report_->CopyHandle());
 }
 
 bool RTCStatsReport::GetMapEntry(ScriptState* script_state,

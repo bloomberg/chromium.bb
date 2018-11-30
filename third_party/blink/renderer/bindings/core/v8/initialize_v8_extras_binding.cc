@@ -44,14 +44,14 @@ constexpr WebFeatureIdNameLookupEntry web_feature_id_name_lookup_table[] = {
 class CountUseForBindings : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    auto* self = new CountUseForBindings(script_state);
+    auto* self = MakeGarbageCollected<CountUseForBindings>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit CountUseForBindings(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     String string_id;
     if (!value.ToString(string_id)) {

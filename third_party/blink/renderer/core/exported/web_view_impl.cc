@@ -242,15 +242,17 @@ namespace {
 
 class EmptyEventListener final : public EventListener {
  public:
-  static EmptyEventListener* Create() { return new EmptyEventListener(); }
+  static EmptyEventListener* Create() {
+    return MakeGarbageCollected<EmptyEventListener>();
+  }
+
+  EmptyEventListener() : EventListener(kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
 
  private:
-  EmptyEventListener() : EventListener(kCPPEventListenerType) {}
-
   void Invoke(ExecutionContext* execution_context, Event*) override {}
 };
 

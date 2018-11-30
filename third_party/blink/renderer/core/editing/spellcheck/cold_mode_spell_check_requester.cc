@@ -30,7 +30,7 @@ const int kInvalidChunkIndex = -1;
 // static
 ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::Create(
     LocalFrame& frame) {
-  return new ColdModeSpellCheckRequester(frame);
+  return MakeGarbageCollected<ColdModeSpellCheckRequester>(frame);
 }
 
 void ColdModeSpellCheckRequester::Trace(blink::Visitor* visitor) {

@@ -104,7 +104,7 @@ ImageResourceContent::ImageResourceContent(scoped_refptr<blink::Image> image)
       has_device_pixel_ratio_header_value_(false),
       image_(std::move(image)) {
   DEFINE_STATIC_LOCAL(Persistent<NullImageResourceInfo>, null_info,
-                      (new NullImageResourceInfo()));
+                      (MakeGarbageCollected<NullImageResourceInfo>()));
   info_ = null_info;
 }
 

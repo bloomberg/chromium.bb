@@ -35,7 +35,8 @@ class EmptyScriptModuleResolver final : public ScriptModuleResolver {
 
 }  // namespace
 
-DummyModulator::DummyModulator() : resolver_(new EmptyScriptModuleResolver()) {}
+DummyModulator::DummyModulator()
+    : resolver_(MakeGarbageCollected<EmptyScriptModuleResolver>()) {}
 
 DummyModulator::~DummyModulator() = default;
 

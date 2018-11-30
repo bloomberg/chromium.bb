@@ -335,7 +335,7 @@ TEST_F(DocumentLoadingRenderingTest,
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   // Frame while the child frame still has pending sheets.
-  auto* frame1_callback = new CheckRafCallback();
+  auto* frame1_callback = MakeGarbageCollected<CheckRafCallback>();
   child_frame->contentDocument()->RequestAnimationFrame(frame1_callback);
   auto frame1 = Compositor().BeginFrame();
   EXPECT_FALSE(frame1_callback->WasCalled());
@@ -347,7 +347,7 @@ TEST_F(DocumentLoadingRenderingTest,
   css_resource.Complete();
 
   // Frame with all lifecycle updates enabled.
-  auto* frame2_callback = new CheckRafCallback();
+  auto* frame2_callback = MakeGarbageCollected<CheckRafCallback>();
   child_frame->contentDocument()->RequestAnimationFrame(frame2_callback);
   auto frame2 = Compositor().BeginFrame();
   EXPECT_TRUE(frame1_callback->WasCalled());

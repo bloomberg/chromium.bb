@@ -29,7 +29,7 @@ inline Comment::Comment(Document& document, const String& text)
     : CharacterData(document, text, kCreateOther) {}
 
 Comment* Comment::Create(Document& document, const String& text) {
-  return new Comment(document, text);
+  return MakeGarbageCollected<Comment>(document, text);
 }
 
 String Comment::nodeName() const {

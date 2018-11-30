@@ -7,7 +7,7 @@
 namespace blink {
 
 AudioTrackList* AudioTrackList::Create(HTMLMediaElement& media_element) {
-  return new AudioTrackList(media_element);
+  return MakeGarbageCollected<AudioTrackList>(media_element);
 }
 
 AudioTrackList::~AudioTrackList() = default;

@@ -38,10 +38,12 @@ class MODULES_EXPORT BackgroundFetchManager final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit BackgroundFetchManager(ServiceWorkerRegistration* registration);
   ~BackgroundFetchManager() override = default;
+
   static BackgroundFetchManager* Create(
       ServiceWorkerRegistration* registration) {
-    return new BackgroundFetchManager(registration);
+    return MakeGarbageCollected<BackgroundFetchManager>(registration);
   }
 
   // Web Exposed methods defined in the IDL file.
@@ -61,8 +63,6 @@ class MODULES_EXPORT BackgroundFetchManager final
 
  private:
   friend class BackgroundFetchManagerTest;
-
-  explicit BackgroundFetchManager(ServiceWorkerRegistration* registration);
 
   // Creates a vector of mojom::blink::FetchAPIRequestPtr objects for the given
   // set of |requests|, which can be either Request objects or URL strings.

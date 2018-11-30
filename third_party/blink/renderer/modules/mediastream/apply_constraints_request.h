@@ -24,6 +24,10 @@ class MODULES_EXPORT ApplyConstraintsRequest final
   static ApplyConstraintsRequest* CreateForTesting(const WebMediaStreamTrack&,
                                                    const WebMediaConstraints&);
 
+  ApplyConstraintsRequest(const WebMediaStreamTrack&,
+                          const WebMediaConstraints&,
+                          ScriptPromiseResolver*);
+
   WebMediaStreamTrack Track() const;
   WebMediaConstraints Constraints() const;
 
@@ -33,10 +37,6 @@ class MODULES_EXPORT ApplyConstraintsRequest final
   virtual void Trace(blink::Visitor*);
 
  private:
-  ApplyConstraintsRequest(const WebMediaStreamTrack&,
-                          const WebMediaConstraints&,
-                          ScriptPromiseResolver*);
-
   WebMediaStreamTrack track_;
   WebMediaConstraints constraints_;
   Member<ScriptPromiseResolver> resolver_;

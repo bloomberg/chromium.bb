@@ -160,7 +160,7 @@ ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new ChannelMergerNode(context, number_of_inputs);
+  return MakeGarbageCollected<ChannelMergerNode>(context, number_of_inputs);
 }
 
 ChannelMergerNode* ChannelMergerNode::Create(

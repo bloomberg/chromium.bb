@@ -287,7 +287,7 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
     web_track = with_track->Component();
   }
   ReplaceTrackRequest* request =
-      new ReplaceTrackRequest(this, with_track, resolver);
+      MakeGarbageCollected<ReplaceTrackRequest>(this, with_track, resolver);
   sender_->ReplaceTrack(web_track, request);
   return promise;
 }
@@ -395,7 +395,7 @@ ScriptPromise RTCRtpSender::setParameters(
   webrtc::DegradationPreference degradation_preference;
   std::tie(encodings, degradation_preference) = ToRtpParameters(parameters);
 
-  auto* request = new SetParametersRequest(resolver, this);
+  auto* request = MakeGarbageCollected<SetParametersRequest>(resolver, this);
   sender_->SetParameters(std::move(encodings), degradation_preference, request);
   return promise;
 }

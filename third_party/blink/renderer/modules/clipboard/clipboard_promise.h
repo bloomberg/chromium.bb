@@ -23,6 +23,7 @@ class ClipboardPromise final
   WTF_MAKE_NONCOPYABLE(ClipboardPromise);
 
  public:
+  ClipboardPromise(ScriptState*);
   virtual ~ClipboardPromise() = default;
 
   static ScriptPromise CreateForRead(ScriptState*);
@@ -33,8 +34,6 @@ class ClipboardPromise final
   void Trace(blink::Visitor*) override;
 
  private:
-  ClipboardPromise(ScriptState*);
-
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
   mojom::blink::PermissionService* GetPermissionService();
 

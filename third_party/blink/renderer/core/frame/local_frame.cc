@@ -966,12 +966,12 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
           GetTaskRunner(TaskType::kInternalInspector))),
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
-    probe_sink_ = new CoreProbeSink();
+    probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
     performance_monitor_ = MakeGarbageCollected<PerformanceMonitor>(this);
     inspector_trace_events_ = MakeGarbageCollected<InspectorTraceEvents>();
     probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
-      ad_tracker_ = new AdTracker(this);
+      ad_tracker_ = MakeGarbageCollected<AdTracker>(this);
     }
   } else {
     // Inertness only needs to be updated if this frame might inherit the

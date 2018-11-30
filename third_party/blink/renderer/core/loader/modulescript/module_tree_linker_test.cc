@@ -209,7 +209,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -231,7 +231,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -257,7 +257,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -284,7 +284,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -324,7 +324,7 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -383,7 +383,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/depth1.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),
@@ -409,7 +409,7 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/a.js");
-  TestModuleTreeClient* client = new TestModuleTreeClient;
+  TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
   ModuleTreeLinker::Fetch(
       url, GetDocument().CreateFetchClientSettingsObjectSnapshot(),
       mojom::RequestContextType::SCRIPT, ScriptFetchOptions(), GetModulator(),

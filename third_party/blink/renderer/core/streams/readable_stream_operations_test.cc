@@ -34,14 +34,15 @@ class ReadableStreamOperationsTestNotReached : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
     ReadableStreamOperationsTestNotReached* self =
-        new ReadableStreamOperationsTestNotReached(script_state);
+        MakeGarbageCollected<ReadableStreamOperationsTestNotReached>(
+            script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit ReadableStreamOperationsTestNotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue) override;
 };
 
@@ -88,9 +89,13 @@ class ReaderFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 Iteration* iteration) {
-    ReaderFunction* self = new ReaderFunction(script_state, iteration);
+    ReaderFunction* self =
+        MakeGarbageCollected<ReaderFunction>(script_state, iteration);
     return self->BindToV8Function();
   }
+
+  ReaderFunction(ScriptState* script_state, Iteration* iteration)
+      : ScriptFunction(script_state), iteration_(iteration) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(iteration_);
@@ -98,9 +103,6 @@ class ReaderFunction : public ScriptFunction {
   }
 
  private:
-  ReaderFunction(ScriptState* script_state, Iteration* iteration)
-      : ScriptFunction(script_state), iteration_(iteration) {}
-
   ScriptValue Call(ScriptValue value) override {
     iteration_->Set(value);
     return value;
@@ -244,8 +246,8 @@ TEST(ReadableStreamOperationsTest, Read) {
                   scope.GetScriptState(), reader, ASSERT_NO_EXCEPTION)
                   .value_or(false));
 
-  Iteration* it1 = new Iteration();
-  Iteration* it2 = new Iteration();
+  Iteration* it1 = MakeGarbageCollected<Iteration>();
+  Iteration* it2 = MakeGarbageCollected<Iteration>();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
       .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             ReadableStreamOperationsTestNotReached::CreateFunction(
@@ -283,7 +285,8 @@ TEST(ReadableStreamOperationsTest,
      CreateReadableStreamWithCustomUnderlyingSourceAndStrategy) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  auto* underlying_source = new TestUnderlyingSource(scope.GetScriptState());
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
 
   ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
       scope.GetScriptState(), 10);
@@ -306,9 +309,9 @@ TEST(ReadableStreamOperationsTest,
                                                ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(reader.IsEmpty());
 
-  Iteration* it1 = new Iteration();
-  Iteration* it2 = new Iteration();
-  Iteration* it3 = new Iteration();
+  Iteration* it1 = MakeGarbageCollected<Iteration>();
+  Iteration* it2 = MakeGarbageCollected<Iteration>();
+  Iteration* it3 = MakeGarbageCollected<Iteration>();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
       .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             ReadableStreamOperationsTestNotReached::CreateFunction(
@@ -350,7 +353,8 @@ TEST(ReadableStreamOperationsTest,
      UnderlyingSourceShouldHavePendingActivityWhenLockedAndControllerIsActive) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  auto* underlying_source = new TestUnderlyingSource(scope.GetScriptState());
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
 
   ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
       scope.GetScriptState(), 10);
@@ -545,8 +549,8 @@ TEST(ReadableStreamOperationsTest, Tee) {
   ASSERT_FALSE(reader1.IsEmpty());
   ASSERT_FALSE(reader2.IsEmpty());
 
-  Iteration* it1 = new Iteration();
-  Iteration* it2 = new Iteration();
+  Iteration* it1 = MakeGarbageCollected<Iteration>();
+  Iteration* it2 = MakeGarbageCollected<Iteration>();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader1)
       .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it1),
             ReadableStreamOperationsTestNotReached::CreateFunction(
@@ -600,7 +604,7 @@ TEST(ReadableStreamOperationsTest, Serialize) {
   ScriptValue reader = ReadableStreamOperations::GetReader(
       scope.GetScriptState(), transferred, ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(reader.IsEmpty());
-  Iteration* it = new Iteration();
+  Iteration* it = MakeGarbageCollected<Iteration>();
   ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
       .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it),
             ReadableStreamOperationsTestNotReached::CreateFunction(

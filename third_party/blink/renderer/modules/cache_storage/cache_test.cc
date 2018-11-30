@@ -54,7 +54,11 @@ class ScopedFetcherForTests final
   USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 
  public:
-  static ScopedFetcherForTests* Create() { return new ScopedFetcherForTests(); }
+  static ScopedFetcherForTests* Create() {
+    return MakeGarbageCollected<ScopedFetcherForTests>();
+  }
+
+  ScopedFetcherForTests() : fetch_count_(0), expected_url_(nullptr) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& request_info,
@@ -98,8 +102,6 @@ class ScopedFetcherForTests final
   }
 
  private:
-  ScopedFetcherForTests() : fetch_count_(0), expected_url_(nullptr) {}
-
   int fetch_count_;
   const String* expected_url_;
   Member<Response> response_;
@@ -328,18 +330,18 @@ class CacheStorageTest : public PageTestBase {
   class UnreachableFunction : public ScriptFunction {
    public:
     static v8::Local<v8::Function> Create(ScriptState* script_state) {
-      UnreachableFunction* self = new UnreachableFunction(script_state);
+      UnreachableFunction* self =
+          MakeGarbageCollected<UnreachableFunction>(script_state);
       return self->BindToV8Function();
     }
+
+    UnreachableFunction(ScriptState* script_state)
+        : ScriptFunction(script_state) {}
 
     ScriptValue Call(ScriptValue value) override {
       ADD_FAILURE() << "Unexpected call to a null ScriptFunction.";
       return value;
     }
-
-   private:
-    UnreachableFunction(ScriptState* script_state)
-        : ScriptFunction(script_state) {}
   };
 
   // A ScriptFunction that saves its parameter; used by tests to assert on
@@ -348,9 +350,13 @@ class CacheStorageTest : public PageTestBase {
    public:
     static v8::Local<v8::Function> Create(ScriptState* script_state,
                                           ScriptValue* out_value) {
-      TestFunction* self = new TestFunction(script_state, out_value);
+      TestFunction* self =
+          MakeGarbageCollected<TestFunction>(script_state, out_value);
       return self->BindToV8Function();
     }
+
+    TestFunction(ScriptState* script_state, ScriptValue* out_value)
+        : ScriptFunction(script_state), value_(out_value) {}
 
     ScriptValue Call(ScriptValue value) override {
       DCHECK(!value.IsEmpty());
@@ -359,9 +365,6 @@ class CacheStorageTest : public PageTestBase {
     }
 
    private:
-    TestFunction(ScriptState* script_state, ScriptValue* out_value)
-        : ScriptFunction(script_state), value_(out_value) {}
-
     ScriptValue* value_;
   };
 
@@ -767,9 +770,9 @@ TEST_F(CacheStorageTest, Add) {
   Request* request = NewRequestFromUrl(url);
   Response* response = Response::Create(
       GetScriptState(),
-      new BodyStreamBuffer(GetScriptState(),
-                           MakeGarbageCollected<FormDataBytesConsumer>(content),
-                           nullptr),
+      MakeGarbageCollected<BodyStreamBuffer>(
+          GetScriptState(),
+          MakeGarbageCollected<FormDataBytesConsumer>(content), nullptr),
       content_type, ResponseInit::Create(), exception_state);
   fetcher->SetResponse(response);
 

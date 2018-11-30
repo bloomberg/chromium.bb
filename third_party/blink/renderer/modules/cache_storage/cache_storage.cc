@@ -25,7 +25,7 @@ namespace blink {
 
 CacheStorage* CacheStorage::Create(ExecutionContext* context,
                                    GlobalFetch::ScopedFetcher* fetcher) {
-  return new CacheStorage(context, fetcher);
+  return MakeGarbageCollected<CacheStorage>(context, fetcher);
 }
 
 ScriptPromise CacheStorage::open(ScriptState* script_state,

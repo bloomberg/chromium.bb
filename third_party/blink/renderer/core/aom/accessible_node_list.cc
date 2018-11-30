@@ -16,7 +16,7 @@ static const unsigned kMaxItems = 65536;
 // static
 AccessibleNodeList* AccessibleNodeList::Create(
     const HeapVector<Member<AccessibleNode>>& nodes) {
-  AccessibleNodeList* result = new AccessibleNodeList();
+  AccessibleNodeList* result = MakeGarbageCollected<AccessibleNodeList>();
   result->nodes_ = nodes;
   return result;
 }

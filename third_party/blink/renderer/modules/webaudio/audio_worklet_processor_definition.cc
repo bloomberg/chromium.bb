@@ -12,8 +12,8 @@ AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
     v8::Local<v8::Object> constructor,
     v8::Local<v8::Function> process) {
   DCHECK(!IsMainThread());
-  return new AudioWorkletProcessorDefinition(isolate, name, constructor,
-                                             process);
+  return MakeGarbageCollected<AudioWorkletProcessorDefinition>(
+      isolate, name, constructor, process);
 }
 
 AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(

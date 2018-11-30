@@ -18,14 +18,12 @@ class MODULES_EXPORT AuthenticatorResponse : public ScriptWrappable {
  public:
   static AuthenticatorResponse* Create(DOMArrayBuffer* client_data_json);
 
+  explicit AuthenticatorResponse(DOMArrayBuffer* client_data_json);
   ~AuthenticatorResponse() override;
 
   DOMArrayBuffer* clientDataJSON() const { return client_data_json_.Get(); }
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  explicit AuthenticatorResponse(DOMArrayBuffer* client_data_json);
 
  private:
   const Member<DOMArrayBuffer> client_data_json_;

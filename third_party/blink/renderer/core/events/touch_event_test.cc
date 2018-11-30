@@ -47,7 +47,7 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
 class TouchEventTest : public PageTestBase {
  public:
   void SetUp() override {
-    chrome_client_ = new ConsoleCapturingChromeClient();
+    chrome_client_ = MakeGarbageCollected<ConsoleCapturingChromeClient>();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();

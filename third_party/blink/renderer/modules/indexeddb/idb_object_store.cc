@@ -695,21 +695,11 @@ class IndexPopulator final : public EventListener {
       int64_t transaction_id,
       int64_t object_store_id,
       scoped_refptr<const IDBIndexMetadata> index_metadata) {
-    return new IndexPopulator(script_state, database, transaction_id,
-                              object_store_id, std::move(index_metadata));
+    return MakeGarbageCollected<IndexPopulator>(script_state, database,
+                                                transaction_id, object_store_id,
+                                                std::move(index_metadata));
   }
 
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(script_state_);
-    visitor->Trace(database_);
-    EventListener::Trace(visitor);
-  }
-
- private:
   IndexPopulator(ScriptState* script_state,
                  IDBDatabase* database,
                  int64_t transaction_id,
@@ -724,6 +714,17 @@ class IndexPopulator final : public EventListener {
     DCHECK(index_metadata_.get());
   }
 
+  bool operator==(const EventListener& other) const override {
+    return this == &other;
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    visitor->Trace(database_);
+    EventListener::Trace(visitor);
+  }
+
+ private:
   const IDBIndexMetadata& IndexMetadata() const { return *index_metadata_; }
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {

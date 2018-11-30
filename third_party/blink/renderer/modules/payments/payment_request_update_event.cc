@@ -27,8 +27,15 @@ class UpdatePaymentDetailsFunction : public ScriptFunction {
       ScriptState* script_state,
       PaymentRequestUpdateEvent* update_event) {
     UpdatePaymentDetailsFunction* self =
-        new UpdatePaymentDetailsFunction(script_state, update_event);
+        MakeGarbageCollected<UpdatePaymentDetailsFunction>(script_state,
+                                                           update_event);
     return self->BindToV8Function();
+  }
+
+  UpdatePaymentDetailsFunction(ScriptState* script_state,
+                               PaymentRequestUpdateEvent* update_event)
+      : ScriptFunction(script_state), update_event_(update_event) {
+    DCHECK(update_event_);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -37,12 +44,6 @@ class UpdatePaymentDetailsFunction : public ScriptFunction {
   }
 
  private:
-  UpdatePaymentDetailsFunction(ScriptState* script_state,
-                               PaymentRequestUpdateEvent* update_event)
-      : ScriptFunction(script_state), update_event_(update_event) {
-    DCHECK(update_event_);
-  }
-
   ScriptValue Call(ScriptValue value) override {
     update_event_->OnUpdatePaymentDetails(update_event_->type(), value);
     return ScriptValue();
@@ -56,8 +57,15 @@ class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 PaymentUpdater* updater) {
     UpdatePaymentDetailsErrorFunction* self =
-        new UpdatePaymentDetailsErrorFunction(script_state, updater);
+        MakeGarbageCollected<UpdatePaymentDetailsErrorFunction>(script_state,
+                                                                updater);
     return self->BindToV8Function();
+  }
+
+  UpdatePaymentDetailsErrorFunction(ScriptState* script_state,
+                                    PaymentUpdater* updater)
+      : ScriptFunction(script_state), updater_(updater) {
+    DCHECK(updater_);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -66,12 +74,6 @@ class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
   }
 
  private:
-  UpdatePaymentDetailsErrorFunction(ScriptState* script_state,
-                                    PaymentUpdater* updater)
-      : ScriptFunction(script_state), updater_(updater) {
-    DCHECK(updater_);
-  }
-
   ScriptValue Call(ScriptValue value) override {
     updater_->OnUpdatePaymentDetailsFailure(
         ToCoreString(value.V8Value()

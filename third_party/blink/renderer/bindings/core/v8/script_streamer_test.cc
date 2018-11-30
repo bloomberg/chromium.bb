@@ -160,7 +160,8 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   // Test that we can successfully compile a streamed script.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   AppendData("function foo() {");
@@ -198,7 +199,8 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   // handle it gracefully.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
   AppendData("this is the part which will be a parse error");
@@ -237,7 +239,8 @@ TEST_F(ScriptStreamingTest, CancellingStreaming) {
   // while streaming is ongoing, and ScriptStreamer handles it gracefully.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
 
@@ -262,7 +265,8 @@ TEST_F(ScriptStreamingTest, DataAfterDisposingPendingScript) {
   // before streaming is started, and ScriptStreamer handles it gracefully.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   // In general, we cannot control what the background thread is doing
@@ -298,7 +302,8 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   // script is loaded.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
   AppendData("function foo() {");
   AppendPadding();
@@ -327,7 +332,8 @@ TEST_F(ScriptStreamingTest, EmptyScripts) {
   // loaded.
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   // Finish the script without sending any data.
@@ -346,7 +352,8 @@ TEST_F(ScriptStreamingTest, SmallScripts) {
   ScriptStreamer::SetSmallScriptThresholdForTesting(100);
 
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   AppendData("function foo() { }");
@@ -368,7 +375,8 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
   ScriptStreamer::SetSmallScriptThresholdForTesting(100);
 
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   // This is the first data chunk which is small.
@@ -405,7 +413,8 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   GetResource()->SetEncodingForTest("windows-1252");
 
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   GetResource()->SetEncodingForTest("UTF-8");
@@ -444,7 +453,8 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   GetResource()->SetEncodingForTest("windows-1252");
 
   GetResource()->StartStreaming(loading_task_runner_);
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   // \xef\xbb\xbf is the UTF-8 byte order mark. \xec\x92\x81 are the raw bytes
@@ -478,7 +488,8 @@ TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
 
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
   EXPECT_FALSE(client->Finished());
 
@@ -492,7 +503,8 @@ TEST_F(ScriptStreamingTest, ResourceSetRevalidatingRequest) {
   V8TestingScope scope;
   GetResource()->StartStreaming(loading_task_runner_);
 
-  TestPendingScriptClient* client = new TestPendingScriptClient;
+  TestPendingScriptClient* client =
+      MakeGarbageCollected<TestPendingScriptClient>();
   GetPendingScript()->WatchForLoad(client);
 
   // Kick the streaming off.

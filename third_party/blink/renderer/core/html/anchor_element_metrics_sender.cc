@@ -41,7 +41,7 @@ AnchorElementMetricsSender* AnchorElementMetricsSender::From(
   AnchorElementMetricsSender* sender =
       Supplement<Document>::From<AnchorElementMetricsSender>(document);
   if (!sender) {
-    sender = new AnchorElementMetricsSender(document);
+    sender = MakeGarbageCollected<AnchorElementMetricsSender>(document);
     ProvideTo(document, sender);
   }
   return sender;

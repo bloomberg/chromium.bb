@@ -199,7 +199,8 @@ IntersectionObserver* IntersectionObserver::Create(
     bool track_visibility,
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
-      new IntersectionObserverDelegateImpl(document, std::move(callback));
+      MakeGarbageCollected<IntersectionObserverDelegateImpl>(
+          document, std::move(callback));
   return MakeGarbageCollected<IntersectionObserver>(
       *intersection_observer_delegate, nullptr, root_margin, thresholds, delay,
       track_visibility);

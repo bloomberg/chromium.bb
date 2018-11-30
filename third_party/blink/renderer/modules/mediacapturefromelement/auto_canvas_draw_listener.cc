@@ -15,7 +15,7 @@ AutoCanvasDrawListener::AutoCanvasDrawListener(
 // static
 AutoCanvasDrawListener* AutoCanvasDrawListener::Create(
     std::unique_ptr<WebCanvasCaptureHandler> handler) {
-  return new AutoCanvasDrawListener(std::move(handler));
+  return MakeGarbageCollected<AutoCanvasDrawListener>(std::move(handler));
 }
 
 }  // namespace blink

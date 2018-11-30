@@ -16,7 +16,8 @@ AmbientLightSensor* AmbientLightSensor::Create(
     ExecutionContext* execution_context,
     const SensorOptions* options,
     ExceptionState& exception_state) {
-  return new AmbientLightSensor(execution_context, options, exception_state);
+  return MakeGarbageCollected<AmbientLightSensor>(execution_context, options,
+                                                  exception_state);
 }
 
 // static

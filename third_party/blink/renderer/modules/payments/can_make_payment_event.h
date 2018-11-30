@@ -33,6 +33,11 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
                                      const CanMakePaymentEventInit*,
                                      RespondWithObserver*,
                                      WaitUntilObserver*);
+
+  CanMakePaymentEvent(const AtomicString& type,
+                      const CanMakePaymentEventInit*,
+                      RespondWithObserver*,
+                      WaitUntilObserver*);
   ~CanMakePaymentEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -47,11 +52,6 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  CanMakePaymentEvent(const AtomicString& type,
-                      const CanMakePaymentEventInit*,
-                      RespondWithObserver*,
-                      WaitUntilObserver*);
-
   String top_origin_;
   String payment_request_origin_;
   HeapVector<Member<PaymentMethodData>> method_data_;

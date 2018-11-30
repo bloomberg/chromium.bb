@@ -151,9 +151,10 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
-    BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsArrayBuffer(),
-                               new BodyArrayBufferConsumer(resolver),
-                               exception_state);
+    BodyBuffer()->StartLoading(
+        FetchDataLoader::CreateLoaderAsArrayBuffer(),
+        MakeGarbageCollected<BodyArrayBufferConsumer>(resolver),
+        exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();
@@ -180,7 +181,7 @@ ScriptPromise Body::blob(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
         FetchDataLoader::CreateLoaderAsBlobHandle(MimeType()),
-        new BodyBlobConsumer(resolver), exception_state);
+        MakeGarbageCollected<BodyBlobConsumer>(resolver), exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();
@@ -216,7 +217,8 @@ ScriptPromise Body::formData(ScriptState* script_state,
     if (body_buffer && !boundary.IsEmpty()) {
       body_buffer->StartLoading(
           FetchDataLoader::CreateLoaderAsFormData(boundary),
-          new BodyFormDataConsumer(resolver), exception_state);
+          MakeGarbageCollected<BodyFormDataConsumer>(resolver),
+          exception_state);
       if (exception_state.HadException()) {
         // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
         resolver->Resolve();
@@ -226,9 +228,10 @@ ScriptPromise Body::formData(ScriptState* script_state,
     }
   } else if (parsedType == "application/x-www-form-urlencoded") {
     if (BodyBuffer()) {
-      BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                                 new BodyFormDataConsumer(resolver),
-                                 exception_state);
+      BodyBuffer()->StartLoading(
+          FetchDataLoader::CreateLoaderAsString(),
+          MakeGarbageCollected<BodyFormDataConsumer>(resolver),
+          exception_state);
       if (exception_state.HadException()) {
         // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
         resolver->Resolve();
@@ -240,9 +243,10 @@ ScriptPromise Body::formData(ScriptState* script_state,
     return promise;
   } else {
     if (BodyBuffer()) {
-      BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsFailure(),
-                                 new BodyFormDataConsumer(resolver),
-                                 exception_state);
+      BodyBuffer()->StartLoading(
+          FetchDataLoader::CreateLoaderAsFailure(),
+          MakeGarbageCollected<BodyFormDataConsumer>(resolver),
+          exception_state);
       if (exception_state.HadException()) {
         // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
         resolver->Resolve();
@@ -271,7 +275,8 @@ ScriptPromise Body::json(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               new BodyJsonConsumer(resolver), exception_state);
+                               MakeGarbageCollected<BodyJsonConsumer>(resolver),
+                               exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();
@@ -298,7 +303,8 @@ ScriptPromise Body::text(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               new BodyTextConsumer(resolver), exception_state);
+                               MakeGarbageCollected<BodyTextConsumer>(resolver),
+                               exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();

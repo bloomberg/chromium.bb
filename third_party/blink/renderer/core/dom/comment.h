@@ -33,9 +33,9 @@ class CORE_EXPORT Comment final : public CharacterData {
  public:
   static Comment* Create(Document&, const String&);
 
- private:
   Comment(Document&, const String&);
 
+ private:
   String nodeName() const override;
   NodeType getNodeType() const override;
   Node* Clone(Document&, CloneChildrenFlag) const override;

@@ -50,29 +50,27 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                                    const EditingStyle* style,
                                    InputEvent::InputType input_type,
                                    EPropertyLevel level = kPropertyDefault) {
-    return new ApplyStyleCommand(document, style, input_type, level);
+    return MakeGarbageCollected<ApplyStyleCommand>(document, style, input_type,
+                                                   level);
   }
   static ApplyStyleCommand* Create(Document& document,
                                    const EditingStyle* style,
                                    const Position& start,
                                    const Position& end) {
-    return new ApplyStyleCommand(document, style, start, end);
+    return MakeGarbageCollected<ApplyStyleCommand>(document, style, start, end);
   }
   static ApplyStyleCommand* Create(Element* element, bool remove_only) {
-    return new ApplyStyleCommand(element, remove_only);
+    return MakeGarbageCollected<ApplyStyleCommand>(element, remove_only);
   }
   static ApplyStyleCommand* Create(
       Document& document,
       const EditingStyle* style,
       IsInlineElementToRemoveFunction is_inline_element_to_remove_function,
       InputEvent::InputType input_type) {
-    return new ApplyStyleCommand(
+    return MakeGarbageCollected<ApplyStyleCommand>(
         document, style, is_inline_element_to_remove_function, input_type);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   ApplyStyleCommand(Document&,
                     const EditingStyle*,
                     InputEvent::InputType,
@@ -87,6 +85,9 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                     bool (*is_inline_element_to_remove)(const Element*),
                     InputEvent::InputType);
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;
 

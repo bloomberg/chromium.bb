@@ -131,11 +131,12 @@ void FetchEvent::OnNavigationPreloadResponse(
   }
   // TODO(ricea): Verify that this response can't be aborted from JS.
   FetchResponseData* response_data =
-      bytes_consumer
-          ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
-                script_state, bytes_consumer,
-                new AbortSignal(ExecutionContext::From(script_state))))
-          : FetchResponseData::Create();
+      bytes_consumer ? FetchResponseData::CreateWithBuffer(
+                           MakeGarbageCollected<BodyStreamBuffer>(
+                               script_state, bytes_consumer,
+                               MakeGarbageCollected<AbortSignal>(
+                                   ExecutionContext::From(script_state))))
+                     : FetchResponseData::Create();
   Vector<KURL> url_list(1);
   url_list[0] = preload_response_->Url();
   response_data->SetURLList(url_list);

@@ -28,13 +28,13 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   static SetSinkIdResolver* Create(ScriptState*,
                                    HTMLMediaElement&,
                                    const String& sink_id);
+  SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sink_id);
   ~SetSinkIdResolver() override = default;
   void StartAsync();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sink_id);
   void TimerFired(TimerBase*);
 
   Member<HTMLMediaElement> element_;
@@ -46,7 +46,7 @@ SetSinkIdResolver* SetSinkIdResolver::Create(ScriptState* script_state,
                                              HTMLMediaElement& element,
                                              const String& sink_id) {
   SetSinkIdResolver* resolver =
-      new SetSinkIdResolver(script_state, element, sink_id);
+      MakeGarbageCollected<SetSinkIdResolver>(script_state, element, sink_id);
   resolver->PauseIfNeeded();
   resolver->KeepAliveWhilePending();
   return resolver;

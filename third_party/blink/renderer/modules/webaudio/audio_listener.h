@@ -47,8 +47,10 @@ class AudioListener : public ScriptWrappable {
 
  public:
   static AudioListener* Create(BaseAudioContext& context) {
-    return new AudioListener(context);
+    return MakeGarbageCollected<AudioListener>(context);
   }
+
+  AudioListener(BaseAudioContext&);
   ~AudioListener() override;
 
   // Location of the listener
@@ -131,8 +133,6 @@ class AudioListener : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioListener(BaseAudioContext&);
-
   void setPosition(const FloatPoint3D&, ExceptionState&);
   void setOrientation(const FloatPoint3D&, ExceptionState&);
   void SetUpVector(const FloatPoint3D&, ExceptionState&);

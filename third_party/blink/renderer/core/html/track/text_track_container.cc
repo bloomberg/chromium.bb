@@ -96,7 +96,7 @@ LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
 
 void TextTrackContainer::ObserveSizeChanges(Element& element) {
   video_size_observer_ = ResizeObserver::Create(
-      GetDocument(), new VideoElementResizeDelegate(*this));
+      GetDocument(), MakeGarbageCollected<VideoElementResizeDelegate>(*this));
   video_size_observer_->observe(&element);
 }
 

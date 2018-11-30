@@ -170,7 +170,7 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* fetch_context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   auto* fetcher = ResourceFetcher::Create(fetch_context);
-  modulator_ = new ModuleScriptLoaderTestModulator(
+  modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()), GetDocument().GetSecurityOrigin(),
       fetcher);
 }
@@ -195,7 +195,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       std::move(creation_params), *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
-  modulator_ = new ModuleScriptLoaderTestModulator(
+  modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState(),
       GetDocument().GetSecurityOrigin(), fetcher);
 }
@@ -215,7 +215,8 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
   InitializeForDocument();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchDataURL(ModuleScriptCustomFetchType::kNone, client);
 
   // TODO(leszeks): This should finish synchronously, but currently due
@@ -229,7 +230,8 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
   InitializeForWorklet();
-  TestModuleScriptLoaderClient* client1 = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client1 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchDataURL(ModuleScriptCustomFetchType::kWorkletAddModule, client1);
 
   EXPECT_FALSE(client1->WasNotifyFinished())
@@ -243,7 +245,8 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 
   // Try to fetch the same URL again in order to verify the case where
   // WorkletModuleResponsesMap serves a cache.
-  TestModuleScriptLoaderClient* client2 = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client2 =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchDataURL(ModuleScriptCustomFetchType::kWorkletAddModule, client2);
 
   EXPECT_FALSE(client2->WasNotifyFinished())
@@ -272,7 +275,8 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   InitializeForDocument();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestInvalidSpecifier(ModuleScriptCustomFetchType::kNone, client);
 
   // TODO(leszeks): This should finish synchronously, but currently due
@@ -287,7 +291,8 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
   InitializeForWorklet();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestInvalidSpecifier(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
@@ -316,7 +321,8 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
 
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
   InitializeForDocument();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchInvalidURL(ModuleScriptCustomFetchType::kNone, client);
 
   // TODO(leszeks): This should finish synchronously, but currently due
@@ -328,7 +334,8 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
 
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL_OnWorklet) {
   InitializeForWorklet();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchInvalidURL(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
@@ -357,7 +364,8 @@ void ModuleScriptLoaderTest::TestFetchURL(
 
 TEST_F(ModuleScriptLoaderTest, FetchURL) {
   InitializeForDocument();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchURL(ModuleScriptCustomFetchType::kNone, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
@@ -373,7 +381,8 @@ TEST_F(ModuleScriptLoaderTest, FetchURL) {
 
 TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
   InitializeForWorklet();
-  TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
+  TestModuleScriptLoaderClient* client =
+      MakeGarbageCollected<TestModuleScriptLoaderClient>();
   TestFetchURL(ModuleScriptCustomFetchType::kWorkletAddModule, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())

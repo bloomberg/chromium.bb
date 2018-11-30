@@ -35,7 +35,11 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   static AnimationWorkletGlobalScope* Create(
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerThread*);
+
+  AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                              WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
+
   void Trace(blink::Visitor*) override;
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
@@ -52,9 +56,6 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
-  AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                              WorkerThread*);
-
   void RegisterWithProxyClientIfNeeded();
   Animator* CreateInstance(const String& name,
                            WorkletAnimationOptions* options,

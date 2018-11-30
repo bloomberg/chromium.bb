@@ -53,9 +53,10 @@ class CORE_EXPORT ApplicationCacheHost final
       public WebApplicationCacheHostClient {
  public:
   static ApplicationCacheHost* Create(DocumentLoader* loader) {
-    return new ApplicationCacheHost(loader);
+    return MakeGarbageCollected<ApplicationCacheHost>(loader);
   }
 
+  explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
 
@@ -162,8 +163,6 @@ class CORE_EXPORT ApplicationCacheHost final
   void Trace(blink::Visitor*);
 
  private:
-  explicit ApplicationCacheHost(DocumentLoader*);
-
   void WillStartLoadingMainResource(const KURL&, const String&);
 
   // WebApplicationCacheHostClient implementation

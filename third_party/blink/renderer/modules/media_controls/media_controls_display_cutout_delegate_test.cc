@@ -39,7 +39,7 @@ class DisplayCutoutMockChromeClient : public EmptyChromeClient {
 class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
  public:
   void SetUp() override {
-    chrome_client_ = new DisplayCutoutMockChromeClient();
+    chrome_client_ = MakeGarbageCollected<DisplayCutoutMockChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);

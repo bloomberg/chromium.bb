@@ -35,16 +35,17 @@ FetchRequestData* FetchRequestData::Create(
        it != web_request.Headers().end(); ++it)
     request->header_list_->Append(it->key, it->value);
   if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
-    request->SetBuffer(new BodyStreamBuffer(
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(
             ExecutionContext::From(script_state), std::move(body)),
         nullptr /* AbortSignal */));
   } else if (web_request.GetBlobDataHandle()) {
-    request->SetBuffer(new BodyStreamBuffer(
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
-        new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              web_request.GetBlobDataHandle()),
+        MakeGarbageCollected<BlobBytesConsumer>(
+            ExecutionContext::From(script_state),
+            web_request.GetBlobDataHandle()),
         nullptr /* AbortSignal */));
   }
   request->SetContext(web_request.GetRequestContext());
@@ -78,10 +79,10 @@ FetchRequestData* FetchRequestData::Create(
     request->header_list_->Append(pair.key, pair.value);
   }
   if (fetch_api_request.blob) {
-    request->SetBuffer(new BodyStreamBuffer(
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
-        new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              fetch_api_request.blob),
+        MakeGarbageCollected<BlobBytesConsumer>(
+            ExecutionContext::From(script_state), fetch_api_request.blob),
         nullptr /* AbortSignal */));
   }
   request->SetContext(fetch_api_request.request_context_type);
@@ -150,8 +151,8 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
   FetchRequestData* request = FetchRequestData::CloneExceptBody();
   if (buffer_) {
     request->buffer_ = buffer_;
-    buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed(),
-                                   nullptr /* AbortSignal */);
+    buffer_ = MakeGarbageCollected<BodyStreamBuffer>(
+        script_state, BytesConsumer::CreateClosed(), nullptr /* AbortSignal */);
     buffer_->CloseAndLockAndDisturb(exception_state);
     if (exception_state.HadException())
       return nullptr;

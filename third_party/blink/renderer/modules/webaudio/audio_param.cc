@@ -349,11 +349,11 @@ AudioParam::AudioParam(BaseAudioContext& context,
 AudioParam* AudioParam::Create(BaseAudioContext& context,
                                AudioParamType param_type,
                                double default_value) {
-  return new AudioParam(context, param_type, default_value,
-                        AudioParamHandler::AutomationRate::kAudio,
-                        AudioParamHandler::AutomationRateMode::kVariable,
-                        -std::numeric_limits<float>::max(),
-                        std::numeric_limits<float>::max());
+  return MakeGarbageCollected<AudioParam>(
+      context, param_type, default_value,
+      AudioParamHandler::AutomationRate::kAudio,
+      AudioParamHandler::AutomationRateMode::kVariable,
+      -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 }
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
@@ -365,8 +365,9 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                                float max_value) {
   DCHECK_LE(min_value, max_value);
 
-  return new AudioParam(context, param_type, default_value, rate, rate_mode,
-                        min_value, max_value);
+  return MakeGarbageCollected<AudioParam>(context, param_type, default_value,
+                                          rate, rate_mode, min_value,
+                                          max_value);
 }
 
 AudioParam::~AudioParam() {

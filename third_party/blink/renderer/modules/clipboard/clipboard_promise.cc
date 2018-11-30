@@ -42,7 +42,8 @@ using mojom::blink::PermissionService;
 using mojom::PageVisibilityState;
 
 ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
-  ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ClipboardPromise::HandleRead,
                            WrapPersistent(clipboard_promise)));
@@ -50,7 +51,8 @@ ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
 }
 
 ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
-  ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ClipboardPromise::HandleReadText,
                            WrapPersistent(clipboard_promise)));
@@ -59,7 +61,8 @@ ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
 
 ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
                                                DataTransfer* data) {
-  ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE,
       WTF::Bind(&ClipboardPromise::HandleWrite,
@@ -69,7 +72,8 @@ ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
 
 ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
                                                    const String& data) {
-  ClipboardPromise* clipboard_promise = new ClipboardPromise(script_state);
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ClipboardPromise::HandleWriteText,
                            WrapPersistent(clipboard_promise), data));

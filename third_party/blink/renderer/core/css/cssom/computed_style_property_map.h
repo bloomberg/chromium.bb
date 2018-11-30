@@ -26,8 +26,13 @@ class CORE_EXPORT ComputedStylePropertyMap
     : public StylePropertyMapReadOnlyMainThread {
  public:
   static ComputedStylePropertyMap* Create(Node* node) {
-    return new ComputedStylePropertyMap(node);
+    return MakeGarbageCollected<ComputedStylePropertyMap>(node);
   }
+
+  ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
+      : StylePropertyMapReadOnlyMainThread(),
+        pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
+        node_(node) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(node_);
@@ -42,11 +47,6 @@ class CORE_EXPORT ComputedStylePropertyMap
   static bool ComparePropertyNames(const String&, const String&);
 
  protected:
-  ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
-      : StylePropertyMapReadOnlyMainThread(),
-        pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
-        node_(node) {}
-
   const CSSValue* GetProperty(CSSPropertyID) override;
   const CSSValue* GetCustomProperty(AtomicString) override;
   void ForEachProperty(const IterationCallback&) override;

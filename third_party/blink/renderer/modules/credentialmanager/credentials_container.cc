@@ -417,7 +417,7 @@ void OnGetAssertionComplete(
 }  // namespace
 
 CredentialsContainer* CredentialsContainer::Create() {
-  return new CredentialsContainer();
+  return MakeGarbageCollected<CredentialsContainer>();
 }
 
 CredentialsContainer::CredentialsContainer() = default;

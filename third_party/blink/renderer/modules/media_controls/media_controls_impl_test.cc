@@ -109,7 +109,7 @@ class MockLayoutObject : public LayoutObject {
 class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
  public:
   static StubLocalFrameClientForImpl* Create() {
-    return new StubLocalFrameClientForImpl;
+    return MakeGarbageCollected<StubLocalFrameClientForImpl>();
   }
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
@@ -210,7 +210,7 @@ class MediaControlsImplTest : public PageTestBase,
   void InitializePage() {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
-    clients.chrome_client = new MockChromeClientForImpl();
+    clients.chrome_client = MakeGarbageCollected<MockChromeClientForImpl>();
     SetupPageWithClients(&clients, StubLocalFrameClientForImpl::Create());
     GetDocument().GetSettings()->SetMediaDownloadInProductHelpEnabled(
         EnableDownloadInProductHelp());

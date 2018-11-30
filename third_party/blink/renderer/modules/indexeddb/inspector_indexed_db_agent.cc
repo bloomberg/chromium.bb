@@ -114,10 +114,16 @@ class GetDatabaseNamesCallback final : public EventListener {
   static GetDatabaseNamesCallback* Create(
       std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
       const String& security_origin) {
-    return new GetDatabaseNamesCallback(std::move(request_callback),
-                                        security_origin);
+    return MakeGarbageCollected<GetDatabaseNamesCallback>(
+        std::move(request_callback), security_origin);
   }
 
+  GetDatabaseNamesCallback(
+      std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
+      const String& security_origin)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)),
+        security_origin_(security_origin) {}
   ~GetDatabaseNamesCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -147,12 +153,6 @@ class GetDatabaseNamesCallback final : public EventListener {
   }
 
  private:
-  GetDatabaseNamesCallback(
-      std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
-      const String& security_origin)
-      : EventListener(EventListener::kCPPEventListenerType),
-        request_callback_(std::move(request_callback)),
-        security_origin_(security_origin) {}
   std::unique_ptr<RequestDatabaseNamesCallback> request_callback_;
   String security_origin_;
 };
@@ -164,9 +164,15 @@ class DeleteCallback final : public EventListener {
   static DeleteCallback* Create(
       std::unique_ptr<DeleteDatabaseCallback> request_callback,
       const String& security_origin) {
-    return new DeleteCallback(std::move(request_callback), security_origin);
+    return MakeGarbageCollected<DeleteCallback>(std::move(request_callback),
+                                                security_origin);
   }
 
+  DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
+                 const String& security_origin)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)),
+        security_origin_(security_origin) {}
   ~DeleteCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -183,11 +189,6 @@ class DeleteCallback final : public EventListener {
   }
 
  private:
-  DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
-                 const String& security_origin)
-      : EventListener(EventListener::kCPPEventListenerType),
-        request_callback_(std::move(request_callback)),
-        security_origin_(security_origin) {}
   std::unique_ptr<DeleteDatabaseCallback> request_callback_;
   String security_origin_;
 };
@@ -261,9 +262,16 @@ class OpenDatabaseCallback final : public EventListener {
   static OpenDatabaseCallback* Create(
       ExecutableWithDatabase<RequestCallback>* executable_with_database,
       ScriptState* script_state) {
-    return new OpenDatabaseCallback(executable_with_database, script_state);
+    return MakeGarbageCollected<OpenDatabaseCallback>(executable_with_database,
+                                                      script_state);
   }
 
+  OpenDatabaseCallback(
+      ExecutableWithDatabase<RequestCallback>* executable_with_database,
+      ScriptState* script_state)
+      : EventListener(EventListener::kCPPEventListenerType),
+        executable_with_database_(executable_with_database),
+        script_state_(script_state) {}
   ~OpenDatabaseCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -298,12 +306,6 @@ class OpenDatabaseCallback final : public EventListener {
   }
 
  private:
-  OpenDatabaseCallback(
-      ExecutableWithDatabase<RequestCallback>* executable_with_database,
-      ScriptState* script_state)
-      : EventListener(EventListener::kCPPEventListenerType),
-        executable_with_database_(executable_with_database),
-        script_state_(script_state) {}
   scoped_refptr<ExecutableWithDatabase<RequestCallback>>
       executable_with_database_;
   Member<ScriptState> script_state_;
@@ -314,9 +316,14 @@ class UpgradeDatabaseCallback final : public EventListener {
  public:
   static UpgradeDatabaseCallback* Create(
       ExecutableWithDatabase<RequestCallback>* executable_with_database) {
-    return new UpgradeDatabaseCallback(executable_with_database);
+    return MakeGarbageCollected<UpgradeDatabaseCallback>(
+        executable_with_database);
   }
 
+  UpgradeDatabaseCallback(
+      ExecutableWithDatabase<RequestCallback>* executable_with_database)
+      : EventListener(EventListener::kCPPEventListenerType),
+        executable_with_database_(executable_with_database) {}
   ~UpgradeDatabaseCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -342,10 +349,6 @@ class UpgradeDatabaseCallback final : public EventListener {
   }
 
  private:
-  UpgradeDatabaseCallback(
-      ExecutableWithDatabase<RequestCallback>* executable_with_database)
-      : EventListener(EventListener::kCPPEventListenerType),
-        executable_with_database_(executable_with_database) {}
   scoped_refptr<ExecutableWithDatabase<RequestCallback>>
       executable_with_database_;
 };
@@ -550,11 +553,24 @@ class OpenCursorCallback final : public EventListener {
       std::unique_ptr<RequestDataCallback> request_callback,
       int skip_count,
       unsigned page_size) {
-    return new OpenCursorCallback(v8_session, script_state,
-                                  std::move(request_callback), skip_count,
-                                  page_size);
+    return MakeGarbageCollected<OpenCursorCallback>(v8_session, script_state,
+                                                    std::move(request_callback),
+                                                    skip_count, page_size);
   }
 
+  OpenCursorCallback(v8_inspector::V8InspectorSession* v8_session,
+                     ScriptState* script_state,
+                     std::unique_ptr<RequestDataCallback> request_callback,
+                     int skip_count,
+                     unsigned page_size)
+      : EventListener(EventListener::kCPPEventListenerType),
+        v8_session_(v8_session),
+        script_state_(script_state),
+        request_callback_(std::move(request_callback)),
+        skip_count_(skip_count),
+        page_size_(page_size) {
+    result_ = Array<DataEntry>::create();
+  }
   ~OpenCursorCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -640,20 +656,6 @@ class OpenCursorCallback final : public EventListener {
   }
 
  private:
-  OpenCursorCallback(v8_inspector::V8InspectorSession* v8_session,
-                     ScriptState* script_state,
-                     std::unique_ptr<RequestDataCallback> request_callback,
-                     int skip_count,
-                     unsigned page_size)
-      : EventListener(EventListener::kCPPEventListenerType),
-        v8_session_(v8_session),
-        script_state_(script_state),
-        request_callback_(std::move(request_callback)),
-        skip_count_(skip_count),
-        page_size_(page_size) {
-    result_ = Array<DataEntry>::create();
-  }
-
   v8_inspector::V8InspectorSession* v8_session_;
   Member<ScriptState> script_state_;
   std::unique_ptr<RequestDataCallback> request_callback_;
@@ -968,9 +970,14 @@ class ClearObjectStoreListener final : public EventListener {
  public:
   static ClearObjectStoreListener* Create(
       std::unique_ptr<ClearObjectStoreCallback> request_callback) {
-    return new ClearObjectStoreListener(std::move(request_callback));
+    return MakeGarbageCollected<ClearObjectStoreListener>(
+        std::move(request_callback));
   }
 
+  ClearObjectStoreListener(
+      std::unique_ptr<ClearObjectStoreCallback> request_callback)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)) {}
   ~ClearObjectStoreListener() override = default;
 
   bool operator==(const EventListener& other) const override {
@@ -987,11 +994,6 @@ class ClearObjectStoreListener final : public EventListener {
   }
 
  private:
-  ClearObjectStoreListener(
-      std::unique_ptr<ClearObjectStoreCallback> request_callback)
-      : EventListener(EventListener::kCPPEventListenerType),
-        request_callback_(std::move(request_callback)) {}
-
   std::unique_ptr<ClearObjectStoreCallback> request_callback_;
 };
 

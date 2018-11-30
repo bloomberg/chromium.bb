@@ -1090,7 +1090,8 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   EXPECT_TRUE(region.IsEmpty());
 
   // Adding a blocking window event handler should create a touch action region.
-  auto* listener = new ScrollingCoordinatorMockEventListener();
+  auto* listener =
+      MakeGarbageCollected<ScrollingCoordinatorMockEventListener>();
   AddEventListenerOptionsResolved* resolved_options =
       AddEventListenerOptionsResolved::Create();
   resolved_options->setPassive(false);

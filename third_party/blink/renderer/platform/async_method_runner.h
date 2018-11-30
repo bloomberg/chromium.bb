@@ -50,9 +50,20 @@ class AsyncMethodRunner final
       TargetClass* object,
       TargetMethod method,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    return new AsyncMethodRunner(object, method, std::move(task_runner));
+    return MakeGarbageCollected<AsyncMethodRunner>(object, method,
+                                                   std::move(task_runner));
   }
 
+  AsyncMethodRunner(TargetClass* object,
+                    TargetMethod method,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : timer_(std::move(task_runner),
+               this,
+               &AsyncMethodRunner<TargetClass>::Fired),
+        object_(object),
+        method_(method),
+        paused_(false),
+        run_when_unpaused_(false) {}
   ~AsyncMethodRunner() = default;
 
   // Schedules to run the method asynchronously. Do nothing if it's already
@@ -116,17 +127,6 @@ class AsyncMethodRunner final
   void Trace(blink::Visitor* visitor) { visitor->Trace(object_); }
 
  private:
-  AsyncMethodRunner(TargetClass* object,
-                    TargetMethod method,
-                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : timer_(std::move(task_runner),
-               this,
-               &AsyncMethodRunner<TargetClass>::Fired),
-        object_(object),
-        method_(method),
-        paused_(false),
-        run_when_unpaused_(false) {}
-
   void Fired(TimerBase*) { (object_->*method_)(); }
 
   TaskRunnerTimer<AsyncMethodRunner<TargetClass>> timer_;

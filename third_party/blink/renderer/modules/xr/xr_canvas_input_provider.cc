@@ -52,7 +52,7 @@ class XRCanvasInputEventListener : public EventListener {
 XRCanvasInputProvider::XRCanvasInputProvider(XRSession* session,
                                              HTMLCanvasElement* canvas)
     : session_(session), canvas_(canvas) {
-  listener_ = new XRCanvasInputEventListener(this);
+  listener_ = MakeGarbageCollected<XRCanvasInputEventListener>(this);
   canvas->addEventListener(event_type_names::kPointerdown, listener_);
   canvas->addEventListener(event_type_names::kPointerup, listener_);
   canvas->addEventListener(event_type_names::kPointercancel, listener_);

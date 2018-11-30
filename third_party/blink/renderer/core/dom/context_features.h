@@ -57,13 +57,13 @@ class ContextFeatures final : public GarbageCollectedFinalized<ContextFeatures>,
   static bool PagePopupEnabled(Document*);
   static bool MutationEventsEnabled(Document*);
 
+  explicit ContextFeatures(std::unique_ptr<ContextFeaturesClient> client)
+      : client_(std::move(client)) {}
+
   bool IsEnabled(Document*, FeatureType, bool) const;
   void UrlDidChange(Document*);
 
  private:
-  explicit ContextFeatures(std::unique_ptr<ContextFeaturesClient> client)
-      : client_(std::move(client)) {}
-
   std::unique_ptr<ContextFeaturesClient> client_;
 };
 
@@ -89,7 +89,7 @@ void ProvideContextFeaturesToDocumentFrom(Document&, Page&);
 
 inline ContextFeatures* ContextFeatures::Create(
     std::unique_ptr<ContextFeaturesClient> client) {
-  return new ContextFeatures(std::move(client));
+  return MakeGarbageCollected<ContextFeatures>(std::move(client));
 }
 
 inline bool ContextFeatures::IsEnabled(Document* document,

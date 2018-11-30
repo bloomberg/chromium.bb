@@ -14,7 +14,8 @@ ApplyConstraintsRequest* ApplyConstraintsRequest::Create(
     const WebMediaStreamTrack& track,
     const WebMediaConstraints& constraints,
     ScriptPromiseResolver* resolver) {
-  return new ApplyConstraintsRequest(track, constraints, resolver);
+  return MakeGarbageCollected<ApplyConstraintsRequest>(track, constraints,
+                                                       resolver);
 }
 
 ApplyConstraintsRequest* ApplyConstraintsRequest::CreateForTesting(

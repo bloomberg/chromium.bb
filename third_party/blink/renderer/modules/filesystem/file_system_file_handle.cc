@@ -70,7 +70,7 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
           file_system_url,
           SnapshotFileCallback::Create(
               filesystem(), name(), file_system_url,
-              new OnDidCreateSnapshotFilePromise(resolver),
+              MakeGarbageCollected<OnDidCreateSnapshotFilePromise>(resolver),
               MakeGarbageCollected<PromiseErrorCallback>(resolver),
               ExecutionContext::From(script_state)));
   return result;

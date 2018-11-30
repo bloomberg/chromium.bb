@@ -16,8 +16,10 @@ class ActivateInvisibleEvent : public Event {
 
  public:
   static ActivateInvisibleEvent* Create(Element* activated_element) {
-    return new ActivateInvisibleEvent(activated_element);
+    return MakeGarbageCollected<ActivateInvisibleEvent>(activated_element);
   }
+
+  explicit ActivateInvisibleEvent(Element* activated_element);
 
   Element* activatedElement() const { return activated_element_.Get(); }
 
@@ -31,8 +33,6 @@ class ActivateInvisibleEvent : public Event {
   void Trace(Visitor*) override;
 
  private:
-  explicit ActivateInvisibleEvent(Element* activated_element);
-
   Member<Element> activated_element_;
 };
 

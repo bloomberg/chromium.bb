@@ -24,7 +24,8 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context,
                                  mojom::blink::WebBluetoothDevicePtr device,
                                  Bluetooth* bluetooth)
     : ContextLifecycleObserver(context),
-      attribute_instance_map_(new BluetoothAttributeInstanceMap(this)),
+      attribute_instance_map_(
+          MakeGarbageCollected<BluetoothAttributeInstanceMap>(this)),
       device_(std::move(device)),
       gatt_(BluetoothRemoteGATTServer::Create(context, this)),
       bluetooth_(bluetooth) {}
@@ -34,8 +35,8 @@ BluetoothDevice* BluetoothDevice::Take(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothDevicePtr device,
     Bluetooth* bluetooth) {
-  return new BluetoothDevice(resolver->GetExecutionContext(), std::move(device),
-                             bluetooth);
+  return MakeGarbageCollected<BluetoothDevice>(resolver->GetExecutionContext(),
+                                               std::move(device), bluetooth);
 }
 
 BluetoothRemoteGATTService* BluetoothDevice::GetOrCreateRemoteGATTService(

@@ -46,18 +46,26 @@ class CloseEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CloseEvent* Create() { return new CloseEvent(); }
+  static CloseEvent* Create() { return MakeGarbageCollected<CloseEvent>(); }
 
   static CloseEvent* Create(bool was_clean,
                             unsigned short code,
                             const String& reason) {
-    return new CloseEvent(was_clean, code, reason);
+    return MakeGarbageCollected<CloseEvent>(was_clean, code, reason);
   }
 
   static CloseEvent* Create(const AtomicString& type,
                             const CloseEventInit* initializer) {
-    return new CloseEvent(type, initializer);
+    return MakeGarbageCollected<CloseEvent>(type, initializer);
   }
+
+  CloseEvent() : was_clean_(false), code_(0) {}
+  CloseEvent(bool was_clean, int code, const String& reason)
+      : Event(event_type_names::kClose, Bubbles::kNo, Cancelable::kNo),
+        was_clean_(was_clean),
+        code_(code),
+        reason_(reason) {}
+  CloseEvent(const AtomicString& type, const CloseEventInit* initializer);
 
   bool wasClean() const { return was_clean_; }
   unsigned short code() const { return code_; }
@@ -71,16 +79,6 @@ class CloseEvent final : public Event {
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  CloseEvent() : was_clean_(false), code_(0) {}
-
-  CloseEvent(bool was_clean, int code, const String& reason)
-      : Event(event_type_names::kClose, Bubbles::kNo, Cancelable::kNo),
-        was_clean_(was_clean),
-        code_(code),
-        reason_(reason) {}
-
-  CloseEvent(const AtomicString& type, const CloseEventInit* initializer);
-
   bool was_clean_;
   unsigned short code_;
   String reason_;

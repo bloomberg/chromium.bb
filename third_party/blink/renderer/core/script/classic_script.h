@@ -20,17 +20,10 @@ class CORE_EXPORT ClassicScript final : public Script {
                                const KURL& base_url,
                                const ScriptFetchOptions& fetch_options,
                                SanitizeScriptErrors sanitize_script_errors) {
-    return new ClassicScript(script_source_code, base_url, fetch_options,
-                             sanitize_script_errors);
+    return MakeGarbageCollected<ClassicScript>(
+        script_source_code, base_url, fetch_options, sanitize_script_errors);
   }
 
-  void Trace(blink::Visitor*) override;
-
-  const ScriptSourceCode& GetScriptSourceCode() const {
-    return script_source_code_;
-  }
-
- private:
   ClassicScript(const ScriptSourceCode& script_source_code,
                 const KURL& base_url,
                 const ScriptFetchOptions& fetch_options,
@@ -39,6 +32,13 @@ class CORE_EXPORT ClassicScript final : public Script {
         script_source_code_(script_source_code),
         sanitize_script_errors_(sanitize_script_errors) {}
 
+  void Trace(blink::Visitor*) override;
+
+  const ScriptSourceCode& GetScriptSourceCode() const {
+    return script_source_code_;
+  }
+
+ private:
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kClassic;
   }

@@ -78,7 +78,7 @@ static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
 }
 
 AutoscrollController* AutoscrollController::Create(Page& page) {
-  return new AutoscrollController(page);
+  return MakeGarbageCollected<AutoscrollController>(page);
 }
 
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}

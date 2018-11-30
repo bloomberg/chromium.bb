@@ -17,8 +17,11 @@ namespace {
 class CheckPointerEventListenerCallback final : public EventListener {
  public:
   static CheckPointerEventListenerCallback* Create() {
-    return new CheckPointerEventListenerCallback();
+    return MakeGarbageCollected<CheckPointerEventListenerCallback>();
   }
+
+  CheckPointerEventListenerCallback()
+      : EventListener(EventListener::kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -39,8 +42,6 @@ class CheckPointerEventListenerCallback final : public EventListener {
   int penEventCount() const { return pen_event_received_count_; }
 
  private:
-  CheckPointerEventListenerCallback()
-      : EventListener(EventListener::kCPPEventListenerType) {}
   int mouse_event_received_count_ = 0;
   int touch_event_received_count_ = 0;
   int pen_event_received_count_ = 0;
@@ -49,8 +50,11 @@ class CheckPointerEventListenerCallback final : public EventListener {
 class PointerEventCoordinateListenerCallback final : public EventListener {
  public:
   static PointerEventCoordinateListenerCallback* Create() {
-    return new PointerEventCoordinateListenerCallback();
+    return MakeGarbageCollected<PointerEventCoordinateListenerCallback>();
   }
+
+  PointerEventCoordinateListenerCallback()
+      : EventListener(EventListener::kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -80,10 +84,6 @@ class PointerEventCoordinateListenerCallback final : public EventListener {
   double last_height_ = 0;
   double last_movement_x_ = 0;
   double last_movement_y_ = 0;
-
- private:
-  PointerEventCoordinateListenerCallback()
-      : EventListener(EventListener::kCPPEventListenerType) {}
 };
 
 }  // namespace

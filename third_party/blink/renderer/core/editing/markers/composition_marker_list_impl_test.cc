@@ -13,12 +13,12 @@ namespace blink {
 class CompositionMarkerListImplTest : public EditingTestBase {
  protected:
   CompositionMarkerListImplTest()
-      : marker_list_(new CompositionMarkerListImpl()) {}
+      : marker_list_(MakeGarbageCollected<CompositionMarkerListImpl>()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new CompositionMarker(start_offset, end_offset, Color::kTransparent,
-                                 ws::mojom::ImeTextSpanThickness::kThin,
-                                 Color::kBlack);
+    return MakeGarbageCollected<CompositionMarker>(
+        start_offset, end_offset, Color::kTransparent,
+        ws::mojom::ImeTextSpanThickness::kThin, Color::kBlack);
   }
 
   Persistent<CompositionMarkerListImpl> marker_list_;

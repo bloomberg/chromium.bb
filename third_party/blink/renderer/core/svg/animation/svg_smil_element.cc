@@ -79,7 +79,7 @@ class ConditionEventListener final : public EventListener {
  public:
   static ConditionEventListener* Create(SVGSMILElement* animation,
                                         SVGSMILElement::Condition* condition) {
-    return new ConditionEventListener(animation, condition);
+    return MakeGarbageCollected<ConditionEventListener>(animation, condition);
   }
 
   static const ConditionEventListener* Cast(const EventListener* listener) {
@@ -87,6 +87,12 @@ class ConditionEventListener final : public EventListener {
                ? static_cast<const ConditionEventListener*>(listener)
                : nullptr;
   }
+
+  ConditionEventListener(SVGSMILElement* animation,
+                         SVGSMILElement::Condition* condition)
+      : EventListener(kConditionEventListenerType),
+        animation_(animation),
+        condition_(condition) {}
 
   bool operator==(const EventListener& other) const override;
 
@@ -99,12 +105,6 @@ class ConditionEventListener final : public EventListener {
   }
 
  private:
-  ConditionEventListener(SVGSMILElement* animation,
-                         SVGSMILElement::Condition* condition)
-      : EventListener(kConditionEventListenerType),
-        animation_(animation),
-        condition_(condition) {}
-
   void Invoke(ExecutionContext*, Event*) override;
 
   Member<SVGSMILElement> animation_;

@@ -388,7 +388,7 @@ TEST_F(AccessibilityObjectModelTest, LabeledBy) {
   AccessibleNodeList* node_list = target->accessibleNode()->labeledBy();
   ASSERT_EQ(nullptr, node_list);
 
-  node_list = new AccessibleNodeList();
+  node_list = MakeGarbageCollected<AccessibleNodeList>();
   node_list->add(l3->accessibleNode());
   target->accessibleNode()->setLabeledBy(node_list);
 

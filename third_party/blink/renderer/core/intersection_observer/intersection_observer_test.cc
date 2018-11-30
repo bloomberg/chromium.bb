@@ -83,7 +83,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -120,7 +120,7 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
   observer_init->setRoot(root);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -157,7 +157,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -217,7 +217,7 @@ TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -264,7 +264,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -314,7 +314,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -349,7 +349,7 @@ TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -399,7 +399,7 @@ TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
   observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -457,7 +457,7 @@ TEST_F(IntersectionObserverV2Test, BasicOpacity) {
   observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -506,7 +506,7 @@ TEST_F(IntersectionObserverV2Test, BasicTransform) {
   observer_init->setDelay(100);
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
-      new TestIntersectionObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());

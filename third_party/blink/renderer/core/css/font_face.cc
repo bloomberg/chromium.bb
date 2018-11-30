@@ -741,7 +741,8 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
 
   scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create(data, size);
   BinaryDataFontFaceSource* source =
-      new BinaryDataFontFaceSource(buffer.get(), ots_parse_message_);
+      MakeGarbageCollected<BinaryDataFontFaceSource>(buffer.get(),
+                                                     ots_parse_message_);
   if (source->IsValid())
     SetLoadStatus(kLoaded);
   else

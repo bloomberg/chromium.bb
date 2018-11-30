@@ -38,7 +38,8 @@ namespace blink {
 AudioWorkletGlobalScope* AudioWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread) {
-  return new AudioWorkletGlobalScope(std::move(creation_params), thread);
+  return MakeGarbageCollected<AudioWorkletGlobalScope>(
+      std::move(creation_params), thread);
 }
 
 AudioWorkletGlobalScope::AudioWorkletGlobalScope(

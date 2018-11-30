@@ -20,12 +20,11 @@ class AutoCanvasDrawListener final
  public:
   static AutoCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
+
+  AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
   ~AutoCanvasDrawListener() override = default;
 
   void Trace(blink::Visitor* visitor) override {}
-
- private:
-  AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 };
 
 }  // namespace blink
