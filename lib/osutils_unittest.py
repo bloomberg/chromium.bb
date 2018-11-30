@@ -742,6 +742,29 @@ class MountImagePartitionTests(cros_test_lib.MockTestCase):
         sudo=True, mount_opts=opts
     )
 
+  def testNameWithCacheOkay(self):
+    mount_dir = self.PatchObject(osutils, 'MountDir')
+    osutils.MountImagePartition('image_file', 'Label', 'destination',
+                                self._gpt_table)
+    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
+    mount_dir.assert_called_with('image_file', 'destination', makedirs=True,
+                                 skip_mtab=False, sudo=True, mount_opts=opts)
+
+  def testNameWithCacheFail(self):
+    self.assertRaises(ValueError, osutils.MountImagePartition,
+                      'image_file', 'Missing', 'destination', self._gpt_table)
+
+  def testNameWithoutCache(self):
+    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+                     return_value=self._gpt_table)
+    mount_dir = self.PatchObject(osutils, 'MountDir')
+    osutils.MountImagePartition('image_file', 'Label', 'destination')
+    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
+    mount_dir.assert_called_with(
+        'image_file', 'destination', makedirs=True, skip_mtab=False,
+        sudo=True, mount_opts=opts
+    )
+
 
 class ChdirTests(cros_test_lib.MockTempDirTestCase):
   """Tests for ChdirContext."""

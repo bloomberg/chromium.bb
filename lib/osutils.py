@@ -1075,7 +1075,7 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
   return msg
 
 
-def MountImagePartition(image_file, part_number, destination, gpt_table=None,
+def MountImagePartition(image_file, part_id, destination, gpt_table=None,
                         sudo=True, makedirs=True, mount_opts=('ro', ),
                         skip_mtab=False):
   """Mount a |partition| from |image_file| to |destination|.
@@ -1090,7 +1090,7 @@ def MountImagePartition(image_file, part_number, destination, gpt_table=None,
 
   Args:
     image_file: A path to the image file (chromiumos_base_image.bin).
-    part_number: A partition number.
+    part_id: A partition name or number.
     destination: A path to the mount point.
     gpt_table: A dictionary of PartitionInfo objects. See
       cros_build_lib.GetImageDiskPartitionInfo.
@@ -1104,13 +1104,16 @@ def MountImagePartition(image_file, part_number, destination, gpt_table=None,
     gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file, 'B',
                                                          key_selector='number')
 
-  for _, part in gpt_table.items():
-    if part.number == part_number:
+  matcher = operator.attrgetter('name')
+  if isinstance(part_id, int):
+    matcher = operator.attrgetter('number')
+  for part in gpt_table.values():
+    if matcher(part) == part_id:
       break
   else:
     part = None
-    raise ValueError('Partition number %d not found in the GPT %r.' %
-                     (part_number, gpt_table))
+    raise ValueError('Partition number %s not found in the GPT %r.' %
+                     (str(part_id), gpt_table))
 
   opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
   opts += mount_opts
