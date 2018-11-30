@@ -231,11 +231,8 @@ IN_PROC_BROWSER_TEST_P(ParameterizedExtensionUninstallDialogViewBrowserTest,
 // on the ExtensionUninstallDialog, the extension's uninstall url (when it is
 // specified) and the CWS Report Abuse survey are opened in the browser, also
 // testing that the CWS survey is the active tab.
-// TODO(catmullings): Disabled due to flake on Windows and Linux.
-// http://crbug.com/725197
-IN_PROC_BROWSER_TEST_F(
-    ExtensionUninstallDialogViewBrowserTest,
-    DISABLED_EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
+                       EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
   scoped_refptr<const extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
