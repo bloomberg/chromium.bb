@@ -10,6 +10,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
@@ -30,10 +32,6 @@ class ScopedFakeStatisticsProvider;
 
 namespace discardable_memory {
 class DiscardableSharedMemoryManager;
-}
-
-namespace service_manager {
-struct EmbeddedServiceInfo;
 }
 
 namespace views {
@@ -68,11 +66,8 @@ class ASH_EXPORT AshService : public service_manager::Service,
                               public service_manager::mojom::ServiceFactory,
                               public ws::gpu_host::GpuHostDelegate {
  public:
-  AshService();
+  explicit AshService(service_manager::mojom::ServiceRequest request);
   ~AshService() override;
-
-  // Returns an appropriate EmbeddedServiceInfo that creates AshService.
-  static service_manager::EmbeddedServiceInfo CreateEmbeddedServiceInfo();
 
   // service_manager::Service:
   void OnStart() override;
@@ -99,6 +94,7 @@ class ASH_EXPORT AshService : public service_manager::Service,
   // ui::ws::GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;

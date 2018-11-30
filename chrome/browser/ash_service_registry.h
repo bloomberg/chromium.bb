@@ -20,6 +20,11 @@ void RegisterInProcessServices(
     content::ContentBrowserClient::StaticServiceMap* services,
     content::ServiceManagerConnection* connection);
 
+// Handles an incoming ServiceRequest. Newly added in-process services should be
+// handled here instead of being registered by RegisterInProcessServices.
+void HandleServiceRequest(const std::string& service_name,
+                          service_manager::mojom::ServiceRequest request);
+
 // Returns true if |name| identifies an Ash related service.
 bool IsAshRelatedServiceName(const std::string& name);
 

@@ -2307,6 +2307,7 @@ static_library("interactive_ui_test_support") {
 
 service("ash_service") {
   output_name = "ash"
+  use_cpp_main = true
 
   sources = [
     "main.cc",

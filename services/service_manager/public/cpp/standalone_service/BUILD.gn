@@ -39,9 +39,33 @@ source_set("standalone_service") {
 # to the Service Manager. In order to link properly, dependents must ensure that
 # they define a ServiceMain() symbol which matches the signature in
 # //services/service_manager/public/c/main.h.
+#
+# NOTE: This target should be considered deprecated, as there is no longer a
+# need for service entry points to use C linkage. service() targets
+# automatically link against this, but can set |use_cpp_main| to |true| to link
+# against the "main_cpp" target below instead.
 source_set("main") {
   sources = [
     "main.cc",
+  ]
+
+  deps = [
+    ":standalone_service",
+    "//base",
+    "//base:i18n",
+    "//services/service_manager/runner:init",
+  ]
+}
+
+# Same as above but uses a nicer signature for |ServiceMain()|, with a type-safe
+# ServiceRequest handle instead of a raw C MojoHandle.
+source_set("main_cpp") {
+  public = [
+    "service_main.h",
+  ]
+
+  sources = [
+    "main_cpp.cc",
   ]
 
   deps = [

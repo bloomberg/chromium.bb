@@ -189,12 +189,6 @@ BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
       new policy::BrowserPolicyConnectorChromeOS());
 }
 
-void BrowserProcessPlatformPart::RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
-  ash_service_registry::RegisterInProcessServices(services, connection);
-}
-
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
   if (!system_clock_.get())
     system_clock_.reset(new chromeos::system::SystemClock());

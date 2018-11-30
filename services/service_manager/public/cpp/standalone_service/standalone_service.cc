@@ -36,7 +36,7 @@
 
 namespace service_manager {
 
-void RunStandaloneService(const StandaloneServiceCallback& callback) {
+void RunStandaloneService(StandaloneServiceCallback callback) {
   DCHECK(!base::MessageLoopCurrent::Get());
 
 #if defined(OS_MACOSX)
@@ -78,7 +78,7 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
   auto invitation = mojo::IncomingInvitation::Accept(
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
           command_line));
-  callback.Run(GetServiceRequestFromCommandLine(&invitation));
+  std::move(callback).Run(GetServiceRequestFromCommandLine(&invitation));
 }
 
 }  // namespace service_manager

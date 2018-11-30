@@ -51,10 +51,11 @@ void RecordMashServiceLaunch(MashService service) {
   UMA_HISTOGRAM_ENUMERATION("Launch.MashService", service);
 }
 
-std::unique_ptr<service_manager::Service> CreateAshService() {
+std::unique_ptr<service_manager::Service> CreateAshService(
+    service_manager::mojom::ServiceRequest request) {
   RecordMashServiceLaunch(MashService::kAsh);
   logging::SetLogPrefix("ash");
-  return std::make_unique<ash::AshService>();
+  return std::make_unique<ash::AshService>(std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunchService(
@@ -86,7 +87,6 @@ MashServiceFactory::~MashServiceFactory() = default;
 
 void MashServiceFactory::RegisterOutOfProcessServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
-  RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, shortcut_viewer::mojom::kServiceName,
                       &CreateShortcutViewerApp);
   RegisterMashService(services, tap_visualizer::mojom::kServiceName,
@@ -99,6 +99,8 @@ std::unique_ptr<service_manager::Service>
 MashServiceFactory::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
+  if (service_name == ash::mojom::kServiceName)
+    return CreateAshService(std::move(request));
   if (service_name == quick_launch::mojom::kServiceName)
     return CreateQuickLaunchService(std::move(request));
 
