@@ -158,6 +158,7 @@ fuzzer_test("pdf_xml_fuzzer") {
     "//third_party/pdfium/testing/fuzzers:pdf_xml_fuzzer_src",
   ]
   dict = "dicts/pdf_xml.dict"
+  seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }
 
 if (pdf_enable_v8) {

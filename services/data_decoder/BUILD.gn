@@ -84,6 +84,6 @@ fuzzer_test("xml_parser_fuzzer") {
     "//base",
     "//third_party/libxml:libxml",
   ]
-  dict = "//testing/libfuzzer/fuzzers/dicts/xml.dict"
-  seed_corpus = "xml_parser_fuzzer_corpus"
+  dict = "//third_party/libxml/fuzz/xml.dict"
+  seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }

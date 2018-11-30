@@ -55,5 +55,6 @@ fuzzer_test("expat_xml_parse_fuzzer") {
   deps = [
     ":expat",
   ]
-  dict = "//testing/libfuzzer/fuzzers/dicts/xml.dict"
+  dict = "//third_party/libxml/fuzz/xml.dict"
+  seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }
