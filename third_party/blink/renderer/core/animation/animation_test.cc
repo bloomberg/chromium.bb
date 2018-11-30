@@ -869,7 +869,7 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
 }
 
 TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
-  ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
+  ScopedCompositeAfterPaintForTest enable_cap(true);
 
   SetBodyInnerHTML(
       "<div id='foo' style='position: relative'></div>"

@@ -193,7 +193,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
-  friend class HTMLCanvasPainterTestForSPv2;
+  friend class HTMLCanvasPainterTestForCAP;
 
   AccelerationMode acceleration_mode_;
   CanvasColorParams color_params_;

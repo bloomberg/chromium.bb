@@ -59,8 +59,8 @@ BoxModelObjectPainter::BoxModelObjectPainter(const LayoutBoxModelObject& box,
 bool BoxModelObjectPainter::IsPaintingScrollingBackground(
     const LayoutBoxModelObject* box_model_,
     const PaintInfo& paint_info) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // TODO(wangxianzhu): For SPv2, remove this method and let callers use
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // TODO(wangxianzhu): For CAP, remove this method and let callers use
     // PaintInfo::IsPaintScrollingBackground() directly.
     return paint_info.IsPaintingScrollingBackground();
   }

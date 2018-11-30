@@ -1302,7 +1302,7 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
     if (layout_object == GetLayoutView() &&
         GetLayoutView()->GetBackgroundPaintLocation() ==
             kBackgroundPaintInScrollingContents &&
-        (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
          GetLayoutView()->Compositor()->PreferCompositingToLCDTextEnabled()))
       continue;
     layout_object->SetBackgroundNeedsFullPaintInvalidation();
@@ -1341,7 +1341,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // if we're not compositing-inputs-clean, then we can't query
     // layer->SubtreeIsInvisible() here.
     layout_object->SetSubtreeShouldCheckForPaintInvalidation();
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         !layer->NeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
       // layer may change if the paint properties escape the graphics layer's
@@ -2174,20 +2174,18 @@ void LocalFrameView::UpdateAllLifecyclePhases(
 // TODO(schenney): add a scrolling update lifecycle phase.
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return UpdateAllLifecyclePhasesExceptPaint();
-  } else {
-    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-        DocumentLifecycle::kCompositingClean,
-        DocumentLifecycle::LifecycleUpdateReason::kOther);
-  }
+  return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
+      DocumentLifecycle::kCompositingClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
-  // When SPv2 is enabled, the standard compositing lifecycle steps do not
+  // When CAP is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingInputsClean,
       DocumentLifecycle::LifecycleUpdateReason::kOther);
@@ -2432,8 +2430,8 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     if (!run_more_lifecycle_phases)
       return;
 
-    // TODO(pdr): PrePaint should be under the "Paint" devtools timeline
-    // step for slimming paint v2.
+    // TODO(pdr): PrePaint should be under the "Paint" devtools timeline step
+    // when CompositeAfterPaint is enabled.
     run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
     DCHECK(ShouldThrottleRendering() ||
            Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
@@ -2520,7 +2518,7 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kCompositing);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
   } else {
@@ -2589,7 +2587,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
   // While printing a document, the paint walk is done by the printing
   // component into a special canvas. There is no point doing a normal paint
-  // step (or animations update for BlinkGenPropertyTrees/SPv2) when in this
+  // step (or animations update for BlinkGenPropertyTrees/CAP) when in this
   // mode.
   //
   // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
@@ -2600,13 +2598,13 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   if (!print_mode_enabled)
     PaintTree();
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (GetLayoutView()->Compositor()->InCompositingMode()) {
       GetScrollingCoordinator()->UpdateAfterPaint(this);
     }
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     if (!print_mode_enabled) {
       base::Optional<CompositorElementIdSet> composited_element_ids =
@@ -2626,7 +2624,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
 
       // PaintController for BlinkGenPropertyTrees is transient.
       if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-          !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+          !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         // Property tree changed state is typically cleared through
         // |PaintController::FinishCycle| but that will be a no-op because
         // the paint controller is transient, so force the changed state to be
@@ -2802,7 +2800,7 @@ void LocalFrameView::PaintTree() {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!paint_controller_)
       paint_controller_ = PaintController::Create();
 
@@ -2876,7 +2874,7 @@ void LocalFrameView::PaintTree() {
     web_local_frame_impl->UpdateDevToolsOverlays();
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // BlinkGenPropertyTrees just needs a transient PaintController to
     // collect the foreign layers which doesn't need caching. It also
     // shouldn't affect caching status of DisplayItemClients because it's
@@ -2911,7 +2909,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
     CompositorElementIdSet& composited_element_ids) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
 
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
   if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
@@ -3403,7 +3401,7 @@ void LocalFrameView::SetTracksPaintInvalidations(
           base::WrapUnique(track_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr);
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         if (paint_artifact_compositor_) {
           paint_artifact_compositor_->SetTracksRasterInvalidations(
               track_paint_invalidations);
@@ -4347,10 +4345,10 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   MainThreadScrollingReasons reasons = main_thread_scrolling_reasons_;
   // TODO(pdr): We should also use the property tree main thread scrolling
   // reasons when RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled is true.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
-    // Slimming paint v2 stores main thread scrolling reasons on property
+    // CompositeAfterPaint stores main thread scrolling reasons on property
     // trees instead of in |main_thread_scrolling_reasons_|.
     if (const auto* scroll =
             GetLayoutView()->FirstFragment().PaintProperties()->Scroll()) {

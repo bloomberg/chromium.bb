@@ -186,7 +186,7 @@ bool BoxPaintInvalidator::BackgroundGeometryDependsOnLayoutOverflowRect() {
 bool BoxPaintInvalidator::BackgroundPaintsOntoScrollingContentsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     return box_.GetBackgroundPaintLocation() &
            kBackgroundPaintInScrollingContents;
   }
@@ -200,7 +200,7 @@ bool BoxPaintInvalidator::BackgroundPaintsOntoScrollingContentsLayer() {
 bool BoxPaintInvalidator::BackgroundPaintsOntoMainGraphicsLayer() {
   if (!HasEffectiveBackground())
     return false;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return box_.GetBackgroundPaintLocation() & kBackgroundPaintInGraphicsLayer;
   if (!box_.HasLayer())
     return true;
@@ -291,7 +291,7 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation(
         box_.Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer())
       should_invalidate_all_layers = true;
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         box_.FirstFragment().PaintProperties() &&
         box_.FirstFragment().PaintProperties()->ScrollTranslation())
       should_invalidate_all_layers = true;

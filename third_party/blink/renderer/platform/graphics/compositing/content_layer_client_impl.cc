@@ -84,7 +84,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   return transform_id;
 }
 
-// This is the SPv2 version of GraphicsLayer::LayerAsJSONInternal().
+// This is the CAP version of GraphicsLayer::LayerAsJSONInternal().
 std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
     LayerAsJSONContext& context) const {
   std::unique_ptr<JSONObject> json = JSONObject::Create();

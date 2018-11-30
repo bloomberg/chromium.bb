@@ -27,7 +27,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
  protected:
   LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
   PaintController& RootPaintController() const {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return *GetDocument().View()->GetPaintController();
     return GetLayoutView()
         .Layer()
@@ -42,7 +42,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
 
   bool PaintWithoutCommit(const IntRect* interest_rect = nullptr) {
     GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       if (GetLayoutView().Layer()->NeedsRepaint()) {
         GraphicsContext graphics_context(RootPaintController());
         GetDocument().View()->Paint(
@@ -106,7 +106,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
 
   void InvalidateAll(PaintController& paint_controller) {
     paint_controller.InvalidateAllForTesting();
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       DCHECK_EQ(&paint_controller, GetDocument().View()->GetPaintController());
       GetLayoutView().Layer()->SetNeedsRepaint();
     }

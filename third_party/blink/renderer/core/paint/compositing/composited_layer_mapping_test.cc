@@ -477,7 +477,7 @@ TEST_F(CompositedLayerMappingTest, ClippedBigLayer) {
 }
 
 TEST_F(CompositedLayerMappingTestWithoutBGPT, ClippingMaskLayer) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   const AtomicString style_without_clipping =
@@ -2628,7 +2628,7 @@ TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScroll) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -2658,7 +2658,7 @@ TEST_F(CompositedLayerMappingTest, SquashingScroll) {
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -2684,7 +2684,7 @@ TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
 
 TEST_F(CompositedLayerMappingTest,
        SquashingBoundsUnderCompositedScrollingWithTransform) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
@@ -2720,7 +2720,7 @@ transform'></div>
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(
@@ -2745,7 +2745,7 @@ TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetHtmlInnerHTML(R"HTML(

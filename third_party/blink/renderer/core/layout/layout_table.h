@@ -361,10 +361,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // onto the same compositing layer as the table (which is rare), and the table
   // will create one display item for all collapsed borders. Otherwise each row
   // will create one display item for collapsed borders.
-  // It always returns false for SPv2.
+  // It always returns false for CAP.
   bool ShouldPaintAllCollapsedBorders() const {
     DCHECK(collapsed_borders_valid_);
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       DCHECK(!should_paint_all_collapsed_borders_);
     return should_paint_all_collapsed_borders_;
   }

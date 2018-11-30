@@ -224,7 +224,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
 
   if (combined_background_color.Alpha()) {
     if (!combined_background_color.HasAlpha() &&
-        RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+        RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       recorder.SetKnownToBeOpaque();
     context.FillRect(
         background_rect, combined_background_color,

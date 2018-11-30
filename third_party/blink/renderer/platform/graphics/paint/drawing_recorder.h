@@ -51,7 +51,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   ~DrawingRecorder();
 
   void SetKnownToBeOpaque() {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     known_to_be_opaque_ = true;
   }
 
@@ -60,7 +60,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
 
-  // True if there are no transparent areas. Only used for SlimmingPaintV2.
+  // True if there are no transparent areas. Only used for CompositeAfterPaint.
   bool known_to_be_opaque_;
 
 #if DCHECK_IS_ON()

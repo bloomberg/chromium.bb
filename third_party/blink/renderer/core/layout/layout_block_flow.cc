@@ -4367,9 +4367,9 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
   // However, sometimes a layer's self painting status is affected by its
   // compositing status, so we need to call this method during compositing
   // update when we find a layer changes self painting status. This doesn't
-  // apply to SPv2 in which a layer's self painting status no longer depends on
+  // apply to CAP in which a layer's self painting status no longer depends on
   // compositing status.
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(float_box.IsFloating());
   bool float_box_is_self_painting_layer =
       float_box.HasLayer() && float_box.Layer()->IsSelfPaintingLayer();

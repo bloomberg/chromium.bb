@@ -65,7 +65,7 @@ enum CompositingStateTransitionType {
 // decides for each PaintLayer whether it should get a CompositedLayerMapping,
 // and asks each CLM to set up its GraphicsLayers.
 //
-// In Slimming Paint v2, PaintLayerCompositor will be eventually replaced by
+// With CompositeAfterPaint, PaintLayerCompositor will be eventually replaced by
 // PaintArtifactCompositor.
 
 class CORE_EXPORT PaintLayerCompositor {

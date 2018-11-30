@@ -1604,7 +1604,7 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 }
 
 void LayoutObject::ClearPreviousVisualRects() {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   for (auto* fragment = &fragment_; fragment;
        fragment = fragment->NextFragment()) {
@@ -1879,7 +1879,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   }
 
   // TODO(wangxianzhu): We may avoid subtree paint invalidation on CSS clip
-  // change for SPv2.
+  // change for CAP.
   if (diff.CssClipChanged())
     diff.SetNeedsPaintInvalidationSubtree();
 

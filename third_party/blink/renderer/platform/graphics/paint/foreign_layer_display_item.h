@@ -17,7 +17,7 @@ class GraphicsContext;
 // A client supplies a layer which can be unwrapped and inserted into the full
 // layer tree.
 //
-// Before SPv2, this content is not painted, but is instead inserted into the
+// Before CAP, this content is not painted, but is instead inserted into the
 // GraphicsLayer tree.
 class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
  public:

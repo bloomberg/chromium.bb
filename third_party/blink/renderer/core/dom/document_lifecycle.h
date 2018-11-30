@@ -77,7 +77,7 @@ class CORE_EXPORT DocumentLifecycle {
 
     // In InPaint step, paint artifacts are generated and raster invalidations
     // are issued.
-    // In SPv2, composited layers are generated/updated.
+    // In CAP, composited layers are generated/updated.
     kInPaint,
     kPaintClean,
 

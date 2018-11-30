@@ -98,7 +98,7 @@ are treated in different ways during painting:
     container.
 
 *   Paint invalidation container: the nearest object on the compositing
-    container chain which is composited. Slimming paint V2 doesn't have this
+    container chain which is composited. CompositeAfterPaint doesn't have this
     concept.
 
 *   Visual rect: the bounding box of all pixels that will be painted by a
@@ -125,9 +125,9 @@ At the time of writing, there are three operation modes that are switched by
 
 ### SlimmingPaintV175 (a.k.a. SPv1.75)
 
-This mode is for incrementally shipping completed features from SPv2. SPv1.75
+This mode is for incrementally shipping completed features from CAP. SPv1.75
 reuses layerization from SPv1, but will cherrypick property-tree-based paint
-from SPv2. Meta display items are abandoned in favor of property tree. Each
+from CAP. Meta display items are abandoned in favor of property tree. Each
 drawable GraphicsLayer's layer state will be computed by the property tree
 builder. During paint, each display item will be associated with a property
 tree state. At the end of paint, meta display items will be generated from
@@ -251,10 +251,10 @@ lifecycle update.
 
 ### BlinkGenPropertyTrees
 
-This mode is for incrementally shipping completed features from SPv2. It is
+This mode is for incrementally shipping completed features from CAP. It is
 based on SPv1.75 and starts sending a layer list and property trees directly to
 the compositor. BlinkGenPropertyTrees still uses the GraphicsLayers from SPv1.75
-and plugs them in as foreign layers to the SPv2 compositor
+and plugs them in as foreign layers to the CAP compositor
 (PaintArtifactCompositor).
 
 ```
@@ -308,7 +308,7 @@ from layout
   v
 ```
 
-### SlimmingPaintV2 (a.k.a. SPv2)
+### CompositeAfterPaint (a.k.a. CAP)
 
 This is a new mode under development. In this mode, layerization runs after
 pre-paint and paint, and meta display items are abandoned in favor of property
@@ -370,10 +370,10 @@ from layout
 ### Comparison of the three modes
 
 ```
-                                 | SPv175             | BlinkGenPropertyTrees | SPv2
+                                 | SPv175             | BlinkGenPropertyTrees | CompositeAfterPaint
 ---------------------------------+--------------------+-----------------------+-------
 REF::BlinkGenPropertyTreesEnabled| false              | true                  | false
-REF::SPv2Enabled                 | false              | false                 | true
+REF::CompositeAfterPaintEnabled  | false              | false                 | true
 Layerization                     | PLC/CLM            | PLC/CLM               | PAC
 cc property tree builder         | on                 | off                   | off
 ```
@@ -637,7 +637,7 @@ from its containing self-painting layer to this layer, assuming that this layer
 needs all paint phases that its container self-painting layer needs.
 
 We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
-would regress performance of the first paint. For slimming paint v2, we can
+would regress performance of the first paint. For CompositeAfterPaint, we can
 update the flags during the pre-painting tree walk to simplify the logics.
 
 ### Hit test painting

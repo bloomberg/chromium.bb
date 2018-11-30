@@ -352,7 +352,7 @@ bool PaintLayer::FixedToViewport() const {
   // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
   // An option for improving this is to cache the nearest scroll node in
   // the local border box properties.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto view_border_box_properties =
         GetLayoutObject().View()->FirstFragment().LocalBorderBoxProperties();
     const auto* view_scroll = view_border_box_properties.Transform()
@@ -1098,7 +1098,7 @@ void PaintLayer::SetNeedsCompositingInputsUpdate() {
 
   // TODO(chrishtr): These are a bit of a heavy hammer, because not all
   // things which require compositing inputs update require a descendant-
-  // dependent flags udpate. Reduce call sites after SPv2 launch allows
+  // dependent flags udpate. Reduce call sites after CAP launch allows
   /// removal of CompositingInputsUpdater.
   MarkAncestorChainForDescendantDependentFlagsUpdate();
 }
@@ -1428,7 +1428,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
   }
 
   bool did_set_paint_invalidation = false;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // Destructing PaintLayer would cause CompositedLayerMapping and composited
     // layers to be destructed and detach from layer tree immediately. Layers
     // could have dangling scroll/clip parent if compositing update were
@@ -1497,7 +1497,7 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
   // this object is stacked content, creating this layer may cause this object
   // and its descendants to change paint invalidation container.
   bool did_set_paint_invalidation = false;
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !GetLayoutObject().IsLayoutView() && GetLayoutObject().IsRooted() &&
       GetLayoutObject().StyleRef().IsStacked()) {
     const LayoutBoxModelObject& previous_paint_invalidation_container =
@@ -1686,7 +1686,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
     const PaintLayer* compositing_layer) const {
   if (!EnclosingPaginationLayer())
     return false;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return true;
   if (PaintsWithTransform(kGlobalPaintNormalPhase))
     return true;
@@ -2720,7 +2720,7 @@ CompositingState PaintLayer::GetCompositingState() const {
 
 bool PaintLayer::IsAllowedToQueryCompositingState() const {
   if (g_compositing_query_mode == kCompositingQueriesAreAllowed ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return true;
   return GetLayoutObject().GetDocument().Lifecycle().GetState() >=
          DocumentLifecycle::kInCompositingUpdate;
@@ -3283,9 +3283,9 @@ void PaintLayer::RemoveAncestorOverflowLayer(const PaintLayer* removed_layer) {
 
     if (PaintLayerScrollableArea* ancestor_scrollable_area =
             AncestorOverflowLayer()->GetScrollableArea()) {
-      // TODO(pdr): When slimming paint v2 is enabled, we will need to
-      // invalidate the scroll paint property subtree for this so main
-      // thread scroll reasons are recomputed.
+      // TODO(pdr): When CompositeAfterPaint is enabled, we will need to
+      // invalidate the scroll paint property subtree for this so main thread
+      // scroll reasons are recomputed.
       ancestor_scrollable_area->InvalidateStickyConstraintsFor(this);
     }
   }

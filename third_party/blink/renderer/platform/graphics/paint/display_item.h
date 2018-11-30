@@ -219,7 +219,7 @@ class PLATFORM_EXPORT DisplayItem {
   // Appends this display item to the cc::DisplayItemList, if applicable.
   // |visual_rect_offset| is the offset between the space of the GraphicsLayer
   // which owns the display item and the coordinate space of VisualRect().
-  // TODO(wangxianzhu): Remove the parameter for slimming paint v2.
+  // TODO(wangxianzhu): Remove the parameter for CompositeAfterPaint.
   virtual void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
                                        cc::DisplayItemList&) const {}
 

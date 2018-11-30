@@ -23,8 +23,8 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
   void ExpectPaintedOutputInvisible(const char* element_name,
                                     bool expected_value) {
     // The optimization to skip painting for effectively-invisible content is
-    // limited to pre-SPv2.
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    // limited to pre-CAP.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return;
 
     PaintLayer* target_layer =
@@ -350,8 +350,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   const auto& view_client = ViewScrollingBackgroundClient();
   // |target| is partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doesn't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doesn't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -4000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -386,8 +386,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
 
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doens't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doens't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -4000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -422,8 +422,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
 
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doens't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doens't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -1000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -974,11 +974,11 @@ TEST_P(PaintLayerPainterTest,
   ExpectPaintedOutputInvisible("target", false);
 }
 
-using PaintLayerPainterTestSPv2 = PaintLayerPainterTest;
+using PaintLayerPainterTestCAP = PaintLayerPainterTest;
 
-INSTANTIATE_SPV2_TEST_CASE_P(PaintLayerPainterTestSPv2);
+INSTANTIATE_CAP_TEST_CASE_P(PaintLayerPainterTestCAP);
 
-TEST_P(PaintLayerPainterTestSPv2, SimpleCullRect) {
+TEST_P(PaintLayerPainterTestCAP, SimpleCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 200px; position: relative'>
@@ -989,7 +989,7 @@ TEST_P(PaintLayerPainterTestSPv2, SimpleCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, TallLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, TallLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 10000px; position: relative'>
@@ -1001,7 +1001,7 @@ TEST_P(PaintLayerPainterTestSPv2, TallLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, WideLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, WideLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 10000px; height: 200px; position: relative'>
@@ -1013,7 +1013,7 @@ TEST_P(PaintLayerPainterTestSPv2, WideLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, TallScrolledLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, TallScrolledLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width: 200px; height: 10000px; position: relative'>
     </div>
@@ -1044,7 +1044,7 @@ TEST_P(PaintLayerPainterTestSPv2, TallScrolledLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, WholeDocumentCullRect) {
+TEST_P(PaintLayerPainterTestCAP, WholeDocumentCullRect) {
   GetDocument().GetSettings()->SetMainFrameClipsContent(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1100,7 +1100,7 @@ TEST_P(PaintLayerPainterTestSPv2, WholeDocumentCullRect) {
                    kBackgroundType)));
 }
 
-TEST_P(PaintLayerPainterTestSPv2, VerticalRightLeftWritingModeDocument) {
+TEST_P(PaintLayerPainterTestCAP, VerticalRightLeftWritingModeDocument) {
   SetBodyInnerHTML(R"HTML(
     <style>
       html { writing-mode: vertical-rl; }
@@ -1121,7 +1121,7 @@ TEST_P(PaintLayerPainterTestSPv2, VerticalRightLeftWritingModeDocument) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScaledCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScaledCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5)'>
@@ -1134,7 +1134,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScaledCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScaledAndRotatedCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScaledAndRotatedCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5) rotateZ(45deg)'>
@@ -1147,7 +1147,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScaledAndRotatedCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3DRotated90DegreesCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3DRotated90DegreesCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(90deg)'>
@@ -1161,7 +1161,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3DRotated90DegreesCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3DRotatedNear90DegreesCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3DRotatedNear90DegreesCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(89.9999deg)'>
@@ -1177,7 +1177,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3DRotatedNear90DegreesCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, PerspectiveCullRect) {
+TEST_P(PaintLayerPainterTestCAP, PerspectiveCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 100px; height: 100px; transform: perspective(1000px)'>
@@ -1189,7 +1189,7 @@ TEST_P(PaintLayerPainterTestSPv2, PerspectiveCullRect) {
       GetPaintLayerByElementId("target")->PreviousCullRect().IsInfinite());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3D45DegRotatedTallCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3D45DegRotatedTallCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 10000px; transform: rotateY(45deg)'>
@@ -1201,7 +1201,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3D45DegRotatedTallCullRect) {
       GetPaintLayerByElementId("target")->PreviousCullRect().IsInfinite());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, FixedPositionCullRect) {
+TEST_P(PaintLayerPainterTestCAP, FixedPositionCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width: 1000px; height: 2000px;
                             position: fixed; top: 100px; left: 200px;'>
@@ -1212,7 +1212,7 @@ TEST_P(PaintLayerPainterTestSPv2, FixedPositionCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenNearCullRect) {
+TEST_P(PaintLayerPainterTestCAP, LayerOffscreenNearCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 3000px; left: 0px;'>
@@ -1224,7 +1224,7 @@ TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenNearCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenFarCullRect) {
+TEST_P(PaintLayerPainterTestCAP, LayerOffscreenFarCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 9000px'>
@@ -1237,7 +1237,7 @@ TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenFarCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScrollingLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScrollingLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div::-webkit-scrollbar { width: 5px; }
@@ -1258,7 +1258,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScrollingLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ClippedBigLayer) {
+TEST_P(PaintLayerPainterTestCAP, ClippedBigLayer) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 1px; height: 1px; overflow: hidden'>
       <div id='target'

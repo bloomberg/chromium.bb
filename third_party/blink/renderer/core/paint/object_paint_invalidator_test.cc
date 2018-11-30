@@ -22,7 +22,7 @@ using ::testing::ElementsAre;
 
 TEST_F(ObjectPaintInvalidatorTest,
        TraverseNonCompositingDescendantsInPaintOrder) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   EnableCompositing();
@@ -73,7 +73,7 @@ TEST_F(ObjectPaintInvalidatorTest,
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   EnableCompositing();
@@ -156,7 +156,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
 
 TEST_F(ObjectPaintInvalidatorTest,
        TraverseFloatUnderMultiLevelCompositedInlines) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   EnableCompositing();
@@ -220,7 +220,7 @@ TEST_F(ObjectPaintInvalidatorTest,
 }
 
 TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   EnableCompositing();

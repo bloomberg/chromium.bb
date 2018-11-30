@@ -151,8 +151,8 @@ class PaintArtifactCompositorTest : public testing::Test,
 
   cc::Layer* RootLayer() { return paint_artifact_compositor_->RootLayer(); }
 
-  // SlimmingPaintV2 creates scroll hit test display items (which create scroll
-  // hit test layers in PaintArtifactCompositor) whereas in
+  // CompositeAfterPaint creates scroll hit test display items (which create
+  // scroll hit test layers in PaintArtifactCompositor) whereas in
   // BlinkGenPropertyTrees, scrollable foreign layers are created in
   // ScrollingCoordinator and passed to PaintArtifactCompositor. This function
   // is used to create a chunk representing the scrollable layer in either of
@@ -182,8 +182,8 @@ class PaintArtifactCompositorTest : public testing::Test,
         .ScrollHitTest(scroll_offset);
   }
 
-  // Returns the |num|th scrollable layer. In SlimmingPaintV2, this will be a
-  // scroll hit test layer, whereas in BlinkGenPropertyTrees this will be a
+  // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
+  // a scroll hit test layer, whereas in BlinkGenPropertyTrees this will be a
   // content layer.
   cc::Layer* ScrollableLayerAt(size_t num) {
     if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
@@ -203,7 +203,7 @@ class PaintArtifactCompositorTest : public testing::Test,
         .get();
   }
 
-  // Returns the |num|th non-scrollable layer. In SlimmingPaintV2, content
+  // Returns the |num|th non-scrollable layer. In CompositeAfterPaint, content
   // layers are not scrollable so this is the |num|th content layer. In
   // BlinkGenPropertyTrees, content layers are scrollable and non-scrollable, so
   // this will return the |num|th content layer that is not scrollable.

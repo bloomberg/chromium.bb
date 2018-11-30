@@ -146,7 +146,7 @@ bool HasIncompatibleAnimations(const Element& target_element,
 CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     CSSPropertyID property) {
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // Pre-BlinkGenPropertyTrees, all animations affect the primary
     // ElementId namespace.
     return CompositorElementIdNamespace::kPrimary;
@@ -327,7 +327,7 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     return FailureCode::NonActionable("Accelerated animations are disabled");
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // We query paint property tree state below to determine whether the
     // animation is compositable. There is a known lifecycle violation where an
     // animation can be cancelled during style update. See
@@ -504,8 +504,8 @@ void CompositorAnimations::AttachCompositedLayers(
   PaintLayer* layer =
       ToLayoutBoxModelObject(element.GetLayoutObject())->Layer();
 
-  // Composited animations do not depend on a composited layer mapping for SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // Composited animations do not depend on a composited layer mapping for CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!layer->IsAllowedToQueryCompositingState() ||
         !layer->GetCompositedLayerMapping() ||
         !layer->GetCompositedLayerMapping()->MainGraphicsLayer())
@@ -524,7 +524,7 @@ void CompositorAnimations::AttachCompositedLayers(
   // Currently we use the kPrimaryEffect node to know if nodes have been
   // created for animations.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
   }
   compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(

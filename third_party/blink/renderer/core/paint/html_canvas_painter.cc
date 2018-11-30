@@ -39,7 +39,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   HTMLCanvasElement* canvas =
       ToHTMLCanvasElement(layout_html_canvas_.GetNode());
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       canvas->RenderingContext() &&
       canvas->RenderingContext()->IsComposited()) {
     if (cc::Layer* layer = canvas->RenderingContext()->CcLayer()) {

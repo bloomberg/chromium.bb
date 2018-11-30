@@ -1833,7 +1833,7 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
   // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer
   // scrolls is enabled.  crbug.com/638719
   if (is_main_frame_layout_view_layer_ &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     bottom_layer = GetLayoutObject()
                        .GetFrame()
                        ->GetPage()

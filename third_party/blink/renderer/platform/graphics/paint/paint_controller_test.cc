@@ -35,10 +35,10 @@ INSTANTIATE_TEST_CASE_P(
     PaintControllerTest,
     testing::Values(0,
                     kBlinkGenPropertyTrees,
-                    kSlimmingPaintV2,
+                    kCompositeAfterPaint,
                     kUnderInvalidationChecking,
                     kBlinkGenPropertyTrees | kUnderInvalidationChecking,
-                    kSlimmingPaintV2 | kUnderInvalidationChecking));
+                    kCompositeAfterPaint | kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(GetPaintController());
@@ -1453,7 +1453,7 @@ TEST_P(PaintControllerTest, BeginAndEndFrame) {
 }
 
 TEST_P(PaintControllerTest, InvalidateAll) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());

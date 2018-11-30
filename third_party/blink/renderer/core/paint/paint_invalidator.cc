@@ -35,8 +35,8 @@ void PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation(
     const LayoutObject& object,
     const PaintInvalidatorContext& context,
     Rect& rect) {
-  // TODO(wangxianzhu): How to handle sub-pixel location animation for SPv2?
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(wangxianzhu): How to handle sub-pixel location animation for CAP?
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // One of the following conditions happened in crbug.com/837226.
@@ -96,7 +96,7 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRect(
         ToLayoutBox(object).FlipForWritingMode(rect);
       } else if (!(context.subtree_flags &
                    PaintInvalidatorContext::kSubtreeSlowPathRect)) {
-        // For SPv2 and the GeometryMapper path, we also need to convert the
+        // For CAP and the GeometryMapper path, we also need to convert the
         // rect for non-boxes into physical coordinates before applying paint
         // offset. (Otherwise we'll call mapToVisualrectInAncestorSpace() which
         // requires physical coordinates for boxes, but "physical coordinates
@@ -404,7 +404,7 @@ void PaintInvalidator::UpdateEmptyVisualRectFlag(
   // Content under transforms needs to invalidate, even if visual
   // rects before and after update were the same. This is because
   // we don't know whether this transform will end up composited in
-  // SPv2, so such transforms are painted even if not visible
+  // CAP, so such transforms are painted even if not visible
   // due to ancestor clips. This does not apply in SPv1 mode when
   // crossing paint invalidation container boundaries.
   if (is_paint_invalidation_container) {
@@ -524,8 +524,8 @@ void PaintInvalidator::InvalidatePaint(
   // The object is under a frame for WebViewPlugin, SVG images etc. Need to
   // inform the chrome client of the invalidation so that the client will
   // initiate painting of the contents.
-  // TODO(wangxianzhu): Do we need this for SPv2?
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  // TODO(wangxianzhu): Do we need this for CAP?
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !context.paint_invalidation_container->IsPaintInvalidationContainer() &&
       reason != PaintInvalidationReason::kNone)
     InvalidateChromeClient(*context.paint_invalidation_container);

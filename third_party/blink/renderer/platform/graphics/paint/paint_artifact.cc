@@ -30,7 +30,8 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
     chunk.outset_for_raster_effects = std::max(chunk.outset_for_raster_effects,
                                                item.OutsetForRasterEffects());
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && item.IsDrawing()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+        item.IsDrawing()) {
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
       if (drawing.GetPaintRecord() && drawing.KnownToBeOpaque()) {
         known_to_be_opaque_region.op(
@@ -100,7 +101,7 @@ void PaintArtifact::AppendDebugDrawing(
     const PropertyTreeState& property_tree_state) {
   DEFINE_STATIC_LOCAL(DebugDrawingClient, debug_drawing_client, ());
 
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   auto& display_item =
       display_item_list_.AllocateAndConstruct<DrawingDisplayItem>(
           debug_drawing_client, DisplayItem::kDebugDrawing, std::move(record));

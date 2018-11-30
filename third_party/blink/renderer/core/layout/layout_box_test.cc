@@ -327,7 +327,7 @@ TEST_P(LayoutBoxTest, ControlClip) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -344,7 +344,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -362,7 +362,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -380,7 +380,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(

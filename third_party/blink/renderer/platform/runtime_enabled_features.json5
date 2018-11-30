@@ -209,6 +209,10 @@
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
+      name: "CompositeAfterPaint",
+      implied_by: ["SlimmingPaintV2"],
+    },
+    {
       name: "CompositedSelectionUpdate",
     },
     {

@@ -51,9 +51,9 @@ namespace blink {
 namespace {
 
 class PaintChunksToCcLayerTest : public testing::Test,
-                                 private ScopedSlimmingPaintV2ForTest {
+                                 private ScopedCompositeAfterPaintForTest {
  protected:
-  PaintChunksToCcLayerTest() : ScopedSlimmingPaintV2ForTest(true) {}
+  PaintChunksToCcLayerTest() : ScopedCompositeAfterPaintForTest(true) {}
 };
 
 // Matches PaintOpTypes in a PaintRecord.
@@ -1190,7 +1190,7 @@ TEST_F(PaintChunksToCcLayerTest, StartWithAliasClip) {
 // release builds. A DCHECK'd build will trap instead.
 #if !DCHECK_IS_ON()
 TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipFailSafe) {
-  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  ScopedCompositeAfterPaintForTest cap_disabler(false);
   // This test verifies the fail-safe path correctly recovers from a malformed
   // chunk that escaped its layer's clip.
   FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
@@ -1210,7 +1210,7 @@ TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipFailSafe) {
 }
 
 TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeEffectClipFailSafe) {
-  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  ScopedCompositeAfterPaintForTest cap_disabler(false);
   // This test verifies the fail-safe path correctly recovers from a malformed
   // chunk that escaped its effect's clip.
   FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
@@ -1234,7 +1234,7 @@ TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeEffectClipFailSafe) {
 }
 
 TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipDoubleFault) {
-  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  ScopedCompositeAfterPaintForTest cap_disabler(false);
   // This test verifies the fail-safe path correctly recovers from a series of
   // malformed chunks that escaped their layer's clip.
   FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);

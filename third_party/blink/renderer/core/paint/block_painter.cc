@@ -39,13 +39,13 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     local_paint_info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
     local_paint_info.phase = PaintPhase::kSelfBlockBackgroundOnly;
-    // With SlimmingPaintV2 we need to call PaintObject twice: once for the
+    // With CompositeAfterPaint we need to call PaintObject twice: once for the
     // background painting that does not scroll, and a second time for the
     // background painting that scrolls.
-    // Without SlimmingPaintV2, this happens as the main graphics layer
+    // Without CompositeAfterPaint, this happens as the main graphics layer
     // paints the background, and then the scrolling contents graphics layer
     // paints the background.
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_location = layout_block_.GetBackgroundPaintLocation();
       if (!(paint_location & kBackgroundPaintInGraphicsLayer))
         local_paint_info.SetSkipsBackground(true);
@@ -197,7 +197,7 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
 }
 
 void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   // Scroll hit test display items are only needed for compositing. This flag is
   // used for for printing and drag images which do not need hit testing.
