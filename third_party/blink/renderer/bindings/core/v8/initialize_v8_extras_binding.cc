@@ -131,10 +131,12 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
   };
 
   v8::Local<v8::Value> message_port = ObjectGet(global, "MessagePort");
+  v8::Local<v8::Value> dom_exception = ObjectGet(global, "DOMException");
 
-  // Some Worklets don't have MessagePort. In this case, serialization will
-  // be disabled.
-  if (message_port->IsUndefined())
+  // Most Worklets don't have MessagePort. In this case, serialization will
+  // fail. AudioWorklet has MessagePort but no DOMException, so it can't use
+  // serialization for now.
+  if (message_port->IsUndefined() || dom_exception->IsUndefined())
     return;
 
   v8::Local<v8::Value> event_target_prototype =
@@ -153,7 +155,6 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
 
   Bind("MessageEvent_data_get", GetOwnPDGet(message_event_prototype, "data"));
 
-  v8::Local<v8::Value> dom_exception = ObjectGet(global, "DOMException");
   Bind("DOMException", dom_exception);
 
   v8::Local<v8::Value> dom_exception_prototype = GetPrototype(dom_exception);
