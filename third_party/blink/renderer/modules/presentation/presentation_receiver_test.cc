@@ -82,8 +82,8 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   auto* receiver =
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
-  auto* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+  auto* event_handler = MakeGarbageCollected<
+      StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
@@ -99,8 +99,8 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   auto* receiver =
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
-  auto* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+  auto* event_handler = MakeGarbageCollected<
+      StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
@@ -122,7 +122,8 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+      MakeGarbageCollected<
+          StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(1);
 
@@ -154,7 +155,8 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+      MakeGarbageCollected<
+          StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 

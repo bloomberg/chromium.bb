@@ -71,7 +71,8 @@ RuleData* RuleData::MaybeCreate(StyleRule* rule,
     return nullptr;
   if (position >= (1 << RuleData::kPositionBits))
     return nullptr;
-  return new RuleData(rule, selector_index, position, add_rule_flags);
+  return MakeGarbageCollected<RuleData>(rule, selector_index, position,
+                                        add_rule_flags);
 }
 
 RuleData::RuleData(StyleRule* rule,
@@ -99,7 +100,7 @@ void RuleSet::AddToRuleSet(const AtomicString& key,
   Member<HeapLinkedStack<Member<const RuleData>>>& rules =
       map.insert(key, nullptr).stored_value->value;
   if (!rules)
-    rules = new HeapLinkedStack<Member<const RuleData>>;
+    rules = MakeGarbageCollected<HeapLinkedStack<Member<const RuleData>>>();
   rules->Push(rule_data);
 }
 

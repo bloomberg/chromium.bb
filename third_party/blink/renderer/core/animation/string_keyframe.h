@@ -27,7 +27,16 @@ class StyleSheetContents;
 // expand shorthand properties; that is done for computed keyframes.
 class CORE_EXPORT StringKeyframe : public Keyframe {
  public:
-  static StringKeyframe* Create() { return new StringKeyframe; }
+  static StringKeyframe* Create() {
+    return MakeGarbageCollected<StringKeyframe>();
+  }
+
+  StringKeyframe()
+      : css_property_map_(
+            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)),
+        presentation_attribute_map_(
+            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)) {}
+  StringKeyframe(const StringKeyframe& copy_from);
 
   MutableCSSPropertyValueSet::SetResult SetCSSPropertyValue(
       const AtomicString& property_name,
@@ -88,9 +97,18 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         scoped_refptr<TimingFunction> easing,
         const CSSValue* value,
         EffectModel::CompositeOperation composite) {
-      return new CSSPropertySpecificKeyframe(offset, std::move(easing), value,
-                                             composite);
+      return MakeGarbageCollected<CSSPropertySpecificKeyframe>(
+          offset, std::move(easing), value, composite);
     }
+
+    CSSPropertySpecificKeyframe(double offset,
+                                scoped_refptr<TimingFunction> easing,
+                                const CSSValue* value,
+                                EffectModel::CompositeOperation composite)
+        : Keyframe::PropertySpecificKeyframe(offset,
+                                             std::move(easing),
+                                             composite),
+          value_(value) {}
 
     const CSSValue* Value() const { return value_.Get(); }
 
@@ -110,15 +128,6 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     void Trace(Visitor*) override;
 
    private:
-    CSSPropertySpecificKeyframe(double offset,
-                                scoped_refptr<TimingFunction> easing,
-                                const CSSValue* value,
-                                EffectModel::CompositeOperation composite)
-        : Keyframe::PropertySpecificKeyframe(offset,
-                                             std::move(easing),
-                                             composite),
-          value_(value) {}
-
     Keyframe::PropertySpecificKeyframe* CloneWithOffset(
         double offset) const override;
     bool IsCSSPropertySpecificKeyframe() const override { return true; }
@@ -135,9 +144,18 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         scoped_refptr<TimingFunction> easing,
         const String& value,
         EffectModel::CompositeOperation composite) {
-      return new SVGPropertySpecificKeyframe(offset, std::move(easing), value,
-                                             composite);
+      return MakeGarbageCollected<SVGPropertySpecificKeyframe>(
+          offset, std::move(easing), value, composite);
     }
+
+    SVGPropertySpecificKeyframe(double offset,
+                                scoped_refptr<TimingFunction> easing,
+                                const String& value,
+                                EffectModel::CompositeOperation composite)
+        : Keyframe::PropertySpecificKeyframe(offset,
+                                             std::move(easing),
+                                             composite),
+          value_(value) {}
 
     const String& Value() const { return value_; }
 
@@ -151,30 +169,12 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         scoped_refptr<TimingFunction> easing) const final;
 
    private:
-    SVGPropertySpecificKeyframe(double offset,
-                                scoped_refptr<TimingFunction> easing,
-                                const String& value,
-                                EffectModel::CompositeOperation composite)
-        : Keyframe::PropertySpecificKeyframe(offset,
-                                             std::move(easing),
-                                             composite),
-          value_(value) {}
-
     bool IsSVGPropertySpecificKeyframe() const override { return true; }
 
     String value_;
   };
 
- protected:
-  StringKeyframe()
-      : css_property_map_(
-            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)),
-        presentation_attribute_map_(
-            MutableCSSPropertyValueSet::Create(kHTMLStandardMode)) {}
-
  private:
-  StringKeyframe(const StringKeyframe& copy_from);
-
   Keyframe* Clone() const override;
   Keyframe::PropertySpecificKeyframe* CreatePropertySpecificKeyframe(
       const PropertyHandle&,

@@ -56,7 +56,7 @@ cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
   if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
-    return new ScrollAnimator(scrollable_area);
+    return MakeGarbageCollected<ScrollAnimator>(scrollable_area);
   return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 

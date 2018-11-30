@@ -140,7 +140,7 @@ namespace {
 ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
   DEFINE_STATIC_LOCAL(Persistent<ScrollCustomizationCallbacks>,
                       scroll_customization_callbacks,
-                      (new ScrollCustomizationCallbacks));
+                      (MakeGarbageCollected<ScrollCustomizationCallbacks>()));
   return *scroll_customization_callbacks;
 }
 

@@ -106,9 +106,11 @@ template <typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
  public:
   static SVGEnumeration<Enum>* Create(Enum new_value) {
-    return new SVGEnumeration<Enum>(new_value);
+    return MakeGarbageCollected<SVGEnumeration<Enum>>(new_value);
   }
 
+  explicit SVGEnumeration(Enum new_value)
+      : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
   ~SVGEnumeration() override = default;
 
   SVGEnumerationBase* Clone() const override { return Create(EnumValue()); }
@@ -122,10 +124,6 @@ class SVGEnumeration : public SVGEnumerationBase {
     value_ = value;
     NotifyChange();
   }
-
- protected:
-  explicit SVGEnumeration(Enum new_value)
-      : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
 };
 
 }  // namespace blink

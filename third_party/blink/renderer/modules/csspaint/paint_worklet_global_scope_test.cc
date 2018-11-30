@@ -68,7 +68,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
             document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
+            kV8CacheOptionsDefault,
+            MakeGarbageCollected<WorkletModuleResponsesMap>()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>(),
         ParentExecutionContextTaskRunners::Create());
     return thread;

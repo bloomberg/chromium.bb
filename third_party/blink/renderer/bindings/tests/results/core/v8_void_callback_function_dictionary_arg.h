@@ -47,6 +47,8 @@ class V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg> final : 
   using V8CallbackFunction = V8VoidCallbackFunctionDictionaryArg;
 
  public:
+  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
+      : V8PersistentCallbackFunctionBase(callback_function) {}
   ~V8PersistentCallbackFunction() override = default;
 
   // Returns a wrapper-tracing version of this callback function.
@@ -56,9 +58,6 @@ class V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg> final : 
   CORE_EXPORT void InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary*& arg);
 
  private:
-  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
-      : V8PersistentCallbackFunctionBase(callback_function) {}
-
   V8CallbackFunction* Proxy() {
     return As<V8CallbackFunction>();
   }

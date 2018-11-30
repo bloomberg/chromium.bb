@@ -30,7 +30,7 @@ class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
 
   static IntWrapper* Create(int x, VerifyArenaCompaction verify = NoVerify) {
     did_verify_at_least_once = false;
-    return new IntWrapper(x, verify);
+    return blink::MakeGarbageCollected<IntWrapper>(x, verify);
   }
 
   virtual ~IntWrapper() = default;

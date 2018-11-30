@@ -44,7 +44,7 @@ typedef testing::StrictMock<testing::MockFunction<void(int)>>
 class MockWebSocketChannel : public WebSocketChannel {
  public:
   static MockWebSocketChannel* Create() {
-    return new testing::StrictMock<MockWebSocketChannel>();
+    return MakeGarbageCollected<testing::StrictMock<MockWebSocketChannel>>();
   }
 
   ~MockWebSocketChannel() override = default;

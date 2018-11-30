@@ -24,6 +24,9 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           const IntRect& intersection_rect,
                                           DOMHighResTimeStamp start_time);
 
+  PerformanceElementTiming(const AtomicString& name,
+                           const IntRect& intersection_rect,
+                           DOMHighResTimeStamp start_time);
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -34,10 +37,6 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceElementTiming(const AtomicString& name,
-                           const IntRect& intersection_rect,
-                           DOMHighResTimeStamp start_time);
-
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   Member<DOMRectReadOnly> intersection_rect_;

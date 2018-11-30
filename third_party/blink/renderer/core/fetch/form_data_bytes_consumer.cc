@@ -201,7 +201,7 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
                           WrapWeakPersistent(this)));
         DataPipeBytesConsumer::CompletionNotifier* completion_notifier =
             nullptr;
-        data_pipe_consumer_ = new DataPipeBytesConsumer(
+        data_pipe_consumer_ = MakeGarbageCollected<DataPipeBytesConsumer>(
             execution_context_, std::move(pipe_consumer_handle),
             &completion_notifier);
         completion_notifier_ = completion_notifier;

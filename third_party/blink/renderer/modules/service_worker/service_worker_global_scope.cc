@@ -204,9 +204,10 @@ void ServiceWorkerGlobalScope::ImportModuleScript(
     fetch_type = ModuleScriptCustomFetchType::kInstalledServiceWorker;
   }
 
-  FetchModuleScript(module_url_record, outside_settings_object,
-                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    fetch_type, new ServiceWorkerModuleTreeClient(modulator));
+  FetchModuleScript(
+      module_url_record, outside_settings_object,
+      mojom::RequestContextType::SERVICE_WORKER, credentials_mode, fetch_type,
+      MakeGarbageCollected<ServiceWorkerModuleTreeClient>(modulator));
 }
 
 void ServiceWorkerGlobalScope::Dispose() {

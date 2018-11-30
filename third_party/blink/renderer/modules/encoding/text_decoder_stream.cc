@@ -157,8 +157,8 @@ TextDecoderStream* TextDecoderStream::Create(ScriptState* script_state,
     return nullptr;
   }
 
-  return new TextDecoderStream(script_state, encoding, options,
-                               exception_state);
+  return MakeGarbageCollected<TextDecoderStream>(script_state, encoding,
+                                                 options, exception_state);
 }
 
 TextDecoderStream::~TextDecoderStream() = default;
@@ -193,7 +193,8 @@ TextDecoderStream::TextDecoderStream(ScriptState* script_state,
                                       "Cannot queue task to retain wrapper");
     return;
   }
-  transform_->Init(new Transformer(script_state, encoding, fatal_, ignore_bom_),
+  transform_->Init(MakeGarbageCollected<Transformer>(script_state, encoding,
+                                                     fatal_, ignore_bom_),
                    script_state, exception_state);
 }
 

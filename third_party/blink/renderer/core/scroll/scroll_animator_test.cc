@@ -195,7 +195,7 @@ TEST(ScrollAnimatorTest, MainThreadStates) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
-      new ScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(2);
   // Once from userScroll, once from updateCompositorAnimations.
@@ -249,7 +249,7 @@ TEST(ScrollAnimatorTest, MainThreadEnabled) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
-      new ScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(9);
   EXPECT_CALL(*scrollable_area, RegisterForAnimation()).Times(6);
@@ -329,7 +329,7 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
-      new ScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(3);
   EXPECT_CALL(*scrollable_area, RegisterForAnimation()).Times(2);
@@ -429,7 +429,7 @@ TEST(ScrollAnimatorTest, Disabled) {
       MockScrollableAreaForAnimatorTest::Create(false, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
-      new ScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(8);
   EXPECT_CALL(*scrollable_area, RegisterForAnimation()).Times(0);
@@ -462,7 +462,7 @@ TEST(ScrollAnimatorTest, CancellingAnimationResetsState) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
-      new ScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
   // Called from first userScroll, setCurrentOffset, and second userScroll.
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(3);
@@ -645,7 +645,8 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment) {
   MockScrollableAreaForAnimatorTest* scrollable_area =
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(-100, -100),
                                                 ScrollOffset(1000, 1000));
-  ScrollAnimator* animator = new ScrollAnimator(scrollable_area, GetMockedTime);
+  ScrollAnimator* animator =
+      MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
   scrollable_area->SetScrollAnimator(animator);
 
   // Twice from tickAnimation, once from reset, and twice from

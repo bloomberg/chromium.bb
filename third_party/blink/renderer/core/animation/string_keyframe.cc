@@ -141,7 +141,7 @@ void StringKeyframe::Trace(Visitor* visitor) {
 }
 
 Keyframe* StringKeyframe::Clone() const {
-  return new StringKeyframe(*this);
+  return MakeGarbageCollected<StringKeyframe>(*this);
 }
 
 Keyframe::PropertySpecificKeyframe*

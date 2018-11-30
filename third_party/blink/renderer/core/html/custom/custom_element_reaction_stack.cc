@@ -17,7 +17,7 @@ namespace {
 Persistent<CustomElementReactionStack>& GetCustomElementReactionStack() {
   DEFINE_STATIC_LOCAL(Persistent<CustomElementReactionStack>,
                       custom_element_reaction_stack,
-                      (new CustomElementReactionStack));
+                      (MakeGarbageCollected<CustomElementReactionStack>()));
   return custom_element_reaction_stack;
 }
 

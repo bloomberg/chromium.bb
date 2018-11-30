@@ -39,10 +39,14 @@ namespace blink {
 
 class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
  public:
+  explicit AnimatableTransform(const TransformOperations& transform,
+                               double zoom)
+      : transform_(transform), zoom_(zoom) {}
   ~AnimatableTransform() override = default;
+
   static AnimatableTransform* Create(const TransformOperations& transform,
                                      double zoom) {
-    return new AnimatableTransform(transform, zoom);
+    return MakeGarbageCollected<AnimatableTransform>(transform, zoom);
   }
   const TransformOperations& GetTransformOperations() const {
     return transform_;
@@ -54,9 +58,6 @@ class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
                                  double fraction) const override;
 
  private:
-  explicit AnimatableTransform(const TransformOperations& transform,
-                               double zoom)
-      : transform_(transform), zoom_(zoom) {}
   AnimatableType GetType() const override { return kTypeTransform; }
 
   const TransformOperations transform_;

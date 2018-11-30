@@ -104,7 +104,8 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
                  : base::UnguessableToken::Create();
   ExecutionContext* context = GetExecutionContext();
 
-  ThreadPoolMessagingProxy* proxy = new ThreadPoolMessagingProxy(context);
+  ThreadPoolMessagingProxy* proxy =
+      MakeGarbageCollected<ThreadPoolMessagingProxy>(context);
   std::unique_ptr<WorkerSettings> settings =
       std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
 

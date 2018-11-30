@@ -44,7 +44,7 @@ WebGLExtensionName KHRParallelShaderCompile::GetName() const {
 
 KHRParallelShaderCompile* KHRParallelShaderCompile::Create(
     WebGLRenderingContextBase* context) {
-  return new KHRParallelShaderCompile(context);
+  return MakeGarbageCollected<KHRParallelShaderCompile>(context);
 }
 
 void KHRParallelShaderCompile::maxShaderCompilerThreadsKHR(GLuint count) {

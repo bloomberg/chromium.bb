@@ -46,6 +46,8 @@ class V8PersistentCallbackFunction<V8AnyCallbackFunctionOptionalAnyArg> final : 
   using V8CallbackFunction = V8AnyCallbackFunctionOptionalAnyArg;
 
  public:
+  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
+      : V8PersistentCallbackFunctionBase(callback_function) {}
   ~V8PersistentCallbackFunction() override = default;
 
   // Returns a wrapper-tracing version of this callback function.
@@ -54,9 +56,6 @@ class V8PersistentCallbackFunction<V8AnyCallbackFunctionOptionalAnyArg> final : 
   v8::Maybe<ScriptValue> Invoke(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
-      : V8PersistentCallbackFunctionBase(callback_function) {}
-
   V8CallbackFunction* Proxy() {
     return As<V8CallbackFunction>();
   }

@@ -270,11 +270,12 @@ bool ConvertCryptoResult<bool>(const ScriptValue& value) {
 
 template <typename T>
 class WebCryptoResultAdapter : public ScriptFunction {
- private:
+ public:
   WebCryptoResultAdapter(ScriptState* script_state,
                          base::RepeatingCallback<void(T)> function)
       : ScriptFunction(script_state), function_(std::move(function)) {}
 
+ private:
   ScriptValue Call(ScriptValue value) final {
     function_.Run(ConvertCryptoResult<T>(value));
     return ScriptValue::From(GetScriptState(), ToV8UndefinedGenerator());
@@ -291,9 +292,10 @@ WebCryptoResult ToWebCryptoResult(ScriptState* script_state,
                                   base::RepeatingCallback<void(T)> function) {
   CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   result->Promise().Then(
-      (new WebCryptoResultAdapter<T>(script_state, std::move(function)))
+      (MakeGarbageCollected<WebCryptoResultAdapter<T>>(script_state,
+                                                       std::move(function)))
           ->BindToV8Function(),
-      (new WebCryptoResultAdapter<DOMException*>(
+      (MakeGarbageCollected<WebCryptoResultAdapter<DOMException*>>(
            script_state, WTF::BindRepeating([](DOMException* exception) {
              CHECK(false) << "crypto operation failed";
            })))

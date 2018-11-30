@@ -116,7 +116,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldOnlyReceiveInputForItself) {
   std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
@@ -135,7 +135,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldNotBeMutatedWhenNoInput) {
   std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
@@ -167,7 +167,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   // Create a thread to run mutator tasks.
   std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
@@ -183,7 +183,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   // Create a thread to run mutator tasks.
   std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
@@ -212,10 +212,10 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnSameThread) {
   std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
   MockAnimationWorkletMutator* second_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
@@ -241,12 +241,12 @@ TEST_F(
     MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnDifferentThreads) {
   std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   std::unique_ptr<Thread> second_thread = CreateThread("SecondAnimationThread");
   MockAnimationWorkletMutator* second_mutator =
-      new ::testing::StrictMock<MockAnimationWorkletMutator>(
+      MakeGarbageCollected<MockAnimationWorkletMutator>(
           second_thread->GetTaskRunner());
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,

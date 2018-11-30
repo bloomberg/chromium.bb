@@ -38,10 +38,11 @@ namespace blink {
 
 class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
  public:
+  AnimatableDouble(double number) : number_(number) {}
   ~AnimatableDouble() override = default;
 
   static AnimatableDouble* Create(double number) {
-    return new AnimatableDouble(number);
+    return MakeGarbageCollected<AnimatableDouble>(number);
   }
 
   double ToDouble() const { return number_; }
@@ -51,7 +52,6 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
                                  double fraction) const override;
 
  private:
-  AnimatableDouble(double number) : number_(number) {}
   AnimatableType GetType() const override { return kTypeDouble; }
 
   double number_;

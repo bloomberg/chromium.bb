@@ -42,6 +42,8 @@ class V8PersistentCallbackFunction<V8LongCallbackFunction> final : public V8Pers
   using V8CallbackFunction = V8LongCallbackFunction;
 
  public:
+  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
+      : V8PersistentCallbackFunctionBase(callback_function) {}
   ~V8PersistentCallbackFunction() override = default;
 
   // Returns a wrapper-tracing version of this callback function.
@@ -50,9 +52,6 @@ class V8PersistentCallbackFunction<V8LongCallbackFunction> final : public V8Pers
   v8::Maybe<int32_t> Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
-      : V8PersistentCallbackFunctionBase(callback_function) {}
-
   V8CallbackFunction* Proxy() {
     return As<V8CallbackFunction>();
   }

@@ -22,8 +22,16 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
  public:
   static TransitionKeyframe* Create(const PropertyHandle& property) {
     DCHECK(!property.IsSVGAttribute());
-    return new TransitionKeyframe(property);
+    return MakeGarbageCollected<TransitionKeyframe>(property);
   }
+
+  TransitionKeyframe(const PropertyHandle& property) : property_(property) {}
+  TransitionKeyframe(const TransitionKeyframe& copy_from)
+      : Keyframe(copy_from.offset_, copy_from.composite_, copy_from.easing_),
+        property_(copy_from.property_),
+        value_(copy_from.value_->Clone()),
+        compositor_value_(copy_from.compositor_value_) {}
+
   void SetValue(std::unique_ptr<TypedInterpolationValue> value) {
     // Speculative CHECK to help investigate crbug.com/826627. The theory is
     // that |SetValue| is being called with a |value| that has no underlying
@@ -48,9 +56,21 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
         EffectModel::CompositeOperation composite,
         std::unique_ptr<TypedInterpolationValue> value,
         AnimatableValue* compositor_value) {
-      return new PropertySpecificKeyframe(offset, std::move(easing), composite,
-                                          std::move(value), compositor_value);
+      return MakeGarbageCollected<PropertySpecificKeyframe>(
+          offset, std::move(easing), composite, std::move(value),
+          compositor_value);
     }
+
+    PropertySpecificKeyframe(double offset,
+                             scoped_refptr<TimingFunction> easing,
+                             EffectModel::CompositeOperation composite,
+                             std::unique_ptr<TypedInterpolationValue> value,
+                             AnimatableValue* compositor_value)
+        : Keyframe::PropertySpecificKeyframe(offset,
+                                             std::move(easing),
+                                             composite),
+          value_(std::move(value)),
+          compositor_value_(compositor_value) {}
 
     const AnimatableValue* GetAnimatableValue() const final {
       return compositor_value_;
@@ -72,17 +92,6 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     void Trace(Visitor*) override;
 
    private:
-    PropertySpecificKeyframe(double offset,
-                             scoped_refptr<TimingFunction> easing,
-                             EffectModel::CompositeOperation composite,
-                             std::unique_ptr<TypedInterpolationValue> value,
-                             AnimatableValue* compositor_value)
-        : Keyframe::PropertySpecificKeyframe(offset,
-                                             std::move(easing),
-                                             composite),
-          value_(std::move(value)),
-          compositor_value_(compositor_value) {}
-
     Keyframe::PropertySpecificKeyframe* CloneWithOffset(
         double offset) const final {
       return Create(offset, easing_, composite_, value_->Clone(),
@@ -94,17 +103,11 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
   };
 
  private:
-  TransitionKeyframe(const PropertyHandle& property) : property_(property) {}
-
-  TransitionKeyframe(const TransitionKeyframe& copy_from)
-      : Keyframe(copy_from.offset_, copy_from.composite_, copy_from.easing_),
-        property_(copy_from.property_),
-        value_(copy_from.value_->Clone()),
-        compositor_value_(copy_from.compositor_value_) {}
-
   bool IsTransitionKeyframe() const final { return true; }
 
-  Keyframe* Clone() const final { return new TransitionKeyframe(*this); }
+  Keyframe* Clone() const final {
+    return MakeGarbageCollected<TransitionKeyframe>(*this);
+  }
 
   Keyframe::PropertySpecificKeyframe* CreatePropertySpecificKeyframe(
       const PropertyHandle&,

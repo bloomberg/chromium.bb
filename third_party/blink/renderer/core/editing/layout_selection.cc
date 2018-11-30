@@ -110,7 +110,7 @@ class SelectionPaintRange : public GarbageCollected<SelectionPaintRange> {
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
     : frame_selection_(&frame_selection),
       has_pending_selection_(false),
-      paint_range_(new SelectionPaintRange) {}
+      paint_range_(MakeGarbageCollected<SelectionPaintRange>()) {}
 
 enum class SelectionMode {
   kNone,
@@ -176,7 +176,8 @@ struct OldSelectedNodes {
   STACK_ALLOCATED();
 
  public:
-  OldSelectedNodes() : paint_range(new SelectionPaintRange) {}
+  OldSelectedNodes()
+      : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
   OldSelectedNodes(OldSelectedNodes&& other) {
     paint_range = other.paint_range;
     selected_map = std::move(other.selected_map);
@@ -197,7 +198,8 @@ struct NewPaintRangeAndSelectedNodes {
   STACK_ALLOCATED();
 
  public:
-  NewPaintRangeAndSelectedNodes() : paint_range(new SelectionPaintRange) {}
+  NewPaintRangeAndSelectedNodes()
+      : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
   NewPaintRangeAndSelectedNodes(
       SelectionPaintRange* passed_paint_range,
       HeapHashSet<Member<const Node>>&& passed_selected_objects)
@@ -297,9 +299,10 @@ static void SetSelectionStateIfNeeded(const Node& node, SelectionState state) {
 static void SetShouldInvalidateSelection(
     const NewPaintRangeAndSelectedNodes& new_range,
     const OldSelectedNodes& old_selected_objects) {
-  // We invalidate each LayoutObject in new SelectionPaintRange which
-  // has SelectionState of kStart, kEnd, kStartAndEnd, or kInside
-  // and is not in old SelectionPaintRange.
+  // We invalidate each LayoutObject in
+  // MakeGarbageCollected<SelectionPaintRange> which has SelectionState of
+  // kStart, kEnd, kStartAndEnd, or kInside and is not in old
+  // SelectionPaintRange.
   for (const Node* node : new_range.selected_objects) {
     if (old_selected_objects.selected_map.Contains(node))
       continue;
@@ -541,8 +544,8 @@ static SelectionPaintRange* ComputeNewPaintRange(
           ? GetTextContentOffsetEnd(end_node, paint_range.end_offset)
           : paint_range.end_offset;
 
-  return new SelectionPaintRange(*paint_range.start_node, start_offset,
-                                 *paint_range.end_node, end_offset);
+  return MakeGarbageCollected<SelectionPaintRange>(
+      *paint_range.start_node, start_offset, *paint_range.end_node, end_offset);
 }
 
 // ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
@@ -789,8 +792,8 @@ static NewPaintRangeAndSelectedNodes CalcSelectionRangeAndSetSelectionState(
     selected_objects.insert(end_node);
   }
 
-  SelectionPaintRange* new_range =
-      new SelectionPaintRange(*start_node, start_offset, *end_node, end_offset);
+  SelectionPaintRange* new_range = MakeGarbageCollected<SelectionPaintRange>(
+      *start_node, start_offset, *end_node, end_offset);
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return {new_range, std::move(selected_objects)};
   return {ComputeNewPaintRange(*new_range), std::move(selected_objects)};

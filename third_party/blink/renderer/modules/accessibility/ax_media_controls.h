@@ -84,6 +84,8 @@ class AccessibilityMediaTimeline final : public AXSlider {
 class AccessibilityMediaVolumeSlider final : public AXSlider {
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AccessibilityMediaVolumeSlider(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaVolumeSlider() override = default;
 
   String Description(ax::mojom::NameFrom,
@@ -94,8 +96,6 @@ class AccessibilityMediaVolumeSlider final : public AXSlider {
   bool InternalClearAccessibilityFocusAction() override;
 
  private:
-  AccessibilityMediaVolumeSlider(LayoutObject*, AXObjectCacheImpl&);
-
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaVolumeSlider);
 };
 

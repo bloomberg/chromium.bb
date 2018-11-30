@@ -39,7 +39,7 @@ DataPipeBytesConsumer::DataPipeBytesConsumer(
                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                execution_context->GetTaskRunner(TaskType::kNetworking)) {
   DCHECK(data_pipe_.is_valid());
-  *notifier = new CompletionNotifier(this);
+  *notifier = MakeGarbageCollected<CompletionNotifier>(this);
   watcher_.Watch(
       data_pipe_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,

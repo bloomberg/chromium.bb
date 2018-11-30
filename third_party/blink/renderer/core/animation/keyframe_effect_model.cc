@@ -325,9 +325,11 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
       KeyframeGroupMap::iterator group_iter = keyframe_groups_->find(property);
       PropertySpecificKeyframeGroup* group;
       if (group_iter == keyframe_groups_->end()) {
-        group = keyframe_groups_
-                    ->insert(property, new PropertySpecificKeyframeGroup)
-                    .stored_value->value.Get();
+        group =
+            keyframe_groups_
+                ->insert(property,
+                         MakeGarbageCollected<PropertySpecificKeyframeGroup>())
+                .stored_value->value.Get();
       } else {
         group = group_iter->value.Get();
       }

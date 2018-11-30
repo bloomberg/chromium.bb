@@ -129,7 +129,7 @@ class ResetCustomElementReactionStackForTest final {
   STACK_ALLOCATED();
  public:
   ResetCustomElementReactionStackForTest()
-      : stack_(new CustomElementReactionStack),
+      : stack_(MakeGarbageCollected<CustomElementReactionStack>()),
         old_stack_(
             CustomElementReactionStackTestSupport::SetCurrentForTest(stack_)) {}
 

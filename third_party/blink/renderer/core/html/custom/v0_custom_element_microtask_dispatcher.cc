@@ -20,8 +20,9 @@ V0CustomElementMicrotaskDispatcher::V0CustomElementMicrotaskDispatcher()
 
 V0CustomElementMicrotaskDispatcher&
 V0CustomElementMicrotaskDispatcher::Instance() {
-  DEFINE_STATIC_LOCAL(Persistent<V0CustomElementMicrotaskDispatcher>, instance,
-                      (new V0CustomElementMicrotaskDispatcher));
+  DEFINE_STATIC_LOCAL(
+      Persistent<V0CustomElementMicrotaskDispatcher>, instance,
+      (MakeGarbageCollected<V0CustomElementMicrotaskDispatcher>()));
   return *instance;
 }
 

@@ -521,7 +521,7 @@ class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
   static MockFinishObserver* Create() {
     return
 
-        new testing::StrictMock<MockFinishObserver>;
+        MakeGarbageCollected<testing::StrictMock<MockFinishObserver>>();
   }
   MOCK_METHOD0(NotifyFinished, void());
   String DebugName() const override { return "MockFinishObserver"; }

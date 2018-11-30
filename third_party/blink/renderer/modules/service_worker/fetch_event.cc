@@ -124,9 +124,9 @@ void FetchEvent::OnNavigationPreloadResponse(
   DataPipeBytesConsumer* bytes_consumer = nullptr;
   if (data_pipe.is_valid()) {
     DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
-    bytes_consumer =
-        new DataPipeBytesConsumer(ExecutionContext::From(script_state),
-                                  std::move(data_pipe), &completion_notifier);
+    bytes_consumer = MakeGarbageCollected<DataPipeBytesConsumer>(
+        ExecutionContext::From(script_state), std::move(data_pipe),
+        &completion_notifier);
     body_completion_notifier_ = completion_notifier;
   }
   // TODO(ricea): Verify that this response can't be aborted from JS.

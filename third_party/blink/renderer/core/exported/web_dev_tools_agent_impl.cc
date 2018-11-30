@@ -258,7 +258,8 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   session->Append(MakeGarbageCollected<InspectorEmulationAgent>(
       web_local_frame_impl_.Get()));
 
-  session->Append(new InspectorTestingAgent(inspected_frames));
+  session->Append(
+      MakeGarbageCollected<InspectorTestingAgent>(inspected_frames));
 
   // Call session init callbacks registered from higher layers.
   CoreInitializer::GetInstance().InitInspectorAgentSession(
@@ -307,7 +308,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
           MakeGarbageCollected<InspectorResourceContainer>(inspected_frames_)),
       include_view_agents_(include_view_agents) {
   DCHECK(IsMainThread());
-  agent_ = new DevToolsAgent(
+  agent_ = MakeGarbageCollected<DevToolsAgent>(
       this, inspected_frames_.Get(), probe_sink_.Get(),
       web_local_frame_impl_->GetFrame()->GetInspectorTaskRunner(),
       Platform::Current()->GetIOTaskRunner());

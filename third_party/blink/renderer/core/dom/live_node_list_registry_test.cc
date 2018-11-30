@@ -108,7 +108,8 @@ struct LiveNodeListRegistryWrapper
 // the garbage collected. Similar to the previous case, except all references to
 // |a| are removed together by the GC.
 TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
-  auto wrapper = WrapPersistent(new LiveNodeListRegistryWrapper);
+  auto wrapper =
+      WrapPersistent(MakeGarbageCollected<LiveNodeListRegistryWrapper>());
   auto& registry = wrapper->registry;
   auto a = WrapPersistent(CreateNodeList());
   auto b = WrapPersistent(CreateNodeList());

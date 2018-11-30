@@ -59,6 +59,8 @@ class WeakIdentifierMap final
     return result;
   }
 
+  WeakIdentifierMap() = default;
+
   static T* Lookup(IdentifierType identifier) {
     return Instance().identifier_to_object_.at(identifier);
   }
@@ -69,8 +71,6 @@ class WeakIdentifierMap final
 
  private:
   static WeakIdentifierMap<T, IdentifierType>& Instance();
-
-  WeakIdentifierMap() = default;
 
   static IdentifierType Next() {
     static IdentifierType last_id = 0;
@@ -96,15 +96,16 @@ class WeakIdentifierMap final
   WeakIdentifierMap<T, ##__VA_ARGS__>::Instance(); \
   extern template class WeakIdentifierMap<T, ##__VA_ARGS__>;
 
-#define DEFINE_WEAK_IDENTIFIER_MAP(T, ...)                            \
-  template class WeakIdentifierMap<T, ##__VA_ARGS__>;                 \
-  template <>                                                         \
-  WeakIdentifierMap<T, ##__VA_ARGS__>&                                \
-  WeakIdentifierMap<T, ##__VA_ARGS__>::Instance() {                   \
-    using RefType = WeakIdentifierMap<T, ##__VA_ARGS__>;              \
-    DEFINE_STATIC_LOCAL(Persistent<RefType>, map_instance,            \
-                        (new WeakIdentifierMap<T, ##__VA_ARGS__>())); \
-    return *map_instance;                                             \
+#define DEFINE_WEAK_IDENTIFIER_MAP(T, ...)                              \
+  template class WeakIdentifierMap<T, ##__VA_ARGS__>;                   \
+  template <>                                                           \
+  WeakIdentifierMap<T, ##__VA_ARGS__>&                                  \
+  WeakIdentifierMap<T, ##__VA_ARGS__>::Instance() {                     \
+    using RefType = WeakIdentifierMap<T, ##__VA_ARGS__>;                \
+    DEFINE_STATIC_LOCAL(                                                \
+        Persistent<RefType>, map_instance,                              \
+        (MakeGarbageCollected<WeakIdentifierMap<T, ##__VA_ARGS__>>())); \
+    return *map_instance;                                               \
   }
 
 }  // namespace blink

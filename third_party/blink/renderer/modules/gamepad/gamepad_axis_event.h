@@ -21,13 +21,21 @@ class GamepadAxisEvent final : public GamepadEvent {
                                   Gamepad* gamepad,
                                   uint32_t axis,
                                   double value) {
-    return new GamepadAxisEvent(type, bubbles, cancelable, gamepad, axis,
-                                value);
+    return MakeGarbageCollected<GamepadAxisEvent>(type, bubbles, cancelable,
+                                                  gamepad, axis, value);
   }
   static GamepadAxisEvent* Create(const AtomicString& type,
                                   const GamepadAxisEventInit* initializer) {
-    return new GamepadAxisEvent(type, initializer);
+    return MakeGarbageCollected<GamepadAxisEvent>(type, initializer);
   }
+
+  GamepadAxisEvent(const AtomicString& type,
+                   Bubbles,
+                   Cancelable,
+                   Gamepad*,
+                   uint32_t axis,
+                   double value);
+  GamepadAxisEvent(const AtomicString&, const GamepadAxisEventInit*);
   ~GamepadAxisEvent() override;
 
   uint32_t getAxis() const { return axis_; }
@@ -36,14 +44,6 @@ class GamepadAxisEvent final : public GamepadEvent {
   const AtomicString& InterfaceName() const override;
 
  private:
-  GamepadAxisEvent(const AtomicString& type,
-                   Bubbles,
-                   Cancelable,
-                   Gamepad*,
-                   uint32_t axis,
-                   double value);
-  GamepadAxisEvent(const AtomicString&, const GamepadAxisEventInit*);
-
   uint32_t axis_ = 0;
   double value_ = 0.0;
 };

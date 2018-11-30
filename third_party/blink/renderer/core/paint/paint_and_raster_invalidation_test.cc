@@ -1055,7 +1055,7 @@ class PaintInvalidatorCustomClientTest : public RenderingTest {
  public:
   PaintInvalidatorCustomClientTest()
       : RenderingTest(EmptyLocalFrameClient::Create()),
-        chrome_client_(new PaintInvalidatorTestClient) {}
+        chrome_client_(MakeGarbageCollected<PaintInvalidatorTestClient>()) {}
 
   PaintInvalidatorTestClient& GetChromeClient() const override {
     return *chrome_client_;

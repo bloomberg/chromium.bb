@@ -84,6 +84,11 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
                                unsigned position,
                                AddRuleFlags);
 
+  RuleData(StyleRule*,
+           unsigned selector_index,
+           unsigned position,
+           AddRuleFlags);
+
   unsigned GetPosition() const { return position_; }
   StyleRule* Rule() const { return rule_; }
   const CSSSelector& Selector() const {
@@ -125,11 +130,6 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   static constexpr size_t kPositionBits = 18;
 
  private:
-  RuleData(StyleRule*,
-           unsigned selector_index,
-           unsigned position,
-           AddRuleFlags);
-
   Member<StyleRule> rule_;
   unsigned selector_index_ : kSelectorIndexBits;
   unsigned position_ : kPositionBits;

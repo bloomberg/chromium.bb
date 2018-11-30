@@ -63,8 +63,9 @@ class VideoPainterTestForSPv2 : private ScopedSlimmingPaintV2ForTest,
  public:
   VideoPainterTestForSPv2()
       : ScopedSlimmingPaintV2ForTest(true),
-        PaintControllerPaintTestBase(new VideoStubLocalFrameClient),
-        chrome_client_(new StubChromeClientForSPv2) {}
+        PaintControllerPaintTestBase(
+            MakeGarbageCollected<VideoStubLocalFrameClient>()),
+        chrome_client_(MakeGarbageCollected<StubChromeClientForSPv2>()) {}
 
   void SetUp() override {
     PaintControllerPaintTestBase::SetUp();

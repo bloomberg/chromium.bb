@@ -23,9 +23,13 @@ class TaskBase::AsyncFunctionCompleted : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 TaskBase* task,
                                                 State state) {
-    return (new AsyncFunctionCompleted(script_state, task, state))
+    return (MakeGarbageCollected<AsyncFunctionCompleted>(script_state, task,
+                                                         state))
         ->BindToV8Function();
   }
+
+  AsyncFunctionCompleted(ScriptState* script_state, TaskBase* task, State state)
+      : ScriptFunction(script_state), task_(task), state_(state) {}
 
   ScriptValue Call(ScriptValue v) override {
     task_->TaskCompletedOnWorkerThread(v.V8Value(), state_);
@@ -33,8 +37,6 @@ class TaskBase::AsyncFunctionCompleted : public ScriptFunction {
   }
 
  private:
-  AsyncFunctionCompleted(ScriptState* script_state, TaskBase* task, State state)
-      : ScriptFunction(script_state), task_(task), state_(state) {}
   CrossThreadPersistent<TaskBase> task_;
   const State state_;
 };
@@ -247,8 +249,8 @@ bool TaskBase::WillStartTaskOnWorkerThread() {
 void TaskBase::TaskCompletedOnWorkerThread(v8::Local<v8::Value> v8_result,
                                            State state) {
   DCHECK(worker_thread_->IsCurrentThread());
-  v8_result_ =
-      new V8ResultHolder(ToIsolate(worker_thread_->GlobalScope()), v8_result);
+  v8_result_ = MakeGarbageCollected<V8ResultHolder>(
+      ToIsolate(worker_thread_->GlobalScope()), v8_result);
   function_ = nullptr;
   arguments_.clear();
 

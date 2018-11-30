@@ -80,7 +80,7 @@ class MockFetchDataLoader : public FetchDataLoader {
   // finished. Since most tests don't care about this, use NiceMock so that the
   // calls to Cancel() are ignored.
   static testing::NiceMock<MockFetchDataLoader>* Create() {
-    return new testing::NiceMock<MockFetchDataLoader>();
+    return MakeGarbageCollected<testing::NiceMock<MockFetchDataLoader>>();
   }
 
   MOCK_METHOD2(Start, void(BytesConsumer*, FetchDataLoader::Client*));

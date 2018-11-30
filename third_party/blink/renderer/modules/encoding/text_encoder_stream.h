@@ -29,6 +29,8 @@ class TextEncoderStream final : public ScriptWrappable {
 
  public:
   static TextEncoderStream* Create(ScriptState*, ExceptionState&);
+
+  TextEncoderStream(ScriptState*, ExceptionState&);
   ~TextEncoderStream() override;
 
   // From text_encoder_stream.idl
@@ -40,8 +42,6 @@ class TextEncoderStream final : public ScriptWrappable {
 
  private:
   class Transformer;
-
-  TextEncoderStream(ScriptState*, ExceptionState&);
 
   const TraceWrapperMember<TransformStream> transform_;
 

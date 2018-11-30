@@ -191,7 +191,8 @@ ScriptPromise RTCQuicStream::waitForReadable(ScriptState* script_state,
     promise_resolver->Resolve();
   } else {
     pending_read_buffered_amount_promises_.push_back(
-        new PendingReadBufferedAmountPromise(promise_resolver, amount));
+        MakeGarbageCollected<PendingReadBufferedAmountPromise>(promise_resolver,
+                                                               amount));
   }
   return promise;
 }
@@ -210,7 +211,8 @@ ScriptPromise RTCQuicStream::waitForWriteBufferedAmountBelow(
     promise_resolver->Resolve();
   } else {
     pending_write_buffered_amount_promises_.push_back(
-        new PendingWriteBufferedAmountPromise(promise_resolver, threshold));
+        MakeGarbageCollected<PendingWriteBufferedAmountPromise>(
+            promise_resolver, threshold));
   }
   return promise;
 }

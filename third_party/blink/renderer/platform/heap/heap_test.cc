@@ -61,7 +61,9 @@ namespace {
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
  public:
-  static IntWrapper* Create(int x) { return new IntWrapper(x); }
+  static IntWrapper* Create(int x) {
+    return MakeGarbageCollected<IntWrapper>(x);
+  }
 
   virtual ~IntWrapper() { AtomicIncrement(&destructor_calls_); }
 
@@ -381,7 +383,8 @@ class TestGCScope : public TestGCCollectGarbageScope {
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
  public:
-  static SimpleObject* Create() { return new SimpleObject(); }
+  static SimpleObject* Create() { return MakeGarbageCollected<SimpleObject>(); }
+  SimpleObject() = default;
   void Trace(blink::Visitor* visitor) {}
   char GetPayload(int i) { return payload[i]; }
   // This virtual method is unused but it is here to make sure
@@ -393,22 +396,21 @@ class SimpleObject : public GarbageCollected<SimpleObject> {
   virtual void VirtualMethod() {}
 
  protected:
-  SimpleObject() = default;
   char payload[64];
 };
 
 class HeapTestSuperClass
     : public GarbageCollectedFinalized<HeapTestSuperClass> {
  public:
-  static HeapTestSuperClass* Create() { return new HeapTestSuperClass(); }
+  static HeapTestSuperClass* Create() {
+    return MakeGarbageCollected<HeapTestSuperClass>();
+  }
 
+  HeapTestSuperClass() = default;
   virtual ~HeapTestSuperClass() { ++destructor_calls_; }
 
   static int destructor_calls_;
   void Trace(blink::Visitor* visitor) {}
-
- protected:
-  HeapTestSuperClass() = default;
 };
 
 int HeapTestSuperClass::destructor_calls_ = 0;
@@ -423,8 +425,11 @@ static const size_t kClassMagic = 0xABCDDBCA;
 class HeapTestSubClass : public HeapTestOtherSuperClass,
                          public HeapTestSuperClass {
  public:
-  static HeapTestSubClass* Create() { return new HeapTestSubClass(); }
+  static HeapTestSubClass* Create() {
+    return MakeGarbageCollected<HeapTestSubClass>();
+  }
 
+  HeapTestSubClass() : magic_(kClassMagic) {}
   ~HeapTestSubClass() override {
     EXPECT_EQ(kClassMagic, magic_);
     ++destructor_calls_;
@@ -433,8 +438,6 @@ class HeapTestSubClass : public HeapTestOtherSuperClass,
   static int destructor_calls_;
 
  private:
-  HeapTestSubClass() : magic_(kClassMagic) {}
-
   const size_t magic_;
 };
 
@@ -686,16 +689,16 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
   class PersistentChain : public GarbageCollectedFinalized<PersistentChain> {
    public:
     static PersistentChain* Create(int count) {
-      return new PersistentChain(count);
+      return MakeGarbageCollected<PersistentChain>(count);
+    }
+
+    explicit PersistentChain(int count) {
+      ref_counted_chain_ = base::AdoptRef(RefCountedChain::Create(count));
     }
 
     void Trace(blink::Visitor* visitor) {}
 
    private:
-    explicit PersistentChain(int count) {
-      ref_counted_chain_ = base::AdoptRef(RefCountedChain::Create(count));
-    }
-
     scoped_refptr<RefCountedChain> ref_counted_chain_;
   };
 
@@ -724,14 +727,14 @@ void CheckWithSlack(T expected, T actual, int slack) {
 
 class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
  public:
-  static TraceCounter* Create() { return new TraceCounter(); }
+  static TraceCounter* Create() { return MakeGarbageCollected<TraceCounter>(); }
+
+  TraceCounter() : trace_count_(0) {}
 
   void Trace(blink::Visitor* visitor) { trace_count_++; }
   int TraceCount() const { return trace_count_; }
 
  private:
-  TraceCounter() : trace_count_(0) {}
-
   int trace_count_;
 };
 
@@ -747,7 +750,11 @@ TEST(HeapTest, IsHeapObjectAliveForConstPointer) {
 
 class ClassWithMember : public GarbageCollected<ClassWithMember> {
  public:
-  static ClassWithMember* Create() { return new ClassWithMember(); }
+  static ClassWithMember* Create() {
+    return MakeGarbageCollected<ClassWithMember>();
+  }
+
+  ClassWithMember() : trace_counter_(TraceCounter::Create()) {}
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(trace_counter_);
@@ -755,24 +762,22 @@ class ClassWithMember : public GarbageCollected<ClassWithMember> {
   int TraceCount() const { return trace_counter_->TraceCount(); }
 
  private:
-  ClassWithMember() : trace_counter_(TraceCounter::Create()) {}
-
   Member<TraceCounter> trace_counter_;
 };
 
 class SimpleFinalizedObject
     : public GarbageCollectedFinalized<SimpleFinalizedObject> {
  public:
-  static SimpleFinalizedObject* Create() { return new SimpleFinalizedObject(); }
+  static SimpleFinalizedObject* Create() {
+    return MakeGarbageCollected<SimpleFinalizedObject>();
+  }
 
+  SimpleFinalizedObject() = default;
   ~SimpleFinalizedObject() { ++destructor_calls_; }
 
   static int destructor_calls_;
 
   void Trace(blink::Visitor* visitor) {}
-
- private:
-  SimpleFinalizedObject() = default;
 };
 
 int SimpleFinalizedObject::destructor_calls_ = 0;
@@ -809,7 +814,9 @@ class IntNode : public GarbageCollected<IntNode> {
 
 class Bar : public GarbageCollectedFinalized<Bar> {
  public:
-  static Bar* Create() { return new Bar(); }
+  static Bar* Create() { return MakeGarbageCollected<Bar>(); }
+
+  Bar() : magic_(kMagic) { live_++; }
 
   void FinalizeGarbageCollectedObject() {
     EXPECT_TRUE(magic_ == kMagic);
@@ -824,8 +831,6 @@ class Bar : public GarbageCollectedFinalized<Bar> {
  protected:
   static const int kMagic = 1337;
   int magic_;
-
-  Bar() : magic_(kMagic) { live_++; }
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Bar);
@@ -834,7 +839,9 @@ unsigned Bar::live_ = 0;
 
 class Baz : public GarbageCollected<Baz> {
  public:
-  static Baz* Create(Bar* bar) { return new Baz(bar); }
+  static Baz* Create(Bar* bar) { return MakeGarbageCollected<Baz>(bar); }
+
+  explicit Baz(Bar* bar) : bar_(bar) {}
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
 
@@ -844,16 +851,18 @@ class Baz : public GarbageCollected<Baz> {
   void WillFinalize() { EXPECT_TRUE(!bar_->HasBeenFinalized()); }
 
  private:
-  explicit Baz(Bar* bar) : bar_(bar) {}
-
   Member<Bar> bar_;
 };
 
 class Foo : public Bar {
  public:
-  static Foo* Create(Bar* bar) { return new Foo(bar); }
+  static Foo* Create(Bar* bar) { return MakeGarbageCollected<Foo>(bar); }
 
-  static Foo* Create(Foo* foo) { return new Foo(foo); }
+  static Foo* Create(Foo* foo) { return MakeGarbageCollected<Foo>(foo); }
+
+  Foo(Bar* bar) : Bar(), bar_(bar), points_to_foo_(false) {}
+
+  Foo(Foo* foo) : Bar(), bar_(foo), points_to_foo_(true) {}
 
   void Trace(blink::Visitor* visitor) override {
     if (points_to_foo_)
@@ -863,10 +872,6 @@ class Foo : public Bar {
   }
 
  private:
-  Foo(Bar* bar) : Bar(), bar_(bar), points_to_foo_(false) {}
-
-  Foo(Foo* foo) : Bar(), bar_(foo), points_to_foo_(true) {}
-
   Bar* bar_;
   bool points_to_foo_;
 };
@@ -875,7 +880,14 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Foo);
 
 class Bars : public Bar {
  public:
-  static Bars* Create() { return new Bars(); }
+  static Bars* Create() { return MakeGarbageCollected<Bars>(); }
+
+  Bars() : width_(0) {
+    for (unsigned i = 0; i < kWidth; i++) {
+      bars_[i] = Bar::Create();
+      width_++;
+    }
+  }
 
   void Trace(blink::Visitor* visitor) override {
     for (unsigned i = 0; i < width_; i++)
@@ -887,13 +899,6 @@ class Bars : public Bar {
   static const unsigned kWidth = 7500;
 
  private:
-  Bars() : width_(0) {
-    for (unsigned i = 0; i < kWidth; i++) {
-      bars_[i] = Bar::Create();
-      width_++;
-    }
-  }
-
   unsigned width_;
   Member<Bar> bars_[kWidth];
 };
@@ -902,20 +907,25 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Bars);
 
 class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
  public:
-  static ConstructorAllocation* Create() { return new ConstructorAllocation(); }
+  static ConstructorAllocation* Create() {
+    return MakeGarbageCollected<ConstructorAllocation>();
+  }
+
+  ConstructorAllocation() { int_wrapper_ = IntWrapper::Create(42); }
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(int_wrapper_); }
 
  private:
-  ConstructorAllocation() { int_wrapper_ = IntWrapper::Create(42); }
-
   Member<IntWrapper> int_wrapper_;
 };
 
 class LargeHeapObject : public GarbageCollectedFinalized<LargeHeapObject> {
  public:
+  LargeHeapObject() { int_wrapper_ = IntWrapper::Create(23); }
   ~LargeHeapObject() { destructor_calls_++; }
-  static LargeHeapObject* Create() { return new LargeHeapObject(); }
+  static LargeHeapObject* Create() {
+    return MakeGarbageCollected<LargeHeapObject>();
+  }
   char Get(size_t i) { return data_[i]; }
   void Set(size_t i, char c) { data_[i] = c; }
   size_t length() { return kLength; }
@@ -924,7 +934,6 @@ class LargeHeapObject : public GarbageCollectedFinalized<LargeHeapObject> {
 
  private:
   static const size_t kLength = 1024 * 1024;
-  LargeHeapObject() { int_wrapper_ = IntWrapper::Create(23); }
   Member<IntWrapper> int_wrapper_;
   char data_[kLength];
 };
@@ -946,9 +955,10 @@ class RefCountedAndGarbageCollected
     : public GarbageCollectedFinalized<RefCountedAndGarbageCollected> {
  public:
   static RefCountedAndGarbageCollected* Create() {
-    return new RefCountedAndGarbageCollected;
+    return MakeGarbageCollected<RefCountedAndGarbageCollected>();
   }
 
+  RefCountedAndGarbageCollected() : ref_count_(0) {}
   ~RefCountedAndGarbageCollected() { ++destructor_calls_; }
 
   void AddRef() {
@@ -973,8 +983,6 @@ class RefCountedAndGarbageCollected
   static int destructor_calls_;
 
  private:
-  RefCountedAndGarbageCollected() : ref_count_(0) {}
-
   int ref_count_;
   SelfKeepAlive<RefCountedAndGarbageCollected> keep_alive_;
 };
@@ -986,9 +994,10 @@ class RefCountedAndGarbageCollected2
       public GarbageCollectedFinalized<RefCountedAndGarbageCollected2> {
  public:
   static RefCountedAndGarbageCollected2* Create() {
-    return new RefCountedAndGarbageCollected2;
+    return MakeGarbageCollected<RefCountedAndGarbageCollected2>();
   }
 
+  RefCountedAndGarbageCollected2() : ref_count_(0) {}
   ~RefCountedAndGarbageCollected2() { ++destructor_calls_; }
 
   void Ref() {
@@ -1013,8 +1022,6 @@ class RefCountedAndGarbageCollected2
   static int destructor_calls_;
 
  private:
-  RefCountedAndGarbageCollected2() : ref_count_(0) {}
-
   int ref_count_;
   SelfKeepAlive<RefCountedAndGarbageCollected2> keep_alive_;
 };
@@ -1023,7 +1030,12 @@ int RefCountedAndGarbageCollected2::destructor_calls_ = 0;
 
 class Weak : public Bar {
  public:
-  static Weak* Create(Bar* strong, Bar* weak) { return new Weak(strong, weak); }
+  static Weak* Create(Bar* strong, Bar* weak) {
+    return MakeGarbageCollected<Weak>(strong, weak);
+  }
+
+  Weak(Bar* strong_bar, Bar* weak_bar)
+      : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(strong_bar_);
@@ -1039,9 +1051,6 @@ class Weak : public Bar {
   bool WeakIsThere() { return !!weak_bar_; }
 
  private:
-  Weak(Bar* strong_bar, Bar* weak_bar)
-      : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
-
   Member<Bar> strong_bar_;
   Bar* weak_bar_;
 };
@@ -1051,8 +1060,11 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Weak);
 class WithWeakMember : public Bar {
  public:
   static WithWeakMember* Create(Bar* strong, Bar* weak) {
-    return new WithWeakMember(strong, weak);
+    return MakeGarbageCollected<WithWeakMember>(strong, weak);
   }
+
+  WithWeakMember(Bar* strong_bar, Bar* weak_bar)
+      : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(strong_bar_);
@@ -1063,9 +1075,6 @@ class WithWeakMember : public Bar {
   bool WeakIsThere() { return !!weak_bar_; }
 
  private:
-  WithWeakMember(Bar* strong_bar, Bar* weak_bar)
-      : Bar(), strong_bar_(strong_bar), weak_bar_(weak_bar) {}
-
   Member<Bar> strong_bar_;
   WeakMember<Bar> weak_bar_;
 };
@@ -1076,7 +1085,10 @@ class Observable : public GarbageCollectedFinalized<Observable> {
   USING_PRE_FINALIZER(Observable, WillFinalize);
 
  public:
-  static Observable* Create(Bar* bar) { return new Observable(bar); }
+  static Observable* Create(Bar* bar) {
+    return MakeGarbageCollected<Observable>(bar);
+  }
+  explicit Observable(Bar* bar) : bar_(bar), was_destructed_(false) {}
   ~Observable() { was_destructed_ = true; }
   void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
 
@@ -1090,8 +1102,6 @@ class Observable : public GarbageCollectedFinalized<Observable> {
   static bool will_finalize_was_called_;
 
  private:
-  explicit Observable(Bar* bar) : bar_(bar), was_destructed_(false) {}
-
   Member<Bar> bar_;
   bool was_destructed_;
 };
@@ -1104,8 +1114,9 @@ class ObservableWithPreFinalizer
 
  public:
   static ObservableWithPreFinalizer* Create() {
-    return new ObservableWithPreFinalizer();
+    return MakeGarbageCollected<ObservableWithPreFinalizer>();
   }
+  ObservableWithPreFinalizer() : was_destructed_(false) {}
   ~ObservableWithPreFinalizer() { was_destructed_ = true; }
   void Trace(blink::Visitor* visitor) {}
   void Dispose() {
@@ -1115,8 +1126,6 @@ class ObservableWithPreFinalizer
   static bool dispose_was_called_;
 
  protected:
-  ObservableWithPreFinalizer() : was_destructed_(false) {}
-
   bool was_destructed_;
 };
 
@@ -1130,7 +1139,10 @@ class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
   USING_PRE_FINALIZER(PreFinalizerBase, Dispose);
 
  public:
-  static PreFinalizerBase* Create() { return new PreFinalizerBase(); }
+  static PreFinalizerBase* Create() {
+    return MakeGarbageCollected<PreFinalizerBase>();
+  }
+  PreFinalizerBase() : was_destructed_(false) {}
   virtual ~PreFinalizerBase() { was_destructed_ = true; }
   virtual void Trace(blink::Visitor* visitor) {}
   void Dispose() {
@@ -1142,7 +1154,6 @@ class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
   }
 
  protected:
-  PreFinalizerBase() : was_destructed_(false) {}
   bool was_destructed_;
 };
 
@@ -1190,8 +1201,11 @@ template <typename T>
 class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
  public:
   static FinalizationObserver* Create(T* data) {
-    return new FinalizationObserver(data);
+    return MakeGarbageCollected<FinalizationObserver>(data);
   }
+
+  FinalizationObserver(T* data) : data_(data), did_call_will_finalize_(false) {}
+
   bool DidCallWillFinalize() const { return did_call_will_finalize_; }
 
   void Trace(blink::Visitor* visitor) {
@@ -1209,8 +1223,6 @@ class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
   }
 
  private:
-  FinalizationObserver(T* data) : data_(data), did_call_will_finalize_(false) {}
-
   WeakMember<T> data_;
   bool did_call_will_finalize_;
 };
@@ -1268,8 +1280,9 @@ class SuperClass;
 
 class PointsBack : public GarbageCollectedFinalized<PointsBack> {
  public:
-  static PointsBack* Create() { return new PointsBack; }
+  static PointsBack* Create() { return MakeGarbageCollected<PointsBack>(); }
 
+  PointsBack() : back_pointer_(nullptr) { ++alive_count_; }
   ~PointsBack() { --alive_count_; }
 
   void SetBackPointer(SuperClass* back_pointer) {
@@ -1283,8 +1296,6 @@ class PointsBack : public GarbageCollectedFinalized<PointsBack> {
   static int alive_count_;
 
  private:
-  PointsBack() : back_pointer_(nullptr) { ++alive_count_; }
-
   WeakMember<SuperClass> back_pointer_;
 };
 
@@ -1293,9 +1304,13 @@ int PointsBack::alive_count_ = 0;
 class SuperClass : public GarbageCollectedFinalized<SuperClass> {
  public:
   static SuperClass* Create(PointsBack* points_back) {
-    return new SuperClass(points_back);
+    return MakeGarbageCollected<SuperClass>(points_back);
   }
 
+  explicit SuperClass(PointsBack* points_back) : points_back_(points_back) {
+    points_back_->SetBackPointer(this);
+    ++alive_count_;
+  }
   virtual ~SuperClass() { --alive_count_; }
 
   void DoStuff(SuperClass* target,
@@ -1311,12 +1326,6 @@ class SuperClass : public GarbageCollectedFinalized<SuperClass> {
   PointsBack* GetPointsBack() const { return points_back_.Get(); }
 
   static int alive_count_;
-
- protected:
-  explicit SuperClass(PointsBack* points_back) : points_back_(points_back) {
-    points_back_->SetBackPointer(this);
-    ++alive_count_;
-  }
 
  private:
   Member<PointsBack> points_back_;
@@ -1338,9 +1347,13 @@ int SubData::alive_count_ = 0;
 class SubClass : public SuperClass {
  public:
   static SubClass* Create(PointsBack* points_back) {
-    return new SubClass(points_back);
+    return MakeGarbageCollected<SubClass>(points_back);
   }
 
+  explicit SubClass(PointsBack* points_back)
+      : SuperClass(points_back), data_(MakeGarbageCollected<SubData>()) {
+    ++alive_count_;
+  }
   ~SubClass() override { --alive_count_; }
 
   void Trace(blink::Visitor* visitor) override {
@@ -1349,12 +1362,6 @@ class SubClass : public SuperClass {
   }
 
   static int alive_count_;
-
- private:
-  explicit SubClass(PointsBack* points_back)
-      : SuperClass(points_back), data_(new SubData) {
-    ++alive_count_;
-  }
 
  private:
   Member<SubData> data_;
@@ -1488,7 +1495,7 @@ class FinalizationAllocator
     for (int i = 0; i < 10; ++i)
       *wrapper_ = IntWrapper::Create(42);
     for (int i = 0; i < 512; ++i)
-      new OneKiloByteObject();
+      MakeGarbageCollected<OneKiloByteObject>();
     for (int i = 0; i < 32; ++i)
       LargeHeapObject::Create();
   }
@@ -1511,7 +1518,7 @@ class PreFinalizationAllocator
     for (int i = 0; i < 10; ++i)
       *wrapper_ = IntWrapper::Create(42);
     for (int i = 0; i < 512; ++i)
-      new OneKiloByteObject();
+      MakeGarbageCollected<OneKiloByteObject>();
     for (int i = 0; i < 32; ++i)
       LargeHeapObject::Create();
   }
@@ -1529,12 +1536,12 @@ class PreFinalizerBackingShrinkForbidden
  public:
   PreFinalizerBackingShrinkForbidden() {
     for (int i = 0; i < 32; ++i) {
-      vector_.push_back(new IntWrapper(i));
+      vector_.push_back(MakeGarbageCollected<IntWrapper>(i));
     }
     EXPECT_LT(31ul, vector_.capacity());
 
     for (int i = 0; i < 32; ++i) {
-      map_.insert(i + 1, new IntWrapper(i + 1));
+      map_.insert(i + 1, MakeGarbageCollected<IntWrapper>(i + 1));
     }
     EXPECT_LT(31ul, map_.Capacity());
   }
@@ -1572,7 +1579,7 @@ class PreFinalizerBackingShrinkForbidden
 };
 
 TEST(HeapTest, PreFinalizerBackingShrinkForbidden) {
-  new PreFinalizerBackingShrinkForbidden();
+  MakeGarbageCollected<PreFinalizerBackingShrinkForbidden>();
   PreciselyCollectGarbage();
 }
 
@@ -1583,7 +1590,7 @@ class PreFinalizerVectorBackingExpandForbidden
 
  public:
   PreFinalizerVectorBackingExpandForbidden() {
-    vector_.push_back(new IntWrapper(1));
+    vector_.push_back(MakeGarbageCollected<IntWrapper>(1));
   }
 
   void Dispose() { EXPECT_DEATH(Test(), ""); }
@@ -1602,7 +1609,7 @@ class PreFinalizerVectorBackingExpandForbidden
 };
 
 TEST(HeapDeathTest, PreFinalizerVectorBackingExpandForbidden) {
-  new PreFinalizerVectorBackingExpandForbidden();
+  MakeGarbageCollected<PreFinalizerVectorBackingExpandForbidden>();
   PreciselyCollectGarbage();
 }
 
@@ -1613,7 +1620,7 @@ class PreFinalizerHashTableBackingExpandForbidden
 
  public:
   PreFinalizerHashTableBackingExpandForbidden() {
-    map_.insert(123, new IntWrapper(123));
+    map_.insert(123, MakeGarbageCollected<IntWrapper>(123));
   }
 
   void Dispose() { EXPECT_DEATH(Test(), ""); }
@@ -1632,7 +1639,7 @@ class PreFinalizerHashTableBackingExpandForbidden
 };
 
 TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
-  new PreFinalizerHashTableBackingExpandForbidden();
+  MakeGarbageCollected<PreFinalizerHashTableBackingExpandForbidden>();
   PreciselyCollectGarbage();
 }
 
@@ -1874,7 +1881,7 @@ TEST(HeapTest, SimpleAllocation) {
   EXPECT_EQ(0ul, heap.ObjectPayloadSizeForTesting());
 
   // Allocate an object in the heap.
-  HeapAllocatedArray* array = new HeapAllocatedArray();
+  HeapAllocatedArray* array = MakeGarbageCollected<HeapAllocatedArray>();
   EXPECT_TRUE(heap.ObjectPayloadSizeForTesting() >= sizeof(HeapAllocatedArray));
 
   // Sanity check of the contents in the heap.
@@ -1918,13 +1925,13 @@ TEST(HeapTest, FreelistReuse) {
   ClearOutOldGarbage();
 
   for (int i = 0; i < 100; i++)
-    new IntWrapper(i);
-  IntWrapper* p1 = new IntWrapper(100);
+    MakeGarbageCollected<IntWrapper>(i);
+  IntWrapper* p1 = MakeGarbageCollected<IntWrapper>(100);
   PreciselyCollectGarbage();
   // In non-production builds, we delay reusing freed memory for at least
   // one GC cycle.
   for (int i = 0; i < 100; i++) {
-    IntWrapper* p2 = new IntWrapper(i);
+    IntWrapper* p2 = MakeGarbageCollected<IntWrapper>(i);
     EXPECT_NE(p1, p2);
   }
 
@@ -1933,7 +1940,7 @@ TEST(HeapTest, FreelistReuse) {
   // Now the freed memory in the first GC should be reused.
   bool reused_memory_found = false;
   for (int i = 0; i < 10000; i++) {
-    IntWrapper* p2 = new IntWrapper(i);
+    IntWrapper* p2 = MakeGarbageCollected<IntWrapper>(i);
     if (p1 == p2) {
       reused_memory_found = true;
       break;
@@ -1966,11 +1973,11 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
 
   // Create free lists that can be reused for IntWrappers created in
   // LargeHeapObject::create().
-  Persistent<IntWrapper> p1 = new IntWrapper(1);
+  Persistent<IntWrapper> p1 = MakeGarbageCollected<IntWrapper>(1);
   for (int i = 0; i < 100; i++) {
-    new IntWrapper(i);
+    MakeGarbageCollected<IntWrapper>(i);
   }
-  Persistent<IntWrapper> p2 = new IntWrapper(2);
+  Persistent<IntWrapper> p2 = MakeGarbageCollected<IntWrapper>(2);
   PreciselyCollectGarbage();
   PreciselyCollectGarbage();
 
@@ -2012,15 +2019,13 @@ class SimpleFinalizedEagerObjectBase
 class SimpleFinalizedEagerObject : public SimpleFinalizedEagerObjectBase {
  public:
   static SimpleFinalizedEagerObject* Create() {
-    return new SimpleFinalizedEagerObject();
+    return MakeGarbageCollected<SimpleFinalizedEagerObject>();
   }
 
+  SimpleFinalizedEagerObject() = default;
   ~SimpleFinalizedEagerObject() override { ++destructor_calls_; }
 
   static int destructor_calls_;
-
- private:
-  SimpleFinalizedEagerObject() = default;
 };
 
 template <typename T>
@@ -2034,16 +2039,15 @@ class SimpleFinalizedObjectInstanceOfTemplate final
       public ParameterizedButEmpty<SimpleFinalizedObjectInstanceOfTemplate> {
  public:
   static SimpleFinalizedObjectInstanceOfTemplate* Create() {
-    return new SimpleFinalizedObjectInstanceOfTemplate();
+    return MakeGarbageCollected<SimpleFinalizedObjectInstanceOfTemplate>();
   }
+
+  SimpleFinalizedObjectInstanceOfTemplate() = default;
   ~SimpleFinalizedObjectInstanceOfTemplate() { ++destructor_calls_; }
 
   void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
-
- private:
-  SimpleFinalizedObjectInstanceOfTemplate() = default;
 };
 
 int SimpleFinalizedEagerObject::destructor_calls_ = 0;
@@ -2423,7 +2427,7 @@ typedef std::pair<int, WeakMember<IntWrapper>> PairUnwrappedWeak;
 
 class Container : public GarbageCollected<Container> {
  public:
-  static Container* Create() { return new Container(); }
+  static Container* Create() { return MakeGarbageCollected<Container>(); }
   HeapHashMap<Member<IntWrapper>, Member<IntWrapper>> map;
   HeapHashSet<Member<IntWrapper>> set;
   HeapHashSet<Member<IntWrapper>> set2;
@@ -3848,9 +3852,9 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
 TEST(HeapTest, HeapHashCountedSetToVector) {
   HeapHashCountedSet<Member<IntWrapper>> set;
   HeapVector<Member<IntWrapper>> vector;
-  set.insert(new IntWrapper(1));
-  set.insert(new IntWrapper(1));
-  set.insert(new IntWrapper(2));
+  set.insert(MakeGarbageCollected<IntWrapper>(1));
+  set.insert(MakeGarbageCollected<IntWrapper>(1));
+  set.insert(MakeGarbageCollected<IntWrapper>(2));
 
   CopyToVector(set, vector);
   EXPECT_EQ(3u, vector.size());
@@ -3868,9 +3872,9 @@ TEST(HeapTest, HeapHashCountedSetToVector) {
 TEST(HeapTest, WeakHeapHashCountedSetToVector) {
   HeapHashCountedSet<WeakMember<IntWrapper>> set;
   HeapVector<Member<IntWrapper>> vector;
-  set.insert(new IntWrapper(1));
-  set.insert(new IntWrapper(1));
-  set.insert(new IntWrapper(2));
+  set.insert(MakeGarbageCollected<IntWrapper>(1));
+  set.insert(MakeGarbageCollected<IntWrapper>(1));
+  set.insert(MakeGarbageCollected<IntWrapper>(2));
 
   CopyToVector(set, vector);
   EXPECT_LE(3u, vector.size());
@@ -4409,7 +4413,7 @@ TEST(HeapTest, VectorDestructors) {
   InlinedVectorObject::destructor_calls_ = 0;
   {
     Persistent<InlinedVectorObjectWrapper> vector_wrapper =
-        new InlinedVectorObjectWrapper();
+        MakeGarbageCollected<InlinedVectorObjectWrapper>();
     ConservativelyCollectGarbage();
     EXPECT_EQ(2, InlinedVectorObject::destructor_calls_);
   }
@@ -4455,7 +4459,7 @@ TEST(HeapTest, VectorDestructorsWithVtable) {
   InlinedVectorObjectWithVtable::destructor_calls_ = 0;
   {
     Persistent<InlinedVectorObjectWithVtableWrapper> vector_wrapper =
-        new InlinedVectorObjectWithVtableWrapper();
+        MakeGarbageCollected<InlinedVectorObjectWithVtableWrapper>();
     ConservativelyCollectGarbage();
     EXPECT_EQ(3, InlinedVectorObjectWithVtable::destructor_calls_);
   }
@@ -4481,7 +4485,7 @@ TEST(HeapTest, HeapLinkedStack) {
   IntWrapper::destructor_calls_ = 0;
 
   HeapLinkedStack<TerminatedArrayItem>* stack =
-      new HeapLinkedStack<TerminatedArrayItem>();
+      MakeGarbageCollected<HeapLinkedStack<TerminatedArrayItem>>();
 
   const wtf_size_t kStackSize = 10;
 
@@ -4511,7 +4515,7 @@ TEST(HeapTest, AllocationDuringFinalization) {
   LargeHeapObject::destructor_calls_ = 0;
 
   Persistent<IntWrapper> wrapper;
-  new FinalizationAllocator(&wrapper);
+  MakeGarbageCollected<FinalizationAllocator>(&wrapper);
 
   PreciselyCollectGarbage();
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
@@ -4537,7 +4541,7 @@ TEST(HeapTest, AllocationDuringPrefinalizer) {
   LargeHeapObject::destructor_calls_ = 0;
 
   Persistent<IntWrapper> wrapper;
-  new PreFinalizationAllocator(&wrapper);
+  MakeGarbageCollected<PreFinalizationAllocator>(&wrapper);
 
   PreciselyCollectGarbage();
   EXPECT_EQ(0, IntWrapper::destructor_calls_);
@@ -5216,12 +5220,13 @@ TEST(HeapTest, EphemeronsPointToEphemerons) {
   Persistent<EphemeronWrapper> chain;
   for (int i = 0; i < 100; i++) {
     EphemeronWrapper* old_head = chain;
-    chain = new EphemeronWrapper();
+    chain = MakeGarbageCollected<EphemeronWrapper>();
     if (i == 50)
       chain->GetMap().insert(key2, old_head);
     else
       chain->GetMap().insert(key, old_head);
-    chain->GetMap().insert(IntWrapper::Create(103), new EphemeronWrapper());
+    chain->GetMap().insert(IntWrapper::Create(103),
+                           MakeGarbageCollected<EphemeronWrapper>());
   }
 
   PreciselyCollectGarbage();
@@ -5351,8 +5356,8 @@ TEST(HeapTest, IndirectStrongToWeak) {
   Persistent<IntWrapper> dead_object =
       IntWrapper::Create(100);  // Named for "Drowning by Numbers" (1988).
   Persistent<IntWrapper> life_object = IntWrapper::Create(42);
-  map->insert(dead_object, new Link1(dead_object));
-  map->insert(life_object, new Link1(life_object));
+  map->insert(dead_object, MakeGarbageCollected<Link1>(dead_object));
+  map->insert(life_object, MakeGarbageCollected<Link1>(life_object));
   EXPECT_EQ(2u, map->size());
   PreciselyCollectGarbage();
   EXPECT_EQ(2u, map->size());
@@ -5605,7 +5610,8 @@ class MarkingSameThreadCheckTester {
     std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
         ThreadCreationParams(WebThreadType::kTestThread)
             .SetThreadNameForTest("Test Worker Thread"));
-    Persistent<MainThreadObject> main_thread_object = new MainThreadObject();
+    Persistent<MainThreadObject> main_thread_object =
+        MakeGarbageCollected<MainThreadObject>();
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&MarkingSameThreadCheckTester::WorkerThreadMain,
@@ -5715,18 +5721,16 @@ class DestructorLockingObject
     : public GarbageCollectedFinalized<DestructorLockingObject> {
  public:
   static DestructorLockingObject* Create() {
-    return new DestructorLockingObject();
+    return MakeGarbageCollected<DestructorLockingObject>();
   }
 
+  DestructorLockingObject() = default;
   virtual ~DestructorLockingObject() {
     ++destructor_calls_;
   }
 
   static int destructor_calls_;
   void Trace(blink::Visitor* visitor) {}
-
- private:
-  DestructorLockingObject() = default;
 };
 
 int DestructorLockingObject::destructor_calls_ = 0;
@@ -5767,7 +5771,7 @@ class PartObject {
 class AllocatesOnAssignment {
  public:
   AllocatesOnAssignment(std::nullptr_t) : value_(nullptr) {}
-  AllocatesOnAssignment(int x) : value_(new IntWrapper(x)) {}
+  AllocatesOnAssignment(int x) : value_(MakeGarbageCollected<IntWrapper>(x)) {}
   AllocatesOnAssignment(IntWrapper* x) : value_(x) {}
 
   AllocatesOnAssignment& operator=(const AllocatesOnAssignment x) {
@@ -5780,7 +5784,7 @@ class AllocatesOnAssignment {
   AllocatesOnAssignment(const AllocatesOnAssignment& other) {
     if (!ThreadState::Current()->IsGCForbidden())
       ConservativelyCollectGarbage();
-    value_ = new IntWrapper(other.value_->Value());
+    value_ = MakeGarbageCollected<IntWrapper>(other.value_->Value());
   }
 
   AllocatesOnAssignment(DeletedMarker) : value_(WTF::kHashTableDeletedValue) {}
@@ -5852,7 +5856,7 @@ namespace blink {
 TEST(HeapTest, GCInHashMapOperations) {
   typedef HeapHashMap<AllocatesOnAssignment, AllocatesOnAssignment> Map;
   Map* map = MakeGarbageCollected<Map>();
-  IntWrapper* key = new IntWrapper(42);
+  IntWrapper* key = MakeGarbageCollected<IntWrapper>(42);
   map->insert(key, AllocatesOnAssignment(103));
   map->erase(key);
   for (int i = 0; i < 10; i++)
@@ -5878,7 +5882,8 @@ class ObjectWithVirtualPartObject
 };
 
 TEST(HeapTest, PartObjectWithVirtualMethod) {
-  ObjectWithVirtualPartObject* object = new ObjectWithVirtualPartObject();
+  ObjectWithVirtualPartObject* object =
+      MakeGarbageCollected<ObjectWithVirtualPartObject>();
   EXPECT_TRUE(object);
 }
 
@@ -5905,7 +5910,7 @@ class AllocInSuperConstructorArgument
 // an object with an uninitialized vtable.
 TEST(HeapTest, AllocationInSuperConstructorArgument) {
   AllocInSuperConstructorArgument* object =
-      new AllocInSuperConstructorArgument();
+      MakeGarbageCollected<AllocInSuperConstructorArgument>();
   EXPECT_TRUE(object);
   ThreadState::Current()->CollectAllGarbage();
 }
@@ -5925,7 +5930,7 @@ class NonNodeAllocatingNodeInDestructor
 Persistent<IntNode>* NonNodeAllocatingNodeInDestructor::node_ = nullptr;
 
 TEST(HeapTest, NonNodeAllocatingNodeInDestructor) {
-  new NonNodeAllocatingNodeInDestructor();
+  MakeGarbageCollected<NonNodeAllocatingNodeInDestructor>();
   PreciselyCollectGarbage();
   EXPECT_EQ(10, (*NonNodeAllocatingNodeInDestructor::node_)->Value());
   delete NonNodeAllocatingNodeInDestructor::node_;
@@ -5999,7 +6004,7 @@ TEST(HeapTest, TraceDeepEagerly) {
 #if !DCHECK_IS_ON() && !defined(OS_ANDROID)
   DeepEagerly* obj = nullptr;
   for (int i = 0; i < 10000000; i++)
-    obj = new DeepEagerly(obj);
+    obj = MakeGarbageCollected<DeepEagerly>(obj);
 
   Persistent<DeepEagerly> persistent(obj);
   PreciselyCollectGarbage();
@@ -6354,7 +6359,7 @@ class WeakPersistentHolder final {
 };
 
 TEST(HeapTest, WeakPersistent) {
-  Persistent<IntWrapper> object = new IntWrapper(20);
+  Persistent<IntWrapper> object = MakeGarbageCollected<IntWrapper>(20);
   std::unique_ptr<WeakPersistentHolder> holder =
       std::make_unique<WeakPersistentHolder>(object);
   PreciselyCollectGarbage();
@@ -6465,7 +6470,7 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
                                     int_wrapper, ());
     Persistent<IntWrapper>& handle = *int_wrapper;
     if (!handle) {
-      handle = new IntWrapper(42);
+      handle = MakeGarbageCollected<IntWrapper>(42);
       handle.RegisterAsStaticReference();
     }
     return *handle;
@@ -6477,9 +6482,11 @@ class ThreadedClearOnShutdownTester::HeapObject final
           ThreadedClearOnShutdownTester::HeapObject> {
  public:
   static HeapObject* Create(bool test_destructor) {
-    return new HeapObject(test_destructor);
+    return MakeGarbageCollected<HeapObject>(test_destructor);
   }
 
+  explicit HeapObject(bool test_destructor)
+      : test_destructor_(test_destructor) {}
   ~HeapObject() {
     if (!test_destructor_)
       return;
@@ -6498,9 +6505,6 @@ class ThreadedClearOnShutdownTester::HeapObject final
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  explicit HeapObject(bool test_destructor)
-      : test_destructor_(test_destructor) {}
-
   bool test_destructor_;
 };
 
@@ -6544,16 +6548,16 @@ TEST(HeapTest, TestClearOnShutdown) {
 class WithWeakConstObject final : public GarbageCollected<WithWeakConstObject> {
  public:
   static WithWeakConstObject* Create(const IntWrapper* int_wrapper) {
-    return new WithWeakConstObject(int_wrapper);
+    return MakeGarbageCollected<WithWeakConstObject>(int_wrapper);
   }
+
+  WithWeakConstObject(const IntWrapper* int_wrapper) : wrapper_(int_wrapper) {}
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_); }
 
   const IntWrapper* Value() const { return wrapper_; }
 
  private:
-  WithWeakConstObject(const IntWrapper* int_wrapper) : wrapper_(int_wrapper) {}
-
   WeakMember<const IntWrapper> wrapper_;
 };
 
@@ -6649,7 +6653,7 @@ class DoublyLinkedListNodeImpl
  public:
   DoublyLinkedListNodeImpl() = default;
   static DoublyLinkedListNodeImpl* Create() {
-    return new DoublyLinkedListNodeImpl();
+    return MakeGarbageCollected<DoublyLinkedListNodeImpl>();
   }
 
   static int destructor_calls_;
@@ -6673,7 +6677,7 @@ class HeapDoublyLinkedListContainer
     : public GarbageCollected<HeapDoublyLinkedListContainer<T>> {
  public:
   static HeapDoublyLinkedListContainer<T>* Create() {
-    return new HeapDoublyLinkedListContainer<T>();
+    return MakeGarbageCollected<HeapDoublyLinkedListContainer<T>>();
   }
   HeapDoublyLinkedListContainer<T>() = default;
   HeapDoublyLinkedList<T> list_;
@@ -6706,7 +6710,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapVector) {
   Address before;
   {
     HeapVector<Member<IntWrapper>> vector;
-    vector.push_back(new IntWrapper(0));
+    vector.push_back(MakeGarbageCollected<IntWrapper>(0));
     NormalPage* normal_page =
         static_cast<NormalPage*>(PageFromObject(vector.data()));
     normal_arena = normal_page->ArenaForNormalPage();
@@ -6723,7 +6727,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapDeque) {
   Address before;
   {
     HeapDeque<Member<IntWrapper>> deque;
-    deque.push_back(new IntWrapper(0));
+    deque.push_back(MakeGarbageCollected<IntWrapper>(0));
     NormalPage* normal_page =
         static_cast<NormalPage*>(PageFromObject(&deque.front()));
     normal_arena = normal_page->ArenaForNormalPage();
@@ -6742,7 +6746,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapHashSet) {
   Address before;
   {
     HeapHashSet<Member<IntWrapper>> hash_set;
-    hash_set.insert(new IntWrapper(0));
+    hash_set.insert(MakeGarbageCollected<IntWrapper>(0));
     before = normal_arena->CurrentAllocationPoint();
   }
   Address after = normal_arena->CurrentAllocationPoint();
@@ -6758,7 +6762,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapListHashSet) {
   Address before;
   {
     HeapListHashSet<Member<IntWrapper>> list_hash_set;
-    list_hash_set.insert(new IntWrapper(0));
+    list_hash_set.insert(MakeGarbageCollected<IntWrapper>(0));
     before = normal_arena->CurrentAllocationPoint();
   }
   Address after = normal_arena->CurrentAllocationPoint();
@@ -6773,7 +6777,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapLinkedHashSet) {
   Address before;
   {
     HeapLinkedHashSet<Member<IntWrapper>> linked_hash_set;
-    linked_hash_set.insert(new IntWrapper(0));
+    linked_hash_set.insert(MakeGarbageCollected<IntWrapper>(0));
     before = normal_arena->CurrentAllocationPoint();
   }
   Address after = normal_arena->CurrentAllocationPoint();
@@ -6787,7 +6791,7 @@ TEST(HeapTest, ShrinkVector) {
   HeapVector<Member<IntWrapper>> vector;
   vector.ReserveCapacity(32);
   for (int i = 0; i < 4; i++) {
-    vector.push_back(new IntWrapper(i));
+    vector.push_back(MakeGarbageCollected<IntWrapper>(i));
   }
 
   ConservativelyCollectGarbage(BlinkGC::kLazySweeping);

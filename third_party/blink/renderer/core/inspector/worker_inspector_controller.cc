@@ -85,9 +85,9 @@ WorkerInspectorController::WorkerInspectorController(
   if (!parent_devtools_token_.is_empty() && io_task_runner) {
     // There may be no io task runner in unit tests.
     wait_for_debugger_ = devtools_params->wait_for_debugger;
-    agent_ = new DevToolsAgent(this, inspected_frames_.Get(), probe_sink_.Get(),
-                               std::move(inspector_task_runner),
-                               std::move(io_task_runner));
+    agent_ = MakeGarbageCollected<DevToolsAgent>(
+        this, inspected_frames_.Get(), probe_sink_.Get(),
+        std::move(inspector_task_runner), std::move(io_task_runner));
     agent_->BindRequest(std::move(devtools_params->agent_host_ptr_info),
                         std::move(devtools_params->agent_request),
                         thread->GetTaskRunner(TaskType::kInternalInspector));

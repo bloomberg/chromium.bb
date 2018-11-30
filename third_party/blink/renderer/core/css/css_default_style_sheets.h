@@ -42,6 +42,8 @@ class CSSDefaultStyleSheets
  public:
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
 
+  CSSDefaultStyleSheets();
+
   bool EnsureDefaultStyleSheetsForElement(const Element&);
   void EnsureDefaultStyleSheetForFullscreen();
 
@@ -86,7 +88,6 @@ class CSSDefaultStyleSheets
   void Trace(blink::Visitor*);
 
  private:
-  CSSDefaultStyleSheets();
   void InitializeDefaultStyles();
 
   Member<RuleSet> default_style_;

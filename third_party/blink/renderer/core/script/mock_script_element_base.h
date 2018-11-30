@@ -19,7 +19,7 @@ class MockScriptElementBase
 
  public:
   static MockScriptElementBase* Create() {
-    return new testing::StrictMock<MockScriptElementBase>();
+    return MakeGarbageCollected<testing::StrictMock<MockScriptElementBase>>();
   }
   virtual ~MockScriptElementBase() {}
 

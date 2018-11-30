@@ -45,30 +45,11 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
                                          InterpolationValue&& end,
                                          AnimatableValue* compositor_start,
                                          AnimatableValue* compositor_end) {
-    return new TransitionInterpolation(property, type, std::move(start),
-                                       std::move(end), compositor_start,
-                                       compositor_end);
+    return MakeGarbageCollected<TransitionInterpolation>(
+        property, type, std::move(start), std::move(end), compositor_start,
+        compositor_end);
   }
 
-  void Apply(StyleResolverState&) const;
-
-  bool IsTransitionInterpolation() const final { return true; }
-
-  const PropertyHandle& GetProperty() const final { return property_; }
-
-  std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
-
-  AnimatableValue* GetInterpolatedCompositorValue() const;
-
-  void Interpolate(int iteration, double fraction) final;
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(compositor_start_);
-    visitor->Trace(compositor_end_);
-    Interpolation::Trace(visitor);
-  }
-
- protected:
   TransitionInterpolation(const PropertyHandle& property,
                           const InterpolationType& type,
                           InterpolationValue&& start,
@@ -93,6 +74,24 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
     cached_interpolable_value_ = merge_.start_interpolable_value->Clone();
     DCHECK_EQ(compositor_start_ && compositor_end_,
               property_.GetCSSProperty().IsCompositableProperty());
+  }
+
+  void Apply(StyleResolverState&) const;
+
+  bool IsTransitionInterpolation() const final { return true; }
+
+  const PropertyHandle& GetProperty() const final { return property_; }
+
+  std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
+
+  AnimatableValue* GetInterpolatedCompositorValue() const;
+
+  void Interpolate(int iteration, double fraction) final;
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(compositor_start_);
+    visitor->Trace(compositor_end_);
+    Interpolation::Trace(visitor);
   }
 
  private:
