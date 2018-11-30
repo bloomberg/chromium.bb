@@ -236,13 +236,7 @@ class ProfileChooserViewExtensionsTest
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
 
-#if defined(OS_WIN)
-#define MAYBE_SigninButtonHasFocus DISABLED_SigninButtonHasFocus
-#else
-#define MAYBE_SigninButtonHasFocus SigninButtonHasFocus
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       MAYBE_SigninButtonHasFocus) {
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
 
@@ -470,8 +464,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_Guest) {
 // TODO: Flaking test crbug.com/802374
 // Shows the |ProfileChooserView| during a Guest browsing session when the DICE
 // flag is enabled.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       DISABLED_InvokeUi_DiceGuest) {
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_DiceGuest) {
   ScopedAccountConsistencyDice scoped_dice;
   ShowAndVerifyUi();
 }
