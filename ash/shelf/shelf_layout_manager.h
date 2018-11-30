@@ -370,7 +370,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
-  bool updating_bounds_;
+  bool updating_bounds_ = false;
 
   bool in_shutdown_ = false;
 

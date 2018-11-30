@@ -166,8 +166,7 @@ bool ShelfLayoutManager::State::Equals(const State& other) const {
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
-    : updating_bounds_(false),
-      shelf_widget_(shelf_widget),
+    : shelf_widget_(shelf_widget),
       shelf_(shelf),
       is_background_blur_enabled_(
           app_list_features::IsBackgroundBlurEnabled()) {
@@ -342,9 +341,10 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
   if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
     return;
 
-  if (event->type() == ui::ET_MOUSE_MOVED ||
-      event->type() == ui::ET_MOUSE_ENTERED ||
-      event->type() == ui::ET_MOUSE_EXITED) {
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      (event->type() == ui::ET_MOUSE_MOVED &&
+       GetVisibleShelfBounds().Contains(
+           display::Screen::GetScreen()->GetCursorScreenPoint()))) {
     UpdateAutoHideState();
   }
 }

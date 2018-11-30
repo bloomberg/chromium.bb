@@ -424,6 +424,17 @@ class ShelfLayoutManagerTest : public AshTestBase {
         ->layer();
   }
 
+  // If |layout_manager->auto_hide_timer_| is running, stops it, runs its task,
+  // and returns true. Otherwise, returns false.
+  bool TriggerAutoHideTimeout() const {
+    ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+    if (!layout_manager->auto_hide_timer_.IsRunning())
+      return false;
+
+    layout_manager->auto_hide_timer_.FireNow();
+    return true;
+  }
+
  private:
   base::TimeTicks timestamp_;
   gfx::Point current_point_;
@@ -2468,6 +2479,62 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   generator->GestureTapAt(
       GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+}
+
+// Tests the auto-hide shelf status with mouse events.
+TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  Shelf* shelf = GetPrimaryShelf();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(0, 0);
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start(display_bounds.bottom_center());
+  const gfx::Point end(start + gfx::Vector2d(0, -80));
+  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const int kNumScrollSteps = 4;
+  // Swipe up to show the auto-hide shelf.
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Move the mouse should not hide the AUTO_HIDE_SHOWN shelf.
+  generator->MoveMouseTo(5, 5);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Mouse press outside the shelf should hide the AUTO_HIDE_SHOWN shelf.
+  generator->PressLeftButton();
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Move the mouse to the position which is contained by the bounds of the
+  // shelf when it is visible should show the auto-hide shelf.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  const int display_bottom = display.bounds().bottom();
+  generator->MoveMouseTo(1, display_bottom - 1);
+  ASSERT_TRUE(TriggerAutoHideTimeout());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Mouse press inside the shelf should not hide the AUTO_HIDE_SHOWN shelf.
+  generator->MoveMouseTo(
+      GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Mouse press the system tray should open the system tray bubble.
+  generator->MoveMouseTo(
+      GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
+  generator->PressLeftButton();
+  generator->ReleaseLeftButton();
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
 }
 
