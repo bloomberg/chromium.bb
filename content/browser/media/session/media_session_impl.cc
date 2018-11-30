@@ -208,7 +208,7 @@ void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
 }
 
 void MediaSessionImpl::NotifyMediaSessionMetadataChange(
-    const base::Optional<MediaMetadata>& metadata) {
+    const base::Optional<media_session::MediaMetadata>& metadata) {
   for (auto& observer : observers_)
     observer.MediaSessionMetadataChanged(metadata);
 }

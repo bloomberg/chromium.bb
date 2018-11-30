@@ -16,6 +16,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
@@ -271,14 +272,14 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  services_[main_frame_]->SetMetadata(MediaMetadata());
+  services_[main_frame_]->SetMetadata(media_session::MediaMetadata());
   services_[main_frame_]->EnableAction(
       media_session::mojom::MediaSessionAction::kPlay);
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
        NotifyMetadataAndActionsChangeWhenControllable) {
-  MediaMetadata expected_metadata;
+  media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
@@ -311,7 +312,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
 TEST_F(MediaSessionImplServiceRoutingTest,
        NotifyMetadataAndActionsChangeWhenTurningControllable) {
-  MediaMetadata expected_metadata;
+  media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
@@ -337,7 +338,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
 TEST_F(MediaSessionImplServiceRoutingTest,
        DontNotifyMetadataAndActionsChangeWhenTurningUncontrollable) {
-  MediaMetadata expected_metadata;
+  media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");

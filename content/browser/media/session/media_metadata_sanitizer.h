@@ -5,17 +5,20 @@
 #ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_METADATA_SANITIZER_H_
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_METADATA_SANITIZER_H_
 
-namespace content {
-
+namespace media_session {
 struct MediaMetadata;
+}  // namespace media_session
+
+namespace content {
 
 class MediaMetadataSanitizer {
  public:
   // Check the sanity of |metadata|.
-  static bool CheckSanity(const MediaMetadata& metadata);
+  static bool CheckSanity(const media_session::MediaMetadata& metadata);
 
   // Sanitizes |metadata| and return the result.
-  static MediaMetadata Sanitize(const MediaMetadata& metadata);
+  static media_session::MediaMetadata Sanitize(
+      const media_session::MediaMetadata& metadata);
 };
 
 }  // namespace content

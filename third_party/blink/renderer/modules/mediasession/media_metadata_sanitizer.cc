@@ -59,16 +59,16 @@ bool CheckMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
 
 // Sanitize MediaImage and do mojo serialization. Returns null when
 // |image.src()| is bad.
-blink::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
+media_session::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
     const MediaImage* image,
     ExecutionContext* context) {
-  blink::mojom::blink::MediaImagePtr mojo_image;
+  media_session::mojom::blink::MediaImagePtr mojo_image;
 
   KURL url = KURL(image->src());
   if (!CheckMediaImageSrcSanity(url, context))
     return mojo_image;
 
-  mojo_image = blink::mojom::blink::MediaImage::New();
+  mojo_image = media_session::mojom::blink::MediaImage::New();
   mojo_image->src = url;
   mojo_image->type = image->type().Left(kMaxImageTypeLength);
   for (const auto& web_size :
@@ -87,21 +87,21 @@ blink::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
 
 }  // anonymous namespace
 
-blink::mojom::blink::MediaMetadataPtr
+media_session::mojom::blink::MediaMetadataPtr
 MediaMetadataSanitizer::SanitizeAndConvertToMojo(const MediaMetadata* metadata,
                                                  ExecutionContext* context) {
-  blink::mojom::blink::MediaMetadataPtr mojo_metadata;
+  media_session::mojom::blink::MediaMetadataPtr mojo_metadata;
   if (!metadata)
     return mojo_metadata;
 
-  mojo_metadata = blink::mojom::blink::MediaMetadata::New();
+  mojo_metadata = media_session::mojom::blink::MediaMetadata::New();
 
   mojo_metadata->title = metadata->title().Left(kMaxStringLength);
   mojo_metadata->artist = metadata->artist().Left(kMaxStringLength);
   mojo_metadata->album = metadata->album().Left(kMaxStringLength);
 
   for (const MediaImage* image : metadata->artwork()) {
-    blink::mojom::blink::MediaImagePtr mojo_image =
+    media_session::mojom::blink::MediaImagePtr mojo_image =
         SanitizeMediaImageAndConvertToMojo(image, context);
     if (!mojo_image.is_null())
       mojo_metadata->artwork.push_back(std::move(mojo_image));
