@@ -435,7 +435,7 @@ class PickleWriter final : public TracedValue::Writer {
 
 std::unique_ptr<TracedValue::Writer> CreateWriter(size_t capacity) {
   TracedValue::WriterFactoryCallback callback =
-      g_writer_factory_callback.load(std::memory_order_relaxed);
+      g_writer_factory_callback.load();
   if (callback) {
     return callback(capacity);
   }
