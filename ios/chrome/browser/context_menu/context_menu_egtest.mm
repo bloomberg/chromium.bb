@@ -60,7 +60,7 @@ const char kDestinationPageUrl[] = "/destination";
 // HTML content of the destination page.
 const char kDestinationHtml[] =
     "<html><body><script>document.title='new doc'</script>"
-    "<span id=\"message\">You made it!</span>"
+    "<center><span id=\"message\">You made it!</span></center>"
     "</body></html>";
 // The DOM element ID of the message on the destination page.
 const char kDestinationPageTextId[] = "message";
