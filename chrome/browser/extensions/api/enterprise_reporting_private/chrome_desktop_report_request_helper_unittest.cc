@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -241,6 +242,18 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportSafeBrowsingData) {
   EXPECT_FALSE(request->browser_report()
                    .chrome_user_profile_reports(0)
                    .has_safe_browsing_warnings_click_through());
+}
+
+TEST_F(ChromeDesktopReportRequestGeneratorTest, SerialNumberNotEmpty) {
+  std::unique_ptr<em::ChromeDesktopReportRequest> request;
+  request =
+      GenerateChromeDesktopReportRequest(base::DictionaryValue(), &profile_);
+  ASSERT_TRUE(request);
+#if defined(OS_WIN)
+  EXPECT_NE(request->browser_report().serial_number(), std::string());
+#else
+  EXPECT_TRUE(request->browser_report().serial_number().empty());
+#endif
 }
 
 }  // namespace extensions
