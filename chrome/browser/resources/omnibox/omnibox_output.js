@@ -562,6 +562,11 @@ cr.define('omnibox_output', function() {
     get hasAdditionalProperties() {
       return Object.keys(this.additionalProperties).length > 0;
     }
+
+    /** @return !Array<!OutputProperty> */
+    get allProperties() {
+      return Object.values(this.properties).concat(this.additionalProperties);
+    }
   }
 
   /** @abstract */
@@ -767,11 +772,10 @@ cr.define('omnibox_output', function() {
      * @return {boolean}
      */
     static filterMatch_(match, filterText) {
-      const row = match.associatedElement;
-      const cells = Array.from(row.querySelectorAll('td'));
       const regexFilter = Array.from(filterText).join('(.*\\.)?');
-      return cells
-          .map(cell => FilterDelegate.textToWords_(cell.textContent).join('.'))
+      return match.allProperties
+          .map(property => property.text)
+          .map(text => FilterDelegate.textToWords_(text).join('.'))
           .some(text => text.match(regexFilter));
     }
 
