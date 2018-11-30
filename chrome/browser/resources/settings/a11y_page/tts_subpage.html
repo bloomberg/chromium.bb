@@ -89,7 +89,8 @@
     <div class="settings-box continuation">
       <cr-input id="previewInput" label="$i18n{textToSpeechPreviewInputLabel}"
           value="$i18n{textToSpeechPreviewInput}">
-        <paper-button on-click="onPreviewTtsClick_" disabled="[[!hasVoices]]"
+        <paper-button on-click="onPreviewTtsClick_"
+            disabled="[[!enablePreviewButton_(allVoices, isPreviewing_)]]"
             slot="suffix">
           $i18n{textToSpeechPreviewPlay}
         </paper-button>

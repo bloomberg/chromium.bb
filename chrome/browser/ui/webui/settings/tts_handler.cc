@@ -108,6 +108,18 @@ void TtsHandler::OnVoicesChanged() {
   HandleGetTtsExtensions(nullptr);
 }
 
+void TtsHandler::OnTtsEvent(content::Utterance* utterance,
+                            content::TtsEventType event_type,
+                            int char_index,
+                            const std::string& error_message) {
+  if (event_type == content::TTS_EVENT_END ||
+      event_type == content::TTS_EVENT_INTERRUPTED ||
+      event_type == content::TTS_EVENT_ERROR) {
+    base::Value result(false /* preview stopped */);
+    FireWebUIListener("tts-preview-state-changed", result);
+  }
+}
+
 void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
   std::string text;
@@ -131,8 +143,11 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
   utterance->set_voice_name(name);
   utterance->set_extension_id(extension_id);
   utterance->set_src_url(GURL("chrome://settings/manageAccessibility/tts"));
-  utterance->set_event_delegate(nullptr);
+  utterance->set_event_delegate(this);
   content::TtsController::GetInstance()->Stop();
+
+  base::Value result(true /* preview started */);
+  FireWebUIListener("tts-preview-state-changed", result);
   content::TtsController::GetInstance()->SpeakOrEnqueue(utterance);
 }
 
@@ -159,6 +174,7 @@ void TtsHandler::OnJavascriptAllowed() {
 
 void TtsHandler::OnJavascriptDisallowed() {
   content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+  content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
 }
 
 int TtsHandler::GetVoiceLangMatchScore(const content::VoiceData* voice,

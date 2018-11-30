@@ -49,6 +49,15 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Whether preview is currently speaking.
+     * @private
+     */
+    isPreviewing_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** Whether any voices are loaded. */
     hasVoices: {
       type: Boolean,
@@ -69,6 +78,8 @@ Polymer({
     chrome.send('getAllTtsVoiceData');
     this.addWebUIListener(
         'tts-extensions-updated', this.populateExtensionList_.bind(this));
+    this.addWebUIListener(
+        'tts-preview-state-changed', this.onTtsPreviewStateChanged_.bind(this));
     chrome.send('getTtsExtensions');
   },
 
@@ -135,6 +146,17 @@ Polymer({
    */
   hasVoices_: function(voices) {
     return voices.length > 0;
+  },
+
+  /**
+   * Returns true if voices are loaded and preview is not currently speaking.
+   * @param {!Array<TtsHandlerVoice>} voices
+   * @param {boolean} isPreviewing
+   * @return {boolean}
+   * @private
+   */
+  enablePreviewButton_: function(voices, isPreviewing) {
+    return this.hasVoices_(voices) && !isPreviewing;
   },
 
   /**
@@ -206,6 +228,16 @@ Polymer({
    */
   populateExtensionList_: function(extensions) {
     this.extensions = extensions;
+  },
+
+  /**
+   * Called when the TTS voice preview state changes between speaking and not
+   * speaking.
+   * @param {boolean} isSpeaking
+   * @private
+   */
+  onTtsPreviewStateChanged_: function(isSpeaking) {
+    this.isPreviewing_ = isSpeaking;
   },
 
   /**
