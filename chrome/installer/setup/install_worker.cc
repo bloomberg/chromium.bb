@@ -721,16 +721,14 @@ base::string16 GetUpdatedBrandCode(const base::string16& brand_code) {
 
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
-                            const base::FilePath& src_path,
-                            const base::FilePath& temp_path,
                             const base::Version* current_version,
                             const base::Version& new_version,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
   HKEY root = installer_state.root_key();
-  const base::FilePath& target_path = installer_state.target_path();
-  base::FilePath new_chrome_exe(target_path.Append(kChromeNewExe));
+  base::FilePath new_chrome_exe(
+      installer_state.target_path().Append(installer::kChromeNewExe));
 
   // Append work items that will only be executed if this was an update.
   // We update the 'opv' value with the current version that is active,
@@ -781,12 +779,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField,
         product_rename_cmd.GetCommandLineString(), true);
 
-    // Delay deploying the new chrome_proxy while chrome is running.
-    in_use_update_work_items->AddCopyTreeWorkItem(
-        src_path.Append(kChromeProxyExe).value(),
-        target_path.Append(kChromeProxyNewExe).value(), temp_path.value(),
-        WorkItem::ALWAYS);
-
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
   }
 
@@ -806,13 +798,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         google_update::kRegCriticalVersionField);
     regular_update_work_items->AddDeleteRegValueWorkItem(
         root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField);
-
-    // Only copy chrome_proxy.exe directly when chrome.exe isn't in use to avoid
-    // different versions getting mixed up between the two binaries.
-    regular_update_work_items->AddCopyTreeWorkItem(
-        src_path.Append(kChromeProxyExe).value(),
-        target_path.Append(kChromeProxyExe).value(), temp_path.value(),
-        WorkItem::ALWAYS);
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }
@@ -954,8 +939,11 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddUpdateBrandCodeWorkItem(installer_state, install_list);
 
   // Append the tasks that run after the installation.
-  AppendPostInstallTasks(installer_state, setup_path, src_path, temp_path,
-                         current_version, new_version, install_list);
+  AppendPostInstallTasks(installer_state,
+                         setup_path,
+                         current_version,
+                         new_version,
+                         install_list);
 }
 
 void AddNativeNotificationWorkItems(

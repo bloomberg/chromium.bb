@@ -62,10 +62,9 @@ base::string16 GetUpdatedBrandCode(const base::string16& brand_code);
 // |current_version| can be NULL to indicate no Chrome is currently installed.
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
-                            const base::FilePath& src_path,
-                            const base::FilePath& temp_path,
                             const base::Version* current_version,
                             const base::Version& new_version,
+                            const base::FilePath& temp_path,
                             WorkItemList* post_install_task_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
