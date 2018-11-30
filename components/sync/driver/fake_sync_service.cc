@@ -61,9 +61,9 @@ bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
 }
 
-void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
+void FakeSyncService::StopAndClear() {}
 
-void FakeSyncService::RequestStop(SyncService::SyncStopDataFate data_fate) {}
+void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 ModelTypeSet FakeSyncService::GetPreferredDataTypes() const {
   return ModelTypeSet();

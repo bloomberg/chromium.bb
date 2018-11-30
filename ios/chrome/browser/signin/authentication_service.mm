@@ -19,6 +19,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -365,7 +366,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // TODO(msarda): Remove this code once the authentication error UI checks
   // SigninGlobalError instead of the sync auth error state.
   // crbug.com/289493
-  sync_service_->RequestStart();
+  sync_service_->GetUserSettings()->SetSyncRequested(true);
   breakpad_helper::SetCurrentlySignedIn(true);
 }
 
@@ -380,7 +381,7 @@ void AuthenticationService::SignOut(
 
   bool is_managed = IsAuthenticatedIdentityManaged();
 
-  sync_service_->RequestStop(syncer::SyncService::CLEAR_DATA);
+  sync_service_->StopAndClear();
   identity_manager_->ClearPrimaryAccount(
       identity::IdentityManager::ClearAccountTokensAction::kDefault,
       signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);

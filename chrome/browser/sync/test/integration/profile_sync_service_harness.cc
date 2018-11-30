@@ -561,7 +561,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+  service()->StopAndClear();
 
   DVLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all "
            << "datatypes on " << profile_debug_name_;

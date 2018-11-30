@@ -54,7 +54,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                     const std::string& message));
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
   MOCK_METHOD0(RequestStart, void());
-  MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
+  MOCK_METHOD0(StopAndClear, void());
 
   MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));

@@ -245,7 +245,7 @@ void SyncInternalsMessageHandler::HandleRequestStopClearData(
     return;
   }
 
-  service->RequestStop(syncer::SyncService::CLEAR_DATA);
+  service->StopAndClear();
 }
 
 void SyncInternalsMessageHandler::HandleTriggerRefresh(

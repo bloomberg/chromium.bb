@@ -79,7 +79,7 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
   // If SyncStandaloneTransport is enabled, then the sync service will
-  // immediately restart (and thus recreate directory files) after RequestStop.
+  // immediately restart (and thus recreate directory files) after StopAndClear.
   // TODO(crbug.com/856179): Rewrite this test to pass with
   // kSyncStandaloneTransport enabled.
   base::test::ScopedFeatureList feature_list;
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                                 ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
-  sync_service->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  sync_service->StopAndClear();
 
   // Wait for StartupController::StartUp()'s tasks to finish.
   base::RunLoop run_loop;

@@ -489,7 +489,7 @@ TEST_F(PeopleHandlerTest,
   // It's important to tell sync the user cancelled the setup flow before we
   // tell it we're through with the setup progress.
   testing::InSequence seq;
-  EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
+  EXPECT_CALL(*mock_pss_, StopAndClear());
   EXPECT_CALL(*mock_pss_, OnSetupInProgressHandleDestroyed());
 
   handler_->CloseSyncSetup();

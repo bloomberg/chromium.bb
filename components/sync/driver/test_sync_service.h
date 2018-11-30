@@ -58,7 +58,7 @@ class TestSyncService : public SyncService {
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
 
-  void RequestStop(SyncStopDataFate data_fate) override;
+  void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReenableDatatype(ModelType type) override;

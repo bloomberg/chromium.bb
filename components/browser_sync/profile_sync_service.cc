@@ -1110,10 +1110,10 @@ void ProfileSyncService::OnActionableError(
         UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::BIRTHDAY_ERROR,
                                   syncer::STOP_SOURCE_LIMIT);
       }
-      // Note: Here we explicitly want RequestStop (rather than StopImpl), so
+      // Note: Here we explicitly want StopAndClear (rather than StopImpl), so
       // that IsSyncRequested gets set to false, and Sync won't start again on
       // the next browser startup.
-      RequestStop(CLEAR_DATA);
+      StopAndClear();
 #if !defined(OS_CHROMEOS)
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
@@ -1981,6 +1981,10 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
 bool ProfileSyncService::IsSyncAllowedByFlag() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSync);
+}
+
+void ProfileSyncService::StopAndClear() {
+  RequestStop(CLEAR_DATA);
 }
 
 void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {

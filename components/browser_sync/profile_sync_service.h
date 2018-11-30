@@ -229,7 +229,8 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
-  void RequestStop(SyncStopDataFate data_fate) override;
+  void StopAndClear() override;
+  void RequestStop(SyncStopDataFate data_fate);
   virtual void RequestStart();  // Virtual for testing.
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   void AddObserver(syncer::SyncServiceObserver* observer) override;

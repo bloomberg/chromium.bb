@@ -332,8 +332,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
   EXPECT_CALL(*sync_setup_service_mock_, HasFinishedInitialSetup())
       .WillOnce(Return(false));
   // Expect a call to disable sync as part of the sign out process.
-  EXPECT_CALL(*profile_sync_service_mock_,
-              RequestStop(syncer::SyncService::CLEAR_DATA));
+  EXPECT_CALL(*profile_sync_service_mock_, StopAndClear());
 
   CreateAuthenticationService();
 

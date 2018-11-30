@@ -50,6 +50,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
@@ -721,11 +722,11 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
     //    startup.
     // It's possible that both of these are already the case, i.e. the engine is
-    // already in the process of initializing, in which case RequestStart() will
-    // effectively do nothing. It's also possible that the sync service is
-    // already running in standalone transport mode and so the engine is already
-    // initialized. In that case, this will trigger the service to switch to
-    // full Sync-the-feature mode.
+    // already in the process of initializing, in which case
+    // SetSyncRequested(true) will effectively do nothing. It's also possible
+    // that the sync service is already running in standalone transport mode and
+    // so the engine is already initialized. In that case, this will trigger the
+    // service to switch to full Sync-the-feature mode.
     service->GetUserSettings()->SetSyncRequested(true);
 
     // See if it's even possible to bring up the sync engine - if not
@@ -865,11 +866,11 @@ void PeopleHandler::CloseSyncSetup() {
         // because we don't want the sync engine to remain in the
         // first-setup-incomplete state.
         // Note: In order to disable sync across restarts on Chrome OS,
-        // we must call RequestStop(CLEAR_DATA), which suppresses sync startup
-        // in addition to disabling it.
+        // we must call StopAndClear(), which suppresses sync startup in
+        // addition to disabling it.
         if (sync_service) {
           DVLOG(1) << "Sync setup aborted by user action";
-          sync_service->RequestStop(ProfileSyncService::CLEAR_DATA);
+          sync_service->StopAndClear();
 #if !defined(OS_CHROMEOS)
           // Sign out the user on desktop Chrome if they click cancel during
           // initial setup.

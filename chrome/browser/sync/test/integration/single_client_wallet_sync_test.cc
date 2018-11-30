@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // Turn off sync, the data should be gone.
-  GetSyncService(0)->RequestStop(syncer::SyncService::CLEAR_DATA);
+  GetSyncService(0)->StopAndClear();
   WaitForNumberOfCards(pdm, 0);
 
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
@@ -397,8 +397,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
 
   // Turn sync on again, the data should come back.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  // RequestStop(CLEAR_DATA) also clears the "first setup complete" flag, so
-  // set it again.
+  // StopAndClear() also clears the "first setup complete" flag, so set it
+  // again.
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
@@ -1025,13 +1025,14 @@ IN_PROC_BROWSER_TEST_F(
 // This tests that switching between Sync-the-feature and
 // Sync-standalone-transport properly migrates server credit cards between the
 // profile (i.e. persisted) and account (i.e. ephemeral) storage.
-// When turning off Sync-the-feature via SyncService::RequestStop, you can
-// specify either KEEP_DATA or CLEAR_DATA. For full coverage, we test all
-// transitions, and each time verify that the card is in the correct storage:
+// Sync can either be turned off temporarily via
+// SyncUserSettings::SetSyncRequested(false), or permanently via
+// SyncService::StopAndClear. For full coverage, we test all transitions, and
+// each time verify that the card is in the correct storage:
 // 1. Start out in Sync-the-feature mode -> profile storage.
-// 2. RequestStop(KEEP_DATA) -> account storage.
+// 2. SetSyncRequested(false) -> account storage.
 // 3. Enable Sync-the-feature again -> profile storage.
-// 4. RequestStop(CLEAR_DATA) -> account storage.
+// 4. StopAndClear() -> account storage.
 // 5. Enable Sync-the-feature again -> profile storage.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
@@ -1121,7 +1122,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(1U, GetServerCards(profile_data).size());
 
   // STEP 4. Turn off Sync-the-feature again, but this time clear data.
-  GetSyncService(0)->RequestStop(syncer::SyncService::CLEAR_DATA);
+  GetSyncService(0)->StopAndClear();
 
   // Wait for Sync to get reconfigured into transport mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
