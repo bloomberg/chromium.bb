@@ -6839,6 +6839,25 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "os": "Mac-10.14",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
@@ -7292,6 +7311,25 @@
           "expiration": 21600
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -7753,6 +7791,25 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "os": "Mac-10.14",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
@@ -8185,6 +8242,23 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
@@ -8576,6 +8650,24 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -9003,6 +9095,25 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -9449,6 +9560,26 @@
           "expiration": 21600
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -9920,6 +10051,29 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            },
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -10414,6 +10568,23 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
@@ -10812,6 +10983,25 @@
           ]
         },
         "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -11221,6 +11411,25 @@
           ]
         },
         "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -11651,6 +11860,25 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -12108,6 +12336,25 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -12687,6 +12934,25 @@
           "expiration": 21600
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:679e",
+              "os": "Mac-10.12",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -13385,6 +13651,23 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
@@ -13513,6 +13796,25 @@
           "shards": 4
         },
         "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -13656,6 +13958,25 @@
           "shards": 4
         },
         "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -13825,6 +14146,24 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -14219,6 +14558,33 @@
           ]
         },
         "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-23.21.13.8816\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -14851,6 +15217,24 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -15531,6 +15915,24 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -16270,6 +16672,24 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-24.21.14.1195",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
       },
       {
         "args": [
@@ -17090,6 +17510,24 @@
       {
         "args": [
           "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
@@ -17870,6 +18308,33 @@
           ]
         },
         "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-23.21.13.8816\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "dawn_end2end_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",

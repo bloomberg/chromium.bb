@@ -2829,6 +2829,7 @@
       'gpu_angle_end2end_tests',
       'gpu_angle_unittests',
       'gpu_common_gtests',
+      'gpu_dawn_end2end_tests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_desktop_specific_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -2836,6 +2837,7 @@
 
     'gpu_fyi_mac_optional_gtests': [
       'gpu_angle_end2end_tests',
+      'gpu_dawn_end2end_tests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_desktop_specific_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -2845,6 +2847,7 @@
       'gpu_angle_end2end_tests',
       'gpu_angle_unittests',
       'gpu_common_gtests',
+      'gpu_dawn_end2end_tests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_desktop_specific_gtests',
@@ -2924,6 +2927,7 @@
       'gpu_angle_unittests',
       'gpu_angle_white_box_tests',
       'gpu_common_gtests',
+      'gpu_dawn_end2end_tests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
@@ -2935,6 +2939,7 @@
     'gpu_fyi_win_optional_gtests': [
       'gpu_angle_end2end_tests',
       'gpu_angle_white_box_tests',
+      'gpu_dawn_end2end_tests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
