@@ -257,10 +257,16 @@ def _GetParamsInDeclaration(native):
   Returns:
     A string containing the params.
   """
-  return ',\n    '.join(_GetJNIFirstParam(native, True) +
-                        [_JavaDataTypeToCForDeclaration(param.datatype) + ' ' +
-                         param.name
-                         for param in native.params])
+  if not native.static:
+    return ',\n    '.join(
+        _GetJNIFirstParam(native, True) + [
+            _JavaDataTypeToCForDeclaration(param.datatype) + ' ' + param.name
+            for param in native.params
+        ])
+  return ',\n    '.join([
+      _JavaDataTypeToCForDeclaration(param.datatype) + ' ' + param.name
+      for param in native.params
+  ])
 
 
 def GetParamsInStub(native):
@@ -273,7 +279,8 @@ def GetParamsInStub(native):
     A string containing the params.
   """
   params = [JavaDataTypeToC(p.datatype) + ' ' + p.name for p in native.params]
-  return ',\n    '.join(_GetJNIFirstParam(native, False) + params)
+  params = _GetJNIFirstParam(native, False) + params
+  return ',\n    '.join(params)
 
 
 def _StripGenerics(value):
@@ -1196,7 +1203,9 @@ $METHOD_STUBS
       params = native.params[1:]
     else:
       params = native.params
-    params_in_call = ['env'] + self.GetJNIFirstParamForCall(native)
+    params_in_call = ['env']
+    if not native.static or is_method:
+      params_in_call.extend(self.GetJNIFirstParamForCall(native))
     for p in params:
       c_type = JavaDataTypeToC(p.datatype)
       if re.match(RE_SCOPED_JNI_TYPES, c_type):
@@ -1254,11 +1263,13 @@ ${TRACE_EVENT}\
 }
 """)
     else:
+      if values['PARAMS']:
+        values['PARAMS'] = ', ' + values['PARAMS']
       if self.options.enable_tracing:
         values['TRACE_EVENT'] = self.GetTraceEventForNameTemplate(
             namespace_qual + '${IMPL_METHOD_NAME}', values)
       template = Template("""\
-static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env, ${PARAMS});
+static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env${PARAMS});
 
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(
     JNIEnv* env,

@@ -8,7 +8,6 @@
 
 static void JNI_GeoLanguageProviderBridge_GetCurrentGeoLanguages(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& set) {
   const std::vector<std::string> current_geo_languages =
       language::GeoLanguageProvider::GetInstance()->CurrentGeoLanguages();

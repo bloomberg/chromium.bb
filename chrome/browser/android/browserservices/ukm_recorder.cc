@@ -14,7 +14,6 @@ namespace browserservices {
 // Called by Java org.chromium.chrome.browser.browserservices.UkmRecorder.
 static void JNI_Bridge_RecordOpen(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);

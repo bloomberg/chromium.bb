@@ -21,7 +21,6 @@ namespace android {
 
 JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsPrefetchingEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   return profile &&
@@ -30,7 +29,6 @@ JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsPrefetchingEnabled(
 
 JNI_EXPORT void JNI_PrefetchConfiguration_SetPrefetchingEnabledInSettings(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jprofile,
     jboolean enabled) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);

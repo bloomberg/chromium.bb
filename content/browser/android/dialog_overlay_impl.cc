@@ -253,7 +253,6 @@ void DialogOverlayImpl::RegisterWindowObserverIfNeeded(
 
 static jint JNI_DialogOverlayImpl_RegisterSurface(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& surface) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
@@ -263,7 +262,6 @@ static jint JNI_DialogOverlayImpl_RegisterSurface(
 
 static void JNI_DialogOverlayImpl_UnregisterSurface(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jint surface_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_id);
@@ -272,7 +270,6 @@ static void JNI_DialogOverlayImpl_UnregisterSurface(
 static ScopedJavaLocalRef<jobject>
 JNI_DialogOverlayImpl_LookupSurfaceForTesting(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jint surfaceId) {
   gl::ScopedJavaSurface surface =
       gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(surfaceId);

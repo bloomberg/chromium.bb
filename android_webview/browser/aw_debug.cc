@@ -22,7 +22,6 @@ namespace android_webview {
 
 static jboolean JNI_AwDebug_DumpWithoutCrashing(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& dump_path) {
   // This may be called from any thread, and we might be in a state
   // where it is impossible to post tasks, so we have to be prepared
@@ -37,23 +36,17 @@ static jboolean JNI_AwDebug_DumpWithoutCrashing(
   return crash_reporter::DumpWithoutCrashingToFd(target.TakePlatformFile());
 }
 
-static void JNI_AwDebug_InitCrashKeysForWebViewTesting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_AwDebug_InitCrashKeysForWebViewTesting(JNIEnv* env) {
   crash_keys::InitCrashKeysForWebViewTesting();
 }
 
-static void JNI_AwDebug_SetWhiteListedKeyForTesting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_AwDebug_SetWhiteListedKeyForTesting(JNIEnv* env) {
   static ::crash_reporter::CrashKeyString<32> crash_key(
       "AW_WHITELISTED_DEBUG_KEY");
   crash_key.Set("AW_DEBUG_VALUE");
 }
 
-static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(JNIEnv* env) {
   static ::crash_reporter::CrashKeyString<32> crash_key(
       "AW_NONWHITELISTED_DEBUG_KEY");
   crash_key.Set("AW_DEBUG_VALUE");

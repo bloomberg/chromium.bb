@@ -46,7 +46,6 @@ void OnUpdated(const JavaRef<jobject>& java_callback,
 // static JNI method.
 static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& java_update_request_path,
     const JavaParamRef<jstring>& java_start_url,
     const JavaParamRef<jstring>& java_scope,
@@ -129,7 +128,6 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
 // static JNI method.
 static void JNI_WebApkUpdateManager_UpdateWebApkFromFile(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& java_update_request_path,
     const JavaParamRef<jobject>& java_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

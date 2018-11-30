@@ -31,7 +31,6 @@ void OnIsPageDistillableUpdate(const JavaRef<jobject>& callback,
 
 static void JNI_DistillablePageUtils_SetDelegate(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobject>& callback) {
   content::WebContents* web_contents(

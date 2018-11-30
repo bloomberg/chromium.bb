@@ -412,9 +412,7 @@ AppBannerManager* AppBannerManager::FromWebContents(
 }
 
 // static
-jint JNI_AppBannerManager_GetHomescreenLanguageOption(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jint JNI_AppBannerManager_GetHomescreenLanguageOption(JNIEnv* env) {
   return AppBannerSettingsHelper::GetHomescreenLanguageOption();
 }
 
@@ -422,7 +420,6 @@ jint JNI_AppBannerManager_GetHomescreenLanguageOption(
 base::android::ScopedJavaLocalRef<jobject>
 JNI_AppBannerManager_GetJavaBannerManagerForWebContents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   AppBannerManagerAndroid* manager = AppBannerManagerAndroid::FromWebContents(
       content::WebContents::FromJavaWebContents(java_web_contents));
@@ -433,7 +430,6 @@ JNI_AppBannerManager_GetJavaBannerManagerForWebContents(
 // static
 void JNI_AppBannerManager_SetDaysAfterDismissAndIgnoreToTrigger(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint dismiss_days,
     jint ignore_days) {
   AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(dismiss_days,
@@ -443,7 +439,6 @@ void JNI_AppBannerManager_SetDaysAfterDismissAndIgnoreToTrigger(
 // static
 void JNI_AppBannerManager_SetTimeDeltaForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint days) {
   AppBannerManager::SetTimeDeltaForTesting(days);
 }
@@ -451,7 +446,6 @@ void JNI_AppBannerManager_SetTimeDeltaForTesting(
 // static
 void JNI_AppBannerManager_SetTotalEngagementToTrigger(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jdouble engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }

@@ -23,17 +23,16 @@
 
 
 // Step 3: Method stubs.
-static void JNI_SampleProxyJni_Foo(JNIEnv* env, const base::android::JavaParamRef<jclass>& jcaller);
+static void JNI_SampleProxyJni_Foo(JNIEnv* env);
 
 JNI_GENERATOR_EXPORT void
     Java_org_chromium_base_natives_GEN_1JNI_org_1chromium_1example_1SampleProxyJni_1foo(
     JNIEnv* env,
     jclass jcaller) {
-  return JNI_SampleProxyJni_Foo(env, base::android::JavaParamRef<jclass>(env, jcaller));
+  return JNI_SampleProxyJni_Foo(env);
 }
 
-static jint JNI_SampleProxyJni_Bar(JNIEnv* env, const base::android::JavaParamRef<jclass>& jcaller,
-    jint x,
+static jint JNI_SampleProxyJni_Bar(JNIEnv* env, jint x,
     jint y);
 
 JNI_GENERATOR_EXPORT jint
@@ -42,12 +41,11 @@ JNI_GENERATOR_EXPORT jint
     jclass jcaller,
     jint x,
     jint y) {
-  return JNI_SampleProxyJni_Bar(env, base::android::JavaParamRef<jclass>(env, jcaller), x, y);
+  return JNI_SampleProxyJni_Bar(env, x, y);
 }
 
 static base::android::ScopedJavaLocalRef<jstring> JNI_SampleProxyJni_Foobar(JNIEnv* env, const
-    base::android::JavaParamRef<jclass>& jcaller,
-    const base::android::JavaParamRef<jstring>& x,
+    base::android::JavaParamRef<jstring>& x,
     const base::android::JavaParamRef<jstring>& y);
 
 JNI_GENERATOR_EXPORT jstring
@@ -56,9 +54,8 @@ JNI_GENERATOR_EXPORT jstring
     jclass jcaller,
     jstring x,
     jstring y) {
-  return JNI_SampleProxyJni_Foobar(env, base::android::JavaParamRef<jclass>(env, jcaller),
-      base::android::JavaParamRef<jstring>(env, x), base::android::JavaParamRef<jstring>(env,
-      y)).Release();
+  return JNI_SampleProxyJni_Foobar(env, base::android::JavaParamRef<jstring>(env, x),
+      base::android::JavaParamRef<jstring>(env, y)).Release();
 }
 
 

@@ -129,7 +129,6 @@ bool InstantAppsInfoBarDelegate::ShouldExpire(
 
 void JNI_InstantAppsInfoBarDelegate_Launch(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& jweb_contents,
     const base::android::JavaParamRef<jobject>& jdata,
     const base::android::JavaParamRef<jstring>& jurl,

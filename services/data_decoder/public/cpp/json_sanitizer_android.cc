@@ -88,7 +88,6 @@ void JsonSanitizerAndroid::OnError(const std::string& error) {
 }  // namespace
 
 void JNI_JsonSanitizer_OnSuccess(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
                                  jlong jsanitizer,
                                  const JavaParamRef<jstring>& json) {
   JsonSanitizerAndroid* sanitizer =
@@ -97,7 +96,6 @@ void JNI_JsonSanitizer_OnSuccess(JNIEnv* env,
 }
 
 void JNI_JsonSanitizer_OnError(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
                                jlong jsanitizer,
                                const JavaParamRef<jstring>& error) {
   JsonSanitizerAndroid* sanitizer =

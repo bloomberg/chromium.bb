@@ -233,16 +233,12 @@ CreateAssetFileRequestInterceptor() {
 }
 
 static ScopedJavaLocalRef<jstring>
-JNI_AndroidProtocolHandler_GetAndroidAssetPath(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& /*clazz*/) {
+JNI_AndroidProtocolHandler_GetAndroidAssetPath(JNIEnv* env) {
   return ConvertUTF8ToJavaString(env, android_webview::kAndroidAssetPath);
 }
 
 static ScopedJavaLocalRef<jstring>
-JNI_AndroidProtocolHandler_GetAndroidResourcePath(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& /*clazz*/) {
+JNI_AndroidProtocolHandler_GetAndroidResourcePath(JNIEnv* env) {
   return ConvertUTF8ToJavaString(env, android_webview::kAndroidResourcePath);
 }
 

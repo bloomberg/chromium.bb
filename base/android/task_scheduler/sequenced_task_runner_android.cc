@@ -11,7 +11,6 @@ namespace base {
 
 jlong JNI_SequencedTaskRunnerImpl_Init(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,

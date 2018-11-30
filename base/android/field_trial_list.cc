@@ -51,7 +51,6 @@ base::LazyInstance<TrialLogger>::Leaky g_trial_logger =
 
 static ScopedJavaLocalRef<jstring> JNI_FieldTrialList_FindFullName(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jtrial_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   return ConvertUTF8ToJavaString(
@@ -60,7 +59,6 @@ static ScopedJavaLocalRef<jstring> JNI_FieldTrialList_FindFullName(
 
 static jboolean JNI_FieldTrialList_TrialExists(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jtrial_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   return base::FieldTrialList::TrialExists(trial_name);
@@ -68,7 +66,6 @@ static jboolean JNI_FieldTrialList_TrialExists(
 
 static ScopedJavaLocalRef<jstring> JNI_FieldTrialList_GetVariationParameter(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jtrial_name,
     const JavaParamRef<jstring>& jparameter_key) {
   std::map<std::string, std::string> parameters;
@@ -78,9 +75,7 @@ static ScopedJavaLocalRef<jstring> JNI_FieldTrialList_GetVariationParameter(
       env, parameters[ConvertJavaStringToUTF8(env, jparameter_key)]);
 }
 
-static void JNI_FieldTrialList_LogActiveTrials(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+static void JNI_FieldTrialList_LogActiveTrials(JNIEnv* env) {
   DCHECK(!g_trial_logger.IsCreated()); // This need only be called once.
 
   LOG(INFO) << "Logging active field trials...";

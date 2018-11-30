@@ -108,8 +108,7 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
 // NotificationBridge has not been initialized yet. Enforce initialization of
 // the class.
 static void JNI_NotificationPlatformBridge_InitializeNotificationPlatformBridge(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   g_browser_process->notification_platform_bridge();
 }
 

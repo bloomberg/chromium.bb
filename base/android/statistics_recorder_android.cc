@@ -18,7 +18,6 @@ namespace android {
 
 static ScopedJavaLocalRef<jstring> JNI_StatisticsRecorderAndroid_ToJson(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint verbosityLevel) {
   return ConvertUTF8ToJavaString(
       env, base::StatisticsRecorder::ToJSON(

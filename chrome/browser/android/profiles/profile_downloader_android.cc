@@ -126,7 +126,6 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 ScopedJavaLocalRef<jstring>
 JNI_ProfileDownloader_GetCachedFullNameForPrimaryAccount(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
@@ -144,7 +143,6 @@ JNI_ProfileDownloader_GetCachedFullNameForPrimaryAccount(
 ScopedJavaLocalRef<jstring>
 JNI_ProfileDownloader_GetCachedGivenNameForPrimaryAccount(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
@@ -162,7 +160,6 @@ JNI_ProfileDownloader_GetCachedGivenNameForPrimaryAccount(
 ScopedJavaLocalRef<jobject>
 JNI_ProfileDownloader_GetCachedAvatarForPrimaryAccount(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
@@ -185,7 +182,6 @@ JNI_ProfileDownloader_GetCachedAvatarForPrimaryAccount(
 // static
 void JNI_ProfileDownloader_StartFetchingAccountInfoFor(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jemail,
     jint image_side_pixels,

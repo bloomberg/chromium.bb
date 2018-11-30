@@ -31,7 +31,6 @@ using base::android::JavaParamRef;
 // static
 static jlong JNI_PageInfoController_Init(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =

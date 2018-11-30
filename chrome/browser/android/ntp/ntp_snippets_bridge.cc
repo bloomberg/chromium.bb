@@ -111,8 +111,7 @@ static jlong JNI_SnippetsBridge_Init(JNIEnv* env,
 
 static void
 JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnPersistentSchedulerWakeUp(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   if (!scheduler) {
@@ -123,8 +122,7 @@ JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnPersistentSchedulerWakeUp(
 }
 
 static void JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnBrowserUpgraded(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   // Can be null if the feature has been disabled but the scheduler has not been
@@ -138,7 +136,6 @@ static void JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnBrowserUpgraded(
 
 static void JNI_SnippetsBridge_SetContentSuggestionsNotificationsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jboolean enabled) {
   ContentSuggestionsNotifierService* notifier_service =
       ContentSuggestionsNotifierServiceFactory::GetForProfile(
@@ -150,8 +147,7 @@ static void JNI_SnippetsBridge_SetContentSuggestionsNotificationsEnabled(
 }
 
 static jboolean JNI_SnippetsBridge_AreContentSuggestionsNotificationsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ContentSuggestionsNotifierService* notifier_service =
       ContentSuggestionsNotifierServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());

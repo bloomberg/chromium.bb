@@ -29,7 +29,6 @@ namespace android {
 
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FixupUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   DCHECK(url);
   GURL fixed_url = url_formatter::FixupURL(
@@ -43,7 +42,6 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FixupUrl(
 static ScopedJavaLocalRef<jstring>
 JNI_UrlFormatter_FormatUrlForDisplayOmitScheme(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrl(
@@ -56,7 +54,6 @@ JNI_UrlFormatter_FormatUrlForDisplayOmitScheme(
 static ScopedJavaLocalRef<jstring>
 JNI_UrlFormatter_FormatUrlForDisplayOmitHTTPScheme(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrl(
@@ -67,7 +64,6 @@ JNI_UrlFormatter_FormatUrlForDisplayOmitHTTPScheme(
 
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForCopy(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrl(
@@ -78,7 +74,6 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForCopy(
 
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrlForSecurityDisplay(
@@ -88,7 +83,6 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
 static ScopedJavaLocalRef<jstring>
 JNI_UrlFormatter_FormatUrlForSecurityDisplayOmitScheme(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return base::android::ConvertUTF16ToJavaString(
       env, url_formatter::FormatUrlForSecurityDisplay(

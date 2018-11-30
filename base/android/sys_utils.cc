@@ -27,9 +27,7 @@ bool SysUtils::IsCurrentlyLowMemory() {
 
 // Logs the number of minor / major page faults to tracing (and also the time to
 // collect) the metrics. Does nothing if tracing is not enabled.
-static void JNI_SysUtils_LogPageFaultCountToTracing(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller) {
+static void JNI_SysUtils_LogPageFaultCountToTracing(JNIEnv* env) {
   // This is racy, but we are OK losing data, and collecting it is potentially
   // expensive (reading and parsing a file).
   bool enabled;

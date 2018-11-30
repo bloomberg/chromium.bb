@@ -162,7 +162,6 @@ void RewriteMinidumpsAsMIMEs(const base::FilePath& src_dir,
 
 static void JNI_CrashReportMimeWriter_RewriteMinidumpsAsMIMEs(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& j_src_dir,
     const base::android::JavaParamRef<jstring>& j_dest_dir) {
   std::string src_dir, dest_dir;

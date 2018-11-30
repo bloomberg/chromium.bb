@@ -31,7 +31,6 @@ void NotifyClientOfDetachedRequestCompletion(
 
 static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& profile,
     const base::android::JavaParamRef<jobject>& session,
     const base::android::JavaParamRef<jstring>& url,

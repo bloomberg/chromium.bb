@@ -12,7 +12,6 @@ namespace payments {
 // static
 jboolean JNI_SslValidityChecker_IsSslCertificateValid(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   return SslValidityChecker::IsSslCertificateValid(
       content::WebContents::FromJavaWebContents(jweb_contents));

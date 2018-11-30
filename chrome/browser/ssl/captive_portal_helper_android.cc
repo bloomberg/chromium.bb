@@ -25,7 +25,6 @@ namespace android {
 
 void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& jhash) {
   auto default_proto =
       SSLErrorAssistant::GetErrorAssistantProtoFromResourceBundle();
@@ -48,7 +47,6 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
 
 void JNI_CaptivePortalHelper_SetOSReportsCaptivePortalForTesting(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jboolean os_reports_captive_portal) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},

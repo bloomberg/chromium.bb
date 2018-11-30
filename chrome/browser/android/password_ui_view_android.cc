@@ -190,8 +190,7 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
 }
 
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return ConvertUTF16ToJavaString(
       env, l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
 }

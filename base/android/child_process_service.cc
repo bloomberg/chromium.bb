@@ -20,7 +20,6 @@ namespace android {
 
 void JNI_ChildProcessService_RegisterFileDescriptors(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobjectArray>& j_keys,
     const JavaParamRef<jintArray>& j_ids,
     const JavaParamRef<jintArray>& j_fds,
@@ -67,9 +66,7 @@ void JNI_ChildProcessService_RegisterFileDescriptors(
   }
 }
 
-void JNI_ChildProcessService_ExitChildProcess(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+void JNI_ChildProcessService_ExitChildProcess(JNIEnv* env) {
   VLOG(0) << "ChildProcessService: Exiting child process.";
   base::android::LibraryLoaderExitHook();
   _exit(0);

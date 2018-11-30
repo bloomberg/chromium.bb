@@ -62,8 +62,7 @@ void OnCookiesFetchFinished(const net::CookieList& cookies) {
 // Fetches cookies for the off-the-record session (i.e. incognito mode). It is a
 // no-op for the standard session. Typically associated with the #onPause of
 // Android's activty lifecycle.
-void JNI_CookiesFetcher_PersistCookies(JNIEnv* env,
-                                       const JavaParamRef<jclass>& jcaller) {
+void JNI_CookiesFetcher_PersistCookies(JNIEnv* env) {
   if (!ProfileManager::GetPrimaryUserProfile()->HasOffTheRecordProfile()) {
     // There is no work to be done. We might consider calling
     // the Java callback if needed.
@@ -79,7 +78,6 @@ void JNI_CookiesFetcher_PersistCookies(JNIEnv* env,
 // with the #onResume of Android's activty lifecycle.
 static void JNI_CookiesFetcher_RestoreCookies(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& name,
     const JavaParamRef<jstring>& value,
     const JavaParamRef<jstring>& domain,

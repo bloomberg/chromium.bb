@@ -160,7 +160,6 @@ void ConnectivityChecker::OnTimeout() {
 
 void JNI_ConnectivityChecker_CheckConnectivity(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url,
     jlong j_timeout_ms,
@@ -187,7 +186,6 @@ void JNI_ConnectivityChecker_CheckConnectivity(
 
 jboolean JNI_ConnectivityChecker_IsUrlValid(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   return url.is_valid();

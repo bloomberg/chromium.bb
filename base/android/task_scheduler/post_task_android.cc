@@ -63,7 +63,6 @@ TaskTraits PostTaskAndroid::CreateTaskTraits(
 
 void JNI_PostTask_PostTask(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,

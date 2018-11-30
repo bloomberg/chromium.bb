@@ -12,7 +12,6 @@ using base::android::JavaParamRef;
 
 static base::android::ScopedJavaLocalRef<jstring>
 JNI_QueryInOmnibox_GetDisplaySearchTerms(JNIEnv* env,
-                                         const JavaParamRef<jclass>&,
                                          const JavaParamRef<jobject>& j_profile,
                                          jint j_security_level,
                                          jboolean j_ignore_security_level,

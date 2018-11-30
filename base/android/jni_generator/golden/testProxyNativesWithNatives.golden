@@ -45,27 +45,26 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_foo_Foo_nativeInstanceMethod(
   return native->InstanceMethod(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
-static void JNI_Foo_StaticMethod(JNIEnv* env, const base::android::JavaParamRef<jclass>& jcaller);
+static void JNI_Foo_StaticMethod(JNIEnv* env);
 
 JNI_GENERATOR_EXPORT void Java_org_chromium_foo_Foo_nativeStaticMethod(
     JNIEnv* env,
     jclass jcaller) {
   TRACE_EVENT0("jni", "JNI_Foo_StaticMethod");
-  return JNI_Foo_StaticMethod(env, base::android::JavaParamRef<jclass>(env, jcaller));
+  return JNI_Foo_StaticMethod(env);
 }
 
-static void JNI_Foo_Foo(JNIEnv* env, const base::android::JavaParamRef<jclass>& jcaller);
+static void JNI_Foo_Foo(JNIEnv* env);
 
 JNI_GENERATOR_EXPORT void Java_org_chromium_base_natives_GEN_1JNI_org_1chromium_1foo_1Foo_1foo(
     JNIEnv* env,
     jclass jcaller) {
   TRACE_EVENT0("jni", "JNI_Foo_Foo");
-  return JNI_Foo_Foo(env, base::android::JavaParamRef<jclass>(env, jcaller));
+  return JNI_Foo_Foo(env);
 }
 
 static base::android::ScopedJavaLocalRef<jstring> JNI_Foo_Bar(JNIEnv* env, const
-    base::android::JavaParamRef<jclass>& jcaller,
-    const base::android::JavaParamRef<jstring>& s,
+    base::android::JavaParamRef<jstring>& s,
     jint y,
     jchar x,
     jshort z);
@@ -78,13 +77,11 @@ JNI_GENERATOR_EXPORT jstring Java_org_chromium_base_natives_GEN_1JNI_org_1chromi
     jchar x,
     jshort z) {
   TRACE_EVENT0("jni", "JNI_Foo_Bar");
-  return JNI_Foo_Bar(env, base::android::JavaParamRef<jclass>(env, jcaller),
-      base::android::JavaParamRef<jstring>(env, s), y, x, z).Release();
+  return JNI_Foo_Bar(env, base::android::JavaParamRef<jstring>(env, s), y, x, z).Release();
 }
 
 static base::android::ScopedJavaLocalRef<jobjectArray> JNI_Foo_Foobar(JNIEnv* env, const
-    base::android::JavaParamRef<jclass>& jcaller,
-    const base::android::JavaParamRef<jobjectArray>& a);
+    base::android::JavaParamRef<jobjectArray>& a);
 
 JNI_GENERATOR_EXPORT jobjectArray
     Java_org_chromium_base_natives_GEN_1JNI_org_1chromium_1foo_1Foo_1foobar(
@@ -92,8 +89,7 @@ JNI_GENERATOR_EXPORT jobjectArray
     jclass jcaller,
     jobjectArray a) {
   TRACE_EVENT0("jni", "JNI_Foo_Foobar");
-  return JNI_Foo_Foobar(env, base::android::JavaParamRef<jclass>(env, jcaller),
-      base::android::JavaParamRef<jobjectArray>(env, a)).Release();
+  return JNI_Foo_Foobar(env, base::android::JavaParamRef<jobjectArray>(env, a)).Release();
 }
 
 

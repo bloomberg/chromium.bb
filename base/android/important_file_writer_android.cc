@@ -15,7 +15,6 @@ namespace android {
 
 static jboolean JNI_ImportantFileWriterAndroid_WriteFileAtomically(
     JNIEnv* env,
-    const JavaParamRef<jclass>& /* clazz */,
     const JavaParamRef<jstring>& file_name,
     const JavaParamRef<jbyteArray>& data) {
   // This is called on the UI thread during shutdown to save tab data, so

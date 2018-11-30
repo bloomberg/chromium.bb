@@ -153,7 +153,6 @@ void RlzPingHandler::OnSimpleLoaderComplete(
 
 void JNI_RlzPingHandler_StartPing(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& j_profile,
     const base::android::JavaParamRef<jstring>& j_brand,
     const base::android::JavaParamRef<jstring>& j_language,

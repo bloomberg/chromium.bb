@@ -625,7 +625,6 @@ static jlong JNI_AutocompleteController_Init(
 static ScopedJavaLocalRef<jstring>
 JNI_AutocompleteController_QualifyPartialURLQuery(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jquery) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
@@ -652,9 +651,7 @@ JNI_AutocompleteController_QualifyPartialURLQuery(
   return ConvertUTF8ToJavaString(env, match.destination_url.spec());
 }
 
-static void JNI_AutocompleteController_PrefetchZeroSuggestResults(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;

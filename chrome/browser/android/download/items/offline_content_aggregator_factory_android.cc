@@ -17,7 +17,6 @@ using base::android::JavaParamRef;
 static base::android::ScopedJavaLocalRef<jobject>
 JNI_OfflineContentAggregatorFactory_GetOfflineContentAggregatorForProfile(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);

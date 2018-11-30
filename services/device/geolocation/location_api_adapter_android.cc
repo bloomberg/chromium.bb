@@ -19,7 +19,6 @@ using device::LocationApiAdapterAndroid;
 
 static void JNI_LocationProviderAdapter_NewLocationAvailable(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jdouble latitude,
     jdouble longitude,
     jdouble time_stamp,
@@ -38,7 +37,6 @@ static void JNI_LocationProviderAdapter_NewLocationAvailable(
 
 static void JNI_LocationProviderAdapter_NewErrorAvailable(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jstring>& message) {
   LocationApiAdapterAndroid::OnNewErrorAvailable(env, message);
 }

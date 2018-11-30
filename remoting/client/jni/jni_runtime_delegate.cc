@@ -32,8 +32,7 @@ namespace remoting {
 // Implementation of stubs defined in JniInterface_jni.h. These are the entry
 // points for JNI calls from Java into C++.
 
-static void JNI_JniInterface_LoadNative(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz) {
+static void JNI_JniInterface_LoadNative(JNIEnv* env) {
   base::CommandLine::Init(0, nullptr);
 
   // Create the singleton now so that the Chromoting threads will be set up.

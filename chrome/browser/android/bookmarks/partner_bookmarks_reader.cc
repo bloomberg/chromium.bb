@@ -363,8 +363,7 @@ void PartnerBookmarksReader::OnFaviconFetched(
 // ----------------------------------------------------------------
 
 static void JNI_PartnerBookmarksReader_DisablePartnerBookmarksEditing(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
 }
 
@@ -381,7 +380,6 @@ static jlong JNI_PartnerBookmarksReader_Init(JNIEnv* env,
 static base::android::ScopedJavaLocalRef<jstring>
 JNI_PartnerBookmarksReader_GetNativeUrlString(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(ConvertJavaStringToUTF8(j_url));
   return ConvertUTF8ToJavaString(env, url.spec());

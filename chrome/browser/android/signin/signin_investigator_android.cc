@@ -18,7 +18,6 @@ using base::android::JavaParamRef;
 // static
 jint JNI_SigninInvestigator_Investigate(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& current_email) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);

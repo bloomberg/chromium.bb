@@ -66,8 +66,7 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
 }
 
 static jboolean JNI_ContextualSuggestionsBridge_IsDisabledByEnterprisePolicy(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
   if (!profile)
     return false;

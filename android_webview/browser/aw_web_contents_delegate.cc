@@ -319,7 +319,6 @@ AwWebContentsDelegate::TakeFileSelectListener() {
 
 static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint process_id,
     jint render_id,
     jint mode_flags,

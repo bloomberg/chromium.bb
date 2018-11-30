@@ -44,7 +44,6 @@ void SetJavaException(const char* exception) {
 
 void JNI_JavaExceptionReporter_ReportJavaException(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jboolean crash_after_report,
     const JavaParamRef<jthrowable>& e) {
   std::string exception_info = base::android::GetJavaExceptionInfo(env, e);
@@ -59,7 +58,6 @@ void JNI_JavaExceptionReporter_ReportJavaException(
 
 void JNI_JavaExceptionReporter_ReportJavaStackTrace(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& stackTrace) {
   SetJavaException(ConvertJavaStringToUTF8(stackTrace).c_str());
   base::debug::DumpWithoutCrashing();

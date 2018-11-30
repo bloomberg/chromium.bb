@@ -375,8 +375,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 #if defined(OS_ANDROID)
 // static
 jint JNI_ServiceManagerConnectionImpl_GetConnectorMessagePipeHandle(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   DCHECK(ServiceManagerConnection::GetForProcess());
 
   service_manager::mojom::ConnectorPtrInfo connector_info;

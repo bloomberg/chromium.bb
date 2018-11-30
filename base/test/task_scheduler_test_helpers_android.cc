@@ -26,15 +26,13 @@ void TaskSchedulerTestHelpers::SetTaskSchedulerExecutionFenceEnabledForTesting(
 }  // namespace base
 
 void JNI_TaskSchedulerTestHelpers_EnableTaskSchedulerExecutionForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   base::TaskSchedulerTestHelpers::
       SetTaskSchedulerExecutionFenceEnabledForTesting(false);
 }
 
 void JNI_TaskSchedulerTestHelpers_DisableTaskSchedulerExecutionForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   base::TaskSchedulerTestHelpers::
       SetTaskSchedulerExecutionFenceEnabledForTesting(true);
 }

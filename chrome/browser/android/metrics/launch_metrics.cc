@@ -26,7 +26,6 @@ enum class HomeScreenLaunchType { STANDALONE = 0, SHORTCUT = 1, COUNT = 2 };
 
 static void JNI_LaunchMetrics_RecordLaunch(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jboolean is_shortcut,
     const JavaParamRef<jstring>& jurl,
     int source,
@@ -120,7 +119,6 @@ static void JNI_LaunchMetrics_RecordLaunch(
 
 static void JNI_LaunchMetrics_RecordHomePageLaunchMetrics(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jboolean show_home_button,
     jboolean homepage_is_ntp,
     const JavaParamRef<jstring>& jhomepage_url) {

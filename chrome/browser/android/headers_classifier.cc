@@ -13,7 +13,6 @@ namespace android {
 
 jboolean JNI_HeaderClassifier_IsCorsSafelistedHeader(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_header_name,
     const JavaParamRef<jstring>& j_header_value) {
   std::string header_name(ConvertJavaStringToUTF8(env, j_header_name));

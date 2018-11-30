@@ -47,7 +47,6 @@ void NotifyEvent(UserClassifier::Metric metric) {
 
 static void JNI_SuggestionsEventReporterBridge_OnSuggestionTargetVisited(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint j_category_id,
     jlong visit_time_ms) {
   ntp_snippets::metrics::OnSuggestionTargetVisited(
@@ -57,7 +56,6 @@ static void JNI_SuggestionsEventReporterBridge_OnSuggestionTargetVisited(
 
 static void JNI_SuggestionsEventReporterBridge_OnPageShown(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     const JavaParamRef<jintArray>& jcategories,
     const JavaParamRef<jintArray>& jsuggestions_per_category,
     const JavaParamRef<jbooleanArray>& jis_category_visible) {
@@ -85,7 +83,6 @@ static void JNI_SuggestionsEventReporterBridge_OnPageShown(
 
 static void JNI_SuggestionsEventReporterBridge_OnSuggestionShown(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint global_position,
     jint j_category_id,
     jint position_in_category,
@@ -103,7 +100,6 @@ static void JNI_SuggestionsEventReporterBridge_OnSuggestionShown(
 
 static void JNI_SuggestionsEventReporterBridge_OnSuggestionOpened(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint global_position,
     jint j_category_id,
     jint category_index,
@@ -131,7 +127,6 @@ static void JNI_SuggestionsEventReporterBridge_OnSuggestionOpened(
 
 static void JNI_SuggestionsEventReporterBridge_OnSuggestionMenuOpened(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint global_position,
     jint j_category_id,
     jint position_in_category,
@@ -145,7 +140,6 @@ static void JNI_SuggestionsEventReporterBridge_OnSuggestionMenuOpened(
 
 static void JNI_SuggestionsEventReporterBridge_OnMoreButtonShown(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint j_category_id,
     jint position) {
   ntp_snippets::metrics::OnMoreButtonShown(Category::FromIDValue(j_category_id),
@@ -154,7 +148,6 @@ static void JNI_SuggestionsEventReporterBridge_OnMoreButtonShown(
 
 static void JNI_SuggestionsEventReporterBridge_OnMoreButtonClicked(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jint j_category_id,
     jint position) {
   ntp_snippets::metrics::OnMoreButtonClicked(
@@ -162,9 +155,7 @@ static void JNI_SuggestionsEventReporterBridge_OnMoreButtonClicked(
   NotifyEvent(UserClassifier::Metric::SUGGESTIONS_USED);
 }
 
-static void JNI_SuggestionsEventReporterBridge_OnSurfaceOpened(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+static void JNI_SuggestionsEventReporterBridge_OnSurfaceOpened(JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   // Can be null if the feature has been disabled but the scheduler has not been
@@ -176,9 +167,7 @@ static void JNI_SuggestionsEventReporterBridge_OnSurfaceOpened(
   scheduler->OnSuggestionsSurfaceOpened();
 }
 
-static void JNI_SuggestionsEventReporterBridge_OnColdStart(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+static void JNI_SuggestionsEventReporterBridge_OnColdStart(JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   // TODO(fhorschig): Remove guard when https://crbug.com/678556 is resolved.
@@ -189,8 +178,7 @@ static void JNI_SuggestionsEventReporterBridge_OnColdStart(
 }
 
 static void JNI_SuggestionsEventReporterBridge_OnActivityWarmResumed(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   // TODO(fhorschig): Remove guard when https://crbug.com/678556 is resolved.

@@ -25,7 +25,6 @@ namespace android {
 // JNI call to start request processing in scheduled mode.
 static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const jboolean j_power_connected,
     const jint j_battery_percentage,
     const jint j_net_connection_type,
@@ -51,9 +50,7 @@ static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
 }
 
 // JNI call to stop request processing in scheduled mode.
-static void JNI_BackgroundSchedulerBridge_StopScheduledProcessing(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+static void JNI_BackgroundSchedulerBridge_StopScheduledProcessing(JNIEnv* env) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetInstance()->GetForBrowserContext(profile);

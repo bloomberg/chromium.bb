@@ -64,7 +64,6 @@ void InstantAppsSettings::RecordInfoBarDismissEvent(
 
 static void JNI_InstantAppsSettings_SetInstantAppDefault(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jurl) {
   content::WebContents* web_contents =
@@ -83,7 +82,6 @@ static void JNI_InstantAppsSettings_SetInstantAppDefault(
 
 static jboolean JNI_InstantAppsSettings_GetInstantAppDefault(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jurl) {
   content::WebContents* web_contents =
@@ -103,7 +101,6 @@ static jboolean JNI_InstantAppsSettings_GetInstantAppDefault(
 
 static jboolean JNI_InstantAppsSettings_ShouldShowBanner(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jurl) {
   content::WebContents* web_contents =

@@ -46,7 +46,6 @@ class WebContentsState {
   // Restores a WebContents from the passed in state.
   static base::android::ScopedJavaLocalRef<jobject>
   RestoreContentsFromByteBuffer(JNIEnv* env,
-                                jclass clazz,
                                 jobject state,
                                 jint saved_state_version,
                                 jboolean initially_hidden);
