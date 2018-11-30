@@ -98,21 +98,6 @@ void UpdateInternalOptions(
   });
 }
 
-action::AppStatus GetActionAppStatus(mojom::AppStatus status) {
-  switch (status) {
-    case mojom::AppStatus::UNKNOWN:
-      return action::UNKNOWN;
-    case mojom::AppStatus::AVAILABLE:
-      return action::AVAILABLE;
-    case mojom::AppStatus::UNAVAILABLE:
-      return action::UNAVAILABLE;
-    case mojom::AppStatus::VERSION_MISMATCH:
-      return action::VERSION_MISMATCH;
-    case mojom::AppStatus::DISABLED:
-      return action::DISABLED;
-  }
-}
-
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
@@ -548,33 +533,6 @@ void AssistantManagerServiceImpl::OnShowNotification(
           weak_factory_.GetWeakPtr(), std::move(notification_ptr)));
 }
 
-void AssistantManagerServiceImpl::OnOpenAndroidApp(
-    const action::AndroidAppInfo& app_info,
-    const action::InteractionInfo& interaction) {
-  mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
-  app_info_ptr->package_name = app_info.package_name;
-  service_->device_actions()->OpenAndroidApp(
-      std::move(app_info_ptr),
-      base::BindOnce(&AssistantManagerServiceImpl::HandleOpenAndroidAppResponse,
-                     weak_factory_.GetWeakPtr(), interaction));
-}
-
-void AssistantManagerServiceImpl::OnVerifyAndroidApp(
-    const std::vector<action::AndroidAppInfo>& apps_info,
-    const action::InteractionInfo& interaction) {
-  std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
-  for (auto app_info : apps_info) {
-    mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
-    app_info_ptr->package_name = app_info.package_name;
-    apps_info_list.push_back(std::move(app_info_ptr));
-  }
-  service_->device_actions()->VerifyAndroidApp(
-      std::move(apps_info_list),
-      base::BindOnce(
-          &AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse,
-          weak_factory_.GetWeakPtr(), interaction));
-}
-
 void AssistantManagerServiceImpl::OnRecognitionStateChanged(
     assistant_client::ConversationStateListener::RecognitionState state,
     const assistant_client::ConversationStateListener::RecognitionResult&
@@ -934,38 +892,6 @@ void AssistantManagerServiceImpl::HandleStopSpeakerIdEnrollment(
     base::RepeatingCallback<void()> callback) {
   speaker_id_enrollment_client_.reset();
   callback.Run();
-}
-
-void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(
-    const action::InteractionInfo& interaction,
-    bool app_opened) {
-  std::string interaction_proto = CreateOpenProviderResponseInteraction(
-      interaction.interaction_id, app_opened);
-
-  assistant_client::VoicelessOptions options;
-  options.obfuscated_gaia_id = interaction.user_id;
-
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction_proto, "open_provider_response", options, [](auto) {});
-}
-
-void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
-    const action::InteractionInfo& interaction,
-    std::vector<mojom::AndroidAppInfoPtr> apps_info) {
-  std::vector<action::AndroidAppInfo> action_apps_info;
-  for (const auto& app_info : apps_info) {
-    action_apps_info.push_back({app_info->package_name, app_info->version,
-                                app_info->localized_app_name, app_info->intent,
-                                GetActionAppStatus(app_info->status)});
-  }
-  std::string interaction_proto = CreateVerifyProviderResponseInteraction(
-      interaction.interaction_id, action_apps_info);
-
-  assistant_client::VoicelessOptions options;
-  options.obfuscated_gaia_id = interaction.user_id;
-
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction_proto, "verify_provider_response", options, [](auto) {});
 }
 
 // assistant_client::DeviceStateListener overrides
