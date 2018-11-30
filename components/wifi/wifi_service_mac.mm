@@ -159,6 +159,7 @@ WiFiServiceMac::WiFiServiceMac() : wlan_observer_(nil) {
 }
 
 WiFiServiceMac::~WiFiServiceMac() {
+  UnInitialize();
 }
 
 void WiFiServiceMac::Initialize(
