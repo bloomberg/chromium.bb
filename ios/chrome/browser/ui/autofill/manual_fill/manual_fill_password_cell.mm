@@ -107,15 +107,23 @@ static const CGFloat NoMultiplier = 1.0;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.verticalConstraints];
+  self.verticalConstraints = @[];
+
   self.siteNameLabel.text = @"";
+
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
   [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
                             forState:UIControlStateNormal];
+
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
   self.passwordButton.accessibilityLabel = nil;
   self.passwordButton.hidden = NO;
+
   self.manualFillCredential = nil;
+
+  self.grayLine.hidden = NO;
 }
 
 - (void)setUpWithCredential:(ManualFillCredential*)credential
@@ -183,10 +191,7 @@ static const CGFloat NoMultiplier = 1.0;
     self.passwordButton.hidden = YES;
   }
 
-  if (!isConnectedToNextCell) {
-    [verticalLeadViews addObject:self.grayLine];
-    self.grayLine.hidden = NO;
-  } else {
+  if (isConnectedToNextCell) {
     self.grayLine.hidden = YES;
   }
 
