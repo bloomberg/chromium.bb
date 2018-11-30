@@ -204,7 +204,7 @@ class MediaSessionImpl : public MediaSession,
   // group can share audio focus. Setting this to null will use the browser
   // default value.
   CONTENT_EXPORT void SetAudioFocusGroupId(
-      const base::UnguessableToken& group_id);
+      const base::UnguessableToken& group_id) override;
 
   // Suspend the media session.
   // |type| represents the origin of the request.

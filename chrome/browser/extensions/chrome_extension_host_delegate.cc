@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -49,6 +50,7 @@ void ChromeExtensionHostDelegate::OnExtensionHostCreated(
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
+  apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
 }
 
 void ChromeExtensionHostDelegate::OnRenderViewCreatedForBackgroundPage(
