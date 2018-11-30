@@ -70,7 +70,7 @@ fuzzer_test("template_url_parser_fuzzer") {
     "//base:i18n",
     "//components/search_engines:search_engines",
   ]
-  dict = "dicts/xml.dict"
+  dict = "//third_party/libxml/fuzz/xml.dict"
   libfuzzer_options = [ "max_len=4096" ]
 }
 
@@ -137,7 +137,8 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
   deps = [
     "//third_party/libxml:libxml",
   ]
-  dict = "dicts/generated/libxml_xml_read_memory_fuzzer.dict"
+  dict = "//third_party/libxml/fuzz/xml.dict"
+  seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }
 
 fuzzer_test("libpng_progressive_read_fuzzer") {
