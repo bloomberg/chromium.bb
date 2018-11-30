@@ -22,8 +22,8 @@ namespace blink {
 
 INSTANTIATE_PAINT_TEST_CASE_P(PaintControllerPaintTest);
 
-using PaintControllerPaintTestForSPv2 = PaintControllerPaintTest;
-INSTANTIATE_SPV2_TEST_CASE_P(PaintControllerPaintTestForSPv2);
+using PaintControllerPaintTestForCAP = PaintControllerPaintTest;
+INSTANTIATE_CAP_TEST_CASE_P(PaintControllerPaintTestForCAP);
 
 TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(
@@ -134,7 +134,7 @@ TEST_P(PaintControllerPaintTest, CompositingNoFold) {
                           IsSameId(&sub_div, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
+TEST_P(PaintControllerPaintTestForCAP, FrameScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -173,7 +173,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
           IsSameId(&div4, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
+TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -218,7 +218,7 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
           IsSameId(&div4, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, ScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -253,7 +253,7 @@ TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
           IsSameId(&child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, NonStackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -299,7 +299,7 @@ TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, StackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -343,7 +343,7 @@ TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2,
+TEST_P(PaintControllerPaintTestForCAP,
        NonStackingScrollHitTestOrderWithoutBackground) {
   SetBodyInnerHTML(R"HTML(
     <style>

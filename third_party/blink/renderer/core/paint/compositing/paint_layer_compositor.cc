@@ -252,9 +252,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   if (!layout_view_.GetDocument().Printing() ||
       RuntimeEnabledFeatures::PrintBrowserEnabled()) {
     // Although BlinkGenPropertyTreesEnabled still uses PaintLayerCompositor to
-    // generate the composited layer tree/list, it also has the SPv2 behavior of
+    // generate the composited layer tree/list, it also has the CAP behavior of
     // removing layers that do not draw content. As such, we use the same path
-    // as SPv2 for updating composited animations once we know the final set of
+    // as CAP for updating composited animations once we know the final set of
     // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
     // during kPaintClean).
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
@@ -877,9 +877,9 @@ void PaintLayerCompositor::DestroyRootLayer() {
 }
 
 void PaintLayerCompositor::AttachRootLayer() {
-  // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
-  // layer.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // With CompositeAfterPaint, PaintArtifactCompositor is responsible for the
+  // root layer.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   if (layout_view_.GetFrame()->IsLocalRoot()) {

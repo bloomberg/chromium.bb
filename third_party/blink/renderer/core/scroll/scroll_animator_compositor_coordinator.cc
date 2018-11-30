@@ -181,7 +181,7 @@ bool ScrollAnimatorCompositorCoordinator::ReattachCompositorAnimationIfNeeded(
     CompositorAnimationTimeline* timeline) {
   bool reattached = false;
   CompositorElementId element_id = GetScrollElementId();
-  DCHECK(element_id || (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  DCHECK(element_id || (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
                         !GetScrollableArea()->LayerForScrolling()));
 
   if (element_id != element_id_) {
@@ -247,7 +247,7 @@ bool ScrollAnimatorCompositorCoordinator::HasImplOnlyAnimationUpdate() const {
 
 CompositorElementId ScrollAnimatorCompositorCoordinator::GetScrollElementId()
     const {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return GetScrollableArea()->GetCompositorElementId();
 
   GraphicsLayer* layer = GetScrollableArea()->LayerForScrolling();

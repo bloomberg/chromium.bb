@@ -466,7 +466,7 @@ FloatRect Image::ComputeSubsetForBackground(const FloatRect& phase_and_size,
                                             const FloatRect& subset,
                                             const FloatSize& intrinsic_size) {
   // TODO(schenney): Re-enable this after determining why it fails for
-  // SPv2, and maybe other cases.
+  // CAP, and maybe other cases.
   // DCHECK(phase_and_size.Contains(subset));
 
   const FloatSize scale(phase_and_size.Width() / intrinsic_size.Width(),

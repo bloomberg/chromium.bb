@@ -786,8 +786,8 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
-  // TODO(chrishtr): implement touch event target rects for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(chrishtr): implement touch event target rects for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
@@ -957,7 +957,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
     if (main_thread_scrolling_reasons) {
       if (ScrollAnimatorBase* scroll_animator =
               scrollable_area->ExistingScrollAnimator()) {
-        DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
                frame->GetDocument()->Lifecycle().GetState() >=
                    DocumentLifecycle::kCompositingClean);
         scroll_animator->TakeOverCompositorAnimation();
@@ -967,7 +967,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
       if (visual_viewport_scroll_layer) {
         if (ScrollAnimatorBase* scroll_animator =
                 visual_viewport.ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
                  frame->GetDocument()->Lifecycle().GetState() >=
                      DocumentLifecycle::kCompositingClean);
           scroll_animator->TakeOverCompositorAnimation();

@@ -113,12 +113,12 @@ struct CORE_EXPORT PaintInfo {
     return paint_flags_ & kPaintLayerPaintingRenderingResourceSubtree;
   }
 
-  // TODO(wangxianzhu): Rename this function to SkipBackground() for SPv2.
+  // TODO(wangxianzhu): Rename this function to SkipBackground() for CAP.
   bool SkipRootBackground() const {
     return paint_flags_ & kPaintLayerPaintingSkipRootBackground;
   }
   void SetSkipsBackground(bool b) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     if (b)
       paint_flags_ |= kPaintLayerPaintingSkipRootBackground;
     else
@@ -170,11 +170,11 @@ struct CORE_EXPORT PaintInfo {
   }
 
   bool IsPaintingScrollingBackground() const {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     return is_painting_scrolling_background_;
   }
   void SetIsPaintingScrollingBackground(bool b) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     is_painting_scrolling_background_ = b;
   }
 
@@ -197,7 +197,7 @@ struct CORE_EXPORT PaintInfo {
   const GlobalPaintFlags global_paint_flags_;
   const bool suppress_painting_descendants_;
 
-  // For SPv2 only.
+  // For CAP only.
   bool is_painting_scrolling_background_;
 };
 

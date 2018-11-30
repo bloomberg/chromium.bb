@@ -252,10 +252,10 @@ static bool NeedsScrollNode(const LayoutObject& object) {
   if (!object.HasOverflowClip())
     return false;
   const LayoutBox& box = ToLayoutBox(object);
-  // TODO(pdr): SPV2 has invalidation issues (crbug.com/732611) as well as
+  // TODO(pdr): CAP has invalidation issues (crbug.com/732611) as well as
   // subpixel issues (crbug.com/693741) which prevent us from compositing the
   // root scroller.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return HasScrollsOverflow(box);
   return HasScrollsOverflow(box) || IsRootScroller(box);
 }
@@ -293,7 +293,7 @@ static bool NeedsReplacedContentTransform(const LayoutObject& object) {
   // to the object-fit box. Note that we don't actually know whether the image
   // will be directly composited. This condition is relaxed to stay on the
   // safe side.
-  // TODO(crbug.com/875110): Figure out the condition for SPv2.
+  // TODO(crbug.com/875110): Figure out the condition for CAP.
   bool is_spv1_composited =
       object.HasLayer() &&
       ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping();
@@ -381,9 +381,9 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   // unnecessary full layer paint/raster invalidation when paint offset in
   // ancestor transform node changes which should not affect the descendants
   // of the composited layer.
-  // TODO(wangxianzhu): For SPv2, we also need a avoid unnecessary paint/raster
+  // TODO(wangxianzhu): For CAP, we also need a avoid unnecessary paint/raster
   // invalidation in composited layers when their paint offset changes.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       // For only LayoutBlocks that won't be escaped by floating objects and
       // column spans when finding their containing blocks.
       // TODO(crbug.com/780242): This can be avoided if we have fully correct
@@ -442,7 +442,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         object_.StyleRef().GetPosition() == EPosition::kFixed &&
         object_.StyleRef().IsFixedToBottom();
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
@@ -625,7 +625,7 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
 }
 
 static bool NeedsTransform(const LayoutObject& object) {
-  if ((RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  if ((RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
       object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
     return true;
@@ -662,7 +662,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
             ComputedStyle::kIncludeMotionPath,
             ComputedStyle::kIncludeIndependentTransformProperties);
 
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
             RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           // TODO(trchen): transform-style should only be respected if a
           // PaintLayer is created. If a node with transform-style: preserve-3d
@@ -681,7 +681,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         state.backface_visibility =
             object_.HasHiddenBackface()
@@ -892,7 +892,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         state.blend_mode = WebCoreCompositeToSkiaComposite(
             kCompositeSourceOver, style.GetBlendMode());
       }
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
@@ -926,7 +926,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.output_clip = output_clip;
         mask_state.color_filter = CSSMaskPainter::MaskColorFilter(object_);
         mask_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
             RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           mask_state.compositor_element_id =
               CompositorElementIdFromUniqueObjectId(
@@ -947,7 +947,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_state.local_transform_space = context_.current.transform;
         clip_path_state.output_clip = output_clip;
         clip_path_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
             RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           clip_path_state.compositor_element_id =
               CompositorElementIdFromUniqueObjectId(
@@ -1069,7 +1069,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // output pixel may depend on an input pixel outside of the output clip.
       // We should generate a special clip node to represent this expansion.
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
@@ -1486,7 +1486,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
                      ToLayoutSize(context_.current.paint_offset);
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.rendering_context_id = context_.current.rendering_context_id;
       OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
@@ -1628,7 +1628,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         }
       }
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.compositor_element_id = scrollable_area->GetCompositorElementId();
 
@@ -1692,7 +1692,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           context_.current.should_flatten_inherited_transform;
       state.is_identity_or_2d_translation = true;
       state.direct_compositing_reasons = CompositingReasonsForScroll(box);
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         state.rendering_context_id = context_.current.rendering_context_id;
       }
@@ -2073,7 +2073,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
     return;
 
   // CSS mask and clip-path comes with an implicit clip to the border box.
-  // Currently only SPv2 generate and take advantage of those.
+  // Currently only CAP generate and take advantage of those.
   const bool box_generates_property_nodes_for_mask_and_clip_path =
       box.HasMask() || box.HasClipPath();
   // The overflow clip paint property depends on the border box rect through
@@ -2268,7 +2268,7 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   // container. We also need to skip fragment clip if the object is a paint
   // invalidation container which doesn't allow fragmentation.
   if (object_.IsColumnSpanAll() ||
-      (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
        object_.IsPaintInvalidationContainer() &&
        ToLayoutBoxModelObject(object_).Layer()->EnclosingPaginationLayer())) {
     if (const auto* pagination_layer_in_tree_hierarchy =
@@ -2286,7 +2286,7 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
 }
 
 void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   const auto* enclosing_pagination_layer =

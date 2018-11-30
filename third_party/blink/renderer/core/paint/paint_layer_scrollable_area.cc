@@ -520,7 +520,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   // If not composited, background always paints into the main graphics layer.
   bool background_paint_in_graphics_layer = true;
   bool background_paint_in_scrolling_contents = false;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       UsesCompositedScrolling()) {
     auto background_paint_location = box->GetBackgroundPaintLocation();
     background_paint_in_graphics_layer =
@@ -545,7 +545,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   // scrollers, this will be taken care of by the interest rect computation
   // in CompositedLayerMapping.
   // TODO(wangxianzhu): replace this shortcut with interest rects.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       !UsesCompositedScrolling())
     Layer()->SetNeedsRepaint();
 }
@@ -1827,7 +1827,7 @@ void PaintLayerScrollableArea::UpdateResizerAreaSet() {
 
 void PaintLayerScrollableArea::UpdateResizerStyle(
     const ComputedStyle* old_style) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && old_style &&
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && old_style &&
       old_style->Resize() != GetLayoutBox()->StyleRef().Resize()) {
     // Invalidate the composited scroll corner layer on resize style change.
     if (auto* graphics_layer = LayerForScrollCorner())
@@ -2855,7 +2855,7 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
   result.MoveBy(box->FirstFragment().PaintOffset());
   result = LayoutRect(PixelSnappedIntRect(result));
 #if DCHECK_IS_ON()
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     DCHECK_EQ(result,
               scrollable_area_->layer_->GraphicsLayerBacking()->VisualRect());
   }

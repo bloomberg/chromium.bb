@@ -515,11 +515,11 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   // For web contents, layer transforms should scale up the contents of layers
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
-  // Both BlinkGenPropertyTrees and SlimmingPaintV2 should imply layer lists in
-  // the compositor. Some code across the boundaries makes assumptions based on
-  // this so ensure tests run using this configuration as well.
+  // Both BlinkGenPropertyTrees and CompositeAfterPaint should imply layer lists
+  // in the compositor. Some code across the boundaries makes assumptions based
+  // on this so ensure tests run using this configuration as well.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     settings.use_layer_lists = true;
   }
 

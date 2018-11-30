@@ -101,7 +101,7 @@ std::unique_ptr<FloatingObject> FloatingObject::Create(LayoutBox* layout_object,
   // update and still haven't decided who should paint the float. If we've
   // decided that the current float owner can paint it that step is unnecessary,
   // so we can clear it now.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       new_obj->ShouldPaint() && layout_object->Layer() &&
       layout_object->Layer()->SelfPaintingStatusChanged())
     layout_object->Layer()->ClearSelfPaintingStatusChanged();

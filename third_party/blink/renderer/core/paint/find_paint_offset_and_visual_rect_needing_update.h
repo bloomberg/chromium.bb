@@ -108,7 +108,7 @@ class FindVisualRectNeedingUpdateScopeBase {
            // while we need neither paint invalidation nor raster invalidation
            // for the change. This may miss some real subpixel changes of visual
            // rects. TODO(wangxianzhu): Look into whether we can tighten this
-           // for SPv2.
+           // for CAP.
            (InflatedRect(old_visual_rect_).Contains(new_visual_rect) &&
             InflatedRect(new_visual_rect).Contains(old_visual_rect_)))
         << "Visual rect changed without needing update"

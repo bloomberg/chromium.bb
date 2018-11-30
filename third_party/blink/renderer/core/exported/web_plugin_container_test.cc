@@ -1497,8 +1497,8 @@ class CompositedPlugin : public FakeWebPlugin {
 
 }  // namespace
 
-TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
-  ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
+TEST_F(WebPluginContainerTest, CompositedPluginCAP) {
+  ScopedCompositeAfterPaintForTest enable_cap(true);
   RegisterMockedURL("plugin.html");
   // Must outlive |web_view_helper|
   CustomPluginWebFrameClient<CompositedPlugin> web_frame_client;

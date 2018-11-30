@@ -24,7 +24,7 @@ enum class ScrollbarOrCorner {
 namespace blink {
 
 void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   if (!object.HasLayer())
@@ -69,7 +69,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
             // Before BlinkGenPropertyTrees, CSS clip could not be composited so
             // we should avoid setting it on the layer itself.
             if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-                !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+                !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
               if (const auto* properties = fragment_data.PaintProperties()) {
                 if (const auto* css_clip = properties->CssClip()) {
                   container_layer_state->SetClip(css_clip->Parent());

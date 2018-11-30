@@ -244,7 +244,7 @@ void GraphicsLayer::RemoveFromParent() {
   // When using layer lists, cc::Layers are created and removed in
   // PaintArtifactCompositor.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->RemoveFromParent();
   }
 }
@@ -384,7 +384,7 @@ bool GraphicsLayer::PaintWithoutCommit(
 void GraphicsLayer::UpdateChildList() {
   // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     return;
   }
 
@@ -525,7 +525,7 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->InsertChild(contents_layer_, 0);
   }
   cc::PictureLayer* border_cc_layer =

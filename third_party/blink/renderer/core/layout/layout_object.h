@@ -2081,9 +2081,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     friend class PaintPropertyTreeBuilder;
     friend class PrePaintTreeWalk;
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                             canStartElementOnCompositorTransformSPv2);
+                             canStartElementOnCompositorTransformCAP);
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                             canStartElementOnCompositorEffectSPv2);
+                             canStartElementOnCompositorEffectCAP);
     FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
     FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, VisualRect);
     FRIEND_TEST_ALL_PREFIXES(BoxPaintInvalidatorTest,

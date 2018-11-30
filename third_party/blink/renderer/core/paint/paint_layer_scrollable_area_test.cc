@@ -857,7 +857,7 @@ TEST_P(PaintLayerScrollableAreaTest,
 
   // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // No invalidation because the background paints into scrolling contents.
     EXPECT_FALSE(scroller->ShouldDoFullPaintInvalidation());
     EXPECT_FALSE(scroller->BackgroundNeedsFullPaintInvalidation());
@@ -938,8 +938,8 @@ TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
   EXPECT_TRUE(fixed_background_div->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
   EXPECT_FALSE(fixed_background_div->NeedsPaintPropertyUpdate());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // In SPv2, we assume the view's fixed attachment background is composited
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // In CAP, we assume the view's fixed attachment background is composited
     // at this time and doesn't need paint invalidation on view scroll.
     EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
     EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
@@ -1019,7 +1019,7 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   auto* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   auto* scrollable_area = scroller->GetScrollableArea();
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
   auto* sticky = ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
 

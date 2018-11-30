@@ -49,7 +49,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   const DisplayItem* background_display_item = nullptr;
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto& display_items = RootPaintController().GetDisplayItemList();
     if (prefer_compositing_to_lcd_text) {
       EXPECT_THAT(
@@ -106,7 +106,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
   SkRect rect = static_cast<const cc::DrawRectOp*>(*it)->rect;
   if (prefer_compositing_to_lcd_text) {
     EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
-  } else if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  } else if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
   } else {
     EXPECT_EQ(SkRect::MakeXYWH(scroll_offset.Width(), scroll_offset.Height(),
@@ -129,7 +129,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
     <div style='height: 5000px'></div>
   )HTML");
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_THAT(
         RootPaintController().GetDisplayItemList(),
         ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
@@ -210,7 +210,7 @@ TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
   html_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     HitTestData non_scrolling_hit_test_data;
     non_scrolling_hit_test_data.touch_action_rects.emplace_back(
         LayoutRect(0, 0, 800, 600));
@@ -282,7 +282,7 @@ TEST_P(ViewPainterTestWithPaintTouchAction,
       LayoutRect(0, 0, 800, 3000));
   scrolling_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(

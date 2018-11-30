@@ -47,7 +47,7 @@ void CullRect::Move(const IntSize& offset) {
 
 CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
     const TransformPaintPropertyNode* transform) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (const auto* scroll = transform->ScrollNode()) {
       rect_.Intersect(scroll->ContainerRect());
       if (rect_.IsEmpty())
@@ -80,7 +80,7 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
 void CullRect::ApplyTransforms(const TransformPaintPropertyNode* source,
                                const TransformPaintPropertyNode* destination,
                                const base::Optional<CullRect>& old_cull_rect) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   Vector<const TransformPaintPropertyNode*> scroll_translations;
   for (const auto* t = destination; t != source; t = t->Parent()) {
@@ -115,7 +115,7 @@ void CullRect::ApplyTransforms(const TransformPaintPropertyNode* source,
 }
 
 bool CullRect::ChangedEnough(const CullRect& old_cull_rect) const {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   const auto& new_rect = Rect();
   const auto& old_rect = old_cull_rect.Rect();

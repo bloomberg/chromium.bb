@@ -20,7 +20,7 @@ LayerTreeHostEmbedder::LayerTreeHostEmbedder(
   settings.layer_transforms_should_scale_layer_contents = true;
   settings.single_thread_proxy_scheduler = false;
   settings.use_layer_lists =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();

@@ -20,7 +20,7 @@ namespace blink {
 
 using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_SPV2_TEST_CASE_P(BlockPainterTest);
+INSTANTIATE_CAP_TEST_CASE_P(BlockPainterTest);
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   SetBodyInnerHTML(R"HTML(

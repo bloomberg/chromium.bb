@@ -67,7 +67,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
   auto* target = GetDocument().getElementById("target");
   auto get_debug_info = [&]() -> std::string {
     auto* cc_layer =
-        RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
             ? GetDocument()
                   .View()
                   ->GetPaintArtifactCompositorForTesting()
@@ -320,7 +320,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -355,7 +355,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -419,9 +419,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -467,9 +467,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   content->setAttribute(html_names::kStyleAttr, "height: 500px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -485,9 +485,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -517,7 +517,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   auto* target_obj = ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -525,7 +525,7 @@ TEST_P(PaintAndRasterInvalidationTest,
 
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(1);
     return target_obj->Layer()
         ->GraphicsLayerBacking(target_obj)
@@ -533,7 +533,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   };
   auto contents_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(2);
     return target_obj->Layer()
         ->GraphicsLayerBacking()
@@ -585,7 +585,7 @@ TEST_P(PaintAndRasterInvalidationTest,
       ToLayoutBoxModelObject(target->GetLayoutObject());
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(1);
     return target_obj->Layer()
         ->GraphicsLayerBacking(target_obj)
@@ -593,7 +593,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   };
   auto contents_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(2);
     return target_obj->Layer()
         ->GraphicsLayerBacking()
@@ -606,7 +606,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -664,9 +664,9 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -701,14 +701,14 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
   EXPECT_EQ(
       kBackgroundPaintInScrollingContents | kBackgroundPaintInGraphicsLayer,
       target_object->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_object->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_TRUE(mapping->BackgroundPaintsOntoGraphicsLayer());
   }
 
   const auto* contents_raster_invalidation_tracking =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
           ? GetRasterInvalidationTracking(2)
           : target_object->Layer()
                 ->GraphicsLayerBacking()
@@ -720,7 +720,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
                   &client, client.DebugName(), IntRect(50, 0, 50, 500),
                   PaintInvalidationReason::kIncremental}));
   const auto* container_raster_invalidation_tracking =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
           ? GetRasterInvalidationTracking(1)
           : target_object->Layer()
                 ->GraphicsLayerBacking(target_object)
@@ -877,8 +877,8 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EXPECT_EQ(LayoutRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   // Should invalidate raster for real_rect only.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 creates composited layers for the rect and its mask.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP creates composited layers for the rect and its mask.
     EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
                 UnorderedElementsAre(RasterInvalidationInfo{
                     real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),

@@ -44,7 +44,7 @@ bool CompositingReasonFinder::IsMainFrame() const {
 CompositingReasons CompositingReasonFinder::DirectReasons(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return CompositingReason::kNone;
 
   DCHECK_EQ(PotentialCompositingReasonsFromStyle(layer->GetLayoutObject()),
@@ -75,7 +75,7 @@ bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
 CompositingReasons
 CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
     LayoutObject& layout_object) const {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return CompositingReason::kNone;
 
   CompositingReasons reasons = CompositingReason::kNone;

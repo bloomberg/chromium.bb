@@ -3158,8 +3158,8 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   if (!layer_tree_view_)
     return;
 
-  // In SPv2, setRootLayer is used instead.
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  // In CAP, setRootLayer is used instead.
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
   visual_viewport.AttachLayerTree(graphics_layer);

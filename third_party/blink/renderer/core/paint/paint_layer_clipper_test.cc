@@ -435,9 +435,9 @@ TEST_F(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
 }
 
 TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
-  // SPv2 will re-use a global GeometryMapper, so this
+  // CAP will re-use a global GeometryMapper, so this
   // logic does not apply.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -470,9 +470,9 @@ TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
 }
 
 TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
-  // SPv2 will re-use a global GeometryMapper, so this
+  // CAP will re-use a global GeometryMapper, so this
   // logic does not apply.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(

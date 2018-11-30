@@ -114,7 +114,7 @@ TEST_F(CullRectTest, ApplyTransformInfinite) {
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(20, 10, 40, 50);
@@ -142,7 +142,7 @@ TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationNoIntersectionWithContainerRect) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(200, 100, 40, 50);
@@ -157,7 +157,7 @@ TEST_F(CullRectTest, ApplyScrollTranslationNoIntersectionWithContainerRect) {
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(20, 10, 40, 50);
@@ -184,7 +184,7 @@ TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
 }
 
 TEST_F(CullRectTest, ChangedEnoughEmpty) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   EXPECT_FALSE(ChangedEnough(IntRect(), IntRect()));
   EXPECT_FALSE(ChangedEnough(IntRect(1, 1, 0, 0), IntRect(2, 2, 0, 0)));
   EXPECT_TRUE(ChangedEnough(IntRect(), IntRect(0, 0, 1, 1)));
@@ -192,7 +192,7 @@ TEST_F(CullRectTest, ChangedEnoughEmpty) {
 }
 
 TEST_F(CullRectTest, ChangedNotEnough) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   IntRect old_rect(100, 100, 100, 100);
   EXPECT_FALSE(ChangedEnough(old_rect, old_rect));
   EXPECT_FALSE(ChangedEnough(old_rect, IntRect(100, 100, 90, 90)));
@@ -201,7 +201,7 @@ TEST_F(CullRectTest, ChangedNotEnough) {
 }
 
 TEST_F(CullRectTest, ChangedEnoughScrollScenarios) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   IntRect old_rect(100, 100, 100, 100);
   IntRect new_rect(old_rect);
   new_rect.Move(500, 0);
@@ -215,7 +215,7 @@ TEST_F(CullRectTest, ChangedEnoughScrollScenarios) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsSameTransform) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto transform =
       CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
   CullRect cull_rect1(IntRect(1, 1, 50, 50));
@@ -235,7 +235,7 @@ TEST_F(CullRectTest, ApplyTransformsSameTransform) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsWithoutScroll) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
   auto t2 = CreateTransform(*t1, TransformationMatrix().Translate(10, 20));
 
@@ -260,7 +260,7 @@ TEST_F(CullRectTest, ApplyTransformsWithoutScroll) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -290,7 +290,7 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -326,7 +326,7 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -352,7 +352,7 @@ TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsSmallScrollContentsAfterBigScrollContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state1;
@@ -387,7 +387,7 @@ TEST_F(CullRectTest, ApplyTransformsSmallScrollContentsAfterBigScrollContents) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsBigScrollContentsAfterSmallScrollContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state1;

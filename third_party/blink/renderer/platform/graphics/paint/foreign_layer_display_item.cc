@@ -41,7 +41,7 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
     : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer)),
                   type,
                   sizeof(*this)) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());

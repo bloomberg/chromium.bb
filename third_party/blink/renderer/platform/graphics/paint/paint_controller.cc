@@ -258,12 +258,12 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
 }
 
 void PaintController::InvalidateAll() {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   InvalidateAllInternal();
 }
 
 void PaintController::InvalidateAllInternal() {
-  // TODO(wangxianzhu): Rename this to InvalidateAllForTesting() for SPv2.
+  // TODO(wangxianzhu): Rename this to InvalidateAllForTesting() for CAP.
   // Can only be called during layout/paintInvalidation, not during painting.
   DCHECK(new_display_item_list_.IsEmpty());
   current_paint_artifact_ = PaintArtifact::Empty();
@@ -272,7 +272,7 @@ void PaintController::InvalidateAllInternal() {
 }
 
 bool PaintController::CacheIsAllInvalid() const {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(!cache_is_all_invalid_ || current_paint_artifact_->IsEmpty());
   return cache_is_all_invalid_;
 }
@@ -588,7 +588,7 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 void PaintController::AppendDebugDrawingAfterCommit(
     sk_sp<const PaintRecord> record,
     const PropertyTreeState& property_tree_state) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(new_display_item_list_.IsEmpty());
   current_paint_artifact_->AppendDebugDrawing(record, property_tree_state);
 }

@@ -1036,11 +1036,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Whether the value of isSelfPaintingLayer() changed since the last clearing
   // (which happens after the flag is chedked during compositing update).
   bool SelfPaintingStatusChanged() const {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     return self_painting_status_changed_;
   }
   void ClearSelfPaintingStatusChanged() {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     self_painting_status_changed_ = false;
   }
 

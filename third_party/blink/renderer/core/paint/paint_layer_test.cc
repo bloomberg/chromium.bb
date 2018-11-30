@@ -39,8 +39,8 @@ TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
 }
 
 TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
-  // BoundingBoxForCompositing is not used in SPv2 mode.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // BoundingBoxForCompositing is not used in CAP mode.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
   SetBodyInnerHTML(
       " <div id='parent'><div id='absposparent'><div id='absposchild'>"
@@ -61,8 +61,8 @@ TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
 }
 
 TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
-  // TODO(chrishtr): fix this test for SPv2
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(chrishtr): fix this test for CAP
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -169,9 +169,9 @@ TEST_P(PaintLayerTest,
   )HTML");
   PaintLayer* layer = GetPaintLayerByElementId("target");
 
-  // In SPv2 mode, we correctly determine that the frame doesn't scroll at all,
+  // In CAP mode, we correctly determine that the frame doesn't scroll at all,
   // and so return true.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_TRUE(layer->FixedToViewport());
   else
     EXPECT_FALSE(layer->FixedToViewport());
@@ -226,7 +226,7 @@ TEST_P(PaintLayerTest, SticksToScrollerStickyPositionInsideScroller) {
 }
 
 TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -254,10 +254,10 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
 }
 
 TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
-  // SPV2 scrolling raster invalidation decisions are made in
+  // CAP scrolling raster invalidation decisions are made in
   // ContentLayerClientImpl::GenerateRasterInvalidations through
   // PaintArtifactCompositor.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -779,7 +779,7 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -854,8 +854,8 @@ TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
   EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -879,8 +879,8 @@ TEST_P(PaintLayerTest,
   EXPECT_EQ(span, target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(span,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -903,8 +903,8 @@ TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
             target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -928,8 +928,8 @@ TEST_P(PaintLayerTest,
             target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -954,8 +954,8 @@ TEST_P(PaintLayerTest,
   EXPECT_EQ(GetPaintLayerByElementId("span"), target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -981,8 +981,8 @@ TEST_P(PaintLayerTest,
   EXPECT_EQ(span, target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(span,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -1008,8 +1008,8 @@ TEST_P(PaintLayerTest,
             target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -1035,8 +1035,8 @@ TEST_P(PaintLayerTest,
             target->CompositingContainer());
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(GetPaintLayerByElementId("compositedContainer"),
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -1246,8 +1246,8 @@ TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
       GetPaintLayerByElementId("compositedContainer");
 
   // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
-  // SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(composited_container,
               target->EnclosingLayerWithCompositedLayerMapping(kExcludeSelf));
   }
@@ -1452,7 +1452,7 @@ TEST_P(PaintLayerTest, FragmentedHitTest) {
 }
 
 TEST_P(PaintLayerTest, SquashingOffsets) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
   SetHtmlInnerHTML(R"HTML(
     <style>

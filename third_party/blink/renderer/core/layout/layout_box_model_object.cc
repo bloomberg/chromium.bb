@@ -242,7 +242,7 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
        StyleRef().IsStackingContext() != new_style.IsStackingContext()) &&
       // ObjectPaintInvalidator requires this.
       IsRooted()) {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
     } else {
       // We need to invalidate based on the current compositing status.
@@ -404,7 +404,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
         if (Layer())
           Layer()->SetNeedsCompositingInputsUpdate();
 
-        // TODO(pdr): When slimming paint v2 is enabled, we will need to
+        // TODO(pdr): When CompositeAfterPaint is enabled, we will need to
         // invalidate the scroll paint property subtree for this so main thread
         // scroll reasons are recomputed.
       } else {
@@ -423,7 +423,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
           }
         }
 
-        // TODO(pdr): When slimming paint v2 is enabled, we will need to
+        // TODO(pdr): When CompositeAfterPaint is enabled, we will need to
         // invalidate the scroll paint property subtree for this so main thread
         // scroll reasons are recomputed.
       }
@@ -443,7 +443,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
       // the paint chunk.
       Layer()->SetNeedsRepaint();
     } else if (diff.TransformChanged() &&
-               (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+               (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
                 !Layer()->HasStyleDeterminedDirectCompositingReasons())) {
       // PaintLayerPainter::PaintLayerWithAdjustedRoot skips painting of a layer
       // whose transform is not invertible, so we need to repaint the layer when

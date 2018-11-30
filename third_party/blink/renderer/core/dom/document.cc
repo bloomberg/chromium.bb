@@ -2642,8 +2642,8 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   if (View() && node->GetLayoutObject() &&
       node->GetLayoutObject()->StyleRef().SubtreeIsSticky()) {
     bool success = false;
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      // In SPv2, compositing inputs are cleaned as part of PrePaint.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // In CAP, compositing inputs are cleaned as part of PrePaint.
       success = View()->UpdateAllLifecyclePhasesExceptPaint();
     } else {
       success = View()->UpdateLifecycleToCompositingInputsClean();

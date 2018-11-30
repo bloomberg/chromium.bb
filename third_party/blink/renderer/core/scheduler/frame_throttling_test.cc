@@ -563,8 +563,8 @@ TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
 }
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // Create a hidden frame which is throttled.
@@ -722,9 +722,9 @@ TEST_P(FrameThrottlingTest,
                      // frame.
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             frame_element->contentDocument()->Lifecycle().GetState());
-  // TODO(szager): Re-enable this check for SPv2 when it properly sets the
+  // TODO(szager): Re-enable this check for CAP when it properly sets the
   // bits for composited scrolling.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(frame_element->contentDocument()
                     ->View()
                     ->LayoutViewport()
@@ -759,8 +759,8 @@ TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetJavaScriptEnabled(true);
@@ -819,8 +819,8 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetJavaScriptEnabled(true);
@@ -908,7 +908,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
 }
 
 TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
@@ -944,7 +944,7 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
@@ -1313,7 +1313,7 @@ TEST_P(FrameThrottlingTest, DisplayNoneChildrenRemainThrottled) {
 }
 
 TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // This test verifies removal of PaintLayer due to style change will force

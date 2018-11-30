@@ -247,7 +247,7 @@ void NGBoxFragmentPainter::PaintObject(
     // Record the scroll hit test after the background so background squashing
     // is not affected. Hit test order would be equivalent if this were
     // immediately before the background.
-    // if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    // if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     //  PaintScrollHitTestDisplayItem(paint_info);
 
     // We're done. We don't bother painting any children.
@@ -533,7 +533,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   BoxDecorationData box_decoration_data(PhysicalFragment());
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();

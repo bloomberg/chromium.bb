@@ -359,8 +359,8 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   container->setAttribute(html_names::kStyleAttr, "will-change: transform");
   UpdateAllLifecyclePhasesForCaretTest();
   // TODO(wangxianzhu): Why will-change:transform doens't trigger compositing
-  // in SPv2?
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // in CAP?
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutRect(50, 50, 1, 1),
               GetCaretDisplayItemClient().VisualRect());
   }

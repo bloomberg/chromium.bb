@@ -227,7 +227,7 @@ void PrePaintTreeWalk::InvalidatePaintForHitTesting(
 void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   if (!object.HasLayer())
@@ -268,7 +268,7 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
   if ((RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-       RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) &&
+       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) &&
       frame_view.GetFrame().IsLocalRoot() &&
       frame_view.GetPage()->GetVisualViewport().NeedsPaintPropertyUpdate())
     return true;
@@ -350,7 +350,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     InvalidatePaintLayerOptimizationsIfNeeded(object, context);
 
     if (property_changed) {
-      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         const auto* paint_invalidation_layer =
             paint_invalidator_context.paint_invalidation_container->Layer();
         if (!paint_invalidation_layer->NeedsRepaint()) {

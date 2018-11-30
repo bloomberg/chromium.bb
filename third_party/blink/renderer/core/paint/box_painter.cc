@@ -134,7 +134,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   BoxDecorationData box_decoration_data(layout_box_);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();

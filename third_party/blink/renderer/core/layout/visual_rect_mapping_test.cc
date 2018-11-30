@@ -33,7 +33,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
     if (object.IsBox())
       ToLayoutBox(object).FlipForWritingMode(rect);
 
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
 
     CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor);
@@ -65,7 +65,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
 
     // The following condition can be false if paintInvalidationContainer is
     // a LayoutView and compositing is not enabled.
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         ancestor.IsPaintInvalidationContainer()) {
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor,
                                                                slow_map_rect);
@@ -657,7 +657,7 @@ TEST_P(VisualRectMappingTest,
 
   LayoutBlock* normal_flow =
       ToLayoutBlock(GetLayoutObjectByElementId("normal-flow"));
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(scroller, &normal_flow->ContainerForPaintInvalidation());
 
   LayoutRect normal_flow_visual_rect = normal_flow->LocalVisualRect();

@@ -53,7 +53,7 @@ class LayerListBuilder {
 // changes in the paint artifact.
 //
 // PaintArtifactCompositor is the successor to PaintLayerCompositor, reflecting
-// the new home of compositing decisions after paint in Slimming Paint v2.
+// the new home of compositing decisions after paint with CompositeAfterPaint.
 class PLATFORM_EXPORT PaintArtifactCompositor final
     : private PropertyTreeManagerClient {
   USING_FAST_MALLOC(PaintArtifactCompositor);
@@ -242,7 +242,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
 
-  friend class StubChromeClientForSPv2;
+  friend class StubChromeClientForCAP;
   friend class PaintArtifactCompositorTest;
 
   DISALLOW_COPY_AND_ASSIGN(PaintArtifactCompositor);

@@ -138,7 +138,7 @@ void ObjectPaintInvalidator::
 
 void ObjectPaintInvalidator::
     InvalidatePaintIncludingNonCompositingDescendants() {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   SlowSetPaintingLayerNeedsRepaint();
   // This method may be used to invalidate paint of objects changing paint
   // invalidation container. Visual rects don't have to be cleared, since they

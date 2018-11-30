@@ -93,7 +93,7 @@ struct StickyPositionScrollingConstraints final {
   //
   // This method exists for performance (to avoid recomputing the sticky offset)
   // and must only be called when compositing inputs are clean for the sticky
-  // element. (Or after prepaint for SlimmingPaintV2).
+  // element. (Or after prepaint for CompositeAfterPaint).
   FloatSize GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
 
   bool is_anchored_left : 1;

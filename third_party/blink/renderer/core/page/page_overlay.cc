@@ -98,7 +98,7 @@ void PageOverlay::Update() {
   if (size != layer_->Size())
     layer_->SetSize(size);
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     layer_->SetNeedsDisplay();
 }
 

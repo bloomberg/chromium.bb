@@ -41,7 +41,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
 
   bool KnownToBeOpaque() const {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     return known_to_be_opaque_;
   }
 
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
 
   sk_sp<const PaintRecord> record_;
 
-  // True if there are no transparent areas. Only used for SlimmingPaintV2.
+  // True if there are no transparent areas. Only used for CompositeAfterPaint.
   const bool known_to_be_opaque_;
 };
 
