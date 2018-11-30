@@ -98,6 +98,18 @@ component("sandbox") {
     ]
     deps += [ "//sandbox/win:sandbox" ]
   }
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/sandbox_policy_fuchsia.cc",
+      "fuchsia/sandbox_policy_fuchsia.h",
+    ]
+
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:mediacodec",
+      "//third_party/fuchsia-sdk/sdk:scenic",
+    ]
+  }
 }
 
 buildflag_header("sanitizer_buildflags") {

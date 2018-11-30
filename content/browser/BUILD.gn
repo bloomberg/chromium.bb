@@ -1938,6 +1938,7 @@ jumbo_source_set("browser") {
       "child_process_launcher_helper_fuchsia.cc",
       "memory/memory_monitor_fuchsia.cc",
     ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
   } else if (is_posix) {
     sources += [
       "child_process_launcher_helper_posix.cc",

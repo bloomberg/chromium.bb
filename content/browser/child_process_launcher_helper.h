@@ -39,7 +39,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "content/common/sandbox_policy_fuchsia.h"
+#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -247,7 +247,7 @@ class ChildProcessLauncherHelper :
 #endif
 
 #if defined(OS_FUCHSIA)
-  SandboxPolicyFuchsia sandbox_policy_;
+  service_manager::SandboxPolicyFuchsia sandbox_policy_;
 #endif
 };
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_policy_fuchsia.h"
+#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 
 #include <lib/fdio/spawn.h>
 #include <stdio.h>
@@ -24,10 +24,9 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/content_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 
-namespace content {
+namespace service_manager {
 namespace {
 
 constexpr const char* const kRendererServices[] = {
@@ -123,4 +122,4 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   }
 }
 
-}  // namespace content
+}  // namespace service_manager
