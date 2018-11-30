@@ -505,6 +505,28 @@ class StorageTest(TestCase):
       self.assertEqual(os.path.join(self.tempdir, filename), pushed_item.path)
       self.assertEqual(files_content[filename], pushed_content)
 
+  def test_archive_files_to_storage_symlink(self):
+    link_path = os.path.join(self.tempdir, u'link')
+    with open(os.path.join(self.tempdir, u'foo'), 'wb') as f:
+      f.write('fooo')
+    fs.symlink('foo', link_path)
+    server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
+    storage_api = MockedStorageApi(server_ref, {})
+    storage = isolateserver.Storage(storage_api)
+    results, cold, hot = isolateserver.archive_files_to_storage(
+        storage, [self.tempdir], None)
+    self.assertEqual([self.tempdir], results.keys())
+    self.assertEqual([], cold)
+    # isolated, symlink, foo file.
+    self.assertEqual(3, len(hot))
+    self.assertEqual(os.path.join(self.tempdir, u'foo'), hot[0].path)
+    self.assertEqual(4, hot[0].size)
+    # TODO(maruel): The symlink is reported as its destination. We should fix
+    # this because it double counts the stats.
+    self.assertEqual(os.path.join(self.tempdir, u'foo'), hot[1].path)
+    self.assertEqual(4, hot[1].size)
+    self.assertEqual(u'isolated', hot[2].path.split(u'.')[-1])
+
 
 class IsolateServerStorageApiTest(TestCase):
   @staticmethod
