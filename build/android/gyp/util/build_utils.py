@@ -360,6 +360,8 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
         By default, items will be |zipfile.ZIP_STORED|.
     zip_prefix_path: Path prepended to file path in zip file.
   """
+  if base_dir is None:
+    base_dir = '.'
   input_tuples = []
   for tup in inputs:
     if isinstance(tup, basestring):
