@@ -12,9 +12,12 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -91,7 +94,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
                             shared_url_loader_factory_);
-    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
+    job->SetOAuthTokenParameter(kOAuthToken);
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_register_request();
     job->SetRetryCallback(base::Bind(
@@ -133,7 +136,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job = service_->CreateJob(
         DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
         shared_url_loader_factory_);
-    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
+    job->SetOAuthTokenParameter(kOAuthToken);
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_service_api_access_request();
     job->SetRetryCallback(base::Bind(
@@ -161,7 +164,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                             shared_url_loader_factory_);
-    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
+    job->SetOAuthTokenParameter(kOAuthToken);
     job->SetClientID(kClientID);
     em::PolicyFetchRequest* fetch_request =
         job->GetRequest()->mutable_policy_request()->add_request();
@@ -177,7 +180,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     DeviceManagementRequestJob* job =
         service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                             shared_url_loader_factory_);
-    job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken));
+    job->SetOAuthTokenParameter(kOAuthToken);
     job->SetClientID(kClientID);
     job->SetCritical(true);
     em::PolicyFetchRequest* fetch_request =
@@ -445,26 +448,29 @@ class QueryParams {
     base::SplitStringIntoKeyValuePairs(query, '=', '&', &params_);
   }
 
+  // Returns true if there is exactly one query parameter with |name| and its
+  // value is equal to |expected_value|.
   bool Check(const std::string& name, const std::string& expected_value) {
-    bool found = false;
-    for (ParamMap::const_iterator i(params_.begin()); i != params_.end(); ++i) {
+    std::vector<std::string> params = GetParams(name);
+    return params.size() == 1 && params[0] == expected_value;
+  }
+
+  // Returns vector containing all values for the query param with |name|.
+  std::vector<std::string> GetParams(const std::string& name) {
+    std::vector<std::string> results;
+    for (const auto& param : params_) {
       std::string unescaped_name;
       net::UnescapeBinaryURLComponent(
-          i->first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
+          param.first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
           &unescaped_name);
       if (unescaped_name == name) {
-        if (found)
-          return false;
-        found = true;
-        std::string unescaped_value;
+        std::string value;
         net::UnescapeBinaryURLComponent(
-            i->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-            &unescaped_value);
-        if (unescaped_value != expected_value)
-          return false;
+            param.second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE, &value);
+        results.push_back(value);
       }
     }
-    return found;
+    return results;
   }
 
  private:
@@ -1015,6 +1021,181 @@ TEST_F(DeviceManagementServiceTest, CancelDuringRetry) {
 
   // We must not crash
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests that authorization data is correctly added to the request.
+class DeviceManagementRequestAuthTest : public DeviceManagementServiceTestBase {
+ protected:
+  DeviceManagementRequestAuthTest() = default;
+  ~DeviceManagementRequestAuthTest() override = default;
+
+  DeviceManagementRequestJob* StartJobWithAuthData(
+      std::unique_ptr<DMAuth> auth,
+      base::Optional<std::string> oauth_token) {
+    EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _));
+    EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+
+    // Job type is not really relevant for the test.
+    DeviceManagementRequestJob* job =
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                            shared_url_loader_factory_);
+    if (auth)
+      job->SetAuthData(std::move(auth));
+    if (oauth_token)
+      job->SetOAuthTokenParameter(*oauth_token);
+
+    job->Start(base::BindRepeating(&DeviceManagementRequestAuthTest::OnJobDone,
+                                   base::Unretained(this)));
+    return job;
+  }
+
+  // Returns vector containing all values for the OAuth query param.
+  std::vector<std::string> GetOAuthParams(
+      const network::TestURLLoaderFactory::PendingRequest& request) {
+    QueryParams query_params(request.request.url.query());
+    return query_params.GetParams(dm_protocol::kParamOAuthToken);
+  }
+
+  // Returns the value of 'Authorization' header if found.
+  base::Optional<std::string> GetAuthHeader(
+      const network::TestURLLoaderFactory::PendingRequest& request) {
+    std::string header;
+    bool result =
+        request.request.headers.GetHeader(dm_protocol::kAuthHeader, &header);
+    return result ? base::Optional<std::string>(header) : base::nullopt;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestAuthTest);
+};
+
+TEST_F(DeviceManagementRequestAuthTest, OnlyOAuthToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartJobWithAuthData(nullptr /* auth */, kOAuthToken));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  const std::vector<std::string> params = GetOAuthParams(*request);
+  ASSERT_EQ(1u, params.size());
+  EXPECT_EQ(kOAuthToken, params[0]);
+  EXPECT_FALSE(GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OnlyDMToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(StartJobWithAuthData(
+      DMAuth::FromDMToken(kDMToken), base::nullopt /* oauth_token */));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  const std::vector<std::string> params = GetOAuthParams(*request);
+  EXPECT_EQ(0u, params.size());
+  EXPECT_EQ(base::StrCat({dm_protocol::kDMTokenAuthHeaderPrefix, kDMToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OnlyEnrollmentToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartJobWithAuthData(DMAuth::FromEnrollmentToken(kEnrollmentToken),
+                           base::nullopt /* oauth_token */));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  const std::vector<std::string> params = GetOAuthParams(*request);
+  EXPECT_EQ(0u, params.size());
+  EXPECT_EQ(base::StrCat({dm_protocol::kEnrollmentTokenAuthHeaderPrefix,
+                          kEnrollmentToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OnlyGaiaToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(StartJobWithAuthData(
+      DMAuth::FromGaiaToken(kGaiaAuthToken), base::nullopt /* oauth_token */));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  const std::vector<std::string> params = GetOAuthParams(*request);
+  EXPECT_EQ(0u, params.size());
+  EXPECT_EQ(base::StrCat(
+                {dm_protocol::kServiceTokenAuthHeaderPrefix, kGaiaAuthToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OAuthAndDMToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartJobWithAuthData(DMAuth::FromDMToken(kDMToken), kOAuthToken));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  std::vector<std::string> params = GetOAuthParams(*request);
+  ASSERT_EQ(1u, params.size());
+  EXPECT_EQ(kOAuthToken, params[0]);
+  EXPECT_EQ(base::StrCat({dm_protocol::kDMTokenAuthHeaderPrefix, kDMToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OAuthAndEnrollmentToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(StartJobWithAuthData(
+      DMAuth::FromEnrollmentToken(kEnrollmentToken), kOAuthToken));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  std::vector<std::string> params = GetOAuthParams(*request);
+  ASSERT_EQ(1u, params.size());
+  EXPECT_EQ(kOAuthToken, params[0]);
+  EXPECT_EQ(base::StrCat({dm_protocol::kEnrollmentTokenAuthHeaderPrefix,
+                          kEnrollmentToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, OAuthAndGaiaToken) {
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartJobWithAuthData(DMAuth::FromGaiaToken(kGaiaAuthToken), kOAuthToken));
+
+  const network::TestURLLoaderFactory::PendingRequest* request =
+      GetPendingRequest();
+  ASSERT_TRUE(request);
+
+  std::vector<std::string> params = GetOAuthParams(*request);
+  ASSERT_EQ(1u, params.size());
+  EXPECT_EQ(kOAuthToken, params[0]);
+  EXPECT_EQ(base::StrCat(
+                {dm_protocol::kServiceTokenAuthHeaderPrefix, kGaiaAuthToken}),
+            GetAuthHeader(*request));
+
+  SendResponse(net::OK, 200, std::string());
+}
+
+TEST_F(DeviceManagementRequestAuthTest, CannotUseOAuthTokenAsAuthData) {
+  // Job type is not really relevant for the test.
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                          shared_url_loader_factory_));
+  ASSERT_DEATH(request_job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken)),
+               "This method does not accept OAuth2");
 }
 
 }  // namespace policy

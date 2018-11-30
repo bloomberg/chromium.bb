@@ -28,6 +28,12 @@ const char kParamPlatform[] = "platform";
 const char kParamRequest[] = "request";
 const char kParamRetry[] = "retry";
 
+// Policy constants used in authorization header.
+const char kAuthHeader[] = "Authorization";
+const char kServiceTokenAuthHeaderPrefix[] = "GoogleLogin auth=";
+const char kDMTokenAuthHeaderPrefix[] = "GoogleDMToken token=";
+const char kEnrollmentTokenAuthHeaderPrefix[] = "GoogleEnrollmentToken token=";
+
 // String constants for the device and app type we report to the server.
 const char kValueAppType[] = "Chrome";
 const char kValueDeviceType[] = "2";

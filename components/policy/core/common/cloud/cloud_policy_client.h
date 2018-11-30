@@ -133,7 +133,7 @@ class POLICY_EXPORT CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
       enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
       enterprise_management::LicenseType::LicenseTypeEnum license_type,
-      std::unique_ptr<DMAuth> auth,
+      const std::string& oauth_token,
       const std::string& client_id,
       const std::string& requisition,
       const std::string& current_state_key);
@@ -269,10 +269,10 @@ class POLICY_EXPORT CloudPolicyClient {
                               const std::string& location,
                               const StatusCallback& callback);
 
-  // Requests a list of licenses available for enrollment. Uses |auth| to
+  // Requests a list of licenses available for enrollment. Uses |oauth_token| to
   // identify user who issues the request, the |callback| will
   // be called when the operation completes.
-  void RequestAvailableLicenses(std::unique_ptr<DMAuth> auth,
+  void RequestAvailableLicenses(const std::string& oauth_token,
                                 const LicenseRequestCallback& callback);
 
   // Sends a GCM id update request to the DM server. The server will

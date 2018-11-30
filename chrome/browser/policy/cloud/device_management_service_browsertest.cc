@@ -17,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -127,7 +128,7 @@ class DeviceManagementServiceIntegrationTest
             InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle)));
     std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
         DeviceManagementRequestJob::TYPE_REGISTRATION, GetFactory()));
-    job->SetAuthData(DMAuth::FromOAuthToken("oauth_token"));
+    job->SetOAuthTokenParameter("oauth_token");
     job->SetClientID("testid");
     job->GetRequest()->mutable_register_request();
     job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,

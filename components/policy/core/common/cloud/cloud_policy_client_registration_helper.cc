@@ -269,9 +269,9 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
       registration_type_,
       enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
       enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      enterprise_management::LicenseType::UNDEFINED,
-      DMAuth::FromOAuthToken(oauth_access_token_), std::string(), std::string(),
-      std::string());
+      enterprise_management::LicenseType::UNDEFINED, oauth_access_token_,
+      std::string() /* client_id */, std::string() /* requisition */,
+      std::string() /* current_state_key */);
 }
 
 void CloudPolicyClientRegistrationHelper::OnPolicyFetched(

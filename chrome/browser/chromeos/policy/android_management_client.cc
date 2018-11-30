@@ -10,7 +10,6 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -79,7 +78,7 @@ void AndroidManagementClient::CheckAndroidManagement(
   request_job_.reset(device_management_service_->CreateJob(
       DeviceManagementRequestJob::TYPE_ANDROID_MANAGEMENT_CHECK,
       url_loader_factory_));
-  request_job_->SetAuthData(DMAuth::FromOAuthToken(access_token));
+  request_job_->SetOAuthTokenParameter(access_token);
   request_job_->SetClientID(base::GenerateGUID());
   request_job_->GetRequest()->mutable_check_android_management_request();
 

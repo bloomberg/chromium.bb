@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
@@ -641,8 +642,7 @@ TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), std::string(),
+                    em::LicenseType::UNDEFINED, kOAuthToken, std::string(),
                     std::string(), std::string());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
@@ -704,8 +704,7 @@ TEST_F(CloudPolicyClientTest, RegistrationParametersPassedThrough) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), kClientID,
+                    em::LicenseType::UNDEFINED, kOAuthToken, kClientID,
                     kRequisition, kStateKey);
   EXPECT_EQ(kClientID, client_id_);
 }
@@ -718,8 +717,7 @@ TEST_F(CloudPolicyClientTest, RegistrationNoToken) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), std::string(),
+                    em::LicenseType::UNDEFINED, kOAuthToken, std::string(),
                     std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
@@ -735,8 +733,7 @@ TEST_F(CloudPolicyClientTest, RegistrationFailure) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), std::string(),
+                    em::LicenseType::UNDEFINED, kOAuthToken, std::string(),
                     std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
@@ -758,8 +755,7 @@ TEST_F(CloudPolicyClientTest, RetryRegistration) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), std::string(),
+                    em::LicenseType::UNDEFINED, kOAuthToken, std::string(),
                     std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   Mock::VerifyAndClearExpectations(&service_);
@@ -1303,8 +1299,7 @@ TEST_F(CloudPolicyClientTest, RequestAvailableLicenses) {
       base::Bind(&MockAvailableLicensesObserver::OnAvailableLicensesFetched,
                  base::Unretained(&license_callback_observer_));
 
-  client_->RequestAvailableLicenses(DMAuth::FromOAuthToken(kOAuthToken),
-                                    callback);
+  client_->RequestAvailableLicenses(kOAuthToken, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
@@ -1319,8 +1314,7 @@ TEST_F(CloudPolicyClientTest, RequestAvailableLicensesBrokenResponse) {
       base::Bind(&MockAvailableLicensesObserver::OnAvailableLicensesFetched,
                  base::Unretained(&license_callback_observer_));
 
-  client_->RequestAvailableLicenses(DMAuth::FromOAuthToken(kOAuthToken),
-                                    callback);
+  client_->RequestAvailableLicenses(kOAuthToken, callback);
   EXPECT_EQ(DM_STATUS_RESPONSE_DECODING_ERROR, client_->status());
 }
 
@@ -1422,8 +1416,7 @@ TEST_F(CloudPolicyClientTest, PolicyReregistration) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), client_id_,
+                    em::LicenseType::UNDEFINED, kOAuthToken, client_id_,
                     std::string(), std::string());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->requires_reregistration());
@@ -1455,8 +1448,7 @@ TEST_F(CloudPolicyClientTest, PolicyReregistrationFailsWithNonMatchingDMToken) {
   client_->Register(em::DeviceRegisterRequest::USER,
                     em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY,
                     em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-                    em::LicenseType::UNDEFINED,
-                    DMAuth::FromOAuthToken(kOAuthToken), client_id_,
+                    em::LicenseType::UNDEFINED, kOAuthToken, client_id_,
                     std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_TRUE(client_->requires_reregistration());
