@@ -89,7 +89,9 @@ struct VR_UI_EXPORT Model {
   EditedText web_input_text_field_info;
 
   // Controller state.
-  ControllerModel controller;
+  const ControllerModel& primary_controller() const;
+  ControllerModel& mutable_primary_controller();  // For tests
+  std::vector<ControllerModel> controllers;
   ReticleModel reticle;
 
   // State affecting both VR browsing and WebVR.

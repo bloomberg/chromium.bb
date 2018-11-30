@@ -54,7 +54,7 @@ class UiSceneCreator {
   void CreateWebVrSubtree();
   void CreateWebVrOverlayElements();
   void CreateWebVrTimeoutScreen();
-  void CreateController();
+  void CreateControllers();
   void CreateKeyboard();
   void Create2dBrowsingHostedUi();
   void CreateExternalPromptNotifcationOverlay();

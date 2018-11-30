@@ -86,8 +86,11 @@ void UiTest::CreateSceneInternal(
   ui_ = ui_instance_.get();
   scene_ = ui_instance_->scene();
   model_ = ui_instance_->model_for_test();
-  model_->controller.transform.Translate3d(kStartControllerPosition);
+  model_->controllers[0].transform.Translate3d(kStartControllerPosition);
 
+  OnBeginFrame();
+  // Need a second BeginFrame here because the first one will add controllers
+  // to the scene, which need an additional frame to get into a good state.
   OnBeginFrame();
 }
 

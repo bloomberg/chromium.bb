@@ -37,8 +37,8 @@ class MockUi : public UiInterface {
   MOCK_METHOD4(SetContentOverlayAlertDialogEnabled,
                void(bool, PlatformUiInputDelegate*, float, float));
   MOCK_METHOD0(OnPause, void());
-  void OnControllerUpdated(const ControllerModel&,
-                           const ReticleModel&) override {}
+  void OnControllersUpdated(const std::vector<ControllerModel>&,
+                            const ReticleModel&) override {}
   void OnProjMatrixChanged(const gfx::Transform&) override {}
   MOCK_METHOD0(AcceptDoffPromptForTesting, void());
   MOCK_METHOD2(GetTargetPointForTesting,

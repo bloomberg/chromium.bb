@@ -1068,7 +1068,7 @@ TEST_F(UiTest, ControllerLabels) {
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
   EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
 
-  model_->controller.resting_in_viewport = true;
+  model_->mutable_primary_controller().resting_in_viewport = true;
   EXPECT_TRUE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerTrackpadRepositionLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
@@ -1111,13 +1111,13 @@ TEST_F(UiTest, ControllerLabels) {
   EXPECT_FALSE(IsVisible(kControllerBackButtonLabel));
 
   model_->push_mode(kModeRepositionWindow);
-  model_->controller.laser_direction = kForwardVector;
+  model_->mutable_primary_controller().laser_direction = kForwardVector;
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_TRUE(IsVisible(kControllerTrackpadRepositionLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
   EXPECT_TRUE(IsVisible(kControllerRepositionFinishLabel));
 
-  model_->controller.resting_in_viewport = false;
+  model_->mutable_primary_controller().resting_in_viewport = false;
   EXPECT_FALSE(IsVisible(kControllerTrackpadRepositionLabel));
   EXPECT_FALSE(IsVisible(kControllerTrackpadLabel));
   EXPECT_FALSE(IsVisible(kControllerExitButtonLabel));
@@ -1140,7 +1140,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
 
   ColorScheme scheme = model_->color_scheme();
 
-  model_->controller.battery_level = 5;
+  model_->mutable_primary_controller().battery_level = 5;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
@@ -1148,7 +1148,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
   EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_full);
 
-  model_->controller.battery_level = 4;
+  model_->mutable_primary_controller().battery_level = 4;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
@@ -1156,7 +1156,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
   EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
 
-  model_->controller.battery_level = 3;
+  model_->mutable_primary_controller().battery_level = 3;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
@@ -1164,7 +1164,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
   EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
   EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
 
-  model_->controller.battery_level = 2;
+  model_->mutable_primary_controller().battery_level = 2;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_full);
@@ -1172,7 +1172,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
   EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
   EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
 
-  model_->controller.battery_level = 1;
+  model_->mutable_primary_controller().battery_level = 1;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_full);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_empty);
@@ -1180,7 +1180,7 @@ TEST_F(UiTest, ControllerBatteryIndicator) {
   EXPECT_EQ(dot_3->center_color(), scheme.controller_battery_empty);
   EXPECT_EQ(dot_4->center_color(), scheme.controller_battery_empty);
 
-  model_->controller.battery_level = 0;
+  model_->mutable_primary_controller().battery_level = 0;
   RunForMs(kAnimationTimeMs);
   EXPECT_EQ(dot_0->center_color(), scheme.controller_battery_empty);
   EXPECT_EQ(dot_1->center_color(), scheme.controller_battery_empty);
@@ -1206,7 +1206,7 @@ TEST_F(UiTest, ResetRepositioner) {
   EXPECT_NE(original, repositioner->world_space_transform());
   repositioner->SetEnabled(false);
 
-  model_->controller.recentered = true;
+  model_->mutable_primary_controller().recentered = true;
 
   OnBeginFrame();
   EXPECT_EQ(original, repositioner->world_space_transform());
