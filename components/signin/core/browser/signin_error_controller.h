@@ -9,14 +9,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 // Keep track of auth errors and expose them to observers in the UI. Services
 // that wish to expose auth errors to the user should register an
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
-class SigninErrorController : public KeyedService {
+class SigninErrorController : public KeyedService,
+                              public OAuth2TokenService::Observer {
  public:
   enum class AccountMode {
     // Signin error controller monitors all the accounts. When multiple accounts
@@ -28,19 +31,6 @@ class SigninErrorController : public KeyedService {
     PRIMARY_ACCOUNT
   };
 
-  class AuthStatusProvider {
-   public:
-    AuthStatusProvider();
-    virtual ~AuthStatusProvider();
-
-    // Returns the account id with the status specified by GetAuthStatus().
-    virtual std::string GetAccountId() const = 0;
-
-    // API invoked by SigninErrorController to get the current auth status of
-    // the various signed in services.
-    virtual GoogleServiceAuthError GetAuthStatus() const = 0;
-  };
-
   // The observer class for SigninErrorController lets the controller notify
   // observers when an error arises or changes.
   class Observer {
@@ -49,19 +39,12 @@ class SigninErrorController : public KeyedService {
     virtual void OnErrorChanged() = 0;
   };
 
-  explicit SigninErrorController(AccountMode mode);
+  explicit SigninErrorController(AccountMode mode,
+                                 OAuth2TokenService* token_service);
   ~SigninErrorController() override;
 
-  // Adds a provider which the SigninErrorController object will start querying
-  // for auth status.
-  void AddProvider(const AuthStatusProvider* provider);
-
-  // Removes a provider previously added by SigninErrorController (generally
-  // only called in preparation for shutdown).
-  void RemoveProvider(const AuthStatusProvider* provider);
-
-  // Invoked when the auth status of an AuthStatusProvider has changed.
-  void AuthStatusChanged();
+  // KeyedService implementation:
+  void Shutdown() override;
 
   // True if there exists an error worth elevating to the user.
   bool HasError() const;
@@ -76,8 +59,18 @@ class SigninErrorController : public KeyedService {
   const GoogleServiceAuthError& auth_error() const { return auth_error_; }
 
  private:
+  // Invoked when the auth status has changed.
+  void Update();
+
+  // OAuth2TokenService::Observer implementation:
+  void OnEndBatchChanges() override;
+  void OnAuthErrorChanged(const std::string& account_id,
+                          const GoogleServiceAuthError& auth_error) override;
+
   const AccountMode account_mode_;
-  std::set<const AuthStatusProvider*> provider_set_;
+  OAuth2TokenService* token_service_;
+  ScopedObserver<OAuth2TokenService, SigninErrorController>
+      scoped_token_service_observer_;
 
   // The primary account ID. Only used in the PRIMARY_ACCOUNT account mode.
   std::string primary_account_id_;

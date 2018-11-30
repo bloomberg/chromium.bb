@@ -6,45 +6,24 @@
 
 #include "components/signin/core/browser/signin_metrics.h"
 
-namespace {
-
-typedef std::set<const SigninErrorController::AuthStatusProvider*>
-    AuthStatusProviderSet;
-
-}  // namespace
-
-SigninErrorController::AuthStatusProvider::AuthStatusProvider() {
-}
-
-SigninErrorController::AuthStatusProvider::~AuthStatusProvider() {
-}
-
-SigninErrorController::SigninErrorController(AccountMode mode)
+SigninErrorController::SigninErrorController(AccountMode mode,
+                                             OAuth2TokenService* token_service)
     : account_mode_(mode),
-      auth_error_(GoogleServiceAuthError::AuthErrorNone()) {}
-
-SigninErrorController::~SigninErrorController() {
-  DCHECK(provider_set_.empty())
-      << "All AuthStatusProviders should be unregistered before "
-      << "SigninErrorController is destroyed";
+      token_service_(token_service),
+      scoped_token_service_observer_(this),
+      auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
+  DCHECK(token_service_);
+  scoped_token_service_observer_.Add(token_service_);
+  Update();
 }
 
-void SigninErrorController::AddProvider(const AuthStatusProvider* provider) {
-  DCHECK(provider_set_.find(provider) == provider_set_.end())
-      << "Adding same AuthStatusProvider multiple times";
-  provider_set_.insert(provider);
-  AuthStatusChanged();
+SigninErrorController::~SigninErrorController() = default;
+
+void SigninErrorController::Shutdown() {
+  scoped_token_service_observer_.RemoveAll();
 }
 
-void SigninErrorController::RemoveProvider(const AuthStatusProvider* provider) {
-  auto iter = provider_set_.find(provider);
-  DCHECK(iter != provider_set_.end())
-      << "Removing provider that was never added";
-  provider_set_.erase(iter);
-  AuthStatusChanged();
-}
-
-void SigninErrorController::AuthStatusChanged() {
+void SigninErrorController::Update() {
   GoogleServiceAuthError::State prev_state = auth_error_.state();
   std::string prev_account_id = error_account_id_;
   bool error_changed = false;
@@ -53,22 +32,19 @@ void SigninErrorController::AuthStatusChanged() {
   // actionable error state and some provider exposes a similar error and
   // account id, use that error. Otherwise, just take the first actionable
   // error we find.
-  for (auto it = provider_set_.begin(); it != provider_set_.end(); ++it) {
-    std::string account_id = (*it)->GetAccountId();
-
+  for (const std::string& account_id : token_service_->GetAccounts()) {
     // In PRIMARY_ACCOUNT mode, ignore all secondary accounts.
     if (account_mode_ == AccountMode::PRIMARY_ACCOUNT &&
         (account_id != primary_account_id_)) {
       continue;
     }
 
-    GoogleServiceAuthError error = (*it)->GetAuthStatus();
-
-    // Ignore the states we don't want to elevate to the user.
-    if (error.state() == GoogleServiceAuthError::NONE ||
-        error.IsTransientError()) {
+    if (!token_service_->RefreshTokenHasError(account_id))
       continue;
-    }
+
+    GoogleServiceAuthError error = token_service_->GetAuthError(account_id);
+    // TokenService only reports persistent errors.
+    DCHECK(error.IsPersistentError());
 
     // Prioritize this error if it matches the previous |auth_error_|.
     if (error.state() == prev_state && account_id == prev_account_id) {
@@ -102,14 +78,14 @@ void SigninErrorController::AuthStatusChanged() {
 }
 
 bool SigninErrorController::HasError() const {
-  return auth_error_.state() != GoogleServiceAuthError::NONE &&
-      auth_error_.state() != GoogleServiceAuthError::CONNECTION_FAILED;
+  DCHECK(!auth_error_.IsTransientError());
+  return auth_error_.state() != GoogleServiceAuthError::NONE;
 }
 
 void SigninErrorController::SetPrimaryAccountID(const std::string& account_id) {
   primary_account_id_ = account_id;
   if (account_mode_ == AccountMode::PRIMARY_ACCOUNT)
-    AuthStatusChanged();  // Recompute the error state.
+    Update();  // Recompute the error state.
 }
 
 void SigninErrorController::AddObserver(Observer* observer) {
@@ -118,4 +94,14 @@ void SigninErrorController::AddObserver(Observer* observer) {
 
 void SigninErrorController::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void SigninErrorController::OnEndBatchChanges() {
+  Update();
+}
+
+void SigninErrorController::OnAuthErrorChanged(
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  Update();
 }

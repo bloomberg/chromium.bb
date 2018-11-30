@@ -114,7 +114,7 @@ FakeOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  if (GetAuthError(account_id) == error)
+  if (error.IsTransientError() || GetAuthError(account_id) == error)
     return;
 
   // Drop transient errors to match OAuth2TokenService's stated contract for

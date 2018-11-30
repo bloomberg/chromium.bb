@@ -243,8 +243,6 @@ static_library("test_support") {
   sources = [
     "fake_account_fetcher_service.cc",
     "fake_account_fetcher_service.h",
-    "fake_auth_status_provider.cc",
-    "fake_auth_status_provider.h",
   ]
 
   deps = [

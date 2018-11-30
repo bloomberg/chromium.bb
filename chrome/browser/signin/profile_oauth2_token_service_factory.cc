@@ -14,7 +14,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -65,8 +64,7 @@ CreateCrOsOAuthDelegate(Profile* profile) {
 
   return std::make_unique<chromeos::ChromeOSOAuth2TokenServiceDelegate>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
-      account_manager,
-      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
+      account_manager);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -102,7 +100,6 @@ CreateMutableProfileOAuthDelegate(Profile* profile) {
 
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile),
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
@@ -145,7 +142,6 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
 #endif
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
-  DependsOn(SigninErrorControllerFactory::GetInstance());
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
 }

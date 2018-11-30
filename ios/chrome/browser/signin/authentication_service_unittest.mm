@@ -31,7 +31,6 @@
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -62,7 +61,6 @@ class FakeSigninClient : public IOSChromeSigninClient {
  public:
   explicit FakeSigninClient(
       ios::ChromeBrowserState* browser_state,
-      SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map)
       : IOSChromeSigninClient(browser_state,
@@ -79,8 +77,6 @@ std::unique_ptr<KeyedService> BuildFakeTestSigninClient(
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<FakeSigninClient>(
       chrome_browser_state,
-      ios::SigninErrorControllerFactory::GetForBrowserState(
-          chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
       ios::HostContentSettingsMapFactory::GetForBrowserState(
           chrome_browser_state));

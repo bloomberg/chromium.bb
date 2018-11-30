@@ -9,7 +9,9 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,13 +36,18 @@ WebViewSigninErrorControllerFactory::GetInstance() {
 WebViewSigninErrorControllerFactory::WebViewSigninErrorControllerFactory()
     : BrowserStateKeyedServiceFactory(
           "SigninErrorController",
-          BrowserStateDependencyManager::GetInstance()) {}
+          BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
+}
 
 std::unique_ptr<KeyedService>
 WebViewSigninErrorControllerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
+  WebViewBrowserState* browser_state =
+      WebViewBrowserState::FromBrowserState(context);
   return std::make_unique<SigninErrorController>(
-      SigninErrorController::AccountMode::ANY_ACCOUNT);
+      SigninErrorController::AccountMode::ANY_ACCOUNT,
+      WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state));
 }
 
 }  // namespace ios_web_view

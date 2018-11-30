@@ -17,7 +17,6 @@
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -107,43 +106,13 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
   std::vector<std::vector<std::string>> batch_change_records_;
 };
 
-class SigninErrorObserver : public SigninErrorController::Observer {
- public:
-  explicit SigninErrorObserver(SigninErrorController* signin_error_controller)
-      : signin_error_controller_(signin_error_controller) {
-    signin_error_controller_->AddObserver(this);
-  }
-
-  ~SigninErrorObserver() override {
-    signin_error_controller_->RemoveObserver(this);
-  }
-
-  // |SigninErrorController::Observer| overrides.
-  void OnErrorChanged() override {
-    last_err_account_id_ = signin_error_controller_->error_account_id();
-    last_err_ = signin_error_controller_->auth_error();
-  }
-
-  std::string last_err_account_id_;
-  GoogleServiceAuthError last_err_ = GoogleServiceAuthError::AuthErrorNone();
-
- private:
-  // Non-owning pointer to |SigninErrorController|.
-  SigninErrorController* const signin_error_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninErrorObserver);
-};
-
 }  // namespace
 
 class CrOSOAuthDelegateTest : public testing::Test {
  public:
   CrOSOAuthDelegateTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::ANY_ACCOUNT),
-        signin_error_observer_(&signin_error_controller_) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~CrOSOAuthDelegateTest() override = default;
 
  protected:
@@ -168,8 +137,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     gaia_account_key_ = {account_info_.gaia, ACCOUNT_TYPE_GAIA};
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-        &account_tracker_service_, &account_manager_,
-        &signin_error_controller_);
+        &account_tracker_service_, &account_manager_);
     delegate_->LoadCredentials(
         account_info_.account_id /* primary_account_id */);
   }
@@ -216,8 +184,6 @@ class CrOSOAuthDelegateTest : public testing::Test {
   AccountManager::AccountKey gaia_account_key_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
-  SigninErrorController signin_error_controller_;
-  SigninErrorObserver signin_error_observer_;
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
   AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
@@ -336,7 +302,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
 
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-      &account_tracker_service_, &account_manager, &signin_error_controller_);
+      &account_tracker_service_, &account_manager);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer;
   delegate->AddObserver(&observer);
@@ -416,28 +382,19 @@ TEST_F(CrOSOAuthDelegateTest,
   auto error =
       GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
 
-  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            signin_error_observer_.last_err_);
   delegate_->UpdateAuthError(account_info_.account_id, error);
 
   EXPECT_EQ(error, delegate_->GetAuthError(account_info_.account_id));
-  EXPECT_EQ(account_info_.account_id,
-            signin_error_observer_.last_err_account_id_);
-  EXPECT_EQ(error, signin_error_observer_.last_err_);
 }
 
 TEST_F(CrOSOAuthDelegateTest, TransientErrorsAreNotShown) {
   auto transient_error = GoogleServiceAuthError(
       GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            signin_error_observer_.last_err_);
-  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             delegate_->GetAuthError(account_info_.account_id));
 
   delegate_->UpdateAuthError(account_info_.account_id, transient_error);
 
-  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            signin_error_observer_.last_err_);
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             delegate_->GetAuthError(account_info_.account_id));
 }

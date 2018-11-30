@@ -147,50 +147,16 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
 
 }  // namespace
 
-ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::AccountStatus(
-    SigninErrorController* signin_error_controller,
-    const std::string& account_id)
-    : signin_error_controller_(signin_error_controller),
-      account_id_(account_id),
-      last_auth_error_(GoogleServiceAuthError::NONE) {
-  DCHECK(signin_error_controller_);
-  DCHECK(!account_id_.empty());
-  signin_error_controller_->AddProvider(this);
-}
-
-ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::~AccountStatus() {
-  signin_error_controller_->RemoveProvider(this);
-}
-
-void ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::SetLastAuthError(
-    const GoogleServiceAuthError& error) {
-    last_auth_error_ = error;
-    signin_error_controller_->AuthStatusChanged();
-}
-
-std::string ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::GetAccountId()
-    const {
-  return account_id_;
-}
-
-GoogleServiceAuthError
-ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::GetAuthStatus() const {
-  return last_auth_error_;
-}
-
 ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
     SigninClient* client,
     std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
-    AccountTrackerService* account_tracker_service,
-    SigninErrorController* signin_error_controller)
+    AccountTrackerService* account_tracker_service)
     : client_(client),
       provider_(std::move(provider)),
-      account_tracker_service_(account_tracker_service),
-      signin_error_controller_(signin_error_controller) {
+      account_tracker_service_(account_tracker_service) {
   DCHECK(client_);
   DCHECK(provider_);
   DCHECK(account_tracker_service_);
-  DCHECK(signin_error_controller_);
 }
 
 ProfileOAuth2TokenServiceIOSDelegate::~ProfileOAuth2TokenServiceIOSDelegate() {
@@ -333,7 +299,7 @@ GoogleServiceAuthError ProfileOAuth2TokenServiceIOSDelegate::GetAuthError(
     const std::string& account_id) const {
   auto it = accounts_.find(account_id);
   return (it == accounts_.end()) ? GoogleServiceAuthError::AuthErrorNone()
-                                 : it->second->GetAuthStatus();
+                                 : it->second.last_auth_error;
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
@@ -352,9 +318,9 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
     return;
   }
 
-  AccountStatus* status = accounts_[account_id].get();
-  if (error.state() != status->GetAuthStatus().state()) {
-    status->SetLastAuthError(error);
+  AccountStatus* status = &accounts_[account_id];
+  if (error.state() != status->last_auth_error.state()) {
+    status->last_auth_error = error;
     FireAuthErrorChanged(account_id, error);
   }
 }
@@ -370,21 +336,16 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
   DCHECK(!account_tracker_service_->GetAccountInfo(account_id).email.empty());
 
   bool account_present = accounts_.count(account_id) > 0;
-  if (account_present &&
-      accounts_[account_id]->GetAuthStatus().state() ==
-          GoogleServiceAuthError::NONE) {
+  if (account_present && accounts_[account_id].last_auth_error.state() ==
+                             GoogleServiceAuthError::NONE) {
     // No need to update the account if it is already a known account and if
     // there is no auth error.
     return;
   }
 
-  if (!account_present) {
-    accounts_[account_id].reset(
-        new AccountStatus(signin_error_controller_, account_id));
-    FireAuthErrorChanged(account_id, accounts_[account_id]->GetAuthStatus());
-  }
-
-  UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
+  accounts_[account_id].last_auth_error =
+      GoogleServiceAuthError::AuthErrorNone();
+  FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
   FireRefreshTokenAvailable(account_id);
 }
 

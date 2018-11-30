@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "net/base/backoff_entry.h"
@@ -41,53 +40,12 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 }  // namespace
 
-class ChromeOSOAuth2TokenServiceDelegate::AccountErrorStatus
-    : public SigninErrorController::AuthStatusProvider {
- public:
-  AccountErrorStatus(SigninErrorController* signin_error_controller,
-                     const std::string& account_id)
-      : signin_error_controller_(signin_error_controller),
-        account_id_(account_id) {
-    signin_error_controller_->AddProvider(this);
-  }
-
-  ~AccountErrorStatus() override {
-    signin_error_controller_->RemoveProvider(this);
-  }
-
-  // SigninErrorController::AuthStatusProvider overrides.
-  std::string GetAccountId() const override { return account_id_; }
-
-  GoogleServiceAuthError GetAuthStatus() const override {
-    return last_auth_error_;
-  }
-
-  void SetLastAuthError(const GoogleServiceAuthError& error) {
-    last_auth_error_ = error;
-    signin_error_controller_->AuthStatusChanged();
-  }
-
- private:
-  // A non-owning pointer to |SigninErrorController|.
-  SigninErrorController* const signin_error_controller_;
-
-  // The account id being tracked by |this| instance of |AccountErrorStatus|.
-  const std::string account_id_;
-
-  // The last auth error seen for |account_id_|.
-  GoogleServiceAuthError last_auth_error_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountErrorStatus);
-};
-
 ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
-    chromeos::AccountManager* account_manager,
-    SigninErrorController* signin_error_controller)
+    chromeos::AccountManager* account_manager)
     : account_mapper_util_(
           std::make_unique<AccountMapperUtil>(account_tracker_service)),
       account_manager_(account_manager),
-      signin_error_controller_(signin_error_controller),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
       weak_factory_(this) {
@@ -113,12 +71,12 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   // We will reject the request if we are facing a persistent error for this
   // account.
   auto it = errors_.find(account_id);
-  if (it != errors_.end() && it->second->GetAuthStatus().IsPersistentError()) {
+  if (it != errors_.end() && it->second.last_auth_error.IsPersistentError()) {
     VLOG(1) << "Request for token has been rejected due to persistent error #"
-            << it->second->GetAuthStatus().state();
+            << it->second.last_auth_error.state();
     // |OAuth2TokenService| will manage the lifetime of this pointer.
     return new OAuth2AccessTokenFetcherImmediateError(
-        consumer, it->second->GetAuthStatus());
+        consumer, it->second.last_auth_error);
   }
   // Or when we need to backoff.
   if (backoff_entry_.ShouldRejectRequest()) {
@@ -160,22 +118,16 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
   }
 
   auto it = errors_.find(account_id);
-  if (error.state() == GoogleServiceAuthError::NONE) {
-    // If the error status is NONE, and we were not tracking any error anyways,
-    // just ignore the update.
-    // Otherwise, delete the error tracking for this account.
-    if (it != errors_.end()) {
+  if ((it != errors_.end())) {
+    // Update the existing error.
+    if (error.state() == GoogleServiceAuthError::NONE)
       errors_.erase(it);
-      FireAuthErrorChanged(account_id, error);
-    }
-  } else if ((it == errors_.end()) || (it->second->GetAuthStatus() != error)) {
-    // Error status is not NONE. We need to start tracking the account / update
-    // the last seen error, if it is different.
-    if (it == errors_.end()) {
-      errors_.emplace(account_id, std::make_unique<AccountErrorStatus>(
-                                      signin_error_controller_, account_id));
-    }
-    errors_[account_id]->SetLastAuthError(error);
+    else
+      it->second.last_auth_error = error;
+    FireAuthErrorChanged(account_id, error);
+  } else if (error.state() != GoogleServiceAuthError::NONE) {
+    // Add a new error.
+    errors_.emplace(account_id, AccountErrorStatus{error});
     FireAuthErrorChanged(account_id, error);
   }
 }
@@ -184,7 +136,7 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
     const std::string& account_id) const {
   auto it = errors_.find(account_id);
   if (it != errors_.end()) {
-    return it->second->GetAuthStatus();
+    return it->second.last_auth_error;
   }
 
   return GoogleServiceAuthError::AuthErrorNone();
