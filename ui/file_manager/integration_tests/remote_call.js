@@ -495,16 +495,24 @@ RemoteCallFilesApp.prototype.expandTreeItemInDirectoryTree = function(
             'queryAllElements', windowId, [`${query}[expanded]`]);
       })
       .then(elements => {
-        // If it's already expanded, do nothing.
-        if (elements.length > 0)
-          return;
-
+        // If it's already expanded just set the focus on directory tree.
+        if (elements.length > 0) {
+          return this.callRemoteTestUtil(
+              'focus', windowId, ['#directory-tree']);
+        }
+        // Expand directory volume and set the focus to directory tree.
         // Focus to directory tree.
-        return this.callRemoteTestUtil('focus', windowId, ['#directory-tree'])
+        return this
+            .callRemoteTestUtil(
+                'fakeMouseClick', windowId, [`${query} .expand-icon`])
             .then(() => {
-              // Expand directory volume.
+              // Wait for the expansion to finish.
+              return this.waitForElement(windowId, query + '[expanded]');
+            })
+            .then(() => {
+              // Force the focus on directory tree.
               return this.callRemoteTestUtil(
-                  'fakeMouseClick', windowId, [`${query} .expand-icon`]);
+                  'focus', windowId, ['#directory-tree']);
             });
       });
 };
