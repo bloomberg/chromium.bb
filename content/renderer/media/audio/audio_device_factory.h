@@ -51,9 +51,11 @@ class CONTENT_EXPORT AudioDeviceFactory {
   static media::AudioLatency::LatencyType GetSourceLatencyType(
       SourceType source);
 
-  // Creates a sink for AudioRendererMixer.
-  // |render_frame_id| refers to the RenderFrame containing the entity
-  // producing the audio.
+  // Creates a sink for AudioRendererMixer. |render_frame_id| refers to the
+  // RenderFrame containing the entity producing the audio. Note: These sinks do
+  // not support the blocking GetOutputDeviceInfo() API and instead clients are
+  // required to use the GetOutputDeviceInfoAsync() API. As such they are
+  // configured with no authorization timeout value.
   static scoped_refptr<media::AudioRendererSink> NewAudioRendererMixerSink(
       int render_frame_id,
       const media::AudioSinkParameters& params);

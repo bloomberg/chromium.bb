@@ -125,6 +125,11 @@ class MEDIA_EXPORT AudioRendererImpl
     kPlaying
   };
 
+  // Called after hardware device information is available.
+  void OnDeviceInfoReceived(DemuxerStream* stream,
+                            CdmContext* cdm_context,
+                            OutputDeviceInfo output_device_info);
+
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(AudioDecoderStream::Status status,
                          const scoped_refptr<AudioBuffer>& buffer);

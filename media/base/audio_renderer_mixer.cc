@@ -155,9 +155,10 @@ void AudioRendererMixer::SetPauseDelayForTesting(base::TimeDelta delay) {
   pause_delay_ = delay;
 }
 
-OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
+void AudioRendererMixer::GetOutputDeviceInfoAsync(
+    AudioRendererSink::OutputDeviceInfoCB info_cb) {
   DVLOG(1) << __func__;
-  return audio_sink_->GetOutputDeviceInfo();
+  return audio_sink_->GetOutputDeviceInfoAsync(std::move(info_cb));
 }
 
 bool AudioRendererMixer::CurrentThreadIsRenderingThread() {

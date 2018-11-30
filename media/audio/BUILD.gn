@@ -56,6 +56,8 @@ source_set("audio") {
   visibility = [
     "//media",
 
+    "//media/renderers",
+
     # TODO(dalecurtis): CoreAudioUtil::IsCoreAudioSupported() should probably
     # move into media/base/win.
     "//media/device_monitors",
