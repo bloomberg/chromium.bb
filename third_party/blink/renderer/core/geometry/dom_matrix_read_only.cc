@@ -243,6 +243,10 @@ DOMMatrix* DOMMatrixReadOnly::scale3d(double scale,
   return DOMMatrix::Create(this)->scale3dSelf(scale, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy) {
+  return DOMMatrix::Create(this)->scaleSelf(sx, sy, 1, 0, 0, 0);
+}
+
 DOMMatrix* DOMMatrixReadOnly::rotate(double rot_x) {
   return DOMMatrix::Create(this)->rotateSelf(rot_x);
 }

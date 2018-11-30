@@ -225,6 +225,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method rotateFromVector
 [Worker]     method scale
 [Worker]     method scale3d
+[Worker]     method scaleNonUniform
 [Worker]     method skewX
 [Worker]     method skewY
 [Worker]     method toFloat32Array

@@ -298,6 +298,7 @@ interface DOMMatrixReadOnly
     method rotateFromVector
     method scale
     method scale3d
+    method scaleNonUniform
     method skewX
     method skewY
     method toFloat32Array
