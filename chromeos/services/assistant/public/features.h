@@ -17,7 +17,12 @@ extern const base::Feature kAssistantVoiceMatch;
 // Enables DSP for hotword detection.
 extern const base::Feature kEnableDspHotword;
 
+// Enables stereo audio input.
+extern const base::Feature kEnableStereoAudioInput;
+
 bool IsDspHotwordEnabled();
+
+bool IsStereoAudioInputEnabled();
 
 }  // namespace features
 }  // namespace assistant
