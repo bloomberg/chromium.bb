@@ -2312,7 +2312,9 @@ TEST_F(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
   EXPECT_EQ(user_wallpaper_info, synced_online_wallpaper_info);
 }
 
-TEST_F(WallpaperControllerTest, AddFirstWallpaperAnimationEndCallback) {
+// Disabled due to flakes; see https://crbug.com/910493.
+TEST_F(WallpaperControllerTest,
+       DISABLED_AddFirstWallpaperAnimationEndCallback) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   std::unique_ptr<aura::Window> test_window(
