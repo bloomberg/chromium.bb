@@ -82,7 +82,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 
 namespace blink {
@@ -312,13 +311,8 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXList::Create(layout_object, *this);
 
   // media controls
-  // TODO(836549): Remove for the rest of the controls.
-  // kMediaVolumeSlider has already been removed.
-  if (node && node->IsMediaControlElement() &&
-      MediaControlElementsHelper::GetMediaControlElementType(node) !=
-          kMediaVolumeSlider) {
+  if (node && node->IsMediaControlElement())
     return AccessibilityMediaControl::Create(layout_object, *this);
-  }
 
   if (IsHTMLOptionElement(node))
     return AXListBoxOption::Create(layout_object, *this);
