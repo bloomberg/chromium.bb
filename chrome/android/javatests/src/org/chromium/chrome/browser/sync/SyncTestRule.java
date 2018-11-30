@@ -219,10 +219,10 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         final Statement base = super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                setUpMockAndroidSyncSettings();
+
                 startMainActivityForSyncTest();
                 mContext = InstrumentationRegistry.getTargetContext();
-
-                setUpMockAndroidSyncSettings();
 
                 ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                     @Override
