@@ -130,6 +130,18 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // process. This only returns true under the "site per process" process model.
   virtual bool RequiresDedicatedProcess() = 0;
 
+  // Return whether this SiteInstance and the provided |url| are part of the
+  // same web site, for the purpose of assigning them to processes accordingly.
+  // The decision is currently based on the registered domain of the URLs
+  // (google.com, bbc.co.uk), as well as the scheme (https, http). This ensures
+  // that two pages will be in the same process if they can communicate with
+  // other via JavaScript. (e.g., docs.google.com and mail.google.com have DOM
+  // access to each other if they both set their document.domain properties to
+  // google.com.) Note that if the destination is a blank page, we consider
+  // that to be part of the same web site for the purposes for process
+  // assignment.
+  virtual bool IsSameSiteWithURL(const GURL& url) = 0;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).
@@ -150,19 +162,6 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Determine if a URL should "use up" a site.  URLs such as about:blank or
   // chrome-native:// leave the site unassigned.
   static bool ShouldAssignSiteForURL(const GURL& url);
-
-  // Return whether both URLs are part of the same web site, for the purpose of
-  // assigning them to processes accordingly.  The decision is currently based
-  // on the registered domain of the URLs (google.com, bbc.co.uk), as well as
-  // the scheme (https, http).  This ensures that two pages will be in
-  // the same process if they can communicate with other via JavaScript.
-  // (e.g., docs.google.com and mail.google.com have DOM access to each other
-  // if they both set their document.domain properties to google.com.)
-  // Note that if the destination is a blank page, we consider that to be part
-  // of the same web site for the purposes for process assignment.
-  static bool IsSameWebSite(content::BrowserContext* browser_context,
-                            const GURL& src_url,
-                            const GURL& dest_url);
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host. Prior to

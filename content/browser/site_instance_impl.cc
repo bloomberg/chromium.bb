@@ -333,14 +333,13 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
   return SiteInstanceImpl::ShouldAssignSiteForURL(url);
 }
 
-// static
-bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
-                                 const GURL& real_src_url,
-                                 const GURL& real_dest_url) {
-  return SiteInstanceImpl::IsSameWebSite(browser_context, real_src_url,
-                                         real_dest_url, true);
+bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
+  return SiteInstanceImpl::IsSameWebSite(
+      browsing_instance_->browser_context(), site_, url,
+      true /* should_compare_effective_urls */);
 }
 
+// static
 bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
                                      const GURL& real_src_url,
                                      const GURL& real_dest_url,
