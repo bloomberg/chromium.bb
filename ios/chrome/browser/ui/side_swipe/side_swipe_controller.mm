@@ -9,9 +9,7 @@
 #include "base/feature_list.h"
 #import "base/ios/block_types.h"
 #include "base/scoped_observer.h"
-#include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -20,9 +18,7 @@
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
-#import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
@@ -95,14 +91,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Curtain over web view while waiting for it to load.
   UIView* curtain_;
 
-  // Provides forward/back action for history entries.
-  HistorySideSwipeProvider* historySideSwipeProvider_;
-
-  // Provides forward action for reading list.
-  ReadingListSideSwipeProvider* readingListSideSwipeProvider_;
-
-  __weak id<SideSwipeContentProvider> currentContentProvider_;
-
   // The disabler that prevents the toolbar from being scrolled away when the
   // side swipe gesture is being recognized.
   std::unique_ptr<ScopedFullscreenDisabler> fullscreenDisabler_;
@@ -156,13 +144,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   if (self) {
     model_ = model;
     [model_ addObserver:self];
-    historySideSwipeProvider_ =
-        [[HistorySideSwipeProvider alloc] initWithTabModel:model_];
-
-    readingListSideSwipeProvider_ = [[ReadingListSideSwipeProvider alloc]
-        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                browserState)];
-
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     scopedWebStateObserver_ =
@@ -424,20 +405,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   }
 }
 
-- (id<SideSwipeContentProvider>)contentProviderForGesture:(BOOL)goBack {
-  if (goBack && [historySideSwipeProvider_ canGoBack]) {
-    return historySideSwipeProvider_;
+- (BOOL)canNavigate:(BOOL)goBack {
+  if (goBack && [[model_ currentTab] canGoBack]) {
+    return YES;
   }
-  if (!goBack && [historySideSwipeProvider_ canGoForward]) {
-    return historySideSwipeProvider_;
+  if (!goBack && [[model_ currentTab] canGoForward]) {
+    return YES;
   }
-  if (goBack && [readingListSideSwipeProvider_ canGoBack]) {
-    return readingListSideSwipeProvider_;
-  }
-  if (!goBack && [readingListSideSwipeProvider_ canGoForward]) {
-    return readingListSideSwipeProvider_;
-  }
-  return nil;
+  return NO;
 }
 
 // Show swipe to navigate.
@@ -454,9 +429,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
     BOOL goBack = IsSwipingBack(gesture.direction);
 
-    currentContentProvider_ = [self contentProviderForGesture:goBack];
-    BOOL canNavigate = currentContentProvider_ != nil;
-
     CGRect gestureBounds = gesture.view.bounds;
     CGFloat headerHeight = [swipeDelegate_ headerHeightForSideSwipe];
     CGRect navigationFrame =
@@ -468,9 +440,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     pageSideSwipeView_ = [[SideSwipeNavigationView alloc]
         initWithFrame:navigationFrame
         withDirection:gesture.direction
-          canNavigate:canNavigate
-                image:[currentContentProvider_ paneIcon]
-        rotateForward:[currentContentProvider_ rotateForwardIcon]];
+          canNavigate:[self canNavigate:goBack]
+                image:[UIImage imageNamed:@"side_swipe_navigation_back"]];
     [pageSideSwipeView_ setTargetView:[swipeDelegate_ sideSwipeContentView]];
 
     [gesture.view insertSubview:pageSideSwipeView_
@@ -489,9 +460,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         BOOL wantsBack = IsSwipingBack(gesture.direction);
         web::WebState* webState = [weakCurrentTab webState];
         if (wantsBack) {
-          [currentContentProvider_ goBack:webState];
+          [[model_ currentTab] goBack];
         } else {
-          [currentContentProvider_ goForward:webState];
+          [[model_ currentTab] goForward];
         }
 
         // Checking -IsLoading() is likely incorrect, but to narrow the scope of
