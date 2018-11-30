@@ -7,7 +7,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/cache_storage/cache_storage_scheduler_types.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 
 namespace content {
 

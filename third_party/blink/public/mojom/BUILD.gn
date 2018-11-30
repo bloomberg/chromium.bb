@@ -16,6 +16,7 @@ mojom("mojom_platform") {
     "blob/blob_url_store.mojom",
     "blob/data_element.mojom",
     "blob/serialized_blob.mojom",
+    "cache_storage/cache_storage.mojom",
     "choosers/file_chooser.mojom",
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",

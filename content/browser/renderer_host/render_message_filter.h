@@ -25,7 +25,7 @@
 #include "content/public/common/widget_type.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
