@@ -40,7 +40,7 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
   void Initialize() override;
   void StartBluetoothDiscovering() override;
   void StopBluetoothDiscovering() override;
-  void ConnectToBluetoothDevice(const std::string& address) override;
+  void ConnectToBluetoothDevice(const BluetoothAddress& address) override;
   device::mojom::BluetoothSystem::State GetBluetoothState() override;
   void SetBluetoothEnabled(bool enabled) override;
   bool HasBluetoothDiscoverySession() override;

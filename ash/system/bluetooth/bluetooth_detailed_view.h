@@ -5,9 +5,12 @@
 #ifndef ASH_SYSTEM_BLUETOOTH_BLUETOOTH_DETAILED_VIEW_H_
 #define ASH_SYSTEM_BLUETOOTH_BLUETOOTH_DETAILED_VIEW_H_
 
+#include <map>
+
 #include "ash/login_status.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/tray_detailed_view.h"
+#include "base/optional.h"
 
 namespace views {
 class ToggleButton;
@@ -52,18 +55,18 @@ class BluetoothDetailedView : public TrayDetailedView {
                                          bool checked);
 
   // Returns true if the device with |device_id| is found in |device_list|.
-  bool FoundDevice(const std::string& device_id,
+  bool FoundDevice(const BluetoothAddress& device_id,
                    const BluetoothDeviceList& device_list) const;
 
   // Updates UI of the clicked bluetooth device to show it is being connected
   // or disconnected if such an operation is going to be performed underway.
-  void UpdateClickedDevice(const std::string& device_id,
+  void UpdateClickedDevice(const BluetoothAddress& device_id,
                            views::View* item_container);
 
   void ShowSettings();
 
-  std::string GetFocusedDeviceAddress() const;
-  void FocusDeviceByAddress(const std::string& address) const;
+  base::Optional<BluetoothAddress> GetFocusedDeviceAddress() const;
+  void FocusDeviceByAddress(const BluetoothAddress& address) const;
 
   // TrayDetailedView:
   void HandleViewClicked(views::View* view) override;
@@ -74,7 +77,7 @@ class BluetoothDetailedView : public TrayDetailedView {
   // TODO(jamescook): Don't cache this.
   LoginStatus login_;
 
-  std::map<views::View*, std::string> device_map_;
+  std::map<views::View*, BluetoothAddress> device_map_;
 
   BluetoothDeviceList connecting_devices_;
   BluetoothDeviceList paired_not_connected_devices_;

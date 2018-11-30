@@ -4,6 +4,13 @@
 
 module device.mojom;
 
+// MAC Address for Bluetooth devices.
+// Bluetooth Device Address (or BD_ADDR) is a unique 48-bit identifier assigned
+// to each Bluetooth device by the manufacturer.
+struct BluetoothAddress {
+  array<uint8, 6> address;
+};
+
 // Holds information about a Bluetooth Device.
 struct BluetoothDeviceInfo {
   enum ConnectionState {
@@ -33,8 +40,7 @@ struct BluetoothDeviceInfo {
   };
 
   // The MAC Address of the device e.g. AA:BB:CC:00:11:22.
-  // TODO(ortuno): Validate address.
-  string address;
+  BluetoothAddress address;
 
   // Name of the device. Retrieved during the inquiry response for Classic
   // devices, from the Advertisement from LE devices, or from the devices itself

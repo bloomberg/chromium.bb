@@ -43,7 +43,7 @@ void UpdateBluetoothDeviceListHelper(BluetoothDeviceList* list,
 // |new_device_address_list|.
 void RemoveObsoleteBluetoothDevicesFromList(
     BluetoothDeviceList* device_list,
-    const std::set<std::string>& new_device_address_list) {
+    const std::set<BluetoothAddress>& new_device_address_list) {
   base::EraseIf(*device_list, [&new_device_address_list](
                                   const BluetoothDeviceInfoPtr& info) {
     return !base::ContainsKey(new_device_address_list, info->address);
@@ -134,10 +134,10 @@ void UnifiedBluetoothDetailedViewController::UpdateDeviceListAndUI() {
 }
 
 void UnifiedBluetoothDetailedViewController::UpdateBluetoothDeviceList() {
-  std::set<std::string> new_connecting_devices;
-  std::set<std::string> new_connected_devices;
-  std::set<std::string> new_paired_not_connected_devices;
-  std::set<std::string> new_discovered_not_paired_devices;
+  std::set<BluetoothAddress> new_connecting_devices;
+  std::set<BluetoothAddress> new_connected_devices;
+  std::set<BluetoothAddress> new_paired_not_connected_devices;
+  std::set<BluetoothAddress> new_discovered_not_paired_devices;
 
   for (const auto& device :
        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices()) {
