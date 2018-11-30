@@ -5,6 +5,7 @@
 #include "ash/assistant/util/histogram_util.h"
 
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/ui/base/assistant_button.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace ash {
@@ -22,6 +23,11 @@ void RecordAssistantEntryPoint(AssistantEntryPoint entry_point) {
 
 void RecordAssistantExitPoint(AssistantExitPoint exit_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.ExitPoint", exit_point);
+}
+
+void IncrementAssistantButtonClickCount(AssistantButtonId button_id) {
+  UMA_HISTOGRAM_ENUMERATION("Assistant.ButtonClickCount", button_id,
+                            AssistantButtonId::kMaxValue);
 }
 
 }  // namespace util

@@ -91,10 +91,10 @@ class ASH_EXPORT AssistantUiController
   void OnAssistantMiniViewPressed() override;
 
   // CaptionBarDelegate:
-  bool OnCaptionButtonPressed(CaptionButtonId id) override;
+  bool OnCaptionButtonPressed(AssistantButtonId id) override;
 
   // DialogPlateObserver:
-  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
+  void OnDialogPlateButtonPressed(AssistantButtonId id) override;
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;

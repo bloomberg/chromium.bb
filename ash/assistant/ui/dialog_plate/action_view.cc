@@ -28,8 +28,10 @@ constexpr int kPreferredSizeDip = 32;
 }  // namespace
 
 ActionView::ActionView(views::ButtonListener* listener,
-                       AssistantController* assistant_controller)
-    : AssistantButton(listener), assistant_controller_(assistant_controller) {
+                       AssistantController* assistant_controller,
+                       AssistantButtonId button_id)
+    : AssistantButton(listener, button_id),
+      assistant_controller_(assistant_controller) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which

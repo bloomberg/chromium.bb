@@ -121,7 +121,7 @@ void AssistantWebView::InitLayout() {
   // Caption bar.
   caption_bar_ = new CaptionBar();
   caption_bar_->set_delegate(this);
-  caption_bar_->SetButtonVisible(CaptionButtonId::kMinimize, false);
+  caption_bar_->SetButtonVisible(AssistantButtonId::kMinimize, false);
   AddChildView(caption_bar_);
 
   // Contents mask.
@@ -131,10 +131,10 @@ void AssistantWebView::InitLayout() {
   contents_mask_->layer()->SetFillsBoundsOpaquely(false);
 }
 
-bool AssistantWebView::OnCaptionButtonPressed(CaptionButtonId id) {
+bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
   // We need special handling of the back button. When possible, the back button
   // should navigate backwards in the web contents' history stack.
-  if (id == CaptionButtonId::kBack && contents_) {
+  if (id == AssistantButtonId::kBack && contents_) {
     contents_->GoBack(base::BindOnce(
         [](const base::WeakPtr<AssistantWebView>& assistant_web_view,
            bool success) {
@@ -142,7 +142,7 @@ bool AssistantWebView::OnCaptionButtonPressed(CaptionButtonId id) {
           // defer back to our primary caption button delegate.
           if (!success && assistant_web_view) {
             assistant_web_view->assistant_controller_->ui_controller()
-                ->OnCaptionButtonPressed(CaptionButtonId::kBack);
+                ->OnCaptionButtonPressed(AssistantButtonId::kBack);
           }
         },
         weak_factory_.GetWeakPtr()));

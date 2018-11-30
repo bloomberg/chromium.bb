@@ -9,6 +9,7 @@ namespace ash {
 
 enum class AssistantEntryPoint;
 enum class AssistantExitPoint;
+enum class AssistantButtonId;
 
 namespace assistant {
 namespace util {
@@ -21,6 +22,9 @@ void RecordAssistantEntryPoint(AssistantEntryPoint entry_point);
 
 // Record the exit point where Assistant UI becomes invisible.
 void RecordAssistantExitPoint(AssistantExitPoint exit_point);
+
+// Count the number of times buttons are clicked on Assistant UI.
+void IncrementAssistantButtonClickCount(AssistantButtonId button_id);
 
 }  // namespace util
 }  // namespace assistant

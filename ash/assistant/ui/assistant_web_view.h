@@ -49,7 +49,7 @@ class AssistantWebView : public views::View,
   void OnWindowDestroying(aura::Window* window) override;
 
   // CaptionBarDelegate:
-  bool OnCaptionButtonPressed(CaptionButtonId id) override;
+  bool OnCaptionButtonPressed(AssistantButtonId id) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(

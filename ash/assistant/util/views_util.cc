@@ -22,8 +22,9 @@ views::ImageButton* CreateImageButton(views::ButtonListener* listener,
                                       int size_in_dip,
                                       int icon_size_in_dip,
                                       int accessible_name_id,
+                                      AssistantButtonId button_id,
                                       SkColor icon_color) {
-  auto* button = new AssistantButton(listener);
+  auto* button = new AssistantButton(listener, button_id);
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
   button->SetImage(views::Button::STATE_NORMAL,
                    gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));

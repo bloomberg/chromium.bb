@@ -506,13 +506,13 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(
-    DialogPlateButtonId id) {
-  if (id == DialogPlateButtonId::kKeyboardInputToggle) {
+    AssistantButtonId id) {
+  if (id == AssistantButtonId::kKeyboardInputToggle) {
     model_.SetInputModality(InputModality::kKeyboard);
     return;
   }
 
-  if (id != DialogPlateButtonId::kVoiceInputToggle)
+  if (id != AssistantButtonId::kVoiceInputToggle)
     return;
 
   switch (model_.mic_state()) {

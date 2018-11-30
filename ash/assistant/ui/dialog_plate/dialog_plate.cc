@@ -108,7 +108,7 @@ int DialogPlate::GetHeightForWidth(int width) const {
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<DialogPlateButtonId>(sender->id()));
+  OnButtonPressed(static_cast<AssistantButtonId>(sender->id()));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -304,8 +304,8 @@ void DialogPlate::InitLayout() {
   // Settings.
   settings_button_ = assistant::util::CreateImageButton(
       this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME, gfx::kGoogleGrey600);
-  settings_button_->set_id(static_cast<int>(DialogPlateButtonId::kSettings));
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME,
+      AssistantButtonId::kSettings);
   AddChildView(settings_button_);
 
   // Artificially trigger event to set initial state.
@@ -355,9 +355,8 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   // Voice input toggle.
   voice_input_toggle_ = assistant::util::CreateImageButton(
       this, kMicIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME);
-  voice_input_toggle_->set_id(
-      static_cast<int>(DialogPlateButtonId::kVoiceInputToggle));
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
+      AssistantButtonId::kVoiceInputToggle);
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
@@ -381,9 +380,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
   // Keyboard input toggle.
   keyboard_input_toggle_ = assistant::util::CreateImageButton(
       this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME, gfx::kGoogleGrey600);
-  keyboard_input_toggle_->set_id(
-      static_cast<int>(DialogPlateButtonId::kKeyboardInputToggle));
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
+      AssistantButtonId::kKeyboardInputToggle);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   // Spacer.
@@ -393,9 +391,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Animated voice input toggle.
-  animated_voice_input_toggle_ = new ActionView(this, assistant_controller_);
-  animated_voice_input_toggle_->set_id(
-      static_cast<int>(DialogPlateButtonId::kVoiceInputToggle));
+  animated_voice_input_toggle_ = new ActionView(
+      this, assistant_controller_, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
   voice_layout_container_->AddChildView(animated_voice_input_toggle_);
@@ -409,7 +406,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
   input_modality_layout_container_->AddChildView(voice_layout_container_);
 }
 
-void DialogPlate::OnButtonPressed(DialogPlateButtonId id) {
+void DialogPlate::OnButtonPressed(AssistantButtonId id) {
   for (DialogPlateObserver& observer : observers_)
     observer.OnDialogPlateButtonPressed(id);
 
