@@ -45,7 +45,7 @@ class PayloadVerificationError(Error):
   """Raised when the generated payload fails to verify."""
 
 
-class _PaygenPayload(object):
+class PaygenPayload(object):
   """Class to manage the process of generating and signing a payload."""
 
   # 50 GB of cache.
@@ -63,7 +63,7 @@ class _PaygenPayload(object):
   _ROOTFS = 'root'
 
   def __init__(self, payload, work_dir, sign, verify, dry_run=False):
-    """Init for _PaygenPayload.
+    """Init for PaygenPayload.
 
     Args:
       payload: An instance of gspaths.Payload describing the payload to
@@ -114,7 +114,7 @@ class _PaygenPayload(object):
     # This cache dir will be shared with other processes, but we need our own
     # instance of the cache manager to properly coordinate.
     self._cache = download_cache.DownloadCache(
-        self._FindCacheDir(), cache_size=_PaygenPayload.CACHE_SIZE)
+        self._FindCacheDir(), cache_size=PaygenPayload.CACHE_SIZE)
 
   def _MetadataUri(self, uri):
     """Given a payload uri, find the uri for the metadata signature."""
@@ -698,4 +698,4 @@ def CreateAndUploadPayload(payload, sign=True, verify=True, dry_run=False):
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
   with chroot_util.TempDirInChroot() as work_dir:
-    _PaygenPayload(payload, work_dir, sign, verify, dry_run=dry_run).Run()
+    PaygenPayload(payload, work_dir, sign, verify, dry_run=dry_run).Run()

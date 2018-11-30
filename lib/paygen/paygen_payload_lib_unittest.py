@@ -110,7 +110,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     if work_dir is None:
       work_dir = self.tempdir
 
-    return paygen_payload_lib._PaygenPayload(
+    return paygen_payload_lib.PaygenPayload(
         payload=payload,
         work_dir=work_dir,
         sign=sign,
@@ -207,7 +207,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
           version='4171.0.0',
           image_type='test',
           uri=download_uri)
-      test_extract_file = paygen_payload_lib._PaygenPayload.TEST_IMAGE_NAME
+      test_extract_file = paygen_payload_lib.PaygenPayload.TEST_IMAGE_NAME
     else:
       raise ValueError('invalid image type descriptor (%s)' % image_type)
 
@@ -396,7 +396,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator()
 
     # Stub out the required functions.
-    run_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_RunGeneratorCmd')
 
     # Run the test.
@@ -450,7 +450,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     metadata_signatures = ('0' * 256,)
 
     # Stub out the required functions.
-    run_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_RunGeneratorCmd')
     read_mock = self.PatchObject(gen, '_ReadMetadataSizeFile')
 
@@ -585,16 +585,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator(payload=self.delta_payload, work_dir='/work')
 
     # Set up stubs.
-    gen_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    gen_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_GenerateHashes',
                                 return_value=(payload_hash, metadata_hash))
-    sign_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    sign_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                  '_SignHashes',
                                  return_value=(payload_sigs, metadata_sigs))
 
-    ins_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    ins_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_InsertSignaturesIntoPayload')
-    store_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    store_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                   '_StoreMetadataSignatures')
 
     # Run the test.
@@ -615,14 +615,14 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator(payload=payload, work_dir='/work')
 
     # Set up stubs.
-    prep_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    prep_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                  '_PrepareImage')
-    gen_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    gen_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_GenerateUnsignedPayload')
     sign_mock = self.PatchObject(
-        paygen_payload_lib._PaygenPayload, '_SignPayload',
+        paygen_payload_lib.PaygenPayload, '_SignPayload',
         return_value=(['payload_sigs'], ['metadata_sigs']))
-    store_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
+    store_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                   '_StorePayloadJson')
 
     # Run the test.
