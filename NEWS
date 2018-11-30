@@ -27,6 +27,8 @@ issues]].
     - Add various Chinese phrases involving exceptions of braille
       patterns
     - Modify dot patterns of dashes for readability reasons
+- Added a table for Turkish grade 2 thanks to ugurgurbuz39 and Simon
+  Aittamaa
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
@@ -41,6 +43,7 @@ issues]].
 
 ** New, renamed or removed tables
 *** New
+- tr-g2.ctb
 *** Renamed
 *** Removed
 
