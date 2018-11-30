@@ -285,7 +285,9 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   }
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
-  TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
+  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                    num_frames_at_client_, "available",
+                    pictures_.size() - num_frames_at_client_);
   DVLOGF(4) << "Notifying output picture id " << output_id << " for input "
             << input_id
             << " is ready. visible rect: " << visible_rect.ToString();
@@ -729,8 +731,9 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   }
 
   --num_frames_at_client_;
-  TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
-
+  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                    num_frames_at_client_, "available",
+                    pictures_.size() - num_frames_at_client_);
   {
     base::AutoLock auto_lock(lock_);
     available_picture_buffers_.push_back(picture_buffer_id);
