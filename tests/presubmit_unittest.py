@@ -1392,7 +1392,6 @@ class OutputApiUnittest(PresubmitTestsBase):
         'PresubmitResult',
         'is_committing',
         'more_cc',
-        'EnsureCQIncludeTrybotsAreAdded',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(False), members)
@@ -1461,119 +1460,6 @@ class OutputApiUnittest(PresubmitTestsBase):
     output.prompt_yes_no('prompt: ')
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
-
-  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text):
-    class FakeCL(object):
-      def __init__(self, description):
-        self._description = description
-
-      def GetDescription(self, force=False):
-        return self._description
-
-      def UpdateDescription(self, description, force=False):
-        self._description = description
-
-    def FakePresubmitNotifyResult(message):
-      return message
-
-    cl = FakeCL(cl_text)
-    output_api = presubmit.OutputApi(False)
-    output_api.PresubmitNotifyResult = FakePresubmitNotifyResult
-    message = 'Automatically added optional bots to run on CQ.'
-    results = output_api.EnsureCQIncludeTrybotsAreAdded(
-      cl,
-      new_trybots,
-      message)
-    self.assertEqual(updated_cl_text, cl.GetDescription())
-    self.assertEqual([message], results)
-
-  def testEnsureCQIncludeTrybotsAreAdded(self):
-    # We need long lines in this test.
-    # pylint: disable=line-too-long
-
-    # Deliberately has a spaces to exercise space-stripping code.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots:  luci.chromium.try:linux-blink-rel;luci.chromium.try:win_optional_gpu_tests_rel
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel'
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux-blink-rel;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
-
-    # Starting without any CQ_INCLUDE_TRYBOTS line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:mac_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel""")
-
-    # All pre-existing bots are already in output set.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:win_optional_gpu_tests_rel
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel'
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
-
-    # Equivalent tests with a pre-existing Change-Id line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:mac_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
-
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
-
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
 
 
 class AffectedFileUnittest(PresubmitTestsBase):
