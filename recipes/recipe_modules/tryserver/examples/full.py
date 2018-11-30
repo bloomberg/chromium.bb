@@ -46,6 +46,7 @@ def RunSteps(api):
     api.tryserver.set_subproject_tag('v8')
 
   api.tryserver.set_patch_failure_tryjob_result()
+  api.tryserver.set_do_not_retry_build()
   api.tryserver.set_compile_failure_tryjob_result()
   api.tryserver.set_test_failure_tryjob_result()
   api.tryserver.set_invalid_test_results_tryjob_result()

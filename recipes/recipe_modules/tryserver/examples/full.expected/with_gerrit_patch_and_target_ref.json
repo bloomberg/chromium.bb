@@ -117,6 +117,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@files@None/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@",
+      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@",
       "@@@SET_BUILD_PROPERTY@failure_type@\"INVALID_TEST_RESULTS\"@@@",
       "@@@SET_BUILD_PROPERTY@subproject_tag@\"v8\"@@@"
     ]
