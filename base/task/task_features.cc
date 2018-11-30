@@ -14,6 +14,9 @@ const Feature kAllTasksUserBlocking{"AllTasksUserBlocking",
 const Feature kMergeBlockingNonBlockingPools = {
     "MergeBlockingNonBlockingPools", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const Feature kNoDetachBelowInitialCapacity = {"NoDetachBelowInitialCapacity",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const Feature kMayBlockTimings = {"MayBlockTimings",
                                   FEATURE_DISABLED_BY_DEFAULT};
 
