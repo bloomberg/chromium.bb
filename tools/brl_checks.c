@@ -280,6 +280,14 @@ check_base(const char *tableList, const char *input, const char *expected,
 			fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen, actualInlen);
 			retval = 1;
 		}
+		// on error print the table name, as it isn't always
+		// clear which table we are testing. In checkyaml for
+		// example you can define a test for multiple tables.
+		if (retval != 0) {
+			fprintf(stderr, "Table: %s\n", tableList);
+			// add an empty line after each error
+			fprintf(stderr, "\n");
+		}
 
 	fail:
 		free(inbuf);
