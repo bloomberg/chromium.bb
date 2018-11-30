@@ -56,6 +56,32 @@ test(function() {
 test(function() {
   var matrix = new DOMMatrix();
   assert_identity_2d_matrix(matrix);
+  var result = matrix.scaleNonUniform();
+  assert_identity_2d_matrix(result);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.scaleNonUniform()");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.scaleNonUniform(5);
+  var expected = matrix.scale(5, 1, 1, 0, 0, 0);
+  assert_2d_matrix_equals(result, [expected.a, expected.b, expected.c, expected.d, expected.e, expected.f]);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.scaleNonUniform(scaleX)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
+  var result = matrix.scaleNonUniform(5, 7);
+  var expected = matrix.scale(5, 7, 1, 0, 0, 0);
+  assert_2d_matrix_equals(result, [expected.a, expected.b, expected.c, expected.d, expected.e, expected.f]);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.scaleNonUniform(scaleX, scaleY)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
   var result = matrix.scale3d();
   assert_identity_2d_matrix(result);
   assert_identity_2d_matrix(matrix);

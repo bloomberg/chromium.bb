@@ -100,6 +100,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
                    double ox = 0,
                    double oy = 0,
                    double oz = 0);
+  DOMMatrix* scaleNonUniform(double sx = 1, double sy = 1);
   DOMMatrix* scale3d(double scale = 1,
                      double ox = 0,
                      double oy = 0,
