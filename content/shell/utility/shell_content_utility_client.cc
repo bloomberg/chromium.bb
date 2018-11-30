@@ -130,15 +130,20 @@ void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
     info.factory = base::BindRepeating(&echo::CreateEchoService);
     services->insert(std::make_pair(echo::mojom::kServiceName, info));
   }
+}
 
+std::unique_ptr<service_manager::Service>
+ShellContentUtilityClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
 #if defined(OS_CHROMEOS)
-  if (features::IsMultiProcessMash()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        base::BindRepeating(&ws::test::CreateOutOfProcessWindowService);
-    services->insert(std::make_pair(test_ws::mojom::kServiceName, info));
+  if (features::IsMultiProcessMash() &&
+      service_name == test_ws::mojom::kServiceName) {
+    return ws::test::CreateOutOfProcessWindowService(std::move(request));
   }
 #endif
+
+  return nullptr;
 }
 
 void ShellContentUtilityClient::RegisterNetworkBinders(

@@ -13,6 +13,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace views {
@@ -29,7 +31,8 @@ class ShortcutViewerApplication
       public ui::InputDeviceEventObserver,
       public shortcut_viewer::mojom::ShortcutViewer {
  public:
-  ShortcutViewerApplication();
+  explicit ShortcutViewerApplication(
+      service_manager::mojom::ServiceRequest request);
   ~ShortcutViewerApplication() override;
 
   // Records a single trace event for shortcut viewer. chrome://tracing doesn't
@@ -52,13 +55,15 @@ class ShortcutViewerApplication
 
   void AddBinding(shortcut_viewer::mojom::ShortcutViewerRequest request);
 
+  service_manager::ServiceBinding service_binding_;
+
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<LastWindowClosedObserver> last_window_closed_observer_;
 
   service_manager::BinderRegistry registry_;
 
   mojo::Binding<shortcut_viewer::mojom::ShortcutViewer>
-      shortcut_viewer_binding_;
+      shortcut_viewer_binding_{this};
 
   // Timestamp of the user gesture (e.g. Ctrl-Shift-/ keystroke) that triggered
   // showing the window. Used for metrics.

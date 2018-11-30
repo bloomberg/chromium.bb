@@ -12,6 +12,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace views {
 class AuraInit;
@@ -21,7 +23,7 @@ class Widget;
 class WindowTypeLauncher : public service_manager::Service,
                            public mash::mojom::Launchable {
  public:
-  WindowTypeLauncher();
+  explicit WindowTypeLauncher(service_manager::mojom::ServiceRequest request);
   ~WindowTypeLauncher() override;
 
   void RemoveWindow(views::Widget* window);
@@ -38,6 +40,7 @@ class WindowTypeLauncher : public service_manager::Service,
 
   void Create(mash::mojom::LaunchableRequest request);
 
+  service_manager::ServiceBinding service_binding_;
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;
 

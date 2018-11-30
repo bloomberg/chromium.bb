@@ -10,7 +10,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -24,7 +23,9 @@
 
 namespace tap_visualizer {
 
-TapVisualizerApp::TapVisualizerApp() = default;
+TapVisualizerApp::TapVisualizerApp(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 TapVisualizerApp::~TapVisualizerApp() {
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -46,12 +47,12 @@ void TapVisualizerApp::Start() {
 
 void TapVisualizerApp::OnStart() {
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   params.register_path_provider = false;
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
-    context()->QuitNow();
+    Terminate();
     return;
   }
   Start();

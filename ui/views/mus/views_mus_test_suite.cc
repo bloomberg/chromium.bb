@@ -21,7 +21,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/ws/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
@@ -51,24 +51,11 @@ void EnsureCommandLineSwitch(const std::string& name) {
     cmd_line->AppendSwitch(name);
 }
 
-class DefaultService : public service_manager::Service {
- public:
-  DefaultService() {}
-  ~DefaultService() override {}
-
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultService);
-};
-
 class ServiceManagerConnection {
  public:
   ServiceManagerConnection()
-      : thread_("Persistent service_manager connections") {
+      : thread_("Persistent service_manager connections"),
+        default_service_binding_(&default_service_) {
     catalog::Catalog::LoadDefaultCatalogManifest(
         base::FilePath(kCatalogFilename));
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -115,7 +102,8 @@ class ServiceManagerConnection {
   }
 
   void CloneConnector(base::WaitableEvent* wait) {
-    service_manager_connector_ = context_->connector()->Clone();
+    service_manager_connector_ =
+        default_service_binding_.GetConnector()->Clone();
     wait->Signal();
   }
 
@@ -124,20 +112,20 @@ class ServiceManagerConnection {
         std::make_unique<service_manager::BackgroundServiceManager>(nullptr,
                                                                     nullptr);
     service_manager::mojom::ServicePtr service;
-    context_ = std::make_unique<service_manager::ServiceContext>(
-        std::make_unique<DefaultService>(), mojo::MakeRequest(&service));
+    default_service_binding_.Bind(mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(
         service_manager::Identity(GetTestName(),
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
         std::move(service), nullptr);
-    service_manager_connector_ = context_->connector()->Clone();
-    service_manager_identity_ = context_->identity();
+    service_manager_connector_ =
+        default_service_binding_.GetConnector()->Clone();
+    service_manager_identity_ = default_service_binding_.identity();
     wait->Signal();
   }
 
   void TearDownConnectionsOnBackgroundThread(base::WaitableEvent* wait) {
-    context_.reset();
+    default_service_binding_.Close();
     background_service_manager_.reset();
     wait->Signal();
   }
@@ -154,7 +142,8 @@ class ServiceManagerConnection {
   base::Thread thread_;
   std::unique_ptr<service_manager::BackgroundServiceManager>
       background_service_manager_;
-  std::unique_ptr<service_manager::ServiceContext> context_;
+  service_manager::Service default_service_;
+  service_manager::ServiceBinding default_service_binding_;
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
   service_manager::Identity service_manager_identity_;
 

@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,8 +16,7 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/standalone_service/service_main.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
@@ -438,7 +438,9 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 
 }  // namespace
 
-WindowTypeLauncher::WindowTypeLauncher() {
+WindowTypeLauncher::WindowTypeLauncher(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<mash::mojom::Launchable>(
       base::Bind(&WindowTypeLauncher::Create, base::Unretained(this)));
 }
@@ -449,16 +451,16 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
   DCHECK(it != windows_.end());
   windows_.erase(it);
   if (windows_.empty())
-    context()->QuitNow();
+    Terminate();
 }
 
 void WindowTypeLauncher::OnStart() {
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_)
-    context()->QuitNow();
+    Terminate();
 }
 
 void WindowTypeLauncher::OnBindInterface(
@@ -477,7 +479,8 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   }
   views::Widget* window = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(this, context()->connector());
+  params.delegate =
+      new WindowTypeLauncherView(this, service_binding_.GetConnector());
   window->Init(params);
   window->Show();
   windows_.push_back(window);
@@ -487,7 +490,7 @@ void WindowTypeLauncher::Create(mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  return service_manager::ServiceRunner(new WindowTypeLauncher)
-      .Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  WindowTypeLauncher(std::move(request)).RunUntilTermination();
 }

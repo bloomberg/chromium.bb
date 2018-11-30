@@ -7,6 +7,8 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 
 namespace viz {
@@ -15,7 +17,7 @@ class VizMainImpl;
 
 class Service : public service_manager::Service {
  public:
-  Service();
+  explicit Service(service_manager::mojom::ServiceRequest request);
   ~Service() override;
 
  private:
@@ -27,6 +29,7 @@ class Service : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
   std::unique_ptr<VizMainImpl> viz_main_;

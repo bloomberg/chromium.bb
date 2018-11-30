@@ -13,7 +13,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ws/gpu_host/gpu_host.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
@@ -35,6 +36,7 @@ namespace ws {
 
 class HostEventQueue;
 class TestHostEventDispatcher;
+class WindowService;
 
 namespace test {
 
@@ -46,7 +48,7 @@ class TestWindowService : public service_manager::Service,
                           public WindowServiceDelegate,
                           public test_ws::mojom::TestWs {
  public:
-  TestWindowService();
+  explicit TestWindowService(service_manager::mojom::ServiceRequest request);
   ~TestWindowService() override;
 
   void InitForInProcess(
@@ -106,14 +108,14 @@ class TestWindowService : public service_manager::Service,
   void SetupAuraTestHelper(ui::ContextFactory* context_factory,
                            ui::ContextFactoryPrivate* context_factory_private);
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   mojo::BindingSet<test_ws::mojom::TestWs> test_ws_bindings_;
 
-  // Handles the ServiceRequest. Owns the WindowService instance.
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
+  std::unique_ptr<WindowService> window_service_;
 
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 

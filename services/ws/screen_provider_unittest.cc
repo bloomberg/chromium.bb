@@ -140,18 +140,17 @@ TEST(ScreenProviderTest, DisplaysSentOnConnection) {
 
   // Create another WindowService.
   TestWindowServiceDelegate test_window_service_delegate;
-  std::unique_ptr<WindowService> window_service_ptr =
-      std::make_unique<WindowService>(&test_window_service_delegate, nullptr,
-                                      test_setup.focus_controller());
-  std::unique_ptr<service_manager::TestConnectorFactory> factory =
-      service_manager::TestConnectorFactory::CreateForUniqueService(
-          std::move(window_service_ptr));
-  std::unique_ptr<service_manager::Connector> connector =
-      factory->CreateConnector();
+  WindowService window_service(&test_window_service_delegate, nullptr,
+                               test_setup.focus_controller());
+
+  service_manager::TestConnectorFactory factory;
+  window_service.BindServiceRequest(
+      factory.RegisterInstance(mojom::kServiceName));
 
   // Connect to |window_service| and ask for a new WindowTree.
   mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  factory.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                               &window_tree_factory);
   mojom::WindowTreePtr window_tree;
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = MakeRequest(&client);

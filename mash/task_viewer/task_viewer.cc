@@ -20,7 +20,6 @@
 #include "services/catalog/public/mojom/catalog.mojom.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "ui/base/models/table_model.h"
@@ -282,10 +281,12 @@ class TaskViewerContents
 
 }  // namespace
 
-TaskViewer::TaskViewer() {
+TaskViewer::TaskViewer(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<::mash::mojom::Launchable>(
       base::Bind(&TaskViewer::Create, base::Unretained(this)));
 }
+
 TaskViewer::~TaskViewer() = default;
 
 void TaskViewer::RemoveWindow(views::Widget* widget) {
@@ -293,16 +294,16 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
   DCHECK(it != windows_.end());
   windows_.erase(it);
   if (windows_.empty())
-    context()->QuitNow();
+    Terminate();
 }
 
 void TaskViewer::OnStart() {
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_)
-    context()->QuitNow();
+    Terminate();
 }
 
 void TaskViewer::OnBindInterface(
@@ -321,11 +322,12 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  context()->connector()->BindInterface(service_manager::mojom::kServiceName,
-                                        &service_manager);
+  service_binding_.GetConnector()->BindInterface(
+      service_manager::mojom::kServiceName, &service_manager);
 
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
+  service_binding_.GetConnector()->BindInterface(catalog::mojom::kServiceName,
+                                                 &catalog);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   TaskViewerContents* task_viewer = new TaskViewerContents(

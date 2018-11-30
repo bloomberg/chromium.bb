@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"

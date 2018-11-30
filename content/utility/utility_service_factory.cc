@@ -109,10 +109,6 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-std::unique_ptr<service_manager::Service> CreateVizService() {
-  return std::make_unique<viz::Service>();
-}
-
 }  // namespace
 
 UtilityServiceFactory::UtilityServiceFactory()
@@ -153,10 +149,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   }
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
-
-  service_manager::EmbeddedServiceInfo viz_info;
-  viz_info.factory = base::Bind(&CreateVizService);
-  services->insert(std::make_pair(viz::mojom::kVizServiceName, viz_info));
 }
 
 bool UtilityServiceFactory::HandleServiceRequest(
@@ -183,6 +175,8 @@ bool UtilityServiceFactory::HandleServiceRequest(
   } else if (name == video_capture::mojom::kServiceName) {
     running_service_ =
         std::make_unique<video_capture::ServiceImpl>(std::move(request));
+  } else if (name == viz::mojom::kVizServiceName) {
+    running_service_ = std::make_unique<viz::Service>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   else if (name == media::mojom::kCdmServiceName) {

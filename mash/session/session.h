@@ -7,13 +7,15 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace mash {
 namespace session {
 
 class Session : public service_manager::Service {
  public:
-  Session();
+  explicit Session(service_manager::mojom::ServiceRequest request);
   ~Session() override;
 
  private:
@@ -21,6 +23,8 @@ class Session : public service_manager::Service {
   void OnStart() override;
 
   void StartWindowManager();
+
+  service_manager::ServiceBinding service_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

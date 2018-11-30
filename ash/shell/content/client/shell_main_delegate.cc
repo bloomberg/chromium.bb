@@ -33,15 +33,17 @@ std::unique_ptr<service_manager::Service> CreateQuickLaunch(
       std::move(request));
 }
 
-std::unique_ptr<service_manager::Service> CreateShortcutViewer() {
+std::unique_ptr<service_manager::Service> CreateShortcutViewer(
+    service_manager::mojom::ServiceRequest request) {
   logging::SetLogPrefix("shortcut");
-  return std::make_unique<
-      keyboard_shortcut_viewer::ShortcutViewerApplication>();
+  return std::make_unique<keyboard_shortcut_viewer::ShortcutViewerApplication>(
+      std::move(request));
 }
 
-std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
+std::unique_ptr<service_manager::Service> CreateTapVisualizer(
+    service_manager::mojom::ServiceRequest request) {
   logging::SetLogPrefix("tap");
-  return std::make_unique<tap_visualizer::TapVisualizerApp>();
+  return std::make_unique<tap_visualizer::TapVisualizerApp>(std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateTestImeDriver(
@@ -55,19 +57,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
   ~ShellContentUtilityClient() override = default;
 
   // ContentUtilityClient:
-  void RegisterServices(StaticServiceMap* services) override {
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateShortcutViewer);
-      (*services)[shortcut_viewer::mojom::kServiceName] = info;
-    }
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateTapVisualizer);
-      (*services)[tap_visualizer::mojom::kServiceName] = info;
-    }
-  }
-
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override {
@@ -75,6 +64,10 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
       return CreateQuickLaunch(std::move(request));
     if (service_name == test_ime_driver::mojom::kServiceName)
       return CreateTestImeDriver(std::move(request));
+    if (service_name == shortcut_viewer::mojom::kServiceName)
+      return CreateShortcutViewer(std::move(request));
+    if (service_name == tap_visualizer::mojom::kServiceName)
+      return CreateTapVisualizer(std::move(request));
 
     return nullptr;
   }

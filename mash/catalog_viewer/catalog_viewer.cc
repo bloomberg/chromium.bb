@@ -207,7 +207,8 @@ class CatalogViewerContents : public views::WidgetDelegateView,
 
 }  // namespace
 
-CatalogViewer::CatalogViewer() {
+CatalogViewer::CatalogViewer(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<mojom::Launchable>(
       base::Bind(&CatalogViewer::Create, base::Unretained(this)));
 }
@@ -218,16 +219,16 @@ void CatalogViewer::RemoveWindow(views::Widget* window) {
   DCHECK(it != windows_.end());
   windows_.erase(it);
   if (windows_.empty())
-    context()->QuitNow();
+    Terminate();
 }
 
 void CatalogViewer::OnStart() {
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_)
-    context()->QuitNow();
+    Terminate();
 }
 
 void CatalogViewer::OnBindInterface(
@@ -245,7 +246,8 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
+  service_binding_.GetConnector()->BindInterface(catalog::mojom::kServiceName,
+                                                 &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new CatalogViewerContents(this, std::move(catalog)), nullptr,

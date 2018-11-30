@@ -14,6 +14,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace views {
 class AuraInit;
@@ -26,7 +28,7 @@ namespace task_viewer {
 class TaskViewer : public service_manager::Service,
                    public ::mash::mojom::Launchable {
  public:
-  TaskViewer();
+  explicit TaskViewer(service_manager::mojom::ServiceRequest request);
   ~TaskViewer() override;
 
   void RemoveWindow(views::Widget* widget);
@@ -43,6 +45,7 @@ class TaskViewer : public service_manager::Service,
 
   void Create(::mash::mojom::LaunchableRequest request);
 
+  service_manager::ServiceBinding service_binding_;
   mojo::BindingSet<::mash::mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;
 
