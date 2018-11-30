@@ -295,7 +295,8 @@ main (void)
 
 bail:
     fprintf (stderr, "Cleaning up\n");
-    unlink_dirs (basedir);
+    if (basedir)
+	unlink_dirs (basedir);
     if (fontdir)
 	FcStrFree (fontdir);
     if (cachedir)
