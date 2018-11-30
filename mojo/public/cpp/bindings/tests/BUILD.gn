@@ -68,7 +68,7 @@ source_set("tests") {
   ]
 
   if (is_ios) {
-    assert_no_deps = [ "//third_party/WebKit/*" ]
+    assert_no_deps = [ "//third_party/blink/*" ]
   } else {
     sources += [
       "pickle_unittest.cc",
