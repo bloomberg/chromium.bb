@@ -78,6 +78,9 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
       ff_effect_ref_(nullptr) {
   if (Dualshock4ControllerMac::IsDualshock4(vendor_id, product_id)) {
     dualshock4_ = std::make_unique<Dualshock4ControllerMac>(device_ref);
+  } else if (HidHapticGamepadMac::IsHidHaptic(vendor_id, product_id)) {
+    hid_haptics_ =
+        HidHapticGamepadMac::Create(vendor_id, product_id, device_ref);
   } else if (device_ref) {
     ff_device_ref_ = CreateForceFeedbackDevice(device_ref);
     if (ff_device_ref_) {
@@ -92,16 +95,19 @@ GamepadDeviceMac::~GamepadDeviceMac() = default;
 
 void GamepadDeviceMac::DoShutdown() {
   if (ff_device_ref_) {
-    if (ff_effect_ref_)
+    if (ff_effect_ref_) {
       FFDeviceReleaseEffect(ff_device_ref_, ff_effect_ref_);
+      ff_effect_ref_ = nullptr;
+    }
     FFReleaseDevice(ff_device_ref_);
-    ff_effect_ref_ = nullptr;
     ff_device_ref_ = nullptr;
   }
-  if (dualshock4_) {
+  if (dualshock4_)
     dualshock4_->Shutdown();
-    dualshock4_ = nullptr;
-  }
+  dualshock4_.reset();
+  if (hid_haptics_)
+    hid_haptics_->Shutdown();
+  hid_haptics_.reset();
 }
 
 // static
@@ -366,13 +372,15 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
 }
 
 bool GamepadDeviceMac::SupportsVibration() {
-  return dualshock4_ || ff_device_ref_;
+  return dualshock4_ || hid_haptics_ || ff_device_ref_;
 }
 
 void GamepadDeviceMac::SetVibration(double strong_magnitude,
                                     double weak_magnitude) {
   if (dualshock4_) {
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+  } else if (hid_haptics_) {
+    hid_haptics_->SetVibration(strong_magnitude, weak_magnitude);
   } else if (ff_device_ref_) {
     FFCUSTOMFORCE* ff_custom_force =
         static_cast<FFCUSTOMFORCE*>(ff_effect_.lpvTypeSpecificParams);
@@ -396,6 +404,8 @@ void GamepadDeviceMac::SetVibration(double strong_magnitude,
 void GamepadDeviceMac::SetZeroVibration() {
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
+  } else if (hid_haptics_) {
+    hid_haptics_->SetZeroVibration();
   } else if (ff_effect_ref_) {
     FFEffectStop(ff_effect_ref_);
   }
