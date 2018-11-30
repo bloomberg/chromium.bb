@@ -155,10 +155,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableRenderingPipelineThrottling(bool);
   BLINK_PLATFORM_EXPORT static void EnableResourceLoadScheduler(bool);
-  BLINK_PLATFORM_EXPORT static void EnableRestrictLazyFrameLoadingToDataSaver(
-      bool);
-  BLINK_PLATFORM_EXPORT static void EnableRestrictLazyImageLoadingToDataSaver(
-      bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechRecognition(bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechSynthesis(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollAnchorSerialization(bool);
