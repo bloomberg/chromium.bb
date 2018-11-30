@@ -3,21 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/wm/window_transient_descendant_iterator.h"
-#include <ui/aura/window.h>
-#include <ui/wm/core/window_util.h>
+
+#include "ash/wm/window_util.h"
+#include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
-
-namespace {
-
-aura::Window* GetTransientRoot(aura::Window* window) {
-  while (window && ::wm::GetTransientParent(window))
-    window = ::wm::GetTransientParent(window);
-  return window;
-}
-
-}  // namespace
 
 WindowTransientDescendantIterator::WindowTransientDescendantIterator()
     : current_window_(nullptr) {}
@@ -76,7 +68,7 @@ WindowTransientDescendantIteratorRange::WindowTransientDescendantIteratorRange(
 WindowTransientDescendantIteratorRange GetTransientTreeIterator(
     aura::Window* window) {
   return WindowTransientDescendantIteratorRange(
-      WindowTransientDescendantIterator(GetTransientRoot(window)));
+      WindowTransientDescendantIterator(::wm::GetTransientRoot(window)));
 }
 
 }  // namespace wm

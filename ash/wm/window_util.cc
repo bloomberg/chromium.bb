@@ -5,7 +5,6 @@
 #include "ash/wm/window_util.h"
 
 #include <memory>
-#include <vector>
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -303,6 +302,18 @@ bool ShouldExcludeForOverview(const aura::Window* window) {
   }
 
   return ShouldExcludeForBothCycleListAndOverview(window);
+}
+
+void RemoveTransientDescendants(std::vector<aura::Window*>* out_window_list) {
+  for (auto it = out_window_list->begin(); it != out_window_list->end();) {
+    aura::Window* transient_root = ::wm::GetTransientRoot(*it);
+    if (*it != transient_root &&
+        base::ContainsValue(*out_window_list, transient_root)) {
+      it = out_window_list->erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 }  // namespace wm

@@ -178,7 +178,7 @@ aura::Window* GetTransientParent(aura::Window* window) {
 const aura::Window* GetTransientParent(const aura::Window* window) {
   const TransientWindowManager* manager =
       TransientWindowManager::GetIfExists(window);
-  return manager ? manager->transient_parent() : NULL;
+  return manager ? manager->transient_parent() : nullptr;
 }
 
 const std::vector<aura::Window*>& GetTransientChildren(
@@ -190,6 +190,12 @@ const std::vector<aura::Window*>& GetTransientChildren(
 
   static std::vector<aura::Window*>* shared = new std::vector<aura::Window*>;
   return *shared;
+}
+
+aura::Window* GetTransientRoot(aura::Window* window) {
+  while (window && GetTransientParent(window))
+    window = GetTransientParent(window);
+  return window;
 }
 
 void AddTransientChild(aura::Window* parent, aura::Window* child) {

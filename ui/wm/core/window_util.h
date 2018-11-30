@@ -80,7 +80,7 @@ WM_CORE_EXPORT std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
 
 // Convenience functions that get the TransientWindowManager for the window and
 // redirect appropriately. These are preferable to calling functions on
-// TransientWindowManager as they handle the appropriate NULL checks.
+// TransientWindowManager as they handle the appropriate null checks.
 WM_CORE_EXPORT aura::Window* GetTransientParent(aura::Window* window);
 WM_CORE_EXPORT const aura::Window* GetTransientParent(
     const aura::Window* window);
@@ -90,6 +90,7 @@ WM_CORE_EXPORT void AddTransientChild(aura::Window* parent,
                                       aura::Window* child);
 WM_CORE_EXPORT void RemoveTransientChild(aura::Window* parent,
                                          aura::Window* child);
+WM_CORE_EXPORT aura::Window* GetTransientRoot(aura::Window* window);
 
 // Returns true if |window| has |ancestor| as a transient ancestor. A transient
 // ancestor is found by following the transient parent chain of the window.

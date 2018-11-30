@@ -272,6 +272,10 @@ bool WindowSelectorController::ToggleOverview(
       [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
   hide_windows.resize(end - hide_windows.begin());
   base::EraseIf(windows, wm::ShouldExcludeForOverview);
+  // Overview windows will handle showing their transient related windows, so if
+  // a window in |windows| has a transient root also in |windows|, we can remove
+  // it as the tranisent root will handle showing the window.
+  wm::RemoveTransientDescendants(&windows);
 
   // We may want to slide the overview grid in or out in some cases, even if
   // not explicitly stated.
