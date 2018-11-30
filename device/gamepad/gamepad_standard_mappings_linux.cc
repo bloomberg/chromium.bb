@@ -469,7 +469,7 @@ void MapperSamsung_EI_GP20(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperSteelSeries(const Gamepad& input, Gamepad* mapped) {
+void MapperSteelSeriesZeemote(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
   mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
@@ -488,6 +488,35 @@ void MapperSteelSeries(const Gamepad& input, Gamepad* mapped) {
       AxisPositiveAsButton(input.axes[4]);
   mapped->buttons[BUTTON_INDEX_META] = NullButton();
   mapped->buttons_length = BUTTON_INDEX_META;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperSteelSeriesStratusXL(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[3]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[18];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = input.buttons[12];
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] = input.buttons[15];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[19];
+
+  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = input.axes[0];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = input.axes[1];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[2];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -578,13 +607,14 @@ struct MappingData {
     {0x0583, 0x2060, MapperIBuffalo},              // iBuffalo Classic
     {0x0925, 0x0005, MapperLakeviewResearch},      // SmartJoy PLUS Adapter
     {0x0925, 0x8866, MapperLakeviewResearch},      // WiseGroup MP-8866
-    {0x0955, 0x7210, MapperNvShield},        // Nvidia Shield gamepad (2015)
-    {0x0955, 0x7214, MapperNvShield2017},    // Nvidia Shield gamepad (2017)
-    {0x0b05, 0x4500, MapperADT1},            // Nexus Player Controller
-    {0x0e8f, 0x0003, MapperXGEAR},           // XFXforce XGEAR PS2 Controller
-    {0x1038, 0x1412, MapperSteelSeries},     // Zeemote: SteelSeries FREE
-    {0x1532, 0x0900, MapperRazerServal},     // Razer Serval Controller
-    {0x18d1, 0x2c40, MapperADT1},            // ADT-1 Controller
+    {0x0955, 0x7210, MapperNvShield},      // Nvidia Shield gamepad (2015)
+    {0x0955, 0x7214, MapperNvShield2017},  // Nvidia Shield gamepad (2017)
+    {0x0b05, 0x4500, MapperADT1},          // Nexus Player Controller
+    {0x0e8f, 0x0003, MapperXGEAR},         // XFXforce XGEAR PS2 Controller
+    {0x1038, 0x1412, MapperSteelSeriesZeemote},    // Zeemote: SteelSeries FREE
+    {0x1038, 0x1418, MapperSteelSeriesStratusXL},  // SteelSeries Stratus XL USB
+    {0x1532, 0x0900, MapperRazerServal},           // Razer Serval Controller
+    {0x18d1, 0x2c40, MapperADT1},                  // ADT-1 Controller
     {0x20d6, 0x6271, MapperMoga},            // Moga Pro Controller (HID mode)
     {0x20d6, 0x89e5, MapperMoga},            // Moga 2 HID
     {0x2378, 0x1008, MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
