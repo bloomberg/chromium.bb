@@ -633,8 +633,15 @@ std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   if (!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) {
     // Default ARC apps available before OptIn.
     std::vector<std::string> ids;
-    for (const auto& default_app : default_apps_->GetActiveApps())
-      ids.push_back(default_app.first);
+    for (const auto& default_app : default_apps_->GetActiveApps()) {
+      // Default apps are iteratively added to prefs. That generates
+      // |OnAppRegistered| event per app. Consumer may use this event to request
+      // list of all apps. Although this practice is discouraged due the
+      // performance reason, let be safe and in order to prevent listing of not
+      // yet registered apps, filter out default apps based of tracked state.
+      if (tracked_apps_.count(default_app.first))
+        ids.push_back(default_app.first);
+    }
     return ids;
   }
   return GetAppIdsNoArcEnabledCheck();
@@ -662,8 +669,9 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
   // Information for default app is available before ARC enabled.
   if ((!IsArcAlive() || !IsArcAndroidEnabledForProfile(profile_)) &&
-      !default_apps_->HasApp(app_id))
+      !default_apps_->HasApp(app_id)) {
     return std::unique_ptr<AppInfo>();
+  }
 
   return GetAppFromPrefs(app_id);
 }

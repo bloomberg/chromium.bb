@@ -47,14 +47,15 @@ class AppSearchProvider : public SearchProvider {
   void Start(const base::string16& query) override;
   void Train(const std::string& id) override;
 
-  // Refresh indexed app data and update search results. When |force_inline| is
-  // set to true, search results is updated before returning from the function.
-  // Otherwise, search results would be grouped, i.e. multiple calls would only
-  // update search results once.
-  void RefreshAppsAndUpdateResults(bool force_inline);
+  // Refreshes apps and updates results inline
+  void RefreshAppsAndUpdateResults();
+
+  // Refreshes apps deferred to prevent multiple redundant refreshes in case of
+  // batch update events from app providers. Used in case when no removed app is
+  // detected.
+  void RefreshAppsAndUpdateResultsDeferred();
 
  private:
-  void RefreshApps();
   void UpdateResults();
   void UpdateRecommendedResults(
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
@@ -68,6 +69,7 @@ class AppSearchProvider : public SearchProvider {
   base::Clock* clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
   std::unique_ptr<AppSearchResultRanker> ranker_;
+  base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);
