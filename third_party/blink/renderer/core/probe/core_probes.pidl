@@ -126,9 +126,9 @@ interface CoreProbes {
   void willSendWebSocketHandshakeRequest([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
   void didReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
   void didCloseWebSocket([Keep] ExecutionContext*, unsigned long identifier);
-  void didReceiveWebSocketFrame(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
-  void didSendWebSocketFrame(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
-  void didReceiveWebSocketFrameError(ExecutionContext*, unsigned long identifier, const String& errorMessage);
+  void didReceiveWebSocketMessage(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
+  void didSendWebSocketMessage(ExecutionContext*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
+  void didReceiveWebSocketMessageError(ExecutionContext*, unsigned long identifier, const String& errorMessage);
   void networkStateChanged([Keep] LocalFrame*, bool online);
   void updateApplicationCacheStatus([Keep] LocalFrame*);
   void layerTreeDidChange(LocalFrame*);

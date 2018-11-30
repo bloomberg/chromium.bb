@@ -170,17 +170,17 @@ class CORE_EXPORT InspectorNetworkAgent final
       network::mojom::blink::WebSocketHandshakeRequest*,
       network::mojom::blink::WebSocketHandshakeResponse*);
   void DidCloseWebSocket(ExecutionContext*, unsigned long identifier);
-  void DidReceiveWebSocketFrame(unsigned long identifier,
-                                int op_code,
-                                bool masked,
-                                const char* payload,
-                                size_t payload_length);
-  void DidSendWebSocketFrame(unsigned long identifier,
-                             int op_code,
-                             bool masked,
-                             const char* payload,
-                             size_t payload_length);
-  void DidReceiveWebSocketFrameError(unsigned long identifier, const String&);
+  void DidReceiveWebSocketMessage(unsigned long identifier,
+                                  int op_code,
+                                  bool masked,
+                                  const char* payload,
+                                  size_t payload_length);
+  void DidSendWebSocketMessage(unsigned long identifier,
+                               int op_code,
+                               bool masked,
+                               const char* payload,
+                               size_t payload_length);
+  void DidReceiveWebSocketMessageError(unsigned long identifier, const String&);
 
   // Called from frontend
   protocol::Response enable(Maybe<int> total_buffer_size,
