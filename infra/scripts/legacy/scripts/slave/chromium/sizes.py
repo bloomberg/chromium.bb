@@ -36,19 +36,15 @@ from tracing.value import convert_chart_json
 
 # If something adds a static initializer, revert it, don't increase these
 # numbers. We don't accept regressions in static initializers.
-#
-# Note: Counts for chrome and nacl_helper are one higher in branded builds
-# compared to release builds.  This is due to a static initializer in
-# WelsThreadPool.cpp (https://crbug.com/893594).
 EXPECTED_LINUX_SI_COUNTS = {
-  'chrome': 5,
-  'nacl_helper': 5,
+  'chrome': 4,
+  'nacl_helper': 4,
   'nacl_helper_bootstrap': 0,
 }
 
 # If something adds a static initializer, revert it, don't increase these
 # numbers. We don't accept regressions in static initializers.
-EXPECTED_MAC_SI_COUNT = 1  # https://crbug.com/893594
+EXPECTED_MAC_SI_COUNT = 0
 
 
 class ResultsCollector(object):
