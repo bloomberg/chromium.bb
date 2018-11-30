@@ -37,9 +37,6 @@ UnifiedConsentService::UnifiedConsentService(
   if (GetMigrationState() == MigrationState::kNotInitialized)
     MigrateProfileToUnifiedConsent();
 
-  // Check if this profile is still eligible for the consent bump.
-  CheckConsentBumpEligibility();
-
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
 }
@@ -54,7 +51,6 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::kNotInitialized));
-  registry->RegisterBooleanPref(prefs::kShouldShowUnifiedConsentBump, false);
   registry->RegisterBooleanPref(prefs::kAllUnifiedConsentServicesWereEnabled,
                                 false);
 }
@@ -86,7 +82,6 @@ void UnifiedConsentService::RollbackIfNeeded(
   // Clear all unified consent prefs.
   user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
-  user_pref_service->ClearPref(prefs::kShouldShowUnifiedConsentBump);
   user_pref_service->ClearPref(prefs::kAllUnifiedConsentServicesWereEnabled);
 }
 
@@ -98,10 +93,6 @@ void UnifiedConsentService::EnableGoogleServices() {
     // If the user opted into unified consent, the migration is completed.
     SetMigrationState(MigrationState::kCompleted);
   }
-
-  if (ShouldShowConsentBump())
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kSettingsOptIn);
 
   // Enable all Google services except sync.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
@@ -115,44 +106,6 @@ void UnifiedConsentService::EnableGoogleServices() {
   }
 
   pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
-}
-
-bool UnifiedConsentService::ShouldShowConsentBump() {
-  if (base::FeatureList::IsEnabled(kForceUnifiedConsentBump) &&
-      identity_manager_->HasPrimaryAccount()) {
-    return true;
-  }
-  return pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump);
-}
-
-void UnifiedConsentService::MarkConsentBumpShown() {
-  // Record suppress reason kNone, which means that it was shown. This also sets
-  // the |kShouldShowConsentBump| pref to false.
-  RecordConsentBumpSuppressReason(metrics::ConsentBumpSuppressReason::kNone);
-}
-
-void UnifiedConsentService::RecordConsentBumpSuppressReason(
-    metrics::ConsentBumpSuppressReason suppress_reason) {
-  UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.ConsentBump.SuppressReason",
-                            suppress_reason);
-
-  switch (suppress_reason) {
-    case metrics::ConsentBumpSuppressReason::kNone:
-    case metrics::ConsentBumpSuppressReason::kNotSignedIn:
-    case metrics::ConsentBumpSuppressReason::kSyncEverythingOff:
-    case metrics::ConsentBumpSuppressReason::kPrivacySettingOff:
-    case metrics::ConsentBumpSuppressReason::kSettingsOptIn:
-    case metrics::ConsentBumpSuppressReason::kUserSignedOut:
-    case metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff:
-    case metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff:
-    case metrics::ConsentBumpSuppressReason::kCustomPassphrase:
-      pref_service_->SetBoolean(prefs::kShouldShowUnifiedConsentBump, false);
-      break;
-    case metrics::ConsentBumpSuppressReason::kSyncPaused:
-      // Consent bump should be shown when sync is active again.
-      DCHECK(ShouldShowConsentBump());
-      break;
-  }
 }
 
 void UnifiedConsentService::Shutdown() {
@@ -178,10 +131,6 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
     // When the user signs out, the migration is complete.
     SetMigrationState(MigrationState::kCompleted);
   }
-
-  if (ShouldShowConsentBump())
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kUserSignedOut);
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
@@ -192,14 +141,6 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
 
   if (GetMigrationState() == MigrationState::kInProgressWaitForSyncInit)
     UpdateSettingsForMigration();
-
-  if (sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase()) {
-    if (ShouldShowConsentBump()) {
-      // Do not show the consent bump when the user has a custom passphrase.
-      RecordConsentBumpSuppressReason(
-          metrics::ConsentBumpSuppressReason::kCustomPassphrase);
-    }
-  }
 }
 
 MigrationState UnifiedConsentService::GetMigrationState() {
@@ -220,24 +161,8 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   DCHECK_EQ(GetMigrationState(), MigrationState::kNotInitialized);
 
   if (!identity_manager_->HasPrimaryAccount()) {
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kNotSignedIn);
     SetMigrationState(MigrationState::kCompleted);
     return;
-  }
-  bool is_syncing_everything =
-      sync_service_->GetUserSettings()->IsSyncEverythingEnabled();
-
-  if (!is_syncing_everything) {
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kSyncEverythingOff);
-  } else if (!AreAllOnByDefaultPrivacySettingsOn()) {
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kPrivacySettingOff);
-  } else {
-    // When the user was syncing everything, and all on-by-default privacy
-    // settings were on, the consent bump should be shown.
-    pref_service_->SetBoolean(prefs::kShouldShowUnifiedConsentBump, true);
   }
 
   UpdateSettingsForMigration();
@@ -260,35 +185,6 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
                             url_keyed_metrics_enabled);
 
   SetMigrationState(MigrationState::kCompleted);
-}
-
-bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
-  for (auto service : {Service::kAlternateErrorPages,
-                       Service::kMetricsReporting, Service::kNetworkPrediction,
-                       Service::kSafeBrowsing, Service::kSearchSuggest}) {
-    if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
-      return false;
-  }
-  return true;
-}
-
-void UnifiedConsentService::CheckConsentBumpEligibility() {
-  // Only check eligility if the user was eligible before.
-  if (!ShouldShowConsentBump()) {
-    metrics::RecordConsentBumpEligibility(false);
-    return;
-  }
-
-  if (!sync_service_->GetUserSettings()->GetChosenDataTypes().HasAll(
-          syncer::UserSelectableTypes())) {
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff);
-  } else if (!AreAllOnByDefaultPrivacySettingsOn()) {
-    RecordConsentBumpSuppressReason(
-        metrics::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff);
-  }
-  metrics::RecordConsentBumpEligibility(
-      pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump));
 }
 
 }  //  namespace unified_consent

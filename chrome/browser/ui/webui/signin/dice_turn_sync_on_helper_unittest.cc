@@ -414,7 +414,7 @@ class DiceTurnSyncOnHelperTestWithUnifiedConsent
     : public DiceTurnSyncOnHelperTestBase {
  public:
   DiceTurnSyncOnHelperTestWithUnifiedConsent()
-      : scoped_unified_consent_(UnifiedConsentFeatureState::kEnabledNoBump) {}
+      : scoped_unified_consent_(UnifiedConsentFeatureState::kEnabled) {}
   ~DiceTurnSyncOnHelperTestWithUnifiedConsent() override {}
 
  private:

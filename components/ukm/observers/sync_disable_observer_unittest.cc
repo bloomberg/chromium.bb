@@ -9,6 +9,7 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -146,7 +147,7 @@ TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentDisabled) {
 
 TEST_F(SyncDisableObserverTest, OneEnabled_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   SetUrlKeyedAnonymizedDataCollectionEnabled(&prefs, true);
@@ -239,7 +240,7 @@ TEST_F(SyncDisableObserverTest, MixedProfiles2_UnifiedConsentDisabled) {
 
 TEST_F(SyncDisableObserverTest, MixedProfiles_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   sync_preferences::TestingPrefServiceSyncable prefs1;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs1);
   sync_preferences::TestingPrefServiceSyncable prefs2;
@@ -275,7 +276,7 @@ TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentDisabled) {
 
 TEST_F(SyncDisableObserverTest, TwoEnabled_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   sync_preferences::TestingPrefServiceSyncable prefs1;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs1);
   sync_preferences::TestingPrefServiceSyncable prefs2;
@@ -315,7 +316,7 @@ TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentDisabled) {
 
 TEST_F(SyncDisableObserverTest, OneAddRemove_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   TestSyncDisableObserver observer;
@@ -356,7 +357,7 @@ TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentDisabled) {
 
 TEST_F(SyncDisableObserverTest, PurgeOnDisable_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
 
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
