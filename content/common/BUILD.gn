@@ -456,18 +456,8 @@ source_set("common") {
   }
 
   if (is_fuchsia) {
-    sources += [
-      "font_list_fuchsia.cc",
-      "sandbox_policy_fuchsia.cc",
-      "sandbox_policy_fuchsia.h",
-    ]
-
-    deps += [
-      "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:fonts",
-      "//third_party/fuchsia-sdk/sdk:mediacodec",
-      "//third_party/fuchsia-sdk/sdk:scenic",
-    ]
+    sources += [ "font_list_fuchsia.cc" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
   }
 }
 

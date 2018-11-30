@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
-#define CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_FUCHSIA_SANDBOX_POLICY_FUCHSIA_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_FUCHSIA_SANDBOX_POLICY_FUCHSIA_H_
 
 #include <lib/zx/channel.h>
 
 #include "base/memory/ref_counted.h"
+#include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
@@ -20,9 +21,9 @@ class FilteredServiceDirectory;
 
 }  // namespace base
 
-namespace content {
+namespace service_manager {
 
-class SandboxPolicyFuchsia {
+class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
  public:
   SandboxPolicyFuchsia();
   ~SandboxPolicyFuchsia();
@@ -44,8 +45,10 @@ class SandboxPolicyFuchsia {
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
   zx::channel service_directory_client_channel_;
   scoped_refptr<base::SequencedTaskRunner> service_directory_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SandboxPolicyFuchsia);
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_FUCHSIA_SANDBOX_POLICY_FUCHSIA_H_

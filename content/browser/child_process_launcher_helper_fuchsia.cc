@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/process/launch.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/common/sandbox_policy_fuchsia.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "services/service_manager/embedder/result_codes.h"
