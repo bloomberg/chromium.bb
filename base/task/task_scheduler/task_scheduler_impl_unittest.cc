@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,6 +27,7 @@
 #include "base/task/task_scheduler/test_task_factory.h"
 #include "base/task/task_scheduler/test_utils.h"
 #include "base/task/task_traits.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -35,6 +37,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -155,6 +158,18 @@ void VerifyTimeAndTaskEnvironmentAndSignalEvent(const TaskTraits& traits,
                                                 WaitableEvent* event) {
   DCHECK(event);
   EXPECT_LE(expected_time, TimeTicks::Now());
+  VerifyTaskEnvironment(traits, state);
+  event->Signal();
+}
+
+void VerifyOrderAndTaskEnvironmentAndSignalEvent(
+    const TaskTraits& traits,
+    SchedulerState state,
+    WaitableEvent* expected_previous_event,
+    WaitableEvent* event) {
+  DCHECK(event);
+  if (expected_previous_event)
+    EXPECT_TRUE(expected_previous_event->IsSignaled());
   VerifyTaskEnvironment(traits, state);
   event->Signal();
 }
@@ -904,6 +919,200 @@ TEST_P(TaskSchedulerImplTest, SchedulerWorkerObserver) {
   task_runners.clear();
 
   TearDown();
+}
+
+class TaskSchedulerPriorityUpdateTest : public testing::Test {
+ protected:
+  struct PoolBlockingEvents {
+    PoolBlockingEvents(const TaskTraits& pool_traits)
+        : pool_traits(pool_traits) {}
+    const TaskTraits pool_traits;
+    WaitableEvent scheduled;
+    WaitableEvent blocked;
+  };
+
+  struct TaskRunnerAndEvents {
+    TaskRunnerAndEvents(
+        scoped_refptr<UpdateableSequencedTaskRunner> task_runner,
+        const TaskPriority updated_priority,
+        WaitableEvent* expected_previous_event)
+        : task_runner(std::move(task_runner)),
+          updated_priority(updated_priority),
+          expected_previous_event(expected_previous_event) {}
+    scoped_refptr<UpdateableSequencedTaskRunner> task_runner;
+    const TaskPriority updated_priority;
+    WaitableEvent scheduled;
+    WaitableEvent blocked;
+    WaitableEvent task_ran;
+    WaitableEvent* expected_previous_event;
+  };
+
+  TaskSchedulerPriorityUpdateTest() : scheduler_("Test") {}
+
+  void StartTaskSchedulerWithNumThreadsPerPool(int threads_per_pool) {
+    constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
+
+    scheduler_.Start({{threads_per_pool, kSuggestedReclaimTime},
+                      {threads_per_pool, kSuggestedReclaimTime},
+                      {threads_per_pool, kSuggestedReclaimTime},
+                      {threads_per_pool, kSuggestedReclaimTime}},
+                     nullptr);
+  }
+
+  // Create a series of sample task runners that will post tasks at various
+  // initial priorities, then update priority.
+  void CreateTaskRunnersAndEvents() {
+    // Task runner that will start as USER_VISIBLE and update to USER_BLOCKING.
+    // Its task is expected to run first.
+    task_runners_and_events_.push_back(std::make_unique<TaskRunnerAndEvents>(
+        scheduler_.CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+            TaskTraits({TaskPriority::USER_VISIBLE})),
+        TaskPriority::USER_BLOCKING, nullptr));
+
+    // Task runner that will start as BEST_EFFORT and update to USER_VISIBLE.
+    // Its task is expected to run after the USER_BLOCKING task runner's task.
+    task_runners_and_events_.push_back(std::make_unique<TaskRunnerAndEvents>(
+        scheduler_.CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+            TaskTraits({TaskPriority::BEST_EFFORT})),
+        TaskPriority::USER_VISIBLE,
+        &task_runners_and_events_.back()->task_ran));
+
+    // Task runner that will start as USER_BLOCKING and update to BEST_EFFORT.
+    // Its task is expected to run asynchronously with the other two task
+    // task runners' tasks if background pools exist, or after the USER_VISIBLE
+    // task runner's task if not.
+    task_runners_and_events_.push_back(std::make_unique<TaskRunnerAndEvents>(
+        scheduler_.CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+            TaskTraits({TaskPriority::USER_BLOCKING})),
+        TaskPriority::BEST_EFFORT,
+        CanUseBackgroundPriorityForSchedulerWorker()
+            ? nullptr
+            : &task_runners_and_events_.back()->task_ran));
+  }
+
+  void TearDown() override {
+    scheduler_.FlushForTesting();
+    scheduler_.JoinForTesting();
+  }
+
+  TaskSchedulerImpl scheduler_;
+
+  std::vector<std::unique_ptr<TaskRunnerAndEvents>> task_runners_and_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerPriorityUpdateTest);
+};
+
+// Update the priority of a sequence when it is not scheduled.
+TEST_F(TaskSchedulerPriorityUpdateTest, UpdatePrioritySequenceNotScheduled) {
+  StartTaskSchedulerWithNumThreadsPerPool(1);
+
+  // Schedule blocking tasks on all threads to prevent tasks from being
+  // scheduled later in the test.
+  std::vector<std::unique_ptr<PoolBlockingEvents>> pool_blocking_events;
+
+  pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
+      TaskTraits({TaskPriority::USER_BLOCKING})));
+  pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
+      TaskTraits({TaskPriority::USER_BLOCKING, MayBlock()})));
+  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+    pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
+        TaskTraits({TaskPriority::BEST_EFFORT})));
+    pool_blocking_events.push_back(std::make_unique<PoolBlockingEvents>(
+        TaskTraits({TaskPriority::BEST_EFFORT, MayBlock()})));
+  }
+
+  // When all blocking tasks signal |scheduled|, there is a task blocked in
+  // each pool.
+  for (auto& pool_blocking_event : pool_blocking_events) {
+    scheduler_
+        .CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+            pool_blocking_event->pool_traits)
+        ->PostTask(
+            FROM_HERE, BindLambdaForTesting([&]() {
+              pool_blocking_event->scheduled.Signal();
+              test::WaitWithoutBlockingObserver(&pool_blocking_event->blocked);
+            }));
+
+    test::WaitWithoutBlockingObserver(&pool_blocking_event->scheduled);
+  }
+
+  CreateTaskRunnersAndEvents();
+
+  // Post tasks to multiple task runners while they are at initial priority.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->task_runner->PostTask(
+        FROM_HERE,
+        BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
+                 task_runner_and_events->updated_priority,
+                 SchedulerState::kAfterSchedulerStart,
+                 Unretained(task_runner_and_events->expected_previous_event),
+                 Unretained(&task_runner_and_events->task_ran)));
+  }
+
+  // Update the priorities of the task runners that posted the tasks.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->task_runner->UpdatePriority(
+        task_runner_and_events->updated_priority);
+  }
+
+  // Unblock the task blocking each pool, allowing the posted tasks to run.
+  // Each posted task will verify that it has been posted with updated priority
+  // when it runs.
+  for (auto& pool_blocking_event : pool_blocking_events) {
+    pool_blocking_event->blocked.Signal();
+  }
+
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);
+  }
+}
+
+// Update the priority of a sequence when it is scheduled, i.e. not currently
+// in a priority queue.
+TEST_F(TaskSchedulerPriorityUpdateTest, UpdatePrioritySequenceScheduled) {
+  StartTaskSchedulerWithNumThreadsPerPool(5);
+
+  CreateTaskRunnersAndEvents();
+
+  // Post blocking tasks to all task runners to prevent tasks from being
+  // scheduled later in the test.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->task_runner->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+          task_runner_and_events->scheduled.Signal();
+          test::WaitWithoutBlockingObserver(&task_runner_and_events->blocked);
+        }));
+
+    ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+    test::WaitWithoutBlockingObserver(&task_runner_and_events->scheduled);
+  }
+
+  // Update the priorities of the task runners while they are scheduled and
+  // blocked.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->task_runner->UpdatePriority(
+        task_runner_and_events->updated_priority);
+  }
+
+  // Post an additional task to each task runner.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->task_runner->PostTask(
+        FROM_HERE,
+        BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
+                 TaskTraits(task_runner_and_events->updated_priority),
+                 SchedulerState::kAfterSchedulerStart,
+                 Unretained(task_runner_and_events->expected_previous_event),
+                 Unretained(&task_runner_and_events->task_ran)));
+  }
+
+  // Unblock the task blocking each task runner, allowing the additional posted
+  // tasks to run. Each posted task will verify that it has been posted with
+  // updated priority when it runs.
+  for (auto& task_runner_and_events : task_runners_and_events_) {
+    task_runner_and_events->blocked.Signal();
+    test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);
+  }
 }
 
 }  // namespace internal

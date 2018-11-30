@@ -256,6 +256,13 @@ TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(
 }
 #endif  // defined(OS_WIN)
 
+scoped_refptr<UpdateableSequencedTaskRunner>
+TaskSchedulerImpl::CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+    const TaskTraits& traits) {
+  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
+  return MakeRefCounted<SchedulerSequencedTaskRunner>(new_traits, this);
+}
+
 std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
   std::vector<const HistogramBase*> histograms;
   for (const auto& worker_pool : worker_pools_)

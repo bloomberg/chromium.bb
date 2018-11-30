@@ -80,6 +80,8 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     const TaskTraits& traits,
     MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate);
 
+void WaitWithoutBlockingObserver(WaitableEvent* event);
+
 }  // namespace test
 }  // namespace internal
 }  // namespace base

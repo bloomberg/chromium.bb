@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/task/task_scheduler/scheduler_parallel_task_runner.h"
 #include "base/task/task_scheduler/scheduler_sequenced_task_runner.h"
+#include "base/threading/scoped_blocking_call.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -57,6 +59,14 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     MockSchedulerTaskRunnerDelegate* mock_scheduler_task_runner_delegate) {
   return MakeRefCounted<SchedulerSequencedTaskRunner>(
       traits, mock_scheduler_task_runner_delegate);
+}
+
+// Waits on |event| in a scope where the blocking observer is null, to avoid
+// affecting the max tasks in a worker pool.
+void WaitWithoutBlockingObserver(WaitableEvent* event) {
+  internal::ScopedClearBlockingObserverForTesting clear_blocking_observer;
+  ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+  event->Wait();
 }
 
 MockSchedulerTaskRunnerDelegate::MockSchedulerTaskRunnerDelegate(

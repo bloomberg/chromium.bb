@@ -25,6 +25,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_scheduler/task_tracker.h"
 #include "base/task/task_traits.h"
+#include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
@@ -93,6 +94,9 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
+  scoped_refptr<UpdateableSequencedTaskRunner>
+  CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+      const TaskTraits& traits);
 
  private:
   // Returns the worker pool that runs Tasks with |traits|.
