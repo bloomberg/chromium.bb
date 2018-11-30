@@ -333,6 +333,8 @@ class GPU_EXPORT Scheduler {
 
   base::ThreadChecker thread_checker_;
 
+  // Invalidated on main thread.
+  base::WeakPtr<Scheduler> weak_ptr_;
   base::WeakPtrFactory<Scheduler> weak_factory_;
 
  private:

@@ -293,6 +293,8 @@ Scheduler::Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       sync_point_manager_(sync_point_manager),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Store weak ptr separately because calling GetWeakPtr() is not thread safe.
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 Scheduler::~Scheduler() {
@@ -390,11 +392,11 @@ void Scheduler::ScheduleTaskHelper(Task task) {
     Sequence* release_sequence = GetSequence(release_sequence_id);
     if (!release_sequence)
       continue;
-    if (sync_point_manager_->Wait(
-            sync_token, sequence_id, order_num,
-            base::Bind(&Scheduler::SyncTokenFenceReleased,
-                       weak_factory_.GetWeakPtr(), sync_token, order_num,
-                       release_sequence_id, sequence_id))) {
+    if (sync_point_manager_->WaitNonThreadSafe(
+            sync_token, sequence_id, order_num, task_runner_,
+            base::BindOnce(&Scheduler::SyncTokenFenceReleased, weak_ptr_,
+                           sync_token, order_num, release_sequence_id,
+                           sequence_id))) {
       sequence->AddWaitFence(sync_token, order_num, release_sequence_id,
                              release_sequence);
     }
@@ -464,8 +466,8 @@ void Scheduler::TryScheduleSequence(Sequence* sequence) {
     if (!running_) {
       TRACE_EVENT_ASYNC_BEGIN0("gpu", "Scheduler::Running", this);
       running_ = true;
-      task_runner_->PostTask(FROM_HERE, base::Bind(&Scheduler::RunNextTask,
-                                                   weak_factory_.GetWeakPtr()));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));
     }
   }
 }
@@ -540,8 +542,8 @@ void Scheduler::RunNextTask() {
     }
   }
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(&Scheduler::RunNextTask,
-                                               weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));
 }
 
 }  // namespace gpu
