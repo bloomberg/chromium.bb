@@ -180,6 +180,8 @@ void ThreadHeap::RegisterWeakTable(void* table,
 void ThreadHeap::CommitCallbackStacks() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
+  previously_not_fully_constructed_worklist_.reset(
+      new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
@@ -187,6 +189,7 @@ void ThreadHeap::CommitCallbackStacks() {
 void ThreadHeap::DecommitCallbackStacks() {
   marking_worklist_.reset(nullptr);
   not_fully_constructed_worklist_.reset(nullptr);
+  previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
   ephemeron_callbacks_.clear();
 }
@@ -205,6 +208,15 @@ void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,
                                               MovingObjectCallback callback,
                                               void* callback_data) {
   Compaction()->RegisterMovingObjectCallback(slot, callback, callback_data);
+}
+
+void ThreadHeap::FlushNotFullyConstructedObjects() {
+  if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
+    not_fully_constructed_worklist_->FlushToGlobal(WorklistTaskId::MainThread);
+    previously_not_fully_constructed_worklist_->MergeGlobalPool(
+        not_fully_constructed_worklist_.get());
+  }
+  DCHECK(not_fully_constructed_worklist_->IsGlobalEmpty());
 }
 
 void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
@@ -245,9 +257,35 @@ void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
   ephemeron_callbacks_ = std::move(final_set);
 }
 
-bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
+namespace {
+
+template <typename Worklist, typename Callback>
+bool DrainWorklistWithDeadline(TimeTicks deadline,
+                               Worklist* worklist,
+                               Callback callback) {
   const size_t kDeadlineCheckInterval = 2500;
+
   size_t processed_callback_count = 0;
+  typename Worklist::EntryType item;
+  while (worklist->Pop(WorklistTaskId::MainThread, &item)) {
+    callback(item);
+    processed_callback_count++;
+    if (++processed_callback_count == kDeadlineCheckInterval) {
+      if (deadline <= CurrentTimeTicks()) {
+        return false;
+      }
+      processed_callback_count = 0;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
+  // const size_t kDeadlineCheckInterval = 2500;
+  // size_t processed_callback_count = 0;
+  bool finished;
   // Ephemeron fixed point loop.
   do {
     {
@@ -255,16 +293,25 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
       // currently pushed onto the marking worklist.
       ThreadHeapStatsCollector::Scope stats_scope(
           stats_collector(), ThreadHeapStatsCollector::kMarkProcessWorklist);
-      MarkingItem item;
-      while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
-        item.callback(visitor, item.object);
-        processed_callback_count++;
-        if (processed_callback_count % kDeadlineCheckInterval == 0) {
-          if (deadline <= CurrentTimeTicks()) {
-            return false;
-          }
-        }
-      }
+
+      finished =
+          DrainWorklistWithDeadline(deadline, marking_worklist_.get(),
+                                    [visitor](const MarkingItem& item) {
+                                      item.callback(visitor, item.object);
+                                    });
+      if (!finished)
+        return false;
+
+      // Iteratively mark all objects that were previously discovered while
+      // being in construction. The objects can be processed incrementally once
+      // a safepoint was reached.
+      finished = DrainWorklistWithDeadline(
+          deadline, previously_not_fully_constructed_worklist_.get(),
+          [visitor](const NotFullyConstructedItem& item) {
+            visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
+          });
+      if (!finished)
+        return false;
     }
 
     InvokeEphemeronCallbacks(visitor);

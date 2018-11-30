@@ -300,7 +300,7 @@ class PLATFORM_EXPORT ThreadState final
   void ScheduleIncrementalMarkingFinalize();
 
   void IncrementalMarkingStart(BlinkGC::GCReason);
-  void IncrementalMarkingStep();
+  void IncrementalMarkingStep(BlinkGC::StackState);
   void IncrementalMarkingFinalize();
   bool FinishIncrementalMarkingIfRunning(BlinkGC::StackState,
                                          BlinkGC::MarkingType,
