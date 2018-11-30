@@ -3056,7 +3056,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   ### Master release configs.
   master_config = _CreateMasterConfig('master-release')
-  lakitu_master_config = _CreateMasterConfig('lakitu-master-release')
+  lakitu_master_config = _CreateMasterConfig('master-lakitu-release')
 
   def _AssignToMaster(config):
     """Add |config| as a slave config to the appropriate master config."""
@@ -3802,7 +3802,7 @@ def BranchScheduleConfig():
       '0 5 * * *',
       # Normally this should be "triggered" but lakitu needs R69 for a little
       # longer. Please let lakitu-dev@google.com know before updating this.
-      # TODO(b/111954990): create a lakitu-master-release builder and remove
+      # TODO(b/111954990): create a master-lakitu-release builder and remove
       # this.
       '0 4 * * 0',
   ]
