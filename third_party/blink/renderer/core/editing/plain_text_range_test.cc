@@ -9,10 +9,7 @@
 
 namespace blink {
 
-class PlainTextRangeTest : public EditingTestBase {
- protected:
-  Element* InsertHTMLElement(const char* element_code, const char* element_id);
-};
+class PlainTextRangeTest : public EditingTestBase {};
 
 TEST_F(PlainTextRangeTest, RangeContainingTableCellBoundary) {
   SetBodyInnerHTML(
