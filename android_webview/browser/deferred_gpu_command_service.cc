@@ -8,6 +8,7 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
@@ -145,8 +146,9 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
 
 // static
 DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
-  static DeferredGpuCommandService* service = CreateDeferredGpuCommandService();
-  return service;
+  static base::NoDestructor<scoped_refptr<DeferredGpuCommandService>> service(
+      CreateDeferredGpuCommandService());
+  return service->get();
 }
 
 DeferredGpuCommandService::DeferredGpuCommandService(

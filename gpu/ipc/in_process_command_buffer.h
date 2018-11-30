@@ -83,7 +83,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       public DecoderClient,
       public ImageTransportSurfaceDelegate {
  public:
-  explicit InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor);
+  explicit InProcessCommandBuffer(
+      scoped_refptr<CommandBufferTaskExecutor> task_executer);
   ~InProcessCommandBuffer() override;
 
   // If |surface| is not null, use it directly; in this case, the command
@@ -181,7 +182,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   int GetRasterDecoderIdForTest() const;
 
   CommandBufferTaskExecutor* service_for_testing() const {
-    return task_executor_;
+    return task_executor_.get();
   }
 
   gpu::SharedImageInterface* GetSharedImageInterface() const;
@@ -341,7 +342,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
-  CommandBufferTaskExecutor* const task_executor_;
+  scoped_refptr<CommandBufferTaskExecutor> task_executor_;
   std::unique_ptr<CommandBufferTaskExecutor::Sequence> task_sequence_;
   std::unique_ptr<SharedImageInterface> shared_image_interface_;
 
