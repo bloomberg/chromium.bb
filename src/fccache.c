@@ -710,15 +710,18 @@ FcCacheRemoveUnlocked (FcCache *cache)
     while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
 	fcCacheMaxLevel--;
 
-    allocated = s->allocated;
-    while (allocated)
+    if (s)
     {
-	/* First element in allocated chunk is the free list */
-	next = *(void **)allocated;
-	free (allocated);
-	allocated = next;
+	allocated = s->allocated;
+	while (allocated)
+	{
+	    /* First element in allocated chunk is the free list */
+	    next = *(void **)allocated;
+	    free (allocated);
+	    allocated = next;
+	}
+	free (s);
     }
-    free (s);
 }
 
 static FcCache *
