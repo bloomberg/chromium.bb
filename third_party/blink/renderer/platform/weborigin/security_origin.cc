@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
+#include "url/url_util.h"
 
 namespace blink {
 
@@ -119,13 +120,19 @@ static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
     return true;
 
   // Nonstandard schemes and unregistered schemes aren't known to contain hosts
-  // and/or ports, so they'll usually be placed in opaque origins. An exception
-  // is made for non-standard local schemes.
-  // TODO: Migrate "content:" and "externalfile:" to be standard schemes, and
-  // remove the local scheme exception.
-  if (!relevant_url.CanSetHostOrPort() &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsLocal(relevant_url.Protocol())) {
-    return true;
+  // and/or ports, so they'll usually be placed in opaque origins.
+  if (!relevant_url.CanSetHostOrPort()) {
+    // A temporary exception is made for non-standard local schemes.
+    // TODO: Migrate "content:" and "externalfile:" to be standard schemes, and
+    // remove the local scheme exception.
+    if (SchemeRegistry::ShouldTreatURLSchemeAsLocal(relevant_url.Protocol()))
+      return false;
+
+    // Otherwise, treat non-standard origins as opaque, unless the Android
+    // WebView workaround is enabled. If the workaround is enabled, return false
+    // so that the scheme is retained, to avoid breaking XHRs on custom schemes,
+    // et cetera.
+    return !url::AllowNonStandardSchemesForAndroidWebView();
   }
 
   // This is the common case.

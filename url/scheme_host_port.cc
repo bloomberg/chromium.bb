@@ -52,6 +52,10 @@ bool IsValidInput(const base::StringPiece& scheme,
                   const base::StringPiece& host,
                   uint16_t port,
                   SchemeHostPort::ConstructPolicy policy) {
+  // Empty schemes are never valid.
+  if (scheme.empty())
+    return false;
+
   SchemeType scheme_type = SCHEME_WITH_HOST_PORT_AND_USER_INFORMATION;
   bool is_standard = GetStandardSchemeType(
       scheme.data(),
@@ -67,7 +71,10 @@ bool IsValidInput(const base::StringPiece& scheme,
     if (base::ContainsValue(GetLocalSchemes(), scheme) && host.empty() &&
         port == 0)
       return true;
-    return false;
+
+    // Otherwise, allow non-standard schemes only if the Android WebView
+    // workaround is enabled.
+    return AllowNonStandardSchemesForAndroidWebView();
   }
 
   switch (scheme_type) {
@@ -135,7 +142,8 @@ SchemeHostPort::SchemeHostPort(std::string scheme,
   scheme_ = std::move(scheme);
   host_ = std::move(host);
   port_ = port;
-  DCHECK(!IsInvalid());
+  DCHECK(!IsInvalid()) << "Scheme: " << scheme_ << " Host: " << host_
+                       << " Port: " << port;
 }
 
 SchemeHostPort::SchemeHostPort(base::StringPiece scheme,

@@ -39,6 +39,17 @@ URL_EXPORT void Shutdown();
 
 // Schemes ---------------------------------------------------------------------
 
+// Changes the behavior of SchemeHostPort / Origin to allow non-standard schemes
+// to be specified, instead of canonicalizing them to an invalid SchemeHostPort
+// or opaque Origin, respectively. This is used for Android WebView backwards
+// compatibility, which allows the use of custom schemes: content hosted in
+// Android WebView assumes that one URL with a non-standard scheme will be
+// same-origin to another URL with the same non-standard scheme.
+URL_EXPORT void EnableNonStandardSchemesForAndroidWebView();
+
+// Whether or not SchemeHostPort and Origin allow non-standard schemes.
+URL_EXPORT bool AllowNonStandardSchemesForAndroidWebView();
+
 // A pair for representing a standard scheme name and the SchemeType for it.
 struct URL_EXPORT SchemeWithType {
   const char* scheme;
