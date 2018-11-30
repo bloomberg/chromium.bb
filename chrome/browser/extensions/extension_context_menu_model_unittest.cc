@@ -214,6 +214,10 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
   // Returns true if the |menu| has the page access submenu at all.
   bool HasPageAccessSubmenu(const ExtensionContextMenuModel& menu) const;
 
+  // Returns true if the |menu| has a valid entry for the "can't access page"
+  // item.
+  bool HasCantAccessPageEntry(const ExtensionContextMenuModel& menu) const;
+
   void SetUp() override;
   void TearDown() override;
 
@@ -314,6 +318,19 @@ bool ExtensionContextMenuModelTest::HasPageAccessSubmenu(
     const ExtensionContextMenuModel& menu) const {
   return menu.GetIndexOfCommandId(
              ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU) != -1;
+}
+
+bool ExtensionContextMenuModelTest::HasCantAccessPageEntry(
+    const ExtensionContextMenuModel& menu) const {
+  if (menu.GetIndexOfCommandId(
+          ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS) == -1) {
+    return false;
+  }
+
+  // The "Can't access this page" entry, if present, should always be disabled.
+  EXPECT_FALSE(menu.IsCommandIdEnabled(
+      ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS));
+  return true;
 }
 
 void ExtensionContextMenuModelTest::SetUp() {
@@ -1074,6 +1091,23 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
 
+    EXPECT_EQ(test_case.selected_entry.has_value(),
+              !test_case.expected_entries.empty())
+        << "If any entries are available, one should be selected.";
+
+    if (test_case.expected_entries.empty()) {
+      // If there are no expected entries (i.e., the extension can't run on the
+      // page), there should be no submenu and instead there should be a
+      // disabled label.
+      int label_index = menu.GetIndexOfCommandId(
+          ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS);
+      EXPECT_NE(-1, label_index);
+      EXPECT_FALSE(menu.IsCommandIdEnabled(
+          ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS));
+      EXPECT_FALSE(HasPageAccessSubmenu(menu));
+      continue;
+    }
+
     // The learn more option should be visible whenever the menu is.
     EXPECT_TRUE(HasPageAccessCommand(menu, kLearnMore));
 
@@ -1084,10 +1118,6 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
               HasPageAccessCommand(menu, kOnSite));
     EXPECT_EQ(test_case.expected_entries.count(kOnAllSites),
               HasPageAccessCommand(menu, kOnAllSites));
-
-    EXPECT_EQ(test_case.selected_entry.has_value(),
-              !test_case.expected_entries.empty())
-        << "If any entries are available, one should be selected.";
 
     auto should_command_be_checked = [test_case](int command) {
       return test_case.selected_entry && *test_case.selected_entry == command;
@@ -1157,6 +1187,7 @@ TEST_F(ExtensionContextMenuModelTest,
     // Without withholding host permissions, the menu should be visible on
     // a.com...
     EXPECT_TRUE(HasPageAccessSubmenu(menu));
+    EXPECT_FALSE(HasCantAccessPageEntry(menu));
     EXPECT_TRUE(HasPageAccessCommand(menu, kOnClick));
     EXPECT_TRUE(HasPageAccessCommand(menu, kOnSite));
     EXPECT_FALSE(HasPageAccessCommand(menu, kOnAllSites));
@@ -1172,14 +1203,11 @@ TEST_F(ExtensionContextMenuModelTest,
   web_contents_tester->NavigateAndCommit(b_com);
 
   {
-    // ... but only the learn more option should be visible on b.com.
+    // ... but not on b.com, where it doesn't want to run.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
-    EXPECT_TRUE(HasPageAccessSubmenu(menu));
-    EXPECT_FALSE(HasPageAccessCommand(menu, kOnClick));
-    EXPECT_FALSE(HasPageAccessCommand(menu, kOnSite));
-    EXPECT_FALSE(HasPageAccessCommand(menu, kOnAllSites));
-    EXPECT_TRUE(HasPageAccessCommand(menu, kLearnMore));
+    EXPECT_FALSE(HasPageAccessSubmenu(menu));
+    EXPECT_TRUE(HasCantAccessPageEntry(menu));
   }
 
   modifier.SetWithholdHostPermissions(true);
@@ -1193,6 +1221,7 @@ TEST_F(ExtensionContextMenuModelTest,
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::VISIBLE, nullptr);
     EXPECT_TRUE(HasPageAccessSubmenu(menu));
+    EXPECT_FALSE(HasCantAccessPageEntry(menu));
     EXPECT_TRUE(HasPageAccessCommand(menu, kOnClick));
     EXPECT_TRUE(HasPageAccessCommand(menu, kOnSite));
     EXPECT_FALSE(HasPageAccessCommand(menu, kOnAllSites));
@@ -1216,11 +1245,8 @@ TEST_F(ExtensionContextMenuModelTest,
                                  ExtensionContextMenuModel::VISIBLE, nullptr);
   // Somewhat strangely, this also removes the access controls, because we don't
   // show it for sites the extension doesn't want to run on.
-  EXPECT_TRUE(HasPageAccessSubmenu(menu));
-  EXPECT_FALSE(HasPageAccessCommand(menu, kOnClick));
-  EXPECT_FALSE(HasPageAccessCommand(menu, kOnSite));
-  EXPECT_FALSE(HasPageAccessCommand(menu, kOnAllSites));
-  EXPECT_TRUE(HasPageAccessCommand(menu, kLearnMore));
+  EXPECT_FALSE(HasPageAccessSubmenu(menu));
+  EXPECT_TRUE(HasCantAccessPageEntry(menu));
 }
 
 TEST_F(ExtensionContextMenuModelTest,

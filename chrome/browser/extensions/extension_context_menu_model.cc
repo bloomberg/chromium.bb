@@ -131,6 +131,10 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
       return ContextMenuAction::kPageAccessRunOnAllSites;
     case ExtensionContextMenuModel::PAGE_ACCESS_LEARN_MORE:
       return ContextMenuAction::kPageAccessLearnMore;
+    case ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS:
+    case ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU:
+      NOTREACHED();
+      break;
     default:
       break;
   }
@@ -249,6 +253,9 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     }
     case UNINSTALL:
       return !IsExtensionRequiredByPolicy(extension, profile_);
+    case PAGE_ACCESS_CANT_ACCESS:
+      // This menu item, by design, is never enabled.
+      return false;
     // The following, if they are present, are always enabled.
     case TOGGLE_VISIBILITY:
     case MANAGE_EXTENSIONS:
@@ -441,15 +448,23 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
+
   ScriptingPermissionsModifier modifier(profile_, extension);
   if (!modifier.CanAffectExtension())
     return;
-  page_access_submenu_.reset(new ui::SimpleMenuModel(this));
-  const int kRadioGroup = 0;
 
   const GURL& url = web_contents->GetLastCommittedURL();
   ScriptingPermissionsModifier::SiteAccess site_access =
       modifier.GetSiteAccess(url);
+
+  if (!site_access.has_site_access && !site_access.withheld_site_access) {
+    AddItemWithStringId(PAGE_ACCESS_CANT_ACCESS,
+                        IDS_EXTENSIONS_CONTEXT_MENU_CANT_ACCESS_PAGE);
+    return;
+  }
+
+  const int kRadioGroup = 0;
+  page_access_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 
   // Only show the access controls if the extension either has or wants access
   // to the site.
