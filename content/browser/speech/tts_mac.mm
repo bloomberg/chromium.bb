@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/speech/tts_platform_impl.h"
+#include "content/browser/speech/tts_platform_impl.h"
 #include "content/public/browser/tts_controller.h"
 
 #import <Cocoa/Cocoa.h>
@@ -48,8 +48,7 @@ class TtsPlatformImplMac;
 
 @end
 
-// TODO(katie): Move to content/browser/speech.
-class TtsPlatformImplMac : public TtsPlatformImpl {
+class TtsPlatformImplMac : public content::TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override { return true; }
 
@@ -96,7 +95,7 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
 };
 
 // static
-TtsPlatform* TtsPlatform::GetInstance() {
+content::TtsPlatformImpl* content::TtsPlatformImpl::GetInstance() {
   return TtsPlatformImplMac::GetInstance();
 }
 
@@ -120,9 +119,8 @@ bool TtsPlatformImplMac::Speak(
   // apply to the current utterance or a previous utterance. In
   // experimentation, the overhead of constructing and destructing a
   // NSSpeechSynthesizer is minimal.
-  speech_synthesizer_.reset(
-      [[SingleUseSpeechSynthesizer alloc]
-        initWithUtterance:utterance_nsstring]);
+  speech_synthesizer_.reset([[SingleUseSpeechSynthesizer alloc]
+      initWithUtterance:utterance_nsstring]);
   [speech_synthesizer_ setDelegate:delegate_];
 
   if (!voice.native_voice_identifier.empty()) {
@@ -137,9 +135,9 @@ bool TtsPlatformImplMac::Speak(
 
   if (params.rate >= 0.0) {
     // The TTS api defines rate via words per minute. Let 200 be the default.
-    [speech_synthesizer_
-        setObject:[NSNumber numberWithInt:params.rate * 200]
-        forProperty:NSSpeechRateProperty error:nil];
+    [speech_synthesizer_ setObject:[NSNumber numberWithInt:params.rate * 200]
+                       forProperty:NSSpeechRateProperty
+                             error:nil];
   }
 
   if (params.pitch >= 0.0) {
@@ -151,15 +149,15 @@ bool TtsPlatformImplMac::Speak(
                                          error:&errorCode];
     int defaultPitch = defaultPitchObj ? [defaultPitchObj intValue] : 48;
     int newPitch = static_cast<int>(defaultPitch * (0.5 * params.pitch + 0.5));
-    [speech_synthesizer_
-        setObject:[NSNumber numberWithInt:newPitch]
-        forProperty:NSSpeechPitchBaseProperty error:nil];
+    [speech_synthesizer_ setObject:[NSNumber numberWithInt:newPitch]
+                       forProperty:NSSpeechPitchBaseProperty
+                             error:nil];
   }
 
   if (params.volume >= 0.0) {
-    [speech_synthesizer_
-        setObject: [NSNumber numberWithFloat:params.volume]
-        forProperty:NSSpeechVolumeProperty error:nil];
+    [speech_synthesizer_ setObject:[NSNumber numberWithFloat:params.volume]
+                       forProperty:NSSpeechVolumeProperty
+                             error:nil];
   }
 
   bool success = [speech_synthesizer_ startSpeakingRetainedUtterance];
@@ -238,8 +236,8 @@ void TtsPlatformImplMac::GetVoices(std::vector<content::VoiceData>* outVoices) {
     NSString* language = [localeComponents objectForKey:NSLocaleLanguageCode];
     NSString* country = [localeComponents objectForKey:NSLocaleCountryCode];
     if (language && country) {
-      data.lang =
-          [[NSString stringWithFormat:@"%@-%@", language, country] UTF8String];
+      data.lang = base::SysNSStringToUTF8(
+          [NSString stringWithFormat:@"%@-%@", language, country]);
     } else {
       data.lang = base::SysNSStringToUTF8(language);
     }
@@ -279,8 +277,7 @@ TtsPlatformImplMac::TtsPlatformImplMac() {
   delegate_.reset([[ChromeTtsDelegate alloc] initWithPlatformImplMac:this]);
 }
 
-TtsPlatformImplMac::~TtsPlatformImplMac() {
-}
+TtsPlatformImplMac::~TtsPlatformImplMac() {}
 
 // static
 TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
@@ -314,9 +311,9 @@ TtsPlatformImplMac* TtsPlatformImplMac::GetInstance() {
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
- didEncounterErrorAtIndex:(NSUInteger)character_index
-                 ofString:(NSString*)string
-                  message:(NSString*)message {
+    didEncounterErrorAtIndex:(NSUInteger)character_index
+                    ofString:(NSString*)string
+                     message:(NSString*)message {
   // Ignore bogus character_index. The Mac speech synthesizer is a bit
   // buggy and occasionally returns a number way out of range.
   if (character_index > [string length])

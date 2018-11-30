@@ -21,7 +21,7 @@ SpeechMonitor::SpeechMonitor() {
 
 SpeechMonitor::~SpeechMonitor() {
   TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
-      TtsPlatform::GetInstance());
+      content::TtsPlatform::GetInstance());
 }
 
 std::string SpeechMonitor::GetNextUtterance() {

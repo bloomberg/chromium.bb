@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_platform.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/tts.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/tts_platform.h"
 
 // This class includes extension-based tts through LoadBuiltInTtsExtension and
 // native tts through ARC.
-class TtsPlatformImplChromeOs : public TtsPlatform {
+class TtsPlatformImplChromeOs : public content::TtsPlatform {
  public:
   // TtsPlatform overrides:
   bool PlatformImplAvailable() override {
@@ -103,11 +103,6 @@ class TtsPlatformImplChromeOs : public TtsPlatform {
 
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImplChromeOs);
 };
-
-// static
-TtsPlatform* TtsPlatform::GetInstance() {
-  return TtsPlatformImplChromeOs::GetInstance();
-}
 
 // static
 TtsPlatformImplChromeOs*

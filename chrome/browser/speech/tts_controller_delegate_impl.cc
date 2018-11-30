@@ -302,7 +302,7 @@ void TtsControllerDelegateImpl::OnTtsEvent(int utterance_id,
 void TtsControllerDelegateImpl::GetVoices(
     content::BrowserContext* browser_context,
     std::vector<content::VoiceData>* out_voices) {
-  TtsPlatform* tts_platform = GetTtsPlatform();
+  content::TtsPlatform* tts_platform = GetTtsPlatform();
   if (tts_platform) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
     // loaded.
@@ -355,7 +355,8 @@ void TtsControllerDelegateImpl::ClearUtteranceQueue(bool send_events) {
   }
 }
 
-void TtsControllerDelegateImpl::SetTtsPlatform(TtsPlatform* tts_platform) {
+void TtsControllerDelegateImpl::SetTtsPlatform(
+    content::TtsPlatform* tts_platform) {
   tts_platform_ = tts_platform;
 }
 
@@ -363,9 +364,9 @@ int TtsControllerDelegateImpl::QueueSize() {
   return static_cast<int>(utterance_queue_.size());
 }
 
-TtsPlatform* TtsControllerDelegateImpl::GetTtsPlatform() {
+content::TtsPlatform* TtsControllerDelegateImpl::GetTtsPlatform() {
   if (!tts_platform_)
-    tts_platform_ = TtsPlatform::GetInstance();
+    tts_platform_ = content::TtsPlatform::GetInstance();
   return tts_platform_;
 }
 

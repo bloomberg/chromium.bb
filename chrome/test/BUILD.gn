@@ -5792,30 +5792,6 @@ if (!is_android && !is_fuchsia) {
 }
 
 if (is_win) {
-  # Note: this compiles and runs on Mac but may cause
-  # system instability; if you try it out, close other
-  # programs and then reboot afterwards. It should be
-  # possible to make it work on Linux if you use the
-  # --enable-speech-dispatcher flag.
-  fuzzer_test("tts_platform_fuzzer") {
-    sources = [
-      "../browser/speech/mock_tts_controller.cc",
-      "../browser/speech/tts_mac.mm",
-      "../browser/speech/tts_platform.h",
-      "../browser/speech/tts_platform_fuzzer.cc",
-      "../browser/speech/tts_platform_impl.cc",
-      "../browser/speech/tts_platform_impl.h",
-      "../browser/speech/tts_win.cc",
-      "../content/public/browser/tts_controller.h",
-    ]
-
-    deps = [
-      "//base",
-      "//base/test:test_support",
-      "//ui/base",
-    ]
-  }
-
   fuzzer_test("safe_browsing_binary_feature_extractor_fuzzer") {
     sources = [
       "../common/safe_browsing/binary_feature_extractor.cc",

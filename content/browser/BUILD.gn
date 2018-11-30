@@ -1703,6 +1703,10 @@ jumbo_source_set("browser") {
     "speech/speech_recognizer_impl_android.h",
     "speech/tts_controller_impl.cc",
     "speech/tts_controller_impl.h",
+    "speech/tts_mac.mm",
+    "speech/tts_platform_impl.cc",
+    "speech/tts_platform_impl.h",
+    "speech/tts_win.cc",
     "ssl/ssl_client_auth_handler.cc",
     "ssl/ssl_client_auth_handler.h",
     "ssl/ssl_error_handler.cc",
@@ -1889,6 +1893,11 @@ jumbo_source_set("browser") {
       "//components/services/font/public/interfaces",
       "//services/service_manager/zygote",
     ]
+  }
+
+  if (is_desktop_linux) {
+    sources += [ "speech/tts_linux.cc" ]
+    deps += [ "//third_party/speech-dispatcher" ]
   }
 
   # ChromeOS also defines linux but their memory-monitors conflict.

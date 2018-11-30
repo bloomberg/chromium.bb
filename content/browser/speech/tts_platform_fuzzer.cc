@@ -5,15 +5,17 @@
 #include <objbase.h>
 
 #include "build/build_config.h"
-#include "chrome/browser/speech/tts_platform.h"
+#include "content/public/browser/tts_platform.h"
+
+namespace content {
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   int utterance_id = 0;
   std::string utterance;
   std::string lang;
-  content::VoiceData voice;
-  content::UtteranceContinuousParameters params;
+  VoiceData voice;
+  UtteranceContinuousParameters params;
   params.pitch = 1.0;
   params.rate = 1.0;
   params.volume = 0.1;
@@ -101,3 +103,5 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
 
   return 0;
 }
+
+}  // namespace content

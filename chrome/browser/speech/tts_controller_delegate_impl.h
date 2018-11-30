@@ -14,9 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/speech/tts_platform.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/tts_controller_delegate.h"
+#include "content/public/browser/tts_platform.h"
 #include "url/gurl.h"
 
 // Singleton class that manages text-to-speech for the TTS and TTS engine
@@ -49,7 +49,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
   void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override;
   content::TtsEngineDelegate* GetTtsEngineDelegate() override;
 
-  void SetTtsPlatform(TtsPlatform* tts_platform);
+  void SetTtsPlatform(content::TtsPlatform* tts_platform);
   int QueueSize();
 
  protected:
@@ -63,7 +63,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
                            TestTtsControllerUtteranceDefaults);
 
   // Get the platform TTS implementation (or injected mock).
-  TtsPlatform* GetTtsPlatform();
+  content::TtsPlatform* GetTtsPlatform();
 
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
@@ -108,7 +108,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
-  TtsPlatform* tts_platform_;
+  content::TtsPlatform* tts_platform_;
 
   // The delegate that processes TTS requests with user-installed extensions.
   content::TtsEngineDelegate* tts_engine_delegate_;

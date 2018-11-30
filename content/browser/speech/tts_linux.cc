@@ -14,13 +14,13 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/speech/tts_platform_impl.h"
+#include "content/browser/speech/tts_platform_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "library_loaders/libspeechd.h"
 
-using content::BrowserThread;
+namespace content {
 
 namespace {
 
@@ -34,20 +34,19 @@ struct SPDChromeVoice {
 
 }  // namespace
 
-// TODO(katie): Move to content/browser/speech.
 class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
   bool PlatformImplAvailable() override;
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override;
+             const VoiceData& voice,
+             const UtteranceContinuousParameters& params) override;
   bool StopSpeaking() override;
   void Pause() override;
   void Resume() override;
   bool IsSpeaking() override;
-  void GetVoices(std::vector<content::VoiceData>* out_voices) override;
+  void GetVoices(std::vector<VoiceData>* out_voices) override;
 
   void OnSpeechEvent(SPDNotificationType type);
 
@@ -93,11 +92,9 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 };
 
 // static
-SPDNotificationType TtsPlatformImplLinux::current_notification_ =
-    SPD_EVENT_END;
+SPDNotificationType TtsPlatformImplLinux::current_notification_ = SPD_EVENT_END;
 
-TtsPlatformImplLinux::TtsPlatformImplLinux()
-    : utterance_id_(0) {
+TtsPlatformImplLinux::TtsPlatformImplLinux() : utterance_id_(0) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kEnableSpeechDispatcher))
@@ -118,19 +115,15 @@ void TtsPlatformImplLinux::Initialize() {
     // spd_open has memory leaks which are hard to suppress.
     // http://crbug.com/317360
     ANNOTATE_SCOPED_MEMORY_LEAK;
-    conn_ = libspeechd_loader_.spd_open(
-        "chrome", "extension_api", NULL, SPD_MODE_THREADED);
+    conn_ = libspeechd_loader_.spd_open("chrome", "extension_api", NULL,
+                                        SPD_MODE_THREADED);
   }
   if (!conn_)
     return;
 
   // Register callbacks for all events.
-  conn_->callback_begin =
-    conn_->callback_end =
-    conn_->callback_cancel =
-    conn_->callback_pause =
-    conn_->callback_resume =
-    &NotificationCallback;
+  conn_->callback_begin = conn_->callback_end = conn_->callback_cancel =
+      conn_->callback_pause = conn_->callback_resume = &NotificationCallback;
 
   conn_->callback_im = &IndexMarkCallback;
 
@@ -153,8 +146,8 @@ void TtsPlatformImplLinux::Reset() {
   base::AutoLock lock(initialization_lock_);
   if (conn_)
     libspeechd_loader_.spd_close(conn_);
-  conn_ = libspeechd_loader_.spd_open(
-      "chrome", "extension_api", NULL, SPD_MODE_THREADED);
+  conn_ = libspeechd_loader_.spd_open("chrome", "extension_api", NULL,
+                                      SPD_MODE_THREADED);
 }
 
 bool TtsPlatformImplLinux::PlatformImplAvailable() {
@@ -165,12 +158,11 @@ bool TtsPlatformImplLinux::PlatformImplAvailable() {
   return result;
 }
 
-bool TtsPlatformImplLinux::Speak(
-    int utterance_id,
-    const std::string& utterance,
-    const std::string& lang,
-    const content::VoiceData& voice,
-    const content::UtteranceContinuousParameters& params) {
+bool TtsPlatformImplLinux::Speak(int utterance_id,
+                                 const std::string& utterance,
+                                 const std::string& lang,
+                                 const VoiceData& voice,
+                                 const UtteranceContinuousParameters& params) {
   if (!PlatformImplAvailable()) {
     error_ = kNotSupportedError;
     return false;
@@ -234,8 +226,7 @@ bool TtsPlatformImplLinux::IsSpeaking() {
   return current_notification_ == SPD_EVENT_BEGIN;
 }
 
-void TtsPlatformImplLinux::GetVoices(
-    std::vector<content::VoiceData>* out_voices) {
+void TtsPlatformImplLinux::GetVoices(std::vector<VoiceData>* out_voices) {
   if (!all_native_voices_.get()) {
     all_native_voices_.reset(new std::map<std::string, SPDChromeVoice>());
     char** modules = libspeechd_loader_.spd_list_modules(conn_);
@@ -269,53 +260,51 @@ void TtsPlatformImplLinux::GetVoices(
 
   for (auto it = all_native_voices_->begin(); it != all_native_voices_->end();
        ++it) {
-    out_voices->push_back(content::VoiceData());
-    content::VoiceData& voice = out_voices->back();
+    out_voices->push_back(VoiceData());
+    VoiceData& voice = out_voices->back();
     voice.native = true;
     voice.name = it->first;
-    voice.events.insert(content::TTS_EVENT_START);
-    voice.events.insert(content::TTS_EVENT_END);
-    voice.events.insert(content::TTS_EVENT_CANCELLED);
-    voice.events.insert(content::TTS_EVENT_MARKER);
-    voice.events.insert(content::TTS_EVENT_PAUSE);
-    voice.events.insert(content::TTS_EVENT_RESUME);
+    voice.events.insert(TTS_EVENT_START);
+    voice.events.insert(TTS_EVENT_END);
+    voice.events.insert(TTS_EVENT_CANCELLED);
+    voice.events.insert(TTS_EVENT_MARKER);
+    voice.events.insert(TTS_EVENT_PAUSE);
+    voice.events.insert(TTS_EVENT_RESUME);
   }
 }
 
 void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
   // hummmmmm
-  content::TtsController* controller = content::TtsController::GetInstance();
+  TtsController* controller = TtsController::GetInstance();
   switch (type) {
-  case SPD_EVENT_BEGIN:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_START, 0,
-                           std::string());
-    break;
-  case SPD_EVENT_RESUME:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_RESUME, 0,
-                           std::string());
-    break;
-  case SPD_EVENT_END:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_END,
-                           utterance_.size(), std::string());
-    break;
-  case SPD_EVENT_PAUSE:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_PAUSE,
-                           utterance_.size(), std::string());
-    break;
-  case SPD_EVENT_CANCEL:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_CANCELLED, 0,
-                           std::string());
-    break;
-  case SPD_EVENT_INDEX_MARK:
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_MARKER, 0,
-                           std::string());
-    break;
+    case SPD_EVENT_BEGIN:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, std::string());
+      break;
+    case SPD_EVENT_RESUME:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME, 0, std::string());
+      break;
+    case SPD_EVENT_END:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_END, utterance_.size(),
+                             std::string());
+      break;
+    case SPD_EVENT_PAUSE:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_PAUSE, utterance_.size(),
+                             std::string());
+      break;
+    case SPD_EVENT_CANCEL:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_CANCELLED, 0,
+                             std::string());
+      break;
+    case SPD_EVENT_INDEX_MARK:
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_MARKER, 0, std::string());
+      break;
   }
 }
 
 // static
-void TtsPlatformImplLinux::NotificationCallback(
-    size_t msg_id, size_t client_id, SPDNotificationType type) {
+void TtsPlatformImplLinux::NotificationCallback(size_t msg_id,
+                                                size_t client_id,
+                                                SPDNotificationType type) {
   // We run Speech Dispatcher in threaded mode, so these callbacks should always
   // be in a separate thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -330,9 +319,9 @@ void TtsPlatformImplLinux::NotificationCallback(
 
 // static
 void TtsPlatformImplLinux::IndexMarkCallback(size_t msg_id,
-                                                      size_t client_id,
-                                                      SPDNotificationType state,
-                                                      char* index_mark) {
+                                             size_t client_id,
+                                             SPDNotificationType state,
+                                             char* index_mark) {
   // TODO(dtseng): index_mark appears to specify an index type supplied by a
   // client. Need to explore how this is used before hooking it up with existing
   // word, sentence events.
@@ -356,6 +345,8 @@ TtsPlatformImplLinux* TtsPlatformImplLinux::GetInstance() {
 }
 
 // static
-TtsPlatform* TtsPlatform::GetInstance() {
+TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
   return TtsPlatformImplLinux::GetInstance();
 }
+
+}  // namespace content

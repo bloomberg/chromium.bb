@@ -8,10 +8,10 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/tts_platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 
@@ -19,7 +19,7 @@ class TtsControllerTest : public testing::Test {
 };
 
 // Platform Tts implementation that does nothing.
-class DummyTtsPlatformImpl : public TtsPlatform {
+class DummyTtsPlatformImpl : public content::TtsPlatform {
  public:
   DummyTtsPlatformImpl() {}
   virtual ~DummyTtsPlatformImpl() {}

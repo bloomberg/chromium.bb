@@ -17,10 +17,10 @@
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/tts_controller.h"
+#include "content/public/browser/tts_platform.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
@@ -48,7 +48,7 @@ int g_saved_utterance_id;
 
 namespace extensions {
 
-class MockTtsPlatformImpl : public TtsPlatform {
+class MockTtsPlatformImpl : public content::TtsPlatform {
  public:
   MockTtsPlatformImpl()
       : should_fake_get_voices_(false),

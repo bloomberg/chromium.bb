@@ -261,6 +261,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/tts_controller.h"
+#include "content/public/browser/tts_platform.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
@@ -355,6 +356,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/speech/tts_chromeos.cc"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -382,6 +384,7 @@
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/offline_pages/offline_page_auto_fetcher.h"
+#include "chrome/browser/speech/tts_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -2995,6 +2998,16 @@ ChromeContentBrowserClient::GetTtsControllerDelegate() {
   delegate->SetTtsEngineDelegate(tts_extension_engine);
 #endif
   return delegate;
+}
+
+content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
+#ifdef OS_CHROMEOS
+  return TtsPlatformImplChromeOs::GetInstance();
+#elif defined OS_ANDROID
+  return TtsPlatformImplAndroid::GetInstance();
+#else
+  return nullptr;
+#endif
 }
 
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
