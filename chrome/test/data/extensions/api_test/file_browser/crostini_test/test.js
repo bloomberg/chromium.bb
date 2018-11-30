@@ -73,5 +73,11 @@ chrome.test.runTests([
         chrome.test.callbackPass((entries, firstForSession) => {
           chrome.test.assertFalse(firstForSession);
         }));
-  }
+  },
+  function testUnsharePathWithCrostiniSuccess() {
+    getEntry('downloads', 'share_dir').then((entry) => {
+      chrome.fileManagerPrivate.unsharePathWithCrostini(
+          entry, chrome.test.callbackPass());
+    });
+  },
 ]);

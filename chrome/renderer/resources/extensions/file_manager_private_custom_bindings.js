@@ -238,6 +238,12 @@ binding.registerCustomHook(function(bindingsAPI) {
       });
 
   apiFunctions.setHandleRequest(
+      'unsharePathWithCrostini', function(entry, callback) {
+        fileManagerPrivateInternal.unsharePathWithCrostini(
+            getEntryURL(entry), callback);
+      });
+
+  apiFunctions.setHandleRequest(
       'getCrostiniSharedPaths', function(callback) {
         fileManagerPrivateInternal.getCrostiniSharedPaths(
             function(entryDescriptions, firstForSession) {
