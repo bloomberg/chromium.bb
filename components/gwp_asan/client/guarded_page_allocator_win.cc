@@ -6,29 +6,11 @@
 
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
-#include "base/bits.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
 namespace gwp_asan {
 namespace internal {
-
-unsigned CountTrailingZeroBits64(uint64_t x) {
-#if defined(ARCH_CPU_64_BITS)
-  return base::bits::CountTrailingZeroBits(x);
-#else
-  // Windows 32-bit builds do not support CountTrailingZeroBits on a uint64_t.
-  // TODO(vtsyrklevich): Fix this in base::bits instead.
-  uint32_t right = static_cast<uint32_t>(x);
-  unsigned right_trailing = base::bits::CountTrailingZeroBits(right);
-  if (right_trailing < 32)
-    return right_trailing;
-
-  uint32_t left = static_cast<uint32_t>(x >> 32);
-  unsigned left_trailing = base::bits::CountTrailingZeroBits(left);
-  return left_trailing + right_trailing;
-#endif
-}
 
 // TODO(vtsyrklevich): See if the platform-specific memory allocation and
 // protection routines can be broken out in base/ and merged with those used for

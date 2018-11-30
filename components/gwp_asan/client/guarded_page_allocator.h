@@ -18,11 +18,6 @@
 namespace gwp_asan {
 namespace internal {
 
-// Method to count trailing zero bits in a uint64_t (identical to
-// base::bits::CountTrailingZeroBits64 except that it also works on 32-bit
-// platforms.)
-unsigned CountTrailingZeroBits64(uint64_t x);
-
 // This class encompasses the allocation and deallocation logic on top of the
 // AllocatorState. Its members are not inspected or used by the crash handler.
 class GWP_ASAN_EXPORT GuardedPageAllocator {
