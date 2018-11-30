@@ -9,8 +9,6 @@
 #include <dxgi1_6.h>
 
 #include "base/containers/circular_deque.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -123,12 +121,11 @@ bool g_supports_scaled_overlays = true;
 // Used for workaround limiting overlay size to monitor size.
 gfx::Size g_overlay_monitor_size;
 
-// Overridden when NV12 is supported, and kDirectCompositionPreferNV12Overlays
-// finch feature is enabled. Default value is set to YUY2 so that we use a valid
-// format for swap chains when forced to enable overlay code path but hardware
-// overlays are not supported.
-OverlayFormat g_overlay_format_used = OverlayFormat::kYUY2;
-DXGI_FORMAT g_overlay_dxgi_format_used = DXGI_FORMAT_YUY2;
+// Preferred overlay format set when detecting hardware overlay support during
+// initialization.  Set to NV12 by default so that it's used when enabling
+// overlays using command line flags.
+OverlayFormat g_overlay_format_used = OverlayFormat::kNV12;
+DXGI_FORMAT g_overlay_dxgi_format_used = DXGI_FORMAT_NV12;
 
 // This is the raw support info, which shouldn't depend on field trial state, or
 // command line flags. Ordered by most preferred to least preferred format.
@@ -1219,14 +1216,6 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     ui::ProtectedVideoType protected_video_type) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
 
-  // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
-  bool swap_chain_resized =
-      swap_chain_ && (swap_chain_size_ != swap_chain_size);
-  bool swap_chain_toggled_yuv =
-      swap_chain_ && (is_yuv_swapchain_ != use_yuv_swap_chain);
-  base::debug::Alias(&swap_chain_resized);
-  base::debug::Alias(&swap_chain_toggled_yuv);
-
   ReleaseSwapChainResources();
 
   DCHECK(!swap_chain_size.IsEmpty());
@@ -1280,14 +1269,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       "GPU.DirectComposition.SwapChainCreationResult.";
   is_yuv_swapchain_ = false;
 
-  // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
-  HRESULT hr = S_OK;
-  VisualInfo visual_info = visual_info_;
-  base::debug::Alias(&hr);
-  base::debug::Alias(&desc);
-  base::debug::Alias(&visual_info);
   if (use_yuv_swap_chain) {
-    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+    HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
     is_yuv_swapchain_ = SUCCEEDED(hr);
@@ -1296,9 +1279,6 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                                   OverlayFormatToString(g_overlay_format_used),
                               SUCCEEDED(hr));
     if (FAILED(hr)) {
-      // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
-      base::debug::DumpWithoutCrashing();
-
       DLOG(ERROR) << "Failed to create "
                   << OverlayFormatToString(g_overlay_format_used)
                   << " swap chain of size " << swap_chain_size.ToString()
