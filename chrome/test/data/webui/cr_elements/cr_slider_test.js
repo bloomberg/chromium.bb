@@ -316,4 +316,52 @@ suite('cr-slider', function() {
       assertEquals(50, crSlider.value);
     });
   });
+
+  test('smooth position transition only on pointerdown', () => {
+    const assertNoTransition = () => {
+      const expected = 'all 0s ease 0s';
+      assertEquals(expected, getComputedStyle(crSlider.$.knob).transition);
+      assertEquals(expected, getComputedStyle(crSlider.$.bar).transition);
+      assertEquals(expected, getComputedStyle(crSlider.$.label).transition);
+    };
+    const assertTransition = () => {
+      const getValue = propName => `${propName} 0.08s ease 0s`;
+      assertEquals(
+          getValue('margin-inline-start'),
+          getComputedStyle(crSlider.$.knob).transition);
+      assertEquals(
+          getValue('width'), getComputedStyle(crSlider.$.bar).transition);
+      assertEquals(
+          getValue('margin-inline-start'),
+          getComputedStyle(crSlider.$.label).transition);
+    };
+
+    assertNoTransition();
+    pointerDown(.5);
+    assertTransition();
+    return test_util.eventToPromise('transitionend', crSlider.$.knob)
+        .then(() => {
+          assertNoTransition();
+          // Other operations that change the value do not have transitions.
+          pointerMove(0);
+          assertNoTransition();
+          assertEquals(0, crSlider.value);
+          pointerUp();
+          pressArrowRight();
+          assertNoTransition();
+          assertEquals(1, crSlider.value);
+          crSlider.value = 50;
+          assertNoTransition();
+
+          // Check that the slider is not stuck with a transition when the value
+          // does not change.
+          crSlider.value = 0;
+          pointerDown(0);
+          assertTransition();
+          return test_util.eventToPromise('transitionend', crSlider.$.knob);
+        })
+        .then(() => {
+          assertNoTransition();
+        });
+  });
 });

@@ -12,6 +12,7 @@
     <style include="cr-hidden-style">
       :host {
         --cr-slider-bar-height: 2px;
+        --cr-slider-position-transition: 80ms ease;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         cursor: default;
         user-select: none;
@@ -52,8 +53,11 @@
         border-top-color: var(--cr-slider-active-color, var(--google-blue-600));
         left: 0;
         position: absolute;
-        transition: width 80ms ease;
         width: 0;
+      }
+
+      :host([transiting_]) #bar {
+        transition: width var(--cr-slider-position-transition);
       }
 
       :host([is-rtl_]) #bar {
@@ -77,8 +81,11 @@
         margin-inline-start: 0;
         outline: none;
         position: absolute;
-        transition: margin-inline-start 80ms ease;
         width: 10px;
+      }
+
+      :host([transiting_]) #knob {
+        transition: margin-inline-start var(--cr-slider-position-transition);
       }
 
       paper-ripple {
@@ -154,8 +161,11 @@
         line-height: 1.5em;
         padding: 0 8px;
         position: absolute;
-        transition: margin-inline-start 80ms ease;
         white-space: nowrap;
+      }
+
+      :host([transiting_]) #label {
+        transition: margin-inline-start var(--cr-slider-position-transition);
       }
 
       :host([disabled_]) {
@@ -196,7 +206,8 @@
         </div>
       </div>
       <div id="knobContainer">
-        <div id="knob" tabindex="0"></div>
+        <div id="knob" tabindex="0" on-transitionend="onKnobTransitionEnd_">
+        </div>
       </div>
       <div id="labelContainer" aria-label="[[label_]]">
         <div id="label">[[label_]]</div>
