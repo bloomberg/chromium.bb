@@ -3938,7 +3938,9 @@ void Document::write(const String& text,
   DCHECK(parser_);
   PerformanceMonitor::ReportGenericViolation(
       this, PerformanceMonitor::kDiscouragedAPIUse,
-      "Avoid using document.write(). https://developers.google.com/web/updates/2016/08/removing-document-write",
+      "Avoid using document.write(). "
+      "https://developers.google.com/web/updates/2016/08/"
+      "removing-document-write",
       base::TimeDelta(), nullptr);
   probe::breakableLocation(this, "Document.write");
   parser_->insert(text);

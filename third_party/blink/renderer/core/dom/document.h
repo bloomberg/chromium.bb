@@ -272,9 +272,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void MediaQueryAffectingValueChanged();
 
-  using SecurityContext::GetSecurityOrigin;
-  using SecurityContext::GetMutableSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
+  using SecurityContext::GetMutableSecurityOrigin;
+  using SecurityContext::GetSecurityOrigin;
   using TreeScope::getElementById;
 
   // ExecutionContext overrides:
@@ -511,8 +511,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // document's frame_, if any.  Can be null.
   // TODO(kochi): Audit usage of this interface (crbug.com/746150).
   LocalFrame* GetFrameOfMasterDocument() const;
-  Page* GetPage() const;                           // can be null
-  Settings* GetSettings() const;                   // can be null
+  Page* GetPage() const;          // can be null
+  Settings* GetSettings() const;  // can be null
 
   float DevicePixelRatio() const;
 
