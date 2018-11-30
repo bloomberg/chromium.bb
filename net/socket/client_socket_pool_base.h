@@ -145,7 +145,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
  private:
   virtual int ConnectInternal() = 0;
 
-  virtual void ChangePriorityInternal(RequestPriority priority) {}
+  virtual void ChangePriorityInternal(RequestPriority priority) = 0;
 
   void LogConnectStart();
   void LogConnectCompletion(int net_error);
