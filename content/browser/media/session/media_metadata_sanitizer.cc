@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "content/public/common/media_metadata.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 
 namespace content {
 
@@ -42,7 +42,8 @@ bool CheckMediaImageSrcSanity(const GURL& src) {
   return true;
 }
 
-bool CheckMediaImageSanity(const MediaMetadata::MediaImage& image) {
+bool CheckMediaImageSanity(
+    const media_session::MediaMetadata::MediaImage& image) {
   if (!CheckMediaImageSrcSanity(image.src))
     return false;
   if (image.type.size() > kMaxMediaImageTypeLength)
@@ -54,9 +55,9 @@ bool CheckMediaImageSanity(const MediaMetadata::MediaImage& image) {
 }
 
 // Sanitize MediaImage. The method should not be called if |image.src| is bad.
-MediaMetadata::MediaImage SanitizeMediaImage(
-    const MediaMetadata::MediaImage& image) {
-  MediaMetadata::MediaImage sanitized_image;
+media_session::MediaMetadata::MediaImage SanitizeMediaImage(
+    const media_session::MediaMetadata::MediaImage& image) {
+  media_session::MediaMetadata::MediaImage sanitized_image;
 
   sanitized_image.src = image.src;
   sanitized_image.type = image.type.substr(0, kMaxMediaImageTypeLength);
@@ -71,7 +72,8 @@ MediaMetadata::MediaImage SanitizeMediaImage(
 
 }  // anonymous namespace
 
-bool MediaMetadataSanitizer::CheckSanity(const MediaMetadata& metadata) {
+bool MediaMetadataSanitizer::CheckSanity(
+    const media_session::MediaMetadata& metadata) {
   if (metadata.title.size() > kMaxIPCStringLength)
     return false;
   if (metadata.artist.size() > kMaxIPCStringLength)
@@ -89,8 +91,9 @@ bool MediaMetadataSanitizer::CheckSanity(const MediaMetadata& metadata) {
   return true;
 }
 
-MediaMetadata MediaMetadataSanitizer::Sanitize(const MediaMetadata& metadata) {
-  MediaMetadata sanitized_metadata;
+media_session::MediaMetadata MediaMetadataSanitizer::Sanitize(
+    const media_session::MediaMetadata& metadata) {
+  media_session::MediaMetadata sanitized_metadata;
 
   sanitized_metadata.title = metadata.title.substr(0, kMaxIPCStringLength);
   sanitized_metadata.artist = metadata.artist.substr(0, kMaxIPCStringLength);

@@ -1714,7 +1714,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   // Set up the service and information.
   EnsureMediaSessionService();
 
-  content::MediaMetadata metadata;
+  media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title");
   metadata.artist = base::ASCIIToUTF16("artist");
   metadata.album = base::ASCIIToUTF16("album");

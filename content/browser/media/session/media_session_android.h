@@ -36,7 +36,7 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   void MediaSessionStateChanged(bool is_controllable,
                                 bool is_suspended) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<MediaMetadata>& metadata) override;
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions)
       override;

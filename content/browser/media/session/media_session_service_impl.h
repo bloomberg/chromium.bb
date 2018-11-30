@@ -6,9 +6,12 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_
 
 #include "base/optional.h"
-#include "content/public/common/media_metadata.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+
+namespace media_session {
+struct MediaMetadata;
+}  // namespace media_session
 
 namespace content {
 
@@ -31,7 +34,9 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   blink::mojom::MediaSessionPlaybackState playback_state() const {
     return playback_state_;
   }
-  const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
+  const base::Optional<media_session::MediaMetadata>& metadata() const {
+    return metadata_;
+  }
   const std::set<media_session::mojom::MediaSessionAction>& actions() const {
     return actions_;
   }
@@ -42,7 +47,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) override;
-  void SetMetadata(const base::Optional<MediaMetadata>& metadata) override;
+  void SetMetadata(
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
 
   void EnableAction(media_session::mojom::MediaSessionAction action) override;
   void DisableAction(media_session::mojom::MediaSessionAction action) override;
@@ -65,7 +71,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
   blink::mojom::MediaSessionClientPtr client_;
   blink::mojom::MediaSessionPlaybackState playback_state_;
-  base::Optional<MediaMetadata> metadata_;
+  base::Optional<media_session::MediaMetadata> metadata_;
   std::set<media_session::mojom::MediaSessionAction> actions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionServiceImpl);

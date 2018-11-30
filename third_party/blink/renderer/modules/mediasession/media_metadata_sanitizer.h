@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_METADATA_SANITIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_METADATA_SANITIZER_H_
 
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom-blink.h"
+#include "services/media_session/public/mojom/media_session.mojom-blink.h"
 
 namespace blink {
 
@@ -16,7 +16,7 @@ class MediaMetadataSanitizer {
  public:
   // Produce the sanitized metadata, which will later be sent to the
   // MediaSession mojo service.
-  static blink::mojom::blink::MediaMetadataPtr SanitizeAndConvertToMojo(
+  static media_session::mojom::blink::MediaMetadataPtr SanitizeAndConvertToMojo(
       const MediaMetadata*,
       ExecutionContext*);
 };

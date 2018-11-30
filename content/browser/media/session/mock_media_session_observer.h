@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MOCK_MEDIA_SESSION_OBSERVER_H_
 
 #include "content/public/browser/media_session_observer.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -18,8 +19,9 @@ class MockMediaSessionObserver : public MediaSessionObserver {
   MOCK_METHOD0(MediaSessionDestroyed, void());
   MOCK_METHOD2(MediaSessionStateChanged,
                void(bool is_controllable, bool is_suspended));
-  MOCK_METHOD1(MediaSessionMetadataChanged,
-               void(const base::Optional<MediaMetadata>& metadata));
+  MOCK_METHOD1(
+      MediaSessionMetadataChanged,
+      void(const base::Optional<media_session::MediaMetadata>& metadata));
   MOCK_METHOD1(
       MediaSessionActionsChanged,
       void(const std::set<media_session::mojom::MediaSessionAction>& action));

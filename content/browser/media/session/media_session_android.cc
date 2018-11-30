@@ -9,7 +9,6 @@
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/android/media_metadata_android.h"
 #include "content/public/browser/media_session.h"
 #include "jni/MediaSessionImpl_jni.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -82,7 +81,7 @@ void MediaSessionAndroid::MediaSessionStateChanged(bool is_controllable,
 }
 
 void MediaSessionAndroid::MediaSessionMetadataChanged(
-    const base::Optional<MediaMetadata>& metadata) {
+    const base::Optional<media_session::MediaMetadata>& metadata) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -95,7 +94,7 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
 
   ScopedJavaLocalRef<jobject> j_metadata;
   if (metadata.has_value())
-    j_metadata = MediaMetadataAndroid::CreateJavaObject(env, metadata.value());
+    j_metadata = metadata.value().CreateJavaObject(env);
   Java_MediaSessionImpl_mediaSessionMetadataChanged(env, j_local_session,
                                                     j_metadata);
 }

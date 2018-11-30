@@ -10,12 +10,15 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/media_metadata.h"
 
 namespace media_session {
 namespace mojom {
 enum class MediaSessionAction;
 }  // namespace mojom
+}  // namespace media_session
+
+namespace media_session {
+struct MediaMetadata;
 }  // namespace media_session
 
 namespace content {
@@ -40,7 +43,7 @@ class CONTENT_EXPORT MediaSessionObserver {
 
   // Called when the observed MediaSession has changed metadata.
   virtual void MediaSessionMetadataChanged(
-      const base::Optional<MediaMetadata>& metadata) {}
+      const base::Optional<media_session::MediaMetadata>& metadata) {}
 
   // Called when the media session action list has changed.
   virtual void MediaSessionActionsChanged(

@@ -60,7 +60,8 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaMetadata {
 
 #if defined(OS_ANDROID)
   // Creates a Java MediaMetadata instance and returns the JNI ref.
-  base::android::ScopedJavaLocalRef<jobject> CreateJavaObject(JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jobject> CreateJavaObject(
+      JNIEnv* env) const;
 #endif
 
   // Title associated to the MediaSession.

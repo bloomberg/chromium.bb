@@ -22,7 +22,6 @@
 #include "content/public/browser/media_session_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/media_metadata.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -37,6 +36,10 @@ class MediaSessionImplBrowserTest;
 namespace media {
 enum class MediaContentType;
 }  // namespace media
+
+namespace media_session {
+struct MediaMetadata;
+}  // namespace media_session
 
 namespace content {
 
@@ -89,7 +92,7 @@ class MediaSessionImpl : public MediaSession,
 #endif  // defined(OS_ANDROID)
 
   void NotifyMediaSessionMetadataChange(
-      const base::Optional<MediaMetadata>& metadata);
+      const base::Optional<media_session::MediaMetadata>& metadata);
   void NotifyMediaSessionActionsChange(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
 

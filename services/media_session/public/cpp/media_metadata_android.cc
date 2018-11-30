@@ -30,7 +30,7 @@ std::vector<int> GetFlattenedSizeArray(const std::vector<gfx::Size>& sizes) {
 }  // anonymous namespace
 
 base::android::ScopedJavaLocalRef<jobject> MediaMetadata::CreateJavaObject(
-    JNIEnv* env) {
+    JNIEnv* env) const {
   ScopedJavaLocalRef<jstring> j_title(
       base::android::ConvertUTF16ToJavaString(env, title));
   ScopedJavaLocalRef<jstring> j_artist(
