@@ -4565,7 +4565,7 @@ void RenderFrameHostImpl::CommitNavigation(
                        common_params.should_replace_current_entry));
   } else {
     // Pass the controller service worker info if we have one.
-    mojom::ControllerServiceWorkerInfoPtr controller;
+    blink::mojom::ControllerServiceWorkerInfoPtr controller;
     blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object;
     blink::mojom::ServiceWorkerState sent_state;
     if (subresource_loader_params &&

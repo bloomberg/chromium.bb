@@ -173,12 +173,13 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
 
 // S13nServiceWorker: a fake ControllerServiceWorker implementation that
 // basically does nothing but records DispatchFetchEvent calls.
-class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
+class FakeControllerServiceWorker
+    : public blink::mojom::ControllerServiceWorker {
  public:
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
 
-  // mojom::ControllerServiceWorker:
+  // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -189,7 +190,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }
-  void Clone(mojom::ControllerServiceWorkerRequest request) override {
+  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -207,7 +208,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   int fetch_event_count_ = 0;
   network::ResourceRequest fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
-  mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
+  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeControllerServiceWorker);
 };
@@ -238,7 +239,7 @@ class FakeServiceWorkerContainerHost
     NOTIMPLEMENTED();
   }
   void EnsureControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest request,
+      blink::mojom::ControllerServiceWorkerRequest request,
       mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
@@ -321,7 +322,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         std::move(container_request), nullptr /* host_ptr_info */,
         nullptr /* controller_info */, nullptr /* loader_factory*/);
 
-    auto info = mojom::ControllerServiceWorkerInfo::New();
+    auto info = blink::mojom::ControllerServiceWorkerInfo::New();
     info->mode = blink::mojom::ControllerServiceWorkerMode::kControlled;
     info->object_info = std::move(object_info);
     container_ptr->SetController(std::move(info),
@@ -366,7 +367,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     provider_impl->SetClient(client.get());
     ASSERT_FALSE(client->was_set_controller_called());
 
-    auto info = mojom::ControllerServiceWorkerInfo::New();
+    auto info = blink::mojom::ControllerServiceWorkerInfo::New();
     info->mode = blink::mojom::ControllerServiceWorkerMode::kControlled;
     info->object_info = std::move(object_info);
     container_ptr->SetController(std::move(info),
@@ -400,7 +401,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
 
-  container_ptr->SetController(mojom::ControllerServiceWorkerInfo::New(),
+  container_ptr->SetController(blink::mojom::ControllerServiceWorkerInfo::New(),
                                std::vector<blink::mojom::WebFeature>(), true);
   base::RunLoop().RunUntilIdle();
 
@@ -435,8 +436,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller1;
-  auto controller_info1 = mojom::ControllerServiceWorkerInfo::New();
-  mojom::ControllerServiceWorkerPtr controller_ptr1;
+  auto controller_info1 = blink::mojom::ControllerServiceWorkerInfo::New();
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr1;
   fake_controller1.Clone(mojo::MakeRequest(&controller_ptr1));
   controller_info1->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
@@ -475,8 +476,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       object_host2->CreateObjectInfo();
   EXPECT_EQ(1, object_host2->GetBindingCount());
   FakeControllerServiceWorker fake_controller2;
-  auto controller_info2 = mojom::ControllerServiceWorkerInfo::New();
-  mojom::ControllerServiceWorkerPtr controller_ptr2;
+  auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr2;
   fake_controller2.Clone(mojo::MakeRequest(&controller_ptr2));
   controller_info2->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
@@ -519,7 +520,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // (3) Test if resetting the controller to nullptr works.
   base::RunLoop drop_binding_loop2;
   object_host2->RunOnConnectionError(drop_binding_loop2.QuitClosure());
-  container_ptr->SetController(mojom::ControllerServiceWorkerInfo::New(),
+  container_ptr->SetController(blink::mojom::ControllerServiceWorkerInfo::New(),
                                std::vector<blink::mojom::WebFeature>(), true);
 
   // The controller is reset. References to the old controller must be
@@ -560,8 +561,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       object_host4->CreateObjectInfo();
   EXPECT_EQ(1, object_host4->GetBindingCount());
   FakeControllerServiceWorker fake_controller4;
-  auto controller_info4 = mojom::ControllerServiceWorkerInfo::New();
-  mojom::ControllerServiceWorkerPtr controller_ptr4;
+  auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr4;
   fake_controller4.Clone(mojo::MakeRequest(&controller_ptr4));
   controller_info4->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
@@ -613,8 +614,7 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
   // fetch event handler.
   blink::mojom::ServiceWorkerObjectInfoPtr object_info =
       object_host->CreateObjectInfo();
-  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
-  mojom::ControllerServiceWorkerPtr controller_ptr;
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
   controller_info->object_info = std::move(object_info);

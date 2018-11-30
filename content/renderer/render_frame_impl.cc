@@ -3192,7 +3192,7 @@ void RenderFrameImpl::CommitNavigation(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
-    mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback callback) {
@@ -7293,7 +7293,8 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
     const RequestNavigationParams* request_params,
-    mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info) {
+    blink::mojom::ControllerServiceWorkerInfoPtr
+        controller_service_worker_info) {
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutDefaultFactory());

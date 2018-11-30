@@ -584,7 +584,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     bool is_starting_installed_worker,
     RendererPreferences renderer_preferences,
     mojom::ServiceWorkerRequest service_worker_request,
-    mojom::ControllerServiceWorkerRequest controller_request,
+    blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,

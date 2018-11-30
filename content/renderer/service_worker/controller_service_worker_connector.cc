@@ -12,7 +12,7 @@ namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
     mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    mojom::ControllerServiceWorkerPtr controller_ptr,
+    blink::mojom::ControllerServiceWorkerPtr controller_ptr,
     const std::string& client_id)
     : client_id_(client_id) {
   container_host_ptr_.Bind(std::move(container_host_info));
@@ -22,14 +22,14 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
   SetControllerServiceWorkerPtr(std::move(controller_ptr));
 }
 
-mojom::ControllerServiceWorker*
+blink::mojom::ControllerServiceWorker*
 ControllerServiceWorkerConnector::GetControllerServiceWorker(
     mojom::ControllerServiceWorkerPurpose purpose) {
   switch (state_) {
     case State::kDisconnected: {
       DCHECK(!controller_service_worker_);
       DCHECK(container_host_ptr_);
-      mojom::ControllerServiceWorkerPtr controller_ptr;
+      blink::mojom::ControllerServiceWorkerPtr controller_ptr;
       container_host_ptr_->EnsureControllerServiceWorker(
           mojo::MakeRequest(&controller_ptr), purpose);
       SetControllerServiceWorkerPtr(std::move(controller_ptr));
@@ -73,12 +73,12 @@ void ControllerServiceWorkerConnector::OnControllerConnectionClosed() {
 }
 
 void ControllerServiceWorkerConnector::AddBinding(
-    mojom::ControllerServiceWorkerConnectorRequest request) {
+    blink::mojom::ControllerServiceWorkerConnectorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void ControllerServiceWorkerConnector::UpdateController(
-    mojom::ControllerServiceWorkerPtr controller_ptr) {
+    blink::mojom::ControllerServiceWorkerPtr controller_ptr) {
   if (state_ == State::kNoContainerHost)
     return;
   SetControllerServiceWorkerPtr(std::move(controller_ptr));
@@ -87,7 +87,7 @@ void ControllerServiceWorkerConnector::UpdateController(
 }
 
 void ControllerServiceWorkerConnector::SetControllerServiceWorkerPtr(
-    mojom::ControllerServiceWorkerPtr controller_ptr) {
+    blink::mojom::ControllerServiceWorkerPtr controller_ptr) {
   controller_service_worker_ = std::move(controller_ptr);
   if (controller_service_worker_) {
     controller_service_worker_.set_connection_error_handler(base::BindOnce(

@@ -13,13 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
 namespace content {
@@ -88,8 +88,8 @@ struct ServiceWorkerProviderStateForClient {
   // subresource loader factory and lives on a background thread. This is
   // populated when GetSubresourceLoader() creates the subresource loader
   // factory and takes |controller_endpoint|.
-  mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
-  mojom::ControllerServiceWorkerConnectorPtr controller_connector;
+  blink::mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
+  blink::mojom::ControllerServiceWorkerConnectorPtr controller_connector;
 };
 
 }  // namespace content

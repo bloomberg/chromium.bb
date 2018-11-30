@@ -502,7 +502,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       const GURL& script_url,
       bool pause_after_download,
       mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -538,7 +538,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   GURL script_url_;
   bool pause_after_download_;
   mojom::ServiceWorkerRequest start_worker_request_;
-  mojom::ControllerServiceWorkerRequest controller_request_;
+  blink::mojom::ControllerServiceWorkerRequest controller_request_;
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;

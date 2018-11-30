@@ -1202,7 +1202,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         DCHECK(!blink::ServiceWorkerUtils::IsServicificationEnabled());
         subresource_loader_params_ = SubresourceLoaderParams();
         subresource_loader_params_->controller_service_worker_info =
-            mojom::ControllerServiceWorkerInfo::New();
+            blink::mojom::ControllerServiceWorkerInfo::New();
         subresource_loader_params_->controller_service_worker_info->mode =
             sw_provider_host->GetControllerMode();
         base::WeakPtr<ServiceWorkerObjectHost> sw_object_host =

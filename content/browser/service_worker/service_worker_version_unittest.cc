@@ -247,7 +247,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       const GURL& script_url,
       bool pause_after_download,
       mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -301,7 +301,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       instance_host_ptr_map_;
   std::map<int /* embedded_worker_id */, mojom::ServiceWorkerRequest>
       service_worker_request_map_;
-  std::map<int /* embedded_worker_id */, mojom::ControllerServiceWorkerRequest>
+  std::map<int /* embedded_worker_id */,
+           blink::mojom::ControllerServiceWorkerRequest>
       controller_request_map_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };

@@ -441,7 +441,7 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   UpdateController(true /* notify_controllerchange */);
 }
 
-mojom::ControllerServiceWorkerPtr
+blink::mojom::ControllerServiceWorkerPtr
 ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(controller_);
@@ -449,7 +449,7 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return nullptr;
   }
-  mojom::ControllerServiceWorkerPtr controller_ptr;
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
   controller_->controller()->Clone(mojo::MakeRequest(&controller_ptr));
   return controller_ptr;
 }
@@ -946,7 +946,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
     bool notify_controllerchange) {
   DCHECK(IsProviderForClient());
 
-  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   controller_info->client_id = client_uuid();
   if (fetch_request_window_id_) {
     controller_info->fetch_request_window_id =
@@ -1248,7 +1248,7 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 }
 
 void ServiceWorkerProviderHost::StartControllerComplete(
-    mojom::ControllerServiceWorkerRequest controller_request,
+    blink::mojom::ControllerServiceWorkerRequest controller_request,
     blink::ServiceWorkerStatusCode status) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (status == blink::ServiceWorkerStatusCode::kOk)
@@ -1256,7 +1256,7 @@ void ServiceWorkerProviderHost::StartControllerComplete(
 }
 
 void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
-    mojom::ControllerServiceWorkerRequest controller_request,
+    blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
   if (!IsContextAlive() || !controller_)

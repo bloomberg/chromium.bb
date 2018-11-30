@@ -15,13 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/service_worker_provider_state_for_client.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -85,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       blink::mojom::ServiceWorkerProviderType provider_type,
       mojom::ServiceWorkerContainerAssociatedRequest request,
       mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
-      mojom::ControllerServiceWorkerInfoPtr controller_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Constructor for service worker execution contexts.
@@ -189,9 +189,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
 
   // Implementation of mojom::ServiceWorkerContainer.
-  void SetController(mojom::ControllerServiceWorkerInfoPtr controller_info,
-                     const std::vector<blink::mojom::WebFeature>& used_features,
-                     bool should_notify_controllerchange) override;
+  void SetController(
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+      const std::vector<blink::mojom::WebFeature>& used_features,
+      bool should_notify_controllerchange) override;
   void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr source,
                            blink::TransferableMessage message) override;
   void CountFeature(blink::mojom::WebFeature feature) override;

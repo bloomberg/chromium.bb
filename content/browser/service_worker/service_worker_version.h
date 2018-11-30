@@ -36,7 +36,6 @@
 #include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
@@ -44,6 +43,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -353,7 +353,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // TODO(kinuko): Relying on the callsites to start the worker when it's
   // not running is a bit sketchy, maybe this should queue a task to check
   // if the pending request is pending too long? https://crbug.com/797222
-  mojom::ControllerServiceWorker* controller() {
+  blink::mojom::ControllerServiceWorker* controller() {
     if (!controller_ptr_.is_bound()) {
       DCHECK(!controller_request_.is_pending());
       controller_request_ = mojo::MakeRequest(&controller_ptr_);
@@ -845,8 +845,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // |controller_request_| is non-null only when the |controller_ptr_| is
   // requested before the worker is started, it is passed to the worker (and
   // becomes null) once it's started.
-  mojom::ControllerServiceWorkerPtr controller_ptr_;
-  mojom::ControllerServiceWorkerRequest controller_request_;
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr_;
+  blink::mojom::ControllerServiceWorkerRequest controller_request_;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;

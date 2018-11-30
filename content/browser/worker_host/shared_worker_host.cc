@@ -242,7 +242,7 @@ void SharedWorkerHost::Start(
   // only provided if NetworkService is enabled. In the non-NetworkService case,
   // the controller is sent in SetController IPCs during the request for the
   // shared worker script.
-  mojom::ControllerServiceWorkerInfoPtr controller;
+  blink::mojom::ControllerServiceWorkerInfoPtr controller;
   blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object;
   blink::mojom::ServiceWorkerState sent_state;
   if (subresource_loader_params &&

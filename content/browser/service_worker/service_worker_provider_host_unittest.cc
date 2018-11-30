@@ -464,9 +464,10 @@ class MockServiceWorkerContainer : public mojom::ServiceWorkerContainer {
 
   ~MockServiceWorkerContainer() override = default;
 
-  void SetController(mojom::ControllerServiceWorkerInfoPtr controller_info,
-                     const std::vector<blink::mojom::WebFeature>& used_features,
-                     bool should_notify_controllerchange) override {
+  void SetController(
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+      const std::vector<blink::mojom::WebFeature>& used_features,
+      bool should_notify_controllerchange) override {
     was_set_controller_called_ = true;
   }
   void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr controller,

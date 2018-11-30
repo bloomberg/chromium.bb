@@ -127,9 +127,10 @@ mojom("speech_recognition_error_code") {
 # typemapped to a type in renderer/core. This also means these interfaces are
 # not available from renderer/platform.
 # Note that service_worker_object.mojom and service_worker.mojom depend
-# on transferable_message.mojom, and service_worker_registration.mojom depends
-# on service_worker_object.mojom, so we put these three service worker
-# mojom files here rather than mojom_platform target.
+# on transferable_message.mojom, and controller_service_worker.mojom and
+# service_worker_registration.mojom depend on service_worker_object.mojom, so
+# we put these service worker mojom files here rather than mojom_platform
+# target.
 # In future we may have a separate mojom target for the things that may have
 # modules dependencies if it looks necessary, at that time we can put all of
 # those high-level service worker mojom files there.
@@ -139,6 +140,7 @@ mojom("mojom_core") {
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",
+    "service_worker/controller_service_worker.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_registration.mojom",

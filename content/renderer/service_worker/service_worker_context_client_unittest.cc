@@ -50,7 +50,7 @@ namespace {
 struct ContextClientPipes {
   // From the browser to ServiceWorkerContextClient.
   mojom::ServiceWorkerPtr service_worker;
-  mojom::ControllerServiceWorkerPtr controller;
+  blink::mojom::ControllerServiceWorkerPtr controller;
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr registration;
 
   // From ServiceWorkerContextClient to the browser.
@@ -467,7 +467,7 @@ TEST_F(ServiceWorkerContextClientTest,
   const GURL expected_url("https://example.com/expected");
 
   // FetchEvent dispatched directly from the controlled clients through
-  // mojom::ControllerServiceWorker should be queued in the idle state.
+  // blink::mojom::ControllerServiceWorker should be queued in the idle state.
   {
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     blink::mojom::ServiceWorkerFetchResponseCallbackRequest
@@ -518,7 +518,7 @@ TEST_F(ServiceWorkerContextClientTest,
       fetch_callback_request_2;
 
   // FetchEvent dispatched directly from the controlled clients through
-  // mojom::ControllerServiceWorker should be queued in the idle state.
+  // blink::mojom::ControllerServiceWorker should be queued in the idle state.
   {
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_1 = mojo::MakeRequest(&fetch_callback_ptr);

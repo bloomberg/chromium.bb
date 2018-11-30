@@ -313,7 +313,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // Otherwise let's send the controller service worker information along
   // with the navigation commit.
   SubresourceLoaderParams params;
-  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   controller_info->mode = provider_host_->GetControllerMode();
   // Note that |controller_info->endpoint| is null if the controller has no
   // fetch event handler. In that case the renderer frame won't get the
