@@ -56,8 +56,9 @@ enum Event {
   kMenuEnd,                   // Native / Win
   kMenuListItemSelected,      // Web
   kMenuListValueChanged,      // Web
-  kMenuPopupEnd,              // Native / Win
-  kMenuPopupStart,            // Native / Win
+  kMenuPopupEnd,              // Native
+  kMenuPopupHide,             // Native / AuraLinux
+  kMenuPopupStart,            // Native
   kMenuStart,                 // Native / Win
   kMouseCanceled,
   kMouseDragged,

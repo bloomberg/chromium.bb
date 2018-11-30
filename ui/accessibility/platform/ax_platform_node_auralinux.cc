@@ -6,11 +6,14 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -356,15 +359,6 @@ static gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
   atk_object = atk_object_get_parent(atk_object);
 
   return FindAtkObjectParentCoords(atk_object);
-}
-
-static AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
-  while (atk_object) {
-    if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
-      return atk_object;
-    atk_object = atk_object_get_parent(atk_object);
-  }
-  return nullptr;
 }
 
 static void AXPlatformNodeAuraLinuxGetExtents(AtkComponent* atk_component,
@@ -1068,6 +1062,32 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
 
+static AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
+  while (atk_object) {
+    if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
+      return atk_object;
+    atk_object = atk_object_get_parent(atk_object);
+  }
+  return nullptr;
+}
+
+// Returns a stack of AtkObjects of activated popup menus. Since each popup
+// menu and submenu has its own native window, we want to properly manage the
+// activated state for their containing frames.
+static std::vector<AtkObject*>& GetActiveMenus() {
+  static base::NoDestructor<std::vector<AtkObject*>> active_menus;
+  return *active_menus;
+}
+
+// The currently active frame is g_active_top_level_frame, unless there is an
+// active menu. If there is an active menu the parent frame of the
+// most-recently opened active menu should be the currently active frame.
+AtkObject* ComputeActiveTopLevelFrame() {
+  if (!GetActiveMenus().empty())
+    return FindAtkObjectParentFrame(GetActiveMenus().back());
+  return g_active_top_level_frame;
+}
+
 const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
   // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
   // value.
@@ -1646,8 +1666,14 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
 
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
-  if (atk_object_ == g_active_top_level_frame)
+
+  bool menu_active = !GetActiveMenus().empty();
+  if (!menu_active && atk_object_ == g_active_top_level_frame)
     atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
+  if (menu_active &&
+      FindAtkObjectParentFrame(GetActiveMenus().back()) == atk_object_)
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
+
   if (data.HasState(ax::mojom::State::kCollapsed))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
   if (data.HasState(ax::mojom::State::kDefault))
@@ -1831,6 +1857,93 @@ void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
                                  is_expanded);
 }
 
+void AXPlatformNodeAuraLinux::OnMenuPopupStart() {
+  AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object_);
+  if (!parent_frame)
+    return;
+
+  // Exit early if kMenuPopupStart is sent multiple times for the same menu.
+  std::vector<AtkObject*>& active_menus = GetActiveMenus();
+  bool menu_already_open = !active_menus.empty();
+  if (menu_already_open && active_menus.back() == atk_object_)
+    return;
+
+  // We also want to inform the AT that menu the is now showing. Normally this
+  // event is not fired because the menu will be created with the
+  // ATK_STATE_SHOWING already set to TRUE.
+  atk_object_notify_state_change(atk_object_, ATK_STATE_SHOWING, TRUE);
+
+  // We need to compute this before modifying the active menu stack.
+  AtkObject* previous_active_frame = ComputeActiveTopLevelFrame();
+
+  active_menus.push_back(atk_object_);
+
+  // We exit early if the newly activated menu has the same AtkWindow as the
+  // previous one.
+  if (previous_active_frame == parent_frame)
+    return;
+  if (previous_active_frame) {
+    g_signal_emit_by_name(previous_active_frame, "deactivate");
+    atk_object_notify_state_change(previous_active_frame, ATK_STATE_ACTIVE,
+                                   FALSE);
+  }
+  g_signal_emit_by_name(parent_frame, "activate");
+  atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, TRUE);
+}
+
+void AXPlatformNodeAuraLinux::OnMenuPopupHide() {
+  AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object_);
+  if (!parent_frame)
+    return;
+
+  atk_object_notify_state_change(atk_object_, ATK_STATE_SHOWING, FALSE);
+
+  // kMenuPopupHide may be called multiple times for the same menu, so only
+  // remove it if our parent frame matches the most recently opened menu.
+  std::vector<AtkObject*>& active_menus = GetActiveMenus();
+  if (active_menus.empty())
+    return;
+
+  // When multiple levels of menu are closed at once, they may be hidden out
+  // of order. When this happens, we just remove the open menu from the stack.
+  if (active_menus.back() != atk_object_) {
+    auto it =
+        std::find(active_menus.rbegin(), active_menus.rend(), atk_object_);
+    if (it != active_menus.rend()) {
+      // We used a reverse iterator, so we need to convert it into a normal
+      // iterator to use it for std::vector::erase(...).
+      auto to_remove = --(it.base());
+      active_menus.erase(to_remove);
+    }
+    return;
+  }
+
+  active_menus.pop_back();
+
+  // We exit early if the newly activated menu has the same AtkWindow as the
+  // previous one.
+  AtkObject* new_active_item = ComputeActiveTopLevelFrame();
+  if (new_active_item == parent_frame)
+    return;
+  g_signal_emit_by_name(parent_frame, "deactivate");
+  atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, FALSE);
+  if (new_active_item) {
+    g_signal_emit_by_name(new_active_item, "activate");
+    atk_object_notify_state_change(new_active_item, ATK_STATE_ACTIVE, TRUE);
+  }
+}
+
+void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
+  if (!GetActiveMenus().empty() && g_active_top_level_frame &&
+      ComputeActiveTopLevelFrame() != g_active_top_level_frame) {
+    g_signal_emit_by_name(g_active_top_level_frame, "activate");
+    atk_object_notify_state_change(g_active_top_level_frame, ATK_STATE_ACTIVE,
+                                   TRUE);
+  }
+
+  GetActiveMenus().clear();
+}
+
 void AXPlatformNodeAuraLinux::OnWindowActivated() {
   AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object_);
   if (!parent_frame || parent_frame == g_active_top_level_frame)
@@ -1945,6 +2058,21 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
+    // There are three types of messages that we receive for popup menus. Each
+    // time a popup menu is shown, we get a kMenuPopupStart message. This
+    // includes if the menu is hidden and then re-shown. When a menu is hidden
+    // we receive the kMenuPopupHide message. Finally, when the entire menu is
+    // closed we receive the kMenuPopupEnd message for the parent menu and all
+    // of the submenus that were opened when navigating through the menu.
+    case ax::mojom::Event::kMenuPopupEnd:
+      OnMenuPopupEnd();
+      break;
+    case ax::mojom::Event::kMenuPopupHide:
+      OnMenuPopupHide();
+      break;
+    case ax::mojom::Event::kMenuPopupStart:
+      OnMenuPopupStart();
+      break;
     case ax::mojom::Event::kCheckedStateChanged:
       OnCheckedStateChanged();
       break;
