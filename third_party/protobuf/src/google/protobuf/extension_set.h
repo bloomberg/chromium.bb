@@ -878,7 +878,8 @@ class RepeatedPrimitiveTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern GOOGLE_PROTOBUF_FORWARD_ONCE(
+    repeated_primitive_generic_type_traits_once_init_);
 
 class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
  private:
@@ -894,52 +895,58 @@ class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
   static const RepeatedField<bool>* default_repeated_field_bool_;
 };
 
-#define PROTOBUF_DEFINE_PRIMITIVE_TYPE(TYPE, METHOD)                       \
-template<> inline TYPE PrimitiveTypeTraits<TYPE>::Get(                     \
-    int number, const ExtensionSet& set, TYPE default_value) {             \
-  return set.Get##METHOD(number, default_value);                           \
-}                                                                          \
-template<> inline void PrimitiveTypeTraits<TYPE>::Set(                     \
-    int number, FieldType field_type, TYPE value, ExtensionSet* set) {     \
-  set->Set##METHOD(number, field_type, value, NULL);                       \
-}                                                                          \
-                                                                           \
-template<> inline TYPE RepeatedPrimitiveTypeTraits<TYPE>::Get(             \
-    int number, const ExtensionSet& set, int index) {                      \
-  return set.GetRepeated##METHOD(number, index);                           \
-}                                                                          \
-template<> inline void RepeatedPrimitiveTypeTraits<TYPE>::Set(             \
-    int number, int index, TYPE value, ExtensionSet* set) {                \
-  set->SetRepeated##METHOD(number, index, value);                          \
-}                                                                          \
-template<> inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(             \
-    int number, FieldType field_type, bool is_packed,                      \
-    TYPE value, ExtensionSet* set) {                                       \
-  set->Add##METHOD(number, field_type, is_packed, value, NULL);            \
-}                                                                          \
-template<> inline const RepeatedField<TYPE>*                               \
-    RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {         \
-  ::google::protobuf::GoogleOnceInit(                                                          \
-      &repeated_primitive_generic_type_traits_once_init_,                  \
-      &RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields); \
-  return RepeatedPrimitiveGenericTypeTraits::                              \
-      default_repeated_field_##TYPE##_;                                    \
-}                                                                          \
-template<> inline const RepeatedField<TYPE>&                               \
-    RepeatedPrimitiveTypeTraits<TYPE>::GetRepeated(int number,             \
-                                               const ExtensionSet& set) {  \
-  return *reinterpret_cast<const RepeatedField<TYPE>*>(                    \
-                            set.GetRawRepeatedField(                       \
-                                number, GetDefaultRepeatedField()));       \
-}                                                                          \
-template<> inline RepeatedField<TYPE>*                                     \
-    RepeatedPrimitiveTypeTraits<TYPE>::MutableRepeated(int number,         \
-                                                   FieldType field_type,   \
-                                                   bool is_packed,         \
-                                                   ExtensionSet* set) {    \
-  return reinterpret_cast<RepeatedField<TYPE>*>(                           \
-      set->MutableRawRepeatedField(number, field_type, is_packed, NULL));  \
-}
+#define PROTOBUF_DEFINE_PRIMITIVE_TYPE(TYPE, METHOD)                           \
+  template <>                                                                  \
+  inline TYPE PrimitiveTypeTraits<TYPE>::Get(                                  \
+      int number, const ExtensionSet& set, TYPE default_value) {               \
+    return set.Get##METHOD(number, default_value);                             \
+  }                                                                            \
+  template <>                                                                  \
+  inline void PrimitiveTypeTraits<TYPE>::Set(int number, FieldType field_type, \
+                                             TYPE value, ExtensionSet* set) {  \
+    set->Set##METHOD(number, field_type, value, NULL);                         \
+  }                                                                            \
+                                                                               \
+  template <>                                                                  \
+  inline TYPE RepeatedPrimitiveTypeTraits<TYPE>::Get(                          \
+      int number, const ExtensionSet& set, int index) {                        \
+    return set.GetRepeated##METHOD(number, index);                             \
+  }                                                                            \
+  template <>                                                                  \
+  inline void RepeatedPrimitiveTypeTraits<TYPE>::Set(                          \
+      int number, int index, TYPE value, ExtensionSet* set) {                  \
+    set->SetRepeated##METHOD(number, index, value);                            \
+  }                                                                            \
+  template <>                                                                  \
+  inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(                          \
+      int number, FieldType field_type, bool is_packed, TYPE value,            \
+      ExtensionSet* set) {                                                     \
+    set->Add##METHOD(number, field_type, is_packed, value, NULL);              \
+  }                                                                            \
+  template <>                                                                  \
+  inline const RepeatedField<TYPE>*                                            \
+  RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {               \
+    ::google::protobuf::GoogleOnceInit(                                        \
+        &GOOGLE_PROTOBUF_GET_ONCE(                                             \
+            repeated_primitive_generic_type_traits_once_init_),                \
+        &RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields); \
+    return RepeatedPrimitiveGenericTypeTraits::                                \
+        default_repeated_field_##TYPE##_;                                      \
+  }                                                                            \
+  template <>                                                                  \
+  inline const RepeatedField<TYPE>&                                            \
+  RepeatedPrimitiveTypeTraits<TYPE>::GetRepeated(int number,                   \
+                                                 const ExtensionSet& set) {    \
+    return *reinterpret_cast<const RepeatedField<TYPE>*>(                      \
+        set.GetRawRepeatedField(number, GetDefaultRepeatedField()));           \
+  }                                                                            \
+  template <>                                                                  \
+  inline RepeatedField<TYPE>*                                                  \
+  RepeatedPrimitiveTypeTraits<TYPE>::MutableRepeated(                          \
+      int number, FieldType field_type, bool is_packed, ExtensionSet* set) {   \
+    return reinterpret_cast<RepeatedField<TYPE>*>(                             \
+        set->MutableRawRepeatedField(number, field_type, is_packed, NULL));    \
+  }
 
 PROTOBUF_DEFINE_PRIMITIVE_TYPE( int32,  Int32)
 PROTOBUF_DEFINE_PRIMITIVE_TYPE( int64,  Int64)
@@ -980,7 +987,8 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_string_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern GOOGLE_PROTOBUF_FORWARD_ONCE(
+    repeated_string_type_traits_once_init_);
 
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
@@ -1025,8 +1033,9 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField() {
-    ::google::protobuf::GoogleOnceInit(&repeated_string_type_traits_once_init_,
-                   &InitializeDefaultRepeatedFields);
+    ::google::protobuf::GoogleOnceInit(
+        &GOOGLE_PROTOBUF_GET_ONCE(repeated_string_type_traits_once_init_),
+        &InitializeDefaultRepeatedFields);
     return default_repeated_field_;
   }
 
@@ -1230,7 +1239,8 @@ class RepeatedMessageTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern GOOGLE_PROTOBUF_FORWARD_ONCE(
+    repeated_message_generic_type_traits_once_init_);
 
 // This class exists only to hold a generic default empty repeated field for all
 // message-type repeated field extensions.
@@ -1248,7 +1258,8 @@ template<typename Type> inline
     const typename RepeatedMessageTypeTraits<Type>::RepeatedFieldType*
     RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
   ::google::protobuf::GoogleOnceInit(
-      &repeated_message_generic_type_traits_once_init_,
+      &GOOGLE_PROTOBUF_GET_ONCE(
+          repeated_message_generic_type_traits_once_init_),
       &RepeatedMessageGenericTypeTraits::InitializeDefaultRepeatedFields);
   return reinterpret_cast<const RepeatedFieldType*>(
       RepeatedMessageGenericTypeTraits::default_repeated_field_);

@@ -95,3 +95,12 @@ Description of the patches:
 
   Fix components build on Windows.
   https://github.com/protocolbuffers/protobuf/pull/5316
+
+- 0025-once-only.patch
+
+  Fixed Protobuf once only sigleton initialation to use static method globals
+  which originally froze when protobuf tool was run after compiling with
+  CL.EXE. This allows MSVC based builds to be re-enabled. The next official
+  release of protobuf should no longer need this patch as the code around
+  singletons has been rewritten to no longer have this issue present in this
+  release of protobuf.
