@@ -137,8 +137,7 @@ void DesktopProfileSessionDurationsService::OnStateChanged(
 }
 
 void DesktopProfileSessionDurationsService::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   DVLOG(1) << __func__;
   HandleSyncAndAccountChange();
 }

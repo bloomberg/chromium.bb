@@ -133,8 +133,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   // identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
 
   // AccountTrackerService::Observer:
   // NOTE: This class listens for signout events via this callback (which itself

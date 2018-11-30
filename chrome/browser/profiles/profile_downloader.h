@@ -97,8 +97,8 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   void OnDecodeImageFailed() override;
 
   // Overriden from identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
 
   // Implementation of AccountTrackerService::Observer.
   void OnAccountUpdated(const AccountInfo& info) override;

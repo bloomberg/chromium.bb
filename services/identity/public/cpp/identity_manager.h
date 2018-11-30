@@ -87,15 +87,13 @@ class IdentityManager : public SigninManagerBase::Observer,
         const GoogleServiceAuthError& error) {}
 
     // Called when a new refresh token is associated with |account_info|.
-    // |is_valid| indicates whether the new refresh token is valid.
     // NOTE: On a signin event, the ordering of this callback wrt the
     // OnPrimaryAccountSet() callback is undefined. If you as a client are
     // interested in both callbacks, PrimaryAccountAccessTokenFetcher will
     // likely meet your needs. Otherwise, if this lack of ordering is
     // problematic for your use case, please contact blundell@chromium.org.
     virtual void OnRefreshTokenUpdatedForAccount(
-        const AccountInfo& account_info,
-        bool is_valid) {}
+        const AccountInfo& account_info) {}
 
     // Called when the refresh token previously associated with |account_id|
     // has been removed. At the time that this callback is invoked, there is

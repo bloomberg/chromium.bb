@@ -200,8 +200,7 @@ void ChromeCryptAuthService::OnPrimaryAccountSet(
 }
 
 void ChromeCryptAuthService::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   OnAuthenticationStateChanged();
 }
 

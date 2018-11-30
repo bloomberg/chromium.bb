@@ -104,8 +104,7 @@ ArcAuthContext::CreateAccessTokenFetcher(
 }
 
 void ArcAuthContext::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   // There is no need to check |is_valid| here. It is intended to avoid
   // adding the ability to query the persistent error state to the
   // IdentityManager API, which is irrelevant for this case.

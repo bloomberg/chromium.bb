@@ -201,8 +201,7 @@ void AuthService::RemoveObserver(AuthServiceObserver* observer) {
 }
 
 void AuthService::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const AccountInfo& account_info) {
   if (account_info.account_id == account_id_)
     OnHandleRefreshToken(true);
 }
