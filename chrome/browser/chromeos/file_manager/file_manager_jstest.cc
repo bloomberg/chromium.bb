@@ -97,11 +97,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
   RunGeneratedTest("/common/js/async_util_unittest.html");
 }
 
-// TODO(sashab): Re-enable when https://crbug.com/842880 is fixed.
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DISABLED_MetricsTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("common/js/metrics_unittest.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("foreground/js/task_controller_unittest.html")));
