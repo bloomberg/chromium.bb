@@ -110,7 +110,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 }
 
 size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
-  DCHECK(PointerIsMine(ptr));
+  CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
