@@ -1790,6 +1790,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                const LayoutPoint& additional_offset,
                                NGOutlineType) const {}
 
+  Vector<LayoutRect> PhysicalOutlineRects(const LayoutPoint& additional_offset,
+                                          NGOutlineType) const;
+
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
   // Focus rings enclose block visual overflows (of line boxes and descendants),
@@ -1803,19 +1806,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Only public for LayoutNG.
   void SetContainsInlineWithOutlineAndContinuation(bool b) {
     bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
-  }
-
-  // Collects rectangles enclosing visual overflows of the DOM subtree under
-  // this object.
-  // The rects also cover continuations which may be not in the layout subtree
-  // of this object.
-  // TODO(crbug.com/614781): Currently the result rects don't cover list markers
-  // and outlines.
-  void AddElementVisualOverflowRects(
-      Vector<LayoutRect>& rects,
-      const LayoutPoint& additional_offset) const {
-    AddOutlineRects(rects, additional_offset,
-                    NGOutlineType::kIncludeBlockVisualOverflow);
   }
 
   // Compute a list of hit-test rectangles per layer rooted at this

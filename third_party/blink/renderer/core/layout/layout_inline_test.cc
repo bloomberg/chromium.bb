@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -11,6 +12,8 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+
+using ::testing::UnorderedElementsAre;
 
 class LayoutInlineTest : public RenderingTest {};
 
@@ -271,6 +274,80 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   EXPECT_EQ(visual_rect.Y(), LayoutUnit(20));
   EXPECT_EQ(visual_rect.Width(), LayoutUnit(111));
   EXPECT_EQ(visual_rect.Height(), LayoutUnit(222 + 20 * 2));
+}
+
+// When adding focus ring rects, we should avoid adding duplicated rect for
+// continuations.
+TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <span id="target">SPAN0
+      <div>DIV1
+        <span>SPAN1
+          <div>DIV2</div>
+        </span>
+      </div>
+    </span>
+  )HTML");
+
+  Vector<LayoutRect> rects;
+  GetLayoutObjectByElementId("target")->AddOutlineRects(
+      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+
+  EXPECT_THAT(rects,
+              UnorderedElementsAre(LayoutRect(0, 0, 100, 20),    // 'SPAN0'
+                                   LayoutRect(0, 20, 800, 40),   // div DIV1
+                                   LayoutRect(0, 20, 200, 20),   // 'DIV1 SPAN1'
+                                   LayoutRect(0, 40, 800, 20),   // div DIV2
+                                   LayoutRect(0, 40, 80, 20)));  // 'DIV2'
+}
+
+// When adding focus ring rects, we should avoid adding line box rects of
+// recursive inlines repeatedly.
+TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div style="width: 200px">
+      <span id="target">
+        <b><b><b><i><i><i>INLINE</i></i> <i><i>TEXT</i></i>
+        <div style="position: relative; top: -5px">
+          <b><b>BLOCK</b> <i>CONTENTS</i></b>
+        </div>
+        </i></b></b></b>
+      </span>
+    </div>
+  )HTML");
+
+  Vector<LayoutRect> rects;
+  GetLayoutObjectByElementId("target")->AddOutlineRects(
+      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+
+  EXPECT_THAT(rects,
+              UnorderedElementsAre(LayoutRect(0, 0, 120, 20),   // 'INLINE'
+                                   LayoutRect(0, 20, 80, 20),   // 'TEXT'
+                                   LayoutRect(0, 35, 200, 40),  // the inner div
+                                   LayoutRect(0, 35, 100, 20),  // 'BLOCK'
+                                   LayoutRect(0, 55, 160, 20)));  // 'CONTENTS'
 }
 
 }  // namespace blink
