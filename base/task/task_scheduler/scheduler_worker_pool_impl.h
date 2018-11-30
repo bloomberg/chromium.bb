@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -158,6 +159,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
  private:
+  class SchedulerWorkerStarter;
   class SchedulerWorkerDelegateImpl;
 
   // Friend tests so that they can access |kBlockedWorkersPollPeriod| and
@@ -180,16 +182,21 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void WaitForWorkersIdleLockRequiredForTesting(size_t n);
 
   // Wakes up the last worker from this worker pool to go idle, if any.
+  // Otherwise, creates and starts a worker, if permitted, and wakes it up.
   void WakeUpOneWorker();
 
-  // Performs the same action as WakeUpOneWorker() except asserts |lock_| is
-  // acquired rather than acquires it and returns true if worker wakeups are
-  // permitted.
-  bool WakeUpOneWorkerLockRequired();
+  // Performs the same action as WakeUpOneWorker(), except:
+  // - Asserts |lock_| is acquired rather than acquires it.
+  // - Instead of starting a worker it creates, returns it and expects that the
+  //   caller will start it once |lock_| is released.
+  scoped_refptr<SchedulerWorker> WakeUpOneWorkerLockRequired()
+      WARN_UNUSED_RESULT;
 
-  // Adds a worker, if needed, to maintain one idle worker, |max_tasks_|
-  // permitting.
-  void MaintainAtLeastOneIdleWorkerLockRequired();
+  // Creates a worker, if needed, to maintain one idle worker, |max_tasks_|
+  // permitting. Expects the caller to start the returned worker once |lock_| is
+  // released.
+  scoped_refptr<SchedulerWorker> MaintainAtLeastOneIdleWorkerLockRequired()
+      WARN_UNUSED_RESULT;
 
   // Adds |worker| to |idle_workers_stack_|.
   void AddToIdleWorkersStackLockRequired(SchedulerWorker* worker);
@@ -200,10 +207,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired();
 
-  // Tries to add a new SchedulerWorker to the pool. Returns the new
-  // SchedulerWorker on success, nullptr otherwise. Cannot be called before
-  // Start(). Must be called under the protection of |lock_|.
-  SchedulerWorker* CreateRegisterAndStartSchedulerWorkerLockRequired();
+  // Creates a worker, adds it to the pool and returns it. Expects the caller to
+  // start the returned worker. Cannot be called before Start(). Must be called
+  // under the protection of |lock_|.
+  scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired()
+      WARN_UNUSED_RESULT;
 
   // Returns the number of workers in the pool that should not run tasks due to
   // the pool being over capacity.

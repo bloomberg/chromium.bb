@@ -342,6 +342,18 @@ TEST(TaskSchedulerLock, AcquireUniversalPredecessorAfterUniversalPredecessor) {
   });
 }
 
+TEST(TaskSchedulerLock, AssertNoLockHeldOnCurrentThread) {
+  // AssertNoLockHeldOnCurrentThread() shouldn't fail when no lock is acquired.
+  SchedulerLock::AssertNoLockHeldOnCurrentThread();
+
+  // AssertNoLockHeldOnCurrentThread() should fail when a lock is acquired.
+  SchedulerLock lock;
+  {
+    AutoSchedulerLock auto_lock(lock);
+    EXPECT_DCHECK_DEATH({ SchedulerLock::AssertNoLockHeldOnCurrentThread(); });
+  }
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace base

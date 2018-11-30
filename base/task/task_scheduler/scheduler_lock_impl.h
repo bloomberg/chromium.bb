@@ -30,6 +30,8 @@ class BASE_EXPORT SchedulerLockImpl {
   explicit SchedulerLockImpl(UniversalPredecessor);
   ~SchedulerLockImpl();
 
+  static void AssertNoLockHeldOnCurrentThread();
+
   void Acquire();
   void Release();
 

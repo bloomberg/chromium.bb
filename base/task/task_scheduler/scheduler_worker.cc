@@ -63,10 +63,11 @@ SchedulerWorker::SchedulerWorker(
 
 bool SchedulerWorker::Start(
     SchedulerWorkerObserver* scheduler_worker_observer) {
+  SchedulerLock::AssertNoLockHeldOnCurrentThread();
   AutoSchedulerLock auto_lock(thread_lock_);
   DCHECK(thread_handle_.is_null());
 
-  if (should_exit_.IsSet())
+  if (should_exit_.IsSet() || join_called_for_testing_.IsSet())
     return true;
 
   DCHECK(!scheduler_worker_observer_);
@@ -103,7 +104,10 @@ void SchedulerWorker::JoinForTesting() {
 
   {
     AutoSchedulerLock auto_lock(thread_lock_);
-    DCHECK(!thread_handle_.is_null());
+
+    if (thread_handle_.is_null())
+      return;
+
     thread_handle = thread_handle_;
     // Reset |thread_handle_| so it isn't joined by the destructor.
     thread_handle_ = PlatformThreadHandle();
