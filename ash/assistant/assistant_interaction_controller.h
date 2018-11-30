@@ -101,7 +101,7 @@ class AssistantInteractionController
   void OnTtsStarted(bool due_to_error) override;
 
   // DialogPlateObserver:
-  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
+  void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 
   // Invoked on suggestion chip pressed event.

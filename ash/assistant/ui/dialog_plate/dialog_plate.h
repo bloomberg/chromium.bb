@@ -31,20 +31,12 @@ namespace ash {
 class AssistantController;
 class ActionView;
 
-// DialogPlateButtonId ---------------------------------------------------------
-
-enum class DialogPlateButtonId {
-  kKeyboardInputToggle = 1,
-  kVoiceInputToggle,
-  kSettings,
-};
-
 // DialogPlateObserver ---------------------------------------------------------
 
 class DialogPlateObserver : public base::CheckedObserver {
  public:
   // Invoked when the dialog plate button identified by |id| is pressed.
-  virtual void OnDialogPlateButtonPressed(DialogPlateButtonId id) {}
+  virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
 
   // Invoked on dialog plate contents committed event.
   virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
@@ -105,7 +97,7 @@ class DialogPlate : public views::View,
   void InitKeyboardLayoutContainer();
   void InitVoiceLayoutContainer();
 
-  void OnButtonPressed(DialogPlateButtonId id);
+  void OnButtonPressed(AssistantButtonId id);
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);

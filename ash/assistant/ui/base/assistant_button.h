@@ -12,9 +12,23 @@
 
 namespace ash {
 
-class AssistantButton : public views::ImageButton {
+// Enumeration of Assistant button ID. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+// Only append to this enum is allowed if more buttons will be added.
+enum class AssistantButtonId {
+  kBack = 1,
+  kClose = 2,
+  kMinimize = 3,
+  kKeyboardInputToggle = 4,
+  kVoiceInputToggle = 5,
+  kSettings = 6,
+  kMaxValue = kSettings,
+};
+
+class AssistantButton : public views::ImageButton,
+                        public views::ButtonListener {
  public:
-  explicit AssistantButton(views::ButtonListener* listener);
+  AssistantButton(views::ButtonListener* listener, AssistantButtonId button_id);
   ~AssistantButton() override;
 
   // views::Button:
@@ -26,7 +40,12 @@ class AssistantButton : public views::ImageButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
+  views::ButtonListener* listener_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantButton);
 };
 

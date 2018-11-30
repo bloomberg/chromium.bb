@@ -146,25 +146,28 @@ void AssistantUiController::OnAssistantMiniViewPressed() {
     UpdateUiMode(AssistantUiMode::kMainUi);
 }
 
-bool AssistantUiController::OnCaptionButtonPressed(CaptionButtonId id) {
+bool AssistantUiController::OnCaptionButtonPressed(AssistantButtonId id) {
   switch (id) {
-    case CaptionButtonId::kBack:
+    case AssistantButtonId::kBack:
       UpdateUiMode(AssistantUiMode::kMainUi);
       return true;
-    case CaptionButtonId::kClose:
+    case AssistantButtonId::kClose:
       CloseUi(AssistantExitPoint::kCloseButton);
       return true;
-    case CaptionButtonId::kMinimize:
+    case AssistantButtonId::kMinimize:
       UpdateUiMode(AssistantUiMode::kMiniUi);
       return true;
+    default:
+      // No action necessary.
+      break;
   }
   return false;
 }
 
 // TODO(dmblack): This event doesn't need to be handled here anymore. Move it
 // out of AssistantUiController.
-void AssistantUiController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
-  if (id != DialogPlateButtonId::kSettings)
+void AssistantUiController::OnDialogPlateButtonPressed(AssistantButtonId id) {
+  if (id != AssistantButtonId::kSettings)
     return;
 
   // Launch Assistant Settings via deep link.

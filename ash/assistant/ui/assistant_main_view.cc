@@ -129,7 +129,7 @@ void AssistantMainView::InitLayout() {
 
   // Caption bar.
   caption_bar_ = new CaptionBar();
-  caption_bar_->SetButtonVisible(CaptionButtonId::kBack, false);
+  caption_bar_->SetButtonVisible(AssistantButtonId::kBack, false);
 
   // The caption bar will be animated on its own layer.
   caption_bar_->SetPaintToLayer();

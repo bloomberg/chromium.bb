@@ -21,7 +21,8 @@ class ActionView : public AssistantButton,
                    public AssistantInteractionModelObserver {
  public:
   ActionView(views::ButtonListener* listener,
-             AssistantController* assistant_controller);
+             AssistantController* assistant_controller,
+             AssistantButtonId button_id);
   ~ActionView() override;
 
   // AssistantButton:
