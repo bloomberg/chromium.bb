@@ -12,6 +12,10 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_rp_entity.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
@@ -60,26 +64,39 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
 
   // See WebAuthNAuthenticatorMakeCredential in <webauthn.h>.
   //
-  // The lifetime of |credential_attestation| must not exceed the lifetime of
-  // the WinWebAuthnApi instance.
+  // The following fields in |options| are ignored because they get filled in
+  // from the other parameters:
+  //  - Extensions
+  //  - pCancellationId
+  //  - CredentialList / pExcludeCredentialList
   virtual void AuthenticatorMakeCredential(
       HWND h_wnd,
-      const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
-      const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
-      const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
+      GUID cancellation_id,
+      PublicKeyCredentialRpEntity rp,
+      PublicKeyCredentialUserEntity user,
+      std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
+          cose_credential_parameter_values,
+      std::string client_data_json,
+      std::vector<WEBAUTHN_EXTENSION> extensions,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list,
+      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
       AuthenticatorMakeCredentialCallback callback) = 0;
 
   // See WebAuthNAuthenticatorGetAssertion in <webauthn.h>.
   //
-  // The lifetime of |assertion| must not exceed the lifetime of
-  // the WinWebAuthnApi instance.
+  // The following fields in |options| are ignored because they get filled in
+  // from the other parameters:
+  //  - pwszU2fAppId / pbU2fAppId
+  //  - pCancellationId
+  //  - CredentialList / pAllowCredentialList
   virtual void AuthenticatorGetAssertion(
       HWND h_wnd,
-      const wchar_t* rp_id_utf16,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
+      GUID cancellation_id,
+      base::string16 rp_id,
+      base::Optional<base::string16> opt_app_id,
+      std::string client_data_json,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list,
+      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
       AuthenticatorGetAssertionCallback callback) = 0;
 
   // See WebAuthNCancelCurrentOperation in <webauthn.h>.
