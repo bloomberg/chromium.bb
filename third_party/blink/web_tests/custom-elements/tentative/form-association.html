@@ -171,4 +171,22 @@ test(() => {
   assert_equals($('#form2').elements.length, 0, 'form.elements.length after removal');
   assert_equals($('#fs2').elements.length, 0, 'fieldset.elements.length after removal');
 }, 'Disassociation');
+
+test(() => {
+  $('#container').innerHTML = '<form id="form1"></form>' +
+      '<pre-defined id="pd1"></pre-defined><form id="form2"></form>';
+  const pd1 = $('#pd1');
+  const form1 = $('#form1');
+  const form2 = $('#form2');
+  assert_equals(pd1.form, null);
+
+  pd1.setAttribute('form', 'form1');
+  assert_equals(pd1.form, form1);
+
+  pd1.setAttribute('form', 'form2');
+  assert_equals(pd1.form, form2);
+
+  $('#container').innerHTML = '';
+  assert_equals(pd1.form, null);
+}, 'Updating "form" content attribute');
 </script>

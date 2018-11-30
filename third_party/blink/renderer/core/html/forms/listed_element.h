@@ -89,12 +89,19 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   bool Valid() const;
   virtual void setCustomValidity(const String&);
 
+  // This should be called when |disabled| content attribute is changed.
   virtual void DisabledAttributeChanged();
-
+  // This should be called when |form| content attribute is changed.
+  void FormAttributeChanged();
+  // This is for FormAttributeTargteObserver class.
   void FormAttributeTargetChanged();
+  // This should be called in Node::InsertedInto().
   void InsertedInto(ContainerNode&);
+  // This should be called in Node::RemovedFrom().
   void RemovedFrom(ContainerNode&);
+  // This should be called in Node::DidMoveToDocument().
   void DidMoveToNewDocument(Document& old_document);
+  // This is for HTMLFieldSetElement class.
   void AncestorDisabledStateWasChanged();
 
   // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
@@ -111,7 +118,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // setForm is confusing.
   void SetForm(HTMLFormElement*);
   void AssociateByParser(HTMLFormElement*);
-  void FormAttributeChanged();
 
   // If you add an override of willChangeForm() or didChangeForm() to a class
   // derived from this one, you will need to add a call to setForm(0) to the
