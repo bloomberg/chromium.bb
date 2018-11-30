@@ -8,20 +8,16 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
@@ -62,40 +58,6 @@ enum class DiceMigrationStatus {
   kDiceMigrationStatusCount
 };
 #endif
-
-class AccountConsistencyModeManagerFactory
-    : public BrowserContextKeyedServiceFactory {
- public:
-  // Returns an instance of the factory singleton.
-  static AccountConsistencyModeManagerFactory* GetInstance() {
-    return base::Singleton<AccountConsistencyModeManagerFactory>::get();
-  }
-
-  static AccountConsistencyModeManager* GetForProfile(Profile* profile) {
-    DCHECK(profile);
-    return static_cast<AccountConsistencyModeManager*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<
-      AccountConsistencyModeManagerFactory>;
-
-  AccountConsistencyModeManagerFactory()
-      : BrowserContextKeyedServiceFactory(
-            "AccountConsistencyModeManager",
-            BrowserContextDependencyManager::GetInstance()) {}
-
-  ~AccountConsistencyModeManagerFactory() override = default;
-
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override {
-    DCHECK(!context->IsOffTheRecord());
-    Profile* profile = static_cast<Profile*>(context);
-    return new AccountConsistencyModeManager(profile);
-  }
-};
 
 // Returns the default account consistency for guest profiles.
 AccountConsistencyMethod GetMethodForNonRegularProfile() {
