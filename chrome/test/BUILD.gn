@@ -1239,6 +1239,7 @@ test("browser_tests") {
         "../browser/apps/platform_apps/api/sync_file_system/sync_file_system_browsertest.cc",
         "../browser/apps/platform_apps/app_browsertest_util.cc",
         "../browser/apps/platform_apps/app_browsertest_util.h",
+        "../browser/apps/platform_apps/audio_focus_web_contents_observer_browsertest.cc",
         "../browser/extensions/active_tab_apitest.cc",
         "../browser/extensions/activity_log/activity_log_browsertest.cc",
         "../browser/extensions/alert_apitest.cc",

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -45,6 +46,12 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   // Set the volume multiplier applied during ducking.
   virtual void SetDuckingVolumeMultiplier(double multiplier) = 0;
+
+  // Set the audio focus group id for this media session. Sessions in the same
+  // group can share audio focus. Setting this to null will use the browser
+  // default value. This will only have any effect if audio focus grouping is
+  // supported.
+  virtual void SetAudioFocusGroupId(const base::UnguessableToken& group_id) = 0;
 
   // media_session.mojom.MediaSession overrides -------------------------------
 

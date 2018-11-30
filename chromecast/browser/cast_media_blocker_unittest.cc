@@ -46,6 +46,7 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(GetDebugInfo, void(GetDebugInfoCallback));
   MOCK_METHOD0(PreviousTrack, void());
   MOCK_METHOD0(NextTrack, void());
+  MOCK_METHOD1(SetAudioFocusGroupId, void(const base::UnguessableToken&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
