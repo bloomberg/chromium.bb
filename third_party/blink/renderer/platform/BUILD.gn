@@ -1364,7 +1364,6 @@ jumbo_component("platform") {
     "web_mouse_event.cc",
     "web_mouse_wheel_event.cc",
     "web_pointer_event.cc",
-    "web_task_runner.h",
     "web_test_support.cc",
     "web_test_support.h",
     "web_text_input_info.cc",
