@@ -92,6 +92,16 @@ bool IsGeminiLakeOrLater() {
       cpuid.model() >= kGeminiLakeModelId;
   return is_geminilake_or_later;
 }
+
+// Decides if the current platform and profile may decode using the client's
+// PictureBuffers, or engage the Vpp to adapt VaApi's and the client's format.
+bool ShouldDecodeOnclientPictureBuffers(bool has_va_surface_ids,
+                                        VideoCodecProfile profile) {
+  return has_va_surface_ids && (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
+         (profile == VP9PROFILE_PROFILE0 ||
+          (profile >= H264PROFILE_BASELINE && profile <= H264PROFILE_HIGH));
+}
+
 }  // namespace
 
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
@@ -631,9 +641,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   }
 
   decode_using_client_picture_buffers_ =
-      !va_surface_ids.empty() &&
-      (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
-      profile_ == VP9PROFILE_PROFILE0;
+      ShouldDecodeOnclientPictureBuffers(!va_surface_ids.empty(), profile_);
 
   // If we have some |va_surface_ids|, use them for decode, otherwise ask
   // |vaapi_wrapper_| to allocate them for us.
