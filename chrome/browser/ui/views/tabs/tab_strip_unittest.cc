@@ -157,8 +157,8 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
-    parent_.AddChildView(tab_strip_);
-    parent_.set_owned_by_client();
+    auto* parent = new views::View;
+    parent->AddChildView(tab_strip_);
 
     widget_.reset(new views::Widget);
     views::Widget::InitParams init_params =
@@ -167,7 +167,7 @@ class TabStripTest : public ChromeViewsTestBase,
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(init_params);
-    widget_->SetContentsView(&parent_);
+    widget_->SetContentsView(parent);
   }
 
   void TearDown() override {
@@ -218,8 +218,6 @@ class TabStripTest : public ChromeViewsTestBase,
 
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
-  // Owns |tab_strip_|.
-  views::View parent_;
   TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 

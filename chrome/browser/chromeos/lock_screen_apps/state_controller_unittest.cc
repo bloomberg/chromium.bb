@@ -401,14 +401,14 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
     SetUpCommandLine(command_line_->GetProcessCommandLine());
 
-    SetUpStylusAvailability();
-
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetPowerManagerClient(
         std::make_unique<chromeos::FakePowerManagerClient>());
 
     BrowserWithTestWindowTest::SetUp();
+
+    SetUpStylusAvailability();
 
     session_manager_ = std::make_unique<session_manager::SessionManager>();
     session_manager_->SessionStarted();
