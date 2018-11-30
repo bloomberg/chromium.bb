@@ -340,7 +340,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             bool cancelable) {
   DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
-  // |start_time| could be null in some tests that inject input.
+  DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());
   DCHECK(!processing_end.is_null());
   DCHECK_GE(processing_end, processing_start);
@@ -374,7 +374,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
   for (const auto& entry : event_timings_) {
     int duration_in_ms = std::ceil((end_time - entry->startTime()) / 8) * 8;
     entry->SetDuration(duration_in_ms);
-    if (!first_input_timing_) {
+    if (!first_input_detected_) {
       if (entry->name() == "pointerdown") {
         first_pointer_down_event_timing_ =
             PerformanceEventTiming::CreateFirstInputTiming(entry);
@@ -413,6 +413,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
   DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
+  first_input_detected_ = true;
 
   if (!entry)
     return;
@@ -423,7 +424,8 @@ void WindowPerformance::DispatchFirstInputTiming(
   }
 
   DCHECK(!first_input_timing_);
-  first_input_timing_ = entry;
+  if (ShouldBufferEventTiming())
+    first_input_timing_ = entry;
 }
 
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
