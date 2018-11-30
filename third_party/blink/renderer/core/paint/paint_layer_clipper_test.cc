@@ -877,10 +877,6 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorParent) {
   PaintLayer* parent_paint_layer =
       ToLayoutBoxModelObject(parent->GetLayoutObject())->Layer();
 
-  Element* child = GetDocument().getElementById("child");
-  PaintLayer* child_paint_layer =
-      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
-
   ClipRectsContext context(
       parent_paint_layer,
       &parent_paint_layer->GetLayoutObject().FirstFragment(),
@@ -890,7 +886,7 @@ TEST_F(PaintLayerClipperTest, ScrollbarClipBehaviorParent) {
   ClipRect background_rect, foreground_rect;
   parent_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
       .CalculateRects(context,
-                      &child_paint_layer->GetLayoutObject().FirstFragment(),
+                      &parent_paint_layer->GetLayoutObject().FirstFragment(),
                       nullptr, layer_bounds, background_rect, foreground_rect);
 
   // Only the foreground is clipped by the scrollbar size, because we
