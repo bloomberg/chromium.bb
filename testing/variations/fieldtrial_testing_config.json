@@ -3305,6 +3305,25 @@
             ]
         }
     ],
+    "OmniboxSteadyStateElisions": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxUIExperimentHideSteadyStateUrlScheme",
+                        "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains"
+                    ]
+                }
+            ]
+        }
+    ],
     "OomIntervention": [
         {
             "platforms": [
