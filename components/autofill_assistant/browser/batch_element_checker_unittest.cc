@@ -25,8 +25,7 @@ namespace autofill_assistant {
 
 namespace {
 
-static constexpr base::TimeDelta kTimeUnit =
-    base::TimeDelta::FromMilliseconds(100);
+static constexpr base::TimeDelta kTimeUnit = base::TimeDelta::FromSeconds(1);
 
 class BatchElementCheckerTest : public testing::Test {
  protected:
@@ -266,7 +265,7 @@ TEST_F(BatchElementCheckerTest, EventuallyFindAll) {
                           ElementExistenceCallback("1"));
   checks_.AddElementCheck(kExistenceCheck, Selector({"2"}),
                           ElementExistenceCallback("2"));
-  checks_.Run(base::TimeDelta::FromSeconds(1), base::DoNothing(),
+  checks_.Run(base::TimeDelta::FromSeconds(10), base::DoNothing(),
               DoneCallback("all_done"));
 
   // The first try should have run, not fully successful, and should now be
@@ -331,7 +330,7 @@ TEST_F(BatchElementCheckerTest, TryDoneCallback) {
 
   checks_.AddElementCheck(kExistenceCheck, Selector({"element"}),
                           base::DoNothing());
-  checks_.Run(base::TimeDelta::FromSeconds(1), TryCallback("try"),
+  checks_.Run(base::TimeDelta::FromSeconds(10), TryCallback("try"),
               DoneCallback("all_done"));
 
   // The first try does not fully succeed.
