@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2040,6 +2041,66 @@ TEST(ServiceWorkerDatabaseTest, Corruption_NoMainResource) {
             database->ReadRegistration(data.registration_id, origin, &data_out,
                                        &resources_out));
   EXPECT_TRUE(resources_out.empty());
+}
+
+// Tests that GetRegistrationsForOrigin() detects corruption without crashing.
+// It must delete the database after freeing the iterator it uses to read all
+// registrations. Regression test for https://crbug.com/909024.
+TEST(ServiceWorkerDatabaseTest, Corruption_GetRegistrationsForOrigin) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  std::vector<Resource> resources;
+  GURL origin("https://example.com");
+
+  // Write a normal registration.
+  RegistrationData data1;
+  data1.registration_id = 1;
+  data1.scope = URL(origin, "/foo");
+  data1.script = URL(origin, "/resource1");
+  data1.version_id = 1;
+  data1.resources_total_size_bytes = 2016;
+  resources = {CreateResource(1, URL(origin, "/resource1"), 2016)};
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data1, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Write a corrupt registration.
+  RegistrationData data2;
+  data2.registration_id = 2;
+  data2.scope = URL(origin, "/foo");
+  data2.script = URL(origin, "/resource2");
+  data2.version_id = 2;
+  data2.resources_total_size_bytes = 2016;
+  // Simulate that "/resource2" wasn't correctly written in the database by
+  // not adding it.
+  resources = {CreateResource(3, URL(origin, "/resource3"), 2016)};
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data2, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Call GetRegistrationsForOrigin(). It should detect corruption, and not
+  // crash.
+  base::HistogramTester histogram_tester;
+  std::vector<RegistrationData> registrations;
+  std::vector<std::vector<ServiceWorkerDatabase::ResourceRecord>>
+      resources_list;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,
+            database->GetRegistrationsForOrigin(origin, &registrations,
+                                                &resources_list));
+  EXPECT_TRUE(registrations.empty());
+  EXPECT_TRUE(resources_list.empty());
+
+  // There should be three "read" operations logged:
+  // 1. Reading all registration data.
+  // 2. Reading the resources of the first registration.
+  // 3. Reading the resources of the second registration. This one fails.
+  histogram_tester.ExpectTotalCount("ServiceWorker.Database.ReadResult", 3);
+  histogram_tester.ExpectBucketCount("ServiceWorker.Database.ReadResult",
+                                     ServiceWorkerDatabase::STATUS_OK, 2);
+  histogram_tester.ExpectBucketCount(
+      "ServiceWorker.Database.ReadResult",
+      ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED, 1);
 }
 
 }  // namespace content
