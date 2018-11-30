@@ -17,7 +17,8 @@ template <>
 class StructTraits<device::mojom::BluetoothAddressDataView,
                    std::array<uint8_t, 6>> {
  public:
-  static base::span<const uint8_t> address(const std::array<uint8_t, 6>& addr) {
+  static base::span<const uint8_t, 6> address(
+      const std::array<uint8_t, 6>& addr) {
     return base::make_span(addr);
   }
 
