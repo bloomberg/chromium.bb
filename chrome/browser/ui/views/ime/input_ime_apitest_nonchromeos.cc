@@ -64,9 +64,7 @@ class InputImeApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(InputImeApiTest);
 };
 
-// TODO(crbug.com/882338) This test fails basically once per try run.
-// See bug for details.
-IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_BasicApiTest) {
+IN_PROC_BROWSER_TEST_F(InputImeApiTest, BasicApiTest) {
   // Manipulates the focused text input client because the follow cursor
   // window requires the text input focus.
   ui::InputMethod* input_method =
