@@ -98,7 +98,10 @@ void AssistantInteractionController::OnDeepLinkReceived(
     // ShowUi() will no-op if UI is already shown.
     assistant_controller_->ui_controller()->ShowUi(
         AssistantEntryPoint::kDeepLink);
-    StartScreenContextInteraction();
+
+    // Currently the only way to trigger this deeplink is via suggestion chip.
+    // TODO(b/119841827): Use source specified from deep link.
+    StartScreenContextInteraction(AssistantQuerySource::kSuggestionChip);
     return;
   }
 
@@ -121,7 +124,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
 
   assistant_controller_->ui_controller()->ShowUi(
       AssistantEntryPoint::kDeepLink);
-  StartTextInteraction(query.value(), /*allow_tts=*/false);
+  StartTextInteraction(query.value(), /*allow_tts=*/false,
+                       /*query_source=*/AssistantQuerySource::kDeepLink);
 }
 
 void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -205,6 +209,51 @@ void AssistantInteractionController::OnHighlighterSelectionRecognized(
   StartMetalayerInteraction(/*region=*/rect);
 }
 
+void AssistantInteractionController::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  if (interaction_state != InteractionState::kActive)
+    return;
+
+  // Metalayer mode should not be sticky. Disable it on interaction start.
+  Shell::Get()->highlighter_controller()->AbortSession();
+}
+
+void AssistantInteractionController::OnInputModalityChanged(
+    InputModality input_modality) {
+  if (assistant_controller_->ui_controller()->model()->visibility() !=
+      AssistantVisibility::kVisible) {
+    return;
+  }
+
+  if (input_modality == InputModality::kVoice)
+    return;
+
+  // Metalayer interactions cause an input modality change that causes us to
+  // lose the pending query. We cache the source before stopping the active
+  // interaction so we can restore the pending query when using the stylus.
+  const auto source = model_.pending_query().source();
+
+  // When switching to a non-voice input modality we instruct the underlying
+  // service to terminate any pending query. We do not do this when switching to
+  // voice input modality because initiation of a voice interaction will
+  // automatically interrupt any pre-existing activity. Stopping the active
+  // interaction here for voice input modality would actually have the undesired
+  // effect of stopping the voice interaction.
+  StopActiveInteraction(false);
+
+  if (source == AssistantQuerySource::kStylus) {
+    model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+        l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
+        AssistantQuerySource::kStylus));
+  }
+}
+
+void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
+  // We should stop ChromeVox from speaking when opening the mic.
+  if (mic_state == MicState::kOpen)
+    Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
+}
+
 void AssistantInteractionController::OnCommittedQueryChanged(
     const AssistantQuery& assistant_query) {
   std::string query;
@@ -225,40 +274,8 @@ void AssistantInteractionController::OnCommittedQueryChanged(
       break;
   }
   model_.query_history().Add(query);
-}
 
-void AssistantInteractionController::OnInteractionStateChanged(
-    InteractionState interaction_state) {
-  if (interaction_state != InteractionState::kActive)
-    return;
-
-  // Metalayer mode should not be sticky. Disable it on interaction start.
-  Shell::Get()->highlighter_controller()->AbortSession();
-}
-
-void AssistantInteractionController::OnInputModalityChanged(
-    InputModality input_modality) {
-  if (assistant_controller_->ui_controller()->model()->visibility() !=
-      AssistantVisibility::kVisible) {
-    return;
-  }
-
-  if (input_modality == InputModality::kVoice)
-    return;
-
-  // When switching to a non-voice input modality we instruct the underlying
-  // service to terminate any pending query. We do not do this when switching to
-  // voice input modality because initiation of a voice interaction will
-  // automatically interrupt any pre-existing activity. Stopping the active
-  // interaction here for voice input modality would actually have the undesired
-  // effect of stopping the voice interaction.
-  StopActiveInteraction(false);
-}
-
-void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
-  // We should stop ChromeVox from speaking when opening the mic.
-  if (mic_state == MicState::kOpen)
-    Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
+  assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
 void AssistantInteractionController::OnResponseChanged(
@@ -400,7 +417,8 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // return TTS, as really the text interaction is just a continuation of the
   // user's preceding voice interaction.
   StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
-                                             model_.response()->has_tts());
+                                             model_.response()->has_tts(),
+                       /*query_source*/ AssistantQuerySource::kSuggestionChip);
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(
@@ -528,7 +546,9 @@ void AssistantInteractionController::OnDialogPlateButtonPressed(
 void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
-  StartTextInteraction(text, /*allow_tts=*/false);
+  StartTextInteraction(
+      text, /*allow_tts=*/false,
+      /*query_source=*/AssistantQuerySource::kDialogPlateTextField);
 }
 
 bool AssistantInteractionController::HasUnprocessedPendingResponse() {
@@ -603,16 +623,19 @@ void AssistantInteractionController::StartMetalayerInteraction(
   StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
+      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
+      AssistantQuerySource::kStylus));
 
   assistant_->StartMetalayerInteraction(region);
 }
 
-void AssistantInteractionController::StartScreenContextInteraction() {
+void AssistantInteractionController::StartScreenContextInteraction(
+    AssistantQuerySource query_source) {
   StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
+      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN),
+      query_source));
 
   // Note that screen context was cached when the UI was launched.
   assistant_->StartCachedScreenContextInteraction();
@@ -620,10 +643,12 @@ void AssistantInteractionController::StartScreenContextInteraction() {
 
 void AssistantInteractionController::StartTextInteraction(
     const std::string text,
-    bool allow_tts) {
+    bool allow_tts,
+    AssistantQuerySource query_source) {
   StopActiveInteraction(false);
 
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(text));
+  model_.SetPendingQuery(
+      std::make_unique<AssistantTextQuery>(text, query_source));
 
   assistant_->StartTextInteraction(text, allow_tts);
 }
