@@ -7,221 +7,137 @@
 /**
  * Tests the focus behavior of the search box.
  */
-testcase.tabindexSearchBoxFocus = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Check that the file list has the focus on launch.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
-    },
-    // Press the Ctrl-F key.
-    function(element) {
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['body', 'f', true, false, false], this.next);
-    },
-    // Check that the search box has the focus.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, ['#search-box cr-input:focus-within'])
-          .then(this.next);
-    },
-    // Press the Esc key.
-    function(element) {
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId,
-          ['#search-box cr-input', 'Escape', false, false, false], this.next);
-    },
-    // Check that the file list has the focus.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
-    },
-    // Check for errors.
-    function(result) {
-      chrome.test.assertTrue(result);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+testcase.tabindexSearchBoxFocus = async function() {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+
+  // Check that the file list has the focus on launch.
+  await remoteCall.waitForElement(appId, ['#file-list:focus']);
+
+  // Press the Ctrl-F key.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeKeyDown', appId, ['body', 'f', true, false, false]));
+
+  // Check that the search box has the focus.
+  await remoteCall.waitForElement(appId, ['#search-box cr-input:focus-within']);
+
+  // Press the Esc key.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeKeyDown', appId,
+      ['#search-box cr-input', 'Escape', false, false, false]));
+
+  // Check that the file list has the focus.
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'file-list'));
 };
 
 /**
  * Tests the tab focus behavior of the Files app when no file is selected.
  */
-testcase.tabindexFocus = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Check that the file list has the focus on launch.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
-    },
-    function(element) {
-      remoteCall.waitForElement(appId, ['#drive-welcome-link']).then(this.next);
-    },
-    function(element) {
-      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
-    // Press the Tab key.
-    }, function(element) {
-      chrome.test.assertEq('list', element.attributes['class']);
-      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'drive-welcome-link').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+testcase.tabindexFocus = async function() {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+
+  // Check that the file list has the focus on launch.
+  await remoteCall.waitForElement(appId, ['#file-list:focus']);
+  await remoteCall.waitForElement(appId, ['#drive-welcome-link']);
+  const element =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('list', element.attributes['class']);
+
+  // Send Tab key events to cycle through the tabable elements.
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'search-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'view-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'sort-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'gear-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'directory-tree'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'drive-welcome-link'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'file-list'));
 };
 
 /**
  * Tests the tab focus behavior of the Files app when no file is selected in
  * Downloads directory.
  */
-testcase.tabindexFocusDownloads = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check that the file list has the focus on launch.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
-    }, function(element) {
-      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
-    }, function(element) {
-      chrome.test.assertEq('list', element.attributes['class']);
-      remoteCall.checkNextTabFocus(appId, 'breadcrumb-path-0').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
-    }, function(result) {
-      chrome.test.assertTrue(result);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-};
+testcase.tabindexFocusDownloads = async function() {
+  // Open Files app on Downloads.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
 
+  // Check that the file list has the focus on launch.
+  await remoteCall.waitForElement(appId, ['#file-list:focus']);
+  const element =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('list', element.attributes['class']);
+
+  // Send Tab key events to cycle through the tabable elements.
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'breadcrumb-path-0'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'search-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'view-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'sort-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'gear-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'directory-tree'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'file-list'));
+};
 /**
  * Tests the tab focus behavior of the Files app when a directory is selected.
  */
-testcase.tabindexFocusDirectorySelected = function() {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Check that the file list has the focus on launch.
-    function(results) {
-      appId = results.windowId;
-      Promise.all([
-        remoteCall.waitForElement(appId, ['#file-list:focus']),
-        remoteCall.waitForElement(appId, ['#drive-welcome-link']),
-     ]).then(this.next);
-    },
-    function(elements) {
-      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
-    },
-    function(element) {
-      chrome.test.assertEq('list', element.attributes['class']);
-      // Select the directory named 'photos'.
-      remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['photos']).then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      Promise
-          .all([
-            remoteCall.waitForElement(
-                appId, ['#share-menu-button:not([hidden]):not([disabled])']),
-            remoteCall.waitForElement(
-                appId, ['#delete-button:not([hidden]):not([disabled])']),
-          ])
-          .then(this.next);
-      // Press the Tab key.
-    },
-    function(elements) {
-      remoteCall.checkNextTabFocus(appId, 'share-menu-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'delete-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'drive-welcome-link').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      checkIfNoErrorsOccured(this.next);
-    }
+testcase.tabindexFocusDirectorySelected = async function() {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+
+  // Check that the file list has the focus on launch.
+  await Promise.all([
+    remoteCall.waitForElement(appId, ['#file-list:focus']),
+    remoteCall.waitForElement(appId, ['#drive-welcome-link']),
   ]);
+  const element =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('list', element.attributes['class']);
+
+  // Select the directory named 'photos'.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']));
+
+  await Promise.all([
+    remoteCall.waitForElement(
+        appId, ['#share-menu-button:not([hidden]):not([disabled])']),
+    remoteCall.waitForElement(
+        appId, ['#delete-button:not([hidden]):not([disabled])']),
+  ]);
+
+  // Send Tab key events to cycle through the tabable elements.
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'share-menu-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'delete-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'search-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'view-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'sort-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'gear-button'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'directory-tree'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'drive-welcome-link'));
+  chrome.test.assertTrue(
+      await remoteCall.checkNextTabFocus(appId, 'file-list'));
 };
 
 /**
@@ -241,98 +157,82 @@ testcase.tabindexFocusDirectorySelected = function() {
  * @param {Array<string>} expectedTabOrder Array with the IDs of the element
  *     with the corresponding order of expected tab-indexes.
  */
-function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,
-                       initialElements, expectedTabOrder) {
-  var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
-  var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
-  var setupPromise = Promise.all([localEntriesPromise, driveEntriesPromise]);
+async function tabindexFocus(
+    dialogParams, volumeName, expectedSet, initialize, initialElements,
+    expectedTabOrder) {
+  await Promise.all([
+    addEntries(['local'], BASIC_LOCAL_ENTRY_SET),
+    addEntries(['drive'], BASIC_DRIVE_ENTRY_SET)
+  ]);
 
-  var selectAndCheckAndClose = function(appId) {
-    var promise = Promise.resolve();
-
+  const selectAndCheckAndClose = async (appId) => {
     if (dialogParams.type === 'saveFile') {
-      promise = promise.then(function() {
-        return remoteCall.waitForElement(
-            appId, ['#filename-input-textbox:focus-within']);
-      });
+      await remoteCall.waitForElement(
+          appId, ['#filename-input-textbox:focus-within']);
     } else {
-      promise = promise.then(function() {
-        return remoteCall.waitForElement(appId, ['#file-list:focus']);
-      });
+      await remoteCall.waitForElement(appId, ['#file-list:focus']);
     }
 
-    if (initialize)
-      promise = promise.then(initialize.bind(null, appId));
+    if (initialize) {
+      await initialize(appId);
+    }
 
-    // Waits for the initial element.
-    promise = promise.then(function() {
-      return Promise.all(initialElements.map(function(selector) {
-        return remoteCall.waitForElement(appId, [selector]);
-      }));
-    });
+    // Wait for the initial element.
+    await Promise.all(initialElements.map((selector) => {
+      return remoteCall.waitForElement(appId, [selector]);
+    }));
 
     // Checks tabfocus.
-    expectedTabOrder.forEach(function(className) {
-      promise = promise.then(function() {
-        return remoteCall.checkNextTabFocus(appId, className);
-      }).then(function(result) {
-        chrome.test.assertTrue(result);
-      });
-    });
+    for (const className of expectedTabOrder) {
+      chrome.test.assertTrue(
+          await remoteCall.checkNextTabFocus(appId, className), className);
+    }
 
-    promise = promise.then(function() {
-      // Closes the window by pressing Enter.
-      return remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'Enter', false, false, false]);
-    });
-
-    return promise;
+    // Closes the window by pressing Enter.
+    await remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', appId, ['#file-list', 'Enter', false, false, false]);
   };
 
-  return setupPromise.then(function() {
-    return openAndWaitForClosingDialog(
-        dialogParams, volumeName, expectedSet, selectAndCheckAndClose);
-  });
+  await openAndWaitForClosingDialog(
+      dialogParams, volumeName, expectedSet, selectAndCheckAndClose);
 }
 
 /**
  * Tests the tab focus behavior of Open Dialog (Downloads).
  */
-testcase.tabindexOpenDialogDownloads = function() {
-  testPromise(tabindexFocus(
+testcase.tabindexOpenDialogDownloads = async function() {
+  return tabindexFocus(
       {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET,
-      function(appId) {
-        return remoteCall.callRemoteTestUtil(
-            'selectFile', appId, ['hello.txt']);
+      async (appId) => {
+        await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
       },
       ['#ok-button:not([disabled])'], [
         'cancel-button', 'ok-button', 'breadcrumb-path-0', 'search-button',
         'view-button', 'sort-button', 'gear-button', 'directory-tree',
         'file-list'
-      ]));
+      ]);
 };
 
 /**
  * Tests the tab focus behavior of Open Dialog (Drive).
  */
-testcase.tabindexOpenDialogDrive = function() {
-  testPromise(tabindexFocus(
+testcase.tabindexOpenDialogDrive = async function() {
+  return tabindexFocus(
       {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET,
-      function(appId) {
-        return remoteCall.callRemoteTestUtil(
-            'selectFile', appId, ['hello.txt']);
+      async (appId) => {
+        await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
       },
       ['#ok-button:not([disabled])'], [
         'cancel-button', 'ok-button', 'search-button', 'view-button',
         'sort-button', 'gear-button', 'directory-tree', 'file-list'
-      ]));
+      ]);
 };
 
 /**
  * Tests the tab focus behavior of Save File Dialog (Downloads).
  */
-testcase.tabindexSaveFileDialogDownloads = function() {
-  testPromise(tabindexFocus(
+testcase.tabindexSaveFileDialogDownloads = async function() {
+  return tabindexFocus(
       {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
@@ -342,14 +242,14 @@ testcase.tabindexSaveFileDialogDownloads = function() {
         'cancel-button', 'ok-button', 'breadcrumb-path-0', 'search-button',
         'view-button', 'sort-button', 'gear-button', 'directory-tree',
         'file-list', 'new-folder-button', 'filename-input-textbox'
-      ]));
+      ]);
 };
 
 /**
  * Tests the tab focus behavior of Save File Dialog (Drive).
  */
-testcase.tabindexSaveFileDialogDrive = function() {
-  testPromise(tabindexFocus(
+testcase.tabindexSaveFileDialogDrive = async function() {
+  return tabindexFocus(
       {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
@@ -358,5 +258,5 @@ testcase.tabindexSaveFileDialogDrive = function() {
         'cancel-button', 'ok-button', 'search-button', 'view-button',
         'sort-button', 'gear-button', 'directory-tree', 'file-list',
         'new-folder-button', 'filename-input-textbox'
-      ]));
+      ]);
 };
