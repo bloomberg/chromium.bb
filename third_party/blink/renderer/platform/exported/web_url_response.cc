@@ -425,10 +425,6 @@ void WebURLResponse::SetExtraData(WebURLResponse::ExtraData* extra_data) {
   }
 }
 
-void WebURLResponse::AppendRedirectResponse(const WebURLResponse& response) {
-  resource_response_->AppendRedirectResponse(response.ToResourceResponse());
-}
-
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {
   return resource_response_->AlpnNegotiatedProtocol();
 }

@@ -299,8 +299,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
   BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
-  BLINK_PLATFORM_EXPORT void AppendRedirectResponse(const WebURLResponse&);
-
 #if INSIDE_BLINK
  protected:
   // Permit subclasses to set arbitrary ResourceResponse pointer as

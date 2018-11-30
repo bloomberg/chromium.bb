@@ -431,11 +431,6 @@ void ResourceResponse::SetDecodedBodyLength(int64_t value) {
   decoded_body_length_ = value;
 }
 
-void ResourceResponse::AppendRedirectResponse(
-    const ResourceResponse& response) {
-  redirect_responses_.push_back(response);
-}
-
 bool ResourceResponse::Compare(const ResourceResponse& a,
                                const ResourceResponse& b) {
   if (a.IsNull() != b.IsNull())
