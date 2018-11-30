@@ -5,6 +5,7 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.view.Display;
@@ -29,5 +30,10 @@ public final class ApiHelperForO {
     /** See {@link Configuration#isScreenWideColorGamut() }. */
     public static boolean isScreenWideColorGamut(Configuration configuration) {
         return configuration.isScreenWideColorGamut();
+    }
+
+    /** See {@link PackageManager#isInstantApp() }. */
+    public static boolean isInstantApp(PackageManager packageManager) {
+        return packageManager.isInstantApp();
     }
 }
