@@ -399,6 +399,7 @@ extern const char kPrintingAllowedPageSizes[];
 extern const char kPrintingColorDefault[];
 extern const char kPrintingDuplexDefault[];
 extern const char kPrintingSizeDefault[];
+extern const char kPrintingSendUsernameAndFilenameEnabled[];
 #endif  // OS_CHROMEOS
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];
