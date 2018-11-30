@@ -294,7 +294,7 @@
   {
     "prefix": "blink-gen-property-trees",
     "base": "paint/transparency",
-    "args": ["--enable-blink-gen-property-trees"]
+    "args": ["--enable-blink-features=BlinkGenPropertyTrees"]
   },
   {
     "prefix": "scalefactor200",
