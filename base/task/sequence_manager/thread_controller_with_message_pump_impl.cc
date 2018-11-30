@@ -267,7 +267,7 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   DCHECK_GE(do_work_delay, TimeDelta());
   // Schedule a continuation.
   // TODO(altimin, gab): Make this more efficient by merging DoWork
-  // and DoDelayedWork and allowing returning base::TimeTicks() when we have
+  // and DoDelayedWork and allowing returing base::TimeTicks() when we have
   // immediate work.
   if (do_work_delay.is_zero()) {
     // Need to run new work immediately, but due to the contract of DoWork we
@@ -309,12 +309,8 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   }
 #endif  // defined(OS_WIN)
 
-  if (main_thread_only().task_source->OnSystemIdle()) {
-    // The OnSystemIdle() callback resulted in more immediate work, so schedule
-    // a DoWork callback.
-    pump_->ScheduleWork();
-    return false;
-  }
+  if (main_thread_only().task_source->OnSystemIdle())
+    return true;  // Pretend we have done work to ensure DoWork is called.
 
   // RunLoop::Delegate knows whether we called Run() or RunUntilIdle().
   if (ShouldQuitWhenIdle())
