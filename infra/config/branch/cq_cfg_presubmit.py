@@ -5,6 +5,7 @@
 
 import argparse
 import difflib
+import re
 import os
 import string
 import sys
@@ -181,6 +182,16 @@ class CQConfig(object):
 
     return CQConfig(lines)
 
+  def get_path_regexps(self):
+    _, opt, _ = self.builder_list().by_section()
+    for b in opt:
+      if 'path_regexp' in b:
+        for reg in b['path_regexp']:
+          yield reg
+      if 'path_regexp_exclude' in b:
+        for reg in b['path_regexp_exclude']:
+          yield reg
+
   @property
   def version(self):
     return int(self._value['version'][0])
@@ -253,6 +264,50 @@ class CQConfig(object):
 
     return '\n'.join(lines)
 
+def verify_path_regexps(regexps, verbose=True):
+  # Verify that all the regexps listed in the file have files which they could
+  # be triggered by. Failing this usually means they're old, and the code was
+  # moved somewhere, like the webkit->blink rename.
+  invalid_regexp = False
+  for regexp in regexps:
+    regexp = regexp.replace('\\\\', '')
+    # Split by path name, so that we don't have to run os.walk on the entire
+    # source tree. cq.cfg always uses '/' as the path separator.
+    parts = regexp.split('/')
+    # Dash and equal sign are used by layout tests.
+    simple_name_re = re.compile(r'^[a-zA-Z0-9_\-=]*$')
+    last_normal_path = 0
+    while last_normal_path < len(parts):
+      itm = parts[last_normal_path]
+      if not simple_name_re.match(itm):
+        break
+      last_normal_path += 1
+    path_to_search = os.path.sep.join(parts[:last_normal_path])
+    # Simple case. Regexp is just referencing a single file. Just check if the
+    # file exists.
+    if path_to_search == regexp and os.path.exists(os.path.join(
+        CHROMIUM_DIR, path_to_search)):
+      continue
+
+    compiled_regexp = re.compile(regexp)
+    found = False
+    for root, _, files in os.walk(os.path.join(CHROMIUM_DIR, path_to_search)):
+      for fname in files:
+        fullname = os.path.relpath(os.path.join(root, fname), CHROMIUM_DIR)
+        if compiled_regexp.match(fullname):
+          found = True
+          break
+      if found:
+        break
+    if not found:
+      if verbose:
+        print (
+            'Regexp %s appears to have no valid files which could match it.' % (
+                regexp))
+      invalid_regexp = True
+
+  return not invalid_regexp
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -288,6 +343,9 @@ def main():
     exit_code = 1
 
   if args.check:
+    if not verify_path_regexps(cfg.get_path_regexps()):
+      exit_code = 1
+
     # TODO(martiniss): Add a check for path_regexp, to make sure they're valid
     # paths.
     with open(os.path.join(
@@ -295,7 +353,7 @@ def main():
       if cfg.get_markdown_doc() != f.read():
         print (
             'Markdown file is out of date. Please run '
-            '`//infra/config/branch/cq_cfg_presubmit.py to regenerate the '
+            '`//infra/config/branch/cq_cfg_presubmit.py` to regenerate the '
             'docs.')
         exit_code = 1
   else:

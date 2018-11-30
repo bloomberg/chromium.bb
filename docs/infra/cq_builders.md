@@ -120,18 +120,20 @@ builder.
 * [linux-blink-gen-property-trees](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-gen-property-trees) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-gen-property-trees)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-gen-property-trees))
 
   Path regular expressions:
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-gen-property-trees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-gen-property-trees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-blink-gen-property-trees/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-gen-property-trees/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
 
 * [linux-blink-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-rel))
 
   Path regular expressions:
     * [`//cc/.+`](https://cs.chromium.org/chromium/src/cc/)
     * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
-    * [`//third_party/blink/renderer/core/layout/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/compositing/)
+    * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-    * [`//third_party/blink/web_tests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees)`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees))
-    * [`//third_party/blink/web_tests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2)
+    * [`//third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/)
 
 * [linux_chromium_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_dbg_ng))
 
@@ -150,11 +152,13 @@ builder.
 * [linux_layout_tests_slimming_paint_v2](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_slimming_paint_v2) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_slimming_paint_v2)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_slimming_paint_v2))
 
   Path regular expressions:
-    * [`//third_party/blink/renderer/core/layout/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/compositing/)
+    * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
     * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-    * [`//third_party/blink/web_tests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees)`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees))
-    * [`//third_party/blink/web_tests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2)
+    * [`//third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/)
 
 * [linux_mojo](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_mojo) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_mojo)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_mojo))
 
