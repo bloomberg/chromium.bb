@@ -621,7 +621,8 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
-  DCHECK(associated_thread_->IsBoundToCurrentThread());
+  DCHECK(associated_thread_->IsBoundToCurrentThread() ||
+         !associated_thread_->IsBound());
   return main_thread_only().time_domain;
 }
 
