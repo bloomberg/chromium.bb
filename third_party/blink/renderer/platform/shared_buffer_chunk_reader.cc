@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/shared_buffer_chunk_reader.h"
 
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ void SharedBufferChunkReader::SetSeparator(const Vector<char>& separator) {
 
 void SharedBufferChunkReader::SetSeparator(const char* separator) {
   separator_.clear();
-  separator_.Append(separator, strlen(separator));
+  separator_.Append(separator, SafeCast<wtf_size_t>(strlen(separator)));
 }
 
 bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
@@ -108,7 +109,7 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
       return !chunk.IsEmpty();
     }
     segment_ = it->data();
-    segment_length_ = it->size();
+    segment_length_ = SafeCast<uint32_t>(it->size());
   }
   NOTREACHED();
   return false;
@@ -125,15 +126,15 @@ String SharedBufferChunkReader::NextChunkAsUTF8StringWithLatin1Fallback(
              : g_empty_string;
 }
 
-size_t SharedBufferChunkReader::Peek(Vector<char>& data,
-                                     size_t requested_size) {
+uint32_t SharedBufferChunkReader::Peek(Vector<char>& data,
+                                       uint32_t requested_size) {
   data.clear();
   if (requested_size <= segment_length_ - segment_index_) {
     data.Append(segment_ + segment_index_, requested_size);
     return requested_size;
   }
 
-  size_t read_bytes_count = segment_length_ - segment_index_;
+  uint32_t read_bytes_count = segment_length_ - segment_index_;
   data.Append(segment_ + segment_index_, read_bytes_count);
 
   for (auto it = buffer_->GetIteratorAt(buffer_position_ + segment_length_);
@@ -143,7 +144,7 @@ size_t SharedBufferChunkReader::Peek(Vector<char>& data,
       read_bytes_count += (requested_size - read_bytes_count);
       break;
     }
-    data.Append(it->data(), it->size());
+    data.Append(it->data(), SafeCast<wtf_size_t>(it->size()));
     read_bytes_count += it->size();
   }
   return read_bytes_count;
