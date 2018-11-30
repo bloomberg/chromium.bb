@@ -181,13 +181,9 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'RemoteBrowserTest.*',
     # Flaky: https://crbug.com/899919
     'SessionHandlingTest.testGetSessions',
-]
-
-# https://crbug.com/904061
-if util.GetPlatformName() == 'mac':
-  _INTEGRATION_NEGATIVE_FILTER += [
+    # Flaky and affects subsequent tests: https://crbug.com/904061
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
-  ]
+]
 
 
 def _GetDesktopNegativeFilter(version_name):
