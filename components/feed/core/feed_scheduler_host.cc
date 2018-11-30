@@ -316,15 +316,20 @@ void FeedSchedulerHost::OnSuggestionsShown() {
   user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsViewed);
 }
 
-void FeedSchedulerHost::OnHistoryCleared() {
-  // Due to privacy, we should not fetch for a while (unless the user explicitly
-  // asks for new suggestions) to give sync the time to propagate the changes in
-  // history to the server.
-  suppress_refreshes_until_ =
-      clock_->Now() +
-      base::TimeDelta::FromMinutes(kSuppressRefreshDurationMinutes.Get());
-  // After that time elapses, we should fetch as soon as possible.
+void FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
+  // Since there are no stored articles, a refresh will be needed soon.
   profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
+
+  if (suppress_refreshes) {
+    // Due to privacy, we should not fetch for a while (unless the user
+    // explicitly asks for new suggestions) to give sync the time to propagate
+    // the changes in history to the server.
+    suppress_refreshes_until_ =
+        clock_->Now() +
+        base::TimeDelta::FromMinutes(kSuppressRefreshDurationMinutes.Get());
+  } else if (ShouldRefresh(TriggerType::kNtpShown)) {
+    refresh_callback_.Run();
+  }
 }
 
 void FeedSchedulerHost::OnEulaAccepted() {

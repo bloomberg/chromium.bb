@@ -161,6 +161,7 @@ public class FeedAppLifecycleTest {
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
+        verify(mFeedScheduler, times(1)).onArticlesCleared(true);
     }
 
     @Test
@@ -173,6 +174,7 @@ public class FeedAppLifecycleTest {
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
+        verify(mFeedScheduler, times(1)).onArticlesCleared(false);
     }
 
     @Test
@@ -185,6 +187,7 @@ public class FeedAppLifecycleTest {
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
+        verify(mFeedScheduler, times(1)).onArticlesCleared(false);
     }
 
     @Test
@@ -197,6 +200,7 @@ public class FeedAppLifecycleTest {
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
+        verify(mFeedScheduler, times(1)).onArticlesCleared(false);
     }
 
     @Test

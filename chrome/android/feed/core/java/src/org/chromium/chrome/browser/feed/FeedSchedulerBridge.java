@@ -124,6 +124,12 @@ public class FeedSchedulerBridge implements FeedScheduler {
         nativeOnSuggestionConsumed(mNativeBridge);
     }
 
+    @Override
+    public void onArticlesCleared(boolean suppressRefreshes) {
+        assert mNativeBridge != 0;
+        nativeOnArticlesCleared(mNativeBridge, suppressRefreshes);
+    }
+
     @CalledByNative
     private boolean triggerRefresh() {
         if (mRequestManager != null && mSessionManager != null) {
@@ -156,4 +162,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private native void nativeOnFixedTimer(
             long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
     private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
+    private native void nativeOnArticlesCleared(
+            long nativeFeedSchedulerBridge, boolean suppressRefreshes);
 }
