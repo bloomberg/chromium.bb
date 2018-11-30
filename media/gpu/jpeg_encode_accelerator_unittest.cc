@@ -236,7 +236,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
  public:
   JpegClient(const std::vector<TestImage*>& test_aligned_images,
              const std::vector<TestImage*>& test_images,
-             ClientStateNotification<ClientState>* note);
+             media::test::ClientStateNotification<ClientState>* note);
   ~JpegClient() override;
   void CreateJpegEncoder();
   void DestroyJpegEncoder();
@@ -287,7 +287,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
 
   // Used to notify another thread about the state. JpegClient does not own
   // this.
-  ClientStateNotification<ClientState>* note_;
+  media::test::ClientStateNotification<ClientState>* note_;
 
   // Output buffer prepared for JpegEncodeAccelerator.
   std::unique_ptr<BitstreamBuffer> encoded_buffer_;
@@ -304,7 +304,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
 
 JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
                        const std::vector<TestImage*>& test_images,
-                       ClientStateNotification<ClientState>* note)
+                       media::test::ClientStateNotification<ClientState>* note)
     : test_aligned_images_(test_aligned_images),
       test_images_(test_images),
       state_(ClientState::CREATED),
@@ -590,11 +590,14 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
   base::Thread encoder_thread("EncoderThread");
   ASSERT_TRUE(encoder_thread.Start());
 
-  std::vector<std::unique_ptr<ClientStateNotification<ClientState>>> notes;
+  std::vector<
+      std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
+      notes;
   std::vector<std::unique_ptr<JpegClient>> clients;
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
-    notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+    notes.push_back(
+        std::make_unique<media::test::ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<JpegClient>(
         test_aligned_images_, test_images_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(

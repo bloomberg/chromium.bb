@@ -8,13 +8,11 @@
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/rendering_helper.h"
-#include "media/gpu/test/texture_ref.h"
 #include "media/video/h264_parser.h"
 
 #if defined(OS_CHROMEOS)

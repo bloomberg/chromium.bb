@@ -365,10 +365,6 @@ source_set("common") {
 # TODO(watk): Run this on bots. http://crbug.com/461437
 if (is_win || is_android || use_v4l2_codec || use_vaapi) {
   test("video_decode_accelerator_unittest") {
-    sources = [
-      "test/video_accelerator_unittest_helpers.h",
-    ]
-
     data = [
       "//media/test/data/",
     ]
@@ -394,9 +390,12 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/khronos:khronos_headers" ]
 
     if (is_win || is_chromeos || use_v4l2_codec) {
-      sources += [ "video_decode_accelerator_unittest.cc" ]
+      sources = [
+        "video_decode_accelerator_unittest.cc",
+      ]
       deps += [
-        "test:helpers",
+        "test:decode_helpers",
+        "test:frame_validator",
         "//mojo/core/embedder",
         "//ui/display",
         "//ui/display/types",
@@ -479,7 +478,7 @@ source_set("android_video_decode_accelerator_unittests") {
 if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
-      "test:helpers",
+      "test:encode_helpers",
       "//base",
       "//base/test:test_support",
       "//media:test_support",
@@ -509,6 +508,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
 if (use_v4l2_codec || use_vaapi) {
   test("jpeg_encode_accelerator_unittest") {
     deps = [
+      "test:helpers",
       "//base",
       "//base/test:test_support",
       "//media:test_support",
@@ -527,7 +527,6 @@ if (use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "jpeg_encode_accelerator_unittest.cc",
-      "test/video_accelerator_unittest_helpers.h",
     ]
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
@@ -541,6 +540,7 @@ if (use_v4l2_codec || use_vaapi) {
 if (is_chromeos || is_linux) {
   test("jpeg_decode_accelerator_unittest") {
     deps = [
+      "test:helpers",
       "//base",
       "//media:test_support",
       "//media/gpu",
@@ -558,7 +558,6 @@ if (is_chromeos || is_linux) {
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "jpeg_decode_accelerator_unittest.cc",
-      "test/video_accelerator_unittest_helpers.h",
     ]
     data = [
       "//media/test/data/peach_pi-1280x720.jpg",
