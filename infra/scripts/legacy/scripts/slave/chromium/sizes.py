@@ -34,27 +34,9 @@ SRC_DIR = os.path.abspath(
 sys.path.append(os.path.join(SRC_DIR, 'third_party', 'catapult', 'tracing'))
 from tracing.value import convert_chart_json
 
-# If something adds a static initializer, revert it, don't increase these
-# numbers. We don't accept regressions in static initializers.
-#
-# Note: Counts for chrome and nacl_helper are one higher in branded builds
-# compared to release builds.  This is due to a static initializer in
-# WelsThreadPool.cpp (https://crbug.com/893594).
-EXPECTED_LINUX_SI_COUNTS = {
-  'chrome': 5,
-  'nacl_helper': 5,
-  'nacl_helper_bootstrap': 0,
-}
-
-# If something adds a static initializer, revert it, don't increase these
-# numbers. We don't accept regressions in static initializers.
-EXPECTED_MAC_SI_COUNT = 1  # https://crbug.com/893594
-
-
 class ResultsCollector(object):
   def __init__(self):
     self.results = {}
-    self.failures = []
 
   def add_result(self, name, identifier, value, units):
     assert name not in self.results
@@ -66,9 +48,6 @@ class ResultsCollector(object):
 
     # Legacy printing, previously used for parsing the text logs.
     print 'RESULT %s: %s= %s %s' % (name, identifier, value, units)
-
-  def add_failure(self, failure):
-    self.failures.append(failure)
 
 
 def get_size(filename):
@@ -102,12 +81,6 @@ def run_process(result, command):
     if result == 0:
       result = p.returncode
   return result, stdout
-
-
-def print_si_fail_hint(path_to_tool):
-  """Print a hint regarding how to handle a static initializer failure."""
-  print '# HINT: To get this list, run %s' % path_to_tool
-  print '# HINT: diff against the log from the last run to see what changed'
 
 
 def main_mac(options, args, results_collector):
@@ -173,55 +146,6 @@ def main_mac(options, args, results_collector):
       du_s = re.search(r'(\d+)', stdout).group(1)
       print_dict['app_bundle_size'] = (int(du_s) * 1024)
 
-      # Count the number of files with at least one static initializer.
-      si_count = 0
-      # Find the __DATA,__mod_init_func section.
-      result, stdout = run_process(result,
-          ['otool', '-l', chromium_framework_executable])
-      section_index = stdout.find('sectname __mod_init_func')
-      if section_index != -1:
-        # If the section exists, the "size" line must follow it.
-        initializers_s = re.search('size 0x([0-9a-f]+)',
-                                   stdout[section_index:]).group(1)
-        word_size = 8  # Assume 64 bit
-        si_count = int(initializers_s, 16) / word_size
-      print_dict['initializers'] = si_count
-
-      # For Release builds only, use dump-static-initializers.py to print the
-      # list of static initializers.
-      if si_count > EXPECTED_MAC_SI_COUNT and options.target == 'Release':
-        result = 125
-        results_collector.add_failure(
-            'Expected 0 static initializers in %s, but found %d' %
-            (chromium_framework_executable, si_count))
-        print '\n# Static initializers in %s:' % chromium_framework_executable
-
-        # First look for a dSYM to get information about the initializers. If
-        # one is not present, check if there is an unstripped copy of the build
-        # output.
-        mac_tools_path = os.path.join(os.path.dirname(build_dir),
-                                      'tools', 'mac')
-        if os.path.exists(chromium_framework_dsym):
-          dump_static_initializers = os.path.join(
-              mac_tools_path, 'dump-static-initializers.py')
-          result, stdout = run_process(result, [dump_static_initializers,
-                                                chromium_framework_dsym])
-          print_si_fail_hint('tools/mac/dump-static-initializers.py')
-          print stdout
-        else:
-          show_mod_init_func = os.path.join(
-              mac_tools_path, 'show_mod_init_func.py')
-          args = [show_mod_init_func]
-          if os.path.exists(chromium_framework_unstripped):
-            args.append(chromium_framework_unstripped)
-          else:
-            print '# Warning: Falling back to potentially stripped output.'
-            args.append(chromium_framework_executable)
-          result, stdout = run_process(result, args)
-          print_si_fail_hint('tools/mac/show_mod_init_func.py')
-          print stdout
-
-
       results_collector.add_result(
           print_dict['app_name'], print_dict['app_name'],
           print_dict['app_size'], 'bytes')
@@ -249,9 +173,6 @@ def main_mac(options, args, results_collector):
       results_collector.add_result(
           print_dict['app_bundle'], print_dict['app_bundle'],
           print_dict['app_bundle_size'], 'bytes')
-      results_collector.add_result(
-          'chrome-si', 'initializers',
-          print_dict['initializers'], 'files')
 
       # Found a match, don't check the other base_names.
       return result
@@ -279,15 +200,6 @@ def check_linux_binary(target_dir, binary_name, options, results_collector):
   result = 0
   sizes = []
 
-  def get_elf_section_size(readelf_stdout, section_name):
-    # Matches: .ctors PROGBITS 000000000516add0 5169dd0 000010 00 WA 0 0 8
-    match = re.search(r'\.%s.*$' % re.escape(section_name),
-                      readelf_stdout, re.MULTILINE)
-    if not match:
-      return (False, -1)
-    size_str = re.split(r'\W+', match.group(0))[5]
-    return (True, int(size_str, 16))
-
   sizes.append((binary_name, binary_name, 'size',
                 get_size(binary_file), 'bytes'))
 
@@ -303,51 +215,6 @@ def check_linux_binary(target_dir, binary_name, options, results_collector):
       (binary_name + '-data', 'data', '', data, 'bytes'),
       (binary_name + '-bss', 'bss', '', bss, 'bytes'),
       ]
-
-  # Find the number of files with at least one static initializer.
-  # First determine if we're 32 or 64 bit
-  result, stdout = run_process(result, ['readelf', '-h', binary_file])
-  elf_class_line = re.search('Class:.*$', stdout, re.MULTILINE).group(0)
-  elf_class = re.split(r'\W+', elf_class_line)[1]
-  if elf_class == 'ELF32':
-    word_size = 4
-  else:
-    word_size = 8
-
-  # Then find the number of files with global static initializers.
-  # NOTE: this is very implementation-specific and makes assumptions
-  # about how compiler and linker implement global static initializers.
-  si_count = 0
-  result, stdout = run_process(result, ['readelf', '-SW', binary_file])
-  has_init_array, init_array_size = get_elf_section_size(stdout, 'init_array')
-  if has_init_array:
-    si_count = init_array_size / word_size
-    # In newer versions of gcc crtbegin.o inserts frame_dummy into .init_array
-    # but we don't want to count this entry, since its alwasys present and not
-    # related to our code.
-    si_count -= 1
-  si_count = max(si_count, 0)
-  sizes.append((binary_name + '-si', 'initializers', '', si_count, 'files'))
-
-  # For Release builds only, use dump-static-initializers.py to print the list
-  # of static initializers.
-  if options.target == 'Release':
-    if (binary_name in EXPECTED_LINUX_SI_COUNTS and
-        si_count > EXPECTED_LINUX_SI_COUNTS[binary_name]):
-      result = 125
-      results_collector.add_failure(
-          'Expected <= %d static initializers in %s, but found %d' %
-          (EXPECTED_LINUX_SI_COUNTS[binary_name], binary_name, si_count))
-    if si_count > 0:
-      build_dir = os.path.dirname(target_dir)
-      dump_static_initializers = os.path.join(os.path.dirname(build_dir),
-                                              'tools', 'linux',
-                                              'dump-static-initializers.py')
-      result, stdout = run_process(result, [dump_static_initializers,
-                                            '-d', binary_file])
-      print '\n# Static initializers in %s:' % binary_file
-      print_si_fail_hint('tools/linux/dump-static-initializers.py')
-      print stdout
 
   # Determine if the binary has the DT_TEXTREL marker.
   result, stdout = run_process(result, ['readelf', '-Wd', binary_file])
@@ -572,8 +439,6 @@ def main():
                            help='specify platform (%s) [default: %%default]'
                                 % ', '.join(platforms))
   option_parser.add_option('--json', help='Path to JSON output file')
-  option_parser.add_option('--failures',
-                           help='Path to JSON output file for failures')
   # This needs to be --output-dir (and not something like --output-directory) in
   # order to work properly with the build-side runtest.py script that's
   # currently used for dashboard uploading results from this script.
@@ -618,10 +483,6 @@ def main():
       return histogram_result.returncode
     with open(histogram_path, 'w') as f:
       f.write(histogram_result.stdout)
-
-  if options.failures:
-    with open(options.failures, 'w') as f:
-      json.dump(results_collector.failures, f)
 
   return rc
 
