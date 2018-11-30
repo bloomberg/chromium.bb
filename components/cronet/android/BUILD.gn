@@ -728,11 +728,11 @@ if (!is_component_build) {
 
   android_resources("cronet_test_apk_resources") {
     testonly = true
+    custom_package = "org.chromium.net"
     resource_dirs = [
       "test/res",
       "test/smoketests/res/native",
     ]
-    android_manifest = "test/AndroidManifest.xml"
   }
 
   android_library("cronet_test_apk_java") {
@@ -775,50 +775,6 @@ if (!is_component_build) {
                                            "test/smoketests/src/org/chromium/net/smoke/ChromiumNativeTestSupport.java",
                                            "test/smoketests/src/org/chromium/net/smoke/NativeCronetTestRule.java",
                                          ]
-
-  android_library("cronet_smoketests_native_java") {
-    testonly = true
-    java_files = [
-                   "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
-                   "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
-                 ] + cronet_smoketests_native_common_srcs
-
-    deps = [
-      ":cronet_api_java",
-      ":cronet_test_apk_java",
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/junit",
-      "//third_party/netty4:netty_all_java",
-    ]
-  }
-
-  android_apk("cronet_test_apk") {
-    testonly = true
-    apk_name = "CronetTest"
-    android_manifest = "test/AndroidManifest.xml"
-    shared_libraries = [
-      ":cronet",
-      ":cronet_tests",
-    ]
-    loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
-
-    deps = [
-      ":cronet_combine_proguard_flags",
-      ":cronet_test_apk_resources",
-      "//base:base_java",
-      "//third_party/netty-tcnative:netty-tcnative-so",
-    ]
-
-    proguard_enabled = true
-
-    proguard_configs = [
-      "$target_gen_dir/cronet_impl_native_proguard.cfg",
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-    ]
-  }
 
   cronet_javatests_deps_to_package = [
     ":cronet_test_apk_java",
@@ -892,15 +848,26 @@ if (!is_component_build) {
 
   instrumentation_test_apk("cronet_test_instrumentation_apk") {
     apk_name = "CronetTestInstrumentation"
-    apk_under_test = ":cronet_test_apk"
     android_manifest = "test/javatests/AndroidManifest.xml"
+
+    shared_libraries = [
+      ":cronet",
+      ":cronet_tests",
+    ]
+    loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
+
+    java_files = cronet_smoketests_native_common_srcs + [
+                   "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
+                   "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
+                 ]
 
     deps = [
       ":cronet_api_java",
+      ":cronet_combine_proguard_flags",
       ":cronet_impl_all_java",
       ":cronet_javatests",
-      ":cronet_smoketests_native_java",
       ":cronet_test_apk_java",
+      ":cronet_test_apk_resources",
       "//base:base_java",
       "//base:base_java_test_support",
       "//net/android:net_java",
@@ -908,6 +875,9 @@ if (!is_component_build) {
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_test_mock_java",
       "//third_party/hamcrest:hamcrest_core_java",
+      "//third_party/junit",
+      "//third_party/netty-tcnative:netty-tcnative-so",
+      "//third_party/netty4:netty_all_java",
     ]
     additional_apks = [ "//net/android:net_test_support_apk" ]
 
@@ -917,88 +887,70 @@ if (!is_component_build) {
 
     proguard_enabled = true
 
-    proguard_configs = [ "test/proguard.cfg" ]
+    proguard_configs = [
+      "$target_gen_dir/cronet_impl_native_proguard.cfg",
+      "cronet_impl_common_proguard.cfg",
+      "cronet_impl_platform_proguard.cfg",
+      "test/proguard.cfg",
+    ]
   }
 
   android_resources("cronet_smoketests_platform_only_apk_resources") {
     testonly = true
+    custom_package = "org.chromium.net"
     resource_dirs = [ "test/smoketests/res/platform_only" ]
-    android_manifest = "test/AndroidManifest.xml"
   }
 
-  android_library("cronet_smoketests_platform_only_java") {
-    testonly = true
-    java_files = [ "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java" ] + cronet_smoketests_platform_only_common_srcs
-    deps = [
-      ":cronet_api_java",
-      "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/junit",
-      "//third_party/netty4:netty_all_java",
-    ]
-  }
+  instrumentation_test_apk(
+      "cronet_smoketests_platform_only_instrumentation_apk") {
+    apk_name = "PlatformOnlyEngineSmokeTestInstrumentation"
+    android_manifest = "test/javatests/AndroidManifest.xml"
 
-  android_apk("cronet_smoketests_platform_only_apk") {
-    testonly = true
-    apk_name = "PlatformOnlyEngineSmokeTest"
-    android_manifest = "test/AndroidManifest.xml"
-    java_files = [ "test/src/org/chromium/net/CronetTestApplication.java" ]
-
-    proguard_enabled = true
-    proguard_configs = [
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-    ]
+    java_files = cronet_smoketests_platform_only_common_srcs + [
+                   "test/src/org/chromium/net/CronetTestApplication.java",
+                   "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java",
+                 ]
 
     deps = [
       ":cronet_api_java",
       ":cronet_impl_common_base_java",
       ":cronet_impl_platform_base_java",
       ":cronet_smoketests_platform_only_apk_resources",
-    ]
-  }
-
-  instrumentation_test_apk(
-      "cronet_smoketests_platform_only_instrumentation_apk") {
-    apk_name = "PlatformOnlyEngineSmokeTestInstrumentation"
-    apk_under_test = ":cronet_smoketests_platform_only_apk"
-    android_manifest = "test/javatests/AndroidManifest.xml"
-    deps = [
-      ":cronet_smoketests_platform_only_java",
       "//base:base_java_test_support",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_test_mock_java",
+      "//third_party/junit",
+      "//third_party/netty4:netty_all_java",
     ]
 
     proguard_enabled = true
 
-    proguard_configs = [ "test/proguard.cfg" ]
-  }
-
-  android_library("cronet_smoketests_missing_native_library_java") {
-    testonly = true
-    java_files = [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ] + cronet_smoketests_native_common_srcs
-    deps = [
-      ":cronet_api_java",
-      ":cronet_test_apk_java",
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/junit",
-      "//third_party/netty4:netty_all_java",
+    proguard_configs = [
+      "cronet_impl_common_proguard.cfg",
+      "cronet_impl_platform_proguard.cfg",
+      "test/proguard.cfg",
     ]
   }
 
-  android_apk("cronet_smoketests_missing_native_library_apk") {
-    testonly = true
-    apk_name = "MissingNativeLibrarySmokeTest"
-    android_manifest = "test/AndroidManifest.xml"
+  instrumentation_test_apk(
+      "cronet_smoketests_missing_native_library_instrumentation_apk") {
+    apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
+    android_manifest = "test/javatests/AndroidManifest.xml"
+
+    java_files = cronet_smoketests_native_common_srcs + [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ]
     deps = [
       ":cronet_api_java",
       ":cronet_combine_proguard_flags",
       ":cronet_impl_common_base_java",
       ":cronet_impl_platform_base_java",
+      ":cronet_test_apk_java",
       ":cronet_test_apk_resources",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/android_support_test_runner:runner_java",
+      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/junit",
+      "//third_party/netty4:netty_all_java",
     ]
 
     proguard_enabled = true
@@ -1006,38 +958,7 @@ if (!is_component_build) {
       "$target_gen_dir/cronet_impl_native_proguard.cfg",
       "cronet_impl_common_proguard.cfg",
       "cronet_impl_platform_proguard.cfg",
-    ]
-  }
-
-  instrumentation_test_apk(
-      "cronet_smoketests_missing_native_library_instrumentation_apk") {
-    apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
-    apk_under_test = ":cronet_smoketests_missing_native_library_apk"
-    android_manifest = "test/javatests/AndroidManifest.xml"
-
-    deps = [
-      ":cronet_smoketests_missing_native_library_java",
-      "//third_party/android_tools:android_test_mock_java",
-    ]
-
-    proguard_enabled = true
-
-    proguard_configs = [ "test/proguard.cfg" ]
-  }
-
-  android_library("cronet_perf_test_apk_java") {
-    testonly = true
-    android_manifest_for_lint = "test/javaperftests/AndroidManifest.xml"
-    java_files = [
-      "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java",
-    ]
-
-    deps = [
-      ":cronet_api_java",
-      ":cronet_impl_all_java",
-      ":cronet_javatests",
-      ":cronet_test_apk_java",
-      "//base:base_java",
+      "test/proguard.cfg",
     ]
   }
 
@@ -1050,12 +971,19 @@ if (!is_component_build) {
       ":cronet_tests",
     ]
 
+    java_files = [
+      "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java",
+    ]
+
     deps = [
+      ":cronet_api_java",
       ":cronet_combine_proguard_flags",
-      ":cronet_perf_test_apk_java",
+      ":cronet_impl_all_java",
+      ":cronet_javatests",
       ":cronet_test_apk_java",
       "//base:base_java",
       "//third_party/android_tools:android_test_mock_java",
+      "//third_party/junit",
     ]
 
     proguard_enabled = true
