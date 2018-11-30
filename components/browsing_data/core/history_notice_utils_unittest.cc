@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -60,7 +60,7 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
   std::unique_ptr<syncer::TestSyncService> sync_service_;
   std::unique_ptr<history::FakeWebHistoryService> history_service_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 
 TEST_F(HistoryNoticeUtilsTest, NotSyncing) {

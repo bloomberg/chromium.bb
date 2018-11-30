@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
@@ -48,7 +48,7 @@ class BrowsingDataUtilsTest : public testing::Test {
   PrefService* prefs() { return &prefs_; }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 
