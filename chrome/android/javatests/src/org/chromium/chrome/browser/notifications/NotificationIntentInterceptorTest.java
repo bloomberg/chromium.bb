@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -65,9 +65,8 @@ public class NotificationIntentInterceptorTest {
         Uri uri = Uri.parse("www.example.com");
         contentIntent.setData(uri);
         contentIntent.setAction(Intent.ACTION_VIEW);
-        int flags = PendingIntent.FLAG_ONE_SHOT;
         PendingIntent contentPendingIntent =
-                PendingIntent.getActivity(context, 0, contentIntent, flags);
+                PendingIntent.getActivity(context, 0, contentIntent, 0);
         assert contentPendingIntent != null;
         builder.setContentIntent(NotificationIntentInterceptor.createInterceptPendingIntent(
                 NotificationIntentInterceptor.IntentType.CONTENT_INTENT, contentPendingIntent));
@@ -84,9 +83,9 @@ public class NotificationIntentInterceptorTest {
     private void clickNotification(String text) {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.openNotification();
-        device.wait(
-                Until.hasObject(By.text(text)), WAIT_FOR_NOTIFICATION_SHOWN_TIMEOUT_MILLISECONDS);
-        UiObject2 textObject = device.findObject(By.text(text));
+        device.wait(Until.hasObject(By.textContains(text)),
+                WAIT_FOR_NOTIFICATION_SHOWN_TIMEOUT_MILLISECONDS);
+        UiObject2 textObject = device.findObject(By.textContains(text));
         Assert.assertEquals(text, textObject.getText());
         textObject.click();
     }
@@ -99,12 +98,13 @@ public class NotificationIntentInterceptorTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky on Kitkat, crbug.com/906843")
+    @RetryOnFailure
     public void testContentIntentInterception() {
         // Send notification.
         NotificationManager notificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
         notificationManager.notify(0, buildSimpleNotification(TEST_NOTIFICATION_TITLE));
 
         // Click notification body.
