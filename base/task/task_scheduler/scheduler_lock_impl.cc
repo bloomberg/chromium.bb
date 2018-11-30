@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 
@@ -47,6 +48,10 @@ class SafeAcquisitionTracker {
         std::find(acquired_locks->begin(), acquired_locks->end(), lock);
     DCHECK(iter_at_lock != acquired_locks->end());
     acquired_locks->erase(iter_at_lock);
+  }
+
+  void AssertNoLockHeldOnCurrentThread() {
+    DCHECK(GetAcquiredLocksOnCurrentThread()->empty());
   }
 
  private:
@@ -141,6 +146,10 @@ SchedulerLockImpl::SchedulerLockImpl(UniversalPredecessor)
 
 SchedulerLockImpl::~SchedulerLockImpl() {
   g_safe_acquisition_tracker.Get().UnregisterLock(this);
+}
+
+void SchedulerLockImpl::AssertNoLockHeldOnCurrentThread() {
+  g_safe_acquisition_tracker.Get().AssertNoLockHeldOnCurrentThread();
 }
 
 void SchedulerLockImpl::Acquire() {

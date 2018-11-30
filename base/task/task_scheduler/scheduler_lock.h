@@ -69,6 +69,7 @@ class SchedulerLock : public Lock {
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock*) {}
   explicit SchedulerLock(UniversalPredecessor) {}
+  static void AssertNoLockHeldOnCurrentThread() {}
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable() {
     return std::unique_ptr<ConditionVariable>(new ConditionVariable(this));
