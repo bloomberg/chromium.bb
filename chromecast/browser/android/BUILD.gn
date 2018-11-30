@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromecast/chromecast.gni")
 import("//build/config/android/rules.gni")
+import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
 assert(is_android)
@@ -129,6 +129,7 @@ android_library("cast_shell_java") {
   srcjar_deps = [
     ":cast_shell_build_config_gen",
     ":logs_provider_aidl",
+    "//chromecast/browser:java_enums",
   ]
 
   deps = [
