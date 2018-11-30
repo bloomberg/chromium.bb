@@ -4,6 +4,7 @@
 
 package org.chromium.webapk.shell_apk.h2o;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -11,19 +12,20 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.widget.FrameLayout;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
-import org.chromium.webapk.shell_apk.HostBrowserLauncherActivity;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.LaunchHostBrowserSelector;
 import org.chromium.webapk.shell_apk.R;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Displays splash screen. */
-public class SplashActivity extends HostBrowserLauncherActivity {
+public class SplashActivity extends Activity {
     /** Returns whether {@link SplashActivity} is enabled. */
     public static boolean checkComponentEnabled(Context context) {
         PackageManager pm = context.getPackageManager();
@@ -34,7 +36,34 @@ public class SplashActivity extends HostBrowserLauncherActivity {
     }
 
     @Override
-    protected void showSplashScreen() {
+    protected void onCreate(Bundle savedInstanceState) {
+        final long activityStartTimeMs = SystemClock.elapsedRealtime();
+        super.onCreate(savedInstanceState);
+
+        showSplashScreen();
+        selectHostBrowser(activityStartTimeMs);
+    }
+
+    private void selectHostBrowser(final long activityStartTimeMs) {
+        new LaunchHostBrowserSelector(this).selectHostBrowser(
+                new LaunchHostBrowserSelector.Callback() {
+                    @Override
+                    public void onBrowserSelected(
+                            String hostBrowserPackageName, boolean dialogShown) {
+                        if (hostBrowserPackageName == null) {
+                            finish();
+                            return;
+                        }
+                        HostBrowserLauncherParams params =
+                                HostBrowserLauncherParams.createForIntent(SplashActivity.this,
+                                        getIntent(), hostBrowserPackageName, dialogShown,
+                                        activityStartTimeMs);
+                        onHostBrowserSelected(params);
+                    }
+                });
+    }
+
+    private void showSplashScreen() {
         Bundle metadata = WebApkUtils.readMetaData(this);
         Resources resources = getResources();
 
@@ -56,8 +85,8 @@ public class SplashActivity extends HostBrowserLauncherActivity {
                 getWindow(), WebApkUtils.getDarkenedColorForStatusBar(themeColor));
     }
 
-    @Override
-    protected void onHostBrowserSelected(HostBrowserLauncherParams params) {
+    /** Called once the host browser has been selected. */
+    private void onHostBrowserSelected(HostBrowserLauncherParams params) {
         if (params == null) {
             finish();
             return;

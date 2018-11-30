@@ -19,13 +19,11 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
     @Override
     protected void onHostBrowserSelected(HostBrowserLauncherParams params) {
         if (params == null) {
-            finish();
             return;
         }
 
         boolean shouldLaunchSplash = H2OLauncher.shouldIntentLaunchSplashActivity(params);
         if (relaunchIfNeeded(params, shouldLaunchSplash)) {
-            finish();
             return;
         }
 
@@ -39,12 +37,10 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
             H2OLauncher.copyIntentExtrasAndLaunch(appContext, getIntent(),
                     params.getSelectedShareTargetActivityClassName(),
                     new ComponentName(appContext, SplashActivity.class));
-            finish();
             return;
         }
 
         HostBrowserLauncher.launch(getApplicationContext(), params);
-        finish();
     }
 
     /**
