@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
+#import "ios/chrome/browser/download/features.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
@@ -23,6 +25,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
@@ -61,6 +64,9 @@
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
+
+// Coordinator to present a QLPreviewController for AR models.
+@property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -181,6 +187,11 @@
   self.pageInfoCoordinator.loader = self.viewController;
   self.pageInfoCoordinator.presentationProvider = self.viewController;
   self.pageInfoCoordinator.tabModel = self.tabModel;
+
+  if (download::IsUsdzPreviewEnabled()) {
+    self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
+        initWithBaseViewController:self.viewController];
+  }
 
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -388,6 +399,11 @@
   AppLauncherTabHelper::CreateForWebState(
       webState, [[AppLauncherAbuseDetector alloc] init],
       self.appLauncherCoordinator);
+
+  if (download::IsUsdzPreviewEnabled()) {
+    ARQuickLookTabHelper::CreateForWebState(webState,
+                                            self.ARQuickLookCoordinator);
+  }
 
   PassKitTabHelper::CreateForWebState(webState, self.passKitCoordinator);
 

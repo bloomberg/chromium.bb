@@ -194,8 +194,7 @@ TEST_F(ARQuickLookTabHelperTest, MimeTypeChange) {
   }));
   task_ptr->SetMimeType("text/html");
   task_ptr->SetDone(true);
-  EXPECT_EQ(1U, delegate().fileURLs.count);
-  EXPECT_TRUE([delegate().fileURLs.firstObject isKindOfClass:[NSURL class]]);
+  EXPECT_EQ(0U, delegate().fileURLs.count);
 
   histogram_tester()->ExpectBucketCount(
       kHistogramName,
@@ -227,8 +226,7 @@ TEST_F(ARQuickLookTabHelperTest, DownloadError) {
   }));
   task_ptr->SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
   task_ptr->SetDone(true);
-  EXPECT_EQ(1U, delegate().fileURLs.count);
-  EXPECT_TRUE([delegate().fileURLs.firstObject isKindOfClass:[NSURL class]]);
+  EXPECT_EQ(0U, delegate().fileURLs.count);
 
   histogram_tester()->ExpectBucketCount(
       kHistogramName,
@@ -260,8 +258,7 @@ TEST_F(ARQuickLookTabHelperTest, UnauthorizedHttpResponse) {
   }));
   task_ptr->SetHttpCode(401);
   task_ptr->SetDone(true);
-  EXPECT_EQ(1U, delegate().fileURLs.count);
-  EXPECT_TRUE([delegate().fileURLs.firstObject isKindOfClass:[NSURL class]]);
+  EXPECT_EQ(0U, delegate().fileURLs.count);
 
   histogram_tester()->ExpectBucketCount(
       kHistogramName,
@@ -293,8 +290,7 @@ TEST_F(ARQuickLookTabHelperTest, ForbiddenHttpResponse) {
   }));
   task_ptr->SetHttpCode(403);
   task_ptr->SetDone(true);
-  EXPECT_EQ(1U, delegate().fileURLs.count);
-  EXPECT_TRUE([delegate().fileURLs.firstObject isKindOfClass:[NSURL class]]);
+  EXPECT_EQ(0U, delegate().fileURLs.count);
 
   histogram_tester()->ExpectBucketCount(
       kHistogramName,

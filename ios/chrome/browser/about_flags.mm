@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
+#include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
@@ -215,6 +216,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
+    {"preview-usdz", flag_descriptions::kUsdzPreviewName,
+     flag_descriptions::kUsdzPreviewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(download::kUsdzPreview)},
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},

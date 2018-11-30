@@ -107,6 +107,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "ar_quick_look_egtest.mm",
     "download_manager_egtest.mm",
     "pass_kit_egtest.mm",
   ]
@@ -118,6 +119,7 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:browser",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/util",

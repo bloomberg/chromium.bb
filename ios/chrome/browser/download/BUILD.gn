@@ -29,6 +29,7 @@ source_set("download") {
   ]
 
   deps = [
+    ":features",
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
@@ -43,6 +44,19 @@ source_set("download") {
     "PassKit.framework",
     "QuartzCore.framework",
     "QuickLook.framework",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("features") {
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+
+  deps = [
+    "//base",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -65,6 +79,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/ui:network_activity_indicator_manager",
     "//ios/chrome/test/fakes",
     "//ios/web/public",
@@ -81,8 +96,8 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "pass_kit_test_util.cc",
-    "pass_kit_test_util.h",
+    "download_test_util.cc",
+    "download_test_util.h",
   ]
   deps = [
     "//base",
