@@ -43,6 +43,12 @@ const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
     "#enable-signed-http-exchange. Warning: Enabling this may pose a security "
     "risk.";
 
+const char kAllowStartingServiceManagerOnlyName[] =
+    "Allow starting service manager only";
+const char kAllowStartingServiceManagerOnlyDescription[] =
+    "Allows running a lightweight service-manager-only mode, in which services "
+    "can run without the browser process.";
+
 const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
 const char kAndroidMessagesIntegrationDescription[] =
     "Enables Chrome OS integration with Android messages.";
