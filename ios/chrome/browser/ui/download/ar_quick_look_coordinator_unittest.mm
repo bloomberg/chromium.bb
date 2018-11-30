@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,11 +29,9 @@ namespace {
 
 // Returns the absolute path for the test file in the test data directory.
 base::FilePath GetTestFilePath() {
-  const char kValidFilePath[] =
-      "ios/testing/data/http_server_files/retrotv.usdz";
   base::FilePath file_path;
   base::PathService::Get(base::DIR_MODULE, &file_path);
-  file_path = file_path.Append(FILE_PATH_LITERAL(kValidFilePath));
+  file_path = file_path.Append(FILE_PATH_LITERAL(testing::kUsdzFilePath));
   return file_path;
 }
 

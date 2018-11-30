@@ -352,6 +352,10 @@ const char kForceUnifiedConsentBumpDescription[] =
     "Force the unified consent bump UI to be shown on every start-up. This "
     "flag is for debug purpose, to test the UI.";
 
+const char kUsdzPreviewName[] = "Preview USDZ format 3D models";
+const char kUsdzPreviewDescription[] =
+    "Enables previewing USDZ format 3D models in AR Quick Look.";
+
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
