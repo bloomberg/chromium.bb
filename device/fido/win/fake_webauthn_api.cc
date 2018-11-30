@@ -25,20 +25,27 @@ HRESULT FakeWinWebAuthnApi::IsUserVerifyingPlatformAuthenticatorAvailable(
 
 void FakeWinWebAuthnApi::AuthenticatorMakeCredential(
     HWND h_wnd,
-    const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
-    const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
-    const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
-    const WEBAUTHN_CLIENT_DATA* client_data,
-    const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
+    GUID cancellation_id,
+    PublicKeyCredentialRpEntity rp,
+    PublicKeyCredentialUserEntity user,
+    std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
+        cose_credential_parameter_values,
+    std::string client_data_json,
+    std::vector<WEBAUTHN_EXTENSION> extensions,
+    base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list,
+    WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
     AuthenticatorMakeCredentialCallback callback) {
   DCHECK(is_available_);
 }
 
 void FakeWinWebAuthnApi::AuthenticatorGetAssertion(
     HWND h_wnd,
-    const wchar_t* rp_id_utf16,
-    const WEBAUTHN_CLIENT_DATA* client_data,
-    const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
+    GUID cancellation_id,
+    base::string16 rp_id,
+    base::Optional<base::string16> opt_app_id,
+    std::string client_data_json,
+    base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list,
+    WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
     AuthenticatorGetAssertionCallback callback) {
   DCHECK(is_available_);
 }

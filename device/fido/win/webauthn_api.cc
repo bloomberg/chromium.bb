@@ -14,10 +14,12 @@
 #include "base/native_library.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "device/fido/features.h"
+#include "device/fido/win/type_conversions.h"
 
 namespace device {
 
@@ -25,6 +27,12 @@ namespace device {
 // don't support BLE and direct device access to USB and BLE FIDO devices is
 // not yet blocked on those platforms.
 constexpr uint32_t kMinWinWebAuthnApiVersion = WEBAUTHN_API_VERSION_1;
+
+namespace {
+base::string16 OptionalGURLToUTF16(const base::Optional<GURL>& in) {
+  return in ? base::UTF8ToUTF16(in->spec()) : base::string16();
+}
+}  // namespace
 
 // WinWebAuthnApiImpl is the default implementation of WinWebAuthnApi, which
 // attempts to load webauthn.dll on intialization.
@@ -92,19 +100,25 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 
   void AuthenticatorMakeCredential(
       HWND h_wnd,
-      const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
-      const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
-      const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options,
+      GUID cancellation_id,
+      PublicKeyCredentialRpEntity rp,
+      PublicKeyCredentialUserEntity user,
+      std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
+          cose_credential_parameter_values,
+      std::string client_data_json,
+      std::vector<WEBAUTHN_EXTENSION> extensions,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list,
+      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
       AuthenticatorMakeCredentialCallback callback) override {
     DCHECK(is_bound_);
     base::PostTaskAndReplyWithResult(
         thread_->task_runner().get(), FROM_HERE,
         base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorMakeCredentialBlocking,
                        base::Unretained(this),  // |thread_| is owned by this.
-                       h_wnd, rp_information, user_information,
-                       pub_key_cred_params, client_data, options),
+                       h_wnd, cancellation_id, std::move(rp), std::move(user),
+                       std::move(cose_credential_parameter_values),
+                       std::move(client_data_json), std::move(extensions),
+                       std::move(exclude_list), std::move(options)),
         base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorMakeCredentialDone,
                        base::Unretained(this),
                        base::SequencedTaskRunnerHandle::Get(),
@@ -113,16 +127,21 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 
   void AuthenticatorGetAssertion(
       HWND h_wnd,
-      const wchar_t* rp_id_utf16,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options,
+      GUID cancellation_id,
+      base::string16 rp_id,
+      base::Optional<base::string16> opt_app_id,
+      std::string client_data_json,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list,
+      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
       AuthenticatorGetAssertionCallback callback) override {
     DCHECK(is_bound_);
     base::PostTaskAndReplyWithResult(
         thread_->task_runner().get(), FROM_HERE,
         base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorGetAssertionBlocking,
                        base::Unretained(this),  // |thread_| is owned by this.
-                       h_wnd, rp_id_utf16, client_data, options),
+                       h_wnd, cancellation_id, std::move(rp_id),
+                       std::move(opt_app_id), std::move(client_data_json),
+                       std::move(allow_list), std::move(options)),
         base::BindOnce(&WinWebAuthnApiImpl::AuthenticatorGetAssertionDone,
                        base::Unretained(this),
                        base::SequencedTaskRunnerHandle::Get(),
@@ -142,15 +161,59 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
   std::pair<HRESULT, ScopedCredentialAttestation>
   AuthenticatorMakeCredentialBlocking(
       HWND h_wnd,
-      const WEBAUTHN_RP_ENTITY_INFORMATION* rp_information,
-      const WEBAUTHN_USER_ENTITY_INFORMATION* user_information,
-      const WEBAUTHN_COSE_CREDENTIAL_PARAMETERS* pub_key_cred_params,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS* options) {
+      GUID cancellation_id,
+      PublicKeyCredentialRpEntity rp,
+      PublicKeyCredentialUserEntity user,
+      std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
+          cose_credential_parameter_values,
+      std::string client_data_json,
+      std::vector<WEBAUTHN_EXTENSION> extensions,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list,
+      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options) {
+    base::string16 rp_id = base::UTF8ToUTF16(rp.rp_id());
+    base::string16 rp_name = base::UTF8ToUTF16(rp.rp_name().value_or(""));
+    base::string16 rp_icon_url = OptionalGURLToUTF16(rp.rp_icon_url());
+    base::string16 user_name = base::UTF8ToUTF16(user.user_name().value_or(""));
+    base::string16 user_icon_url = OptionalGURLToUTF16(user.user_icon_url());
+    WEBAUTHN_RP_ENTITY_INFORMATION rp_info{
+        WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, rp_id.c_str(),
+        rp_name.c_str(), rp_icon_url.c_str()};
+
+    base::string16 user_display_name =
+        base::UTF8ToUTF16(user.user_display_name().value_or(""));
+    WEBAUTHN_USER_ENTITY_INFORMATION user_info{
+        WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
+        user.user_id().size(),
+        const_cast<unsigned char*>(user.user_id().data()),
+        user_name.c_str(),
+        user_icon_url.c_str(),
+        user_display_name.c_str(),  // This appears to be ignored.
+    };
+
+    WEBAUTHN_COSE_CREDENTIAL_PARAMETERS cose_credential_parameters{
+        cose_credential_parameter_values.size(),
+        cose_credential_parameter_values.data()};
+
+    WEBAUTHN_CLIENT_DATA client_data{
+        WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
+        const_cast<unsigned char*>(
+            reinterpret_cast<const unsigned char*>(client_data_json.data())),
+        WEBAUTHN_HASH_ALGORITHM_SHA_256};
+
+    options.Extensions =
+        WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()};
+    options.pCancellationId = &cancellation_id;
+
+    auto exclude_list_credentials = ToWinCredentialExVector(exclude_list);
+    auto* exclude_list_ptr = exclude_list_credentials.data();
+    WEBAUTHN_CREDENTIAL_LIST credential_list{exclude_list_credentials.size(),
+                                             &exclude_list_ptr};
+    options.pExcludeCredentialList = &credential_list;
+
     WEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr = nullptr;
     HRESULT hresult = authenticator_make_credential_(
-        h_wnd, rp_information, user_information, pub_key_cred_params,
-        client_data, options, &credential_attestation_ptr);
+        h_wnd, &rp_info, &user_info, &cose_credential_parameters, &client_data,
+        &options, &credential_attestation_ptr);
     return std::make_pair(
         hresult, ScopedCredentialAttestation(credential_attestation_ptr,
                                              free_credential_attestation_));
@@ -158,12 +221,37 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 
   std::pair<HRESULT, ScopedAssertion> AuthenticatorGetAssertionBlocking(
       HWND h_wnd,
-      const wchar_t* rp_id_utf16,
-      const WEBAUTHN_CLIENT_DATA* client_data,
-      const WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS* options) {
+      GUID cancellation_id,
+      base::string16 rp_id,
+      base::Optional<base::string16> opt_app_id,
+      std::string client_data_json,
+      base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list,
+      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options) {
+    if (opt_app_id) {
+      options.pwszU2fAppId = opt_app_id->data();
+      static BOOL kUseAppIdTrue = TRUE;  // const
+      options.pbU2fAppId = &kUseAppIdTrue;
+    } else {
+      static BOOL kUseAppIdFalse = FALSE;  // const
+      options.pbU2fAppId = &kUseAppIdFalse;
+    }
+    options.pCancellationId = &cancellation_id;
+
+    auto allow_list_credentials = ToWinCredentialExVector(allow_list);
+    auto* allow_list_ptr = allow_list_credentials.data();
+    WEBAUTHN_CREDENTIAL_LIST credential_list{allow_list_credentials.size(),
+                                             &allow_list_ptr};
+    options.pAllowCredentialList = &credential_list;
+
+    WEBAUTHN_CLIENT_DATA client_data{
+        WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
+        const_cast<unsigned char*>(
+            reinterpret_cast<const unsigned char*>(client_data_json.data())),
+        WEBAUTHN_HASH_ALGORITHM_SHA_256};
+
     WEBAUTHN_ASSERTION* assertion_ptr = nullptr;
     HRESULT hresult = authenticator_get_assertion_(
-        h_wnd, rp_id_utf16, client_data, options, &assertion_ptr);
+        h_wnd, rp_id.data(), &client_data, &options, &assertion_ptr);
     return std::make_pair(hresult,
                           ScopedAssertion(assertion_ptr, free_assertion_));
   }
