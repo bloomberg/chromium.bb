@@ -391,8 +391,8 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
                << " < " << last_packet_pos_ << ")";
       return;
     }
-    if (packet->pos == last_packet_pos_ && packet_dts <= last_packet_dts_) {
-      DCHECK_NE(last_packet_dts_, AV_NOPTS_VALUE);
+    if (last_packet_dts_ != AV_NOPTS_VALUE && packet->pos == last_packet_pos_ &&
+        packet_dts <= last_packet_dts_) {
       DVLOG(3) << "Dropped packet with out of order display timestamp ("
                << packet_dts << " < " << last_packet_dts_ << ")";
       return;
