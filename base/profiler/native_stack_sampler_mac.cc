@@ -361,7 +361,7 @@ std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
     if (stack_size > stack_buffer->size())
       return empty_frames;
 
-    profile_builder->RecordAnnotations();
+    profile_builder->RecordMetadata();
 
     CopyStackAndRewritePointers(
         reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),

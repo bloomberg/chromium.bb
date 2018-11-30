@@ -93,7 +93,7 @@ class LegacyCallStackProfileBuilder
   ~LegacyCallStackProfileBuilder() override;
 
   // base::StackSamplingProfiler::ProfileBuilder:
-  void RecordAnnotations() override;
+  void RecordMetadata() override;
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
