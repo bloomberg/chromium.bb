@@ -520,6 +520,7 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     } else {
       barrier.Run();
     }
+    job_coordinator_->Abort(registration->scope());
     UnregisterServiceWorker(
         registration->scope(),
         base::BindOnce(&SuccessCollectorCallback, barrier, overall_success));

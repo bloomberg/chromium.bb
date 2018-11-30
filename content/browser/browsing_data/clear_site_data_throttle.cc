@@ -14,7 +14,9 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/browser/browsing_data/clear_site_data_utils.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,6 +75,21 @@ int ParametersMask2(bool clear_cookies, bool clear_storage, bool clear_cache) {
 void JumpFromUIToIOThread(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, std::move(callback));
+}
+
+BrowserContext* GetBrowserContext(
+    int process_id,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter) {
+  // TODO(dullweber): Could we always use RenderProcessHost?
+  WebContents* web_contents = web_contents_getter.Run();
+  if (web_contents)
+    return web_contents->GetBrowserContext();
+
+  RenderProcessHost* process_host = RenderProcessHostImpl::FromID(process_id);
+  if (process_host)
+    return process_host->GetBrowserContext();
+
+  return nullptr;
 }
 
 // Outputs a single |formatted_message| on the UI thread.
@@ -395,12 +412,13 @@ void ClearSiteDataThrottle::ExecuteClearingTask(const url::Origin& origin,
                                                 bool clear_cache,
                                                 base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto* request_info = ResourceRequestInfo::ForRequest(request_);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &clear_site_data_utils::ClearSiteData,
-          ResourceRequestInfo::ForRequest(request_)
-              ->GetWebContentsGetterForRequest(),
+          base::BindRepeating(&GetBrowserContext, request_info->GetChildID(),
+                              request_info->GetWebContentsGetterForRequest()),
           origin, clear_cookies, clear_storage, clear_cache,
           base::BindOnce(&JumpFromUIToIOThread, std::move(callback))));
 }

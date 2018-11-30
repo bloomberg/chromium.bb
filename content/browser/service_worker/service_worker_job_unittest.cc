@@ -769,6 +769,44 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
   EXPECT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
 }
 
+TEST_F(ServiceWorkerJobTest, AbortScope) {
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options1;
+  options1.scope = GURL("https://www.example.com/1");
+  blink::mojom::ServiceWorkerRegistrationOptions options2;
+  options2.scope = GURL("https://www.example.com/2");
+
+  bool registration1_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration1;
+  job_coordinator()->Register(
+      script_url, options1,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                       &registration1_called, &registration1));
+
+  bool registration2_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration2;
+  job_coordinator()->Register(
+      script_url, options2,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
+                       &registration2_called, &registration2));
+
+  ASSERT_FALSE(registration1_called);
+  ASSERT_FALSE(registration2_called);
+  job_coordinator()->Abort(options1.scope);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(registration1_called);
+  ASSERT_TRUE(registration2_called);
+
+  registration1 = FindRegistrationForScope(
+      options1.scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
+  EXPECT_EQ(nullptr, registration1);
+
+  registration2 = FindRegistrationForScope(options2.scope,
+                                           blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_NE(nullptr, registration2);
+}
+
 // Tests that the waiting worker enters the 'redundant' state upon
 // unregistration.
 TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
