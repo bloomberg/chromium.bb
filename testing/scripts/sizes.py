@@ -8,7 +8,9 @@ import json
 import os
 import sys
 
+
 import common
+
 
 PERF_DASHBOARD_URL = 'https://chromeperf.appspot.com'
 
@@ -26,30 +28,33 @@ def main_run(script_args):
   parser.add_argument('prefix')
   args = parser.parse_args(script_args.args)
 
-  runtest_args = [
-      '--test-type',
-      'sizes',
+  with common.temporary_file() as tempfile_path:
+    runtest_args = [
+      '--test-type', 'sizes',
       '--run-python-script',
-  ]
-  if args.perf_id:
-    runtest_args.extend([
-        '--perf-id',
-        args.perf_id,
-        '--results-url=%s' % args.results_url,
-        '--perf-dashboard-id=sizes',
-        '--annotate=graphing',
-    ])
-  sizes_cmd = [
-      os.path.join(common.SRC_DIR, 'infra', 'scripts', 'legacy', 'scripts',
-                   'slave', 'chromium', 'sizes.py')
-  ]
-  if args.platform:
-    sizes_cmd.extend(['--platform', args.platform])
-  rc = common.run_runtest(script_args, runtest_args + sizes_cmd)
+    ]
+    if args.perf_id:
+      runtest_args.extend([
+          '--perf-id', args.perf_id,
+          '--results-url=%s' % args.results_url,
+          '--perf-dashboard-id=sizes',
+          '--annotate=graphing',
+      ])
+    sizes_cmd = [
+        os.path.join(
+            common.SRC_DIR, 'infra', 'scripts', 'legacy', 'scripts', 'slave',
+            'chromium', 'sizes.py'),
+        '--failures', tempfile_path
+    ]
+    if args.platform:
+      sizes_cmd.extend(['--platform', args.platform])
+    rc = common.run_runtest(script_args, runtest_args + sizes_cmd)
+    with open(tempfile_path) as f:
+      failures = json.load(f)
 
   json.dump({
-      'valid': rc == 0,
-      'failures': [],
+      'valid': (rc == 0 or rc == 125),
+      'failures': failures,
   }, script_args.output)
 
   return rc
@@ -60,16 +65,17 @@ def main_compile_targets(script_args):
   args = parser.parse_args(script_args.args)
 
   _COMPILE_TARGETS = {
-      'android-cronet': ['cronet'],
-      'android-webview': ['libwebviewchromium'],
+    'android-cronet': ['cronet'],
+    'android-webview': ['libwebviewchromium'],
   }
 
-  json.dump(_COMPILE_TARGETS.get(args.platform, ['chrome']), script_args.output)
+  json.dump(_COMPILE_TARGETS.get(args.platform, ['chrome']),
+            script_args.output)
 
 
 if __name__ == '__main__':
   funcs = {
-      'run': main_run,
-      'compile_targets': main_compile_targets,
+    'run': main_run,
+    'compile_targets': main_compile_targets,
   }
   sys.exit(common.run_script(sys.argv[1:], funcs))

@@ -1649,10 +1649,6 @@
     ],
     "scripts": [
       {
-        "name": "check_static_initializers",
-        "script": "check_static_initializers.py"
-      },
-      {
         "name": "checkdeps",
         "script": "checkdeps.py"
       },
@@ -4285,10 +4281,6 @@
       }
     ],
     "scripts": [
-      {
-        "name": "check_static_initializers",
-        "script": "check_static_initializers.py"
-      },
       {
         "name": "checkdeps",
         "script": "checkdeps.py"
