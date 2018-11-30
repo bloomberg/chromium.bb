@@ -12,6 +12,7 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -25,50 +26,6 @@ namespace {
 const char kExpectedSourceName[] = "web";
 
 }  // namespace
-
-class MediaSessionStateObserver
-    : public media_session::mojom::MediaSessionObserver {
- public:
-  explicit MediaSessionStateObserver(
-      media_session::mojom::MediaSession* media_session)
-      : binding_(this) {
-    media_session::mojom::MediaSessionObserverPtr observer;
-    binding_.Bind(mojo::MakeRequest(&observer));
-    media_session->AddObserver(std::move(observer));
-  }
-
-  ~MediaSessionStateObserver() override = default;
-
-  // media_session::mojom::MediaSessionObserver
-  void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {
-    if (desired_state_.has_value() &&
-        desired_state_.value() == session_info->state) {
-      run_loop_.Quit();
-      return;
-    }
-
-    session_info_ = std::move(session_info);
-  }
-
-  void WaitForState(
-      media_session::mojom::MediaSessionInfo::SessionState state) {
-    if (session_info_ && state == session_info_->state)
-      return;
-
-    desired_state_ = state;
-    run_loop_.Run();
-  }
-
- protected:
-  base::RunLoop run_loop_;
-  mojo::Binding<media_session::mojom::MediaSessionObserver> binding_;
-  base::Optional<media_session::mojom::MediaSessionInfo::SessionState>
-      desired_state_;
-  media_session::mojom::MediaSessionInfoPtr session_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionStateObserver);
-};
 
 class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
  protected:
@@ -121,14 +78,16 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     }
 
     {
-      MediaSessionStateObserver state_observer(media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *media_session);
+      observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
 
     {
-      MediaSessionStateObserver state_observer(other_media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *other_media_session);
+      observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kInactive);
     }
 
@@ -144,16 +103,18 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     }
 
     {
-      MediaSessionStateObserver state_observer(media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *media_session);
+      observer.WaitForState(
           use_separate_group_id
               ? media_session::mojom::MediaSessionInfo::SessionState::kSuspended
               : media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
 
     {
-      MediaSessionStateObserver state_observer(other_media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *other_media_session);
+      observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kActive);
     }
 
@@ -167,14 +128,16 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     }
 
     {
-      MediaSessionStateObserver state_observer(media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *media_session);
+      observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kInactive);
     }
 
     {
-      MediaSessionStateObserver state_observer(other_media_session);
-      state_observer.WaitForState(
+      media_session::test::MockMediaSessionMojoObserver observer(
+          *other_media_session);
+      observer.WaitForState(
           media_session::mojom::MediaSessionInfo::SessionState::kInactive);
     }
   }

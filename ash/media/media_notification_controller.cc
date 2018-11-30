@@ -122,6 +122,11 @@ void MediaNotificationController::MediaSessionInfoChanged(
     view_->UpdateWithMediaSessionInfo(session_info_);
 }
 
+void MediaNotificationController::MediaSessionMetadataChanged(
+    const base::Optional<media_session::MediaMetadata>& metadata) {
+  NOTIMPLEMENTED();
+}
+
 void MediaNotificationController::FlushForTesting() {
   media_controller_ptr_.FlushForTesting();
 }

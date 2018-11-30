@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -35,9 +36,12 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr session) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<MediaMetadata>& metadata) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
+  const base::Optional<MediaMetadata>& WaitForMetadata();
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -45,6 +49,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
 
  private:
   mojom::MediaSessionInfoPtr session_info_;
+  base::Optional<base::Optional<MediaMetadata>> session_metadata_;
+
+  bool waiting_for_metadata_ = false;
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
   base::RunLoop run_loop_;
@@ -63,13 +70,13 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   ~MockMediaSession() override;
 
   // mojom::MediaSession overrides.
-  void Suspend(SuspendType) override;
-  void Resume(SuspendType) override;
+  void Suspend(SuspendType type) override;
+  void Resume(SuspendType type) override;
   void StartDucking() override;
   void StopDucking() override;
-  void GetMediaSessionInfo(GetMediaSessionInfoCallback) override;
-  void AddObserver(mojom::MediaSessionObserverPtr) override;
-  void GetDebugInfo(GetDebugInfoCallback) override;
+  void GetMediaSessionInfo(GetMediaSessionInfoCallback callback) override;
+  void AddObserver(mojom::MediaSessionObserverPtr observer) override;
+  void GetDebugInfo(GetDebugInfoCallback callback) override;
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
@@ -80,8 +87,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   base::UnguessableToken GetRequestIdFromClient();
 
   base::UnguessableToken RequestAudioFocusFromService(
-      mojom::AudioFocusManagerPtr&,
-      mojom::AudioFocusType);
+      mojom::AudioFocusManagerPtr& service,
+      mojom::AudioFocusType audio_foucs_type);
 
   base::UnguessableToken RequestGroupedAudioFocusFromService(
       mojom::AudioFocusManagerPtr& service,
@@ -94,6 +101,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
     return afr_client_.get();
   }
   void FlushForTesting();
+
+  void SimulateMetadataChanged(const base::Optional<MediaMetadata>& metadata);
 
   int prev_track_count() const { return prev_track_count_; }
   int next_track_count() const { return next_track_count_; }

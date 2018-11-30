@@ -7,10 +7,12 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -38,6 +40,8 @@ class MediaController : public mojom::MediaController,
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(
       mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<MediaMetadata>&) override;
 
   // Sets the media session that the controller should be bound to. If the
   // session is already bound to the same session then we will return false.
@@ -52,6 +56,9 @@ class MediaController : public mojom::MediaController,
 
   // The current info for the |session_|.
   mojom::MediaSessionInfoPtr session_info_;
+
+  // The current metadata for |session_|.
+  base::Optional<MediaMetadata> session_metadata_;
 
   // Raw pointer to the local proxy. This is used for sending control events to
   // the underlying MediaSession.
