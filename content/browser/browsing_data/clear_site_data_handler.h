@@ -20,6 +20,7 @@
 namespace content {
 
 class WebContents;
+class BrowserContext;
 
 // This handler parses the Clear-Site-Data header and executes the clearing
 // of browsing data. The resource load is delayed until the header is parsed
@@ -67,6 +68,7 @@ class CONTENT_EXPORT ClearSiteDataHandler {
   // method calls ParseHeader() to parse it, and then ExecuteClearingTask() if
   // applicable.
   static void HandleHeader(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
       const GURL& url,
       const std::string& header_value,
@@ -83,6 +85,7 @@ class CONTENT_EXPORT ClearSiteDataHandler {
 
  protected:
   ClearSiteDataHandler(
+      base::RepeatingCallback<BrowserContext*()> browser_context_getter,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
       const GURL& url,
       const std::string& header_value,
@@ -136,6 +139,7 @@ class CONTENT_EXPORT ClearSiteDataHandler {
 
  private:
   // Required to clear the data.
+  base::RepeatingCallback<BrowserContext*()> browser_context_getter_;
   base::RepeatingCallback<WebContents*()> web_contents_getter_;
 
   // Target URL whose data will be cleared.

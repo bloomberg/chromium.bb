@@ -127,22 +127,21 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
 }  // namespace
 
 void ClearSiteData(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const base::RepeatingCallback<BrowserContext*()>& browser_context_getter,
     const url::Origin& origin,
     bool clear_cookies,
     bool clear_storage,
     bool clear_cache,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = web_contents_getter.Run();
-  // TODO(crbug.com/898465): Fix Clear-Site-Data for requests without
-  // WebContents. (E.g. service worker updates)
-  if (!web_contents) {
+  BrowserContext* browser_context = browser_context_getter.Run();
+  if (!browser_context) {
     std::move(callback).Run();
     return;
   }
-  (new SiteDataClearer(web_contents->GetBrowserContext(), origin, clear_cookies,
-                       clear_storage, clear_cache, std::move(callback)))
+  (new SiteDataClearer(browser_context, origin, clear_cookies, clear_storage,
+                       clear_cache, std::move(callback)))
+
       ->RunAndDestroySelfWhenDone();
 }
 

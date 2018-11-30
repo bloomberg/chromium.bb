@@ -36,6 +36,10 @@ namespace {
 
 const char kClearCookiesHeader[] = "\"cookies\"";
 
+BrowserContext* FakeBrowserContextGetter() {
+  return nullptr;
+}
+
 WebContents* FakeWebContentsGetter() {
   return nullptr;
 }
@@ -44,13 +48,15 @@ WebContents* FakeWebContentsGetter() {
 // functionality.
 class TestHandler : public ClearSiteDataHandler {
  public:
-  TestHandler(base::RepeatingCallback<WebContents*()> web_contents_getter,
+  TestHandler(base::RepeatingCallback<BrowserContext*()> browser_context_getter,
+              base::RepeatingCallback<WebContents*()> web_contents_getter,
               const GURL& url,
               const std::string& header_value,
               int load_flags,
               base::OnceClosure callback,
               std::unique_ptr<ConsoleMessagesDelegate> delegate)
-      : ClearSiteDataHandler(std::move(web_contents_getter),
+      : ClearSiteDataHandler(browser_context_getter,
+                             web_contents_getter,
                              url,
                              header_value,
                              load_flags,
@@ -222,7 +228,8 @@ TEST_F(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
       net::TestURLRequestContext context;
       std::unique_ptr<net::URLRequest> request(context.CreateRequest(
           url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-      TestHandler handler(base::BindRepeating(&FakeWebContentsGetter),
+      TestHandler handler(base::BindRepeating(&FakeBrowserContextGetter),
+                          base::BindRepeating(&FakeWebContentsGetter),
                           request->url(), test_case.header,
                           request->load_flags(), base::DoNothing(),
                           std::make_unique<ConsoleMessagesDelegate>());
@@ -292,6 +299,7 @@ TEST_F(ClearSiteDataHandlerTest, ClearCookieSuccess) {
                             nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   std::vector<Message> message_buffer;
   TestHandler handler(
+      base::BindRepeating(&FakeBrowserContextGetter),
       base::BindRepeating(&FakeWebContentsGetter), request->url(),
       kClearCookiesHeader, request->load_flags(), base::DoNothing(),
       std::make_unique<VectorConsoleMessagesDelegate>(&message_buffer));
@@ -317,6 +325,7 @@ TEST_F(ClearSiteDataHandlerTest, LoadDoNotSaveCookies) {
   request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   std::vector<Message> message_buffer;
   TestHandler handler(
+      base::BindRepeating(&FakeBrowserContextGetter),
       base::BindRepeating(&FakeWebContentsGetter), request->url(),
       kClearCookiesHeader, request->load_flags(), base::DoNothing(),
       std::make_unique<VectorConsoleMessagesDelegate>(&message_buffer));
@@ -364,6 +373,7 @@ TEST_F(ClearSiteDataHandlerTest, InvalidOrigin) {
                               nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
     std::vector<Message> message_buffer;
     TestHandler handler(
+        base::BindRepeating(&FakeBrowserContextGetter),
         base::BindRepeating(&FakeWebContentsGetter), request->url(),
         kClearCookiesHeader, request->load_flags(), base::DoNothing(),
         std::make_unique<VectorConsoleMessagesDelegate>(&message_buffer));
@@ -456,6 +466,7 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     // navigation, redirect, or subresource header responses.
     for (size_t i = 0; i < base::size(kTestCases); i++) {
       TestHandler handler(
+          base::BindRepeating(&FakeBrowserContextGetter),
           base::BindRepeating(&FakeWebContentsGetter), GURL(kTestCases[i].url),
           kTestCases[i].header, request->load_flags(), base::DoNothing(),
           std::make_unique<StringConsoleMessagesDelegate>(&output_buffer));

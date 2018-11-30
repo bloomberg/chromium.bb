@@ -6,13 +6,13 @@
 #define CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_UTILS_H_
 
 #include "base/callback_forward.h"
-#include "content/public/browser/resource_request_info.h"
 
 namespace url {
 class Origin;
 }
 
 namespace content {
+class BrowserContext;
 namespace clear_site_data_utils {
 
 // Removes browsing data associated with |origin| when the Clear-Site-Data
@@ -21,7 +21,7 @@ namespace clear_site_data_utils {
 // thread when done.
 // TODO(dullweber): Consider merging back when network service is shipped.
 void ClearSiteData(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const base::RepeatingCallback<BrowserContext*()>& browser_context_getter,
     const url::Origin& origin,
     bool clear_cookies,
     bool clear_storage,
