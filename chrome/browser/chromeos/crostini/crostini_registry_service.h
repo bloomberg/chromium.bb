@@ -90,6 +90,7 @@ class CrostiniRegistryService : public KeyedService {
 
     // Whether this app should scale up when displayed.
     bool IsScaled() const;
+    bool CanUninstall() const;
 
     // Whether this app is the default terminal app.
     bool is_terminal_app() const { return is_terminal_app_; }

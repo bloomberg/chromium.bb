@@ -184,6 +184,12 @@ const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables an uninstall option in the right-click menu of Crostini (Linux)
+// applications.
+// TODO(iby): Remove once remaining bugs fixed.
+const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether the UsageTimeLimit policy should be applied to the user.
 const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

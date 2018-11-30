@@ -6,7 +6,10 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ui_base_features.h"
 
@@ -18,17 +21,39 @@ CrostiniAppContextMenu::CrostiniAppContextMenu(
 
 CrostiniAppContextMenu::~CrostiniAppContextMenu() = default;
 
-// TODO(timloh): Add support for "App Info", "Uninstall", and possibly actions
-// defined in .desktop files.
+bool CrostiniAppContextMenu::IsUninstallable() const {
+  if (!crostini::IsCrostiniEnabled(profile())) {
+    return false;
+  }
+  if (app_id() == crostini::kCrostiniTerminalId) {
+    return true;  // Crostini can always be uninstalled if enabled.
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kCrostiniAppUninstallGui)) {
+    return false;
+  }
+
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
+  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(app_id());
+  if (registration) {
+    return registration->CanUninstall();
+  }
+  return false;
+}
+
+// TODO(timloh): Add support for "App Info" and possibly actions defined in
+// .desktop files.
 void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   app_list::AppContextMenu::BuildMenu(menu_model);
 
-  if (app_id() == crostini::kCrostiniTerminalId) {
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
+  if (IsUninstallable()) {
     AddContextMenuOption(menu_model, ash::UNINSTALL,
                          IDS_APP_LIST_UNINSTALL_ITEM);
+  }
+
+  if (app_id() == crostini::kCrostiniTerminalId) {
     AddContextMenuOption(menu_model, ash::STOP_APP,
                          IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
   }
@@ -36,9 +61,7 @@ void CrostiniAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
 bool CrostiniAppContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::UNINSTALL) {
-    if (app_id() == crostini::kCrostiniTerminalId) {
-      return crostini::IsCrostiniEnabled(profile());
-    }
+    return IsUninstallable();
   } else if (command_id == ash::STOP_APP) {
     if (app_id() == crostini::kCrostiniTerminalId) {
       return crostini::IsCrostiniRunning(profile());
