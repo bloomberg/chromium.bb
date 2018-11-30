@@ -9,6 +9,7 @@
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -139,6 +140,40 @@ TEST_F(WindowUtilTest, MoveWindowToDisplay) {
             screen->GetDisplayNearestWindow(window.get()).id());
   EXPECT_EQ(original_container_id, window->parent()->id());
   EXPECT_EQ(original_root, window->GetRootWindow());
+}
+
+TEST_F(WindowUtilTest, RemoveTransientDescendants) {
+  // Create two windows which have no transient children or parents. Test that
+  // neither of them get removed when running RemoveTransientDescendants.
+  auto window1 = CreateTestWindow();
+  auto window2 = CreateTestWindow();
+  std::vector<aura::Window*> window_list = {window1.get(), window2.get()};
+  RemoveTransientDescendants(&window_list);
+  ASSERT_EQ(2u, window_list.size());
+
+  // Create two windows whose transient roots are |window1|. One is a direct
+  // transient child and one is a transient descendant. Test that both get
+  // removed when calling RemoveTransientDescendants.
+  auto descendant1 = CreateTestWindow();
+  auto descendant2 = CreateTestWindow();
+  ::wm::AddTransientChild(descendant1.get(), descendant2.get());
+  ::wm::AddTransientChild(window1.get(), descendant1.get());
+  window_list.push_back(descendant1.get());
+  window_list.push_back(descendant2.get());
+  RemoveTransientDescendants(&window_list);
+  ASSERT_EQ(2u, window_list.size());
+  ASSERT_TRUE(base::ContainsValue(window_list, window1.get()));
+  ASSERT_TRUE(base::ContainsValue(window_list, window2.get()));
+
+  // Create a window which has a transient parent that is not in |window_list|.
+  // Test that the window is not removed when calling
+  // RemoveTransientDescendants.
+  auto window3 = CreateTestWindow();
+  auto descendant3 = CreateTestWindow();
+  ::wm::AddTransientChild(window3.get(), descendant3.get());
+  window_list.push_back(descendant3.get());
+  RemoveTransientDescendants(&window_list);
+  EXPECT_EQ(3u, window_list.size());
 }
 
 }  // namespace wm

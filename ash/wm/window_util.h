@@ -6,6 +6,7 @@
 #define ASH_WM_WINDOW_UTIL_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ui/base/ui_base_types.h"
@@ -108,6 +109,12 @@ ASH_EXPORT bool ShouldExcludeForBothCycleListAndOverview(
     const aura::Window* window);
 ASH_EXPORT bool ShouldExcludeForCycleList(const aura::Window* window);
 ASH_EXPORT bool ShouldExcludeForOverview(const aura::Window* window);
+
+// Removes all windows in |out_window_list| whose transient root is also in
+// |out_window_list|. This is used by overview and window cycler to avoid
+// showing multiple previews for windows linked by transient.
+ASH_EXPORT void RemoveTransientDescendants(
+    std::vector<aura::Window*>* out_window_list);
 
 }  // namespace wm
 }  // namespace ash

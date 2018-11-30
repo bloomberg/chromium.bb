@@ -50,12 +50,6 @@ bool immediate_close_for_tests = false;
 // Delay closing window to allow it to shrink and fade out.
 constexpr int kCloseWindowDelayInMilliseconds = 150;
 
-aura::Window* GetTransientRoot(aura::Window* window) {
-  while (window && ::wm::GetTransientParent(window))
-    window = ::wm::GetTransientParent(window);
-  return window;
-}
-
 ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType(
     aura::Window* window) {
   if (window->bounds().width() >
@@ -446,7 +440,7 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
 }
 
 void ScopedTransformOverviewWindow::CloseWidget() {
-  aura::Window* parent_window = GetTransientRoot(window_);
+  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
   if (parent_window)
     wm::CloseWidgetForWindow(parent_window);
 }
