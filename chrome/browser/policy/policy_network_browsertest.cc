@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/test_root_certs.h"
@@ -164,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, QuicDisallowedForSystem) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->system_network_context_manager()
@@ -179,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse,
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->safe_browsing_service()
@@ -193,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, QuicDisallowedForProfile) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
@@ -228,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForSystem) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->system_network_context_manager()
@@ -242,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForSafeBrowsing) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->safe_browsing_service()
@@ -256,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForProfile) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())

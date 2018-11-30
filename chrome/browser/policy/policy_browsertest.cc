@@ -817,7 +817,7 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   void SetShouldRequireCTForTesting(bool* required) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (content::IsOutOfProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
       content::ServiceManagerConnection::GetForProcess()
           ->GetConnector()

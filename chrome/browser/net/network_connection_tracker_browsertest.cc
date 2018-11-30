@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
@@ -158,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
                        SimulateNetworkServiceCrash) {
   // Out-of-process network service is not enabled, so network service's crash
   // and restart aren't applicable.
-  if (!network_service_enabled())
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   network::NetworkConnectionTracker* tracker =
