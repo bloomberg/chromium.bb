@@ -204,8 +204,6 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
-  height: var(--md-title-height);
-  line-height: var(--md-title-height);
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
@@ -213,6 +211,9 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   width: 96px;
 }
 
+.md-title span {
+  line-height: var(--md-title-height);
+}
 /* Font weight on Mac and ChromeOS looks heavier on default background and
  * needs to be reduced. */
 body.mac-chromeos .md-title {

@@ -773,7 +773,8 @@ function renderMaterialDesignTile(data) {
   mdTitleContainer.className = CLASSES.MD_TITLE_CONTAINER;
   let mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
-  mdTitle.innerText = data.title;
+  let mdTitleTextwrap = document.createElement('span');
+  mdTitleTextwrap.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
   // Windows font family fallback to Segoe
   if (navigator.userAgent.indexOf('Windows') > -1) {
@@ -783,6 +784,7 @@ function renderMaterialDesignTile(data) {
   mdTileInner.appendChild(mdTitleContainer);
   mdTile.appendChild(mdTileInner);
   mdTileContainer.appendChild(mdTile);
+  mdTitle.appendChild(mdTitleTextwrap);
 
   if (!data.isAddButton) {
     let mdMenu = document.createElement('button');
