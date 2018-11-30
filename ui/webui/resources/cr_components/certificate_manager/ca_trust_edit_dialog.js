@@ -60,7 +60,7 @@ Polymer({
   onOkTap_: function() {
     this.$.spinner.active = true;
 
-    var whenDone = this.model.id ?
+    const whenDone = this.model.id ?
         this.browserProxy_.editCaCertificateTrust(
             this.model.id, this.$.ssl.checked, this.$.email.checked,
             this.$.objSign.checked) :
