@@ -153,6 +153,20 @@ cr_slider.SliderTick;
         value: false,
         reflectToAttribute: true,
       },
+
+      /**
+       * |transiting_| is set to true when bar is touched or clicked. This
+       * triggers a single position transition effect to take place for the
+       * knob, bar and label. When the transition is complete, |transiting_| is
+       * set to false resulting in no transition effect during dragging, manual
+       * value updates and keyboard events.
+       * @private
+       */
+      transiting_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
     },
 
     hostAttributes: {
@@ -317,6 +331,11 @@ cr_slider.SliderTick;
       }
     },
 
+    /** @private */
+    onKnobTransitionEnd_: function() {
+      this.transiting_ = false;
+    },
+
     /**
      * When the left-mouse button is pressed, the knob location is updated and
      * dragging starts.
@@ -328,6 +347,7 @@ cr_slider.SliderTick;
         return;
 
       this.dragging = true;
+      this.transiting_ = true;
       this.updateValueFromClientX_(event.clientX);
       // If there is a ripple animation in progress, setTimeout will hold off on
       // updating |holdDown_|.
