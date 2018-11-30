@@ -9,6 +9,9 @@
 #include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_targeter.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -516,6 +519,42 @@ TEST_F(NativeViewHostAuraTest, FocusManagerUpdatedDuringDestruction) {
 
   child_widget.reset();
   EXPECT_EQ(nullptr, toplevel()->GetFocusManager()->GetFocusedView());
+}
+
+namespace {
+
+ui::EventTarget* GetTarget(aura::Window* window, const gfx::Point& location) {
+  gfx::Point root_location = location;
+  aura::Window::ConvertPointToTarget(window, window->GetRootWindow(),
+                                     &root_location);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, root_location, root_location,
+                       base::TimeTicks::Now(), 0, 0);
+  return window->GetHost()->dispatcher()->event_targeter()->FindTargetForEvent(
+      window->GetRootWindow(), &event);
+}
+
+}  // namespace
+
+TEST_F(NativeViewHostAuraTest, TopInsets) {
+  CreateHost();
+  toplevel()->SetBounds(gfx::Rect(20, 20, 100, 100));
+  toplevel()->Show();
+
+  aura::Window* toplevel_window = toplevel()->GetNativeWindow();
+  aura::Window* child_window = child()->GetNativeWindow();
+  EXPECT_EQ(child_window, GetTarget(toplevel_window, gfx::Point(1, 1)));
+  EXPECT_EQ(child_window, GetTarget(toplevel_window, gfx::Point(1, 11)));
+
+  host()->SetHitTestTopInset(10);
+  EXPECT_EQ(toplevel_window, GetTarget(toplevel_window, gfx::Point(1, 1)));
+  EXPECT_EQ(child_window, GetTarget(toplevel_window, gfx::Point(1, 11)));
+
+  host()->SetHitTestTopInset(0);
+  EXPECT_EQ(child_window, GetTarget(toplevel_window, gfx::Point(1, 1)));
+  EXPECT_EQ(child_window, GetTarget(toplevel_window, gfx::Point(1, 11)));
+
+  DestroyHost();
+  DestroyTopLevel();
 }
 
 }  // namespace views

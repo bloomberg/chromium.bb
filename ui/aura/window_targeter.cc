@@ -29,6 +29,21 @@ bool AreInsetsEmptyOrPositive(const gfx::Insets& insets) {
          insets.bottom() >= 0;
 }
 
+void UpdateMusIfNecessary(aura::Window* window,
+                          const gfx::Insets& mouse_extend,
+                          const gfx::Insets& touch_extend) {
+  if (!window || window->env()->mode() != Env::Mode::MUS)
+    return;
+
+  // Negative insets are used solely to extend the hit-test region of child
+  // windows, which is not needed by code using MUS (negative insets are only
+  // used in the server).
+  if (AreInsetsEmptyOrPositive(mouse_extend) &&
+      AreInsetsEmptyOrPositive(touch_extend)) {
+    WindowPortMus::Get(window)->SetHitTestInsets(mouse_extend, touch_extend);
+  }
+}
+
 }  // namespace
 
 WindowTargeter::WindowTargeter() {}
@@ -224,6 +239,9 @@ Window* WindowTargeter::FindTargetForKeyEvent(Window* window) {
 }
 
 void WindowTargeter::OnInstalled(Window* window) {
+  // Needs to clear the existing insets when uninstalled.
+  if (!window)
+    aura::UpdateMusIfNecessary(window_, gfx::Insets(), gfx::Insets());
   window_ = window;
   UpdateMusIfNecessary();
 }
@@ -334,16 +352,7 @@ bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* w) const {
 
 // TODO: this function should go away once https://crbug.com/879308 is fixed.
 void WindowTargeter::UpdateMusIfNecessary() {
-  if (!window_ || window_->env()->mode() != Env::Mode::MUS)
-    return;
-
-  // Negative insets are used solely to extend the hit-test region of child
-  // windows, which is not needed by code using MUS (negative insets are only
-  // used in the server).
-  if (AreInsetsEmptyOrPositive(mouse_extend_) &&
-      AreInsetsEmptyOrPositive(touch_extend_)) {
-    WindowPortMus::Get(window_)->SetHitTestInsets(mouse_extend_, touch_extend_);
-  }
+  aura::UpdateMusIfNecessary(window_, mouse_extend_, touch_extend_);
 }
 
 Window* WindowTargeter::FindTargetForNonKeyEvent(Window* root_window,
