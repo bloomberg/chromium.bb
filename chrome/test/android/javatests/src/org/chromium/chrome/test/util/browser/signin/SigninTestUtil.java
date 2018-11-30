@@ -10,7 +10,6 @@ import android.support.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
 import org.chromium.components.signin.AccountIdProvider;
@@ -43,8 +42,6 @@ public final class SigninTestUtil {
      */
     @WorkerThread
     public static void setUpAuthForTest() {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> ProcessInitializationHandler.getInstance().initializePreNative());
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
