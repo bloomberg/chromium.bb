@@ -1,8 +1,8 @@
 AXWebArea
-++AXTextArea AXValue='Editable paragraph<newline><newline>Non-editable paragraph' AXEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph' AXHighestEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph'
-++++AXGroup AXEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph' AXHighestEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph'
-++++++AXStaticText AXValue='Editable paragraph' AXEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph' AXHighestEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph'
-++++AXGroup AXEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph' AXHighestEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph'
-++++++AXStaticText AXValue='Non-editable paragraph' AXEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph' AXHighestEditableAncestor='AXTextArea Editable paragraph<newline><newline>Non-editable paragraph'
+++AXTextArea AXValue='Editable text/Non-editable text' AXEditableAncestor='AXTextArea Editable text/Non-editable text' AXHighestEditableAncestor='AXTextArea Editable text/Non-editable text'
+++++AXGroup AXEditableAncestor='AXTextArea Editable text/Non-editable text' AXHighestEditableAncestor='AXTextArea Editable text/Non-editable text'
+++++++AXStaticText AXValue='Editable text/' AXEditableAncestor='AXTextArea Editable text/Non-editable text' AXHighestEditableAncestor='AXTextArea Editable text/Non-editable text'
+++++AXGroup AXEditableAncestor='AXTextArea Editable text/Non-editable text' AXHighestEditableAncestor='AXTextArea Editable text/Non-editable text'
+++++++AXStaticText AXValue='Non-editable text' AXEditableAncestor='AXTextArea Editable text/Non-editable text' AXHighestEditableAncestor='AXTextArea Editable text/Non-editable text'
 ++AXGroup
 ++++AXStaticText AXValue='Fake-editable'
