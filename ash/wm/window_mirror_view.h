@@ -40,9 +40,17 @@ class WindowMirrorView : public views::View {
   void Layout() override;
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
   void OnVisibleBoundsChanged() override;
+  void NativeViewHierarchyChanged() override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
 
  private:
   void InitLayerOwner();
+
+  // Ensures that the |target_| window is in the list of mirror windows that is
+  // set as a property on the |source_| window. This method triggers the
+  // OnWindowPropertyChanged() on WindowObservers.
+  void UpdateSourceWindowProperty();
 
   // Gets the root of the layer tree that was lifted from |source_| (and is now
   // a child of |this->layer()|).
@@ -54,6 +62,9 @@ class WindowMirrorView : public views::View {
 
   // The original window that is being represented by |this|.
   aura::Window* source_;
+
+  // The window which contains this mirror view.
+  aura::Window* target_ = nullptr;
 
   // Retains ownership of the mirror layer tree. This is lazily initialized
   // the first time the view becomes visible.

@@ -174,6 +174,9 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // embedded).
   virtual void OnEmbeddedAppDisconnected(Window* window) {}
 
+  // Called when the occlusion state of |window| changes.
+  virtual void OnWindowOcclusionChanged(Window* window) {}
+
  protected:
   ~WindowObserver() override;
 };

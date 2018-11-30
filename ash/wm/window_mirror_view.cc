@@ -4,6 +4,9 @@
 
 #include "ash/wm/window_mirror_view.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
@@ -28,6 +31,23 @@ void EnsureAllChildrenAreVisible(ui::Layer* layer) {
   }
 }
 
+// Removes 1 instance of an element from a multiset.
+void EraseFromList(std::vector<aura::Window*>* targets, aura::Window* target) {
+  auto it = std::find(targets->begin(), targets->end(), target);
+  if (it != targets->end())
+    targets->erase(it);
+}
+
+void RemoveTargetWindowFromSource(aura::Window* target, aura::Window* source) {
+  if (!target || !source)
+    return;
+  std::vector<aura::Window*>* target_window_list =
+      source->GetProperty(aura::client::kMirrorWindowList);
+  if (!target_window_list)
+    return;
+  EraseFromList(target_window_list, target);
+}
+
 }  // namespace
 
 WindowMirrorView::WindowMirrorView(aura::Window* source,
@@ -40,8 +60,7 @@ WindowMirrorView::WindowMirrorView(aura::Window* source,
 WindowMirrorView::~WindowMirrorView() {
   // Make sure |source_| has outlived |this|. See crbug.com/681207
   DCHECK(source_->layer());
-  if (layer_owner_)
-    source_->ClearProperty(aura::client::kMirroringEnabledKey);
+  RemoveTargetWindowFromSource(target_, source_);
 }
 
 void WindowMirrorView::RecreateMirrorLayers() {
@@ -85,10 +104,51 @@ void WindowMirrorView::OnVisibleBoundsChanged() {
     InitLayerOwner();
 }
 
-void WindowMirrorView::InitLayerOwner() {
-  if (!layer_owner_)
-    source_->SetProperty(aura::client::kMirroringEnabledKey, true);
+void WindowMirrorView::NativeViewHierarchyChanged() {
+  View::NativeViewHierarchyChanged();
+  DCHECK(GetWidget());
+  UpdateSourceWindowProperty();
+}
 
+void WindowMirrorView::AddedToWidget() {
+  UpdateSourceWindowProperty();
+}
+
+void WindowMirrorView::RemovedFromWidget() {
+  RemoveTargetWindowFromSource(target_, source_);
+  target_ = nullptr;
+}
+
+void WindowMirrorView::UpdateSourceWindowProperty() {
+  DCHECK(GetWidget());
+  std::vector<aura::Window*>* target_window_list =
+      source_->GetProperty(aura::client::kMirrorWindowList);
+
+  // Remove 1 instance of |target_| from the list.
+  if (target_ && target_window_list)
+    EraseFromList(target_window_list, target_);
+
+  // Set and insert the new target window associated with this mirror view.
+  target_ = GetWidget()->GetNativeWindow();
+  target_->TrackOcclusionState();
+
+  // Allocate new memory for |target_window_list| here because as soon as a
+  // call is made to SetProperty, the previous memory will be deallocated.
+  auto temp_list =
+      target_window_list
+          ? std::make_unique<std::vector<aura::Window*>>(*target_window_list)
+          : std::make_unique<std::vector<aura::Window*>>();
+
+  temp_list->push_back(target_);
+
+  // Set the property to trigger a call to OnWindowPropertyChanged() on all the
+  // window observer.
+  // NOTE: This will deallocate the current property value so make sure new
+  // memory has been allocated for the property value.
+  source_->SetProperty(aura::client::kMirrorWindowList, temp_list.release());
+}
+
+void WindowMirrorView::InitLayerOwner() {
   layer_owner_ = ::wm::MirrorLayers(source_, false /* sync_bounds */);
 
   SetPaintToLayer();
