@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 
 #include "net/third_party/quic/core/quic_error_codes.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -85,7 +86,7 @@ void P2PQuicStreamImpl::OnStreamDataConsumed(size_t bytes_consumed) {
   QuicStream::OnStreamDataConsumed(bytes_consumed);
   if (bytes_consumed > 0) {
     write_buffered_amount_ -= bytes_consumed;
-    delegate_->OnWriteDataConsumed(bytes_consumed);
+    delegate_->OnWriteDataConsumed(SafeCast<uint32_t>(bytes_consumed));
   }
 }
 
