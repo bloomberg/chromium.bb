@@ -15,11 +15,13 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/audio/null_audio_sink.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_latency.h"
@@ -367,18 +369,53 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   // If we are re-initializing playback (e.g. switching media tracks), stop the
   // sink first.
-  if (state_ == kFlushed) {
+  if (state_ == kFlushed)
     sink_->Stop();
-    audio_clock_.reset();
-  }
 
   state_ = kInitializing;
   client_ = client;
 
+  // Always post |init_cb_| because |this| could be destroyed if initialization
+  // failed.
+  init_cb_ = BindToCurrentLoop(init_cb);
+
+  // Retrieve hardware device parameters asynchronously so we don't block the
+  // media thread on synchronous IPC.
+  sink_->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererImpl::OnDeviceInfoReceived,
+                     weak_factory_.GetWeakPtr(), stream, cdm_context));
+}
+
+void AudioRendererImpl::OnDeviceInfoReceived(
+    DemuxerStream* stream,
+    CdmContext* cdm_context,
+    OutputDeviceInfo output_device_info) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(client_);
+  DCHECK(stream);
+  DCHECK_EQ(stream->type(), DemuxerStream::AUDIO);
+  DCHECK(init_cb_);
+  DCHECK_EQ(state_, kInitializing);
+
+  // Fall-back to a fake audio sink if the audio device can't be setup; this
+  // allows video playback in cases where there is no audio hardware.
+  //
+  // TODO(dalecurtis): We could disable the audio track here too.
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererImpl.SinkStatus",
+                            output_device_info.device_status(),
+                            OUTPUT_DEVICE_STATUS_MAX + 1);
+  if (output_device_info.device_status() != OUTPUT_DEVICE_STATUS_OK) {
+    sink_ = new NullAudioSink(task_runner_);
+    output_device_info = sink_->GetOutputDeviceInfo();
+    MEDIA_LOG(ERROR, media_log_)
+        << "Output device error, falling back to null sink. device_status="
+        << output_device_info.device_status();
+  }
+
   current_decoder_config_ = stream->audio_decoder_config();
   DCHECK(current_decoder_config_.IsValidConfig());
 
-  auto output_device_info = sink_->GetOutputDeviceInfo();
   const AudioParameters& hw_params = output_device_info.output_params();
   ChannelLayout hw_channel_layout =
       hw_params.IsValid() ? hw_params.channel_layout() : CHANNEL_LAYOUT_NONE;
@@ -390,10 +427,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   audio_decoder_stream_->set_config_change_observer(base::BindRepeating(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
-
-  // Always post |init_cb_| because |this| could be destroyed if initialization
-  // failed.
-  init_cb_ = BindToCurrentLoop(init_cb);
 
   AudioCodec codec = stream->audio_decoder_config().codec();
   if (auto* mc = GetMediaClient())
@@ -532,8 +565,13 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   last_decoded_channels_ = stream->audio_decoder_config().channels();
 
-  audio_clock_.reset(
-      new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
+  {
+    // Set the |audio_clock_| under lock in case this is a reinitialize and some
+    // external caller to GetWallClockTimes() exists.
+    base::AutoLock lock(lock_);
+    audio_clock_.reset(
+        new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
+  }
 
   audio_decoder_stream_->Initialize(
       stream,

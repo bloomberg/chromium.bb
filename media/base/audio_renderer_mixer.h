@@ -48,7 +48,7 @@ class MEDIA_EXPORT AudioRendererMixer
 
   void SetPauseDelayForTesting(base::TimeDelta delay);
 
-  OutputDeviceInfo GetOutputDeviceInfo();
+  void GetOutputDeviceInfoAsync(AudioRendererSink::OutputDeviceInfoCB info_cb);
 
   // Returns true if called on rendering thread, otherwise false.
   bool CurrentThreadIsRenderingThread();

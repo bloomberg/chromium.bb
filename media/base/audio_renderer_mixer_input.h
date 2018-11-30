@@ -80,8 +80,26 @@ class MEDIA_EXPORT AudioRendererMixerInput
   bool playing_ = false;
   double volume_ GUARDED_BY(volume_lock_) = 1.0;
 
+  scoped_refptr<AudioRendererSink> sink_;
+  base::Optional<OutputDeviceInfo> device_info_;
+
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
+
+  void OnDeviceInfoReceived(OutputDeviceInfoCB info_cb,
+                            OutputDeviceInfo device_info);
+
+  // Method to help handle device changes. Must be static to ensure we can still
+  // execute the |switch_cb| even if the pipeline is destructed. Restarts (if
+  // necessary) Start() and Play() state with a new |sink| and |device_info|.
+  //
+  // |switch_cb| is the callback given to the SwitchOutputDevice() call.
+  // |sink| is a fresh sink which should be used if device info is good.
+  // |device_info| is the OutputDeviceInfo for |sink| after
+  // GetOutputDeviceInfoAsync() completes.
+  void OnDeviceSwitchReady(OutputDeviceStatusCB switch_cb,
+                           scoped_refptr<AudioRendererSink> sink,
+                           OutputDeviceInfo device_info);
 
   // AudioParameters received during Initialize().
   AudioParameters params_;
