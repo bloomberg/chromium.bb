@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -46,6 +47,8 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -56,6 +59,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
@@ -213,6 +218,13 @@ std::unique_ptr<KeyedService> BuildOfflinePageModel(
   return std::make_unique<offline_pages::StubOfflinePageModel>();
 }
 #endif
+
+std::unique_ptr<KeyedService> BuildPersonalDataManagerInstanceFor(
+    content::BrowserContext* context) {
+  return std::unique_ptr<KeyedService>(
+      autofill::PersonalDataManagerFactory::BuildPersonalDataManager(
+          autofill::TestAutofillProfileValidator::GetInstance(), context));
+}
 
 }  // namespace
 
@@ -434,6 +446,9 @@ void TestingProfile::Init() {
   if (launcher)
     launcher->MaybeSetProfile(this);
 #endif
+
+  autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+      this, base::BindRepeating(&BuildPersonalDataManagerInstanceFor));
 
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
   // anymore, after converting the PrefService to a PKS. Until then it must
