@@ -301,10 +301,7 @@ def main(args):
   if options.release:
     dex_cmd += ['--release']
   if options.min_api:
-    # TODO(mheikal): Actually pass min-api once catapult/devil dexdump has been
-    # updated. see https://crbug.com/892644
-    # dex_cmd += ['--min-api', options.min_api]
-    pass
+    dex_cmd += ['--min-api', options.min_api]
 
   is_dex = options.dex_path.endswith('.dex')
   is_jar = options.dex_path.endswith('.jar')
