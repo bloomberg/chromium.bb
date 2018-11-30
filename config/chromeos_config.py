@@ -3779,6 +3779,11 @@ def BranchScheduleConfig():
   # The three active release branches.
   # (<branch>, [<android PFQs>], <chrome PFQ>)
   RELEASES = [
+      ('release-R72-11316.B',
+       ['reef-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+
       ('release-R71-11151.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
@@ -3800,17 +3805,19 @@ def BranchScheduleConfig():
   RELEASE_SCHEDULES = [
       '0 6 * * *',
       '0 5 * * *',
+      '0 16 * * 0',
       # Normally this should be "triggered" but lakitu needs R69 for a little
       # longer. Please let lakitu-dev@google.com know before updating this.
       # TODO(b/111954990): create a master-lakitu-release builder and remove
       # this.
-      '0 4 * * 0',
+      '0 15 * * 0',
   ]
 
   PFQ_SCHEDULE = [
       '0 3,7,11,15,19,23 * * *',
       '0 2,6,10,14,18,22 * * *',
       '0 2,6,10,14,18,22 * * *',
+      '0 3,7,11,15,19,23 * * *',
   ]
 
   for (branch, android_pfq, chrome_pfq), schedule, android_schedule in zip(
