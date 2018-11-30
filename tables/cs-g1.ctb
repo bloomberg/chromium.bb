@@ -28,7 +28,7 @@
 #     Based on the official Czech Braille Standard
 # -------------------------------------------------------------------------------
 
-include basic-spaces.uti
+include spaces.uti
 
 include cs-chardefs.cti
 include braille-patterns.cti

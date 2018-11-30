@@ -40,10 +40,10 @@
 # Display upcodes
 include da-dk-octobraille.dis
 
-# FIXME: Overwrite the definition of NO-BREAK SPACE in basic-spaces.uti. Why? Is Danish really different? Or is it just a matter of fixing the YAML tests?
+# FIXME: Overwrite the definition of NO-BREAK SPACE in spaces.uti. Why? Is Danish really different? Or is it just a matter of fixing the YAML tests?
 space \x00a0 a NO-BREAK SPACE
 
-include basic-spaces.uti
+include spaces.uti
 
 ### Character definitions ###
 

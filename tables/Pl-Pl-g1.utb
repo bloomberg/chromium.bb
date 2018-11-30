@@ -22,7 +22,7 @@
 
 # Created & maintained by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
-include basic-spaces.uti
+include spaces.uti
 include text_nabcc.dis
 
 # ----------- define all chars --------------------------------------

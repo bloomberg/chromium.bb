@@ -26,7 +26,7 @@
 # Modifications done by Bert Frees based on input from Gatis Grintals
 # and Artis Raugulis.
 
-include basic-spaces.uti
+include spaces.uti
 include text_nabcc.dis
 
 # ----------- define all chars --------------------------------------

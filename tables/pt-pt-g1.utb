@@ -42,7 +42,7 @@
 
 locale Portugal
 
-include basic-spaces.uti
+include spaces.uti
 include text_nabcc.dis
 
 #--------------------- All chars definitions ------------------------------

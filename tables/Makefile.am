@@ -10,7 +10,7 @@ table_files = \
 	as.tbl \
 	awa.tbl \
 	aw-in-g1.utb \
-	basic-spaces.uti \
+	spaces.uti \
 	be-in-g1.utb \
 	bengali.cti \
 	bg.ctb \

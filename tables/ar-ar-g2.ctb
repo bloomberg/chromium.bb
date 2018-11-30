@@ -24,7 +24,7 @@
 #-author-name: Ikrami Ahmad
 #-author-email: ikrami.ahmad@gmail.com
 
-include basic-spaces.uti
+include spaces.uti
 
 include ar-ar-g1.utb
 

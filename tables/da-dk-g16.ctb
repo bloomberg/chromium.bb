@@ -32,7 +32,7 @@
 #+dots: 6
 #+direction: both
 
-include basic-spaces.uti
+include spaces.uti
 
 ### Character definitions
 

@@ -22,7 +22,7 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-include basic-spaces.uti
+include spaces.uti
 
 include en-us-g1.ctb
 

@@ -23,6 +23,6 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
-include basic-spaces.uti
+include spaces.uti
 include gurumuki.cti
 include en-in-g1.ctb

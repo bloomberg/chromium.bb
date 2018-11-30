@@ -39,7 +39,7 @@
 
 # -----------------
 
-include basic-spaces.uti
+include spaces.uti
 
 # Ukrainian braille is largely the same as Russian braille
 include ru-litbrl.ctb

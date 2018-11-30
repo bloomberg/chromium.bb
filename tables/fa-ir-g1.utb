@@ -41,7 +41,7 @@
 # Fixed some conflicts in Persian Braille script and added
 # Persian-specific signs which weren't available in previous table.
 
-include basic-spaces.uti
+include spaces.uti
 include braille-patterns.cti # unicode braille.
 
 # ----------- define all chars --------------------------------------

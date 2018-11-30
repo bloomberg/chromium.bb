@@ -40,7 +40,7 @@
 # Uncontracted Unified French Table
 # ---------------------------------
 
-include basic-spaces.uti
+include spaces.uti
 
 undefined 0
 

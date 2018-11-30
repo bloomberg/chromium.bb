@@ -24,7 +24,7 @@
 
 locale Sweden
 
-include basic-spaces.uti
+include spaces.uti
 include se-se.dis
 
 # ----------- define all chars --------------------------------------

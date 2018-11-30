@@ -30,7 +30,7 @@
 # www.compassbraille.org
 # Last updated 15th August 2018
 
-include basic-spaces.uti
+include spaces.uti
 
 include ur-pk-g1.utb
 
