@@ -450,10 +450,8 @@ def main():
                           ninja_targets, ninja_targets_seen):
         result = 1
 
-    skip_targets = [k for k, v in gn_isolate_map.items() if
-                    ('skip_usage_check' in v and v['skip_usage_check'])]
-    extra_targets = (set(ninja_targets) - set(skip_targets) -
-                     ninja_targets_seen - SKIP_GN_ISOLATE_MAP_TARGETS)
+    extra_targets = (set(ninja_targets) - ninja_targets_seen -
+                     SKIP_GN_ISOLATE_MAP_TARGETS)
     if extra_targets:
       if len(extra_targets) > 1:
         extra_targets_str = ', '.join(extra_targets) + ' are'

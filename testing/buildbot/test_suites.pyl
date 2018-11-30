@@ -699,27 +699,15 @@
       'checkperms': {
         'script': 'checkperms.py',
       },
-      'check_static_initializers': {
-        'script': 'check_static_initializers.py',
-      },
       'webkit_lint': {
         'script': 'webkit_lint.py',
-      },
-    },
-
-    'chromium_mac_scripts': {
-      'check_static_initializers': {
-        'script': 'check_static_initializers.py',
-      },
-      'webkit_lint': {
-        'script': 'webkit_lint.py',
-      },
+      }
     },
 
     'chromium_scripts': {
       'webkit_lint': {
         'script': 'webkit_lint.py',
-      },
+      }
     },
 
     'chromium_swarm_android_gtests': {
