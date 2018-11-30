@@ -24,7 +24,7 @@ const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
 
 // Controls the billing interstitial UI.
 const base::Feature kBillingInterstitial{"BillingInterstitial",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
