@@ -345,7 +345,10 @@ class BASE_EXPORT TaskQueueImpl {
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
-  using TaskDeque = LazilyDeallocatedDeque<Task>;
+  // LazilyDeallocatedDeque use TimeTicks to figure out when to resize.  We
+  // should use real time here always.
+  using TaskDeque =
+      LazilyDeallocatedDeque<Task, subtle::TimeTicksNowIgnoringOverride>;
 
   // Extracts all the tasks from the immediate incoming queue and swaps it with
   // |queue| which must be empty.
