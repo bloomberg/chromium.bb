@@ -10,7 +10,7 @@
 
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
 namespace content {

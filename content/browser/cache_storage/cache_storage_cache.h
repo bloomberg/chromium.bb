@@ -21,8 +21,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
 namespace crypto {

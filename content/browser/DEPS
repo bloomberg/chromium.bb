@@ -134,7 +134,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h",
   "+third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
-  "+third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h",
   "+third_party/blink/public/platform/modules/cookie_store/cookie_store.mojom.h",
   "+third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom.h",
   "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",

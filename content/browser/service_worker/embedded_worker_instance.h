@@ -28,10 +28,10 @@
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

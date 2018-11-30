@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 
 namespace content {
 
