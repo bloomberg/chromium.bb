@@ -11,6 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
 
+namespace image_fetcher {
+class ImageFetcher;
+}
+
 namespace offline_pages {
 class OfflineMetricsCollector;
 class OfflinePageModel;
@@ -71,6 +75,9 @@ class PrefetchServiceTestTaco {
           prefetch_background_task_handler);
   // Default type: MockThumbnailFetcher.
   void SetThumbnailFetcher(std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher);
+  // Default type: image_fetcher::MockImageFetcher.
+  void SetThumbnailImageFetcher(
+      std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher);
   void SetOfflinePageModel(
       std::unique_ptr<OfflinePageModel> offline_page_model);
 
@@ -104,6 +111,7 @@ class PrefetchServiceTestTaco {
       prefetch_background_task_handler_;
   std::unique_ptr<PrefetchService> prefetch_service_;
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher_;
   std::unique_ptr<OfflinePageModel> offline_page_model_;
   std::unique_ptr<TestDownloadService> download_service_;
   std::unique_ptr<TestDownloadClient> download_client_;

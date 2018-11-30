@@ -22,6 +22,8 @@ namespace offline_pages {
 // successfully or not.
 // Instances of this class are in-memory representations of items in (or to be
 // inserted into) the persistent prefetching data store.
+//
+// Only used in tests.
 struct PrefetchItem {
   PrefetchItem();
   PrefetchItem(PrefetchItem&& other);

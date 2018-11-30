@@ -213,8 +213,9 @@ using PrefetchRequestFinishedCallback =
 struct PrefetchURL {
   PrefetchURL(const std::string& id,
               const GURL& url,
-              const base::string16& title)
-      : id(id), url(url), title(title) {}
+              const base::string16& title);
+  ~PrefetchURL();
+  PrefetchURL(const PrefetchURL& other);
 
   // Client provided ID to allow the matching of provided URLs to the respective
   // work item in the prefetching system within that client's assigned
@@ -227,6 +228,10 @@ struct PrefetchURL {
 
   // The title of the page.
   base::string16 title;
+
+  // URL for a thumbnail that represents the page. May be empty if no thumbnail
+  // is available.
+  GURL thumbnail_url;
 };
 
 // Result of a completed download.

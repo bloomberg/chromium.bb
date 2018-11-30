@@ -163,7 +163,7 @@ Refer to README.md for content description and update process.
  <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" policy_fields="-1" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
  <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="24127780" os_list="linux" file_path="net/cert_net/nss_ocsp.cc"/>
- <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="57248156" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
+ <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="112039446" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
  <item id="omnibox_documentsuggest" hash_code="6055066" type="0" content_hash_code="126973249" os_list="linux,windows" file_path="components/omnibox/browser/document_suggestions_service.cc"/>
  <item id="omnibox_navigation_observer" hash_code="61684939" type="0" content_hash_code="70941231" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc"/>
  <item id="omnibox_prefetch_image" hash_code="109200878" type="0" content_hash_code="107906693" os_list="linux,windows" file_path="chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc"/>
@@ -194,7 +194,8 @@ Refer to README.md for content description and update process.
  <item id="popular_sites_fetch" hash_code="50755044" type="0" content_hash_code="6910083" os_list="linux,windows" file_path="components/ntp_tiles/popular_sites_impl.cc"/>
  <item id="port_forwarding_controller_socket" hash_code="95075845" type="0" content_hash_code="122163428" os_list="linux,windows" file_path="chrome/browser/devtools/device/port_forwarding_controller.cc"/>
  <item id="ppapi_download_request" hash_code="135967426" type="0" content_hash_code="110461402" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc"/>
- <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="100587691" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
+ <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="21424542" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
+ <item id="prefetch_thumbnail" hash_code="83519268" type="0" content_hash_code="6947363" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/thumbnail_fetch_by_url.cc"/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
  <item id="profile_avatar" hash_code="51164680" type="0" content_hash_code="113550845" os_list="linux,windows" file_path="chrome/browser/profiles/profile_avatar_downloader.cc"/>
