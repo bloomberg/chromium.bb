@@ -545,4 +545,10 @@ if (is_android) {
 
     jni_package = "chromecast"
   }
+
+  java_cpp_enum("java_enums") {
+    sources = [
+      "cast_content_window.h",
+    ]
+  }
 }
