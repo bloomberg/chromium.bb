@@ -1861,7 +1861,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_win_intel_gtests',
+          'gtest_tests': 'gpu_angle_win_gtests',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
         },
       },
@@ -1872,7 +1872,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_angle_win_nvidia_gtests',
+          'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_nvidia_telemetry_tests',
         },
