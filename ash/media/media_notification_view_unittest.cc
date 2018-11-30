@@ -26,6 +26,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
+#include "ui/message_center/views/notification_header_view.h"
 
 namespace ash {
 
@@ -36,7 +37,7 @@ namespace {
 
 // The icons size is 24 and INSETS_VECTOR_IMAGE_BUTTON will add padding around
 // the image.
-const int kMediaButtonIconSize = 32;
+const int kMediaButtonIconSize = 24;
 
 // Checks if the view class name is used by a media button.
 bool IsMediaButtonType(const char* class_name) {
@@ -145,6 +146,7 @@ class MediaNotificationViewTest : public AshTestBase {
     return media_controller_.get();
   }
 
+  views::View* header_row() const { return view_->header_row_; }
   views::View* button_row() const { return view_->button_row_; }
 
   views::View* title_artist_row() const { return view_->title_artist_row_; }
@@ -163,6 +165,8 @@ class MediaNotificationViewTest : public AshTestBase {
 
     return nullptr;
   }
+
+  bool is_expanded() const { return view_->expanded_; }
 
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
@@ -216,8 +220,8 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
     ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
 
     EXPECT_TRUE(child->visible());
-    EXPECT_EQ(kMediaButtonIconSize, child->width());
-    EXPECT_EQ(kMediaButtonIconSize, child->height());
+    EXPECT_LT(kMediaButtonIconSize, child->width());
+    EXPECT_LT(kMediaButtonIconSize, child->height());
   }
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
@@ -449,6 +453,67 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
   EXPECT_TRUE(artist_label()->visible());
 
   EXPECT_EQ(metadata.artist, artist_label()->text());
+}
+
+TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
+  media_session::MediaMetadata metadata;
+  metadata.artist = base::ASCIIToUTF16("artist");
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      metadata);
+
+  view()->SetExpanded(false);
+
+  EXPECT_FALSE(is_expanded());
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay)->visible());
+  EXPECT_TRUE(
+      GetButtonForAction(MediaSessionAction::kPreviousTrack)->visible());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack)->visible());
+  EXPECT_FALSE(
+      GetButtonForAction(MediaSessionAction::kSeekBackward)->visible());
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kSeekForward)->visible());
+}
+
+TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
+  media_session::MediaMetadata metadata;
+  metadata.artist = base::ASCIIToUTF16("artist");
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      metadata);
+
+  view()->SetExpanded(true);
+
+  EXPECT_TRUE(is_expanded());
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay)->visible());
+  EXPECT_TRUE(
+      GetButtonForAction(MediaSessionAction::kPreviousTrack)->visible());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack)->visible());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekBackward)->visible());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekForward)->visible());
+}
+
+TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
+  EXPECT_TRUE(is_expanded());
+
+  {
+    gfx::Point cursor_location(1, 1);
+    views::View::ConvertPointToScreen(header_row(), &cursor_location);
+    GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+    GetEventGenerator()->ClickLeftButton();
+  }
+
+  EXPECT_FALSE(is_expanded());
+
+  {
+    gfx::Point cursor_location(1, 1);
+    views::View::ConvertPointToScreen(header_row(), &cursor_location);
+    GetEventGenerator()->MoveMouseTo(cursor_location.x(), cursor_location.y());
+    GetEventGenerator()->ClickLeftButton();
+  }
+
+  EXPECT_TRUE(is_expanded());
 }
 
 }  // namespace ash
