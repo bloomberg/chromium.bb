@@ -86,6 +86,9 @@ class PaygenPayload(object):
     self.description_file = os.path.join(work_dir, 'delta.json')
     self.metadata_size_file = os.path.join(work_dir, 'metadata_size.txt')
     self.metadata_size = 0
+    self.metadata_hash_file = os.path.join(work_dir, 'metadata_hash')
+    self.payload_hash_file = os.path.join(work_dir, 'payload_hash')
+
     self._postinst_config_file = os.path.join(work_dir, 'postinst_config')
 
     self.signer = None
@@ -347,21 +350,18 @@ class PaygenPayload(object):
     # How big will the signatures be.
     signature_sizes = [str(size) for size in self.PAYLOAD_SIGNATURE_SIZES_BYTES]
 
-    with tempfile.NamedTemporaryFile(dir=self.work_dir) as \
-         payload_hash_file, \
-         tempfile.NamedTemporaryFile(dir=self.work_dir) as \
-         metadata_hash_file:
+    cmd = ['delta_generator',
+           '--in_file=' + path_util.ToChrootPath(self.payload_file),
+           '--signature_size=' + ':'.join(signature_sizes),
+           '--out_hash_file=' +
+           path_util.ToChrootPath(self.payload_hash_file),
+           '--out_metadata_hash_file=' +
+           path_util.ToChrootPath(self.metadata_hash_file)]
 
-      cmd = ['delta_generator',
-             '--in_file=' + path_util.ToChrootPath(self.payload_file),
-             '--signature_size=' + ':'.join(signature_sizes),
-             '--out_hash_file=' +
-             path_util.ToChrootPath(payload_hash_file.name),
-             '--out_metadata_hash_file=' +
-             path_util.ToChrootPath(metadata_hash_file.name)]
+    self._RunGeneratorCmd(cmd)
 
-      self._RunGeneratorCmd(cmd)
-      return payload_hash_file.read(), metadata_hash_file.read()
+    return (osutils.ReadFile(self.payload_hash_file),
+            osutils.ReadFile(self.metadata_hash_file))
 
   def _ReadMetadataSizeFile(self):
     """Discover the metadata size.
@@ -570,8 +570,14 @@ class PaygenPayload(object):
     Returns:
       List of payload signatures, List of metadata signatures.
     """
-    # Create hashes to sign.
+    # Create hashes to sign or even if signing not needed.  TODO(ahassani): In
+    # practice we don't need to generate hashes if we are not signing, so when
+    # devserver stopped depending on cros_generate_update_payload. this can be
+    # reverted.
     payload_hash, metadata_hash = self._GenerateHashes()
+
+    if not self.signer:
+      return (None, None)
 
     # Sign them.
     # pylint: disable=unpacking-non-sequence
@@ -604,9 +610,7 @@ class PaygenPayload(object):
     self._GenerateUnsignedPayload()
 
     # Sign the payload, if needed.
-    metadata_signatures = None
-    if self.signer:
-      _, metadata_signatures = self._SignPayload()
+    _, metadata_signatures = self._SignPayload()
 
     # Store hash and signatures json.
     self._StorePayloadJson(metadata_signatures)

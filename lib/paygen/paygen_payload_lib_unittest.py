@@ -398,6 +398,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Stub out the required functions.
     run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_RunGeneratorCmd')
+    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='')
 
     # Run the test.
     self.assertEqual(gen._GenerateHashes(), ('', ''))
@@ -408,6 +409,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--signature_size=256',
            partial_mock.HasString('--out_hash_file='),
            partial_mock.HasString('--out_metadata_hash_file=')]
+    read_mock.assert_any_call(gen.payload_hash_file)
+    read_mock.assert_any_call(gen.metadata_hash_file)
     run_mock.assert_called_once_with(cmd)
 
   def testSignHashes(self):
