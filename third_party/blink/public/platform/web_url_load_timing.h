@@ -45,7 +45,7 @@ class ResourceLoadTiming;
 
 // The browser-side equivalent to this struct is content::ResourceLoadTiming.
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
-// duplicated in //content and //third_party/WebKit.
+// duplicated in //content and //third_party/blink.
 class WebURLLoadTiming {
  public:
   ~WebURLLoadTiming() { Reset(); }

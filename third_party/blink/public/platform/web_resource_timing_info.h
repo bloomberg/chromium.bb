@@ -17,7 +17,7 @@ namespace blink {
 
 // The browser-side equivalent to this struct is content::ServerTimingInfo.
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
-// duplicated in //content and //third_party/WebKit.
+// duplicated in //content and //third_party/blink.
 struct WebServerTimingInfo {
   WebServerTimingInfo(const WebString& name,
                       double duration,
@@ -34,7 +34,7 @@ struct WebServerTimingInfo {
 // information about cross-process iframes for window.performance. The
 // browser-side equivalent to this struct is content::ResourceTimingInfo.
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
-// duplicated in //content and //third_party/WebKit.
+// duplicated in //content and //third_party/blink.
 struct WebResourceTimingInfo {
   // The name to associate with the performance entry. For iframes, this is
   // typically the initial URL of the iframe resource.

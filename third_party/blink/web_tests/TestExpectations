@@ -121,7 +121,7 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 
 
 # ====== Site Isolation failures from here ======
-# See also third_party/WebKit/LayoutTests/virtual/not-site-per-process/README.md
+# See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 #
 # When modifying the list of files that behave differently with and without
 # OOPIFs, please consider modifying all the locations below:
