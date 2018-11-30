@@ -138,6 +138,17 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // method to return.
   content::NavigationThrottle::ThrottleCheckResult TriggerPreview() const;
 
+  // Gets the ServerLitePageInfo struct from an existing attempted lite page
+  // navigation, if there is one. If not, returns nullptr.
+  previews::PreviewsUserData::ServerLitePageInfo* GetServerLitePageInfo() const;
+
+  // Gets the ServerLitePageInfo struct from an existing attempted lite page
+  // navigation, if there is one. If not, returns a new ServerLitePageInfo
+  // initialized with metadata from navigation_handle() and |this| that is owned
+  // by the PreviewsUserData associated with navigation_handle().
+  previews::PreviewsUserData::ServerLitePageInfo*
+  GetOrCreateServerLitePageInfo() const;
+
   // content::NavigationThrottle implementation:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
