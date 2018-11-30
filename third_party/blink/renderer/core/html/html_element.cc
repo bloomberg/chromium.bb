@@ -337,6 +337,7 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
   const AtomicString& kNoEvent = g_null_atom;
   static AttributeTriggers attribute_triggers[] = {
       {kDirAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnDirAttrChanged},
+      {kFormAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnFormAttrChanged},
       {kInertAttr, WebFeature::kInertAttribute, kNoEvent,
        &HTMLElement::OnInertAttrChanged},
       {kLangAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnLangAttrChanged},
@@ -1405,6 +1406,11 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
 
   if (DeprecatedEqualIgnoringCase(params.new_value, "auto"))
     CalculateAndAdjustDirectionality();
+}
+
+void HTMLElement::OnFormAttrChanged(const AttributeModificationParams& params) {
+  if (IsFormAssociatedCustomElement())
+    EnsureElementInternals().FormAttributeChanged();
 }
 
 void HTMLElement::OnInertAttrChanged(
