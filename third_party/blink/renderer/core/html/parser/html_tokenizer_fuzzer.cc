@@ -30,9 +30,8 @@ int FuzzTokenizer(const uint8_t* data, size_t size) {
     // The tokenizer deals with incremental strings as they are received.
     // Split the input into a bunch of small chunks to throw partial tokens
     // at the tokenizer and exercise the state machine and resumption.
-    CString chunk = fuzzed_data_provider.ConsumeBytesInRange(1, 32);
-    SegmentedString segment(String(chunk.data(), chunk.length()));
-    input.Append(segment);
+    String chunk = fuzzed_data_provider.ConsumeRandomLengthString(32);
+    input.Append(SegmentedString(chunk));
     // If a token was generated from the input then the next call
     // needs to use a fresh token for output. If a token is not generated
     // then the same token instance needs to be reused in the next calls
@@ -48,7 +47,8 @@ int FuzzTokenizer(const uint8_t* data, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Need at least 2 bytes for the options flags and one byte of test data.
-  if (size >= 3)
+  // Avoid huge inputs which can cause non-actionable timeout crashes.
+  if (size >= 3 && size <= 16384)
     blink::FuzzTokenizer(data, size);
 
   return 0;

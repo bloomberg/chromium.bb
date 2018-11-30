@@ -9,11 +9,11 @@ namespace blink {
 FuzzedDataProvider::FuzzedDataProvider(const uint8_t* bytes, size_t num_bytes)
     : provider_(bytes, num_bytes) {}
 
-CString FuzzedDataProvider::ConsumeBytesInRange(uint32_t min_bytes,
-                                                uint32_t max_bytes) {
-  size_t num_bytes = provider_.ConsumeIntegralInRange(min_bytes, max_bytes);
-  std::vector<char> bytes = provider_.ConsumeBytes<char>(num_bytes);
-  return CString(bytes.data(), bytes.size());
+String FuzzedDataProvider::ConsumeRandomLengthString(size_t max_length) {
+  std::string str = provider_.ConsumeRandomLengthString(max_length);
+  // FromUTF8 will return a null string if the input data contains invalid UTF-8
+  // sequences. Fall back to latin1 in those cases.
+  return String::FromUTF8WithLatin1Fallback(str.data(), str.length());
 }
 
 CString FuzzedDataProvider::ConsumeRemainingBytes() {
