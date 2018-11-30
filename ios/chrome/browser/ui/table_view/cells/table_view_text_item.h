@@ -18,7 +18,7 @@
 // UIColor for the cell's textLabel. Default is
 // kTableViewTextLabelColorLightGrey. ChromeTableViewStyler's |cellTitleColor|
 // takes precedence over the default color, but not over |textColor|.
-@property(nonatomic, assign) UIColor* textColor;
+@property(nonatomic, strong) UIColor* textColor;
 
 @property(nonatomic, strong) NSString* text;
 
