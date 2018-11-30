@@ -302,4 +302,13 @@ std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
   return shared_memory_arbiter_->CreateTraceWriter(target_buffer);
 }
 
+void ProducerClient::RegisterTraceWriter(uint32_t writer_id,
+                                         uint32_t target_buffer) {
+  // TODO(eseckler): implement.
+}
+
+void ProducerClient::UnregisterTraceWriter(uint32_t writer_id) {
+  // TODO(eseckler): implement.
+}
+
 }  // namespace tracing
