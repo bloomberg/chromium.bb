@@ -227,7 +227,32 @@ GEN('#endif');
 
 /**
  * Test fixture for
- * chrome/browser/resources/settings/passwords_and_forms/autofill_section.html.
+ * chrome/browser/resources/settings/autofill_page/autofill_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAutofillPageTest() {}
+
+CrSettingsAutofillPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/autofill_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'autofill_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsAutofillPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/autofill_page/autofill_section.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -237,8 +262,7 @@ CrSettingsAutofillSectionCompanyEnabledTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/autofill_section.html',
+  browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
   featureList: ['autofill::features::kAutofillEnableCompanyName', ''],
 
@@ -263,8 +287,7 @@ CrSettingsAutofillSectionCompanyDisabledTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/autofill_section.html',
+  browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
   featureList: ['', 'autofill::features::kAutofillEnableCompanyName'],
 
@@ -285,7 +308,7 @@ TEST_F('CrSettingsAutofillSectionCompanyDisabledTest', 'All', function() {
 
 /**
  * Test fixture for
- * chrome/browser/resources/settings/passwords_and_forms/payments_section.html.
+ * chrome/browser/resources/settings/autofill_page/payments_section.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -295,8 +318,7 @@ CrSettingsPaymentsSectionTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/payments_section.html',
+  browsePreload: 'chrome://settings/autofill_page/payments_section.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A helper object used from the People section to interact with
+ * @fileoverview A helper object used from the Autofill section to interact with
  * the browser.
  */
 
@@ -11,7 +11,7 @@ cr.exportPath('settings');
 
 cr.define('settings', function() {
   /** @interface */
-  class PeopleBrowserProxy {
+  class AutofillBrowserProxy {
     // TODO(dpapad): Create a simple OpenWindowProxy class that replaces the
     // need for this method and similar methods in other BrowserProxy classes.
     /**
@@ -21,18 +21,18 @@ cr.define('settings', function() {
     openURL(url) {}
   }
 
-  /** @implements {settings.PeopleBrowserProxy} */
-  class PeopleBrowserProxyImpl {
+  /** @implements {settings.AutofillBrowserProxy} */
+  class AutofillBrowserProxyImpl {
     /** @override */
     openURL(url) {
       window.open(url);
     }
   }
 
-  cr.addSingletonGetter(PeopleBrowserProxyImpl);
+  cr.addSingletonGetter(AutofillBrowserProxyImpl);
 
   return {
-    PeopleBrowserProxy: PeopleBrowserProxy,
-    PeopleBrowserProxyImpl: PeopleBrowserProxyImpl,
+    AutofillBrowserProxy: AutofillBrowserProxy,
+    AutofillBrowserProxyImpl: AutofillBrowserProxyImpl,
   };
 });

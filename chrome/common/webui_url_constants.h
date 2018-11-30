@@ -262,6 +262,7 @@ extern const char kChromeUIPrintHost[];
 extern const char kChromeUIWebRtcLogsHost[];
 
 // Settings sub-pages.
+extern const char kAddressesSubPage[];
 extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
