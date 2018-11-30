@@ -38,12 +38,11 @@ let testFunction = function(session, t, fakeDeviceController) {
   return session.requestFrameOfReference("stage")
     .then((frameOfRef) => new Promise((resolve, reject) => {
       function onFirstFrame(time, xrFrame) {
-        // On the first frame, the stage should be using an emulated frame of
-        // reference because it has no stageParameters yet. So the pose should
-        // be ~1.5 meters off the floor.
+        // On the first frame where the pose has been initialized, the stage
+        // should be using an emulated frame of reference because it has no
+        // stageParameters yet. So the pose should be ~1.5 meters off the floor.
         t.step( () => {
           let pose = xrFrame.getDevicePose(frameOfRef);
-          assert_not_equals(pose, null);
 
           let poseMatrix = pose.poseModelMatrix;
           assert_approx_equals(poseMatrix[12], 0.0, FLOAT_EPSILON);
@@ -51,9 +50,10 @@ let testFunction = function(session, t, fakeDeviceController) {
           assert_approx_equals(poseMatrix[14], 0.0, FLOAT_EPSILON);
 
           fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
+          session.requestAnimationFrame(() => {
+            session.requestAnimationFrame(onFrame);
+          });
         });
-
-        session.requestAnimationFrame(onFrame);
       }
 
       function onFrame(time, xrFrame) {
@@ -70,7 +70,9 @@ let testFunction = function(session, t, fakeDeviceController) {
         resolve();
       }
 
-      session.requestAnimationFrame(onFirstFrame);
+      session.requestAnimationFrame(() => {
+        session.requestAnimationFrame(onFirstFrame);
+      });
     }));
 };
 
