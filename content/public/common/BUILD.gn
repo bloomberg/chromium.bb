@@ -157,8 +157,6 @@ jumbo_source_set("common_sources") {
     "main_function_params.h",
     "manifest_util.cc",
     "manifest_util.h",
-    "media_metadata.cc",
-    "media_metadata.h",
     "media_stream_request.cc",
     "media_stream_request.h",
     "menu_item.cc",
