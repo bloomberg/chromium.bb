@@ -10,8 +10,10 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 namespace ios {
 
@@ -31,6 +33,7 @@ SigninErrorControllerFactory::SigninErrorControllerFactory()
     : BrowserStateKeyedServiceFactory(
           "SigninErrorController",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 SigninErrorControllerFactory::~SigninErrorControllerFactory() {
@@ -39,8 +42,12 @@ SigninErrorControllerFactory::~SigninErrorControllerFactory() {
 std::unique_ptr<KeyedService>
 SigninErrorControllerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SigninErrorController>(
-      SigninErrorController::AccountMode::ANY_ACCOUNT);
+      SigninErrorController::AccountMode::ANY_ACCOUNT,
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state));
 }
 
 }  // namespace ios

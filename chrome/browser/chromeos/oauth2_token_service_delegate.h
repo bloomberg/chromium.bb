@@ -19,7 +19,6 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 class AccountTrackerService;
-class SigninErrorController;
 
 namespace chromeos {
 
@@ -30,15 +29,13 @@ class ChromeOSOAuth2TokenServiceDelegate
       public AccountManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  // Accepts non-owning pointers to |AccountTrackerService|, |AccountManager|
-  // and |SigninErrorController|. |AccountTrackerService| and
-  // |SigninErrorController| are |KeyedService|s. |AccountManager| transitively
-  // belongs to |g_browser_process|. They outlive (as they must) |this|
-  // delegate.
+  // Accepts non-owning pointers to |AccountTrackerService| and
+  // |AccountManager|. |AccountTrackerService| is a |KeyedService|.
+  // |AccountManager| transitively belongs to |g_browser_process|. They outlive
+  // (as they must) |this| delegate.
   ChromeOSOAuth2TokenServiceDelegate(
       AccountTrackerService* account_tracker_service,
-      AccountManager* account_manager,
-      SigninErrorController* signin_error_controller);
+      AccountManager* account_manager);
   ~ChromeOSOAuth2TokenServiceDelegate() override;
 
   // OAuth2TokenServiceDelegate overrides.
@@ -75,10 +72,10 @@ class ChromeOSOAuth2TokenServiceDelegate
                            BackOffIsResetOnNetworkChange);
 
   // A utility class to keep track of |GoogleServiceAuthError|s for an account.
-  // This is used for providing account error status reports to
-  // |SigninErrorController| and for firing
-  // |OAuth2TokenService::Observer::OnAuthErrorChanged|.
-  class AccountErrorStatus;
+  struct AccountErrorStatus {
+    // The last auth error seen.
+    GoogleServiceAuthError last_auth_error;
+  };
 
   // Callback handler for |AccountManager::GetAccounts|.
   void GetAccountsCallback(
@@ -90,14 +87,11 @@ class ChromeOSOAuth2TokenServiceDelegate
   // throughout the lifetime of a user session.
   AccountManager* account_manager_;
 
-  // A non-owning pointer to |SigninErrorController|.
-  SigninErrorController* const signin_error_controller_;
-
   // A cache of AccountKeys.
   std::set<AccountManager::AccountKey> account_keys_;
 
   // A map from account id to the last seen error for that account.
-  std::map<std::string, std::unique_ptr<AccountErrorStatus>> errors_;
+  std::map<std::string, AccountErrorStatus> errors_;
 
   // Used to rate-limit token fetch requests so as to not overload the server.
   net::BackoffEntry backoff_entry_;

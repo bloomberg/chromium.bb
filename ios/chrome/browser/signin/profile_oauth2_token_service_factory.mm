@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,7 +24,6 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
-  DependsOn(ios::SigninErrorControllerFactory::GetInstance());
 }
 
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {}
@@ -56,8 +54,6 @@ ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
       ios::AccountTrackerServiceFactory::GetForBrowserState(
-          chrome_browser_state),
-      ios::SigninErrorControllerFactory::GetForBrowserState(
           chrome_browser_state));
   return std::make_unique<ProfileOAuth2TokenService>(
       chrome_browser_state->GetPrefs(), std::move(delegate));

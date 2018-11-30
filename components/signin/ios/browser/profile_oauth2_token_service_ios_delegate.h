@@ -8,9 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 class AccountTrackerService;
@@ -22,8 +20,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   ProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,
       std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider,
-      AccountTrackerService* account_tracker_service,
-      SigninErrorController* signin_error_controller);
+      AccountTrackerService* account_tracker_service);
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
@@ -78,29 +75,13 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
                            LoadRevokeCredentialsClearsExcludedAccounts);
 
-  class AccountStatus : public SigninErrorController::AuthStatusProvider {
-   public:
-    AccountStatus(SigninErrorController* signin_error_controller,
-                  const std::string& account_id);
-    ~AccountStatus() override;
-
-    void SetLastAuthError(const GoogleServiceAuthError& error);
-
-    // SigninErrorController::AuthStatusProvider implementation.
-    std::string GetAccountId() const override;
-    GoogleServiceAuthError GetAuthStatus() const override;
-
-   private:
-    SigninErrorController* signin_error_controller_;
-    std::string account_id_;
-    GoogleServiceAuthError last_auth_error_;
-
-    DISALLOW_COPY_AND_ASSIGN(AccountStatus);
+  struct AccountStatus {
+    GoogleServiceAuthError last_auth_error;
   };
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountStatus>> AccountStatusMap;
+  typedef std::map<std::string, AccountStatus> AccountStatusMap;
 
   // Clears exclude secondary accounts preferences.
   void ClearExcludedSecondaryAccounts();
@@ -120,9 +101,6 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   SigninClient* client_;
   std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider> provider_;
   AccountTrackerService* account_tracker_service_;
-
-  // The error controller with which this instance was initialized, or NULL.
-  SigninErrorController* signin_error_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceIOSDelegate);
 };

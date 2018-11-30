@@ -14,7 +14,6 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -34,7 +33,6 @@ class MutableProfileOAuth2TokenServiceDelegate
  public:
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
-      SigninErrorController* signin_error_controller,
       AccountTrackerService* account_tracker_service,
       scoped_refptr<TokenWebData> token_web_data,
       signin::AccountConsistencyMethod account_consistency,
@@ -89,32 +87,9 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   class RevokeServerRefreshToken;
 
-  class AccountStatus : public SigninErrorController::AuthStatusProvider {
-   public:
-    AccountStatus(SigninErrorController* signin_error_controller,
-                  const std::string& account_id,
-                  const std::string& refresh_token);
-    ~AccountStatus() override;
-
-    // Must be called after the account has been added to the AccountStatusMap.
-    void Initialize();
-
-    const std::string& refresh_token() const { return refresh_token_; }
-    void set_refresh_token(const std::string& token) { refresh_token_ = token; }
-
-    void SetLastAuthError(const GoogleServiceAuthError& error);
-
-    // SigninErrorController::AuthStatusProvider implementation.
-    std::string GetAccountId() const override;
-    GoogleServiceAuthError GetAuthStatus() const override;
-
-   private:
-    SigninErrorController* signin_error_controller_;
-    std::string account_id_;
-    std::string refresh_token_;
-    GoogleServiceAuthError last_auth_error_;
-
-    DISALLOW_COPY_AND_ASSIGN(AccountStatus);
+  struct AccountStatus {
+    std::string refresh_token;
+    GoogleServiceAuthError last_auth_error;
   };
 
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
@@ -203,8 +178,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, std::unique_ptr<AccountStatus>>
-      AccountStatusMap;
+  typedef std::map<std::string, AccountStatus> AccountStatusMap;
   // In memory refresh token store mapping account_id to refresh_token.
   AccountStatusMap refresh_tokens_;
 
@@ -227,7 +201,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   GoogleServiceAuthError backoff_error_;
 
   SigninClient* client_;
-  SigninErrorController* signin_error_controller_;
   AccountTrackerService* account_tracker_service_;
   scoped_refptr<TokenWebData> token_web_data_;
   signin::AccountConsistencyMethod account_consistency_;

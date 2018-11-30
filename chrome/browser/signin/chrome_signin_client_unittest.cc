@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -177,14 +178,18 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   }
 
   void CreateClient(Profile* profile) {
-    client_.reset(new MockChromeSigninClient(profile));
-    SigninErrorController* controller = new SigninErrorController(
-        SigninErrorController::AccountMode::ANY_ACCOUNT);
-    fake_controller_.reset(controller);
+    if (fake_controller_)
+      fake_controller_->Shutdown();
+
+    client_ = std::make_unique<MockChromeSigninClient>(profile);
+    token_service_ = std::make_unique<FakeOAuth2TokenService>();
+    fake_controller_ = std::make_unique<SigninErrorController>(
+        SigninErrorController::AccountMode::ANY_ACCOUNT, token_service_.get());
   }
 
-  std::unique_ptr<SigninErrorController> fake_controller_;
   std::unique_ptr<MockChromeSigninClient> client_;
+  std::unique_ptr<FakeOAuth2TokenService> token_service_;
+  std::unique_ptr<SigninErrorController> fake_controller_;
   std::unique_ptr<MockSigninManager> manager_;
 };
 

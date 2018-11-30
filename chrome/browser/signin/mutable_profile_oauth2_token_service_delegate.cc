@@ -324,47 +324,9 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
       }));
 }
 
-MutableProfileOAuth2TokenServiceDelegate::AccountStatus::AccountStatus(
-    SigninErrorController* signin_error_controller,
-    const std::string& account_id,
-    const std::string& refresh_token)
-    : signin_error_controller_(signin_error_controller),
-      account_id_(account_id),
-      refresh_token_(refresh_token),
-      last_auth_error_(GoogleServiceAuthError::NONE) {
-  DCHECK(signin_error_controller_);
-  DCHECK(!account_id_.empty());
-  DCHECK(!refresh_token.empty());
-}
-
-void MutableProfileOAuth2TokenServiceDelegate::AccountStatus::Initialize() {
-  signin_error_controller_->AddProvider(this);
-}
-
-MutableProfileOAuth2TokenServiceDelegate::AccountStatus::~AccountStatus() {
-  signin_error_controller_->RemoveProvider(this);
-}
-
-void MutableProfileOAuth2TokenServiceDelegate::AccountStatus::SetLastAuthError(
-    const GoogleServiceAuthError& error) {
-  last_auth_error_ = error;
-  signin_error_controller_->AuthStatusChanged();
-}
-
-std::string
-MutableProfileOAuth2TokenServiceDelegate::AccountStatus::GetAccountId() const {
-  return account_id_;
-}
-
-GoogleServiceAuthError
-MutableProfileOAuth2TokenServiceDelegate::AccountStatus::GetAuthStatus() const {
-  return last_auth_error_;
-}
-
 MutableProfileOAuth2TokenServiceDelegate::
     MutableProfileOAuth2TokenServiceDelegate(
         SigninClient* client,
-        SigninErrorController* signin_error_controller,
         AccountTrackerService* account_tracker_service,
         scoped_refptr<TokenWebData> token_web_data,
         signin::AccountConsistencyMethod account_consistency,
@@ -374,7 +336,6 @@ MutableProfileOAuth2TokenServiceDelegate::
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
-      signin_error_controller_(signin_error_controller),
       account_tracker_service_(account_tracker_service),
       token_web_data_(token_web_data),
       account_consistency_(account_consistency),
@@ -382,7 +343,6 @@ MutableProfileOAuth2TokenServiceDelegate::
       can_revoke_credentials_(can_revoke_credentials) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
-  DCHECK(signin_error_controller);
   DCHECK(account_tracker_service_);
   // It's okay to fill the backoff policy after being used in construction.
   backoff_policy_.num_errors_to_ignore = 0;
@@ -415,11 +375,11 @@ MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
   // check whether the account has persistent error.
-  if (refresh_tokens_[account_id]->GetAuthStatus().IsPersistentError()) {
+  if (refresh_tokens_[account_id].last_auth_error.IsPersistentError()) {
     VLOG(1) << "Request for token has been rejected due to persistent error #"
-            << refresh_tokens_[account_id]->GetAuthStatus().state();
+            << refresh_tokens_[account_id].last_auth_error.state();
     return new OAuth2AccessTokenFetcherImmediateError(
-        consumer, refresh_tokens_[account_id]->GetAuthStatus());
+        consumer, refresh_tokens_[account_id].last_auth_error);
   }
   if (backoff_entry_.ShouldRejectRequest()) {
     VLOG(1) << "Request for token has been rejected due to backoff rules from"
@@ -436,7 +396,7 @@ GoogleServiceAuthError MutableProfileOAuth2TokenServiceDelegate::GetAuthError(
     const std::string& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   return (it == refresh_tokens_.end()) ? GoogleServiceAuthError::AuthErrorNone()
-                                       : it->second->GetAuthStatus();
+                                       : it->second.last_auth_error;
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
@@ -464,9 +424,9 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
     return;
   }
 
-  AccountStatus* status = refresh_tokens_[account_id].get();
-  if (error != status->GetAuthStatus()) {
-    status->SetLastAuthError(error);
+  AccountStatus* status = &refresh_tokens_[account_id];
+  if (error != status->last_auth_error) {
+    status->last_auth_error = error;
     FireAuthErrorChanged(account_id, error);
   }
 }
@@ -475,11 +435,10 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetTokenForMultilogin(
     const std::string& account_id) const {
   auto iter = refresh_tokens_.find(account_id);
   if (iter == refresh_tokens_.end() ||
-      iter->second->GetAuthStatus() !=
-          GoogleServiceAuthError::AuthErrorNone()) {
+      iter->second.last_auth_error != GoogleServiceAuthError::AuthErrorNone()) {
     return std::string();
   }
-  const std::string& refresh_token = iter->second->refresh_token();
+  const std::string& refresh_token = iter->second.refresh_token;
   DCHECK(!refresh_token.empty());
   return refresh_token;
 }
@@ -494,7 +453,7 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const std::string& account_id) const {
   auto iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end()) {
-    const std::string refresh_token = iter->second->refresh_token();
+    const std::string refresh_token = iter->second.refresh_token;
     DCHECK(!refresh_token.empty());
     return refresh_token;
   }
@@ -806,7 +765,7 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
   // If token present, and different from the new one, cancel its requests,
   // and clear the entries in cache related to that account.
   if (refresh_token_present) {
-    DCHECK_NE(refresh_token, refresh_tokens_[account_id]->refresh_token());
+    DCHECK_NE(refresh_token, refresh_tokens_[account_id].refresh_token);
     VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
             << "account_id=" << account_id;
 
@@ -822,9 +781,9 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
     // would also be invalidated server-side).
     // See http://crbug.com/865189 for more information about this regression.
     if (is_refresh_token_invalidated)
-      RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
+      RevokeCredentialsOnServer(refresh_tokens_[account_id].refresh_token);
 
-    refresh_tokens_[account_id]->set_refresh_token(refresh_token);
+    refresh_tokens_[account_id].refresh_token = refresh_token;
     UpdateAuthError(account_id, error);
   } else {
     VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
@@ -885,7 +844,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
   if (refresh_tokens_.count(account_id) > 0) {
     VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
     ScopedBatchChange batch(this);
-    const std::string& token = refresh_tokens_[account_id]->refresh_token();
+    const std::string& token = refresh_tokens_[account_id].refresh_token;
     RecordTokenRevoked(token);
     RevokeCredentialsOnServer(token);
     refresh_tokens_.erase(account_id);
@@ -949,12 +908,8 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
     const std::string& refresh_token,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(0u, refresh_tokens_.count(account_id));
-  AccountStatus* status =
-      new AccountStatus(signin_error_controller_, account_id, refresh_token);
-  refresh_tokens_[account_id].reset(status);
-  status->Initialize();
-  status->SetLastAuthError(error);
-  FireAuthErrorChanged(account_id, status->GetAuthStatus());
+  refresh_tokens_[account_id] = AccountStatus{refresh_token, error};
+  FireAuthErrorChanged(account_id, error);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {

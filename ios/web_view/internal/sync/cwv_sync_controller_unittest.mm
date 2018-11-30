@@ -50,17 +50,17 @@ class CWVSyncControllerTest : public PlatformTest {
   CWVSyncControllerTest()
       : browser_state_(/*off_the_record=*/false),
         signin_client_(browser_state_.GetPrefs()),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::ANY_ACCOUNT),
         token_service_delegate_(new ProfileOAuth2TokenServiceIOSDelegate(
             &signin_client_,
             std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>(),
-            &account_tracker_service_,
-            &signin_error_controller_)),
+            &account_tracker_service_)),
         token_service_(browser_state_.GetPrefs(),
                        std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate>(
                            token_service_delegate_)),
         gaia_cookie_manager_service_(&token_service_, &signin_client_),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::ANY_ACCOUNT,
+            &token_service_),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
@@ -110,13 +110,13 @@ class CWVSyncControllerTest : public PlatformTest {
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> profile_sync_service_;
   AccountTrackerService account_tracker_service_;
   TestSigninClient signin_client_;
-  SigninErrorController signin_error_controller_;
 
   // Weak, owned by the token service.
   ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate_;
 
   FakeProfileOAuth2TokenService token_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  SigninErrorController signin_error_controller_;
   FakeSigninManager signin_manager_;
   CWVSyncController* sync_controller_;
   syncer::SyncServiceObserver* sync_service_observer_;
