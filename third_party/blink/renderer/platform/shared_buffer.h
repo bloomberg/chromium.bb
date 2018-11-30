@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -84,16 +83,14 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     // for the consecutive part
     Iterator(size_t offset, const SharedBuffer* buffer);
     // for the rest
-    Iterator(wtf_size_t segment_index,
-             size_t offset,
-             const SharedBuffer* buffer);
+    Iterator(size_t segment_index, size_t offset, const SharedBuffer* buffer);
 
     void Init(size_t offset);
     bool IsEnd() const { return index_ == buffer_->segments_.size() + 1; }
 
     // It represents |buffer_->buffer| if |index_| is 0, and
     // |buffer_->segments[index_ - 1]| otherwise.
-    wtf_size_t index_;
+    size_t index_;
     base::span<const char> value_;
     const SharedBuffer* buffer_;
   };
@@ -206,9 +203,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   class Segment;
 
   SharedBuffer();
-  explicit SharedBuffer(wtf_size_t);
-  SharedBuffer(const char*, wtf_size_t);
-  SharedBuffer(const unsigned char*, wtf_size_t);
+  explicit SharedBuffer(size_t);
+  SharedBuffer(const char*, size_t);
+  SharedBuffer(const unsigned char*, size_t);
 
   // See SharedBuffer::data().
   void MergeSegmentsIntoBuffer();
@@ -230,10 +227,10 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 template <>
 inline Vector<char> SharedBuffer::CopyAs() const {
   Vector<char> buffer;
-  buffer.ReserveInitialCapacity(SafeCast<wtf_size_t>(size_));
+  buffer.ReserveInitialCapacity(size_);
 
   for (const auto& span : *this)
-    buffer.Append(span.data(), static_cast<wtf_size_t>(span.size()));
+    buffer.Append(span.data(), span.size());
 
   DCHECK_EQ(buffer.size(), size_);
   return buffer;
