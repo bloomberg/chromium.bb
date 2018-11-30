@@ -280,7 +280,7 @@ struct Profile {
   Profile() = default;
   Profile(Profile&& other) = default;
   Profile(const FrameSets& frame_sets,
-          int annotation_count,
+          int metadata_count,
           TimeDelta profile_duration,
           TimeDelta sampling_period);
 
@@ -291,8 +291,8 @@ struct Profile {
   // The collected frame sets.
   FrameSets frame_sets;
 
-  // The number of invocations of RecordAnnotations().
-  int annotation_count;
+  // The number of invocations of RecordMetadata().
+  int metadata_count;
 
   // Duration of this profile.
   TimeDelta profile_duration;
@@ -302,11 +302,11 @@ struct Profile {
 };
 
 Profile::Profile(const FrameSets& frame_sets,
-                 int annotation_count,
+                 int metadata_count,
                  TimeDelta profile_duration,
                  TimeDelta sampling_period)
     : frame_sets(frame_sets),
-      annotation_count(annotation_count),
+      metadata_count(metadata_count),
       profile_duration(profile_duration),
       sampling_period(sampling_period) {}
 
@@ -323,7 +323,7 @@ class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
   ~TestProfileBuilder() override;
 
   // StackSamplingProfiler::ProfileBuilder:
-  void RecordAnnotations() override;
+  void RecordMetadata() override;
   void OnSampleCompleted(Frames frames) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
@@ -332,8 +332,8 @@ class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
   // The sets of frames recorded.
   std::vector<Frames> frame_sets_;
 
-  // The number of invocations of RecordAnnotations().
-  int annotation_count_ = 0;
+  // The number of invocations of RecordMetadata().
+  int metadata_count_ = 0;
 
   // Callback made when sampling a profile completes.
   const ProfileCompletedCallback callback_;
@@ -346,8 +346,8 @@ TestProfileBuilder::TestProfileBuilder(const ProfileCompletedCallback& callback)
 
 TestProfileBuilder::~TestProfileBuilder() = default;
 
-void TestProfileBuilder::RecordAnnotations() {
-  ++annotation_count_;
+void TestProfileBuilder::RecordMetadata() {
+  ++metadata_count_;
 }
 
 void TestProfileBuilder::OnSampleCompleted(Frames frames) {
@@ -356,8 +356,8 @@ void TestProfileBuilder::OnSampleCompleted(Frames frames) {
 
 void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
                                             TimeDelta sampling_period) {
-  callback_.Run(Profile(frame_sets_, annotation_count_, profile_duration,
-                        sampling_period));
+  callback_.Run(
+      Profile(frame_sets_, metadata_count_, profile_duration, sampling_period));
 }
 
 // Loads the other library, which defines a function to be called in the
@@ -1034,7 +1034,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleStart) {
 }
 
 // Checks that the profile duration and the sampling interval are calculated
-// correctly. Also checks that RecordAnnotations() is invoked each time a sample
+// correctly. Also checks that RecordMetadata() is invoked each time a sample
 // is recorded.
 PROFILER_TEST_F(StackSamplingProfilerTest, ProfileGeneralInfo) {
   WithTargetThread([](PlatformThreadId target_thread_id) {
@@ -1055,9 +1055,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ProfileGeneralInfo) {
     EXPECT_EQ(TimeDelta::FromMilliseconds(1),
               profiler_info.profile.sampling_period);
 
-    // The number of invocations of RecordAnnotations() should be equal to the
+    // The number of invocations of RecordMetadata() should be equal to the
     // number of samples recorded.
-    EXPECT_EQ(3, profiler_info.profile.annotation_count);
+    EXPECT_EQ(3, profiler_info.profile.metadata_count);
   });
 }
 

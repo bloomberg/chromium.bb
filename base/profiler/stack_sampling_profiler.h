@@ -100,12 +100,13 @@ class BASE_EXPORT StackSamplingProfiler {
     ProfileBuilder() = default;
     virtual ~ProfileBuilder() = default;
 
-    // Metadata associated with the sample to be saved off.
-    // The code implementing this method must not do anything that could acquire
-    // a mutex, including allocating memory (which includes LOG messages)
-    // because that mutex could be held by a stopped thread, thus resulting in
-    // deadlock.
-    virtual void RecordAnnotations();
+    // Records metadata to be associated with the current sample. To avoid
+    // deadlock on locks taken by the suspended profiled thread, implementations
+    // of this method must not execute any code that could take a lock,
+    // including heap allocation or use of CHECK/DCHECK/LOG
+    // statements. Generally implementations should simply atomically copy
+    // metadata state to be associated with the sample.
+    virtual void RecordMetadata();
 
     // Records a new set of frames. Invoked when sampling a sample completes.
     virtual void OnSampleCompleted(std::vector<Frame> frames) = 0;

@@ -620,7 +620,7 @@ void StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(
   SamplingThread::TestPeer::ShutdownAssumingIdle(simulate_intervening_start);
 }
 
-void StackSamplingProfiler::ProfileBuilder::RecordAnnotations() {}
+void StackSamplingProfiler::ProfileBuilder::RecordMetadata() {}
 
 StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,

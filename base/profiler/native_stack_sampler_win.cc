@@ -383,7 +383,7 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
       if (PointsToGuardPage(bottom))
         return NATIVE_STACK_SAMPLER_POINTS_TO_GUARD;
 
-      profile_builder->RecordAnnotations();
+      profile_builder->RecordMetadata();
 
       CopyMemoryFromStack(stack_copy_buffer,
                           reinterpret_cast<const void*>(bottom), top - bottom);

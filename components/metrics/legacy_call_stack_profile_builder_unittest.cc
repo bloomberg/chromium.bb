@@ -67,11 +67,11 @@ TEST(LegacyCallStackProfileBuilderTest, SetProcessMilestone) {
       std::make_unique<TestingLegacyCallStackProfileBuilder>(kProfileParams);
 
   // The default milestone is 0.
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(std::vector<Frame>());
 
   LegacyCallStackProfileBuilder::SetProcessMilestone(1);
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(std::vector<Frame>());
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -198,10 +198,10 @@ TEST(LegacyCallStackProfileBuilderTest, SamplesDeduped) {
   // process milestone therefore they are deduped to one.
   LegacyCallStackProfileBuilder::SetProcessMilestone(0);
 
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames, 42);
 
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -244,11 +244,11 @@ TEST(LegacyCallStackProfileBuilderTest, SamplesNotDeduped) {
   // Two samples are completed with the same frames but different process
   // milestones. They are considered as different samples threfore not deduped.
   LegacyCallStackProfileBuilder::SetProcessMilestone(2);
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
 
   LegacyCallStackProfileBuilder::SetProcessMilestone(4);
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -289,13 +289,13 @@ TEST(LegacyCallStackProfileBuilderTest, SamplesDedupedAndNotDeduped) {
   std::vector<Frame> frames1 = {frame1, frame2};
   std::vector<Frame> frames2 = {frame2, frame1};
 
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1, 42);
 
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
 
-  profile_builder->RecordAnnotations();
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames2);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());

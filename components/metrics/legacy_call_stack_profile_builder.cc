@@ -170,7 +170,7 @@ LegacyCallStackProfileBuilder::LegacyCallStackProfileBuilder(
 
 LegacyCallStackProfileBuilder::~LegacyCallStackProfileBuilder() = default;
 
-void LegacyCallStackProfileBuilder::RecordAnnotations() {
+void LegacyCallStackProfileBuilder::RecordMetadata() {
   // The code inside this method must not do anything that could acquire a
   // mutex, including allocating memory (which includes LOG messages) because
   // that mutex could be held by a stopped thread, thus resulting in deadlock.
