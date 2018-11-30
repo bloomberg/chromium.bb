@@ -156,16 +156,15 @@ const TickClock* ThreadControllerWithMessagePumpImpl::GetClock() {
 }
 
 bool ThreadControllerWithMessagePumpImpl::RunsTasksInCurrentSequence() {
-  return associated_thread_->thread_id == PlatformThread::CurrentId();
+  return associated_thread_->IsBoundToCurrentThread();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  DCHECK(associated_thread_->thread_id == kInvalidThreadId ||
-         associated_thread_->thread_id == PlatformThread::CurrentId());
   AutoLock lock(task_runner_lock_);
   task_runner_ = task_runner;
-  if (associated_thread_->thread_id != kInvalidThreadId) {
+  if (associated_thread_->IsBound()) {
+    DCHECK(associated_thread_->IsBoundToCurrentThread());
     // Thread task runner handle will be created in BindToCurrentThread().
     InitializeThreadTaskRunnerHandle();
   }

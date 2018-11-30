@@ -153,7 +153,7 @@ const char* TaskQueueImpl::GetName() const {
 }
 
 bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
-  return PlatformThread::CurrentId() == associated_thread_->thread_id;
+  return associated_thread_->IsBoundToCurrentThread();
 }
 
 void TaskQueueImpl::PostTask(PostedTask task, CurrentThread current_thread) {
@@ -469,7 +469,7 @@ void TaskQueueImpl::TraceQueueSize() const {
 
   // It's only safe to access the work queues from the main thread.
   // TODO(alexclarke): We should find another way of tracing this
-  if (PlatformThread::CurrentId() != associated_thread_->thread_id)
+  if (!associated_thread_->IsBoundToCurrentThread())
     return;
 
   AutoLock lock(immediate_incoming_queue_lock_);
@@ -621,12 +621,8 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {
-  if (associated_thread_->thread_id == kInvalidThreadId ||
-      PlatformThread::CurrentId() == associated_thread_->thread_id)
-    return main_thread_only().time_domain;
-
-  AutoLock lock(any_thread_lock_);
-  return any_thread().time_domain;
+  DCHECK(associated_thread_->IsBoundToCurrentThread());
+  return main_thread_only().time_domain;
 }
 
 void TaskQueueImpl::SetBlameContext(trace_event::BlameContext* blame_context) {

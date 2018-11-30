@@ -28,7 +28,7 @@ class BlameContext;
 namespace sequence_manager {
 
 namespace internal {
-struct AssociatedThreadId;
+class AssociatedThreadId;
 class SequenceManagerImpl;
 class TaskQueueImpl;
 }  // namespace internal

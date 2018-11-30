@@ -42,7 +42,7 @@ bool TaskQueueProxy::PostTask(PostedTask task) const {
 }
 
 bool TaskQueueProxy::RunsTasksInCurrentSequence() const {
-  return associated_thread_->thread_id == PlatformThread::CurrentId();
+  return associated_thread_->IsBoundToCurrentThread();
 }
 
 void TaskQueueProxy::DetachFromTaskQueueImpl() {

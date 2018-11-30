@@ -17,7 +17,7 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-struct AssociatedThreadId;
+class AssociatedThreadId;
 
 // TaskQueueSelector is used by the SchedulerHelper to enable prioritization
 // of particular task queues.
