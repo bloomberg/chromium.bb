@@ -193,7 +193,6 @@ class Manager(object):
             self._upload_json_files()
 
             self._copy_results_html_file(self._results_directory, 'results.html')
-            self._copy_results_html_file(self._results_directory, 'legacy-results.html')
             if initial_results.keyboard_interrupted:
                 exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
             else:
