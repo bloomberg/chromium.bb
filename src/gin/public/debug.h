@@ -51,6 +51,31 @@ class GIN_EXPORT Debug {
    * when it is deleted.
    */
   static void SetCodeRangeDeletedCallback(CodeRangeDeletedCallback callback);
+
+  typedef void (__cdecl *DebugBreakCallback)();
+
+  /* Gets the callback that should be invoked when JavaScript execution is
+   * paused at a debug breakpoint.
+   */
+  static DebugBreakCallback GetDebugBreakCallback();
+
+  /* Sets a callback that is invoked when JavaScript execution is paused at a
+   * debug breakpoint.
+   */
+  static void SetDebugBreakCallback(DebugBreakCallback callback);
+
+  typedef void (__cdecl *DebugResumeCallback)();
+
+  /* Gets the callback that should be invoked when JavaScript execution is
+   * resumed after a debug breakpoint.
+   */
+  static DebugResumeCallback GetDebugResumeCallback();
+
+  /* Sets a callback that is invoked when JavaScript execution is resumed after
+   * a debug breakpoint.
+   */
+  static void SetDebugResumeCallback(DebugResumeCallback callback);
+
 #endif
 };
 
