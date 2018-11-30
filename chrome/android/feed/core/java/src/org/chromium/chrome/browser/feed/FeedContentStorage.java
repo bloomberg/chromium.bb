@@ -51,48 +51,49 @@ public class FeedContentStorage implements ContentStorage {
 
     @Override
     public void get(List<String> keys, Consumer < Result < Map<String, byte[]>>> consumer) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mFeedContentBridge == null) return;
-
-        mFeedContentBridge.loadContent(keys,
-                (Map<String, byte[]> data)
-                        -> consumer.accept(Result.success(data)),
-                (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedContentBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedContentBridge.loadContent(keys,
+                    (Map<String, byte[]> data)
+                            -> consumer.accept(Result.success(data)),
+                    (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 
     @Override
     public void getAll(String prefix, Consumer < Result < Map<String, byte[]>>> consumer) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mFeedContentBridge == null) return;
-
-        mFeedContentBridge.loadContentByPrefix(prefix,
-                (Map<String, byte[]> data)
-                        -> consumer.accept(Result.success(data)),
-                (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedContentBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedContentBridge.loadContentByPrefix(prefix,
+                    (Map<String, byte[]> data)
+                            -> consumer.accept(Result.success(data)),
+                    (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mFeedContentBridge == null) return;
-
-        mFeedContentBridge.commitContentMutation(mutation,
-                (Boolean result)
-                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        if (mFeedContentBridge == null) {
+            consumer.accept(CommitResult.FAILURE);
+        } else {
+            mFeedContentBridge.commitContentMutation(mutation,
+                    (Boolean result)
+                            -> consumer.accept(
+                                    result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        }
     }
 
     @Override
     public void getAllKeys(Consumer < Result < List<String>>> consumer) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mFeedContentBridge == null) return;
-
-        mFeedContentBridge.loadAllContentKeys(
-                (String[] keys)
-                        -> consumer.accept(Result.success(Arrays.asList(keys))),
-                (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedContentBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedContentBridge.loadAllContentKeys(
+                    (String[] keys)
+                            -> consumer.accept(Result.success(Arrays.asList(keys))),
+                    (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 }
