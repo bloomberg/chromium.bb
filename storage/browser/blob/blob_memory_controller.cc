@@ -28,7 +28,7 @@
 #include "base/system/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -145,7 +145,7 @@ EmptyFilesResult CreateEmptyFiles(
     DiskSpaceFuncPtr disk_space_function,
     scoped_refptr<base::TaskRunner> file_task_runner,
     std::vector<base::FilePath> file_paths) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   File::Error dir_create_status = CreateBlobDirectory(blob_storage_dir);
   if (dir_create_status != File::FILE_OK) {
@@ -186,7 +186,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
     size_t total_size_bytes) {
   DCHECK_NE(0u, total_size_bytes);
   UMA_HISTOGRAM_MEMORY_KB("Storage.Blob.PageFileSize", total_size_bytes / 1024);
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   FileCreationInfo creation_info;
   creation_info.file_deletion_runner = std::move(file_task_runner);
