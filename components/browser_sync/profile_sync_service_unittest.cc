@@ -537,7 +537,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   ShutdownAndDeleteService();
 }
 
-// Test RequestStop() before we've initialized the backend.
+// Test SetSyncRequested(false) before we've initialized the backend.
 TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, EarlyRequestStop) {
   CreateService(ProfileSyncService::AUTO_START);
   // Set up a fake sync engine that will not immediately finish initialization.
@@ -603,7 +603,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, EarlyRequestStop) {
   EXPECT_TRUE(service()->IsSyncFeatureEnabled());
 }
 
-// Test RequestStop() after we've initialized the backend.
+// Test SetSyncRequested(false) after we've initialized the backend.
 TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest,
        DisableAndEnableSyncTemporarily) {
   CreateService(ProfileSyncService::AUTO_START);
@@ -898,7 +898,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, ClearDataOnSignOut) {
   ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   // Sign out.
-  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+  service()->StopAndClear();
 
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
@@ -920,7 +920,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
   ASSERT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   // Sign out.
-  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+  service()->StopAndClear();
 
   // Even though Sync-the-feature is disabled, Sync-the-transport should still
   // be running, and should have updated the last synced time.

@@ -522,8 +522,8 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StopSync) {
   sync_service()->Initialize();
 
   EXPECT_CALL(*data_type_manager, Stop(syncer::STOP_SYNC));
-  // On RequestStop(), the sync service will immediately start up again in
-  // transport mode.
+  // On SetSyncRequested(false), the sync service will immediately start up
+  // again in transport mode.
   SetUpFakeSyncEngine();
   data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
@@ -547,7 +547,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, DisableSync) {
   sync_service()->Initialize();
 
   EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
-  sync_service()->RequestStop(syncer::SyncService::CLEAR_DATA);
+  sync_service()->StopAndClear();
 
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
@@ -565,12 +565,12 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, DisableSync) {
 
   sync_service()->Initialize();
 
-  // On RequestStop(), the sync service will immediately start up again in
+  // On StopAndClear(), the sync service will immediately start up again in
   // transport mode.
   SetUpFakeSyncEngine();
   data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
-  sync_service()->RequestStop(syncer::SyncService::CLEAR_DATA);
+  sync_service()->StopAndClear();
 
   // Sync-the-feature is still considered off.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());

@@ -253,13 +253,11 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Stops sync at the user's request. |data_fate| controls whether the sync
-  // engine should clear its data directory when it shuts down. Generally
-  // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
-  // when they sign out of the profile entirely.
+  // Stops sync and clears all local data. This usually gets called when the
+  // user fully signs out (i.e. removes the primary account).
   // Note: This refers to Sync-the-feature. Sync-the-transport may remain active
   // after calling this.
-  virtual void RequestStop(SyncStopDataFate data_fate) = 0;
+  virtual void StopAndClear() = 0;
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
