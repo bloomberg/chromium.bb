@@ -934,7 +934,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             public void onUrlUpdated(Tab tab) {
                 // Update the color on every new URL.
                 updateColor(tab);
-                maybeUpdateCctHeaderVisibility(tab.getUrl());
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
+                    boolean isFragmentNavigation, @Nullable Integer pageTransition, int errorCode,
+                    int httpStatusCode) {
+                if (!isInMainFrame || !hasCommitted) return;
+                maybeUpdateCctHeaderVisibility(url);
             }
 
             /**
