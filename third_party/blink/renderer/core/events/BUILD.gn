@@ -46,6 +46,8 @@ blink_core_sources("events") {
     "mutation_event.h",
     "navigator_events.cc",
     "navigator_events.h",
+    "overscroll_event.cc",
+    "overscroll_event.h",
     "page_transition_event.cc",
     "page_transition_event.h",
     "picture_in_picture_control_event.cc",

@@ -1174,6 +1174,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void EnqueueResizeEvent();
   void EnqueueScrollEventForNode(Node*);
+  void EnqueueScrollEndEventForNode(Node*);
+  void EnqueueOverscrollEventForNode(Node* target,
+                                     double delta_x,
+                                     double delta_y);
   void EnqueueAnimationFrameTask(base::OnceClosure);
   void EnqueueAnimationFrameEvent(Event*);
   // Only one event for a target/event type combination will be dispatched per

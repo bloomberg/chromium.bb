@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/core/events/before_unload_event.h"
 #include "third_party/blink/renderer/core/events/event_factory.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
+#include "third_party/blink/renderer/core/events/overscroll_event.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
@@ -5132,6 +5133,21 @@ void Document::EnqueueScrollEventForNode(Node* target) {
                             : Event::Create(event_type_names::kScroll);
   scroll_event->SetTarget(target);
   EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_event);
+}
+
+void Document::EnqueueScrollEndEventForNode(Node* target) {
+  Event* scroll_end_event = Event::Create(event_type_names::kScrollend);
+  scroll_end_event->SetTarget(target);
+  EnsureScriptedAnimationController().EnqueuePerFrameEvent(scroll_end_event);
+}
+
+void Document::EnqueueOverscrollEventForNode(Node* target,
+                                             double delta_x,
+                                             double delta_y) {
+  Event* overscroll_event =
+      OverscrollEvent::Create(event_type_names::kOverscroll, delta_x, delta_y);
+  overscroll_event->SetTarget(target);
+  EnsureScriptedAnimationController().EnqueuePerFrameEvent(overscroll_event);
 }
 
 void Document::EnqueueResizeEvent() {

@@ -930,6 +930,10 @@
       settable_from_internals: true,
     },
     {
+      name: "OverscrollCustomization",
+      settable_from_internals: true,
+    },
+    {
       name: "PageLifecycle",
       status: "stable",
     },
