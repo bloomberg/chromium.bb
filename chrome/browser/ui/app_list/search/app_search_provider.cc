@@ -276,13 +276,13 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
   // extensions::ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override {
-    owner()->RefreshAppsAndUpdateResults(true);
+    owner()->RefreshAppsAndUpdateResults();
   }
 
  private:
@@ -369,21 +369,21 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   // ArcAppListPrefs::Observer overrides:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnAppRemoved(const std::string& id) override {
-    owner()->RefreshAppsAndUpdateResults(true);
+    owner()->RefreshAppsAndUpdateResults();
   }
 
   void OnAppNameUpdated(const std::string& id,
                         const std::string& name) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
  private:
@@ -396,18 +396,17 @@ class InternalDataSource : public AppSearchProvider::DataSource {
       : AppSearchProvider::DataSource(profile, owner) {
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (service) {
-      // base::Unretained() is safe below because the subscription itself is a
-      // class member field and handles destruction well.
-      foreign_session_updated_subscription_ =
-          service->SubscribeToForeignSessionsChanged(base::BindRepeating(
-              &AppSearchProvider::RefreshAppsAndUpdateResults,
-              base::Unretained(owner),
-              /*force_inline=*/false));
-    }
+    if (!service)
+      return;
+    // base::Unretained() is safe below because the subscription itself is a
+    // class member field and handles destruction well.
+    foreign_session_updated_subscription_ =
+        service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+            &AppSearchProvider::RefreshAppsAndUpdateResultsDeferred,
+            base::Unretained(owner)));
   }
 
-  ~InternalDataSource() override {}
+  ~InternalDataSource() override = default;
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
@@ -511,7 +510,10 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override {
-    owner()->RefreshAppsAndUpdateResults(!removed_apps.empty());
+    if (removed_apps.empty())
+      owner()->RefreshAppsAndUpdateResultsDeferred();
+    else
+      owner()->RefreshAppsAndUpdateResults();
   }
 
  private:
@@ -531,6 +533,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       ranker_(std::make_unique<AppSearchResultRanker>(
           profile->GetPath(),
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
+      refresh_apps_factory_(this),
       update_results_factory_(this) {
   data_sources_.emplace_back(
       std::make_unique<ExtensionDataSource>(profile, this));
@@ -552,20 +555,34 @@ void AppSearchProvider::Start(const base::string16& query) {
   // Refresh list of apps to ensure we have the latest launch time information.
   // This will also cause the results to update.
   if (show_recommendations || apps_.empty())
-    RefreshApps();
-
-  UpdateResults();
+    RefreshAppsAndUpdateResults();
+  else
+    UpdateResults();
 }
 
 void AppSearchProvider::Train(const std::string& id) {
   ranker_->Train(id);
 }
 
-void AppSearchProvider::RefreshApps() {
+void AppSearchProvider::RefreshAppsAndUpdateResults() {
+  // Clear any pending requests if any.
+  refresh_apps_factory_.InvalidateWeakPtrs();
+
   apps_.clear();
   apps_.reserve(kMinimumReservedAppsContainerCapacity);
   for (auto& data_source : data_sources_)
     data_source->AddApps(&apps_);
+  UpdateResults();
+}
+
+void AppSearchProvider::RefreshAppsAndUpdateResultsDeferred() {
+  // Check if request is pending.
+  if (refresh_apps_factory_.HasWeakPtrs())
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&AppSearchProvider::RefreshAppsAndUpdateResults,
+                                refresh_apps_factory_.GetWeakPtr()));
 }
 
 void AppSearchProvider::UpdateRecommendedResults(
@@ -678,20 +695,6 @@ void AppSearchProvider::UpdateResults() {
                        update_results_factory_.GetWeakPtr()));
   } else {
     UpdateQueriedResults();
-  }
-}
-
-void AppSearchProvider::RefreshAppsAndUpdateResults(bool force_inline) {
-  RefreshApps();
-
-  if (force_inline) {
-    UpdateResults();
-  } else {
-    if (!update_results_factory_.HasWeakPtrs()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&AppSearchProvider::UpdateResults,
-                                update_results_factory_.GetWeakPtr()));
-    }
   }
 }
 
