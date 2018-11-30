@@ -89,7 +89,7 @@
     <div id="line"></div>
     <cr-input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]"
         type="text" disabled="[[invisible]]" on-blur="onBlur_"
-        invalid="[[invalid]]" data-timeout-delay="1000">
+        on-focus="onFocus_" invalid="[[invalid]]" data-timeout-delay="1000">
     </cr-input>
   </template>
   <script src="margin_control.js"></script>

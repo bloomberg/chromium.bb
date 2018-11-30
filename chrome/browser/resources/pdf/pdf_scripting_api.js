@@ -236,6 +236,14 @@ PDFScriptingAPI.prototype = {
     this.sendMessage_(
         {type: 'sendKeyEvent', keyEvent: SerializeKeyEvent(keyEvent)});
   },
+
+  /**
+   * @param {number} scrollX The amount to horizontally scroll in pixels.
+   * @param {number} scrollY The amount to vertically scroll in pixels.
+   */
+  scrollPosition: function(scrollX, scrollY) {
+    this.sendMessage_({type: 'scrollPosition', x: scrollX, y: scrollY});
+  },
 };
 
 /**
@@ -268,5 +276,6 @@ function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   iframe.resetPrintPreviewMode = client.resetPrintPreviewMode.bind(client);
   iframe.loadPreviewPage = client.loadPreviewPage.bind(client);
   iframe.sendKeyEvent = client.sendKeyEvent.bind(client);
+  iframe.scrollPosition = client.scrollPosition.bind(client);
   return iframe;
 }

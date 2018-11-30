@@ -149,8 +149,12 @@ Polymer({
   /** @private */
   onBlur_: function() {
     this.resetAndUpdate();
-    if (this.invalid)
-      this.fire('text-blur');
+    this.fire('text-blur', this.invalid);
+  },
+
+  /** @private */
+  onFocus_: function() {
+    this.fire('text-focus');
   },
 
   /** @private */

@@ -836,6 +836,13 @@ TEST_F(
           custom_margins_test.TestNames.MediaSizeClearsCustomMarginsPDF);
     });
 
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'RequestScrollToOutOfBoundsTextbox',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.RequestScrollToOutOfBoundsTextbox);
+    });
+
 PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
