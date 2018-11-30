@@ -226,6 +226,7 @@ class AndroidProfileTool(object):
     Args:
       files: ([str]) List of pregenerated files.
     """
+    logging.info('Using pregenerated profiles')
     self._pregenerated_profiles = files
 
   def RunCygprofileTests(self):
@@ -300,9 +301,11 @@ class AndroidProfileTool(object):
       NoProfileDataError: No data was found on the device.
     """
     if self._pregenerated_profiles:
-      logging.info('Using pregenerated profiles instead of running profile')
+      logging.info('Using pregenerated profiles instead of running '
+                   'system health profile')
       logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
       return self._pregenerated_profiles
+    logging.info('Running system health profile')
     self._SetUpDeviceFolders()
     self._RunCommand(['tools/perf/run_benchmark',
                       '--device={}'.format(self._device.serial),

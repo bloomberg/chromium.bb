@@ -27,10 +27,10 @@ import sys
 import tempfile
 import time
 
+import cluster
 import cyglog_to_orderfile
 import cygprofile_utils
 import patch_orderfile
-import phased_orderfile
 import process_profiles
 import profile_android_startup
 import symbol_extractor
@@ -527,25 +527,11 @@ class OrderfileGenerator(object):
     profiles = process_profiles.ProfileManager(files)
     processor = process_profiles.SymbolOffsetProcessor(
         self._compiler.lib_chrome_so)
-    phaser = phased_orderfile.PhasedAnalyzer(profiles, processor)
-    if self._options.offsets_for_memory:
-      profile_offsets = phaser.GetOffsetsForMemoryFootprint()
-    else:
-      profile_offsets = phaser.GetOffsetsForStartup()
-    self._output_data['orderfile_size'] = {
-        'startup_kib': processor.OffsetsPrimarySize(
-            profile_offsets.startup) / 1024,
-        'common_kib': processor.OffsetsPrimarySize(
-            profile_offsets.common) / 1024,
-        'interaction_kib': processor.OffsetsPrimarySize(
-            profile_offsets.interaction) / 1024}
-
-    offsets_list = (profile_offsets.startup +
-                    profile_offsets.common +
-                    profile_offsets.interaction)
-    ordered_symbols = processor.GetOrderedSymbols(offsets_list)
+    ordered_symbols= cluster.ClusterOffsets(profiles, processor)
     if not ordered_symbols:
       raise Exception('Failed to get ordered symbols')
+    self._output_data['offsets_kib'] = processor.SymbolsSize(
+            ordered_symbols) / 1024
     with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
       orderfile.write('\n'.join(ordered_symbols))
 
@@ -654,7 +640,7 @@ class OrderfileGenerator(object):
     Args:
       filename: (str) Orderfile to upload.
     """
-    # First compute hashes so that we can download them later if we need to
+    # First compute hashes so that we can download them later if we need to.
     self._step_recorder.BeginStep('Compute hash for ' + filename)
     self._RecordHash(filename)
     if self._options.buildbot:
@@ -830,10 +816,6 @@ def CreateArgumentParser():
   parser.add_argument('--monochrome', action='store_true',
                       help=('Compile and instrument monochrome (for post-N '
                             'devices).'))
-  parser.add_argument('--offsets-for-memory', action='store_true',
-                      help=('Favor memory savings in the orderfile. Used '
-                            'with --system-health-orderfile.'),
-                      default=False)
 
   parser.add_argument('--manual-symbol-offsets', default=None, type=str,
                       help=('File of list of ordered symbol offsets generated '
