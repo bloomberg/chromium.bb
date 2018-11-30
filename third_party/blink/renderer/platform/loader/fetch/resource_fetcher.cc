@@ -111,19 +111,6 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
   }
 
-void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
-  // Store redirect responses that were packed inside the final response.
-  const auto& responses = resource->GetResponse().RedirectResponses();
-  for (wtf_size_t i = 0; i < responses.size(); ++i) {
-    const KURL& new_url = i + 1 < responses.size()
-                              ? KURL(responses[i + 1].Url())
-                              : resource->GetResourceRequest().Url();
-    bool cross_origin =
-        !SecurityOrigin::AreSameSchemeHostPort(responses[i].Url(), new_url);
-    info->AddRedirect(responses[i], cross_origin);
-  }
-}
-
 ResourceLoadPriority TypeToPriority(ResourceType type) {
   switch (type) {
     case ResourceType::kMainResource:
@@ -329,9 +316,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
 }
 
 static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
-  KURL initial_url = resource->GetResponse().RedirectResponses().IsEmpty()
-                         ? resource->GetResourceRequest().Url()
-                         : resource->GetResponse().RedirectResponses()[0].Url();
+  KURL initial_url = resource->GetResourceRequest().Url();
   info->SetInitialURL(initial_url);
   info->SetFinalResponse(resource->GetResponse());
 }
@@ -1640,8 +1625,6 @@ void ResourceFetcher::HandleLoaderFinish(
 
   if (resource->GetType() == ResourceType::kMainResource) {
     DCHECK(navigation_timing_info_);
-    // Store redirect responses that were packed inside the final response.
-    AddRedirectsToTimingInfo(resource, navigation_timing_info_.get());
     if (resource->GetResponse().IsHTTP()) {
       PopulateTimingInfo(navigation_timing_info_.get(), resource);
       navigation_timing_info_->AddFinalTransferSize(
@@ -1650,9 +1633,6 @@ void ResourceFetcher::HandleLoaderFinish(
   }
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
-    // Store redirect responses that were packed inside the final response.
-    AddRedirectsToTimingInfo(resource, info.get());
-
     if (resource->GetResponse().IsHTTP() &&
         resource->GetResponse().HttpStatusCode() < 400) {
       PopulateTimingInfo(info.get(), resource);

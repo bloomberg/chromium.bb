@@ -399,14 +399,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     return 1280;
   }
 
-  // PlzNavigate: Even if there is redirections, only one
-  // ResourceResponse is built: the final response.
-  // The redirect response chain can be accessed by this function.
-  const Vector<ResourceResponse>& RedirectResponses() const {
-    return redirect_responses_;
-  }
-  void AppendRedirectResponse(const ResourceResponse&);
-
   bool AsyncRevalidationRequested() const {
     return async_revalidation_requested_;
   }
@@ -580,10 +572,6 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // ExtraData associated with the response.
   scoped_refptr<ExtraData> extra_data_;
-
-  // PlzNavigate: the redirect responses are transmitted
-  // inside the final response.
-  Vector<ResourceResponse> redirect_responses_;
 };
 
 inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) {
