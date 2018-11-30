@@ -1572,6 +1572,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   }
   // The last update time should be bumped.
   EXPECT_LT(last_update_time, GetLastUpdateCheck(registration_id));
+
+  // Tidy up.
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kScope),
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 class MockContentBrowserClient : public TestContentBrowserClient {
