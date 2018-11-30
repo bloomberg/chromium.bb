@@ -92,13 +92,6 @@
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testNotCalledForDownloadPdf
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testRendererInitiatedRedirectHangingNavigation
 
-# https://crbug.com/893573
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testIframeSubresource
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testImageSubresource
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testMainFrame
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGesture
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGestureForIframeSubresource
-
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
