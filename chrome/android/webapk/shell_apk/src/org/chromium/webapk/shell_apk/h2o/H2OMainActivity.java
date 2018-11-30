@@ -46,7 +46,7 @@ public class H2OMainActivity extends TransparentLauncherActivity {
             // delay (several seconds) is too high.
             H2OLauncher.requestRelaunchFromHostBrowser(appContext, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
-                    new ComponentName(appContext, SplashActivity.class), getComponentName());
+                    new ComponentName(appContext, H2OOpaqueMainActivity.class), getComponentName());
             return;
         }
 

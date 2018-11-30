@@ -80,32 +80,40 @@ public final class LaunchTest {
         launchIntent.setPackage(WEBAPK_PACKAGE_NAME);
 
         ArrayList<Intent> launchedIntents;
-        launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
-                false /* browserCompatibleWithSplashActivity */, launchIntent,
-                H2OTransparentLauncherActivity.class, deepLinkUrl);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        false /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
         Assert.assertEquals(1, launchedIntents.size());
+        assertIntentIsForBrowserLaunch(launchedIntents.get(0), deepLinkUrl);
 
-        launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
-                true /* browserCompatibleWithSplashActivity */, launchIntent,
-                H2OTransparentLauncherActivity.class, deepLinkUrl);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
         Assert.assertEquals(5, launchedIntents.size());
         assertIntentComponentClassNameEquals(H2OMainActivity.class, launchedIntents.get(0));
         Assert.assertEquals(BROWSER_PACKAGE_NAME, launchedIntents.get(1).getPackage());
         assertIntentComponentClassNameEquals(
                 H2OTransparentLauncherActivity.class, launchedIntents.get(2));
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(3));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(4), deepLinkUrl);
 
-        launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
-                false /* browserCompatibleWithSplashActivity */, launchIntent,
-                H2OTransparentLauncherActivity.class, deepLinkUrl);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
+                        false /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(1), deepLinkUrl);
 
-        launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
-                true /* browserCompatibleWithSplashActivity */, launchIntent,
-                H2OTransparentLauncherActivity.class, deepLinkUrl);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(1), deepLinkUrl);
     }
 
     /** Test that the host browser is launched as a result of a main launch intent. */
@@ -116,29 +124,39 @@ public final class LaunchTest {
         launchIntent.setPackage(WEBAPK_PACKAGE_NAME);
 
         ArrayList<Intent> launchedIntents;
-        launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
-                false /* browserCompatibleWithSplashActivity */, launchIntent,
-                H2OMainActivity.class, DEFAULT_START_URL);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        false /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OMainActivity.class);
         Assert.assertEquals(1, launchedIntents.size());
+        assertIntentIsForBrowserLaunch(launchedIntents.get(0), DEFAULT_START_URL);
 
-        launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
-                true /* browserCompatibleWithSplashActivity */, launchIntent, H2OMainActivity.class,
-                DEFAULT_START_URL);
+        launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OMainActivity.class);
         Assert.assertEquals(4, launchedIntents.size());
         Assert.assertEquals(BROWSER_PACKAGE_NAME, launchedIntents.get(0).getPackage());
         assertIntentComponentClassNameEquals(
                 H2OTransparentLauncherActivity.class, launchedIntents.get(1));
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(2));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(3), DEFAULT_START_URL);
 
-        launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
-                false /* browserCompatibleWithSplashActivity */, launchIntent, SplashActivity.class,
-                DEFAULT_START_URL);
-        Assert.assertEquals(1, launchedIntents.size());
+        launchedIntents =
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
+                        false /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OOpaqueMainActivity.class);
+        Assert.assertEquals(2, launchedIntents.size());
+        assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(1), DEFAULT_START_URL);
 
-        launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
-                true /* browserCompatibleWithSplashActivity */, launchIntent, SplashActivity.class,
-                DEFAULT_START_URL);
-        Assert.assertEquals(1, launchedIntents.size());
+        launchedIntents =
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OOpaqueMainActivity.class);
+        Assert.assertEquals(2, launchedIntents.size());
+        assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
+        assertIntentIsForBrowserLaunch(launchedIntents.get(1), DEFAULT_START_URL);
     }
 
     /**
@@ -149,17 +167,15 @@ public final class LaunchTest {
     @Test
     @Ignore
     public void testTargetShareActivityPreserved() {
-        final String expectedStartUrl = "https://pwa.rocks/share_title.html?text=subject_value";
-
         Intent launchIntent = new Intent(Intent.ACTION_SEND);
         launchIntent.setComponent(
                 new ComponentName(WEBAPK_PACKAGE_NAME, SHARE_ACTIVITY1_CLASS_NAME));
         launchIntent.putExtra(Intent.EXTRA_TEXT, "subject_value");
 
         ArrayList<Intent> launchedIntents =
-                launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
                         false /* browserCompatibleWithSplashActivity */, launchIntent,
-                        H2OTransparentLauncherActivity.class, expectedStartUrl);
+                        H2OTransparentLauncherActivity.class);
         Assert.assertTrue(launchedIntents.size() > 1);
 
         Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
@@ -184,9 +200,9 @@ public final class LaunchTest {
         launchIntent.putExtra(WebApkConstants.EXTRA_SOURCE, source);
 
         ArrayList<Intent> launchedIntents =
-                launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
                         true /* browserCompatibleWithSplashActivity */, launchIntent,
-                        H2OTransparentLauncherActivity.class, deepLinkUrl);
+                        H2OTransparentLauncherActivity.class);
         Assert.assertTrue(launchedIntents.size() > 1);
 
         Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
@@ -210,9 +226,9 @@ public final class LaunchTest {
         launchIntent.putExtra(WebApkConstants.EXTRA_RELAUNCH, true);
 
         ArrayList<Intent> launchedIntents =
-                launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
+                launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
                         true /* browserCompatibleWithSplashActivity */, launchIntent,
-                        H2OTransparentLauncherActivity.class, deepLinkUrl);
+                        H2OTransparentLauncherActivity.class);
         Assert.assertTrue(launchedIntents.size() > 1);
 
         Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
@@ -225,9 +241,9 @@ public final class LaunchTest {
      */
     @Test
     @Ignore
-    public void testDoesNotLoopIfEnablingSplashActivityIsSlow() {
-        // SplashActivity is disabled. Host browser is compatible with SplashActivity.
-        changeWebApkActivityEnabledSetting(mPackageManager, SplashActivity.class,
+    public void testDoesNotLoopIfEnablingInitialSplashActivityIsSlow() {
+        // InitialSplashActivity is disabled. Host browser is compatible with SplashActivity.
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
@@ -272,26 +288,34 @@ public final class LaunchTest {
         Assert.assertEquals(expectedClass.getName(), intent.getComponent().getClassName());
     }
 
+    /** Checks that the passed in intent launches the host browser with the given URL. */
+    private static void assertIntentIsForBrowserLaunch(Intent intent, String expectedStartUrl) {
+        Assert.assertEquals(BROWSER_PACKAGE_NAME, intent.getPackage());
+        Assert.assertEquals(HostBrowserLauncher.ACTION_START_WEBAPK, intent.getAction());
+        Assert.assertEquals(expectedStartUrl, intent.getStringExtra(WebApkConstants.EXTRA_URL));
+    }
+
     /**
      * Launches WebAPK with the given intent and configuration. Tests that the host browser is
      * launched and which activities are enabled after the browser launch.
-     * @param splashActivityInitiallyEnabled Whether SplashActivity is enabled at the beginning
-     *         of the test case.
+     * @param initialSplashActivityInitiallyEnabled Whether SplashActivity is enabled at the
+     *         beginning of the test case.
      * @param browserCompatibleWithSplashActivity Whether the host browser supports the ShellAPK
      *         showing the splash screen.
      * @param launchIntent Intent to launch.
      * @param launchActivity Activity which should receive the launch intent.
-     * @param expectedLaunchUrl The expected launch URL.
      * @return List of launched activity intents (including the host browser launch intent).
      */
-    private ArrayList<Intent> launchAndCheckBrowserLaunched(boolean splashActivityInitiallyEnabled,
-            boolean browserCompatibleWithSplashActivity, Intent launchIntent,
-            Class<? extends Activity> launchActivity, String expectedLaunchUrl) {
+    private ArrayList<Intent> launchAndCheckBrowserLaunched(
+            boolean opaqueMainActivityInitiallyEnabled, boolean browserCompatibleWithSplashActivity,
+            Intent launchIntent, Class<? extends Activity> launchActivity) {
         changeWebApkActivityEnabledSetting(mPackageManager,
-                splashActivityInitiallyEnabled ? SplashActivity.class : H2OMainActivity.class,
+                opaqueMainActivityInitiallyEnabled ? H2OOpaqueMainActivity.class
+                                                   : H2OMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
         changeWebApkActivityEnabledSetting(mPackageManager,
-                splashActivityInitiallyEnabled ? H2OMainActivity.class : SplashActivity.class,
+                opaqueMainActivityInitiallyEnabled ? H2OMainActivity.class
+                                                   : H2OOpaqueMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         installBrowser(BROWSER_PACKAGE_NAME,
                 browserCompatibleWithSplashActivity
@@ -305,15 +329,8 @@ public final class LaunchTest {
         ArrayList<Intent> launchedIntents =
                 runActivityChain(launchIntentCopy, launchActivity, BROWSER_PACKAGE_NAME);
 
-        Assert.assertTrue(!launchedIntents.isEmpty());
-        Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
-        Assert.assertEquals(
-                HostBrowserLauncher.ACTION_START_WEBAPK, browserLaunchIntent.getAction());
-        Assert.assertEquals(
-                expectedLaunchUrl, browserLaunchIntent.getStringExtra(WebApkConstants.EXTRA_URL));
-
         Assert.assertEquals(browserCompatibleWithSplashActivity,
-                isWebApkActivityEnabled(mPackageManager, SplashActivity.class));
+                isWebApkActivityEnabled(mPackageManager, H2OOpaqueMainActivity.class));
         Assert.assertEquals(!browserCompatibleWithSplashActivity,
                 isWebApkActivityEnabled(mPackageManager, H2OMainActivity.class));
 

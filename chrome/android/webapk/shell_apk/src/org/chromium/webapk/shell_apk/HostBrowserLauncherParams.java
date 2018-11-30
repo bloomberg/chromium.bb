@@ -252,7 +252,11 @@ public class HostBrowserLauncherParams {
         return mForceNavigation;
     }
 
-    /** Returns time in milliseconds that the WebAPK was launched. */
+    /**
+     * If this object was created as a result of launching the WebAPK, returns the time in
+     * milliseconds that the WebAPK was launched. If this object was created when the WebAPK was
+     * already running (e.g. {@link Activity#onNewIntent()}) returns -1.
+     */
     public long getLaunchTimeMs() {
         return mLaunchTimeMs;
     }
