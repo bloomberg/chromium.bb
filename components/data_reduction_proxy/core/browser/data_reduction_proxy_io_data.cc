@@ -476,12 +476,31 @@ void DataReductionProxyIOData::MarkProxiesAsBad(
     base::TimeDelta bypass_duration,
     const net::ProxyList& bad_proxies,
     mojom::DataReductionProxy::MarkProxiesAsBadCallback callback) {
-  // TODO(https://crbug.com/721403): Do sanity checks on |bypass_duration| and
-  // |bad_proxies|.
-  //
-  // In particular need to enforce that only data reduction
-  // proxies are permitted to be marked as bad. Allowing renderers to
-  // arbitrarily bypass *any* proxy would be a more powerful capability.
+  // Sanity check the inputs, as this data may originate from a lower-privilege
+  // process (renderer).
+
+  // The current policy sets this to 5 minutes, so don't allow a bigger
+  // timespan.
+  if (bypass_duration < base::TimeDelta() ||
+      bypass_duration > base::TimeDelta::FromMinutes(5)) {
+    LOG(ERROR) << "Received bad MarkProxiesAsBad() -- invalid bypass_duration: "
+               << bypass_duration;
+    std::move(callback).Run();
+    return;
+  }
+
+  // |bad_proxies| should be DRP servers or this API allows marking arbitrary
+  // proxies as bad. It is possible that proxies from an older config are
+  // received (FindConfiguredDataReductionProxy() searches recent proxies too).
+  for (const auto& proxy : bad_proxies.GetAll()) {
+    if (!config_->FindConfiguredDataReductionProxy(proxy)) {
+      LOG(ERROR) << "Received bad MarkProxiesAsBad() -- not a DRP server: "
+                 << proxy.ToURI();
+      std::move(callback).Run();
+      return;
+    }
+  }
+
   proxy_config_client_->MarkProxiesAsBad(bypass_duration, bad_proxies,
                                          std::move(callback));
 }
