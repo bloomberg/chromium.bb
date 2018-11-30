@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.task.AsyncTask;
@@ -61,13 +62,13 @@ public class WebappAuthenticator {
      *
      * @return true if the MAC is a valid MAC for the URL, false otherwise.
      */
-    public static boolean isUrlValid(Context context, String url, byte[] mac) {
+    public static boolean isUrlValid(String url, byte[] mac) {
         byte[] goodMac = null;
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525785
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             long time = SystemClock.elapsedRealtime();
-            goodMac = getMacForUrl(context, url);
+            goodMac = getMacForUrl(url);
             sWebappValidationTimes.record(SystemClock.elapsedRealtime() - time);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
@@ -85,8 +86,8 @@ public class WebappAuthenticator {
      *
      * @return The bytes of a MAC for the URL, or null if a secure MAC was not available.
      */
-    public static byte[] getMacForUrl(Context context, String url) {
-        Mac mac = getMac(context);
+    public static byte[] getMacForUrl(String url) {
+        Mac mac = getMac();
         if (mac == null) {
             return null;
         }
@@ -169,9 +170,10 @@ public class WebappAuthenticator {
         }
     }
 
-    private static SecretKey getKey(Context context) {
+    private static SecretKey getKey() {
         synchronized (sLock) {
             if (sKey == null) {
+                Context context = ContextUtils.getApplicationContext();
                 SecretKey key = readKeyFromFile(context, MAC_KEY_BASENAME, MAC_ALGORITHM_NAME);
                 if (key != null) {
                     sKey = key;
@@ -226,9 +228,9 @@ public class WebappAuthenticator {
     /**
      * @return A Mac, or null if it is not possible to instantiate one.
      */
-    private static Mac getMac(Context context) {
+    private static Mac getMac() {
         try {
-            SecretKey key = getKey(context);
+            SecretKey key = getKey();
             if (key == null) {
                 // getKey should have invoked triggerMacKeyGeneration, which should have set the
                 // random seed and generated a key from it. If not, there is a problem with the
