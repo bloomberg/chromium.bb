@@ -45,8 +45,8 @@ class DeviceTarget(target.Target):
     self._loglistener = None
 
     if self._auto:
-      self._ssh_config_path = EnsurePathExists(
-          boot_data.GetSSHConfigPath(output_dir))
+      boot_data.ProvisionSSH(output_dir)
+      self._ssh_config_path = boot_data.GetSSHConfigPath(output_dir)
     else:
       self._ssh_config_path = os.path.expanduser(ssh_config)
       self._host = host
