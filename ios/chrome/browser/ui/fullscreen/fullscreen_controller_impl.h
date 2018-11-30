@@ -30,6 +30,9 @@ class FullscreenControllerImpl : public FullscreenController {
   void IncrementDisabledCounter() override;
   void DecrementDisabledCounter() override;
   CGFloat GetProgress() const override;
+  UIEdgeInsets GetMinViewportInsets() const override;
+  UIEdgeInsets GetMaxViewportInsets() const override;
+  UIEdgeInsets GetCurrentViewportInsets() const override;
   void EnterFullscreen() override;
   void ExitFullscreen() override;
 
