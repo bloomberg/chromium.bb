@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.graphics.PointF;
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 
@@ -26,6 +29,8 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
+import org.chromium.chrome.browser.vr.util.NativeUiUtils;
+import org.chromium.chrome.browser.vr.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -119,6 +124,109 @@ public class WebXrVrDeviceTest {
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.executeStepAndWait("stepCheckCapabilities('Daydream')");
+        mWebXrVrTestFramework.endTest();
+    }
+
+    /**
+     * Tests that WebXR returns null poses while in VR browsing mode, and valid ones otherwise.
+     * Specific steps:
+     *   * Enter immersive mode by clicking on 'Enter VR' button displayed on a VR content page
+     *   * Check for non-null poses
+     *   * Enter inline VR mode by clicking the 'app' button on the controller
+     *   * Check for null poses
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.
+            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+            public void testForNullPosesInInlineVrPostImmersive() throws InterruptedException {
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+        Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOnStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("resetCounters()");
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
+        mWebXrVrTestFramework.pollJavaScriptBoolean(
+                "sessionInfos[sessionTypes.IMMERSIVE].currentSession == null",
+                POLL_TIMEOUT_SHORT_MS);
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("done()");
+        mWebXrVrTestFramework.endTest();
+    }
+
+    /**
+     * Tests that WebXR returns null poses while in VR browsing mode, and valid ones otherwise.
+     * Specific steps:
+     *   * Enter inline VR mode using NFC scan while browser points at a VR content page
+     *   * Check for null poses
+     *   * Enter immersive mode by clicking the 'Enter VR' button on the page
+     *   * Check for non-null poses
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.
+            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+            public void testForNullPosesInInlineVrFromNfc() throws InterruptedException {
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
+        NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("resetCounters()");
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+        Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOnStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("done()");
+        mWebXrVrTestFramework.endTest();
+    }
+
+    /**
+     * Tests that WebXR returns null poses while in VR browsing mode, and valid ones otherwise.
+     * Specific steps:
+     *   * Enter inline VR mode using NFC scan while browser points at a blank page
+     *   * Point the browser at a page with VR content
+     *   * Check for null poses
+     *   * Enter immersive mode by clicking the 'Enter VR' button on the page
+     *   * Check for non-null poses
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.
+            Add({"enable-features=WebXROrientationSensorDevice", "enable-features=WebXR"})
+            @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+            public void testForNullPosesInInlineVrOnNavigation() throws InterruptedException {
+        NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("resetCounters()");
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+        Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
+
+        mWebXrVrTestFramework.executeStepAndWait("posesTurnedOnStep()");
+
+        mWebXrVrTestFramework.executeStepAndWait("done()");
         mWebXrVrTestFramework.endTest();
     }
 }

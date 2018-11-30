@@ -20,6 +20,7 @@ var gl = null;
 var xrDevice = null;
 var onMagicWindowXRFrameCallback = null;
 var onImmersiveXRFrameCallback = null;
+var onPoseCallback = null;
 var shouldSubmitFrame = true;
 var hasPresentedFrame = false;
 var arSessionRequestWouldTriggerPermissionPrompt = null;
@@ -135,6 +136,9 @@ function onXRFrame(t, frame) {
   let frameOfRef = null;
   frameOfRef = sessionInfos[getSessionType(session)].currentFrameOfRef;
   let pose = frame.getDevicePose(frameOfRef);
+  if (onPoseCallback) {
+    onPoseCallback(pose);
+  }
 
   // Exiting the rAF callback without dirtying the GL context is interpreted
   // as not submitting a frame
