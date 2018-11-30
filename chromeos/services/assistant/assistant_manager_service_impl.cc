@@ -708,6 +708,7 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
   api::client_op::ModifySettingArgs modify_setting_args;
   modify_setting_args.ParseFromString(modify_setting_args_proto);
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
+  receive_modify_settings_proto_response_ = true;
 
   if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
     HandleOnOffChange(modify_setting_args, [&](bool enabled) {
@@ -1044,6 +1045,8 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kNormal);
       });
+
+      RecordQueryResponseTypeUMA();
       break;
     // Interaction ended due to interruption.
     case Resolution::BARGE_IN:
@@ -1052,6 +1055,11 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kInterruption);
       });
+
+      if (receive_inline_response_ || receive_modify_settings_proto_response_ ||
+          !receive_url_response_.empty()) {
+        RecordQueryResponseTypeUMA();
+      }
       break;
     // Interaction ended due to mic timeout.
     case Resolution::TIMEOUT:
@@ -1081,6 +1089,8 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
     const std::string& html,
     const std::string& fallback) {
+  receive_inline_response_ = true;
+
   interaction_subscribers_.ForAllPtrs(
       [&html, &fallback](auto* ptr) { ptr->OnHtmlResponse(html, fallback); });
 }
@@ -1094,12 +1104,16 @@ void AssistantManagerServiceImpl::OnShowSuggestionsOnMainThread(
 
 void AssistantManagerServiceImpl::OnShowTextOnMainThread(
     const std::string& text) {
+  receive_inline_response_ = true;
+
   interaction_subscribers_.ForAllPtrs(
       [&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
 void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
     const std::string& url) {
+  receive_url_response_ = url;
+
   interaction_subscribers_.ForAllPtrs(
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
@@ -1257,6 +1271,30 @@ void AssistantManagerServiceImpl::FillServerExperimentIds(
   if (base::FeatureList::IsEnabled(kChromeOSAssistantDogfood)) {
     server_experiment_ids->emplace_back(kServersideDogfoodExperimentId);
   }
+}
+
+void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
+  auto response_type = AssistantQueryResponseType::kUnspecified;
+
+  if (receive_modify_settings_proto_response_) {
+    response_type = AssistantQueryResponseType::kDeviceAction;
+  } else if (!receive_url_response_.empty()) {
+    if (receive_url_response_.find("www.google.com/search?") !=
+        std::string::npos) {
+      response_type = AssistantQueryResponseType::kSearchFallback;
+    } else {
+      response_type = AssistantQueryResponseType::kTargetedAction;
+    }
+  } else if (receive_inline_response_) {
+    response_type = AssistantQueryResponseType::kInlineElement;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Assistant.QueryResponseType", response_type);
+
+  // Reset the flags.
+  receive_inline_response_ = false;
+  receive_modify_settings_proto_response_ = false;
+  receive_url_response_.clear();
 }
 
 }  // namespace assistant
