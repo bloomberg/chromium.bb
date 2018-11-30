@@ -33,18 +33,18 @@ greater virtue than compliance.)
 ### pylint
 [Depot tools](http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools.html)
 contains a local copy of pylint, appropriately configured.
- * Directories need to opt into pylint presumbit checks via:
+* Directories need to opt into pylint presumbit checks via:
    `input_api.canned_checks.RunPylint()`.
 
 ### YAPF
-[YAPF](https://github.com/google/yapf) is a Python formatter that can be used via:
+[YAPF](https://github.com/google/yapf) is the Python formatter used by:
 
 ```sh
 git cl format --python
 ```
 
-Directories can opt into enforcing YAPF styling by adding `.style.yapf` file
-with the following contents:
+Directories can opt into enforcing auto-formatting by adding a `.style.yapf`
+file with the following contents:
 ```
 [style]
 based_on_style = chromium
@@ -54,3 +54,10 @@ Entire files can be formatted (rather than just touched lines) via:
 ```sh
 git cl format --python --full
 ```
+
+#### Bugs
+* Are tracked here: https://github.com/google/yapf/issues.
+* For Chromium-specific bugs, please discuss on `python@chromium.org`.
+
+#### Editor Integration
+See: https://github.com/google/yapf/tree/master/plugins
