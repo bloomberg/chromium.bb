@@ -65,17 +65,17 @@ class PLATFORM_EXPORT SharedBufferChunkReader final {
   // the buffer position.
   // Returns the number of bytes read. That number might be less than the
   // specified size if the end of the buffer was reached.
-  size_t Peek(Vector<char>&, size_t);
+  uint32_t Peek(Vector<char>&, uint32_t);
 
  private:
   scoped_refptr<const SharedBuffer> buffer_;
   size_t buffer_position_;
   const char* segment_;
-  size_t segment_length_;
-  size_t segment_index_;
+  uint32_t segment_length_;
+  uint32_t segment_index_;
   bool reached_end_of_file_;
   Vector<char> separator_;
-  size_t separator_index_;
+  uint32_t separator_index_;
 };
 
 }  // namespace blink
