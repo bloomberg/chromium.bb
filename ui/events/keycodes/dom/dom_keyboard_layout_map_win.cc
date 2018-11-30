@@ -102,20 +102,37 @@ ui::DomKey DomKeyboardLayoutMapWin::GetDomKeyFromDomCodeForLayout(
       ::ToUnicodeEx(virtual_key_code, scan_code, keyboard_state, char_buffer,
                     base::size(char_buffer), /*wFlags=*/0, keyboard_layout);
 
+  // Handle special cases for Japanese keyboard layout.
+  if (0x04110411 == reinterpret_cast<unsigned int>(keyboard_layout)) {
+    // Fix value for Japanese yen currency symbol.
+    // Windows returns '\' for both IntlRo and IntlYen, even though IntlYen
+    // should be the yen symbol.
+    if (dom_code == ui::DomCode::INTL_YEN)
+      return ui::DomKey::FromCharacter(0x00a5);  // Japanese yen symbol.
+
+    // Special case for Backquote.
+    // Technically, this layout is not completely ASCII-capable because the
+    // Backquote key is used as an IME function key (hankaku/zenkaku) and is
+    // thus not a printable key. However, other than this key, it is a perfectly
+    // usable ASCII-capable layout and it matches the values printed on the
+    // keyboard, so we have special handling to allow this key.
+    if (dom_code == ui::DomCode::BACKQUOTE)
+      return ui::DomKey::ZENKAKU_HANKAKU;
+  }
+
+  // Handle special cases for Korean keyboard layout.
+  if (0x04120412 == reinterpret_cast<unsigned int>(keyboard_layout)) {
+    // Fix value for Korean won currency symbol.
+    // Windows returns '\' for both Backslash and IntlBackslash, even though
+    // IntlBackslash should be the won symbol.
+    if (dom_code == ui::DomCode::INTL_BACKSLASH)
+      return ui::DomKey::FromCharacter(0x20a9);  // Korean won symbol.
+  }
+
   if (key_type == 1)
     return ui::DomKey::FromCharacter(char_buffer[0]);
   if (key_type == -1)
     return ui::DomKey::DeadKeyFromCombiningCharacter(char_buffer[0]);
-
-  // Special case for Backquote on Japanese keyboard layout.
-  // Technically, this layout is not completely ASCII-capable because the
-  // Backquote key is used as a IME function key (hankaku/zenkaku) and is thus
-  // not a printable key. However, other than this key, it is a perfectly
-  // usable ASCII-capable layout and it matches the values printed on the
-  // keyboard, so we have special handling to allow this key.
-  if (dom_code == ui::DomCode::BACKQUOTE &&
-      0x04110411 == reinterpret_cast<unsigned int>(keyboard_layout))
-    return ui::DomKey::ZENKAKU_HANKAKU;
 
   return ui::DomKey::NONE;
 }
