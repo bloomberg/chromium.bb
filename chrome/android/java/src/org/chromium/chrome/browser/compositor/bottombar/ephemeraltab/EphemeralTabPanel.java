@@ -9,11 +9,12 @@ import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelProgressObserver;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -34,6 +35,9 @@ import org.chromium.ui.resources.ResourceManager;
 public class EphemeralTabPanel extends OverlayPanel {
     /** The compositor layer used for drawing the panel. */
     private EphemeralTabSceneLayer mSceneLayer;
+
+    /** Remembers whether the panel was opened beyond the peeking state. */
+    private boolean mWasPanelOpened;
 
     /**
      * Checks if this feature (a.k.a. "Sneak peek") for html and image is supported.
@@ -94,6 +98,19 @@ public class EphemeralTabPanel extends OverlayPanel {
     @Override
     public float getProgressBarOpacity() {
         return 1.0f;
+    }
+
+    @Override
+    public void setPanelState(PanelState toState, @StateChangeReason int reason) {
+        super.setPanelState(toState, reason);
+        if (toState == PanelState.CLOSED) {
+            RecordHistogram.recordBooleanHistogram("EphemeralTab.Ctr", mWasPanelOpened);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "EphemeralTab.CloseReason", reason, StateChangeReason.MAX_VALUE + 1);
+            mWasPanelOpened = false;
+        } else if (toState == PanelState.EXPANDED || toState == PanelState.MAXIMIZED) {
+            mWasPanelOpened = true;
+        }
     }
 
     // Scene Overlay
