@@ -7,27 +7,32 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "crypto/sha2.h"
 
 namespace autofill {
 namespace prefs {
 namespace {
 
-// TODO(crbug.com/907929): Use a hash of the account id.
-// Returns the opt-in bitfield for the specifiec |account_id| or 0 if no entry
+// Returns the opt-in bitfield for the specific |account_id| or 0 if no entry
 // was found.
 int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
-                                            const std::string& account_id) {
-  auto* upload_events =
-      prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+                                            const std::string& account_hash) {
+  // We should always be passed an account hash, as we don't want to store the
+  // account id in clear in the prefs.
+  DCHECK_EQ(crypto::kSHA256Length, account_hash.size());
 
-  // If there is no dictionary or no entry in the dictionary, it means the
-  // account didn't opt-in. Use 0 because it's the same as not having opted-in
-  // to anything.
-  if (!upload_events) {
+  auto* dictionary = prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+
+  // If there is no dictionary it means the account didn't opt-in. Use 0 because
+  // it's the same as not having opted-in to anything.
+  if (!dictionary) {
     return 0;
   }
+
+  // If there is no entry in the dictionary, it means the account didn't opt-in.
+  // Use 0 because it's the same as not having opted-in to anything.
   auto* found =
-      upload_events->FindKeyOfType(account_id, base::Value::Type::INTEGER);
+      dictionary->FindKeyOfType(account_hash, base::Value::Type::INTEGER);
   return found ? found->GetInt() : 0;
 }
 
@@ -265,12 +270,17 @@ std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
 void SetUserOptedInWalletSyncTransport(PrefService* prefs,
                                        const std::string& account_id,
                                        bool opted_in) {
+  // Get the hash of the account id. The hashing here is only a secondary bit of
+  // obfuscation. The primary privacy guarantees are handled by clearing this
+  // whenever cookies are cleared.
+  const std::string account_hash = crypto::SHA256HashString(account_id);
+
   DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
-  int value = GetSyncTransportOptInBitFieldForAccount(prefs, account_id);
+  int value = GetSyncTransportOptInBitFieldForAccount(prefs, account_hash);
 
   // If the user has opted in, set that bit while leaving the others intact.
   if (opted_in) {
-    update->SetKey(account_id,
+    update->SetKey(account_hash,
                    base::Value(value | sync_transport_opt_in::kWallet));
     return;
   }
@@ -278,17 +288,20 @@ void SetUserOptedInWalletSyncTransport(PrefService* prefs,
   // Invert the mask in order to reset the Wallet bit while leaving the other
   // bits intact, or remove the key entirely if the Wallet was the only opt-in.
   if (value & ~sync_transport_opt_in::kWallet) {
-    update->SetKey(account_id,
+    update->SetKey(account_hash,
                    base::Value(value & ~sync_transport_opt_in::kWallet));
   } else {
-    update->RemoveKey(account_id);
+    update->RemoveKey(account_hash);
   }
 }
 
 bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
                                       const std::string& account_id) {
+  // Get the hash of the account id.
+  const std::string account_hash = crypto::SHA256HashString(account_id);
+
   // Return whether the wallet opt-in bit is set.
-  return GetSyncTransportOptInBitFieldForAccount(prefs, account_id) &
+  return GetSyncTransportOptInBitFieldForAccount(prefs, account_hash) &
          sync_transport_opt_in::kWallet;
 }
 
