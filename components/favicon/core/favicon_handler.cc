@@ -231,13 +231,13 @@ void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
       &cancelable_task_tracker_for_page_url_);
 }
 
-bool FaviconHandler::UpdateFaviconCandidate(
-    const DownloadedFavicon& downloaded_favicon) {
-  if (downloaded_favicon.candidate.score > best_favicon_.candidate.score)
-    best_favicon_ = downloaded_favicon;
-
+bool FaviconHandler::ShouldDownloadNextCandidate() const {
   // Stop downloading if the current candidate is the last candidate.
   if (current_candidate_index_ + 1 >= final_candidates_->size())
+    return false;
+
+  // Continue downloading if no valid favicon has been downloaded yet.
+  if (best_favicon_.candidate.icon_type == favicon_base::IconType::kInvalid)
     return true;
 
   // |next_candidate_score| is based on the sizes provided in the <link> tag,
@@ -245,10 +245,9 @@ bool FaviconHandler::UpdateFaviconCandidate(
   float next_candidate_score =
       (*final_candidates_)[current_candidate_index_ + 1].score;
 
-  // Stop downloading if the next candidate is not better than the best one
-  // observed so far, which means any following candidate should also be worse
-  // or equal too.
-  return next_candidate_score <= best_favicon_.candidate.score;
+  // Continue downloading only if the next candidate is better than the best one
+  // observed so far.
+  return next_candidate_score > best_favicon_.candidate.score;
 }
 
 void FaviconHandler::SetFavicon(const GURL& icon_url,
@@ -493,7 +492,6 @@ void FaviconHandler::OnDidDownloadFavicon(
   // Mark download as finished.
   image_download_request_.Cancel();
 
-  bool request_next_icon = true;
   if (bitmaps.empty()) {
     if (http_status_code == 404) {
       DVLOG(1) << "Failed to Download Favicon:" << image_url;
@@ -519,22 +517,18 @@ void FaviconHandler::OnDidDownloadFavicon(
                                           &score);
     }
 
-    if (!image_skia.isNull()) {
-      // The downloaded icon is still valid when there is no FaviconURL update
-      // during the downloading.
-      DownloadedFavicon downloaded_favicon;
-      downloaded_favicon.image = gfx::Image(image_skia);
-      downloaded_favicon.candidate.icon_url = image_url;
-      downloaded_favicon.candidate.icon_type = icon_type;
-      downloaded_favicon.candidate.score = score;
-      request_next_icon = !UpdateFaviconCandidate(downloaded_favicon);
+    if (!image_skia.isNull() && score > best_favicon_.candidate.score) {
+      best_favicon_.image = gfx::Image(image_skia);
+      best_favicon_.candidate.icon_url = image_url;
+      best_favicon_.candidate.icon_type = icon_type;
+      best_favicon_.candidate.score = score;
     }
   }
 
-  if (request_next_icon &&
-      current_candidate_index_ + 1 < final_candidates_->size()) {
+  if (ShouldDownloadNextCandidate()) {
     // Process the next candidate.
     ++current_candidate_index_;
+    DCHECK_LT(current_candidate_index_, final_candidates_->size());
     DownloadCurrentCandidateOrAskFaviconService();
   } else {
     if (best_favicon_.candidate.icon_type == favicon_base::IconType::kInvalid) {
