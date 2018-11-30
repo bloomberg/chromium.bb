@@ -19,7 +19,8 @@
 - (instancetype)initWithFrame:(CGRect)frame
                 withDirection:(UISwipeGestureRecognizerDirection)direction
                   canNavigate:(BOOL)canNavigate
-                        image:(UIImage*)image;
+                        image:(UIImage*)image
+                rotateForward:(BOOL)rotateForward;
 
 // Update views for latest gesture, and call completion blocks whether
 // |threshold| is met.

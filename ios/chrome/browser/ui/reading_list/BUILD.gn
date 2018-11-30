@@ -20,6 +20,8 @@ source_set("reading_list") {
     "reading_list_menu_notification_delegate.h",
     "reading_list_menu_notifier.h",
     "reading_list_menu_notifier.mm",
+    "reading_list_side_swipe_provider.h",
+    "reading_list_side_swipe_provider.mm",
     "reading_list_table_view_item.h",
     "reading_list_table_view_item.mm",
     "reading_list_utils.h",
@@ -95,6 +97,7 @@ source_set("reading_list_ui") {
   deps = [
     "resources:reading_list_empty_state",
     "resources:reading_list_empty_state_new",
+    "resources:reading_list_side_swipe",
     "resources:reading_list_tools_icon",
     "//base",
     "//base:i18n",

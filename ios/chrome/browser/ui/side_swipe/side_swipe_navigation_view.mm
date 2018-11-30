@@ -81,6 +81,10 @@ const CGFloat kSelectionAnimationDuration = 0.5;
   // If |NO| this is an edge gesture and navigation isn't possible. Don't show
   // arrows and bubbles and don't allow navigate.
   BOOL canNavigate_;
+
+  // If |YES| arrowView_ is directionnal and must be rotated 180 degreed for the
+  // forward panes.
+  BOOL rotateForward_;
 }
 // Returns a newly allocated and configured selection circle shape.
 - (CAShapeLayer*)newSelectionCircleLayer;
@@ -96,12 +100,14 @@ const CGFloat kSelectionAnimationDuration = 0.5;
 - (instancetype)initWithFrame:(CGRect)frame
                 withDirection:(UISwipeGestureRecognizerDirection)direction
                   canNavigate:(BOOL)canNavigate
-                        image:(UIImage*)image {
+                        image:(UIImage*)image
+                rotateForward:(BOOL)rotateForward {
   self = [super initWithFrame:frame];
   if (self) {
     self.backgroundColor = [UIColor colorWithWhite:90.0 / 256 alpha:1.0];
 
     canNavigate_ = canNavigate;
+    rotateForward_ = rotateForward;
     if (canNavigate) {
       image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       const CGRect imageSize = CGRectMake(0, 0, 24, 24);
@@ -182,8 +188,13 @@ const CGFloat kSelectionAnimationDuration = 0.5;
   CGFloat rotationStart = -CGFloat(base::kPiDouble) / 2;
   CGFloat rotationEnd = 0;
   if (gesture.direction == UISwipeGestureRecognizerDirectionLeft) {
-    rotationStart = CGFloat(base::kPiDouble) * 1.5;
-    rotationEnd = CGFloat(base::kPiDouble);
+    if (rotateForward_) {
+      rotationStart = CGFloat(base::kPiDouble) * 1.5;
+      rotationEnd = CGFloat(base::kPiDouble);
+    } else {
+      rotationStart = CGFloat(base::kPiDouble) / 2;
+      rotationEnd = 0;
+    }
   }
   CGAffineTransform rotation = CGAffineTransformMakeRotation(MapValueToRange(
       {0, kArrowThreshold}, {rotationStart, rotationEnd}, distance));
