@@ -24,7 +24,9 @@ namespace {
 
 class UnifiedConsentBrowserTest : public SyncTest {
  public:
-  UnifiedConsentBrowserTest() : SyncTest(SINGLE_CLIENT) {}
+  UnifiedConsentBrowserTest(UnifiedConsentFeatureState feature_state =
+                                UnifiedConsentFeatureState::kEnabled)
+      : SyncTest(SINGLE_CLIENT), scoped_unified_consent_state_(feature_state) {}
   ~UnifiedConsentBrowserTest() override = default;
 
   void DisableGoogleServices() {
@@ -64,18 +66,17 @@ class UnifiedConsentBrowserTest : public SyncTest {
  protected:
   base::HistogramTester histogram_tester_;
 
+ private:
+  ScopedUnifiedConsent scoped_unified_consent_state_;
+
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentBrowserTest);
 };
 
 class UnifiedConsentDisabledBrowserTest : public UnifiedConsentBrowserTest {
  public:
   UnifiedConsentDisabledBrowserTest()
-      : scoped_unified_consent_disabled(UnifiedConsentFeatureState::kDisabled) {
-  }
+      : UnifiedConsentBrowserTest(UnifiedConsentFeatureState::kDisabled) {}
   ~UnifiedConsentDisabledBrowserTest() override = default;
-
- private:
-  ScopedUnifiedConsent scoped_unified_consent_disabled;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentDisabledBrowserTest);
 };
