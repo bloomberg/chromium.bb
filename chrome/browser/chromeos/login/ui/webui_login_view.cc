@@ -9,7 +9,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -125,6 +124,8 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] = kAccelNameCancel;
   accel_map_[ui::Accelerator(ui::VKEY_E,
@@ -186,17 +187,19 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
     }
   }
 
-  if (!features::IsMultiProcessMash())
-    ash::Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
+  if (LoginScreenClient::HasInstance()) {
+    LoginScreenClient::Get()->AddSystemTrayFocusObserver(this);
+    observing_system_tray_focus_ = true;
+  }
 }
 
 WebUILoginView::~WebUILoginView() {
   for (auto& observer : observer_list_)
     observer.OnHostDestroying();
 
+  if (observing_system_tray_focus_)
+    LoginScreenClient::Get()->RemoveSystemTrayFocusObserver(this);
   if (!features::IsMultiProcessMash()) {
-    ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
-        this);
     ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
     ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
   }
@@ -399,7 +402,20 @@ void WebUILoginView::Observe(int type,
     case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE:
     case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN: {
       OnLoginPromptVisible();
-      registrar_.RemoveAll();
+      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                        content::NotificationService::AllSources());
+      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+                        content::NotificationService::AllSources());
+      break;
+    }
+    case chrome::NOTIFICATION_APP_TERMINATING: {
+      // In some tests, WebUILoginView remains after LoginScreenClient gets
+      // deleted on shutdown. It should unregister itself before the deletion
+      // happens.
+      if (observing_system_tray_focus_) {
+        LoginScreenClient::Get()->RemoveSystemTrayFocusObserver(this);
+        observing_system_tray_focus_ = false;
+      }
       break;
     }
     default:
@@ -565,6 +581,10 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
 }
 
 void WebUILoginView::OnLoginPromptVisible() {
+  if (!observing_system_tray_focus_ && LoginScreenClient::HasInstance()) {
+    LoginScreenClient::Get()->AddSystemTrayFocusObserver(this);
+    observing_system_tray_focus_ = true;
+  }
   // If we're hidden than will generate this signal once we're shown.
   if (is_hidden_ || webui_visible_) {
     VLOG(1) << "Login WebUI >> not emitting signal, hidden: " << is_hidden_;

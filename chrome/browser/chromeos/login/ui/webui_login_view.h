@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/system/system_tray_focus_observer.h"
+#include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -221,6 +221,8 @@ class WebUILoginView : public views::View,
   // Whether this was set as lock_screen_apps::StateController's
   // FocusCyclerDelegate.
   bool delegates_lock_screen_app_focus_cycle_ = false;
+
+  bool observing_system_tray_focus_ = false;
 
   base::ObserverList<web_modal::ModalDialogHostObserver>::Unchecked
       observer_list_;

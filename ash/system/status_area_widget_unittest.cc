@@ -6,6 +6,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -14,7 +15,6 @@
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_test_helper.h"
-#include "ash/system/system_tray_focus_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"

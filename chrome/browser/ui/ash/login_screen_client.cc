@@ -63,6 +63,16 @@ void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+void LoginScreenClient::AddSystemTrayFocusObserver(
+    ash::SystemTrayFocusObserver* observer) {
+  system_tray_focus_observers_.AddObserver(observer);
+}
+
+void LoginScreenClient::RemoveSystemTrayFocusObserver(
+    ash::SystemTrayFocusObserver* observer) {
+  system_tray_focus_observers_.RemoveObserver(observer);
+}
+
 ash::mojom::LoginScreenPtr& LoginScreenClient::login_screen() {
   return login_screen_;
 }
@@ -209,6 +219,11 @@ void LoginScreenClient::ShowAccountAccessHelpApp() {
   scoped_refptr<chromeos::HelpAppLauncher>(
       new chromeos::HelpAppLauncher(nullptr))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+}
+
+void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {
+  for (ash::SystemTrayFocusObserver& observer : system_tray_focus_observers_)
+    observer.OnFocusLeavingSystemTray(reverse);
 }
 
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {

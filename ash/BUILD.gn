@@ -66,7 +66,6 @@ component("ash") {
     "sticky_keys/sticky_keys_controller.h",
     "system/status_area_widget.h",
     "system/status_area_widget_delegate.h",
-    "system/system_tray_focus_observer.h",
     "system/tray/system_tray_notifier.h",
     "system/unified/unified_system_tray.h",
     "touch/touch_observer_hud.h",
