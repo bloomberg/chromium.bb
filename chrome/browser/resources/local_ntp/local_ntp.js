@@ -858,6 +858,12 @@ function handlePostMessage(event) {
         injectOneGoogleBar(og);
       };
     }
+    if (configData.isGooglePage && !$('promo-loader')) {
+      var promoScript = document.createElement('script');
+      promoScript.id = 'promo-loader';
+      promoScript.src = 'chrome-search://local-ntp/promo.js';
+      document.body.appendChild(promoScript);
+    }
     if (configData.isCustomLinksEnabled) {
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
           .classList.toggle(

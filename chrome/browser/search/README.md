@@ -120,15 +120,15 @@ appearance of the Google homepage. It’s not actually a real search bar,
 and if the user interacts with it, the NTP moves keyboard focus and any
 text to the Omnibox and hides the Fakebox.
 
-##### Promos
+##### Middle-slot Promos
 
-Below the NTP tiles, there is space for a **Promo**. A Promo is
+Below the NTP tiles, there is space for a **Middle-slot Promo**. A promo is
 typically a short string, typically used for disasters (e.g. “Affected
 by the Boston Molassacre? Find a relief center near you.”) or an
 advertisement (e.g. “Try the all-new new Chromebook, with included
 toaster oven.”).
 
-As of 2017-12-05, the Local NTP does not yet support Promos.
+Middle-slot promos are fetched from Google servers on NTP load.
 
 #### Non-Google Local NTP
 
