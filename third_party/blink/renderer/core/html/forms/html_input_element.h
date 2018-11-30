@@ -327,7 +327,7 @@ class CORE_EXPORT HTMLInputElement
   bool MayTriggerVirtualKeyboard() const final;
   bool IsEnumeratable() const final;
   bool IsInteractiveContent() const final;
-  bool SupportLabels() const final;
+  bool IsLabelable() const final;
   bool MatchesDefaultPseudoClass() const override;
 
   bool IsTextControl() const final { return IsTextField(); }

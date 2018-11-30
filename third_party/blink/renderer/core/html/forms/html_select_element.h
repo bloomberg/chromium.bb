@@ -196,7 +196,7 @@ class CORE_EXPORT HTMLSelectElement final
   bool IsEnumeratable() const override { return true; }
   bool IsInteractiveContent() const override;
   bool SupportsAutofocus() const override;
-  bool SupportLabels() const override { return true; }
+  bool IsLabelable() const override { return true; }
 
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;

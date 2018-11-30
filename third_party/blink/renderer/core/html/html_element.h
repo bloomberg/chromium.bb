@@ -37,6 +37,7 @@ class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
 class KeyboardEvent;
+class LabelsNodeList;
 class StringOrTrustedScript;
 class StringTreatNullAsEmptyStringOrTrustedScript;
 
@@ -108,7 +109,11 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsHTMLUnknownElement() const { return false; }
   virtual bool IsPluginElement() const { return false; }
 
+  // https://html.spec.whatwg.org/multipage/forms.html#category-label
   virtual bool IsLabelable() const { return false; }
+  // |labels| IDL attribute implementation for IsLabelable()==true elements.
+  LabelsNodeList* labels();
+
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content
   virtual bool IsInteractiveContent() const;
   void DefaultEventHandler(Event&) override;

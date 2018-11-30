@@ -227,8 +227,6 @@ blink_core_sources("html") {
     "forms/internal_popup_menu.h",
     "forms/keyboard_clickable_input_type_view.cc",
     "forms/keyboard_clickable_input_type_view.h",
-    "forms/labelable_element.cc",
-    "forms/labelable_element.h",
     "forms/labels_node_list.cc",
     "forms/labels_node_list.h",
     "forms/listed_element.cc",

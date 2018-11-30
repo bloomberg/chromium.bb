@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
-#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
 
 namespace blink {
 
@@ -258,7 +257,7 @@ void AXRelationCache::TextChanged(AXObject* object) {
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
-  if (LabelableElement* control = ToHTMLLabelElement(node)->control())
+  if (HTMLElement* control = ToHTMLLabelElement(node)->control())
     TextChanged(Get(control));
 }
 

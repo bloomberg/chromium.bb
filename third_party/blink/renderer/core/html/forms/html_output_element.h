@@ -65,7 +65,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
   bool IsDisabledFormControl() const override;
   bool MatchesEnabledPseudoClass() const override;
   bool IsEnumeratable() const override { return true; }
-  bool SupportLabels() const override { return true; }
+  bool IsLabelable() const override { return true; }
   bool SupportsFocus() const override;
   void ChildrenChanged(const ChildrenChange&) override;
   void ResetImpl() override;

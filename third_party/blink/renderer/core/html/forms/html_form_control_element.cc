@@ -50,7 +50,7 @@ using namespace html_names;
 
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
-    : LabelableElement(tag_name, document),
+    : HTMLElement(tag_name, document),
       autofill_state_(WebAutofillState::kNotFilled),
       data_list_ancestor_state_(kUnknown),
       has_validation_message_(false),
@@ -68,7 +68,7 @@ HTMLFormControlElement::~HTMLFormControlElement() = default;
 
 void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
   ListedElement::Trace(visitor);
-  LabelableElement::Trace(visitor);
+  HTMLElement::Trace(visitor);
 }
 
 String HTMLFormControlElement::formAction() const {

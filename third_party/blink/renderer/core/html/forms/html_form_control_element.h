@@ -29,8 +29,8 @@
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/form_associated.h"
-#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ enum CheckValidityEventBehavior {
 // HTMLFormControlElement is the default implementation of
 // ListedElement, and listed element implementations should use
 // HTMLFormControlElement unless there is a special reason.
-class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
+class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
                                            public ListedElement,
                                            public FormAssociated {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);

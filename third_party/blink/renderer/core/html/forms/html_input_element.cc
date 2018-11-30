@@ -1701,7 +1701,7 @@ bool HTMLInputElement::IsEnumeratable() const {
   return input_type_->IsEnumeratable();
 }
 
-bool HTMLInputElement::SupportLabels() const {
+bool HTMLInputElement::IsLabelable() const {
   return input_type_->IsInteractiveContent();
 }
 
