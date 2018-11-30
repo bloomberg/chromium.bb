@@ -59,7 +59,6 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // static
 jlong JNI_CachedImageFetcherBridge_Init(
     JNIEnv* j_env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   base::FilePath file_path =

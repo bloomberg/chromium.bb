@@ -13,7 +13,6 @@ namespace net {
 
 ScopedJavaLocalRef<jstring> JNI_GURLUtils_GetOrigin(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   GURL host(base::android::ConvertJavaStringToUTF16(env, url));
 
@@ -22,7 +21,6 @@ ScopedJavaLocalRef<jstring> JNI_GURLUtils_GetOrigin(
 
 ScopedJavaLocalRef<jstring> JNI_GURLUtils_GetScheme(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   GURL host(base::android::ConvertJavaStringToUTF16(env, url));
 

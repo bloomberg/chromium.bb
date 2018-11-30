@@ -8,7 +8,6 @@
 using base::android::JavaParamRef;
 
 static jint JNI_CronetUrlRequestTest_GetConnectionMigrationDisableLoadFlag(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   return net::LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
 }

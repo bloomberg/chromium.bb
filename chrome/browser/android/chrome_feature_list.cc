@@ -430,15 +430,12 @@ const base::Feature kVideoPersistence{"VideoPersistence",
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-static jboolean JNI_ChromeFeatureList_IsInitialized(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_ChromeFeatureList_IsInitialized(JNIEnv* env) {
   return !!base::FeatureList::GetInstance();
 }
 
 static jboolean JNI_ChromeFeatureList_IsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name) {
   const base::Feature* feature =
       FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
@@ -448,7 +445,6 @@ static jboolean JNI_ChromeFeatureList_IsEnabled(
 static ScopedJavaLocalRef<jstring>
 JNI_ChromeFeatureList_GetFieldTrialParamByFeature(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
     const JavaParamRef<jstring>& jparam_name) {
   const base::Feature* feature =
@@ -461,7 +457,6 @@ JNI_ChromeFeatureList_GetFieldTrialParamByFeature(
 
 static jint JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsInt(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
     const JavaParamRef<jstring>& jparam_name,
     const jint jdefault_value) {
@@ -474,7 +469,6 @@ static jint JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsInt(
 
 static jdouble JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsDouble(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
     const JavaParamRef<jstring>& jparam_name,
     const jdouble jdefault_value) {
@@ -487,7 +481,6 @@ static jdouble JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsDouble(
 
 static jboolean JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsBoolean(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
     const JavaParamRef<jstring>& jparam_name,
     const jboolean jdefault_value) {

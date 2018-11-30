@@ -46,7 +46,6 @@ const base::Feature kRequestUnbufferedDispatch{
 
 static jboolean JNI_ContentFeatureList_IsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name) {
   const base::Feature* feature =
       FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));

@@ -181,7 +181,6 @@ inline static base::TimeDelta GetTimeDelta(jlong ms) {
 
 void JNI_TabModelJniBridge_LogFromCloseMetric(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong ms,
     jboolean perceived) {
   if (perceived) {
@@ -195,7 +194,6 @@ void JNI_TabModelJniBridge_LogFromCloseMetric(
 
 void JNI_TabModelJniBridge_LogFromExitMetric(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong ms,
     jboolean perceived) {
   if (perceived) {
@@ -208,7 +206,6 @@ void JNI_TabModelJniBridge_LogFromExitMetric(
 }
 
 void JNI_TabModelJniBridge_LogFromNewMetric(JNIEnv* env,
-                                            const JavaParamRef<jclass>& jcaller,
                                             jlong ms,
                                             jboolean perceived) {
   if (perceived) {
@@ -222,7 +219,6 @@ void JNI_TabModelJniBridge_LogFromNewMetric(JNIEnv* env,
 
 void JNI_TabModelJniBridge_LogFromUserMetric(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong ms,
     jboolean perceived) {
   if (perceived) {

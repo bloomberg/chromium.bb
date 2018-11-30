@@ -203,7 +203,6 @@ void OnStoragePermissionDecided(
 
 static void JNI_DownloadController_OnAcquirePermissionResult(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong callback_id,
     jboolean granted,
     const JavaParamRef<jstring>& jpermission_to_update) {

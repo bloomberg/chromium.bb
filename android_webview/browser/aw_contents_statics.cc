@@ -65,9 +65,7 @@ void ProxyOverrideChanged(const JavaRef<jobject>& callback) {
 
 // static
 ScopedJavaLocalRef<jstring>
-JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
@@ -81,7 +79,6 @@ JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
 // static
 void JNI_AwContentsStatics_ClearClientCertPreferences(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraitsAndReply(
@@ -93,16 +90,14 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
 
 // static
 ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetUnreachableWebDataUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, content::kUnreachableWebDataURL);
 }
 
 // static
 ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, version_info::GetVersionNumber());
 }
@@ -110,7 +105,6 @@ ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
 // static
 void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobjectArray>& jrules,
     const JavaParamRef<jobject>& callback) {
   std::vector<std::string> rules;
@@ -126,7 +120,6 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
 // static
 void JNI_AwContentsStatics_SetServiceWorkerIoThreadClient(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const base::android::JavaParamRef<jobject>& io_thread_client,
     const base::android::JavaParamRef<jobject>& browser_context) {
   AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(io_thread_client,
@@ -136,7 +129,6 @@ void JNI_AwContentsStatics_SetServiceWorkerIoThreadClient(
 // static
 void JNI_AwContentsStatics_SetCheckClearTextPermitted(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jboolean permitted) {
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
 }
@@ -144,7 +136,6 @@ void JNI_AwContentsStatics_SetCheckClearTextPermitted(
 // static
 void JNI_AwContentsStatics_SetProxyOverride(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const base::android::JavaParamRef<jstring>& jhost,
     jint port,
     const base::android::JavaParamRef<jobjectArray>& jexclusion_list,
@@ -163,7 +154,6 @@ void JNI_AwContentsStatics_SetProxyOverride(
 // static
 void JNI_AwContentsStatics_ClearProxyOverride(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& callback) {
   AwBrowserContext::GetDefault()->GetAwURLRequestContext()->ClearProxyOverride(
       base::BindOnce(&ProxyOverrideChanged,

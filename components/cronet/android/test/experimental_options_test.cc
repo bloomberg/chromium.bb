@@ -50,7 +50,6 @@ void WriteToHostCacheOnNetworkThread(jlong jcontext_adapter,
 
 static void JNI_ExperimentalOptionsTest_WriteToHostCache(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong jcontext_adapter,
     const JavaParamRef<jstring>& jaddress) {
   TestUtil::RunAfterContextInit(

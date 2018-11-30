@@ -26,7 +26,6 @@ class TemplateURL;
 
 static jlong JNI_LocaleTemplateUrlLoader_Init(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jlocale) {
   Profile* profile =
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile();

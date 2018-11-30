@@ -13,7 +13,6 @@ using base::android::JavaParamRef;
 
 int JNI_PolicyAuditor_GetCertificateFailure(
     JNIEnv* env,
-    const JavaParamRef<jclass>& obj,
     const JavaParamRef<jobject>& java_web_contents) {
   // This function is similar to
   // LocationBarModelImpl::GetSecurityLevelForWebContents, but has a custom

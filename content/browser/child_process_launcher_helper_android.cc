@@ -181,7 +181,6 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
 
 static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jlong termination_info_ptr,
     jint binding_state,
     jboolean killed_by_us,

@@ -52,8 +52,7 @@ void RemoveSessionCookiesForProfile(Profile* profile) {
 }  // namespace
 
 static void JNI_ProfileManagerUtils_FlushPersistentDataForAllProfiles(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& obj) {
+    JNIEnv* env) {
   std::vector<Profile*> loaded_profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::for_each(loaded_profiles.begin(), loaded_profiles.end(),
@@ -64,8 +63,7 @@ static void JNI_ProfileManagerUtils_FlushPersistentDataForAllProfiles(
 }
 
 static void JNI_ProfileManagerUtils_RemoveSessionCookiesForAllProfiles(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& obj) {
+    JNIEnv* env) {
   std::vector<Profile*> loaded_profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::for_each(loaded_profiles.begin(), loaded_profiles.end(),

@@ -19,20 +19,17 @@ namespace prefetch {
 
 JNI_EXPORT void JNI_PrefetchTestBridge_EnableLimitlessPrefetching(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jboolean enable) {
   SetLimitlessPrefetchingEnabledForTesting(enable != 0);
 }
 
-JNI_EXPORT jboolean JNI_PrefetchTestBridge_IsLimitlessPrefetchingEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+JNI_EXPORT jboolean
+JNI_PrefetchTestBridge_IsLimitlessPrefetchingEnabled(JNIEnv* env) {
   return static_cast<jboolean>(IsLimitlessPrefetchingEnabled());
 }
 
 JNI_EXPORT void JNI_PrefetchTestBridge_SkipNTPSuggestionsAPIKeyCheck(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsFetcherImpl::
       set_skip_api_key_check_for_testing();
 }

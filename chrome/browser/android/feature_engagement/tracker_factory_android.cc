@@ -12,7 +12,6 @@
 static base::android::ScopedJavaLocalRef<jobject>
 JNI_TrackerFactory_GetTrackerForProfile(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);

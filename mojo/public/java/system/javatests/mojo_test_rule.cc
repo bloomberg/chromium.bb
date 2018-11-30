@@ -32,8 +32,7 @@ struct TestEnvironment {
 namespace mojo {
 namespace android {
 
-static void JNI_MojoTestRule_InitCore(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
+static void JNI_MojoTestRule_InitCore(JNIEnv* env) {
   mojo::core::Init();
 }
 

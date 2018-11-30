@@ -9,8 +9,7 @@ using base::android::JavaParamRef;
 
 namespace net {
 
-void JNI_X509Util_NotifyKeyChainChanged(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz) {
+void JNI_X509Util_NotifyKeyChainChanged(JNIEnv* env) {
   CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 

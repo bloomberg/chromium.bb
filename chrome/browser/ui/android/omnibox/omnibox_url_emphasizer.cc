@@ -18,7 +18,6 @@ using base::android::ScopedJavaLocalRef;
 ScopedJavaLocalRef<jintArray>
 JNI_OmniboxUrlEmphasizer_ParseForEmphasizeComponents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jtext) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);

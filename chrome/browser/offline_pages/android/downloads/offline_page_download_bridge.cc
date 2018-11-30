@@ -344,7 +344,6 @@ void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
 
 void JNI_OfflinePageDownloadBridge_StartDownload(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_tab,
     const JavaParamRef<jstring>& j_origin) {
   TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);

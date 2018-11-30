@@ -11,15 +11,12 @@
 #include "jni/ContentUtils_jni.h"
 
 static base::android::ScopedJavaLocalRef<jstring>
-JNI_ContentUtils_GetBrowserUserAgent(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+JNI_ContentUtils_GetBrowserUserAgent(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 
 static void JNI_ContentUtils_SetUserAgentOverride(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   const char kLinuxInfoStr[] = "X11; Linux x86_64";
   ChromeContentClient content_client;

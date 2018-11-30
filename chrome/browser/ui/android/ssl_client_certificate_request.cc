@@ -228,7 +228,6 @@ namespace android {
 // the user didn't select a certificate.
 static void JNI_SSLClientCertificateRequest_OnSystemRequestCompletion(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong request_id,
     const JavaParamRef<jobjectArray>& encoded_chain_ref,
     const JavaParamRef<jobject>& private_key_ref) {
@@ -280,8 +279,7 @@ static void NotifyClientCertificatesChanged() {
 
 static void
 JNI_SSLClientCertificateRequest_NotifyClientCertificatesChangedOnIOThread(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     NotifyClientCertificatesChanged();
   } else {

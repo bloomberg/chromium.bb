@@ -13,7 +13,6 @@ namespace android {
 
 jlong JNI_ResourceFactory_CreateToolbarContainerResource(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint toolbar_left,
     jint toolbar_top,
     jint toolbar_right,

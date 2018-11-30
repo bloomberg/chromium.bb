@@ -48,13 +48,11 @@ void RemoveShellView(const JavaRef<jobject>& shell_view) {
 }
 
 static void JNI_ShellManager_Init(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
                                   const JavaParamRef<jobject>& obj) {
   g_global_state.Get().j_shell_manager.Reset(obj);
 }
 
 void JNI_ShellManager_LaunchShell(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
                                   const JavaParamRef<jstring>& jurl) {
   ShellBrowserContext* browserContext =
       ShellContentBrowserClient::Get()->browser_context();

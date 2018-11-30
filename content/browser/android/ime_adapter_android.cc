@@ -75,7 +75,6 @@ jlong JNI_ImeAdapterImpl_Init(JNIEnv* env,
 // Callback from Java to convert BackgroundColorSpan data to a
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void JNI_ImeAdapterImpl_AppendBackgroundColorSpan(JNIEnv*,
-                                                  const JavaParamRef<jclass>&,
                                                   jlong ime_text_spans_ptr,
                                                   jint start,
                                                   jint end,
@@ -96,7 +95,6 @@ void JNI_ImeAdapterImpl_AppendBackgroundColorSpan(JNIEnv*,
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void JNI_ImeAdapterImpl_AppendSuggestionSpan(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jlong ime_text_spans_ptr,
     jint start,
     jint end,
@@ -126,7 +124,6 @@ void JNI_ImeAdapterImpl_AppendSuggestionSpan(
 // Callback from Java to convert UnderlineSpan data to a
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void JNI_ImeAdapterImpl_AppendUnderlineSpan(JNIEnv*,
-                                            const JavaParamRef<jclass>&,
                                             jlong ime_text_spans_ptr,
                                             jint start,
                                             jint end) {

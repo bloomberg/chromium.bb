@@ -54,15 +54,11 @@ void VrModuleProvider::OnInstalledModule(
   j_vr_module_provider_ = nullptr;
 }
 
-static void JNI_VrModuleProvider_Init(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+static void JNI_VrModuleProvider_Init(JNIEnv* env) {
   device::VrModuleDelegate::Set(std::make_unique<VrModuleProvider>());
 }
 
-static void JNI_VrModuleProvider_RegisterJni(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+static void JNI_VrModuleProvider_RegisterJni(JNIEnv* env) {
   CHECK(RegisterJni(env));
 }
 

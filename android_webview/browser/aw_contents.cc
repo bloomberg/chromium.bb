@@ -194,7 +194,6 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 // static
 void JNI_AwContents_UpdateDefaultLocale(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jstring>& locale,
     const JavaParamRef<jstring>& locale_list) {
   *g_locale() = ConvertJavaStringToUTF8(env, locale);
@@ -423,7 +422,6 @@ void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 static jlong JNI_AwContents_Init(JNIEnv* env,
-                                 const JavaParamRef<jclass>&,
                                  const JavaParamRef<jobject>& browser_context) {
   // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
   // than hard-code the default instance lookup here.
@@ -434,9 +432,7 @@ static jlong JNI_AwContents_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(new AwContents(std::move(web_contents)));
 }
 
-static jboolean JNI_AwContents_HasRequiredHardwareExtensions(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+static jboolean JNI_AwContents_HasRequiredHardwareExtensions(JNIEnv* env) {
   ScopedAllowInitGLBindings scoped_allow_init_gl_bindings;
   // Make sure GPUInfo is collected. This will initialize GL bindings,
   // collect GPUInfo, and compute GpuFeatureInfo if they have not been
@@ -446,26 +442,22 @@ static jboolean JNI_AwContents_HasRequiredHardwareExtensions(
 }
 
 static void JNI_AwContents_SetAwDrawSWFunctionTable(JNIEnv* env,
-                                                    const JavaParamRef<jclass>&,
                                                     jlong function_table) {
   RasterHelperSetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 
 static void JNI_AwContents_SetAwDrawGLFunctionTable(JNIEnv* env,
-                                                    const JavaParamRef<jclass>&,
                                                     jlong function_table) {}
 
 // static
-jint JNI_AwContents_GetNativeInstanceCount(JNIEnv* env,
-                                           const JavaParamRef<jclass>&) {
+jint JNI_AwContents_GetNativeInstanceCount(JNIEnv* env) {
   return base::subtle::NoBarrier_Load(&g_instance_count);
 }
 
 // static
 ScopedJavaLocalRef<jstring> JNI_AwContents_GetSafeBrowsingLocaleForTesting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   ScopedJavaLocalRef<jstring> locale =
       ConvertUTF8ToJavaString(env, base::i18n::GetConfiguredLocale());
   return locale;
@@ -1356,9 +1348,7 @@ jlong AwContents::GetAutofillProvider(
   return reinterpret_cast<jlong>(autofill_provider_.get());
 }
 
-void JNI_AwContents_SetShouldDownloadFavicons(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jclazz) {
+void JNI_AwContents_SetShouldDownloadFavicons(JNIEnv* env) {
   g_should_download_favicons = true;
 }
 

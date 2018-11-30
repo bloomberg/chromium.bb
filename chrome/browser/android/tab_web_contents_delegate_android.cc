@@ -482,7 +482,6 @@ TabWebContentsDelegateAndroid::SwapWebContents(
 
 void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHungRendererInfoBar)) {
@@ -500,7 +499,6 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
 
 void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
           content::WebContents::FromJavaWebContents(java_web_contents);
@@ -519,7 +517,6 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
 
 jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingAudio(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
@@ -531,7 +528,6 @@ jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingAudio(
 
 jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingVideo(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
@@ -543,7 +539,6 @@ jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingVideo(
 
 jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingScreen(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
@@ -555,7 +550,6 @@ jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingScreen(
 
 void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
@@ -567,7 +561,6 @@ void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
 
 void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents,
     const JavaParamRef<jstring>& java_url) {
   GURL url(base::android::ConvertJavaStringToUTF16(env, java_url));

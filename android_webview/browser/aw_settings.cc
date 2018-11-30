@@ -502,8 +502,7 @@ static jlong JNI_AwSettings_Init(JNIEnv* env,
 }
 
 static ScopedJavaLocalRef<jstring> JNI_AwSettings_GetDefaultUserAgent(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 

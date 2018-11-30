@@ -331,16 +331,12 @@ jlong JNI_VrShellDelegate_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
 }
 
-static void JNI_VrShellDelegate_OnLibraryAvailable(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_VrShellDelegate_OnLibraryAvailable(JNIEnv* env) {
   device::GvrDelegateProviderFactory::Install(
       std::make_unique<VrShellDelegateProviderFactory>());
 }
 
-static void JNI_VrShellDelegate_RegisterVrAssetsComponent(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_VrShellDelegate_RegisterVrAssetsComponent(JNIEnv* env) {
   component_updater::RegisterVrAssetsComponent(
       g_browser_process->component_updater());
 }

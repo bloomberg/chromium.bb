@@ -15,7 +15,6 @@ namespace android {
 
 static void JNI_RevenueStats_SetSearchClient(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jclient) {
   SearchTermsDataAndroid::search_client_.Get() =
       base::android::ConvertJavaStringToUTF8(env, jclient);
@@ -23,7 +22,6 @@ static void JNI_RevenueStats_SetSearchClient(
 
 static void JNI_RevenueStats_SetRlzParameterValue(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jrlz) {
   SearchTermsDataAndroid::rlz_parameter_value_.Get() =
       base::android::ConvertJavaStringToUTF16(env, jrlz);

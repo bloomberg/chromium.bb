@@ -16,7 +16,6 @@ namespace remoting {
 
 static void JNI_JniOAuthTokenGetter_ResolveOAuthTokenCallback(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong callback_ptr,
     jint jni_status,
     const JavaParamRef<jstring>& user_email,

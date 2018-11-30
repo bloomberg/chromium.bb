@@ -57,7 +57,6 @@ void LocationSettingsImpl::PromptToEnableSystemLocationSetting(
 
 static void JNI_LocationSettings_OnLocationSettingsDialogOutcome(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jlong callback_ptr,
     int result) {
   auto* callback =

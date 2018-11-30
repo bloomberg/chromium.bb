@@ -58,8 +58,7 @@ void OnLargeIconAvailable(const JavaRef<jobject>& j_callback,
 
 }  // namespace
 
-static jlong JNI_LargeIconBridge_Init(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
+static jlong JNI_LargeIconBridge_Init(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(new LargeIconBridge());
 }
 

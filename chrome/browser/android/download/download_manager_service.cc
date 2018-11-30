@@ -620,16 +620,13 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
 // static
 jboolean JNI_DownloadManagerService_IsSupportedMimeType(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jmime_type) {
   std::string mime_type = ConvertJavaStringToUTF8(env, jmime_type);
   return blink::IsSupportedMimeType(mime_type);
 }
 
 // static
-jint JNI_DownloadManagerService_GetAutoResumptionLimit(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jint JNI_DownloadManagerService_GetAutoResumptionLimit(JNIEnv* env) {
   std::string value  = base::GetFieldTrialParamValueByFeature(
       chrome::android::kDownloadAutoResumptionThrottling,
       kAutoResumptionLimitParamName);

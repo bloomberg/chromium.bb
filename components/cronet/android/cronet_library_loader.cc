@@ -107,9 +107,7 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
 }
 #endif
 
-void JNI_CronetLibraryLoader_CronetInitOnInitThread(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
   // Initialize message loop for init thread.
   DCHECK(!base::MessageLoopCurrent::IsSet());
   DCHECK(!g_init_message_loop);
@@ -132,8 +130,7 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
 }
 
 ScopedJavaLocalRef<jstring> JNI_CronetLibraryLoader_GetCronetVersion(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
 #if defined(ARCH_CPU_ARM64)
   // Attempt to avoid crashes on some ARM64 Marshmallow devices by
   // prompting zlib ARM feature detection early on. https://crbug.com/853725

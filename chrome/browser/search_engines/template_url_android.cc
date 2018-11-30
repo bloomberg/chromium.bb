@@ -19,7 +19,6 @@ TemplateURL* ToTemplateURL(jlong j_template_url) {
 
 ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetShortName(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return base::android::ConvertUTF16ToJavaString(env,
@@ -28,7 +27,6 @@ ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetShortName(
 
 ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetKeyword(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return base::android::ConvertUTF16ToJavaString(env, template_url->keyword());
@@ -36,7 +34,6 @@ ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetKeyword(
 
 jboolean JNI_TemplateUrl_IsPrepopulatedOrCreatedByPolicy(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return template_url->prepopulate_id() > 0 ||
@@ -44,14 +41,12 @@ jboolean JNI_TemplateUrl_IsPrepopulatedOrCreatedByPolicy(
 }
 
 jlong JNI_TemplateUrl_GetLastVisitedTime(JNIEnv* env,
-                                         const JavaParamRef<jclass>& jcaller,
                                          jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return template_url->last_visited().ToJavaTime();
 }
 
 jint JNI_TemplateUrl_GetPrepopulatedId(JNIEnv* env,
-                                       const JavaParamRef<jclass>& jcaller,
                                        jlong template_url_ptr) {
   TemplateURL* template_url = ToTemplateURL(template_url_ptr);
   return template_url->prepopulate_id();

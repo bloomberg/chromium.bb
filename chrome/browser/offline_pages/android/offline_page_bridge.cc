@@ -332,21 +332,16 @@ void PublishPageDone(
 
 }  // namespace
 
-static jboolean JNI_OfflinePageBridge_IsOfflineBookmarksEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_OfflinePageBridge_IsOfflineBookmarksEnabled(JNIEnv* env) {
   return offline_pages::IsOfflineBookmarksEnabled();
 }
 
-static jboolean JNI_OfflinePageBridge_IsPageSharingEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_OfflinePageBridge_IsPageSharingEnabled(JNIEnv* env) {
   return offline_pages::IsOfflinePagesSharingEnabled();
 }
 
 static jboolean JNI_OfflinePageBridge_CanSavePage(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
   return OfflinePageModel::CanSaveURL(url);
@@ -355,7 +350,6 @@ static jboolean JNI_OfflinePageBridge_CanSavePage(
 static ScopedJavaLocalRef<jobject>
 JNI_OfflinePageBridge_GetOfflinePageBridgeForProfile(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 

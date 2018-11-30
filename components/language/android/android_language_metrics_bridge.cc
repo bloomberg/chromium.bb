@@ -17,7 +17,6 @@ const char kTranslateExplicitLanguageAskLanguageRemoved[] =
 static void
 JNI_AndroidLanguageMetricsBridge_ReportExplicitLanguageAskStateChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& language,
     const jboolean added) {
   base::UmaHistogramSparse(

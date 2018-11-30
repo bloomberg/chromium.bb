@@ -95,7 +95,6 @@ void NavigateShareTargetPost(const std::string& body,
 
 void JNI_WebApkPostShareTargetNavigator_LoadViewForShareTargetPost(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const jboolean java_is_multipart_encoding,
     const JavaParamRef<jobjectArray>& java_names,
     const JavaParamRef<jobjectArray>& java_values,

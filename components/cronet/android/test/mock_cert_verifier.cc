@@ -49,7 +49,6 @@ static bool CalculatePublicKeySha256(const net::X509Certificate& cert,
 
 static jlong JNI_MockCertVerifier_CreateMockCertVerifier(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobjectArray>& jcerts,
     const jboolean jknown_root,
     const JavaParamRef<jstring>& jtest_data_dir) {

@@ -84,9 +84,7 @@ ScopedJavaLocalRef<jintArray> SBThreatTypeSetToJavaArray(
 
 // Java->Native call, to check whether the feature to use local blacklists is
 // enabled.
-jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(JNIEnv* env) {
   return base::FeatureList::IsEnabled(kUseLocalBlacklistsV2);
 }
 
@@ -100,7 +98,6 @@ jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(
 //   nothing thread unsafe happening here.
 void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
     JNIEnv* env,
-    const JavaParamRef<jclass>& context,
     jlong callback_id,
     jint result_status,
     const JavaParamRef<jstring>& metadata,

@@ -20,7 +20,6 @@ namespace cronet {
 
 jboolean JNI_NativeTestServer_StartNativeTestServer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jtest_files_root,
     const JavaParamRef<jstring>& jtest_data_dir) {
   base::FilePath test_data_dir(
@@ -32,22 +31,17 @@ jboolean JNI_NativeTestServer_StartNativeTestServer(
   return cronet::TestServer::StartServeFilesFromDirectory(test_files_root);
 }
 
-void JNI_NativeTestServer_ShutdownNativeTestServer(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+void JNI_NativeTestServer_ShutdownNativeTestServer(JNIEnv* env) {
   cronet::TestServer::Shutdown();
 }
 
-ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoBodyURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoBodyURL(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetEchoRequestBodyURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoHeaderURL(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jheader) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetEchoHeaderURL(
@@ -55,50 +49,41 @@ ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoHeaderURL(
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoAllHeadersURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetEchoAllHeadersURL());
 }
 
-ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoMethodURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoMethodURL(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetEchoMethodURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetRedirectToEchoBody(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetRedirectToEchoBodyURL());
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetFileURL(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jfile_path) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetFileURL(
                base::android::ConvertJavaStringToUTF8(env, jfile_path)));
 }
 
-jint JNI_NativeTestServer_GetPort(JNIEnv* env,
-                                  const JavaParamRef<jclass>& jcaller) {
+jint JNI_NativeTestServer_GetPort(JNIEnv* env) {
   return cronet::TestServer::GetPort();
 }
 
 ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetExabyteResponseURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetExabyteResponseURL());
 }
 
-ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetHostPort(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetHostPort(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, cronet::TestServer::GetHostPort());
 }

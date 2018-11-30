@@ -61,7 +61,6 @@ const base::Feature kWebViewUmaLogAppPackageName{
 
 static jboolean JNI_AwFeatureList_IsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name) {
   const base::Feature* feature =
       FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));

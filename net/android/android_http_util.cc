@@ -15,7 +15,6 @@ namespace net {
 
 jboolean JNI_HttpUtil_IsAllowedHeader(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_header_name,
     const JavaParamRef<jstring>& j_header_value) {
   std::string header_name(ConvertJavaStringToUTF8(env, j_header_name));

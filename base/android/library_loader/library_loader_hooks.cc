@@ -214,9 +214,7 @@ void LibraryLoaderExitHook() {
   }
 }
 
-static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(JNIEnv* env) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
       ShouldDoOrderfileMemoryOptimization());
@@ -224,8 +222,7 @@ static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
 }
 
 static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
 #else
@@ -233,9 +230,7 @@ static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
 #endif
 }
 
-static void JNI_LibraryLoader_PeriodicallyCollectResidency(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_LibraryLoader_PeriodicallyCollectResidency(JNIEnv* env) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   NativeLibraryPrefetcher::PeriodicallyCollectResidency();
 #else

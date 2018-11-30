@@ -35,7 +35,6 @@ JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(
 base::android::ScopedJavaLocalRef<jbyteArray>
 JNI_ResourceRequestBody_CreateResourceRequestBodyFromBytes(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jbyteArray>& j_post_data) {
   base::android::ScopedJavaLocalRef<jbyteArray> result;
   if (!j_post_data)

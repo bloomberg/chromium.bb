@@ -16,7 +16,6 @@ using base::android::JavaParamRef;
 
 static void JNI_WarmupManager_StartPreconnectPredictorInitialization(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   auto* loading_predictor =
@@ -28,7 +27,6 @@ static void JNI_WarmupManager_StartPreconnectPredictorInitialization(
 
 static void JNI_WarmupManager_PreconnectUrlAndSubresources(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& url_str) {
   if (url_str) {
@@ -46,7 +44,6 @@ static void JNI_WarmupManager_PreconnectUrlAndSubresources(
 
 static void JNI_WarmupManager_WarmupSpareRenderer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   if (profile) {

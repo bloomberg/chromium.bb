@@ -15,7 +15,6 @@ using base::android::ScopedJavaLocalRef;
 
 static ScopedJavaLocalRef<jobject> JNI_WebContentsFactory_CreateWebContents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_profile,
     jboolean incognito,
     jboolean initially_hidden,

@@ -139,7 +139,6 @@ void JNI_ForeignSessionHelper_CopySessionToJava(
 
 static jlong JNI_ForeignSessionHelper_Init(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& profile) {
   ForeignSessionHelper* foreign_session_helper = new ForeignSessionHelper(
       ProfileAndroid::FromProfileAndroid(profile));

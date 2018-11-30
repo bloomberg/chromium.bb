@@ -42,7 +42,6 @@ MediaSessionAndroid::~MediaSessionAndroid() = default;
 // static
 ScopedJavaLocalRef<jobject> JNI_MediaSessionImpl_GetMediaSessionFromWebContents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_contents_android) {
   WebContents* contents = WebContents::FromJavaWebContents(j_contents_android);
   if (!contents)

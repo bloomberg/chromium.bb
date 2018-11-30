@@ -132,8 +132,7 @@ ScopedJavaLocalRef<jobject> ArCoreJavaUtils::GetApplicationContext() {
 }
 
 static void JNI_ArCoreJavaUtils_InstallArCoreDeviceProviderFactory(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   device::ArCoreDeviceProviderFactory::Install(
       std::make_unique<ArCoreDeviceProviderFactoryImpl>());
 }

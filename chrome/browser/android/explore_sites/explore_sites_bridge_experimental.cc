@@ -96,7 +96,6 @@ void OnGetIconDone(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
 // static
 void JNI_ExploreSitesBridgeExperimental_GetNtpCategories(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_result_obj,
     const JavaParamRef<jobject>& j_callback_obj) {
@@ -111,8 +110,7 @@ void JNI_ExploreSitesBridgeExperimental_GetNtpCategories(
 
 // static
 ScopedJavaLocalRef<jstring> JNI_ExploreSitesBridgeExperimental_GetCatalogUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, GetCatalogPrototypeURL().spec());
 }
@@ -120,7 +118,6 @@ ScopedJavaLocalRef<jstring> JNI_ExploreSitesBridgeExperimental_GetCatalogUrl(
 // static
 static void JNI_ExploreSitesBridgeExperimental_GetIcon(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jobject>& j_callback_obj) {

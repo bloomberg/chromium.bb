@@ -86,7 +86,6 @@ void UpdateCatalogDone(ScopedJavaGlobalRef<jobject>(j_callback_obj),
 // static
 void JNI_ExploreSitesBridge_GetEspCatalog(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_result_obj,
     const JavaParamRef<jobject>& j_callback_obj) {
@@ -107,8 +106,7 @@ void JNI_ExploreSitesBridge_GetEspCatalog(
 }
 
 // static
-jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env,
-                                         const JavaParamRef<jclass>& j_caller) {
+jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env) {
   return static_cast<jint>(
       chrome::android::explore_sites::GetExploreSitesVariation());
 }
@@ -116,7 +114,6 @@ jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env,
 // static
 void JNI_ExploreSitesBridge_GetIcon(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const jint j_site_id,
     const JavaParamRef<jobject>& j_callback_obj) {
@@ -139,7 +136,6 @@ void JNI_ExploreSitesBridge_GetIcon(
 
 void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     jboolean is_immediate_fetch,
     const JavaParamRef<jobject>& j_callback_obj) {
@@ -170,7 +166,6 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
 
 void JNI_ExploreSitesBridge_BlacklistSite(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
@@ -200,7 +195,6 @@ float ExploreSitesBridge::GetScaleFactorFromDevice() {
 // static
 void JNI_ExploreSitesBridge_GetCategoryImage(
     JNIEnv* env,
-    const JavaParamRef<jclass>& j_caller,
     const JavaParamRef<jobject>& j_profile,
     const jint j_category_id,
     const jint j_pixel_size,

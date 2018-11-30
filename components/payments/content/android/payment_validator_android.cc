@@ -21,7 +21,6 @@ namespace payments {
 
 jboolean JNI_PaymentValidator_ValidatePaymentDetailsAndroid(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& buffer) {
   jbyte* buf_in = static_cast<jbyte*>(env->GetDirectBufferAddress(buffer));
   jlong buf_size = env->GetDirectBufferCapacity(buffer);
@@ -37,7 +36,6 @@ jboolean JNI_PaymentValidator_ValidatePaymentDetailsAndroid(
 
 jboolean JNI_PaymentValidator_ValidatePaymentValidationErrorsAndroid(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobject>& buffer) {
   jbyte* buf_in = static_cast<jbyte*>(env->GetDirectBufferAddress(buffer));
   jlong buf_size = env->GetDirectBufferCapacity(buffer);

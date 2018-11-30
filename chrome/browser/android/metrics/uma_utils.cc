@@ -24,15 +24,12 @@ base::TimeTicks GetMainEntryPointTimeTicks() {
       Java_UmaUtils_getMainEntryPointTicks(env));
 }
 
-static jboolean JNI_UmaUtils_IsClientInMetricsReportingSample(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& obj) {
+static jboolean JNI_UmaUtils_IsClientInMetricsReportingSample(JNIEnv* env) {
   return ChromeMetricsServicesManagerClient::IsClientInSample();
 }
 
 static void JNI_UmaUtils_RecordMetricsReportingDefaultOptIn(
     JNIEnv* env,
-    const JavaParamRef<jclass>& obj,
     jboolean opt_in) {
   DCHECK(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();

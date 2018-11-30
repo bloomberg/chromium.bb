@@ -293,7 +293,6 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
 
 static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobjectArray>& jmethod_data,
     jboolean jmay_crawl_for_installable_payment_apps,
@@ -321,7 +320,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
 
 static void JNI_ServiceWorkerPaymentAppBridge_HasServiceWorkerPaymentApps(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jcallback) {
   // Checks whether there is a installed service worker payment app through
   // GetAllPaymentApps.
@@ -333,7 +331,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_HasServiceWorkerPaymentApps(
 
 static void JNI_ServiceWorkerPaymentAppBridge_GetServiceWorkerPaymentAppsInfo(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jcallback) {
   content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
       ProfileManager::GetActiveUserProfile(),
@@ -343,7 +340,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetServiceWorkerPaymentAppsInfo(
 
 static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
     const JavaParamRef<jstring>& jtop_origin,
@@ -406,7 +402,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
 
 static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
     const JavaParamRef<jstring>& jtop_origin,
@@ -431,7 +426,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
 
 static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jtop_origin,
     const JavaParamRef<jstring>& jpayment_request_origin,
@@ -470,7 +464,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
 
 static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
     jlong registration_id,
     const JavaParamRef<jobject>& jcallback) {
@@ -486,7 +479,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
 
 static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);

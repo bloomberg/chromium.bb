@@ -22,7 +22,6 @@ namespace android {
 
 ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetDistillerViewUrlFromUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_scheme,
     const JavaParamRef<jstring>& j_url) {
   std::string scheme(base::android::ConvertJavaStringToUTF8(env, j_scheme));
@@ -41,7 +40,6 @@ ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetDistillerViewUrlFromUrl(
 ScopedJavaLocalRef<jstring>
 JNI_DomDistillerUrlUtils_GetOriginalUrlFromDistillerUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   if (!url.is_valid())
@@ -57,7 +55,6 @@ JNI_DomDistillerUrlUtils_GetOriginalUrlFromDistillerUrl(
 
 jboolean JNI_DomDistillerUrlUtils_IsDistilledPage(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   return dom_distiller::url_utils::IsDistilledPage(url);
@@ -65,7 +62,6 @@ jboolean JNI_DomDistillerUrlUtils_IsDistilledPage(
 
 ScopedJavaLocalRef<jstring> JNI_DomDistillerUrlUtils_GetValueForKeyInUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jstring>& j_key) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
