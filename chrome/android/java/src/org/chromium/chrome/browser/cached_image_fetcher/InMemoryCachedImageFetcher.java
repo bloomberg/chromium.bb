@@ -47,13 +47,21 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
     @Override
     public void destroy() {
         mCachedImageFetcher.destroy();
+        mCachedImageFetcher = null;
+
         mBitmapCache.destroy();
+        mBitmapCache = null;
     }
 
     @Override
     public void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
         Bitmap cachedBitmap = tryToGetBitmap(url, width, height);
         if (cachedBitmap == null) {
+            if (mCachedImageFetcher == null) {
+                callback.onResult(null);
+                return;
+            }
+
             mCachedImageFetcher.fetchImage(url, width, height, (Bitmap bitmap) -> {
                 storeBitmap(bitmap, url, width, height);
                 callback.onResult(bitmap);
@@ -76,7 +84,10 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      * @param height The height (in pixels) of the image.
      * @return The Bitmap stored in memory or null.
      */
-    private Bitmap tryToGetBitmap(String url, int width, int height) {
+    @VisibleForTesting
+    Bitmap tryToGetBitmap(String url, int width, int height) {
+        if (mBitmapCache == null) return null;
+
         String key = encodeCacheKey(url, width, height);
         return mBitmapCache.getBitmap(key);
     }
@@ -89,7 +100,9 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      * @param height The height (in pixels) of the image.
      */
     private void storeBitmap(Bitmap bitmap, String url, int width, int height) {
-        if (bitmap == null) return;
+        if (bitmap == null || mBitmapCache == null) {
+            return;
+        }
 
         String key = encodeCacheKey(url, width, height);
         mBitmapCache.putBitmap(key, bitmap);

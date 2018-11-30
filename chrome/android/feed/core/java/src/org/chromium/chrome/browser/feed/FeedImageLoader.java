@@ -61,6 +61,7 @@ public class FeedImageLoader implements ImageLoaderApi {
 
     public void destroy() {
         mCachedImageFetcher.destroy();
+        mCachedImageFetcher = null;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class FeedImageLoader implements ImageLoaderApi {
      */
     private void loadDrawableWithIter(
             Iterator<String> urlsIter, int widthPx, int heightPx, Consumer<Drawable> consumer) {
-        if (!urlsIter.hasNext()) {
+        if (!urlsIter.hasNext() || mCachedImageFetcher == null) {
             // Post to ensure callback is not run synchronously.
             ThreadUtils.postOnUiThread(() -> consumer.accept(null));
             return;
