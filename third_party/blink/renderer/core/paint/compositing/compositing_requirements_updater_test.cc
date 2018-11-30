@@ -77,33 +77,6 @@ TEST_F(CompositingRequirementsUpdaterTest,
 }
 
 TEST_F(CompositingRequirementsUpdaterTest,
-       NoAssumedOverlapReasonForNonSelfPaintingLayer) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target {
-       overflow: auto;
-       width: 100px;
-       height: 100px;
-     }
-    </style>
-    <div style="position: relative; width: 500px; height: 300px;
-        transform: translateZ(0)"></div>
-    <div id=target></div>
-  )HTML");
-
-  PaintLayer* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  EXPECT_FALSE(target->GetCompositingReasons());
-
-  // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
-                                                       "position: relative");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(CompositingReason::kAssumedOverlap,
-            target->GetCompositingReasons());
-}
-
-TEST_F(CompositingRequirementsUpdaterTest,
        NoDescendantReasonForNonSelfPaintingLayer) {
   SetBodyInnerHTML(R"HTML(
     <style>

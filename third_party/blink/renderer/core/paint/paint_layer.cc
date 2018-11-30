@@ -3064,15 +3064,8 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   if (!rare_data_ || !rare_data_->composited_layer_mapping)
     return false;
 
-  // To cut off almost all the work in the compositing update for
-  // this case, we treat inline transforms has having assumed overlap
-  // (similar to how we treat animated transforms). Notice that we read
-  // CompositingReasonInlineTransform from the m_compositingReasons, which
-  // means that the inline transform actually triggered assumed overlap in
-  // the overlap map.
-  if (diff.TransformChanged() &&
-      (!rare_data_ || !(rare_data_->compositing_reasons &
-                        CompositingReason::kInlineTransform)))
+  // If a transform changed, we can't use the fast path.
+  if (diff.TransformChanged())
     return false;
 
   // We composite transparent Layers differently from non-transparent

@@ -94,9 +94,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
       !style.SubtreeWillChangeContents())
     reasons |= CompositingReason::kWillChangeCompositingHint;
 
-  if (style.HasInlineTransform())
-    reasons |= CompositingReason::kInlineTransform;
-
   if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
     reasons |= CompositingReason::kPreserve3DWith3DDescendants;
 

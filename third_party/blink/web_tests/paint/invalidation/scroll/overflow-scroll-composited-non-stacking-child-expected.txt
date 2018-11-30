@@ -40,23 +40,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFDDBB",
       "transform": 1
-    },
-    {
-      "name": "Ancestor Clipping Layer",
-      "position": [23, 65],
-      "bounds": [285, 175],
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='list'",
-      "position": [43, 35],
-      "bounds": [180, 250],
-      "drawsContent": false
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='commit')",
-      "position": [43, 35],
-      "bounds": [180, 250]
     }
   ],
   "transforms": [
