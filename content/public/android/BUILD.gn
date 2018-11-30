@@ -277,7 +277,6 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/common/ContentProcessInfo.java",
     "java/src/org/chromium/content_public/common/ContentSwitches.java",
     "java/src/org/chromium/content_public/common/ContentUrlConstants.java",
-    "java/src/org/chromium/content_public/common/MediaMetadata.java",
     "java/src/org/chromium/content_public/common/Referrer.java",
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
     "java/src/org/chromium/content_public/common/ScreenOrientationConstants.java",
@@ -402,7 +401,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
     "java/src/org/chromium/content/common/ServiceManagerConnectionImpl.java",
     "java/src/org/chromium/content_public/browser/LoadUrlParams.java",
-    "java/src/org/chromium/content_public/common/MediaMetadata.java",
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
   ]
