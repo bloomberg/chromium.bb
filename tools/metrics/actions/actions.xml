@@ -21026,6 +21026,7 @@ should be able to be added at any place in this file.
   <suffix name="Open" label="User opened an offline item."/>
   <suffix name="Pause" label="User paused downloading an offline item."/>
   <suffix name="Resume" label="User resumed downloading an offline item."/>
+  <suffix name="Retry" label="User retried downloading an offline item."/>
   <affected-action name="Android.DownloadManager.List.View.Action"/>
 </action-suffix>
 

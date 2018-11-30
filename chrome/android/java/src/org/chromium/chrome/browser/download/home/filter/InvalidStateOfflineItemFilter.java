@@ -27,7 +27,6 @@ public class InvalidStateOfflineItemFilter extends OfflineItemFilter {
             case OfflineItemState.FAILED:
                 return true;
             case OfflineItemState.INTERRUPTED:
-                return !item.isResumable;
             default:
                 return false;
         }
