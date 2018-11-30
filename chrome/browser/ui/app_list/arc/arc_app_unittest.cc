@@ -197,7 +197,7 @@ ArcAppListPrefs::AppInfo GetAppInfoExpectation(const arc::mojom::AppInfo& app,
 }
 
 MATCHER_P(ArcPackageInfoIs, package, "") {
-  return arg.Equals(package);
+  return arg.Equals(*package);
 }
 
 }  // namespace
@@ -2178,7 +2178,7 @@ TEST_P(ArcAppModelBuilderTest, DontRemoveRuntimeAppOnPackageChange) {
 
   prefs->AddObserver(&observer);
 
-  EXPECT_CALL(observer, OnPackageInstalled(ArcPackageInfoIs(*package)))
+  EXPECT_CALL(observer, OnPackageInstalled(ArcPackageInfoIs(package.get())))
       .Times(1);
   EXPECT_CALL(observer,
               OnAppRegistered(app_id1, GetAppInfoExpectation(
