@@ -85,11 +85,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   // Callback from TraceLog, can be called from any thread.
   static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
-                              bool thread_will_flush,
-                              base::trace_event::TraceEventHandle* handle);
-  static void OnUpdateDuration(base::trace_event::TraceEventHandle handle,
-                               const base::TimeTicks& now,
-                               const base::ThreadTicks& thread_now);
+                              bool thread_will_flush);
 
   base::Lock lock_;
   uint32_t target_buffer_ = 0;

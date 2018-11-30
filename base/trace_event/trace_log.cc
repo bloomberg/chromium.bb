@@ -328,13 +328,14 @@ void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
   // find the generation mismatch and delete this buffer soon.
 }
 
-void TraceLog::SetAddTraceEventOverrides(
-    const AddTraceEventOverrideCallback& add_event_override,
-    const OnFlushCallback& on_flush_callback,
-    const UpdateDurationCallback& update_duration_callback) {
-  add_trace_event_override_.store(add_event_override);
-  on_flush_callback_.store(on_flush_callback);
-  update_duration_callback_.store(update_duration_callback);
+void TraceLog::SetAddTraceEventOverride(
+    const AddTraceEventOverrideCallback& override,
+    const OnFlushCallback& on_flush_callback) {
+  subtle::NoBarrier_Store(&trace_event_override_,
+                          reinterpret_cast<subtle::AtomicWord>(override));
+  subtle::NoBarrier_Store(
+      &on_flush_callback_,
+      reinterpret_cast<subtle::AtomicWord>(on_flush_callback));
 }
 
 struct TraceLog::RegisteredAsyncObserver {
@@ -379,6 +380,8 @@ TraceLog::TraceLog()
       thread_shared_chunk_index_(0),
       generation_(0),
       use_worker_thread_(false),
+      trace_event_override_(0),
+      on_flush_callback_(0),
       filter_factory_for_testing_(nullptr) {
   CategoryRegistry::Initialize();
 
@@ -1022,7 +1025,8 @@ void TraceLog::FlushCurrentThread(int generation, bool discard_events) {
   // This will flush the thread local buffer.
   delete thread_local_event_buffer_.Get();
 
-  auto on_flush_callback = on_flush_callback_.load(std::memory_order_relaxed);
+  auto on_flush_callback = reinterpret_cast<OnFlushCallback>(
+      subtle::NoBarrier_Load(&on_flush_callback_));
   if (on_flush_callback) {
     on_flush_callback();
   }
@@ -1290,9 +1294,17 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                                   convertable_values);
 #endif  // OS_WIN
 
-  auto trace_event_override =
-      add_trace_event_override_.load(std::memory_order_relaxed);
+  AddTraceEventOverrideCallback trace_event_override =
+      reinterpret_cast<AddTraceEventOverrideCallback>(
+          subtle::NoBarrier_Load(&trace_event_override_));
   if (trace_event_override) {
+    // If we have an override in place for events, rather than sending
+    // them to the tracelog, we don't have a way of going back and updating
+    // the duration of _COMPLETE events. Instead, we emit separate _BEGIN
+    // and _END events.
+    if (phase == TRACE_EVENT_PHASE_COMPLETE)
+      phase = TRACE_EVENT_PHASE_BEGIN;
+
     TraceEvent new_trace_event(thread_id, offset_event_timestamp, thread_now,
                                phase, category_group_enabled, name, scope, id,
                                bind_id, num_args, arg_names, arg_types,
@@ -1300,7 +1312,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
     trace_event_override(
         &new_trace_event,
-        /*thread_will_flush=*/thread_local_event_buffer != nullptr, &handle);
+        /*thread_will_flush=*/thread_local_event_buffer != nullptr);
     return handle;
   }
 
@@ -1488,10 +1500,29 @@ void TraceLog::UpdateTraceEventDurationExplicit(
 #endif  // OS_WIN
 
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
-    auto update_duration_callback =
-        update_duration_callback_.load(std::memory_order_relaxed);
-    if (update_duration_callback) {
-      update_duration_callback(handle, now, thread_now);
+    AddTraceEventOverrideCallback trace_event_override =
+        reinterpret_cast<AddTraceEventOverrideCallback>(
+            subtle::NoBarrier_Load(&trace_event_override_));
+
+    // If we send events off to an override instead of the TraceBuffer,
+    // we don't have way of updating the prior event so we'll emit a
+    // separate _END event instead.
+    if (trace_event_override) {
+      TraceEvent new_trace_event(
+          static_cast<int>(base::PlatformThread::CurrentId()), now, thread_now,
+          TRACE_EVENT_PHASE_END, category_group_enabled, name,
+          trace_event_internal::kGlobalScope,
+          trace_event_internal::kNoId /* id */,
+          trace_event_internal::kNoId /* bind_id */, 0, nullptr, nullptr,
+          nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
+      trace_event_override(
+          &new_trace_event,
+          /*thread_will_flush=*/thread_local_event_buffer_.Get() != nullptr);
+
+#if defined(OS_ANDROID)
+      new_trace_event.SendToATrace();
+#endif
+
       return;
     }
   }
@@ -1532,13 +1563,13 @@ void TraceLog::AddMetadataEventWhileLocked(int thread_id,
                                            const char* metadata_name,
                                            const char* arg_name,
                                            const T& value) {
-  auto trace_event_override =
-      add_trace_event_override_.load(std::memory_order_relaxed);
+  auto trace_event_override = reinterpret_cast<AddTraceEventOverrideCallback>(
+      subtle::NoBarrier_Load(&trace_event_override_));
   if (trace_event_override) {
     TraceEvent trace_event;
     InitializeMetadataEvent(&trace_event, thread_id, metadata_name, arg_name,
                             value);
-    trace_event_override(&trace_event, /*thread_will_flush=*/true, nullptr);
+    trace_event_override(&trace_event, /*thread_will_flush=*/true);
   } else {
     InitializeMetadataEvent(
         AddEventToThreadSharedChunkWhileLocked(nullptr, false), thread_id,
@@ -1549,14 +1580,14 @@ void TraceLog::AddMetadataEventWhileLocked(int thread_id,
 void TraceLog::AddMetadataEventsWhileLocked() {
   lock_.AssertAcquired();
 
-  auto trace_event_override =
-      add_trace_event_override_.load(std::memory_order_relaxed);
+  auto trace_event_override = reinterpret_cast<AddTraceEventOverrideCallback>(
+      subtle::NoBarrier_Load(&trace_event_override_));
 
   // Move metadata added by |AddMetadataEvent| into the trace log.
   if (trace_event_override) {
     while (!metadata_events_.empty()) {
       trace_event_override(metadata_events_.back().get(),
-                           /*thread_will_flush=*/true, nullptr);
+                           /*thread_will_flush=*/true);
       metadata_events_.pop_back();
     }
   } else {
