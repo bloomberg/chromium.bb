@@ -7,7 +7,7 @@ package org.chromium.webapk.shell_apk.h2o;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -26,15 +26,6 @@ import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Displays splash screen. */
 public class SplashActivity extends Activity {
-    /** Returns whether {@link SplashActivity} is enabled. */
-    public static boolean checkComponentEnabled(Context context) {
-        PackageManager pm = context.getPackageManager();
-        ComponentName component = new ComponentName(context, SplashActivity.class);
-        int enabledSetting = pm.getComponentEnabledSetting(component);
-        // Component is disabled by default.
-        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final long activityStartTimeMs = SystemClock.elapsedRealtime();
@@ -42,6 +33,13 @@ public class SplashActivity extends Activity {
 
         showSplashScreen();
         selectHostBrowser(activityStartTimeMs);
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        selectHostBrowser(-1);
     }
 
     private void selectHostBrowser(final long activityStartTimeMs) {
@@ -97,7 +95,8 @@ public class SplashActivity extends Activity {
         if (!H2OLauncher.shouldIntentLaunchSplashActivity(params)) {
             HostBrowserLauncher.launch(appContext, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
-                    new ComponentName(appContext, H2OMainActivity.class), getComponentName());
+                    new ComponentName(appContext, H2OMainActivity.class),
+                    new ComponentName(appContext, H2OOpaqueMainActivity.class));
             finish();
             return;
         }

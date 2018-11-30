@@ -66,6 +66,7 @@ template("webapk_java") {
       java_files += [
         "src/org/chromium/webapk/shell_apk/h2o/H2OLauncher.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OMainActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/H2OOpaqueMainActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OTransparentLauncherActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java",
       ]

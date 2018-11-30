@@ -56,8 +56,8 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
         // if the wrong component is enabled) to handle the case where both components are enabled.
         ComponentName relaunchComponent = null;
         if (shouldLaunchSplash) {
-            // Relaunch if SplashActivity is disabled.
-            if (!SplashActivity.checkComponentEnabled(appContext)) {
+            // Relaunch if H2OOpaqueMainActivity is disabled.
+            if (!H2OOpaqueMainActivity.checkComponentEnabled(appContext)) {
                 relaunchComponent = new ComponentName(appContext, H2OMainActivity.class);
             }
         } else {
