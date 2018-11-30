@@ -246,7 +246,7 @@ void AudioDestination::Resume() {
   }
 }
 
-size_t AudioDestination::CallbackBufferSize() const {
+uint32_t AudioDestination::CallbackBufferSize() const {
   DCHECK(IsMainThread());
   return callback_buffer_size_;
 }

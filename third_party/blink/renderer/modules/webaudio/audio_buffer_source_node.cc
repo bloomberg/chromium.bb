@@ -25,6 +25,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
@@ -227,9 +228,10 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Avoid converting from time to sample-frames twice by computing
   // the grain end time first before computing the sample frame.
   unsigned end_frame =
-      is_grain_ ? audio_utilities::TimeToSampleFrame(
-                      grain_offset_ + grain_duration_, buffer_sample_rate)
-                : buffer_length;
+      is_grain_
+          ? base::saturated_cast<uint32_t>(audio_utilities::TimeToSampleFrame(
+                grain_offset_ + grain_duration_, buffer_sample_rate))
+          : buffer_length;
 
   // Do some sanity checking.
   if (end_frame > buffer_length)

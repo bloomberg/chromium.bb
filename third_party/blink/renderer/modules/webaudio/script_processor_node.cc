@@ -46,9 +46,9 @@ namespace blink {
 ScriptProcessorHandler::ScriptProcessorHandler(
     AudioNode& node,
     float sample_rate,
-    size_t buffer_size,
-    unsigned number_of_input_channels,
-    unsigned number_of_output_channels)
+    uint32_t buffer_size,
+    uint32_t number_of_input_channels,
+    uint32_t number_of_output_channels)
     : AudioHandler(kNodeTypeScriptProcessor, node, sample_rate),
       double_buffer_index_(0),
       input_buffers_(MakeGarbageCollected<HeapVector<Member<AudioBuffer>>>()),
@@ -85,9 +85,9 @@ ScriptProcessorHandler::ScriptProcessorHandler(
 scoped_refptr<ScriptProcessorHandler> ScriptProcessorHandler::Create(
     AudioNode& node,
     float sample_rate,
-    size_t buffer_size,
-    unsigned number_of_input_channels,
-    unsigned number_of_output_channels) {
+    uint32_t buffer_size,
+    uint32_t number_of_input_channels,
+    uint32_t number_of_output_channels) {
   return base::AdoptRef(new ScriptProcessorHandler(
       node, sample_rate, buffer_size, number_of_input_channels,
       number_of_output_channels));
@@ -106,7 +106,7 @@ void ScriptProcessorHandler::Initialize() {
   // Create double buffers on both the input and output sides.
   // These AudioBuffers will be directly accessed in the main thread by
   // JavaScript.
-  for (unsigned i = 0; i < 2; ++i) {
+  for (uint32_t i = 0; i < 2; ++i) {
     AudioBuffer* input_buffer =
         number_of_input_channels_
             ? AudioBuffer::Create(number_of_input_channels_, BufferSize(),
@@ -140,7 +140,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
 
   // Get input and output buffers. We double-buffer both the input and output
   // sides.
-  unsigned double_buffer_index = this->DoubleBufferIndex();
+  uint32_t double_buffer_index = this->DoubleBufferIndex();
   bool is_double_buffer_index_good =
       double_buffer_index < 2 && double_buffer_index < input_buffers_->size() &&
       double_buffer_index < output_buffers_->size();
@@ -152,7 +152,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   AudioBuffer* output_buffer = output_buffers_->at(double_buffer_index).Get();
 
   // Check the consistency of input and output buffers.
-  unsigned number_of_input_channels = internal_input_bus_->NumberOfChannels();
+  uint32_t number_of_input_channels = internal_input_bus_->NumberOfChannels();
   bool buffers_are_good =
       output_buffer && BufferSize() == output_buffer->length() &&
       buffer_read_write_index_ + frames_to_process <= BufferSize();
@@ -175,7 +175,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   if (!is_frames_to_process_good)
     return;
 
-  unsigned number_of_output_channels = output_bus->NumberOfChannels();
+  uint32_t number_of_output_channels = output_bus->NumberOfChannels();
 
   bool channels_are_good =
       (number_of_input_channels == number_of_input_channels_) &&
@@ -184,7 +184,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   if (!channels_are_good)
     return;
 
-  for (unsigned i = 0; i < number_of_input_channels; ++i)
+  for (uint32_t i = 0; i < number_of_input_channels; ++i)
     internal_input_bus_->SetChannelMemory(
         i,
         input_buffer->getChannelData(i).View()->Data() +
@@ -195,7 +195,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
     internal_input_bus_->CopyFrom(*input_bus);
 
   // Copy from the output buffer to the output.
-  for (unsigned i = 0; i < number_of_output_channels; ++i) {
+  for (uint32_t i = 0; i < number_of_output_channels; ++i) {
     memcpy(output_bus->Channel(i)->MutableData(),
            output_buffer->getChannelData(i).View()->Data() +
                buffer_read_write_index_,
@@ -253,7 +253,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   }
 }
 
-void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
+void ScriptProcessorHandler::FireProcessEvent(uint32_t double_buffer_index) {
   DCHECK(IsMainThread());
 
   if (!Context() || !Context()->GetExecutionContext())
@@ -288,7 +288,7 @@ void ScriptProcessorHandler::FireProcessEvent(unsigned double_buffer_index) {
 }
 
 void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
-    unsigned double_buffer_index,
+    uint32_t double_buffer_index,
     WaitableEvent* waitable_event) {
   DCHECK(IsMainThread());
 
@@ -334,7 +334,7 @@ double ScriptProcessorHandler::LatencyTime() const {
   return std::numeric_limits<double>::infinity();
 }
 
-void ScriptProcessorHandler::SetChannelCount(unsigned channel_count,
+void ScriptProcessorHandler::SetChannelCount(uint32_t channel_count,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
@@ -365,22 +365,22 @@ void ScriptProcessorHandler::SetChannelCountMode(
 
 ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context,
                                          float sample_rate,
-                                         size_t buffer_size,
-                                         unsigned number_of_input_channels,
-                                         unsigned number_of_output_channels)
+                                         uint32_t buffer_size,
+                                         uint32_t number_of_input_channels,
+                                         uint32_t number_of_output_channels)
     : AudioNode(context) {
   SetHandler(ScriptProcessorHandler::Create(*this, sample_rate, buffer_size,
                                             number_of_input_channels,
                                             number_of_output_channels));
 }
 
-static size_t ChooseBufferSize(size_t callback_buffer_size) {
+static uint32_t ChooseBufferSize(uint32_t callback_buffer_size) {
   // Choose a buffer size based on the audio hardware buffer size. Arbitarily
   // make it a power of two that is 4 times greater than the hardware buffer
   // size.
   // TODO(crbug.com/855758): What is the best way to choose this?
-  size_t buffer_size =
-      1 << static_cast<unsigned>(log2(4 * callback_buffer_size) + 0.5);
+  uint32_t buffer_size =
+      1 << static_cast<uint32_t>(log2(4 * callback_buffer_size) + 0.5);
 
   if (buffer_size < 256)
     return 256;
@@ -402,7 +402,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t requested_buffer_size,
+    uint32_t requested_buffer_size,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -412,8 +412,8 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t requested_buffer_size,
-    unsigned number_of_input_channels,
+    uint32_t requested_buffer_size,
+    uint32_t number_of_input_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -424,9 +424,9 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
 ScriptProcessorNode* ScriptProcessorNode::Create(
     BaseAudioContext& context,
-    size_t requested_buffer_size,
-    unsigned number_of_input_channels,
-    unsigned number_of_output_channels,
+    uint32_t requested_buffer_size,
+    uint32_t number_of_input_channels,
+    uint32_t number_of_output_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -461,7 +461,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
   }
 
   // Sanitize user-supplied buffer size.
-  size_t buffer_size;
+  uint32_t buffer_size;
   switch (requested_buffer_size) {
     case 0:
       // Choose an appropriate size.  For an AudioContext, we need to

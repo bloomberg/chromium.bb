@@ -54,52 +54,52 @@ class ScriptProcessorHandler final : public AudioHandler {
   static scoped_refptr<ScriptProcessorHandler> Create(
       AudioNode&,
       float sample_rate,
-      size_t buffer_size,
-      unsigned number_of_input_channels,
-      unsigned number_of_output_channels);
+      uint32_t buffer_size,
+      uint32_t number_of_input_channels,
+      uint32_t number_of_output_channels);
   ~ScriptProcessorHandler() override;
 
   // AudioHandler
   void Process(uint32_t frames_to_process) override;
   void Initialize() override;
 
-  uint32_t BufferSize() const { return static_cast<uint32_t>(buffer_size_); }
+  uint32_t BufferSize() const { return buffer_size_; }
 
-  void SetChannelCount(unsigned, ExceptionState&) override;
+  void SetChannelCount(uint32_t, ExceptionState&) override;
   void SetChannelCountMode(const String&, ExceptionState&) override;
 
-  unsigned NumberOfOutputChannels() const override {
+  uint32_t NumberOfOutputChannels() const override {
     return number_of_output_channels_;
   }
 
  private:
   ScriptProcessorHandler(AudioNode&,
                          float sample_rate,
-                         size_t buffer_size,
-                         unsigned number_of_input_channels,
-                         unsigned number_of_output_channels);
+                         uint32_t buffer_size,
+                         uint32_t number_of_input_channels,
+                         uint32_t number_of_output_channels);
   double TailTime() const override;
   double LatencyTime() const override;
   bool RequiresTailProcessing() const final;
 
-  void FireProcessEvent(unsigned);
-  void FireProcessEventForOfflineAudioContext(unsigned, WaitableEvent*);
+  void FireProcessEvent(uint32_t);
+  void FireProcessEventForOfflineAudioContext(uint32_t, WaitableEvent*);
 
   // Double buffering
-  unsigned DoubleBufferIndex() const { return double_buffer_index_; }
+  uint32_t DoubleBufferIndex() const { return double_buffer_index_; }
   void SwapBuffers() { double_buffer_index_ = 1 - double_buffer_index_; }
-  unsigned double_buffer_index_;
+  uint32_t double_buffer_index_;
 
   // These Persistent don't make reference cycles including the owner
   // ScriptProcessorNode.
   CrossThreadPersistent<HeapVector<Member<AudioBuffer>>> input_buffers_;
   CrossThreadPersistent<HeapVector<Member<AudioBuffer>>> output_buffers_;
 
-  size_t buffer_size_;
-  unsigned buffer_read_write_index_;
+  uint32_t buffer_size_;
+  uint32_t buffer_read_write_index_;
 
-  unsigned number_of_input_channels_;
-  unsigned number_of_output_channels_;
+  uint32_t number_of_input_channels_;
+  uint32_t number_of_output_channels_;
 
   scoped_refptr<AudioBus> internal_input_bus_;
   // Synchronize process() with fireProcessEvent().
@@ -127,23 +127,23 @@ class ScriptProcessorNode final
   // The value chosen must carefully balance between latency and audio quality.
   static ScriptProcessorNode* Create(BaseAudioContext&, ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t requested_buffer_size,
+                                     uint32_t requested_buffer_size,
                                      ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t requested_buffer_size,
-                                     unsigned number_of_input_channels,
+                                     uint32_t requested_buffer_size,
+                                     uint32_t number_of_input_channels,
                                      ExceptionState&);
   static ScriptProcessorNode* Create(BaseAudioContext&,
-                                     size_t requested_buffer_size,
-                                     unsigned number_of_input_channels,
-                                     unsigned number_of_output_channels,
+                                     uint32_t requested_buffer_size,
+                                     uint32_t number_of_input_channels,
+                                     uint32_t number_of_output_channels,
                                      ExceptionState&);
 
   ScriptProcessorNode(BaseAudioContext&,
                       float sample_rate,
-                      size_t buffer_size,
-                      unsigned number_of_input_channels,
-                      unsigned number_of_output_channels);
+                      uint32_t buffer_size,
+                      uint32_t number_of_input_channels,
+                      uint32_t number_of_output_channels);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
   uint32_t bufferSize() const;
