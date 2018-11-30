@@ -16,6 +16,10 @@ extern const BASE_EXPORT Feature kAllTasksUserBlocking;
 extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
 extern const BASE_EXPORT Feature kMayBlockTimings;
 
+// Under this feature, unused threads in SchedulerWorkerPool are only detached
+// if the total number of threads in the pool is above the initial capacity.
+extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
+
 extern const BASE_EXPORT FeatureParam<int> kMayBlockThresholdMicrosecondsParam;
 extern const BASE_EXPORT FeatureParam<int> kBlockedWorkersPollMicrosecondsParam;
 

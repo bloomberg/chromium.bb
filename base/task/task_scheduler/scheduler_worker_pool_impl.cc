@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -630,6 +631,8 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
   const TimeTicks last_used_time = worker->GetLastUsedTime();
   return !last_used_time.is_null() &&
          TimeTicks::Now() - last_used_time >= outer_->suggested_reclaim_time_ &&
+         (outer_->workers_.size() > outer_->initial_max_tasks_ ||
+          !FeatureList::IsEnabled(kNoDetachBelowInitialCapacity)) &&
          LIKELY(!outer_->worker_cleanup_disallowed_for_testing_);
 }
 
