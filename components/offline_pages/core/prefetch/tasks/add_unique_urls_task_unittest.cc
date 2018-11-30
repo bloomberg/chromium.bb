@@ -32,6 +32,7 @@ const char kClientId3[] = "ID-3";
 const GURL kTestURL1("https://www.google.com/");
 const GURL kTestURL2("http://www.example.com/");
 const GURL kTestURL3("https://news.google.com/");
+const char kTestThumbnailURL[] = "http://thumbnail.com/";
 const base::string16 kTestTitle1 = base::ASCIIToUTF16("Title 1");
 const base::string16 kTestTitle2 = base::ASCIIToUTF16("Title 2");
 const base::string16 kTestTitle3 = base::ASCIIToUTF16("Title 3");
@@ -69,8 +70,10 @@ TEST_F(AddUniqueUrlsTaskTest, StoreFailure) {
 
 TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
   std::vector<PrefetchURL> urls;
-  urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
-  urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
+  PrefetchURL url1{kClientId1, kTestURL1, kTestTitle1};
+  url1.thumbnail_url = GURL(kTestThumbnailURL);
+  urls.push_back(url1);
+  urls.emplace_back(kClientId2, kTestURL2, kTestTitle2);
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
 
@@ -81,6 +84,8 @@ TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
   EXPECT_EQ(kTestNamespace, items[kClientId1].client_id.name_space);
   EXPECT_EQ(kTestTitle1, items[kClientId1].title);
   ASSERT_GT(items.count(kClientId2), 0U);
+  EXPECT_EQ(kTestThumbnailURL, items[kClientId1].thumbnail_url);
+  ASSERT_GT(items.count(kClientId2), 0ul);
   EXPECT_EQ(kTestURL2, items[kClientId2].url);
   EXPECT_EQ(kTestNamespace, items[kClientId2].client_id.name_space);
   EXPECT_EQ(kTestTitle2, items[kClientId2].title);

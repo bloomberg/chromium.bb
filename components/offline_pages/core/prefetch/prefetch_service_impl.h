@@ -30,7 +30,8 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<PrefetchDownloader> prefetch_downloader,
       std::unique_ptr<PrefetchImporter> prefetch_importer,
       std::unique_ptr<PrefetchBackgroundTaskHandler> background_task_handler,
-      std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher);
+      std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
+      std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher_);
 
   ~PrefetchServiceImpl() override;
 
@@ -54,9 +55,14 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchDownloader* GetPrefetchDownloader() override;
   PrefetchImporter* GetPrefetchImporter() override;
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
+
+  // Thumbnail fetchers. With Feed, GetThumbnailImageFetcher() is available
+  // and GetThumbnailFetcher() is null.
   ThumbnailFetcher* GetThumbnailFetcher() override;
+  image_fetcher::ImageFetcher* GetThumbnailImageFetcher() override;
 
   SuggestedArticlesObserver* GetSuggestedArticlesObserverForTesting() override;
+
   // KeyedService implementation:
   void Shutdown() override;
 
@@ -77,6 +83,7 @@ class PrefetchServiceImpl : public PrefetchService {
   // Zine/Feed: only non-null when using Zine.
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
+  std::unique_ptr<image_fetcher::ImageFetcher> thumbnail_image_fetcher_;
 
   // Zine/Feed: only non-null when using Feed.
   SuggestionsProvider* suggestions_provider_ = nullptr;

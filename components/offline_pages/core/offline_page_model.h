@@ -19,8 +19,7 @@
 #include "components/offline_pages/core/offline_page_archiver.h"
 #include "components/offline_pages/core/offline_page_thumbnail.h"
 #include "components/offline_pages/core/offline_page_types.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace offline_pages {
 

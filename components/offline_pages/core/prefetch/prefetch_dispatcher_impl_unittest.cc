@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 
+#include <set>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -11,12 +12,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/fake_suggestions_provider.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/mock_thumbnail_fetcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer_impl.h"
@@ -59,6 +63,8 @@ const char kOperationName[] = "operation-1";
 const char kBodyName[] = "body-1";
 const int64_t kBodyLength = 10;
 const char kBodyContent[] = "abcde12345";
+const char kThumbnailUrl[] = "http://www.thumbnail.com/";
+const char kThumbnailData[] = "thumbnail_data";
 const base::Time kRenderTime = base::Time::Now();
 
 PrefetchSuggestion TestSuggestion1() {
@@ -72,6 +78,52 @@ PrefetchSuggestion TestSuggestion1() {
   return suggestion;
 }
 
+PrefetchSuggestion TestSuggestion2() {
+  PrefetchSuggestion suggestion;
+  suggestion.article_url = kTestURL2;
+  suggestion.article_title = "Second Title";
+  suggestion.article_attribution = "From fun.com";
+  suggestion.article_snippet = "More fun stuff";
+  suggestion.thumbnail_url = GURL("http://google.com/funthumbnail");
+  suggestion.favicon_url = GURL("http://fun.com/favicon");
+  return suggestion;
+}
+
+PrefetchSuggestion TestSuggestion3() {
+  PrefetchSuggestion suggestion;
+  suggestion.article_url = GURL("http://www.google.com/3");
+  suggestion.article_title = "Third Title";
+  suggestion.article_attribution = "From google.com";
+  suggestion.article_snippet = "I'm feeling lucky";
+  suggestion.thumbnail_url = GURL("http://google.com/googlethumbnail");
+  suggestion.favicon_url = GURL("http://google.com/favicon");
+  return suggestion;
+}
+
+PrefetchSuggestion TestSuggestion4() {
+  PrefetchSuggestion suggestion;
+  suggestion.article_url = GURL("http://www.four.com");
+  suggestion.article_title = "Fourth title";
+  suggestion.article_attribution = "From four.com";
+  suggestion.article_snippet = "I'm four";
+  suggestion.thumbnail_url = GURL("http://google.com/fourthumbnail");
+  suggestion.favicon_url = GURL("http://four.com/favicon");
+  return suggestion;
+}
+
+ClientId SuggestionClientId(const PrefetchSuggestion& suggestion) {
+  return {kSuggestedArticlesNamespace, suggestion.article_url.spec()};
+}
+
+const PrefetchItem* FindByUrl(const std::set<PrefetchItem>& items,
+                              const GURL& url) {
+  for (const auto& item : items) {
+    if (item.url == url)
+      return &item;
+  }
+  return nullptr;
+}
+
 RenderPageInfo RenderInfo(const std::string& url) {
   RenderPageInfo info;
   info.url = url;
@@ -83,18 +135,64 @@ RenderPageInfo RenderInfo(const std::string& url) {
   return info;
 }
 
+OfflinePageThumbnail FakeThumbnail(int64_t offline_id) {
+  return OfflinePageThumbnail(offline_id, kRenderTime, kThumbnailData);
+}
+
+// This class is a mix between a mock and fake.
 class MockOfflinePageModel : public StubOfflinePageModel {
  public:
   explicit MockOfflinePageModel(const base::FilePath& archive_directory) {
     SetArchiveDirectory(archive_directory);
   }
   ~MockOfflinePageModel() override = default;
-  MOCK_METHOD1(StoreThumbnail, void(const OfflinePageThumbnail& thumb));
-  MOCK_METHOD2(HasThumbnailForOfflineId,
-               void(int64_t offline_id,
-                    base::OnceCallback<void(bool)> callback));
+
+  // OfflinePageModel implementation.
+
   MOCK_METHOD2(AddPage,
                void(const OfflinePageItem& page, AddPageCallback callback));
+
+  void StoreThumbnail(const OfflinePageThumbnail& thumb) override {
+    thumbnails_.insert(thumb);
+  }
+
+  void HasThumbnailForOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(bool)> callback) override {
+    has_thumbnail_for_offline_id_calls_.insert(offline_id);
+    bool found = false;
+    for (const OfflinePageThumbnail& thumbnail : thumbnails_) {
+      if (thumbnail.offline_id == offline_id)
+        found = true;
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), found));
+  }
+
+  // Returns the thumbnails stored with StoreThumbnail.
+  const std::set<OfflinePageThumbnail>& thumbnails() const {
+    return thumbnails_;
+  }
+
+  const OfflinePageThumbnail* FindThumbnail(int64_t offline_id) const {
+    for (const auto& thumbnail : thumbnails_) {
+      if (thumbnail.offline_id == offline_id)
+        return &thumbnail;
+    }
+    return nullptr;
+  }
+
+  void set_thumbnails(std::set<OfflinePageThumbnail> thumbnails) {
+    thumbnails_ = std::move(thumbnails);
+  }
+
+  const std::set<int64_t>& has_thumbnail_for_offline_id_calls() const {
+    return has_thumbnail_for_offline_id_calls_;
+  }
+
+ private:
+  std::set<OfflinePageThumbnail> thumbnails_;
+  std::set<int64_t> has_thumbnail_for_offline_id_calls_;
 };
 
 class TestPrefetchBackgroundTask : public PrefetchBackgroundTask {
@@ -165,8 +263,6 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   void TearDown() override;
 
   // Configures the fixture for the test. Must be called before each test.
-  // feed_configuration=true configures the fixture as if Feed were the
-  // suggestion source. Otherwise, it's configured as if Zine was the source.
   // Zine/Feed TODO(harringtond): Collapse this method with SetUp() after Zine
   // code is removed.
   void Configure(PrefetchServiceTestTaco::SuggestionSource suggestion_source) {
@@ -183,8 +279,9 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
     taco_->SetPrefetchNetworkRequestFactory(
         base::WrapUnique(network_request_factory_));
     if (suggestion_source == PrefetchServiceTestTaco::kFeed) {
-      taco_->SetThumbnailFetcher(std::unique_ptr<MockThumbnailFetcher>());
-
+      auto image_fetcher = std::make_unique<image_fetcher::MockImageFetcher>();
+      thumbnail_image_fetcher_ = image_fetcher.get();
+      taco_->SetThumbnailImageFetcher(std::move(image_fetcher));
     } else {
       auto thumbnail_fetcher = std::make_unique<MockThumbnailFetcher>();
       thumbnail_fetcher_ = thumbnail_fetcher.get();
@@ -261,12 +358,18 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
         });
   }
 
-  void ExpectHasThumbnailForOfflineId(int64_t offline_id, bool to_return) {
-    EXPECT_CALL(*offline_model_, HasThumbnailForOfflineId(offline_id, _))
-        .WillOnce([&, to_return](int64_t offline_id,
-                                 base::OnceCallback<void(bool)> callback) {
-          task_runner()->PostTask(
-              FROM_HERE, base::BindOnce(std::move(callback), to_return));
+  void ExpectFetchThumbnailImage(const std::string& thumbnail_data,
+                                 const GURL& thumbnail_url) {
+    ASSERT_TRUE(thumbnail_image_fetcher_) << "Not configured in kFeed mode";
+    EXPECT_CALL(*thumbnail_image_fetcher_,
+                FetchImageAndData_(std::string(), thumbnail_url, _, _, _))
+        .WillOnce([=](const std::string& id, const GURL& image_url,
+                      image_fetcher::ImageDataFetcherCallback* data_callback,
+                      image_fetcher::ImageFetcherCallback* image_callback,
+                      const net::NetworkTrafficAnnotationTag&) {
+          ASSERT_TRUE(image_callback->is_null());
+          std::move(*data_callback)
+              .Run(thumbnail_data, image_fetcher::RequestMetadata());
         });
   }
 
@@ -282,8 +385,10 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
 
   // Owned by |taco_|, may be null.
   MockThumbnailFetcher* thumbnail_fetcher_;
+  image_fetcher::MockImageFetcher* thumbnail_image_fetcher_;
 
   PrefetchStoreTestUtil store_util_{task_runner()};
+  MockPrefetchItemGenerator item_generator_;
   base::ScopedTempDir archive_directory_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<FakeSuggestionsProvider> suggestions_provider_;
@@ -630,6 +735,64 @@ TEST_F(PrefetchDispatcherTest, ZineNoNetworkRequestsAfterNewURLs) {
   EXPECT_EQ(nullptr, GetPendingRequest());
 }
 
+TEST_F(PrefetchDispatcherTest, ThumbnailImageFetchFailure_ItemDownloaded) {
+  Configure(PrefetchServiceTestTaco::kFeed);
+  suggestions_provider_->SetSuggestions({TestSuggestion1()});
+
+  PrefetchItem item = item_generator_.CreateItem(PrefetchItemState::DOWNLOADED);
+  item.thumbnail_url = GURL(kThumbnailUrl);
+  item.client_id.id = kClientID;
+  item.offline_id = kTestOfflineID;
+  store_util_.InsertPrefetchItem(item);
+
+  ExpectFetchThumbnailImage("", GURL(kThumbnailUrl));
+  prefetch_dispatcher()->ItemDownloaded(
+      kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
+  RunUntilIdle();
+
+  EXPECT_TRUE(offline_model_->thumbnails().empty())
+      << "Stored thumbnails: "
+      << ::testing::PrintToString(offline_model_->thumbnails());
+}
+
+// Test attempting to fetch several suggested article thumbnails. This verifies
+// that multiple fetches are attempted.
+TEST_F(PrefetchDispatcherTest, ThumbnailImageFetch_SeveralThumbnailDownloads) {
+  Configure(PrefetchServiceTestTaco::kFeed);
+  // Suggestion 1: No thumbnail fetch because there is no thumbnail_url.
+  testing::InSequence sequence;
+  PrefetchSuggestion suggestion1 = TestSuggestion1();
+  suggestion1.thumbnail_url = GURL();
+  // Suggestion 2: Thumbnail fetch fails.
+  const PrefetchSuggestion suggestion2 = TestSuggestion2();
+  ExpectFetchThumbnailImage("", suggestion2.thumbnail_url);
+  // Suggestions 3&4: Successful thumbnail fetch.
+  const PrefetchSuggestion suggestion3 = TestSuggestion3();
+  ExpectFetchThumbnailImage(kThumbnailData, suggestion3.thumbnail_url);
+  const PrefetchSuggestion suggestion4 = TestSuggestion4();
+  ExpectFetchThumbnailImage(kThumbnailData, suggestion4.thumbnail_url);
+  std::vector<PrefetchSuggestion> suggestions = {suggestion1, suggestion2,
+                                                 suggestion3, suggestion4};
+  suggestions_provider_->SetSuggestions(suggestions);
+
+  prefetch_service()->NewSuggestionsAvailable();
+  RunUntilIdle();
+
+  // Pull out the items to find the OfflineIDs, and continue processing those
+  // IDs.
+  std::set<PrefetchItem> items;
+  store_util_.GetAllItems(&items);
+  auto generate_ids = std::make_unique<PrefetchDispatcher::IdsVector>();
+  for (const auto& suggestion : suggestions) {
+    const PrefetchItem* item = FindByUrl(items, suggestion.article_url);
+    ASSERT_TRUE(item) << " item url=" << suggestion.article_url;
+    generate_ids->push_back(
+        std::make_pair(item->offline_id, SuggestionClientId(suggestion)));
+  }
+  prefetch_dispatcher()->GeneratePageBundleRequested(std::move(generate_ids));
+  RunUntilIdle();
+}
+
 TEST_F(PrefetchDispatcherTest, FeedNoNetworkRequestsAfterNewURLs) {
   Configure(PrefetchServiceTestTaco::kFeed);
   suggestions_provider_->SetSuggestions({TestSuggestion1()});
@@ -646,31 +809,36 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure_ItemDownloaded) {
   Configure(PrefetchServiceTestTaco::kContentSuggestions);
 
   ExpectFetchThumbnail("", false, kClientID);
-  ExpectHasThumbnailForOfflineId(kTestOfflineID, false);
-  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
+
+  EXPECT_TRUE(offline_model_->thumbnails().empty())
+      << "Stored thumbnails: "
+      << ::testing::PrintToString(offline_model_->thumbnails());
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess_ItemDownloaded) {
   Configure(PrefetchServiceTestTaco::kContentSuggestions);
 
-  std::string kThumbnailData = "abc";
-  ExpectHasThumbnailForOfflineId(kTestOfflineID, false);
-  EXPECT_CALL(*offline_model_, StoreThumbnail(ValidThumbnail()));
   ExpectFetchThumbnail(kThumbnailData, false, kClientID);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
+  RunUntilIdle();
+
+  const OfflinePageThumbnail* stored_thumbnail =
+      offline_model_->FindThumbnail(kTestOfflineID);
+  ASSERT_TRUE(stored_thumbnail);
+  EXPECT_EQ(kThumbnailData, stored_thumbnail->thumbnail);
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailAlreadyExists_ItemDownloaded) {
   Configure(PrefetchServiceTestTaco::kContentSuggestions);
 
-  ExpectHasThumbnailForOfflineId(kTestOfflineID, true);
+  offline_model_->set_thumbnails({FakeThumbnail(kTestOfflineID)});
   EXPECT_CALL(*thumbnail_fetcher_, FetchSuggestionImageData(_, _, _)).Times(0);
-  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID));
+  RunUntilIdle();
 }
 
 TEST_F(PrefetchDispatcherTest,
@@ -689,14 +857,11 @@ TEST_F(PrefetchDispatcherTest,
 
   InSequence in_sequence;
   // Case #1.
-  ExpectHasThumbnailForOfflineId(kTestOfflineID1, false);
-  ExpectFetchThumbnail("abc", true, kClientID1);
-  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(1);
+  ExpectFetchThumbnail(kThumbnailData, true, kClientID1);
   // Case #2.
-  ExpectHasThumbnailForOfflineId(kTestOfflineID2, false);
   ExpectFetchThumbnail("", true, kClientID2);
-  // Case #3.
-  ExpectHasThumbnailForOfflineId(kTestOfflineID3, true);
+  // Case #3: thumbnail already exists
+  offline_model_->set_thumbnails({FakeThumbnail(kTestOfflineID3)});
 
   auto prefetch_item_ids = std::make_unique<PrefetchDispatcher::IdsVector>();
   prefetch_item_ids->emplace_back(
@@ -707,6 +872,12 @@ TEST_F(PrefetchDispatcherTest,
       kTestOfflineID3, ClientId(kSuggestedArticlesNamespace, kClientID3));
   prefetch_dispatcher()->GeneratePageBundleRequested(
       std::move(prefetch_item_ids));
+  RunUntilIdle();
+
+  EXPECT_TRUE(offline_model_->FindThumbnail(kTestOfflineID1))
+      << "Thumbnails: "
+      << ::testing::PrintToString(offline_model_->thumbnails());
+  EXPECT_FALSE(offline_model_->FindThumbnail(kTestOfflineID2));
 }
 
 // Runs through the entire lifecycle of a successful prefetch item,
