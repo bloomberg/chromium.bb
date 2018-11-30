@@ -510,6 +510,10 @@ TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
   return nullptr;
 }
 
+TtsPlatform* ContentBrowserClient::GetTtsPlatform() {
+  return nullptr;
+}
+
 net::NetLog* ContentBrowserClient::GetNetLog() {
   return nullptr;
 }

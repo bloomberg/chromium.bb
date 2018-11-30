@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_
-#define CHROME_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_
+#ifndef CONTENT_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_
+#define CONTENT_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_platform.h"
 #include "content/public/browser/tts_controller.h"
+#include "content/public/browser/tts_platform.h"
+
+namespace content {
 
 // Abstract platform implementation.
-// TODO(katie): Move to content/browser/speech.
 class TtsPlatformImpl : public TtsPlatform {
  public:
+  static TtsPlatformImpl* GetInstance();
+
   // TtsPlatform overrides.
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
-  void WillSpeakUtteranceWithVoice(
-      const content::Utterance* utterance,
-      const content::VoiceData& voice_data) override;
+  bool LoadBuiltInTtsExtension(BrowserContext* browser_context) override;
+  void WillSpeakUtteranceWithVoice(const Utterance* utterance,
+                                   const VoiceData& voice_data) override;
   std::string GetError() override;
   void ClearError() override;
   void SetError(const std::string& error) override;
@@ -37,4 +38,6 @@ class TtsPlatformImpl : public TtsPlatform {
   DISALLOW_COPY_AND_ASSIGN(TtsPlatformImpl);
 };
 
-#endif  // CHROME_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_SPEECH_TTS_PLATFORM_IMPL_H_

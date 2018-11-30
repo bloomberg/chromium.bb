@@ -142,7 +142,7 @@ src:*audio/pulse/pulse_stubs.cc
 src:*media/gpu/vaapi/va_stubs.cc
 
 # Calls to auto-generated stubs by generate_library_loader.py
-src:*chrome/browser/speech/tts_linux.cc
+src:*content/browser/speech/tts_linux.cc
 src:*device/udev_linux/udev0_loader.cc
 src:*device/udev_linux/udev1_loader.cc
 

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
-#define CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
+#ifndef CONTENT_PUBLIC_BROWSER_TTS_PLATFORM_H_
+#define CONTENT_PUBLIC_BROWSER_TTS_PLATFORM_H_
 
 #include <string>
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/tts_controller.h"
+
+namespace content {
 
 // Abstract class that defines the native platform TTS interface,
 // subclassed by specific implementations on Win, Mac, etc.
-// TODO(katie): Move to content/public/browser and most implementations into
-// content/browser/speech. The tts_chromeos.cc implementation may need to remain
-// in chrome/ due to ARC++ dependencies.
-class TtsPlatform {
+class CONTENT_EXPORT TtsPlatform {
  public:
   static TtsPlatform* GetInstance();
 
@@ -27,8 +27,7 @@ class TtsPlatform {
   // false if it's already loaded or if there's no extension to load.
   // Will call TtsController::RetrySpeakingQueuedUtterances when
   // the extension finishes loading.
-  virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) = 0;
+  virtual bool LoadBuiltInTtsExtension(BrowserContext* browser_context) = 0;
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.
@@ -40,8 +39,8 @@ class TtsPlatform {
   virtual bool Speak(int utterance_id,
                      const std::string& utterance,
                      const std::string& lang,
-                     const content::VoiceData& voice,
-                     const content::UtteranceContinuousParameters& params) = 0;
+                     const VoiceData& voice,
+                     const UtteranceContinuousParameters& params) = 0;
 
   // Stop speaking immediately and return true on success.
   virtual bool StopSpeaking() = 0;
@@ -51,7 +50,7 @@ class TtsPlatform {
 
   // Append information about voices provided by this platform implementation
   // to |out_voices|.
-  virtual void GetVoices(std::vector<content::VoiceData>* out_voices) = 0;
+  virtual void GetVoices(std::vector<VoiceData>* out_voices) = 0;
 
   // Pause the current utterance, if any, until a call to Resume,
   // Speak, or StopSpeaking.
@@ -62,13 +61,14 @@ class TtsPlatform {
 
   // Allows the platform to monitor speech commands and the voices used
   // for each one.
-  virtual void WillSpeakUtteranceWithVoice(
-      const content::Utterance* utterance,
-      const content::VoiceData& voice_data) = 0;
+  virtual void WillSpeakUtteranceWithVoice(const Utterance* utterance,
+                                           const VoiceData& voice_data) = 0;
 
   virtual std::string GetError() = 0;
   virtual void ClearError() = 0;
   virtual void SetError(const std::string& error) = 0;
 };
 
-#endif  // CHROME_BROWSER_SPEECH_TTS_PLATFORM_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_TTS_PLATFORM_H_

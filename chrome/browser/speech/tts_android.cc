@@ -16,13 +16,7 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
-// static
-TtsPlatform* TtsPlatform::GetInstance() {
-  return TtsPlatformImplAndroid::GetInstance();
-}
-
-TtsPlatformImplAndroid::TtsPlatformImplAndroid()
-    : utterance_id_(0) {
+TtsPlatformImplAndroid::TtsPlatformImplAndroid() : utterance_id_(0) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
       Java_TtsPlatformImpl_create(env, reinterpret_cast<intptr_t>(this)));
@@ -69,8 +63,7 @@ void TtsPlatformImplAndroid::Pause() {
   StopSpeaking();
 }
 
-void TtsPlatformImplAndroid::Resume() {
-}
+void TtsPlatformImplAndroid::Resume() {}
 
 bool TtsPlatformImplAndroid::IsSpeaking() {
   return (utterance_id_ != 0);
@@ -95,6 +88,27 @@ void TtsPlatformImplAndroid::GetVoices(
     data.events.insert(content::TTS_EVENT_END);
     data.events.insert(content::TTS_EVENT_ERROR);
   }
+}
+
+bool TtsPlatformImplAndroid::LoadBuiltInTtsExtension(
+    content::BrowserContext* browser_context) {
+  return false;
+}
+
+void TtsPlatformImplAndroid::WillSpeakUtteranceWithVoice(
+    const content::Utterance* utterance,
+    const content::VoiceData& voice_data) {}
+
+std::string TtsPlatformImplAndroid::GetError() {
+  return error_;
+}
+
+void TtsPlatformImplAndroid::ClearError() {
+  error_ = std::string();
+}
+
+void TtsPlatformImplAndroid::SetError(const std::string& error) {
+  error_ = error;
 }
 
 void TtsPlatformImplAndroid::VoicesChanged(JNIEnv* env,

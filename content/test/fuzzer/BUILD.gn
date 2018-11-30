@@ -192,3 +192,32 @@ fuzzer_test("appcache_fuzzer") {
     "//third_party/libprotobuf-mutator",
   ]
 }
+
+# Note: this compiles and runs on Mac but may cause
+# system instability; if you try it out, close other
+# programs and then reboot afterwards. It should be
+# possible to make it work on Linux if you use the
+# --enable-speech-dispatcher flag.
+if (is_win) {
+  fuzzer_test("tts_platform_fuzzer") {
+    sources = [
+      "../../browser/speech/mock_tts_controller.cc",
+      "../../browser/speech/tts_mac.mm",
+      "../../browser/speech/tts_platform_fuzzer.cc",
+      "../../browser/speech/tts_platform_impl.cc",
+      "../../browser/speech/tts_platform_impl.h",
+      "../../browser/speech/tts_win.cc",
+      "../../public/browser/tts_controller.h",
+      "../../public/browser/tts_platform.h",
+      "//content/common/content_export.h",
+    ]
+
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//content/public/browser:browser_sources",
+      "//ui/base",
+      "//url:url",
+    ]
+  }
+}

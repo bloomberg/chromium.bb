@@ -7,12 +7,11 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_platform_impl.h"
+#include "content/public/browser/tts_platform.h"
 
-// TODO(katie): Move to content/browser/speech.
-class TtsPlatformImplAndroid : public TtsPlatformImpl {
+class TtsPlatformImplAndroid : public content::TtsPlatform {
  public:
-  // TtsPlatformImpl implementation.
+  // TtsPlatform overrides.
   bool PlatformImplAvailable() override;
   bool Speak(int utterance_id,
              const std::string& utterance,
@@ -24,6 +23,14 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   void Resume() override;
   bool IsSpeaking() override;
   void GetVoices(std::vector<content::VoiceData>* out_voices) override;
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override;
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override;
+  std::string GetError() override;
+  void ClearError() override;
+  void SetError(const std::string& error) override;
 
   // Methods called from Java via JNI.
   void VoicesChanged(JNIEnv* env,
@@ -45,12 +52,13 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   friend struct base::DefaultSingletonTraits<TtsPlatformImplAndroid>;
 
   TtsPlatformImplAndroid();
-  ~TtsPlatformImplAndroid() override;
+  virtual ~TtsPlatformImplAndroid();
 
   void SendFinalTtsEvent(int utterance_id,
                          content::TtsEventType event_type,
                          int char_index);
 
+  std::string error_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   int utterance_id_;
   std::string utterance_;

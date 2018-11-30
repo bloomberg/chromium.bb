@@ -176,6 +176,7 @@ class SpeechRecognitionManagerDelegate;
 class StoragePartition;
 class TracingDelegate;
 class TtsControllerDelegate;
+class TtsPlatform;
 class URLLoaderRequestInterceptor;
 class URLLoaderThrottle;
 class VpnServiceProxy;
@@ -796,6 +797,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to return a delegate for the TtsController.
   virtual TtsControllerDelegate* GetTtsControllerDelegate();
+
+  // Allows the embedder to return a TTS platform implementation.
+  virtual TtsPlatform* GetTtsPlatform();
 
   // Getter for the net logging object. This can be called on any thread.
   virtual net::NetLog* GetNetLog();
