@@ -107,6 +107,7 @@ struct Session {
   // |CommandListener|s might be |CommandListenerProxy|s that forward to
   // |DevToolsEventListener|s owned by |chrome|.
   std::vector<std::unique_ptr<CommandListener>> command_listeners;
+  bool strict_file_interactability;
   std::string unhandled_prompt_behavior;
 };
 

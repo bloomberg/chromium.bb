@@ -699,6 +699,7 @@ PerfLoggingPrefs::~PerfLoggingPrefs() {}
 Capabilities::Capabilities()
     : accept_insecure_certs(false),
       page_load_strategy(PageLoadStrategy::kNormal),
+      strict_file_interactability(false),
       android_use_running_app(false),
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
@@ -731,6 +732,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   parser_map["pageLoadStrategy"] = base::BindRepeating(&ParsePageLoadStrategy);
   parser_map["proxy"] = base::BindRepeating(&ParseProxy, w3c_compliant);
   parser_map["timeouts"] = base::BindRepeating(&ParseTimeouts);
+  parser_map["strictFileInteractability"] =
+      base::BindRepeating(&ParseBoolean, &strict_file_interactability);
   if (!w3c_compliant) {
     // TODO(https://crbug.com/chromedriver/2596): "unexpectedAlertBehaviour" is
     // legacy name of "unhandledPromptBehavior", remove when we stop supporting

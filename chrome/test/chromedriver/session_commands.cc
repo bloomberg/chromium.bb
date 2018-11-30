@@ -138,6 +138,8 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
                    session->page_load_timeout.InMilliseconds());
   caps->SetInteger("timeouts.implicit",
                    session->implicit_wait.InMilliseconds());
+  caps->SetBoolean("strictFileInteractability",
+                    session->strict_file_interactability);
   caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
                                          : "unexpectedAlertBehaviour",
                   session->unhandled_prompt_behavior);
@@ -277,7 +279,8 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->implicit_wait = capabilities.implicit_wait_timeout;
   session->page_load_timeout = capabilities.page_load_timeout;
   session->script_timeout = capabilities.script_timeout;
-
+  session->strict_file_interactability =
+        capabilities.strict_file_interactability;
   Log::Level driver_level = Log::kWarning;
   if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];

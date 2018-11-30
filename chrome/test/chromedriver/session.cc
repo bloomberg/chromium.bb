@@ -51,7 +51,8 @@ Session::Session(const std::string& id)
       implicit_wait(kDefaultImplicitWaitTimeout),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
-      auto_reporting_enabled(false) {}
+      auto_reporting_enabled(false),
+      strict_file_interactability(false){}
 
 Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
     : id(id),
@@ -68,7 +69,8 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       implicit_wait(kDefaultImplicitWaitTimeout),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
-      auto_reporting_enabled(false) {}
+      auto_reporting_enabled(false),
+      strict_file_interactability(false){}
 
 Session::~Session() {}
 
