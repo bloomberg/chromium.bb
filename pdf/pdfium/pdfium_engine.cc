@@ -533,8 +533,8 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
 void SetUpV8() {
-  static const char kNoExposeWasm[] = "--no-expose-wasm";
-  v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
+  const char* recommended = FPDF_GetRecommendedV8Flags();
+  v8::V8::SetFlagsFromString(recommended, strlen(recommended));
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
