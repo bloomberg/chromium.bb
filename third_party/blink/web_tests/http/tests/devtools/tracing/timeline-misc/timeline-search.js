@@ -204,7 +204,8 @@
   var flameChartView = timeline._flameChart;
   var searchConfig = new UI.SearchableView.SearchConfig('Paint', false, false);
   flameChartView.performSearch(searchConfig, true, false);
-  for (var i = 0; i < 7; ++i) {
+  TestRunner.addResult(`Count: ${flameChartView._searchResults.length}`);
+  for (var i = 0; i <= flameChartView._searchResults.length; ++i) {
     var selection = timeline._selection;
     if (!selection || selection.type() !== Timeline.TimelineSelection.Type.TraceEvent) {
       TestRunner.addResult(`Invalid selection type: ${selection && selection.type()}`);

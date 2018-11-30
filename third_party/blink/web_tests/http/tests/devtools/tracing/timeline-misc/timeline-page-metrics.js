@@ -4,7 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Test timeline page metrics.\n`);
-  Runtime.experiments.enableForTest('timelinePaintTimingMarkers');
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
