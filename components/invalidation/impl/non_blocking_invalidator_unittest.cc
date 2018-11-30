@@ -9,8 +9,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
@@ -86,7 +86,7 @@ class NonBlockingInvalidatorTestDelegate {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::Thread io_thread_;
   std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> net_config_helper_;
   std::unique_ptr<NonBlockingInvalidator> invalidator_;

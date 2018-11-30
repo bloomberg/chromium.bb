@@ -7,9 +7,11 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -69,7 +71,7 @@ class PerUserTopicRegistrationRequestTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationRequestTest);
