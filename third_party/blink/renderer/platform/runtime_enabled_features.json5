@@ -606,6 +606,10 @@
       status: "experimental",
     },
     {
+      name: "IDBTransactionCommit",
+      status: "experimental",
+    },
+    {
       name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
       status: "experimental",
     },
