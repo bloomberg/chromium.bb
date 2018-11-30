@@ -22,6 +22,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
@@ -68,17 +69,23 @@ const char kAutofillForcedFontWeightParameterBold[] = "bold";
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
-  // Check Autofill sync setting.
-  if (!(sync_service && sync_service->CanSyncFeatureStart() &&
-        sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
+  if (!sync_service || sync_service->GetAuthError().IsPersistentError() ||
+      !sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+    // If credit card sync is not active, we're not offering to upload cards.
     return false;
   }
 
-  // Check if the upload to Google state is active.
-  if (syncer::GetUploadToGoogleState(sync_service,
-                                     syncer::ModelType::AUTOFILL_WALLET_DATA) !=
-      syncer::UploadState::ACTIVE) {
-    return false;
+  if (sync_service->IsSyncFeatureActive()) {
+    if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
+      // In full sync mode, we only allow card upload when addresses are also
+      // active, because we upload potential billing addresses with the card.
+      return false;
+    }
+  } else {
+    // If Wallet sync is running even when sync the feature is off, the account
+    // Wallet feature must be on.
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kAutofillEnableAccountWalletStorage));
   }
 
   // Also don't offer upload for users that have a secondary sync passphrase.
@@ -86,6 +93,11 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.
   if (sync_service->IsUsingSecondaryPassphrase())
+    return false;
+
+  // Don't offer upload for users that are only syncing locally, since they
+  // won't receive the cards back from Google Payments.
+  if (sync_service->IsLocalSyncEnabled())
     return false;
 
   // Check Payments integration user setting.
