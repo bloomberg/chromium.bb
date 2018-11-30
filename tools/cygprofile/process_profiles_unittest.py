@@ -107,13 +107,13 @@ class ProcessProfilesTestCase(unittest.TestCase):
     self.assertListEqual(symbols[1:3],
                          processor.MatchSymbolNames(['Y', 'X']))
 
-  def testOffsetsPrimarySize(self):
+  def testSymbolsSize(self):
     symbols = [SimpleTestSymbol('W', 10, 1),
                SimpleTestSymbol('X', 20, 2),
                SimpleTestSymbol('Y', 30, 4),
                SimpleTestSymbol('Z', 40, 8)]
     processor = TestSymbolOffsetProcessor(symbols)
-    self.assertEqual(13, processor.OffsetsPrimarySize([10, 30, 40]))
+    self.assertEqual(13, processor.SymbolsSize(['W', 'Y', 'Z']))
 
   def testMedian(self):
     self.assertEquals(None, process_profiles._Median([]))
