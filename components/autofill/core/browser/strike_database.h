@@ -48,6 +48,10 @@ class StrikeDatabase : public KeyedService {
   // Increments in-memory cache and updates underlying ProtoDatabase.
   int AddStrike(const std::string id);
 
+  // Removes an in-memory cache strike, updates last_update_timestamp, and
+  // updates underlying ProtoDatabase.
+  int RemoveStrike(const std::string id);
+
   // Returns strike count from in-memory cache.
   int GetStrikes(const std::string id);
 
@@ -80,6 +84,10 @@ class StrikeDatabase : public KeyedService {
                            StrikeDatabaseEmptyOnAutofillRemoveEverything);
   FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
                            GetKeyForCreditCardSaveTest);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
+                           GetIdForCreditCardSaveTest);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
+                           RemoveExpiredStrikesOnLoadTest);
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 
@@ -97,8 +105,18 @@ class StrikeDatabase : public KeyedService {
   // opportunity stops being offered.
   virtual int GetMaxStrikesLimit() = 0;
 
+  // Returns the time after which the most recent strike should expire.
+  virtual long long GetExpiryTimeMicros() = 0;
+
   // Generates key based on project-specific string identifier.
   std::string GetKey(const std::string id);
+
+  // Generates project-specific string identifier based on key.
+  std::string GetIdPartFromKey(const std::string key);
+
+  // Updates the StrikeData for |key| in the cache and ProtoDatabase to have
+  // |num_stikes|, and the current time as timestamp.
+  void SetStrikeData(const std::string key, int num_strikes);
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
   // that the database fails to retrieve the strike update or if no entry is

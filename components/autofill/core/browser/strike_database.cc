@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 
 namespace autofill {
@@ -48,15 +49,22 @@ int StrikeDatabase::AddStrike(const std::string id) {
   int num_strikes = strike_map_cache_.count(key)  // Cache has entry for |key|.
                         ? strike_map_cache_[key].num_strikes() + 1
                         : 1;
-  StrikeData data;
-  data.set_num_strikes(num_strikes);
-  data.set_last_update_timestamp(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  UpdateCache(key, data);
-  SetProtoStrikeData(key, data, base::DoNothing());
+  SetStrikeData(key, num_strikes);
   base::UmaHistogramCounts1000(
       "Autofill.StrikeDatabase.NthStrikeAdded." + GetProjectPrefix(),
       num_strikes);
+  return num_strikes;
+}
+
+int StrikeDatabase::RemoveStrike(const std::string id) {
+  std::string key = GetKey(id);
+  DCHECK(strike_map_cache_.count(key));
+  int num_strikes = strike_map_cache_[key].num_strikes() - 1;
+  if (num_strikes < 1) {
+    ClearStrikes(id);
+    return 0;
+  }
+  SetStrikeData(key, num_strikes);
   return num_strikes;
 }
 
@@ -105,10 +113,32 @@ void StrikeDatabase::OnDatabaseLoadKeysAndEntries(
     return;
   }
   strike_map_cache_.insert(entries->begin(), entries->end());
+  // Remove all expired strikes.
+  for (auto entry : *entries) {
+    if (AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds() -
+            entry.second.last_update_timestamp() >
+        GetExpiryTimeMicros()) {
+      if (GetStrikes(GetIdPartFromKey(entry.first)) > 0)
+        RemoveStrike(GetIdPartFromKey(entry.first));
+    }
+  }
 }
 
 std::string StrikeDatabase::GetKey(const std::string id) {
   return GetProjectPrefix() + kKeyDeliminator + id;
+}
+
+std::string StrikeDatabase::GetIdPartFromKey(const std::string key) {
+  return key.substr((GetProjectPrefix() + kKeyDeliminator).size());
+}
+
+void StrikeDatabase::SetStrikeData(const std::string key, int num_strikes) {
+  StrikeData data;
+  data.set_num_strikes(num_strikes);
+  data.set_last_update_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  UpdateCache(key, data);
+  SetProtoStrikeData(key, data, base::DoNothing());
 }
 
 void StrikeDatabase::GetProtoStrikes(const std::string key,
