@@ -48,6 +48,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
   void UpdateControlButtonsVisibility() override;
+  void SetExpanded(bool expanded) override;
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -70,9 +71,14 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void CreateMediaButton(const gfx::VectorIcon& icon,
                          media_session::mojom::MediaSessionAction action);
 
+  void UpdateViewForExpandedState();
+
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>
       control_buttons_view_;
+
+  // Whether this notification is expanded or not.
+  bool expanded_ = false;
 
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
@@ -81,6 +87,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   views::View* title_artist_row_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* artist_label_ = nullptr;
+  views::View* main_row_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };

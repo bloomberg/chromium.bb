@@ -25,8 +25,12 @@ using media_session::mojom::MediaSessionAction;
 
 namespace {
 
-// The right padding is 2/3rds the size of the notification.
-constexpr int kRightMarginSize = message_center::kNotificationWidth / 3;
+// The right padding is 1/5th the size of the notification.
+constexpr int kRightMarginSize = message_center::kNotificationWidth / 5;
+
+// The right padding is 1/3rd the size of the notification when the
+// notification is expanded.
+constexpr int kRightMarginExpandedSize = message_center::kNotificationWidth / 3;
 
 // Dimensions.
 constexpr int kDefaultMarginSize = 16;
@@ -35,6 +39,13 @@ constexpr int kMediaButtonIconSize = 24;
 SkColor GetMediaNotificationColor(const views::View& view) {
   return views::style::GetColor(view, views::style::CONTEXT_LABEL,
                                 views::style::STYLE_PRIMARY);
+}
+
+bool ShouldShowActionWhenCollapsed(MediaSessionAction action) {
+  return action == MediaSessionAction::kPlay ||
+         action == MediaSessionAction::kPause ||
+         action == MediaSessionAction::kNextTrack ||
+         action == MediaSessionAction::kPreviousTrack;
 }
 
 }  // namespace
@@ -53,25 +64,26 @@ MediaNotificationView::MediaNotificationView(
   // |header_row_| contains app_icon, app_name, control buttons, etc.
   header_row_ = new message_center::NotificationHeaderView(
       control_buttons_view_.get(), this);
-  header_row_->SetExpandButtonEnabled(false);
+  header_row_->SetExpandButtonEnabled(true);
   header_row_->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
   AddChildView(header_row_);
+
+  // |main_row_| holds the main content of the notification.
+  main_row_ = new views::View();
+  AddChildView(main_row_);
 
   // |title_artist_row_| contains the title and artist labels.
   title_artist_row_ = new views::View();
   auto* title_artist_row_layout =
       title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
-          gfx::Insets(kDefaultMarginSize, kDefaultMarginSize, 0,
-                      kRightMarginSize),
-          0));
+          views::BoxLayout::kVertical, gfx::Insets(), 0));
   title_artist_row_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   title_artist_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   title_artist_row_->SetVisible(false);
-  AddChildView(title_artist_row_);
+  main_row_->AddChildView(title_artist_row_);
 
   title_label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL,
                                   views::style::STYLE_PRIMARY);
@@ -91,16 +103,13 @@ MediaNotificationView::MediaNotificationView(
   button_row_ = new views::View();
   auto* button_row_layout =
       button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
-          gfx::Insets(kDefaultMarginSize, kDefaultMarginSize,
-                      kDefaultMarginSize, kRightMarginSize),
-          16));
+          views::BoxLayout::kHorizontal, gfx::Insets(), 0));
   button_row_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
   button_row_layout->SetDefaultFlex(1);
-  AddChildView(button_row_);
+  main_row_->AddChildView(button_row_);
 
   CreateMediaButton(vector_icons::kMediaPreviousTrackIcon,
                     MediaSessionAction::kPreviousTrack);
@@ -129,6 +138,7 @@ MediaNotificationView::MediaNotificationView(
   UpdateControlButtonsVisibilityWithNotification(notification);
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
+  UpdateViewForExpandedState();
 
   Shell::Get()->media_notification_controller()->SetView(this);
 }
@@ -160,6 +170,16 @@ void MediaNotificationView::UpdateControlButtonsVisibility() {
   control_buttons_view_->SetVisible(target_visibility);
 }
 
+void MediaNotificationView::SetExpanded(bool expanded) {
+  if (expanded_ == expanded)
+    return;
+
+  expanded_ = expanded;
+
+  UpdateViewForExpandedState();
+  PreferredSizeChanged();
+}
+
 void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
@@ -175,10 +195,18 @@ void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
 
 void MediaNotificationView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
+  if (sender == header_row_) {
+    SetExpanded(!expanded_);
+    return;
+  }
+
   if (sender->parent() == button_row_) {
     message_center::MessageCenter::Get()->ClickOnNotificationButton(
         notification_id(), sender->tag());
+    return;
   }
+
+  NOTREACHED();
 }
 
 void MediaNotificationView::UpdateWithMediaSessionInfo(
@@ -215,6 +243,42 @@ void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
 
   control_buttons_view_->ShowCloseButton(!notification.pinned());
   UpdateControlButtonsVisibility();
+}
+
+void MediaNotificationView::UpdateViewForExpandedState() {
+  // We should reduce the number of action buttons we show when we are
+  // collapsed.
+  for (int i = 0; i < button_row_->child_count(); ++i) {
+    views::Button* action_button =
+        views::Button::AsButton(button_row_->child_at(i));
+
+    action_button->SetVisible(expanded_ || ShouldShowActionWhenCollapsed(
+                                               static_cast<MediaSessionAction>(
+                                                   action_button->tag())));
+  }
+
+  // Adjust the layout of the |main_row_| based on the expanded state. If the
+  // notification is expanded then the buttons should be below the title/artist
+  // information. If it is collapsed then the buttons will be to the right.
+  if (expanded_) {
+    main_row_
+        ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kVertical,
+            gfx::Insets(kDefaultMarginSize, kDefaultMarginSize,
+                        kDefaultMarginSize, kRightMarginExpandedSize),
+            kDefaultMarginSize))
+        ->SetDefaultFlex(1);
+  } else {
+    main_row_
+        ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kHorizontal,
+            gfx::Insets(0, kDefaultMarginSize, kDefaultMarginSize,
+                        kRightMarginSize),
+            kDefaultMarginSize, true))
+        ->SetDefaultFlex(1);
+  }
+
+  header_row_->SetExpanded(expanded_);
 }
 
 void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,
