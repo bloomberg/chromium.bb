@@ -33,7 +33,6 @@ public class H2OMainActivity extends TransparentLauncherActivity {
     @Override
     protected void onHostBrowserSelected(HostBrowserLauncherParams params) {
         if (params == null) {
-            finish();
             return;
         }
 
@@ -48,11 +47,9 @@ public class H2OMainActivity extends TransparentLauncherActivity {
             H2OLauncher.requestRelaunchFromHostBrowser(appContext, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, SplashActivity.class), getComponentName());
-            finish();
             return;
         }
 
         HostBrowserLauncher.launch(appContext, params);
-        finish();
     }
 }
