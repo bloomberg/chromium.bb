@@ -4988,8 +4988,9 @@ crbug.com/794338 [ Android ] virtual/video-surface-layer/media/video-rotation.ht
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 crbug.com/811605 virtual/video-surface-layer/media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
+crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
+
 crbug.com/860368 virtual/video-surface-layer/media/autoplay/webaudio-audio-context-resume.html  [ Pass Failure ]
-crbug.com/860368 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/860368 virtual/video-surface-layer/media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/860368 virtual/video-surface-layer/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
 crbug.com/860368 virtual/video-surface-layer/media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
