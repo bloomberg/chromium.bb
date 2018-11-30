@@ -204,6 +204,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetMediaDownloadInProductHelpEnabled(bool) override;
   void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) override;
 
+  void SetLazyLoadEnabled(bool) override;
+
   // TODO(rajendrant): Remove these lazyload distance threshold settings for
   // frames and images, once the values are finalized from the experiment.
   void SetLazyFrameLoadingDistanceThresholdPxUnknown(int) override;

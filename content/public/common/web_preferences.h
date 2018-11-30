@@ -320,6 +320,9 @@ struct CONTENT_EXPORT WebPreferences {
   // regardless of the actual quality.
   net::EffectiveConnectionType network_quality_estimator_web_holdback;
 
+  // Whether lazy loading of frames and images is enabled.
+  bool lazy_load_enabled = true;
+
   // Specifies how close a lazily loaded iframe or image should be from the
   // viewport before it should start being loaded in, depending on the effective
   // connection type of the current network. Blink will use the default distance

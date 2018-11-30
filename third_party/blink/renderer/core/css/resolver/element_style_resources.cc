@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -203,7 +204,9 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             FetchParameters::ImageRequestOptimization
                 image_request_optimization = FetchParameters::kNone;
             if (!BackgroundLayerMayBeSprite(*background_layer)) {
-              if (element_->GetDocument()
+              if (element_->GetDocument().GetSettings() &&
+                  element_->GetDocument().GetSettings()->GetLazyLoadEnabled() &&
+                  element_->GetDocument()
                       .GetFrame()
                       ->IsLazyLoadingImageAllowed()) {
                 image_request_optimization = FetchParameters::kDeferImageLoad;

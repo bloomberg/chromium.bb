@@ -111,6 +111,7 @@ class LazyLoadFramesTest : public SimTest,
     settings.SetLazyFrameLoadingDistanceThresholdPx2G(500);
     settings.SetLazyFrameLoadingDistanceThresholdPx3G(600);
     settings.SetLazyFrameLoadingDistanceThresholdPx4G(700);
+    settings.SetLazyLoadEnabled(true);
   }
 
   int GetLoadingDistanceThreshold() const {

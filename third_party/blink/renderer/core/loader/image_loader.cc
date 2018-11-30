@@ -100,7 +100,9 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
       width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
     return false;
   }
-  return frame->IsLazyLoadingImageAllowed();
+  return frame->GetDocument()->GetSettings() &&
+         frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
+         frame->IsLazyLoadingImageAllowed();
 }
 
 }  // namespace
