@@ -66,7 +66,7 @@ class Buffer : public PacketPipe {
   void Send(std::unique_ptr<Packet> packet) final {
     if (packet->size() + buffer_size_ <= max_buffer_size_) {
       buffer_size_ += packet->size();
-      buffer_.push_back(linked_ptr<Packet>(packet.release()));
+      buffer_.push_back(std::move(packet));
       if (buffer_.size() == 1) {
         Schedule();
       }
@@ -95,7 +95,7 @@ class Buffer : public PacketPipe {
     while (!buffer_.empty() &&
            static_cast<int64_t>(buffer_.front()->size()) <= bytes_to_send) {
       CHECK(!buffer_.empty());
-      std::unique_ptr<Packet> packet(buffer_.front().release());
+      std::unique_ptr<Packet> packet = std::move(buffer_.front());
       bytes_to_send -= packet->size();
       buffer_size_ -= packet->size();
       buffer_.pop_front();
@@ -106,7 +106,7 @@ class Buffer : public PacketPipe {
     }
   }
 
-  base::circular_deque<linked_ptr<Packet>> buffer_;
+  base::circular_deque<std::unique_ptr<Packet>> buffer_;
   base::TimeTicks last_schedule_;
   size_t buffer_size_;
   size_t max_buffer_size_;
@@ -223,7 +223,7 @@ class RandomSortedDelay : public PacketPipe {
         weak_factory_(this) {}
 
   void Send(std::unique_ptr<Packet> packet) final {
-    buffer_.push_back(linked_ptr<Packet>(packet.release()));
+    buffer_.push_back(std::move(packet));
     if (buffer_.size() == 1) {
       next_send_ = std::max(
           clock_->NowTicks() +
@@ -266,7 +266,7 @@ class RandomSortedDelay : public PacketPipe {
   void ProcessBuffer() {
     base::TimeTicks now = clock_->NowTicks();
     while (!buffer_.empty() && next_send_ <= now) {
-      std::unique_ptr<Packet> packet(buffer_.front().release());
+      std::unique_ptr<Packet> packet = std::move(buffer_.front());
       pipe_->Send(std::move(packet));
       buffer_.pop_front();
 
@@ -284,7 +284,7 @@ class RandomSortedDelay : public PacketPipe {
   }
 
   base::TimeTicks block_until_;
-  base::circular_deque<linked_ptr<Packet>> buffer_;
+  base::circular_deque<std::unique_ptr<Packet>> buffer_;
   double random_delay_;
   double extra_delay_;
   double seconds_between_extra_delay_;
@@ -363,7 +363,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
     if (stored_size_ >= stored_limit_)
       return;
     stored_size_ += packet->size();
-    buffer_.push_back(linked_ptr<Packet>(packet.release()));
+    buffer_.push_back(std::move(packet));
     buffer_time_.push_back(clock_->NowTicks());
     DCHECK(buffer_.size() == buffer_time_.size());
   }
@@ -378,7 +378,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
   }
 
   void SendOnePacket() {
-    std::unique_ptr<Packet> packet(buffer_.front().release());
+    std::unique_ptr<Packet> packet = std::move(buffer_.front());
     stored_size_ -= packet->size();
     buffer_.pop_front();
     buffer_time_.pop_front();
@@ -404,7 +404,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
   const base::WeakPtr<InterruptedPoissonProcess> ipp_;
   size_t stored_size_;
   const size_t stored_limit_;
-  base::circular_deque<linked_ptr<Packet>> buffer_;
+  base::circular_deque<std::unique_ptr<Packet>> buffer_;
   base::circular_deque<base::TimeTicks> buffer_time_;
   const base::TickClock* clock_;
   base::WeakPtrFactory<InternalBuffer> weak_factory_;

@@ -1187,7 +1187,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   // Copy the picture buffers provided by the client to the available list,
   // and mark these buffers as available for use.
   for (size_t buffer_index = 0; buffer_index < buffers.size(); ++buffer_index) {
-    linked_ptr<DXVAPictureBuffer> picture_buffer =
+    std::unique_ptr<DXVAPictureBuffer> picture_buffer =
         DXVAPictureBuffer::Create(*this, buffers[buffer_index], egl_config_);
     RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer.get(),
                                  "Failed to allocate picture buffer",
@@ -1202,10 +1202,10 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
       }
     }
 
-    bool inserted =
-        output_picture_buffers_
-            .insert(std::make_pair(buffers[buffer_index].id(), picture_buffer))
-            .second;
+    bool inserted = output_picture_buffers_
+                        .insert(std::make_pair(buffers[buffer_index].id(),
+                                               std::move(picture_buffer)))
+                        .second;
     DCHECK(inserted);
   }
 
@@ -2481,7 +2481,7 @@ void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
     } else {
       // Move to |stale_output_picture_buffers_| for deferred deletion.
       stale_output_picture_buffers_.insert(
-          std::make_pair(index->first, index->second));
+          std::make_pair(index->first, std::move(index->second)));
     }
   }
 

@@ -15,7 +15,6 @@
 #include "base/containers/queue.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -121,11 +120,11 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   struct Task {
     Task(TaskType type);
-    Task(const Task& other);
+    Task(Task&& other);
     ~Task();
 
     TaskType type;
-    linked_ptr<Frame> frame;
+    std::unique_ptr<Frame> frame;
   };
 
   struct PictureInfo {
@@ -145,8 +144,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   };
 
   struct FrameOrder {
-    bool operator()(const linked_ptr<Frame>& lhs,
-                    const linked_ptr<Frame>& rhs) const;
+    bool operator()(const std::unique_ptr<Frame>& lhs,
+                    const std::unique_ptr<Frame>& rhs) const;
   };
 
   //
@@ -210,8 +209,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   base::queue<Task> task_queue_;
 
   // Queue of decoded frames in presentation order.
-  std::priority_queue<linked_ptr<Frame>,
-                      std::vector<linked_ptr<Frame>>,
+  std::priority_queue<std::unique_ptr<Frame>,
+                      std::vector<std::unique_ptr<Frame>>,
                       FrameOrder>
       reorder_queue_;
 
@@ -220,7 +219,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   // Frames that have not yet been decoded, keyed by bitstream ID; maintains
   // ownership of Frame objects while they flow through VideoToolbox.
-  std::map<int32_t, linked_ptr<Frame>> pending_frames_;
+  std::map<int32_t, std::unique_ptr<Frame>> pending_frames_;
 
   // Set of assigned bitstream IDs, so that Destroy() can release them all.
   std::set<int32_t> assigned_bitstream_ids_;
