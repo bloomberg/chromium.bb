@@ -102,7 +102,7 @@ public class FeedAppLifecycle
      * We call onClearAll to avoid presenting personalized suggestions based on deleted history.
      */
     public void onHistoryDeleted() {
-        onClearAll();
+        onClearAll(/*suppressRefreshes*/ true);
     }
 
     /**
@@ -110,7 +110,7 @@ public class FeedAppLifecycle
      * Feed deletes its cached browsing data.
      */
     public void onCachedDataCleared() {
-        onClearAll();
+        onClearAll(/*suppressRefreshes*/ false);
     }
 
     /**
@@ -152,12 +152,12 @@ public class FeedAppLifecycle
 
     @Override
     public void onSignedIn() {
-        onClearAll();
+        onClearAll(/*suppressRefreshes*/ false);
     }
 
     @Override
     public void onSignedOut() {
-        onClearAll();
+        onClearAll(/*suppressRefreshes*/ false);
     }
 
     private void onEnterForeground() {
@@ -170,9 +170,14 @@ public class FeedAppLifecycle
         mAppLifecycleListener.onEnterBackground();
     }
 
-    private void onClearAll() {
+    private void onClearAll(boolean suppressRefreshes) {
         reportEvent(AppLifecycleEvent.CLEAR_ALL);
+        // It is important that #onClearAll() is called before notifying the scheduler, otherwise
+        // the clear all could wipe out the new results. These are both async operations that are
+        // kicked off here, but the Feed is responsible for tracking them and making sure they're
+        // correctly respected.
         mAppLifecycleListener.onClearAll();
+        mFeedScheduler.onArticlesCleared(suppressRefreshes);
     }
 
     private void initialize() {
