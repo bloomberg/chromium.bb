@@ -602,8 +602,15 @@ def main():
 
   if options.output_dir:
     histogram_path = os.path.join(options.output_dir, 'perf_results.json')
+    # We need to add a bit more data to the results, otherwise the conversion
+    # fails due to the provided data being malformed.
+    updated_results = {
+      'format_version': '1.0',
+      'benchmark_name': 'sizes',
+      'charts': results_collector.results,
+    }
     with open(histogram_path, 'w') as f:
-      json.dump(results_collector.results, f)
+      json.dump(updated_results, f)
     histogram_result = convert_chart_json.ConvertChartJson(histogram_path)
     if histogram_result.returncode != 0:
       sys.stderr.write(
