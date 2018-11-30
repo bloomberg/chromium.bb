@@ -118,15 +118,16 @@ testcase.fileDisplayComputers = async function() {
       null, RootPath.DRIVE, null, [], COMPUTERS_ENTRY_SET);
 
   // Navigate to Comuter Grand Root.
-  await remoteCall.navigateWithDirectoryTree(appId, '/Computers', 'Computers');
+  await remoteCall.navigateWithDirectoryTree(
+      appId, '/Computers', 'Computers', 'drive');
 
   // Navigiate to a Computer Root.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/Computers/Computer A', 'Computers');
+      appId, '/Computers/Computer A', 'Computers', 'drive');
 
   // Navigiate to a subdirectory under a Computer Root.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/Computers/Computer A/A', 'Computers');
+      appId, '/Computers/Computer A/A', 'Computers', 'drive');
 };
 
 
