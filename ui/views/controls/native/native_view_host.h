@@ -57,6 +57,11 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // NB: This does not interact nicely with fast_resize.
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask);
 
+  // Sets the height of the top region where the gfx::NativeView shouldn't be
+  // targeted. This will be used when another view is covering there
+  // temporarily, like the immersive fullscreen mode of ChromeOS.
+  void SetHitTestTopInset(int top_inset);
+
   // Sets the size for the NativeView that may or may not match the size of this
   // View when it is being captured. If the size does not match, scaling will
   // occur. Pass an empty size to revert to the default behavior, where the

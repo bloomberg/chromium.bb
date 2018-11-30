@@ -41,6 +41,7 @@ class NativeViewHostMac : public NativeViewHostWrapper,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
+  void SetHitTestTopInset(int top_inset) override;
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;

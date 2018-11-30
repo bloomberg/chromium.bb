@@ -183,6 +183,10 @@ bool NativeViewHostMac::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
   return false;
 }
 
+void NativeViewHostMac::SetHitTestTopInset(int top_inset) {
+  NOTIMPLEMENTED();
+}
+
 void NativeViewHostMac::InstallClip(int x, int y, int w, int h) {
   NOTIMPLEMENTED();
 }

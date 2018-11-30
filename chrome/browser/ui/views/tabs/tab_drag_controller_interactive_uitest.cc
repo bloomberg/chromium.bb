@@ -1134,9 +1134,15 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToOwnWindowWhileInImmersiveFullscreenMode) {
   // Toggle the immersive fullscreen mode for the initial browser.
   chrome::ToggleFullscreenMode(browser());
-  ASSERT_TRUE(BrowserView::GetBrowserViewForBrowser(browser())
-                  ->immersive_mode_controller()
-                  ->IsEnabled());
+  ImmersiveModeController* controller =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->immersive_mode_controller();
+  ASSERT_TRUE(controller->IsEnabled());
+
+  // Forcively reveal the tabstrip immediately.
+  std::unique_ptr<ImmersiveRevealedLock> lock(
+      controller->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_NO));
+  aura::test::WaitForAllChangesToComplete();
 
   // Add another tab.
   AddTabAndResetBrowser(browser());
@@ -1148,10 +1154,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
       base::Bind(&DetachToOwnWindowStep2, this)));
-  if (input_source() == INPUT_SOURCE_MOUSE) {
+  if (input_source() == INPUT_SOURCE_MOUSE)
     ReleaseMouseAfterWindowDetached();
-    QuitWhenNotDragging();
-  }
+  QuitWhenNotDragging();
 
   // Should no longer be dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());

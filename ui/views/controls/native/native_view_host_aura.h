@@ -34,6 +34,7 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) override;
+  void SetHitTestTopInset(int top_inset) override;
   void InstallClip(int x, int y, int w, int h) override;
   bool HasInstalledClip() override;
   void UninstallClip() override;
@@ -74,6 +75,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
   // Unsets the mask layer on the native view's layer.
   void UninstallMask();
 
+  // Updates the top insets of |clipping_window_|.
+  void UpdateInsets();
+
   // Our associated NativeViewHost.
   NativeViewHost* host_;
 
@@ -97,6 +101,9 @@ class NativeViewHostAura : public NativeViewHostWrapper,
 
   // True if a transform different from the original was set.
   bool original_transform_changed_ = false;
+
+  // The top insets to exclude the underlying native view from the target.
+  int top_inset_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostAura);
 };

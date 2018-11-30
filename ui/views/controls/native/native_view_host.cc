@@ -60,6 +60,10 @@ bool NativeViewHost::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
   return native_wrapper_->SetCustomMask(std::move(mask));
 }
 
+void NativeViewHost::SetHitTestTopInset(int top_inset) {
+  native_wrapper_->SetHitTestTopInset(top_inset);
+}
+
 void NativeViewHost::SetNativeViewSize(const gfx::Size& size) {
   if (native_view_size_ == size)
     return;

@@ -12,9 +12,11 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_constants_aura.h"
@@ -161,6 +163,13 @@ bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
 #endif
 }
 
+void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
+  if (top_inset_ == top_inset)
+    return;
+  top_inset_ = top_inset;
+  UpdateInsets();
+}
+
 void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
   clip_rect_.reset(
       new gfx::Rect(host_->ConvertRectToWidget(gfx::Rect(x, y, w, h))));
@@ -284,6 +293,7 @@ void NativeViewHostAura::CreateClippingWindow() {
   clipping_window_->SetName("NativeViewHostAuraClip");
   clipping_window_->layer()->SetMasksToBounds(true);
   clipping_window_->SetProperty(views::kHostViewKey, static_cast<View*>(host_));
+  UpdateInsets();
 }
 
 void NativeViewHostAura::AddClippingWindow() {
@@ -338,6 +348,25 @@ void NativeViewHostAura::UninstallMask() {
 
   host_->native_view()->layer()->SetMaskLayer(nullptr);
   mask_.reset();
+}
+
+void NativeViewHostAura::UpdateInsets() {
+  if (!clipping_window_)
+    return;
+
+  if (top_inset_ == 0) {
+    // The window targeter needs to be uninstalled when not used; keeping empty
+    // targeter here actually conflicts with ash::ImmersiveWindowTargeter on
+    // immersive mode in Ash.
+    // TODO(mukai): fix this.
+    clipping_window_->SetEventTargeter(nullptr);
+  } else {
+    if (!clipping_window_->targeter()) {
+      clipping_window_->SetEventTargeter(
+          std::make_unique<aura::WindowTargeter>());
+    }
+    clipping_window_->targeter()->SetInsets(gfx::Insets(top_inset_, 0, 0, 0));
+  }
 }
 
 }  // namespace views
