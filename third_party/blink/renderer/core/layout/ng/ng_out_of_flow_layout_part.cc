@@ -149,8 +149,6 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
           ComputeBorders(dummy_constraint_space, *inline_cb_style);
       NGPhysicalBoxStrut physical_borders = inline_cb_borders.ConvertToPhysical(
           inline_cb_style->GetWritingMode(), inline_cb_style->Direction());
-      NGBoxStrut inline_cb_padding =
-          ComputePadding(dummy_constraint_space, *inline_cb_style);
 
       // Warning: lots of non-obvious coordinate manipulation ahead.
       //
@@ -184,8 +182,6 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       // 3. Convert both topleft/bottomright to logical, so that we can
       // 4. Enforce logical topLeft < bottomRight
       // 5. Compute size, physical offset
-      const NGPhysicalFragment* start_fragment =
-          block_info.value.start_fragment;
       const NGPhysicalLineBoxFragment* start_linebox_fragment =
           block_info.value.start_linebox_fragment;
       WritingMode container_writing_mode =
@@ -198,11 +194,6 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
               container_writing_mode, container_direction,
               start_linebox_fragment->Size(),
               block_info.value.start_fragment_union_rect.size);
-      // Text fragments do not include inline-cb borders and padding.
-      if (start_fragment->IsText()) {
-        start_fragment_logical_offset -= inline_cb_borders.StartOffset();
-        start_fragment_logical_offset -= inline_cb_padding.StartOffset();
-      }
       NGPhysicalOffset start_fragment_physical_offset =
           start_fragment_logical_offset.ConvertToPhysical(
               container_writing_mode, container_direction,
@@ -210,19 +201,11 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       // Step 2
       const NGPhysicalLineBoxFragment* end_linebox_fragment =
           block_info.value.end_linebox_fragment;
-      const NGPhysicalFragment* end_fragment = block_info.value.end_fragment;
       NGLogicalOffset end_fragment_logical_offset =
           block_info.value.end_fragment_union_rect.offset.ConvertToLogical(
               container_writing_mode, container_direction,
               end_linebox_fragment->Size(),
               block_info.value.end_fragment_union_rect.size);
-      // Text fragments do not include inline-cb borders and padding.
-      if (end_fragment->IsText()) {
-        end_fragment_logical_offset += NGLogicalOffset(
-            inline_cb_borders.inline_end, inline_cb_borders.block_end);
-        end_fragment_logical_offset += NGLogicalOffset(
-            inline_cb_padding.inline_end, inline_cb_padding.block_end);
-      }
       NGLogicalOffset end_fragment_bottom_right =
           end_fragment_logical_offset +
           block_info.value.end_fragment_union_rect.size.ConvertToLogical(

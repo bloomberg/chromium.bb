@@ -225,17 +225,10 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
 
       for (auto& descendant :
            NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
-        LayoutObject* key = {};
-        if (descendant.fragment->IsText()) {
-          key = descendant.fragment->GetLayoutObject();
-          DCHECK(key);
-          key = key->Parent();
-          DCHECK(key);
-        } else if (descendant.fragment->IsBox()) {
-          key = descendant.fragment->GetLayoutObject();
-        }
-        if (!key)
+        if (!descendant.fragment->IsBox())
           continue;
+
+        LayoutObject* key = descendant.fragment->GetLayoutObject();
         auto it = inline_container_fragments->find(key);
         if (it != inline_container_fragments->end()) {
           NGBoxFragmentBuilder::FragmentPair& value = it->value;
