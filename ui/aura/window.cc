@@ -893,6 +893,9 @@ void Window::SetOcclusionInfo(OcclusionState occlusion_state,
     occluded_region_ = occluded_region;
     if (delegate_)
       delegate_->OnWindowOcclusionChanged(occlusion_state, occluded_region);
+
+    for (WindowObserver& observer : observers_)
+      observer.OnWindowOcclusionChanged(this);
   }
 }
 

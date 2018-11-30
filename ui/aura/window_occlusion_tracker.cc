@@ -126,7 +126,9 @@ void WindowOcclusionTracker::Track(Window* window) {
   DCHECK(window != window->GetRootWindow());
 
   auto insert_result = tracked_windows_.insert({window, {}});
-  DCHECK(insert_result.second);
+  if (!insert_result.second)
+    return;
+
   if (!window_observer_.IsObserving(window))
     window_observer_.Add(window);
   if (window->GetRootWindow())

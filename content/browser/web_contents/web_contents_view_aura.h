@@ -66,6 +66,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
  private:
   class WindowObserver;
+  class MirrorWindowObserver;
 
   ~WebContentsViewAura() override;
 
@@ -208,6 +209,8 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<aura::Window> window_;
 
   std::unique_ptr<WindowObserver> window_observer_;
+
+  std::unique_ptr<MirrorWindowObserver> mirror_window_observer_;
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
