@@ -96,7 +96,10 @@ const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
 
 // The field type, validity state map of all profiles.
-const char kAutofillProfileValidity[] = "autofill.profile_validity";
+// TODO(crbug.com/910596): Pref name is "autofill_" instead of "autofill."
+// because of a mismatch when the priorify prefs were generated. Consider
+// migrating this back to "autofill." in the future.
+const char kAutofillProfileValidity[] = "autofill_profile_validity";
 
 // The opt-ins for Sync Transport features for each client.
 const char kAutofillSyncTransportOptIn[] = "autofill.sync_transport_opt_ins";
