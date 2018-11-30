@@ -1000,7 +1000,7 @@
   },
   {
     "name": "enable-cros-ime-service",
-    // "owners": [ "your-team" ],
+    "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 76
   },
   {
