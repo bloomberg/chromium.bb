@@ -163,6 +163,7 @@ public class BuildInfo {
 
     /**
      * Check if this is a debuggable build of Android. Use this to enable developer-only features.
+     * This is a rough approximation of the hidden API {@code Build.IS_DEBUGGABLE}.
      */
     public static boolean isDebugAndroid() {
         return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);

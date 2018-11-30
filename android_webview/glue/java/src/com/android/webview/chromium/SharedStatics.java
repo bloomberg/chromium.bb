@@ -14,7 +14,7 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.ThreadUtils;
@@ -44,10 +44,9 @@ public class SharedStatics {
     }
 
     public void setWebContentsDebuggingEnabled(boolean enable) {
-        // Web Contents debugging is always enabled on debug builds.
-        if (!CommandLineUtil.isBuildDebuggable()) {
-            setWebContentsDebuggingEnabledUnconditionally(enable);
-        }
+        // On debug builds, Web Contents debugging is enabled elsewhere, and cannot be disabled.
+        if (BuildInfo.isDebugAndroid()) return;
+        setWebContentsDebuggingEnabledUnconditionally(enable);
     }
 
     public void setWebContentsDebuggingEnabledUnconditionally(boolean enable) {
