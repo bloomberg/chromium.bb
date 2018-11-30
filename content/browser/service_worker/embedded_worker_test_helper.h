@@ -160,7 +160,7 @@ class EmbeddedWorkerTestHelper {
       const GURL& script_url,
       bool pause_after_download,
       mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr

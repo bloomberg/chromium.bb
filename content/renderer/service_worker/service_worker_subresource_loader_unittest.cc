@@ -122,7 +122,8 @@ class FakeNetworkURLLoaderFactory final
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkURLLoaderFactory);
 };
 
-class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
+class FakeControllerServiceWorker
+    : public blink::mojom::ControllerServiceWorker {
  public:
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
@@ -239,7 +240,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     }
   }
 
-  // mojom::ControllerServiceWorker:
+  // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -335,7 +336,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       std::move(fetch_event_callback_).Run();
   }
 
-  void Clone(mojom::ControllerServiceWorkerRequest request) override {
+  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -368,7 +369,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   int fetch_event_count_ = 0;
   network::ResourceRequest fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
-  mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
+  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -420,7 +421,7 @@ class FakeServiceWorkerContainerHost
     NOTIMPLEMENTED();
   }
   void EnsureControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest request,
+      blink::mojom::ControllerServiceWorkerRequest request,
       mojom::ControllerServiceWorkerPurpose purpose) override {
     get_controller_service_worker_count_++;
     if (!fake_controller_)

@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace blink {
@@ -81,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       int route_id,
       const RequestNavigationParams* request_params,
       blink::WebLocalFrame* frame,
-      mojom::ControllerServiceWorkerInfoPtr controller_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
@@ -94,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
-      mojom::ControllerServiceWorkerInfoPtr controller_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
@@ -140,14 +140,14 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::mojom::ServiceWorkerProviderType type,
       int provider_id,
       bool is_parent_frame_secure,
-      mojom::ControllerServiceWorkerInfoPtr controller_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   ServiceWorkerNetworkProvider(
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
-      mojom::ControllerServiceWorkerInfoPtr controller_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
   // This is for controllers, used in CreateForController.

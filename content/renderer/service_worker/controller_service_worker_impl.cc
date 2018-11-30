@@ -10,7 +10,7 @@
 namespace content {
 
 ControllerServiceWorkerImpl::ControllerServiceWorkerImpl(
-    mojom::ControllerServiceWorkerRequest request,
+    blink::mojom::ControllerServiceWorkerRequest request,
     base::WeakPtr<ServiceWorkerContextClient> context_client)
     : context_client_(std::move(context_client)) {
   CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
@@ -20,7 +20,7 @@ ControllerServiceWorkerImpl::ControllerServiceWorkerImpl(
 ControllerServiceWorkerImpl::~ControllerServiceWorkerImpl() = default;
 
 void ControllerServiceWorkerImpl::Clone(
-    mojom::ControllerServiceWorkerRequest request) {
+    blink::mojom::ControllerServiceWorkerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

@@ -184,7 +184,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     return mojo::MakeRequest(&service_workers_.back());
   }
 
-  mojom::ControllerServiceWorkerRequest CreateController() {
+  blink::mojom::ControllerServiceWorkerRequest CreateController() {
     controllers_.emplace_back();
     return mojo::MakeRequest(&controllers_.back());
   }
@@ -220,7 +220,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
 
   // Mojo endpoints.
   std::vector<mojom::ServiceWorkerPtr> service_workers_;
-  std::vector<mojom::ControllerServiceWorkerPtr> controllers_;
+  std::vector<blink::mojom::ControllerServiceWorkerPtr> controllers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
@@ -249,7 +249,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       const GURL& script_url,
       bool pause_after_download,
       mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -817,7 +817,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
       const GURL& script_url,
       bool pause_after_download,
       mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)

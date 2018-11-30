@@ -34,7 +34,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
-    mojom::ControllerServiceWorkerInfoPtr controller_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {

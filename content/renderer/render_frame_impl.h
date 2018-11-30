@@ -544,7 +544,8 @@ class CONTENT_EXPORT RenderFrameImpl
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
-      mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override;
@@ -1291,7 +1292,8 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   BuildServiceWorkerNetworkProviderForNavigation(
       const RequestNavigationParams* request_params,
-      mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info);
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after

@@ -160,7 +160,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     int route_id,
     const RequestNavigationParams* request_params,
     blink::WebLocalFrame* frame,
-    mojom::ControllerServiceWorkerInfoPtr controller_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
@@ -214,7 +214,7 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
-    mojom::ControllerServiceWorkerInfoPtr controller_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   // S13nServiceWorker: |info| holds info about the precreated provider host.
   if (info) {
@@ -286,7 +286,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     blink::mojom::ServiceWorkerProviderType provider_type,
     int provider_id,
     bool is_parent_frame_secure,
-    mojom::ControllerServiceWorkerInfoPtr controller_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   DCHECK_NE(provider_id, kInvalidServiceWorkerProviderId);
   DCHECK(provider_type == blink::mojom::ServiceWorkerProviderType::kForWindow ||
@@ -325,7 +325,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
-    mojom::ControllerServiceWorkerInfoPtr controller_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id,

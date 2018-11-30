@@ -6,11 +6,11 @@ module content.mojom;
 
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
-import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "url/mojom/url.mojom";
+import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/web/commit_result.mojom";
 
 // See src/content/common/navigation_params.h
@@ -59,7 +59,7 @@ interface NavigationClient {
       network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints,
       URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
-      ControllerServiceWorkerInfo? controller_service_worker_info,
+      blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
       network.mojom.URLLoaderFactory? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
       => (blink.mojom.CommitResult commit_result);

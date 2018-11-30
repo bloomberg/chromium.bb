@@ -269,7 +269,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
   // for posting messages.
-  mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
+  blink::mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
 
   // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
   // the client uuid if it's a cross-origin transition.
@@ -552,7 +552,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetRegistrationForReady(
       GetRegistrationForReadyCallback callback) override;
   void EnsureControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ControllerServiceWorkerPurpose purpose) override;
   void CloneContainerHost(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
@@ -582,7 +582,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Callback for ServiceWorkerVersion::RunAfterStartWorker()
   void StartControllerComplete(
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       blink::ServiceWorkerStatusCode status);
 
   bool IsValidGetRegistrationMessage(const GURL& client_url,

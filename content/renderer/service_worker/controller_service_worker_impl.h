@@ -8,8 +8,8 @@
 #include <utility>
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ class ServiceWorkerContextClient;
 // S13nServiceWorker:
 // An instance of this class is created on the service worker thread
 // when ServiceWorkerContextClient's WorkerContextData is created.
-// This implements mojom::ControllerServiceWorker and its Mojo endpoint
+// This implements blink::mojom::ControllerServiceWorker and its Mojo endpoint
 // is connected by each controllee and also by the ServiceWorkerProviderHost
 // in the browser process.
 // Subresource requests made by the controllees are sent to this class as
@@ -27,27 +27,28 @@ class ServiceWorkerContextClient;
 // TODO(kinuko): Implement self-killing timer, that does something similar to
 // what ServiceWorkerVersion::StopWorkerIfIdle does in the browser process in
 // non-S13n code.
-class ControllerServiceWorkerImpl : public mojom::ControllerServiceWorker {
+class ControllerServiceWorkerImpl
+    : public blink::mojom::ControllerServiceWorker {
  public:
   // |context_client|'s weak pointer is the one that is bound to the worker
   // thread. (It should actually outlive this instance, but allow us to make
   // sure the thread safety)
   ControllerServiceWorkerImpl(
-      mojom::ControllerServiceWorkerRequest request,
+      blink::mojom::ControllerServiceWorkerRequest request,
       base::WeakPtr<ServiceWorkerContextClient> context_client);
   ~ControllerServiceWorkerImpl() override;
 
-  // mojom::ControllerServiceWorker:
+  // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override;
-  void Clone(mojom::ControllerServiceWorkerRequest request) override;
+  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override;
 
  private:
   // Connected by the ServiceWorkerProviderHost in the browser process
   // and by the controllees.
-  mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
+  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
   base::WeakPtr<ServiceWorkerContextClient> context_client_;
 
