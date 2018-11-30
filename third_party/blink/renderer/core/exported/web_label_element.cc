@@ -32,7 +32,6 @@
 
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
-#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {

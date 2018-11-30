@@ -35,7 +35,7 @@ namespace blink {
 using namespace html_names;
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
-    : LabelableElement(kMeterTag, document) {
+    : HTMLElement(kMeterTag, document) {
   UseCounter::Count(document, WebFeature::kMeterElement);
 }
 
@@ -60,7 +60,7 @@ LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
     default:
       break;
   }
-  return LabelableElement::CreateLayoutObject(style);
+  return HTMLElement::CreateLayoutObject(style);
 }
 
 void HTMLMeterElement::ParseAttribute(
@@ -70,7 +70,7 @@ void HTMLMeterElement::ParseAttribute(
       name == kLowAttr || name == kHighAttr || name == kOptimumAttr)
     DidElementStateChange();
   else
-    LabelableElement::ParseAttribute(params);
+    HTMLElement::ParseAttribute(params);
 }
 
 double HTMLMeterElement::value() const {
@@ -225,7 +225,7 @@ bool HTMLMeterElement::CanContainRangeEndPoint() const {
 
 void HTMLMeterElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);
-  LabelableElement::Trace(visitor);
+  HTMLElement::Trace(visitor);
 }
 
 }  // namespace blink

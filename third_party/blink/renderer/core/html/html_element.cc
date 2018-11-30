@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -1282,6 +1284,12 @@ void HTMLElement::AddHTMLColorToStyle(MutableCSSPropertyValueSet* style,
     return;
 
   style->SetProperty(property_id, *CSSColorValue::Create(parsed_color.Rgb()));
+}
+
+LabelsNodeList* HTMLElement::labels() {
+  if (!IsLabelable())
+    return nullptr;
+  return EnsureCachedCollection<LabelsNodeList>(kLabelsNodeListType);
 }
 
 bool HTMLElement::IsInteractiveContent() const {

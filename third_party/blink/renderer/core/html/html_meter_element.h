@@ -22,13 +22,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_METER_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
 class HTMLDivElement;
 
-class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
+class CORE_EXPORT HTMLMeterElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
 
   bool AreAuthorShadowsAllowed() const override { return false; }
 
-  bool SupportLabels() const override { return true; }
+  bool IsLabelable() const override { return true; }
   bool ShouldForceLegacyLayout() const final { return true; }
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
