@@ -85,7 +85,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   }
 
   // Shared constant for disabled text.
-  constexpr SkColor kDisabledTextColor = SkColorSetRGB(0xA1, 0xA1, 0x92);
+  constexpr SkColor kDisabledTextColor = gfx::kGoogleGrey600;
 
   // Buttons:
   constexpr SkColor kButtonEnabledColor = gfx::kChromeIconGrey;
