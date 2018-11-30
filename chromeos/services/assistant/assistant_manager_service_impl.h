@@ -46,6 +46,29 @@ namespace assistant {
 
 class Service;
 
+// Enumeration of Assistant query response type, also recorded in histograms.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Only append to this enum is allowed
+// if the possible type grows.
+enum class AssistantQueryResponseType {
+  // Query without response.
+  kUnspecified = 0,
+  // Query results in device actions (e.g. turn on bluetooth/WiFi).
+  kDeviceAction = 1,
+  // Query results in answer cards with contents rendered inside the
+  // Assistant UI.
+  kInlineElement = 2,
+  // Query results in searching on Google, indicating that Assistant
+  // doesn't know what to do.
+  kSearchFallback = 3,
+  // Query results in specific actions (e.g. opening a web app such as YouTube
+  // or Facebook, some deeplink actions such as taking a screenshot or opening
+  // chrome settings page), indicating that Assistant knows what to do.
+  kTargetedAction = 4,
+  // Special enumerator value used by histogram macros.
+  kMaxValue = kTargetedAction
+};
+
 // Implementation of AssistantManagerService based on LibAssistant.
 // This is the main class that ineracts with LibAssistant.
 // Since LibAssistant is a standalone library, all callbacks come from it
@@ -219,6 +242,15 @@ class AssistantManagerServiceImpl
 
   void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
 
+  // Record the response type for each query. Note that query on device
+  // actions (e.g. turn on Bluetooth, turn on WiFi) will cause duplicate
+  // record because it interacts with server twice on on the same query.
+  // The first round interaction checks IsSettingSupported with no responses
+  // sent back and ends normally (will be recorded as kUnspecified), and
+  // settings modification proto along with any text/voice responses would
+  // be sent back in the second round (recorded as kDeviceAction).
+  void RecordQueryResponseTypeUMA();
+
   State state_ = State::STOPPED;
   std::unique_ptr<PlatformApiImpl> platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
@@ -249,6 +281,10 @@ class AssistantManagerServiceImpl
   base::TimeTicks started_time_;
 
   base::Thread background_thread_;
+
+  bool receive_modify_settings_proto_response_ = false;
+  bool receive_inline_response_ = false;
+  std::string receive_url_response_;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
