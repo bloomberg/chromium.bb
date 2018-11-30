@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -23,9 +25,12 @@ using media_session::mojom::MediaSessionAction;
 
 namespace {
 
+// The right padding is 2/3rds the size of the notification.
+constexpr int kRightMarginSize = message_center::kNotificationWidth / 3;
+
 // Dimensions.
-constexpr gfx::Insets kButtonRowPadding(0, 12, 16, 12);
-constexpr int kMediaButtonIconSize = 32;
+constexpr int kDefaultMarginSize = 16;
+constexpr int kMediaButtonIconSize = 24;
 
 SkColor GetMediaNotificationColor(const views::View& view) {
   return views::style::GetColor(view, views::style::CONTEXT_LABEL,
@@ -53,15 +58,48 @@ MediaNotificationView::MediaNotificationView(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
   AddChildView(header_row_);
 
+  // |title_artist_row_| contains the title and artist labels.
+  title_artist_row_ = new views::View();
+  auto* title_artist_row_layout =
+      title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical,
+          gfx::Insets(kDefaultMarginSize, kDefaultMarginSize, 0,
+                      kRightMarginSize),
+          0));
+  title_artist_row_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  title_artist_row_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  title_artist_row_->SetVisible(false);
+  AddChildView(title_artist_row_);
+
+  title_label_ = new views::Label(base::string16(), views::style::CONTEXT_LABEL,
+                                  views::style::STYLE_PRIMARY);
+  const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+  title_label_->SetFontList(base_font_list.Derive(
+      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::SEMIBOLD));
+  title_label_->SetVisible(false);
+  title_artist_row_->AddChildView(title_label_);
+
+  artist_label_ =
+      new views::Label(base::string16(), views::style::CONTEXT_LABEL,
+                       views::style::STYLE_PRIMARY);
+  artist_label_->SetVisible(false);
+  title_artist_row_->AddChildView(artist_label_);
+
   // |button_row_| contains the buttons for controlling playback.
   button_row_ = new views::View();
   auto* button_row_layout =
       button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, kButtonRowPadding, 16));
+          views::BoxLayout::kHorizontal,
+          gfx::Insets(kDefaultMarginSize, kDefaultMarginSize,
+                      kDefaultMarginSize, kRightMarginSize),
+          16));
   button_row_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  button_row_layout->SetDefaultFlex(1);
   AddChildView(button_row_);
 
   CreateMediaButton(vector_icons::kMediaPreviousTrackIcon,
@@ -151,6 +189,22 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
   play_pause_button_->set_tag(
       playing ? static_cast<int>(MediaSessionAction::kPause)
               : static_cast<int>(MediaSessionAction::kPlay));
+}
+
+void MediaNotificationView::UpdateWithMediaMetadata(
+    const media_session::MediaMetadata& metadata) {
+  if (metadata.title.empty() && metadata.artist.empty()) {
+    title_artist_row_->SetVisible(false);
+    return;
+  }
+
+  title_artist_row_->SetVisible(true);
+
+  title_label_->SetText(metadata.title);
+  title_label_->SetVisible(!metadata.title.empty());
+
+  artist_label_->SetText(metadata.artist);
+  artist_label_->SetVisible(!metadata.artist.empty());
 }
 
 void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(

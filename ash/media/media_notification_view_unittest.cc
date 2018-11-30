@@ -16,6 +16,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -33,9 +34,9 @@ using media_session::test::TestMediaController;
 
 namespace {
 
-// The icons size is 32 and INSETS_VECTOR_IMAGE_BUTTON will add padding around
+// The icons size is 24 and INSETS_VECTOR_IMAGE_BUTTON will add padding around
 // the image.
-const int kMediaButtonIconSize = 40;
+const int kMediaButtonIconSize = 32;
 
 // Checks if the view class name is used by a media button.
 bool IsMediaButtonType(const char* class_name) {
@@ -118,6 +119,26 @@ class MediaNotificationViewTest : public AshTestBase {
     return view()->GetControlButtonsView()->layer()->opacity() > 0;
   }
 
+  void UpdateWithSampleMetadata() {
+    EXPECT_FALSE(title_artist_row()->visible());
+    EXPECT_FALSE(title_label()->visible());
+    EXPECT_FALSE(artist_label()->visible());
+
+    media_session::MediaMetadata metadata;
+    metadata.title = base::ASCIIToUTF16("title");
+    metadata.artist = base::ASCIIToUTF16("artist");
+
+    Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+        metadata);
+
+    EXPECT_TRUE(title_artist_row()->visible());
+    EXPECT_TRUE(title_label()->visible());
+    EXPECT_TRUE(artist_label()->visible());
+
+    EXPECT_EQ(metadata.title, title_label()->text());
+    EXPECT_EQ(metadata.artist, artist_label()->text());
+  }
+
   MediaNotificationView* view() const { return view_; }
 
   TestMediaController* media_controller() const {
@@ -125,6 +146,12 @@ class MediaNotificationViewTest : public AshTestBase {
   }
 
   views::View* button_row() const { return view_->button_row_; }
+
+  views::View* title_artist_row() const { return view_->title_artist_row_; }
+
+  views::Label* title_label() const { return view_->title_label_; }
+
+  views::Label* artist_label() const { return view_->artist_label_; }
 
   views::Button* GetButtonForAction(MediaSessionAction action) const {
     for (int i = 0; i < button_row()->child_count(); ++i) {
@@ -364,6 +391,64 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
   Shell::Get()->media_notification_controller()->MediaSessionInfoChanged(
       session_info.Clone());
   EXPECT_FALSE(button->toggled_for_testing());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
+  UpdateWithSampleMetadata();
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_Empty) {
+  UpdateWithSampleMetadata();
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      base::nullopt);
+
+  EXPECT_FALSE(title_artist_row()->visible());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_EmptyString) {
+  UpdateWithSampleMetadata();
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      media_session::MediaMetadata());
+
+  EXPECT_FALSE(title_artist_row()->visible());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoArtist) {
+  EXPECT_FALSE(title_artist_row()->visible());
+  EXPECT_FALSE(title_label()->visible());
+  EXPECT_FALSE(artist_label()->visible());
+
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      metadata);
+
+  EXPECT_TRUE(title_artist_row()->visible());
+  EXPECT_TRUE(title_label()->visible());
+  EXPECT_FALSE(artist_label()->visible());
+
+  EXPECT_EQ(metadata.title, title_label()->text());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
+  EXPECT_FALSE(title_artist_row()->visible());
+  EXPECT_FALSE(title_label()->visible());
+  EXPECT_FALSE(artist_label()->visible());
+
+  media_session::MediaMetadata metadata;
+  metadata.artist = base::ASCIIToUTF16("artist");
+
+  Shell::Get()->media_notification_controller()->MediaSessionMetadataChanged(
+      metadata);
+
+  EXPECT_TRUE(title_artist_row()->visible());
+  EXPECT_FALSE(title_label()->visible());
+  EXPECT_TRUE(artist_label()->visible());
+
+  EXPECT_EQ(metadata.artist, artist_label()->text());
 }
 
 }  // namespace ash

@@ -10,6 +10,11 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
+
+namespace media_session {
+struct MediaMetadata;
+}  // namespace media_session
 
 namespace media_session {
 enum class MediaSessionAction;
@@ -52,6 +57,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   void UpdateWithMediaSessionInfo(
       const media_session::mojom::MediaSessionInfoPtr& session_info);
+  void UpdateWithMediaMetadata(const media_session::MediaMetadata& metadata);
 
  private:
   friend class MediaNotificationViewTest;
@@ -72,6 +78,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   message_center::NotificationHeaderView* header_row_ = nullptr;
   views::View* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
+  views::View* title_artist_row_ = nullptr;
+  views::Label* title_label_ = nullptr;
+  views::Label* artist_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };

@@ -124,7 +124,10 @@ void MediaNotificationController::MediaSessionInfoChanged(
 
 void MediaNotificationController::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
-  NOTIMPLEMENTED();
+  session_metadata_ = metadata.value_or(media_session::MediaMetadata());
+
+  if (view_)
+    view_->UpdateWithMediaMetadata(session_metadata_);
 }
 
 void MediaNotificationController::FlushForTesting() {
@@ -139,6 +142,7 @@ void MediaNotificationController::SetView(MediaNotificationView* view) {
   if (view) {
     DCHECK(!session_info_.is_null());
     view_->UpdateWithMediaSessionInfo(session_info_);
+    view_->UpdateWithMediaMetadata(session_metadata_);
   }
 }
 

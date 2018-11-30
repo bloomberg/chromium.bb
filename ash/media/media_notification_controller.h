@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -63,6 +62,8 @@ class ASH_EXPORT MediaNotificationController
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
 
   media_session::mojom::MediaSessionInfoPtr session_info_;
+
+  media_session::MediaMetadata session_metadata_;
 
   mojo::Binding<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_binding_{this};
