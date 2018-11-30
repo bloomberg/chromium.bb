@@ -13,16 +13,13 @@ the DON flow is canceled.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Presentation promise is rejected after DON canceled");
       function onImmersiveRequestWithDon() {
         xrDevice.requestSession({immersive: true}).then( (session) => {
-          t.step( () => {
-            assert_unreached("requestPresent promise resolved");
-          });
+          assert_unreached("requestPresent promise resolved");
         }, () => {
           // Do nothing when the promise is rejected
         }).then( () => {
-          t.done();
+          done();
         });
       }
       webglCanvas.onclick = onImmersiveRequestWithDon;

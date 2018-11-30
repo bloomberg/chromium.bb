@@ -18,13 +18,11 @@ Tests that the provided WebXR device has the expected capabilities
           "non-immersive": true,
         }
       };
-      var t = async_test("XRDevice capabilities match expectations");
 
       function stepCheckCapabilities(device) {
         if (!(device in expectations)) {
-          t.step_func_done( () => {
-            assert_unreached("Given device " + device + " not in expectations");
-          })();
+          assert_unreached("Given device " + device + " not in expectations");
+          done();
           return;
         }
 
@@ -43,13 +41,11 @@ Tests that the provided WebXR device has the expected capabilities
           }, () => {
             supportsImmersive = false;
           }).then( () => {
-            t.step( () => {
-              assert_equals(supportsNonImmersive, expected["non-immersive"],
-                  'Device supports non-immersive sessions');
-              assert_equals(supportsImmersive, expected["immersive"],
-                  'Device supports immersive sessions');
-            });
-            t.done();
+            assert_equals(supportsNonImmersive, expected["non-immersive"],
+                'Device supports non-immersive sessions');
+            assert_equals(supportsImmersive, expected["immersive"],
+                'Device supports immersive sessions');
+            done();
           });
         });
       }

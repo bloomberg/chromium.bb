@@ -13,8 +13,6 @@ on Android.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("window.rAF stops while presenting");
-
       function stepVerifyBeforePresent() {
         window.requestAnimationFrame( () => {
           finishJavaScriptStep();
@@ -24,12 +22,10 @@ on Android.
       function stepVerifyDuringPresent() {
         let handle = window.requestAnimationFrame( () => {
           numWindowRafs++;
-          t.step( () => {
-            // Even though we wait for setVSyncPaused to be called Java-side,
-            // 1-2 frames might still get window rAFs due to the call to the
-            // renderer being asynchronous.
-            assert_less_than(numWindowRafs, 3);
-          });
+          // Even though we wait for setVSyncPaused to be called Java-side,
+          // 1-2 frames might still get window rAFs due to the call to the
+          // renderer being asynchronous.
+          assert_less_than(numWindowRafs, 3);
         });
         window.setTimeout( () => {
           window.cancelAnimationFrame(handle);
@@ -39,7 +35,7 @@ on Android.
 
       function stepVerifyAfterPresent() {
         window.requestAnimationFrame( () => {
-          t.done();
+          done();
         });
       }
     </script>

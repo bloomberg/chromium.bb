@@ -8,16 +8,12 @@ working Android selection dialog.
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
     <script>
-      var t = async_test("<select> tag works properly in VR browser.");
-
       function onSelectChange(newValue) {
-        t.step(() => {
-          assert_not_equals(newValue, "initial_option",
-              "Newly selected value is the starting value");
-          assert_true(newValue.startsWith("option"),
-              "Didn't get initial option, but didn't get valid option either");
-        });
-        t.done();
+        assert_not_equals(newValue, "initial_option",
+            "Newly selected value is the starting value");
+        assert_true(newValue.startsWith("option"),
+            "Didn't get initial option, but didn't get valid option either");
+        done();
       }
     </script>
     <select id="selectbox" onchange="onSelectChange(this.value)">

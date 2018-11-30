@@ -13,8 +13,6 @@ the need for a user gesture.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("Trusted intents allow auto present");
-
       // We need to wait for vrDisplay to be non-null before adding the
       // listener, so poll it
       function pollVrDisplay() {
@@ -26,11 +24,9 @@ the need for a user gesture.
           vrDisplay.requestPresent([{source: webglCanvas}]).then( () => {
             // Do nothing
           }, () => {
-            t.step( () => {
-              assert_unreached("requestPresent promise rejected");
-            });
+            assert_unreached("requestPresent promise rejected");
           }).then( () => {
-            t.done();
+            done();
           });
         }, false);
       }

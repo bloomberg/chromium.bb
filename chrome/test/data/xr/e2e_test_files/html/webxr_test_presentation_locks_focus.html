@@ -13,7 +13,6 @@ focus, that the presenting frame still receives input.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Focus is locked to immersive session");
       var rafCount = 0;
 
       function stepSetupFocusLoss() {
@@ -26,7 +25,7 @@ focus, that the presenting frame still receives input.
       window.onblur = function() {
         onImmersiveXRFrameCallback = function() {
           if (rafCount == 3) {
-            t.done();
+            done();
           }
           rafCount++;
         }

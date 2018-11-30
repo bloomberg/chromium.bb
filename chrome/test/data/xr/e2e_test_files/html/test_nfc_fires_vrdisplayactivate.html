@@ -14,17 +14,14 @@ vrdisplayactivate event
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("NFC scan fires the vrdisplayactivate event");
       function addListener() {
         window.addEventListener("vrdisplayactivate", () => {
           vrDisplay.requestPresent([{source: webglCanvas}]).then( () => {
             // Do nothing
           }, (err) => {
-            t.step( () => {
-              assert_unreached(
-                  "Was unable to present with vrdisplayactivate: " + err);
-            });
-          }).then( () => {t.done()});
+            assert_unreached(
+                "Was unable to present with vrdisplayactivate: " + err);
+          }).then( () => { done() });
         }, false);
       }
       // NFC scan triggered after page loaded and listener added

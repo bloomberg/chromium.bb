@@ -15,7 +15,6 @@ test can query for whether each submitted frame used the correct pose.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Pose data is correct");
       var frame_id = 0;
       var frame_data_array = {};
       // We exit presentation before checking stuff that needs the frame of
@@ -80,7 +79,7 @@ test can query for whether each submitted frame used the correct pose.
       }
 
       function finishTest() {
-        t.done();
+        done();
       }
     </script>
   </body>
