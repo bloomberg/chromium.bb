@@ -151,31 +151,6 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoaderHeaders() const {
 
 std::unique_ptr<network::SimpleURLLoader>
 JourneyInfoJsonRequest::Builder::BuildSimpleURLLoader() const {
-  // TODO(meiliang): update the policy section with correct setting and
-  // chrome_policy
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("journey_journey_info_json_request",
-                                          R"(
-        semantics {
-          sender: "Journey info Json request"
-          description:
-            "Chromium can show a list of pages that are related to currently "
-            "visited page."
-          trigger:
-            "Triggered at every tab selection, and every 30s has passed since "
-            "the last request for that journey if there is already a journey "
-            "to match to the tab."
-          data:
-            "Only white-listed signed-in test user's OAuth2 credentials,"
-            "the task_id or the timestamps of the current tab."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "None."
-          chrome_policy {}
-        })");
-
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(url_);
   resource_request->load_flags =
@@ -184,7 +159,7 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoader() const {
   resource_request->method = "POST";
 
   auto simple_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
+      std::move(resource_request), NO_TRAFFIC_ANNOTATION_YET);
   simple_loader->SetAllowHttpErrorResults(true);
   simple_loader->AttachStringForUpload(body_,
                                        "application/json; charset=UTF-8");
