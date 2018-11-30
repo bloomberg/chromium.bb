@@ -75,6 +75,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kUpdateWithoutShippingOptionOnShippingOptionChange,
           WebFeature::kSignedExchangeInnerResponseInMainFrame,
           WebFeature::kSignedExchangeInnerResponseInSubFrame,
+          WebFeature::kWebShareShare,
       }));
   return opt_in_features->count(feature);
 }
