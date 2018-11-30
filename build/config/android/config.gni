@@ -216,12 +216,8 @@ if (is_android || is_chromeos) {
         "//third_party/android_build_tools/aapt2/aapt2"
 
     # Use r8 for Java optimization rather than ProGuard.
-    # This will evenutally be the default. https://crbug.com/908988
-    # -1 will turn it on only for public targets, 0 turns it off for all, and 1
-    # turns it on for all targets.
-    # TODO(smaier): Once R8 is acceptable for all usages, make this a bool and
-    # get rid of the use_r8 variable everywhere.
-    experimental_use_r8 = -1
+    # This will evenutally be the default. https://crbug.com/872904
+    experimental_use_r8 = false
   }
 
   # We need a second declare_args block to make sure we are using the overridden
