@@ -335,6 +335,17 @@ ThemeHelperMac::~ThemeHelperMac() {
 void ThemeHelperMac::LoadSystemColors() {
   base::span<SkColor> values = writable_color_map_.GetMemoryAsSpan<SkColor>(
       blink::kMacSystemColorIDCount);
+  // Ensure light mode appearance in web content even if the topchrome is in
+  // dark mode.
+  // TODO(lgrey): Add a second map for content dark mode for the
+  // `prefers-color-scheme` media query: https://crbug.com/889087.
+  NSAppearance* savedAppearance;
+  if (@available(macOS 10.14, *)) {
+    savedAppearance = [NSAppearance currentAppearance];
+    [NSAppearance
+        setCurrentAppearance:[NSAppearance
+                                 appearanceNamed:NSAppearanceNameAqua]];
+  }
   for (size_t i = 0; i < blink::kMacSystemColorIDCount; ++i) {
     blink::MacSystemColorID color_id = static_cast<blink::MacSystemColorID>(i);
     switch (color_id) {
@@ -408,6 +419,9 @@ void ThemeHelperMac::LoadSystemColors() {
         NOTREACHED();
         break;
     }
+  }
+  if (@available(macOS 10.14, *)) {
+    [NSAppearance setCurrentAppearance:savedAppearance];
   }
 }
 
