@@ -172,8 +172,6 @@ void GamepadService::PlayVibrationEffectOnce(
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
     mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   if (!provider_) {
     std::move(callback).Run(
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
@@ -187,8 +185,6 @@ void GamepadService::PlayVibrationEffectOnce(
 void GamepadService::ResetVibrationActuator(
     uint32_t pad_index,
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   if (!provider_) {
     std::move(callback).Run(
         mojom::GamepadHapticsResult::GamepadHapticsResultError);

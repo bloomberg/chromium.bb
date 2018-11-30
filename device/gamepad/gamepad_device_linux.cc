@@ -193,7 +193,7 @@ bool GamepadDeviceLinux::IsEmpty() const {
 }
 
 bool GamepadDeviceLinux::SupportsVibration() const {
-  if (dualshock4_)
+  if (dualshock4_ || hid_haptics_)
     return true;
 
   // Vibration is only supported over USB.
@@ -485,12 +485,14 @@ bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
   uint16_t product_id;
   bool is_dualshock4 = false;
   bool is_switch_pro = false;
+  bool is_hid_haptic = false;
   if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
     is_dualshock4 =
         Dualshock4ControllerLinux::IsDualshock4(vendor_id, product_id);
     is_switch_pro =
         SwitchProControllerLinux::IsSwitchPro(vendor_id, product_id);
-    DCHECK(!is_dualshock4 || !is_switch_pro);
+    is_hid_haptic = HidHapticGamepadLinux::IsHidHaptic(vendor_id, product_id);
+    DCHECK_LE(is_dualshock4 + is_switch_pro + is_hid_haptic, 1);
   }
 
   if (is_dualshock4 && !dualshock4_)
@@ -503,6 +505,11 @@ bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
       switch_pro_->SendConnectionStatusQuery();
   }
 
+  if (is_hid_haptic && !hid_haptics_) {
+    hid_haptics_ =
+        HidHapticGamepadLinux::Create(vendor_id, product_id, hidraw_fd_);
+  }
+
   return true;
 }
 
@@ -513,6 +520,9 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   if (switch_pro_)
     switch_pro_->Shutdown();
   switch_pro_.reset();
+  if (hid_haptics_)
+    hid_haptics_->Shutdown();
+  hid_haptics_.reset();
   if (hidraw_fd_ >= 0) {
     close(hidraw_fd_);
     hidraw_fd_ = -1;
@@ -528,6 +538,11 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 
   if (switch_pro_) {
     switch_pro_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
+  if (hid_haptics_) {
+    hid_haptics_->SetVibration(strong_magnitude, weak_magnitude);
     return;
   }
 
@@ -560,6 +575,11 @@ void GamepadDeviceLinux::SetZeroVibration() {
 
   if (switch_pro_) {
     switch_pro_->SetZeroVibration();
+    return;
+  }
+
+  if (hid_haptics_) {
+    hid_haptics_->SetZeroVibration();
     return;
   }
 

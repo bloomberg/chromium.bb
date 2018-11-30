@@ -12,6 +12,7 @@
 
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_mac.h"
+#include "device/gamepad/hid_haptic_gamepad_mac.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
@@ -105,6 +106,9 @@ class GamepadDeviceMac : public AbstractHapticGamepad {
 
   // Dualshock4 functionality, if available.
   std::unique_ptr<Dualshock4ControllerMac> dualshock4_;
+
+  // A controller that uses a HID output report for vibration effects.
+  std::unique_ptr<HidHapticGamepadMac> hid_haptics_;
 };
 
 }  // namespace device
