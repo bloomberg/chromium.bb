@@ -70,7 +70,7 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
               const AudioIOPosition& output_position) final;
 
   // Returns a hadrware callback buffer size from audio infra.
-  size_t GetCallbackBufferSize() const;
+  uint32_t GetCallbackBufferSize() const;
 
   // Returns a given frames-per-buffer size from audio infra.
   int GetFramesPerBuffer() const;

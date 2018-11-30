@@ -111,7 +111,7 @@ class PeriodicWave final : public ScriptWrappable {
 
   unsigned NumberOfPartialsForRange(unsigned range_index) const;
 
-  void AdjustV8ExternalMemory(int delta);
+  void AdjustV8ExternalMemory(int64_t delta);
 
   // Creates tables based on numberOfComponents Fourier coefficients.
   void CreateBandLimitedTables(const float* real,

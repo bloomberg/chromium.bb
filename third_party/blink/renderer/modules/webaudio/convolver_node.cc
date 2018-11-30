@@ -110,7 +110,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   }
 
   unsigned number_of_channels = buffer->numberOfChannels();
-  size_t buffer_length = buffer->length();
+  uint32_t buffer_length = buffer->length();
 
   // The current implementation supports only 1-, 2-, or 4-channel impulse
   // responses, with the 4-channel response being interpreted as true-stereo

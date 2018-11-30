@@ -202,7 +202,7 @@ void DefaultAudioDestinationHandler::Render(
   Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
-size_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
+uint32_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
   DCHECK(IsMainThread());
   DCHECK(IsInitialized());
 

@@ -99,7 +99,7 @@ class PLATFORM_EXPORT AudioDestination
       scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner);
 
   // Getters must be accessed from the main thread.
-  size_t CallbackBufferSize() const;
+  uint32_t CallbackBufferSize() const;
   bool IsPlaying();
 
   // TODO(hongchan): this should not be called by the rendering thread.
@@ -124,7 +124,7 @@ class PLATFORM_EXPORT AudioDestination
   // Accessed by the main thread.
   std::unique_ptr<WebAudioDevice> web_audio_device_;
   const unsigned number_of_output_channels_;
-  size_t callback_buffer_size_;
+  uint32_t callback_buffer_size_;
   PlayState play_state_;
 
   // The task runner for AudioWorklet operation. This is only valid when

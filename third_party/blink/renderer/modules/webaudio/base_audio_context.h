@@ -137,7 +137,7 @@ class MODULES_EXPORT BaseAudioContext
   AudioContextState ContextState() const { return context_state_; }
   void ThrowExceptionForClosedState(ExceptionState&);
 
-  AudioBuffer* createBuffer(unsigned number_of_channels,
+  AudioBuffer* createBuffer(uint32_t number_of_channels,
                             uint32_t number_of_frames,
                             float sample_rate,
                             ExceptionState&);
@@ -184,21 +184,21 @@ class MODULES_EXPORT BaseAudioContext
   DynamicsCompressorNode* createDynamicsCompressor(ExceptionState&);
   AnalyserNode* createAnalyser(ExceptionState&);
   ScriptProcessorNode* createScriptProcessor(ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
                                              ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
-                                             size_t number_of_input_channels,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
+                                             uint32_t number_of_input_channels,
                                              ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
-                                             size_t number_of_input_channels,
-                                             size_t number_of_output_channels,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
+                                             uint32_t number_of_input_channels,
+                                             uint32_t number_of_output_channels,
                                              ExceptionState&);
   StereoPannerNode* createStereoPanner(ExceptionState&);
   ChannelSplitterNode* createChannelSplitter(ExceptionState&);
-  ChannelSplitterNode* createChannelSplitter(size_t number_of_outputs,
+  ChannelSplitterNode* createChannelSplitter(uint32_t number_of_outputs,
                                              ExceptionState&);
   ChannelMergerNode* createChannelMerger(ExceptionState&);
-  ChannelMergerNode* createChannelMerger(size_t number_of_inputs,
+  ChannelMergerNode* createChannelMerger(uint32_t number_of_inputs,
                                          ExceptionState&);
   OscillatorNode* createOscillator(ExceptionState&);
   PeriodicWave* createPeriodicWave(const Vector<float>& real,
@@ -255,7 +255,7 @@ class MODULES_EXPORT BaseAudioContext
   using GraphAutoLocker = DeferredTaskHandler::GraphAutoLocker;
 
   // Returns the maximum numuber of channels we can support.
-  static unsigned MaxNumberOfChannels() { return kMaxNumberOfChannels; }
+  static uint32_t MaxNumberOfChannels() { return kMaxNumberOfChannels; }
 
   // EventTarget
   const AtomicString& InterfaceName() const final;
