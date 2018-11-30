@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
 service("views_examples") {
   testonly = true
-
+  use_cpp_main = true
   sources = [
     "views_examples.cc",
   ]

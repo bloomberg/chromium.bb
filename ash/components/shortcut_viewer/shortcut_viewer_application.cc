@@ -10,14 +10,14 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/views/mus/aura_init.h"
 
 namespace keyboard_shortcut_viewer {
 
-ShortcutViewerApplication::ShortcutViewerApplication()
-    : shortcut_viewer_binding_(this) {
+ShortcutViewerApplication::ShortcutViewerApplication(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<shortcut_viewer::mojom::ShortcutViewer>(
       base::BindRepeating(&ShortcutViewerApplication::AddBinding,
                           base::Unretained(this)));
@@ -32,13 +32,13 @@ void ShortcutViewerApplication::RegisterForTraceEvents() {
 
 void ShortcutViewerApplication::OnStart() {
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   params.register_path_provider = false;
   params.use_accessibility_host = true;
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
-    context()->QuitNow();
+    Terminate();
     return;
   }
 
@@ -46,8 +46,9 @@ void ShortcutViewerApplication::OnStart() {
   ash::ash_client::Init();
 
   // Quit the application when the window is closed.
-  last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>(
-      context()->CreateQuitClosure());
+  last_window_closed_observer_ =
+      std::make_unique<LastWindowClosedObserver>(base::BindRepeating(
+          &ShortcutViewerApplication::Terminate, base::Unretained(this)));
 }
 
 void ShortcutViewerApplication::OnBindInterface(

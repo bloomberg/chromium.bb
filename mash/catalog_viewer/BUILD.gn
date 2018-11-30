@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("lib") {
   sources = [
@@ -27,6 +27,7 @@ source_set("lib") {
 }
 
 service("catalog_viewer") {
+  use_cpp_main = true
   sources = [
     "main.cc",
   ]

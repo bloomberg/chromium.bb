@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "mash/catalog_viewer/catalog_viewer.h"
-#include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/standalone_service/service_main.h"
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(
-      new mash::catalog_viewer::CatalogViewer);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  mash::catalog_viewer::CatalogViewer(std::move(request)).RunUntilTermination();
 }

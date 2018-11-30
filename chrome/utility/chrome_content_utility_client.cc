@@ -290,11 +290,6 @@ void ChromeContentUtilityClient::RegisterServices(
   }
 #endif
 
-#if defined(OS_CHROMEOS)
-  // TODO(jamescook): Figure out why we have to do this when not using mash.
-  mash_service_factory_->RegisterOutOfProcessServices(services);
-#endif
-
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
   {
     service_manager::EmbeddedServiceInfo service_info;

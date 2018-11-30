@@ -11,14 +11,10 @@
 #include "ash/shell_init_params.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-
-namespace service_manager {
-class ServiceContext;
-}
+#include "services/ws/window_service.h"
 
 namespace ws {
 class GpuInterfaceProvider;
-class WindowService;
 }  // namespace ws
 
 namespace ash {
@@ -38,22 +34,13 @@ class ASH_EXPORT WindowServiceOwner {
   // WindowService.
   void BindWindowService(service_manager::mojom::ServiceRequest request);
 
-  ws::WindowService* window_service() { return window_service_; }
+  ws::WindowService* window_service() { return &window_service_; }
 
  private:
   friend class AshTestHelper;
 
   std::unique_ptr<WindowServiceDelegateImpl> window_service_delegate_;
-
-  // Handles the ServiceRequest. Owns |window_service_|.
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
-
-  // The WindowService. The constructor creates the WindowService and assigns
-  // it to |owned_window_service_| and |window_service_|. When
-  // BindWindowService() is called |owned_window_service_| is passed to
-  // |service_context_|.
-  std::unique_ptr<ws::WindowService> owned_window_service_;
-  ws::WindowService* window_service_;
+  ws::WindowService window_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceOwner);
 };

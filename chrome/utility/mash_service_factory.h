@@ -18,10 +18,6 @@ class MashServiceFactory {
   MashServiceFactory();
   ~MashServiceFactory();
 
-  // Registers out-of-process services for mash.
-  void RegisterOutOfProcessServices(
-      content::ContentUtilityClient::StaticServiceMap* services);
-
   // Handles an incoming service request for this utility process. Returns
   // null if the named service is unknown or cannot be created.
   std::unique_ptr<service_manager::Service> HandleServiceRequest(

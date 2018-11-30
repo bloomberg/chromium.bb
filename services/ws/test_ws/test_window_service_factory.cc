@@ -16,16 +16,17 @@ namespace test {
 std::unique_ptr<service_manager::Service> CreateInProcessWindowService(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
-    std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider) {
-  auto window_service = std::make_unique<TestWindowService>();
+    std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider,
+    service_manager::mojom::ServiceRequest request) {
+  auto window_service = std::make_unique<TestWindowService>(std::move(request));
   window_service->InitForInProcess(context_factory, context_factory_private,
                                    std::move(gpu_interface_provider));
   return window_service;
 }
 
-std::unique_ptr<service_manager::Service> CreateOutOfProcessWindowService() {
-  auto window_service = std::make_unique<TestWindowService>();
-  return window_service;
+std::unique_ptr<service_manager::Service> CreateOutOfProcessWindowService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<TestWindowService>(std::move(request));
 }
 
 }  // namespace test

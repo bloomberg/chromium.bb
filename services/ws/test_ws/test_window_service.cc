@@ -50,7 +50,9 @@ class TestWindowService::VisibilitySynchronizer : public aura::WindowTracker {
   DISALLOW_COPY_AND_ASSIGN(VisibilitySynchronizer);
 };
 
-TestWindowService::TestWindowService() = default;
+TestWindowService::TestWindowService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 TestWindowService::~TestWindowService() {
   Shutdown(base::NullCallback());
@@ -176,16 +178,15 @@ void TestWindowService::CreateService(
   DCHECK(!ui_service_created_);
   ui_service_created_ = true;
 
-  auto window_service = std::make_unique<WindowService>(
+  window_service_ = std::make_unique<WindowService>(
       this, std::move(gpu_interface_provider_),
       aura_test_helper_->focus_client(), /*decrement_client_ids=*/false,
       aura_test_helper_->GetEnv());
   test_host_event_dispatcher_ =
       std::make_unique<TestHostEventDispatcher>(aura_test_helper_->host());
-  host_event_queue_ = window_service->RegisterHostEventDispatcher(
+  host_event_queue_ = window_service_->RegisterHostEventDispatcher(
       aura_test_helper_->host(), test_host_event_dispatcher_.get());
-  service_context_ = std::make_unique<service_manager::ServiceContext>(
-      std::move(window_service), std::move(request));
+  window_service_->BindServiceRequest(std::move(request));
   pid_receiver->SetPID(base::GetCurrentProcId());
 }
 
@@ -204,7 +205,7 @@ void TestWindowService::MaximizeNextWindow(MaximizeNextWindowCallback cb) {
 void TestWindowService::Shutdown(
     test_ws::mojom::TestWs::ShutdownCallback callback) {
   // WindowService depends upon Screen, which is owned by AuraTestHelper.
-  service_context_.reset();
+  window_service_.reset();
 
   // |aura_test_helper_| could be null when exiting before fully initialized.
   if (aura_test_helper_) {
@@ -235,7 +236,8 @@ void TestWindowService::CreateGpuHost() {
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
   gpu_host_ = std::make_unique<gpu_host::GpuHost>(
-      this, context()->connector(), discardable_shared_memory_manager_.get());
+      this, service_binding_.GetConnector(),
+      discardable_shared_memory_manager_.get());
 
   gpu_interface_provider_ = std::make_unique<TestGpuInterfaceProvider>(
       gpu_host_.get(), discardable_shared_memory_manager_.get());

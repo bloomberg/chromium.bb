@@ -38,8 +38,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void RegisterInProcessServices(StaticServiceMap* services,
-                                 ServiceManagerConnection* connection) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   void HandleServiceRequest(
       const std::string& service_name,

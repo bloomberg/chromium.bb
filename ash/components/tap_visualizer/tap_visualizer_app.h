@@ -12,6 +12,8 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_observer.h"
 
@@ -29,7 +31,8 @@ class TapVisualizerApp : public service_manager::Service,
                          public ui::EventObserver,
                          public display::DisplayObserver {
  public:
-  TapVisualizerApp();
+  explicit TapVisualizerApp(service_manager::mojom::ServiceRequest request);
+
   ~TapVisualizerApp() override;
 
  private:
@@ -50,6 +53,8 @@ class TapVisualizerApp : public service_manager::Service,
 
   // Creates the touch HUD widget for a display.
   void CreateWidgetForDisplay(int64_t display_id);
+
+  service_manager::ServiceBinding service_binding_;
 
   // Maps display::Display::id() to the renderer for that display.
   std::map<int64_t, std::unique_ptr<TapRenderer>> display_id_to_renderer_;

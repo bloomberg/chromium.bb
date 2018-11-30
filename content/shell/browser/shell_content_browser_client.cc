@@ -194,24 +194,6 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
                                       render_frame_host);
 }
 
-void ShellContentBrowserClient::RegisterInProcessServices(
-    StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
-#if defined(OS_CHROMEOS)
-  if (features::IsSingleProcessMash()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return ws::test::CreateInProcessWindowService(
-              GetContextFactory(), GetContextFactoryPrivate(),
-              CreateGpuInterfaceProvider());
-        });
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(test_ws::mojom::kServiceName, info));
-  }
-#endif
-}
-
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[kTestServiceUrl] =
@@ -233,6 +215,16 @@ void ShellContentBrowserClient::HandleServiceRequest(
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaServiceForTesting(std::move(request)));
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (features::IsSingleProcessMash() &&
+      service_name == test_ws::mojom::kServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        ws::test::CreateInProcessWindowService(
+            GetContextFactory(), GetContextFactoryPrivate(),
+            CreateGpuInterfaceProvider(), std::move(request)));
   }
 #endif
 }

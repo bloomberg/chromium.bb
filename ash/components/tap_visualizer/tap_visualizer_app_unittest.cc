@@ -81,7 +81,7 @@ class TapVisualizerAppTest : public aura::test::AuraTestBase {
 
 TEST_F(TapVisualizerAppTest, Basics) {
   // Simulate the service starting.
-  TapVisualizerApp app;
+  TapVisualizerApp app(nullptr);
   TapVisualizerAppTestApi test_api(&app);
   test_api.Start();
 
@@ -111,7 +111,7 @@ TEST_F(TapVisualizerAppTest, MultiDisplay) {
       display::DisplayList::Type::NOT_PRIMARY);
 
   // Simulate the service starting.
-  TapVisualizerApp app;
+  TapVisualizerApp app(nullptr);
   TapVisualizerAppTestApi test_api(&app);
   test_api.Start();
 

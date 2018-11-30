@@ -6,6 +6,7 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 service("viz") {
+  use_cpp_main = true
   sources = [
     "main.cc",
   ]

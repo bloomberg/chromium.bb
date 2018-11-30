@@ -16,6 +16,8 @@
 #include "base/observer_list.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/ws/ids.h"
 #include "services/ws/ime/ime_driver_bridge.h"
 #include "services/ws/ime/ime_registrar_impl.h"
@@ -86,6 +88,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                 bool decrement_client_ids = false,
                 aura::Env* env = nullptr);
   ~WindowService() override;
+
+  // Binds this WindowService instance to a ServiceRequest from the Service
+  // Manger.
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Gets the ServerWindow for |window|, creating if necessary.
   ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
@@ -218,6 +224,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   WindowServiceDelegate* delegate_;
 
   aura::Env* env_;
+
+  service_manager::ServiceBinding service_binding_{this};
 
   // GpuInterfaceProvider may be null in tests.
   std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider_;

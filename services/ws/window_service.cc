@@ -79,6 +79,12 @@ WindowService::~WindowService() {
   DCHECK(window_trees_.empty());
 }
 
+void WindowService::BindServiceRequest(
+    service_manager::mojom::ServiceRequest request) {
+  DCHECK(!service_binding_.is_bound());
+  service_binding_.Bind(std::move(request));
+}
+
 ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
     aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
