@@ -59,6 +59,10 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
                                  MarkedPointerCallbackForTesting);
 #endif  // DCHECK_IS_ON()
 
+  // Marks an object dynamically using any address within its body and adds a
+  // tracing callback for processing of the object.
+  void DynamicallyMarkAddress(Address);
+
   // Marks an object and adds a tracing callback for processing of the object.
   inline void MarkHeader(HeapObjectHeader*, TraceCallback);
 

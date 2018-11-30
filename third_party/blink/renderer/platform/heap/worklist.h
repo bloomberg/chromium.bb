@@ -30,12 +30,14 @@ namespace blink {
 //
 // Work stealing is best effort, i.e., there is no way to inform other tasks
 // of the need of items.
-template <typename EntryType, int segment_size, int max_tasks = 1>
+template <typename _EntryType, int segment_size, int max_tasks = 1>
 class Worklist {
   USING_FAST_MALLOC(Worklist);
-  using WorklistType = Worklist<EntryType, segment_size, max_tasks>;
+  using WorklistType = Worklist<_EntryType, segment_size, max_tasks>;
 
  public:
+  using EntryType = _EntryType;
+
   class View {
    public:
     View(WorklistType* worklist, int task_id)

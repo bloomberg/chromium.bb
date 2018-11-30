@@ -39,6 +39,19 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
 
 MarkingVisitor::~MarkingVisitor() = default;
 
+void MarkingVisitor::DynamicallyMarkAddress(Address address) {
+  BasePage* const page = PageFromObject(address);
+  HeapObjectHeader* const header =
+      page->IsLargeObjectPage()
+          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(address);
+  DCHECK(header);
+  DCHECK(!header->IsInConstruction());
+  const GCInfo* gc_info =
+      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
+  MarkHeader(header, gc_info->trace_);
+}
+
 void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
                                                Address address) {
 #if DCHECK_IS_ON()

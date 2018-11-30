@@ -932,7 +932,7 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
       // Idle time GC will be scheduled by Blink Scheduler.
       break;
     case kIncrementalMarkingStepScheduled:
-      IncrementalMarkingStep();
+      IncrementalMarkingStep(stack_state);
       break;
     case kIncrementalMarkingFinalizeScheduled:
       IncrementalMarkingFinalize();
@@ -1455,7 +1455,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   }
 }
 
-void ThreadState::IncrementalMarkingStep() {
+void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
   DCHECK(IsMarkingInProgress());
 
   ThreadHeapStatsCollector::EnabledScope stats_scope(
@@ -1465,6 +1465,9 @@ void ThreadState::IncrementalMarkingStep() {
           << "IncrementalMarking: Step "
           << "Reason: " << GcReasonString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
+  if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
+    Heap().FlushNotFullyConstructedObjects();
+  }
   const bool complete = MarkPhaseAdvanceMarking(
       CurrentTimeTicks() + next_incremental_marking_step_duration_);
   if (complete) {
@@ -1714,6 +1717,10 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
 
   if (isolate_ && perform_cleanup_)
     perform_cleanup_(isolate_);
+
+  if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
+    Heap().FlushNotFullyConstructedObjects();
+  }
 
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();

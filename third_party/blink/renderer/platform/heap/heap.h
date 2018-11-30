@@ -284,6 +284,11 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void WeakProcessing(Visitor*);
 
+  // Moves not fully constructed objects to previously not fully constructed
+  // objects. Such objects can be iterated using the Trace() method and do
+  // not need to rely on conservative handling.
+  void FlushNotFullyConstructedObjects();
+
   // Marks not fully constructed objects.
   void MarkNotFullyConstructedObjects(MarkingVisitor*);
   // Marks the transitive closure including ephemerons.
@@ -436,9 +441,29 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<AddressCache> address_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
+
+  // All objects on this worklist have been fully initialized and assigned a
+  // trace callback for iterating the body of the object. This worklist should
+  // contain almost all objects.
   std::unique_ptr<MarkingWorklist> marking_worklist_;
+
+  // Objects on this worklist were observed to be in construction (in their
+  // constructor) and thus have been delayed for processing. They have not yet
+  // been assigned a valid header and trace callback.
   std::unique_ptr<NotFullyConstructedWorklist> not_fully_constructed_worklist_;
+
+  // Objects on this worklist were previously in construction but have been
+  // moved here upon observing a safepoint, i.e., processing without stack. They
+  // have not yet been assigned a valid header and trace callback but are fully
+  // specified and can thus be iterated using the trace callback (which can be
+  // looked up dynamically).
+  std::unique_ptr<NotFullyConstructedWorklist>
+      previously_not_fully_constructed_worklist_;
+
+  // Worklist of weak callbacks accumulated for objects. Such callbacks are
+  // processed after finishing marking objects.
   std::unique_ptr<WeakCallbackWorklist> weak_callback_worklist_;
+
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
   WTF::HashMap<void*, EphemeronCallback> ephemeron_callbacks_;

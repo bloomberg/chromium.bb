@@ -159,7 +159,7 @@ TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
 
   while (thread_state->GetGCState() ==
          ThreadState::kIncrementalMarkingStepScheduled)
-    thread_state->IncrementalMarkingStep();
+    thread_state->IncrementalMarkingStep(BlinkGC::kNoHeapPointersOnStack);
   thread_state->IncrementalMarkingFinalize();
 
   RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(was_enabled);
