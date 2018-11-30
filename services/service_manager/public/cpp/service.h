@@ -80,6 +80,11 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   // deprecated.
   virtual bool OnServiceManagerConnectionLost();
 
+  // Runs a RunLoop until this service self-terminates. This is intended for use
+  // in environments where the service is the only thing running, e.g. as a
+  // standalone executable.
+  void RunUntilTermination();
+
  protected:
   // Subclasses should always invoke |Terminate()| when they want to
   // self-terminate. This should generally only be done once the service is

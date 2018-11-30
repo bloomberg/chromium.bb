@@ -5,6 +5,7 @@
 #include "services/service_manager/public/cpp/service.h"
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
@@ -32,6 +33,12 @@ void Service::OnDisconnected() {
 
 bool Service::OnServiceManagerConnectionLost() {
   return true;
+}
+
+void Service::RunUntilTermination() {
+  base::RunLoop loop;
+  set_termination_closure(loop.QuitClosure());
+  loop.Run();
 }
 
 void Service::Terminate() {

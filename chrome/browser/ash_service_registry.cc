@@ -94,12 +94,15 @@ void RegisterInProcessServices(
         });
     (*services)[ax::mojom::kAXHostServiceName] = info;
   }
+}
 
-  if (features::IsMultiProcessMash())
-    return;
-
-  (*services)[ash::mojom::kServiceName] =
-      ash::AshService::CreateEmbeddedServiceInfo();
+void HandleServiceRequest(const std::string& service_name,
+                          service_manager::mojom::ServiceRequest request) {
+  if (!features::IsMultiProcessMash() &&
+      service_name == ash::mojom::kServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<ash::AshService>(std::move(request)));
+  }
 }
 
 bool IsAshRelatedServiceName(const std::string& name) {

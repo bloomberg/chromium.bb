@@ -101,11 +101,11 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       &base::ASCIIToUTF16, test_ime_driver::mojom::kServiceName);
 }
 
-void ShellContentBrowserClient::RegisterInProcessServices(
-    StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
-  services->insert(std::make_pair(mojom::kServiceName,
-                                  AshService::CreateEmbeddedServiceInfo()));
+void ShellContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  service_manager::Service::RunAsyncUntilTermination(
+      std::make_unique<AshService>(std::move(request)));
 }
 
 }  // namespace shell

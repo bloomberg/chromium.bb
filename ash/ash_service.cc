@@ -47,10 +47,6 @@
 namespace ash {
 namespace {
 
-std::unique_ptr<service_manager::Service> CreateAshService() {
-  return std::make_unique<AshService>();
-}
-
 class AshViewsDelegate : public views::ViewsDelegate {
  public:
   AshViewsDelegate() = default;
@@ -71,7 +67,8 @@ class AshViewsDelegate : public views::ViewsDelegate {
 
 }  // namespace
 
-AshService::AshService() = default;
+AshService::AshService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 AshService::~AshService() {
   if (!base::FeatureList::IsEnabled(features::kMash))
@@ -104,14 +101,6 @@ AshService::~AshService() {
   gpu_host_.reset();
 }
 
-// static
-service_manager::EmbeddedServiceInfo AshService::CreateEmbeddedServiceInfo() {
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::BindRepeating(&CreateAshService);
-  info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  return info;
-}
-
 void AshService::InitForMash() {
   wm_state_ = std::make_unique<::wm::WMState>();
 
@@ -119,7 +108,8 @@ void AshService::InitForMash() {
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
   gpu_host_ = std::make_unique<ws::gpu_host::GpuHost>(
-      this, context()->connector(), discardable_shared_memory_manager_.get());
+      this, service_binding_.GetConnector(),
+      discardable_shared_memory_manager_.get());
 
   host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
   CreateFrameSinkManager();
@@ -127,13 +117,13 @@ void AshService::InitForMash() {
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(io_thread_->StartWithOptions(thread_options));
-  gpu_ = ws::Gpu::Create(context()->connector(), ws::mojom::kServiceName,
-                         io_thread_->task_runner());
+  gpu_ = ws::Gpu::Create(service_binding_.GetConnector(),
+                         ws::mojom::kServiceName, io_thread_->task_runner());
 
   context_factory_ = std::make_unique<ws::HostContextFactory>(
       gpu_.get(), host_frame_sink_manager_.get());
 
-  env_ = aura::Env::CreateInstanceToHostViz(context()->connector());
+  env_ = aura::Env::CreateInstanceToHostViz(service_binding_.GetConnector());
 
   views_delegate_ = std::make_unique<AshViewsDelegate>();
 
@@ -173,7 +163,7 @@ void AshService::InitForMash() {
   shell_init_params.context_factory = context_factory_.get();
   shell_init_params.context_factory_private =
       context_factory_->GetContextFactoryPrivate();
-  shell_init_params.connector = context()->connector();
+  shell_init_params.connector = service_binding_.GetConnector();
   shell_init_params.gpu_interface_provider =
       std::make_unique<AshGpuInterfaceProvider>(
           gpu_host_.get(), discardable_shared_memory_manager_.get());

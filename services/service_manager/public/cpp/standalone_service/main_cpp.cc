@@ -1,8 +1,7 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/c/main.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -14,6 +13,7 @@
 #include "base/process/launch.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
+#include "services/service_manager/public/cpp/standalone_service/service_main.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -22,20 +22,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
 #endif
-
-namespace {
-
-// TODO(rockot): We should consider removing ServiceMain and instead allowing
-// service sources to define a CreateService method which returns a new instance
-// of service_manager::Service. This would reduce boilerplate in service sources
-// since they all effectively do the same thing via
-// service_manager::ServiceRunner.
-void RunServiceMain(service_manager::mojom::ServiceRequest request) {
-  MojoResult result = ServiceMain(request.PassMessagePipe().release().value());
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-}
-
-}  // namespace
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -61,7 +47,7 @@ int main(int argc, char** argv) {
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   service_manager::WaitForDebuggerIfNecessary();
-  service_manager::RunStandaloneService(base::BindOnce(&RunServiceMain));
+  service_manager::RunStandaloneService(base::BindOnce(&ServiceMain));
 
   base::TaskScheduler::GetInstance()->Shutdown();
 

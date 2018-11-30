@@ -10,7 +10,8 @@
 
 namespace service_manager {
 
-using StandaloneServiceCallback = base::Callback<void(mojom::ServiceRequest)>;
+using StandaloneServiceCallback =
+    base::OnceCallback<void(mojom::ServiceRequest)>;
 
 // Runs a standalone service in the current process. This takes care of setting
 // up a boilerplate environment, including initializing //base objects, Mojo
@@ -23,7 +24,7 @@ using StandaloneServiceCallback = base::Callback<void(mojom::ServiceRequest)>;
 // NOTE: A typical service should also link against the main() defined in
 // main.cc (next to this header) and thus have no need to call this function
 // directly.
-void RunStandaloneService(const StandaloneServiceCallback& callback);
+void RunStandaloneService(StandaloneServiceCallback callback);
 
 }  // namespace service_manager
 

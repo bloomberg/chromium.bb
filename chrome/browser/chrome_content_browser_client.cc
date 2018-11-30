@@ -3898,6 +3898,10 @@ void ChromeContentBrowserClient::HandleServiceRequest(
         media::CreateMediaService(std::move(request)));
   }
 #endif
+
+#if defined(OS_CHROMEOS)
+  ash_service_registry::HandleServiceRequest(service_name, std::move(request));
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
