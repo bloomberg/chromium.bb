@@ -366,8 +366,8 @@ bool BlockPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
     // empty, but we need to continue painting to output <a>'s PDF URL rect
     // which covers the continuations, as if we included <a>'s PDF URL rect into
     // layout_block_'s visual overflow.
-    Vector<LayoutRect> rects;
-    layout_block_.AddElementVisualOverflowRects(rects, LayoutPoint());
+    auto rects = layout_block_.PhysicalOutlineRects(
+        LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
     overflow_rect = UnionRect(rects);
   }
   overflow_rect.Unite(layout_block_.VisualOverflowRect());

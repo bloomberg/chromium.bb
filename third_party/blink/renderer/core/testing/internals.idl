@@ -371,8 +371,6 @@ enum EffectiveConnectionType {
     [Unscopable] readonly attribute DOMString unscopableAttribute;
     [Unscopable] DOMString unscopableMethod();
 
-    DOMRectList focusRingRects(Element element);
-    DOMRectList outlineRects(Element element);
     void setCapsLockState(boolean enabled);
 
     // Returns whether the scrollbar was able to be shown or hidden; not all platforms

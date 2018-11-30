@@ -546,9 +546,6 @@ class Internals final : public ScriptWrappable {
   String unscopableAttribute();
   String unscopableMethod();
 
-  DOMRectList* focusRingRects(Element*);
-  DOMRectList* outlineRects(Element*);
-
   void setCapsLockState(bool enabled);
 
   bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);

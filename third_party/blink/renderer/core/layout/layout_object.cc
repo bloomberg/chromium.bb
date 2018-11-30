@@ -4177,6 +4177,24 @@ LayoutRect LayoutObject::AdjustVisualRectForInlineBox(
   return visual_rect;
 }
 
+Vector<LayoutRect> LayoutObject::PhysicalOutlineRects(
+    const LayoutPoint& additional_offset,
+    NGOutlineType outline_type) const {
+  Vector<LayoutRect> outline_rects;
+  AddOutlineRects(outline_rects, additional_offset, outline_type);
+  if (IsSVGChild() || !HasFlippedBlocksWritingMode())
+    return outline_rects;
+
+  const auto* writing_mode_container =
+      IsBox() ? ToLayoutBox(this) : ContainingBlock();
+  for (auto& r : outline_rects) {
+    r.MoveBy(-additional_offset);
+    writing_mode_container->FlipForWritingMode(r);
+    r.MoveBy(additional_offset);
+  }
+  return outline_rects;
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG
