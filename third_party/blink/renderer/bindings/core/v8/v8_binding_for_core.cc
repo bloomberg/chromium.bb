@@ -697,7 +697,7 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
   }
   size_t length = buffer->ByteLength();
   buffer->CopyContents(storage, length);
-  result.SetSmall(storage, length);
+  result.SetSmall(storage, SafeCast<uint32_t>(length));
 }
 
 static ScriptState* ToScriptStateImpl(LocalFrame* frame,

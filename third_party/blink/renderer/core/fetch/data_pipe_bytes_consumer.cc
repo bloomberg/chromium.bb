@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -96,7 +97,7 @@ BytesConsumer::Result DataPipeBytesConsumer::EndRead(size_t read) {
   DCHECK(is_in_two_phase_read_);
   is_in_two_phase_read_ = false;
   DCHECK(IsReadableOrWaiting());
-  MojoResult rv = data_pipe_->EndReadData(read);
+  MojoResult rv = data_pipe_->EndReadData(SafeCast<uint32_t>(read));
   if (rv != MOJO_RESULT_OK) {
     SetError(Error("error"));
     return Result::kError;
