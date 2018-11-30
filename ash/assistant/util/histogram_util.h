@@ -10,6 +10,7 @@ namespace ash {
 enum class AssistantEntryPoint;
 enum class AssistantExitPoint;
 enum class AssistantButtonId;
+enum class AssistantQuerySource;
 
 namespace assistant {
 namespace util {
@@ -25,6 +26,9 @@ void RecordAssistantExitPoint(AssistantExitPoint exit_point);
 
 // Count the number of times buttons are clicked on Assistant UI.
 void IncrementAssistantButtonClickCount(AssistantButtonId button_id);
+
+// Record the input source of each query (e.g. voice, typing).
+void RecordAssistantQuerySource(AssistantQuerySource source);
 
 }  // namespace util
 }  // namespace assistant

@@ -25,6 +25,7 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionModelObserver;
+enum class AssistantQuerySource;
 
 class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
@@ -65,7 +66,7 @@ class AssistantInteractionController
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
-  void OnCommittedQueryChanged(const AssistantQuery& query) override;
+  void OnCommittedQueryChanged(const AssistantQuery& assistant_query) override;
   void OnResponseChanged(
       const std::shared_ptr<AssistantResponse>& response) override;
 
@@ -116,8 +117,11 @@ class AssistantInteractionController
   void OnUiVisible(AssistantEntryPoint entry_point);
 
   void StartMetalayerInteraction(const gfx::Rect& region);
-  void StartScreenContextInteraction();
-  void StartTextInteraction(const std::string text, bool allow_tts);
+  void StartScreenContextInteraction(AssistantQuerySource query_source);
+  void StartTextInteraction(const std::string text,
+                            bool allow_tts,
+                            AssistantQuerySource query_source);
+
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 
