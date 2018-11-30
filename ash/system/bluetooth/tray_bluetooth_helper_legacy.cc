@@ -13,11 +13,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
+#include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 
 using device::mojom::BluetoothSystem;
 using device::mojom::BluetoothDeviceInfo;
@@ -36,9 +40,37 @@ void BluetoothSetDiscoveringError() {
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {}
 
+std::string BluetoothAddressToStr(const BluetoothAddress& address) {
+  static constexpr char kAddressFormat[] =
+      "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX";
+  return base::StringPrintf(kAddressFormat, address[0], address[1], address[2],
+                            address[3], address[4], address[5]);
+}
+
+// Converts a MAC Address string e.g. "00:11:22:33:44:55" into an
+// BluetoothAddress e.g. {0x00, 0x11, 0x22, 0x33, 0x44, 0x55}.
+BluetoothAddress AddressStrToBluetoothAddress(const std::string& address_str) {
+  std::string numbers;
+  bool success = base::ReplaceChars(address_str, ":", "", &numbers);
+  DCHECK(success);
+
+  std::vector<uint8_t> address_vector;
+  success = base::HexStringToBytes(numbers, &address_vector);
+  DCHECK(success);
+
+  // If the size is not 6, then the underlying Bluetooth API returned an
+  // incorrect value.
+  CHECK_EQ(6u, address_vector.size());
+
+  BluetoothAddress address_array;
+  std::copy_n(address_vector.begin(), 6, address_array.begin());
+
+  return address_array;
+}
+
 BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
-  info->address = device->GetAddress();
+  info->address = AddressStrToBluetoothAddress(device->GetAddress());
   info->name = device->GetName();
   info->is_paired = device->IsPaired();
 
@@ -150,8 +182,9 @@ void TrayBluetoothHelperLegacy::StopBluetoothDiscovering() {
 }
 
 void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
-    const std::string& address) {
-  device::BluetoothDevice* device = adapter_->GetDevice(address);
+    const BluetoothAddress& address) {
+  device::BluetoothDevice* device =
+      adapter_->GetDevice(BluetoothAddressToStr(address));
   if (!device || device->IsConnecting() ||
       (device->IsConnected() && device->IsPaired())) {
     return;

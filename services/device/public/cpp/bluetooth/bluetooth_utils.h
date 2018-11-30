@@ -10,6 +10,10 @@
 
 namespace device {
 
+// Returns the address suitable for displaying e.g. "AA:BB:CC:DD:00:11".
+base::string16 GetBluetoothAddressForDisplay(
+    const std::array<uint8_t, 6>& address);
+
 // Returns the name of the device suitable for displaying, this may
 // be a synthesized string containing the address and localized type name
 // if the device has no obtained name.

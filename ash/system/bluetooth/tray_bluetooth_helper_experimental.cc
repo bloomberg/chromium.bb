@@ -57,7 +57,7 @@ void TrayBluetoothHelperExperimental::StopBluetoothDiscovering() {
 }
 
 void TrayBluetoothHelperExperimental::ConnectToBluetoothDevice(
-    const std::string& address) {
+    const BluetoothAddress& address) {
   NOTIMPLEMENTED();
 }
 
