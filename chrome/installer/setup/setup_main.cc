@@ -402,11 +402,12 @@ installer::InstallStatus RepeatDeleteOldVersions(
 
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
-// for Chrome so there should be a file called new_chrome.exe on the file
-// system and a key called 'opv' in the registry. This function will move
-// new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
-// This function also deletes elevation policies associated with the old version
-// if they exist. |setup_exe| is the path to the current executable.
+// for Chrome so there should be files called new_chrome.exe and
+// new_chrome_proxy.exe on the file system and a key called 'opv' in the
+// registry. This function will move new_chrome.exe to chrome.exe,
+// new_chrome_proxy.exe to chrome_proxy.exe and delete 'opv' key in one atomic
+// operation. This function also deletes elevation policies associated with the
+// old version if they exist. |setup_exe| is the path to the current executable.
 installer::InstallStatus RenameChromeExecutables(
     const base::FilePath& setup_exe,
     const InstallationState& original_state,
@@ -415,6 +416,12 @@ installer::InstallStatus RenameChromeExecutables(
   base::FilePath chrome_exe(target_path.Append(installer::kChromeExe));
   base::FilePath chrome_new_exe(target_path.Append(installer::kChromeNewExe));
   base::FilePath chrome_old_exe(target_path.Append(installer::kChromeOldExe));
+  base::FilePath chrome_proxy_exe(
+      target_path.Append(installer::kChromeProxyExe));
+  base::FilePath chrome_proxy_new_exe(
+      target_path.Append(installer::kChromeProxyNewExe));
+  base::FilePath chrome_proxy_old_exe(
+      target_path.Append(installer::kChromeProxyOldExe));
 
   // Create a temporary backup directory on the same volume as chrome.exe so
   // that moving in-use files doesn't lead to trouble.
@@ -438,6 +445,16 @@ installer::InstallStatus RenameChromeExecutables(
                                     WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
 
+  // Move chrome_proxy.exe to old_chrome_proxy.exe, then move
+  // new_chrome_proxy.exe to chrome_proxy.exe.
+  install_list->AddMoveTreeWorkItem(
+      chrome_proxy_exe.value(), chrome_proxy_old_exe.value(),
+      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+  install_list->AddMoveTreeWorkItem(
+      chrome_proxy_new_exe.value(), chrome_proxy_exe.value(),
+      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+  install_list->AddDeleteTreeWorkItem(chrome_proxy_new_exe, temp_path.path());
+
   // Add work items to delete Chrome's "opv", "cpv", and "cmd" values.
   // TODO(grt): Clean this up; https://crbug.com/577816.
   HKEY reg_root = installer_state->root_key();
@@ -453,6 +470,8 @@ installer::InstallStatus RenameChromeExecutables(
                                           google_update::kRegRenameCmdField);
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
+      ->set_best_effort(true);
+  install_list->AddDeleteTreeWorkItem(chrome_proxy_old_exe, temp_path.path())
       ->set_best_effort(true);
 
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
