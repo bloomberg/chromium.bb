@@ -47,7 +47,7 @@ namespace Spv
     {
         public const uint MagicNumber = 0x07230203;
         public const uint Version = 0x00010300;
-        public const uint Revision = 1;
+        public const uint Revision = 6;
         public const uint OpCodeMask = 0xffff;
         public const uint WordCountShift = 16;
 
@@ -136,6 +136,11 @@ namespace Spv
             LocalSizeId = 38,
             LocalSizeHintId = 39,
             PostDepthCoverage = 4446,
+            DenormPreserve = 4459,
+            DenormFlushToZero = 4460,
+            SignedZeroInfNanPreserve = 4461,
+            RoundingModeRTE = 4462,
+            RoundingModeRTZ = 4463,
             StencilRefReplacingEXT = 5027,
             OutputLinesNV = 5269,
             OutputPrimitivesNV = 5270,
@@ -415,6 +420,8 @@ namespace Spv
             MaxByteOffset = 45,
             AlignmentId = 46,
             MaxByteOffsetId = 47,
+            NoSignedWrap = 4469,
+            NoUnsignedWrap = 4470,
             ExplicitInterpAMD = 4999,
             OverrideCoverageNV = 5248,
             PassthroughNV = 5250,
@@ -760,6 +767,11 @@ namespace Spv
             StorageBuffer8BitAccess = 4448,
             UniformAndStorageBuffer8BitAccess = 4449,
             StoragePushConstant8 = 4450,
+            DenormPreserve = 4464,
+            DenormFlushToZero = 4465,
+            SignedZeroInfNanPreserve = 4466,
+            RoundingModeRTE = 4467,
+            RoundingModeRTZ = 4468,
             Float16ImageAMD = 5008,
             ImageGatherBiasLodAMD = 5009,
             FragmentMaskAMD = 5010,

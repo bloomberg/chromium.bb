@@ -48,11 +48,11 @@ namespace spv {
 typedef unsigned int Id;
 
 #define SPV_VERSION 0x10300
-#define SPV_REVISION 1
+#define SPV_REVISION 6
 
 static const unsigned int MagicNumber = 0x07230203;
 static const unsigned int Version = 0x00010300;
-static const unsigned int Revision = 1;
+static const unsigned int Revision = 6;
 static const unsigned int OpCodeMask = 0xffff;
 static const unsigned int WordCountShift = 16;
 
@@ -140,6 +140,11 @@ enum class ExecutionMode : unsigned {
     LocalSizeId = 38,
     LocalSizeHintId = 39,
     PostDepthCoverage = 4446,
+    DenormPreserve = 4459,
+    DenormFlushToZero = 4460,
+    SignedZeroInfNanPreserve = 4461,
+    RoundingModeRTE = 4462,
+    RoundingModeRTZ = 4463,
     StencilRefReplacingEXT = 5027,
     OutputLinesNV = 5269,
     OutputPrimitivesNV = 5270,
@@ -417,6 +422,8 @@ enum class Decoration : unsigned {
     MaxByteOffset = 45,
     AlignmentId = 46,
     MaxByteOffsetId = 47,
+    NoSignedWrap = 4469,
+    NoUnsignedWrap = 4470,
     ExplicitInterpAMD = 4999,
     OverrideCoverageNV = 5248,
     PassthroughNV = 5250,
@@ -756,6 +763,11 @@ enum class Capability : unsigned {
     StorageBuffer8BitAccess = 4448,
     UniformAndStorageBuffer8BitAccess = 4449,
     StoragePushConstant8 = 4450,
+    DenormPreserve = 4464,
+    DenormFlushToZero = 4465,
+    SignedZeroInfNanPreserve = 4466,
+    RoundingModeRTE = 4467,
+    RoundingModeRTZ = 4468,
     Float16ImageAMD = 5008,
     ImageGatherBiasLodAMD = 5009,
     FragmentMaskAMD = 5010,

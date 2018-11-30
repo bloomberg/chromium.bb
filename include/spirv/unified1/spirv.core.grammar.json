@@ -4773,6 +4773,56 @@
           "extensions" : [ "SPV_KHR_post_depth_coverage" ],
           "version" : "None"
         },
+{
+          "enumerant" : "DenormPreserve",
+          "value" : 4459,
+          "capabilities" : [ "DenormPreserve"],
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "parameters" : [
+            { "kind" : "LiteralInteger", "name" : "'Target Width'" }
+          ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "DenormFlushToZero",
+          "value" : 4460,
+          "capabilities" : [ "DenormFlushToZero"],
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "parameters" : [
+            { "kind" : "LiteralInteger", "name" : "'Target Width'" }
+          ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "SignedZeroInfNanPreserve",
+          "value" : 4461,
+          "capabilities" : [ "SignedZeroInfNanPreserve"],
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "parameters" : [
+            { "kind" : "LiteralInteger", "name" : "'Target Width'" }
+          ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RoundingModeRTE",
+          "value" : 4462,
+          "capabilities" : [ "RoundingModeRTE"],
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "parameters" : [
+            { "kind" : "LiteralInteger", "name" : "'Target Width'" }
+          ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RoundingModeRTZ",
+          "value" : 4463,
+          "capabilities" : [ "RoundingModeRTZ"],
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "parameters" : [
+            { "kind" : "LiteralInteger", "name" : "'Target Width'" }
+          ],
+          "version" : "None"
+        },
         {
           "enumerant" : "StencilRefReplacingEXT",
           "value" : 5027,
@@ -5815,6 +5865,18 @@
             { "kind" : "IdRef", "name" : "'Max Byte Offset'" }
           ],
           "version" : "1.2"
+        },
+        {
+          "enumerant" : "NoSignedWrap",
+          "value" : 4469,
+          "extensions" : [ "SPV_KHR_no_integer_wrap_decoration" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "NoUnsignedWrap",
+          "value" : 4470,
+          "extensions" : [ "SPV_KHR_no_integer_wrap_decoration" ],
+          "version" : "None"
         },
         {
           "enumerant" : "ExplicitInterpAMD",
@@ -7039,6 +7101,36 @@
           "enumerant" : "StoragePushConstant8",
           "value" : 4450,
           "extensions" : [ "SPV_KHR_8bit_storage" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "DenormPreserve",
+          "value" : 4464,
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "DenormFlushToZero",
+          "value" : 4465,
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "SignedZeroInfNanPreserve",
+          "value" : 4466,
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RoundingModeRTE",
+          "value" : 4467,
+          "extensions" : [ "SPV_KHR_float_controls" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "RoundingModeRTZ",
+          "value" : 4468,
+          "extensions" : [ "SPV_KHR_float_controls" ],
           "version" : "None"
         },
         {

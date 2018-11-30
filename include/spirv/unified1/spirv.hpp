@@ -48,11 +48,11 @@ namespace spv {
 typedef unsigned int Id;
 
 #define SPV_VERSION 0x10300
-#define SPV_REVISION 1
+#define SPV_REVISION 6
 
 static const unsigned int MagicNumber = 0x07230203;
 static const unsigned int Version = 0x00010300;
-static const unsigned int Revision = 1;
+static const unsigned int Revision = 6;
 static const unsigned int OpCodeMask = 0xffff;
 static const unsigned int WordCountShift = 16;
 
@@ -140,6 +140,11 @@ enum ExecutionMode {
     ExecutionModeLocalSizeId = 38,
     ExecutionModeLocalSizeHintId = 39,
     ExecutionModePostDepthCoverage = 4446,
+    ExecutionModeDenormPreserve = 4459,
+    ExecutionModeDenormFlushToZero = 4460,
+    ExecutionModeSignedZeroInfNanPreserve = 4461,
+    ExecutionModeRoundingModeRTE = 4462,
+    ExecutionModeRoundingModeRTZ = 4463,
     ExecutionModeStencilRefReplacingEXT = 5027,
     ExecutionModeOutputLinesNV = 5269,
     ExecutionModeOutputPrimitivesNV = 5270,
@@ -417,6 +422,8 @@ enum Decoration {
     DecorationMaxByteOffset = 45,
     DecorationAlignmentId = 46,
     DecorationMaxByteOffsetId = 47,
+    DecorationNoSignedWrap = 4469,
+    DecorationNoUnsignedWrap = 4470,
     DecorationExplicitInterpAMD = 4999,
     DecorationOverrideCoverageNV = 5248,
     DecorationPassthroughNV = 5250,
@@ -756,6 +763,11 @@ enum Capability {
     CapabilityStorageBuffer8BitAccess = 4448,
     CapabilityUniformAndStorageBuffer8BitAccess = 4449,
     CapabilityStoragePushConstant8 = 4450,
+    CapabilityDenormPreserve = 4464,
+    CapabilityDenormFlushToZero = 4465,
+    CapabilitySignedZeroInfNanPreserve = 4466,
+    CapabilityRoundingModeRTE = 4467,
+    CapabilityRoundingModeRTZ = 4468,
     CapabilityFloat16ImageAMD = 5008,
     CapabilityImageGatherBiasLodAMD = 5009,
     CapabilityFragmentMaskAMD = 5010,

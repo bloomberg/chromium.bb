@@ -52,11 +52,11 @@
 typedef unsigned int SpvId;
 
 #define SPV_VERSION 0x10300
-#define SPV_REVISION 1
+#define SPV_REVISION 6
 
 static const unsigned int SpvMagicNumber = 0x07230203;
 static const unsigned int SpvVersion = 0x00010300;
-static const unsigned int SpvRevision = 1;
+static const unsigned int SpvRevision = 6;
 static const unsigned int SpvOpCodeMask = 0xffff;
 static const unsigned int SpvWordCountShift = 16;
 
@@ -144,6 +144,11 @@ typedef enum SpvExecutionMode_ {
     SpvExecutionModeLocalSizeId = 38,
     SpvExecutionModeLocalSizeHintId = 39,
     SpvExecutionModePostDepthCoverage = 4446,
+    SpvExecutionModeDenormPreserve = 4459,
+    SpvExecutionModeDenormFlushToZero = 4460,
+    SpvExecutionModeSignedZeroInfNanPreserve = 4461,
+    SpvExecutionModeRoundingModeRTE = 4462,
+    SpvExecutionModeRoundingModeRTZ = 4463,
     SpvExecutionModeStencilRefReplacingEXT = 5027,
     SpvExecutionModeOutputLinesNV = 5269,
     SpvExecutionModeOutputPrimitivesNV = 5270,
@@ -421,6 +426,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationMaxByteOffset = 45,
     SpvDecorationAlignmentId = 46,
     SpvDecorationMaxByteOffsetId = 47,
+    SpvDecorationNoSignedWrap = 4469,
+    SpvDecorationNoUnsignedWrap = 4470,
     SpvDecorationExplicitInterpAMD = 4999,
     SpvDecorationOverrideCoverageNV = 5248,
     SpvDecorationPassthroughNV = 5250,
@@ -760,6 +767,11 @@ typedef enum SpvCapability_ {
     SpvCapabilityStorageBuffer8BitAccess = 4448,
     SpvCapabilityUniformAndStorageBuffer8BitAccess = 4449,
     SpvCapabilityStoragePushConstant8 = 4450,
+    SpvCapabilityDenormPreserve = 4464,
+    SpvCapabilityDenormFlushToZero = 4465,
+    SpvCapabilitySignedZeroInfNanPreserve = 4466,
+    SpvCapabilityRoundingModeRTE = 4467,
+    SpvCapabilityRoundingModeRTZ = 4468,
     SpvCapabilityFloat16ImageAMD = 5008,
     SpvCapabilityImageGatherBiasLodAMD = 5009,
     SpvCapabilityFragmentMaskAMD = 5010,
