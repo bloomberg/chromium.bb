@@ -617,6 +617,21 @@ TEST(HashMapTest, InitializerList) {
   EXPECT_TRUE(IsOneTwoThreeMap(ReturnOneTwoThreeMap()));
 }
 
+TEST(HashMapTest, IsValidKey) {
+  bool is_deleted;
+  EXPECT_FALSE((HashMap<int, int>::IsValidKey(0)));
+  EXPECT_FALSE((HashMap<int, int>::IsValidKey(-1)));
+  EXPECT_TRUE((HashMap<int, int>::IsValidKey(-2)));
+
+  EXPECT_FALSE((HashMap<int*, int>::IsValidKey(nullptr)));
+  EXPECT_TRUE((HashMap<int*, int>::IsValidKey(std::make_unique<int>().get())));
+
+  auto p = base::MakeRefCounted<DummyRefCounted>(is_deleted);
+  EXPECT_TRUE((HashMap<scoped_refptr<DummyRefCounted>, int>::IsValidKey(p)));
+  EXPECT_FALSE(
+      (HashMap<scoped_refptr<DummyRefCounted>, int>::IsValidKey(nullptr)));
+}
+
 static_assert(!IsTraceable<HashMap<int, int>>::value,
               "HashMap<int, int> must not be traceable.");
 
