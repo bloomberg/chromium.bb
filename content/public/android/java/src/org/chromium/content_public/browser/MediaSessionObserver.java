@@ -7,7 +7,7 @@ package org.chromium.content_public.browser;
 import android.support.annotation.Nullable;
 
 import org.chromium.content.browser.MediaSessionImpl;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.Set;
 

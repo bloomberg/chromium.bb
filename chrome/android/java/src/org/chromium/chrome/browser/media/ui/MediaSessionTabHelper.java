@@ -27,8 +27,8 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.media_session.mojom.MediaSessionAction;
+import org.chromium.services.media_session.MediaMetadata;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
