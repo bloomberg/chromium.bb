@@ -88,6 +88,8 @@ class CORE_EXPORT CSSParser {
   static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
       const String&,
       Element*);
+  static ImmutableCSSPropertyValueSet*
+  ParseInlineStyleDeclaration(const String&, CSSParserMode, SecureContextMode);
 
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
   static StyleRuleKeyframe* ParseKeyframeRule(const CSSParserContext*,
