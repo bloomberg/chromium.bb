@@ -108,6 +108,10 @@ PropertyConverter::PropertyConverter() {
   RegisterWindowPtrProperty(
       client::kChildModalParentKey,
       ws::mojom::WindowManager::kChildModalParent_Property);
+  RegisterPrimitiveProperty(
+      client::kClientWindowHasContent,
+      ws::mojom::WindowManager::kClientWindowHasContent_Property,
+      CreateAcceptAnyValueCallback());
 }
 
 PropertyConverter::~PropertyConverter() {}

@@ -62,6 +62,13 @@ AURA_EXPORT extern const WindowProperty<gfx::SizeF*>* const kAspectRatio;
 // frame to indicate the owner of the window when needed.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAvatarIconKey;
 
+// A property key to indicate if a client window has content. The value is
+// based on whether the window has a drawn layer (i.e. layer type !=
+// LAYER_NOT_DRAWN) and is opaque. It is passed to the Window Service side for
+// the occlusion tracker to process since the info is only available at the
+// client side.
+AURA_EXPORT extern const WindowProperty<bool>* const kClientWindowHasContent;
+
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 

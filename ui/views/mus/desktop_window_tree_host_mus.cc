@@ -504,6 +504,13 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
     window()->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   else
     aura::WindowPortMus::Get(content_window())->SetCanAcceptDrops(true);
+
+  // Sets the has-content info for the occlusion tracker that runs on the Window
+  // Service side.
+  content_window()->SetProperty(
+      aura::client::kClientWindowHasContent,
+      params.layer_type != ui::LAYER_NOT_DRAWN &&
+          params.opacity == views::Widget::InitParams::OPAQUE_WINDOW);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
