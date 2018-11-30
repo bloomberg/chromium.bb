@@ -42,11 +42,11 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
 }
 
 std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThreadWithPump(
-    MessageLoop::Type type,
-    std::unique_ptr<MessagePump> message_pump) {
+    MessageLoop::Type type) {
   std::unique_ptr<SequenceManager> sequence_manager =
       internal::SequenceManagerImpl::CreateUnboundWithPump(type);
-  sequence_manager->BindToMessagePump(std::move(message_pump));
+  sequence_manager->BindToMessagePump(
+      MessageLoop::CreateMessagePumpForType(type));
   return sequence_manager;
 }
 
