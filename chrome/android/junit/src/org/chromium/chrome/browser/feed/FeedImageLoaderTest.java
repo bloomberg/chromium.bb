@@ -88,8 +88,12 @@ public class FeedImageLoaderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        setUpWithImageFetcher(mCachedImageFetcher);
+    }
+
+    public void setUpWithImageFetcher(CachedImageFetcher cachedImageFetcher) {
         mImageLoader = Mockito.spy(
-                new FeedImageLoader(ContextUtils.getApplicationContext(), mCachedImageFetcher));
+                new FeedImageLoader(ContextUtils.getApplicationContext(), cachedImageFetcher));
     }
 
     private void answerFetchImage(String url, Bitmap bitmap) {
@@ -136,6 +140,17 @@ public class FeedImageLoaderTest {
                 .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
                         eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
         verify(mConsumer, times(1)).accept(eq(null));
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadDrawableWithNullFetcher() {
+        setUpWithImageFetcher(null);
+        loadDrawable(HTTP_STRING1);
+        verify(mConsumer, times(1)).accept(eq(null));
+        verify(mImageLoader, times(0))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
     }
 
     @Test
