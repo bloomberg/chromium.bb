@@ -550,6 +550,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
       client_->DismissPictureBuffer(iter->first);
   }
   pictures_.clear();
+  num_frames_at_client_ = 0;
 
   // And ask for a new set as requested.
   VLOGF(2) << "Requesting " << requested_num_pics_
