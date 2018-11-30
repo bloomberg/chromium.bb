@@ -23,6 +23,7 @@ from chromite.lib import path_util
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gspaths
+from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
 
@@ -85,19 +86,20 @@ class _PaygenPayload(object):
     self.description_file = os.path.join(work_dir, 'delta.json')
     self.metadata_size_file = os.path.join(work_dir, 'metadata_size.txt')
     self.metadata_size = 0
+    self._postinst_config_file = os.path.join(work_dir, 'postinst_config')
 
     self.signer = None
 
-    # Names to pass to cros_generate_update_payload for extracting old/new
+    # TODO(ahassani): Use the partition names from the target image to construct
+    # these so we can support different partitions.
+    #
+    #  Names to pass to cros_generate_update_payload for extracting old/new
     # kernel/rootfs partitions.
-    self.partition_names = (self._KERNEL, self._ROOTFS)
-    self.tgt_partitions = {}
-    self.src_partitions = {}
-    for part_name in self.partition_names:
-      self.tgt_partitions[part_name] = os.path.join(self.work_dir,
-                                                    'new_' + part_name + '.dat')
-      self.src_partitions[part_name] = os.path.join(self.work_dir,
-                                                    'old_' + part_name + '.dat')
+    self.partition_names = (self._ROOTFS, self._KERNEL)
+    self.tgt_partitions = tuple(os.path.join(self.work_dir, 'tgt_%s.bin' % name)
+                                for name in self.partition_names)
+    self.src_partitions = tuple(os.path.join(self.work_dir, 'src_%s.bin' % name)
+                                for name in self.partition_names)
 
     if sign:
       self.signed_payload_file = self.payload_file + '.signed'
@@ -177,19 +179,13 @@ class _PaygenPayload(object):
 
     Returns:
       If dict_obj[key] contains a non-False value or default is non-False,
-      returns a list containing the flag and value arguments (e.g. ['--foo',
-      'bar']), unless flag is empty/None, in which case returns a list
-      containing only the value argument (e.g.  ['bar']). Otherwise, returns an
-      empty list.
-    """
-    arg_list = []
-    val = dict_obj.get(key) or default
-    if val:
-      arg_list = [str(val)]
-      if flag:
-        arg_list.insert(0, flag)
+      returns a list containing the flag and value arguments
+      (e.g. ['--foo=bar'])
 
-    return arg_list
+    """
+    val = dict_obj.get(key) or default
+    return ['%s=%s' % (flag, str(val))]
+
 
   def _PrepareImage(self, image, image_file):
     """Download an prepare an image for delta generation.
@@ -245,55 +241,91 @@ class _PaygenPayload(object):
       # It's safe to delete the archive at this point.
       os.remove(download_file)
 
-  def _CheckPartitionFiles(self):
-    """Makes sure the extracted partition files exist."""
-    for part_name in self.partition_names:
-      if not os.path.isfile(self.tgt_partitions[part_name]):
-        raise PayloadVerificationError('Failed to extract partition (%s)' %
-                                       self.tgt_partitions[part_name])
-    if self.payload.src_image:
-      for part_name in self.partition_names:
-        if not os.path.isfile(self.src_partitions[part_name]):
-          raise PayloadVerificationError('Failed to extract partition (%s)' %
-                                         self.src_partitions[part_name])
+  def _GeneratePostinstConfig(self, run_postinst):
+    """Generates the postinstall config file
+
+    This file is used in update engine's major version 2.
+
+    Args:
+      run_postinst: Whether the updater should run postinst or not.
+    """
+    # In major version 2 we need to explicity mark the postinst on the root
+    # partition to run.
+    osutils.WriteFile(self._postinst_config_file,
+                      'RUN_POSTINSTALL_root=%s\n' %
+                      ('true' if run_postinst else 'false'))
+
+  def _ExtractPartitions(self):
+    """Extracts root and kernel partitions from an image."""
+    for idx, part_name in enumerate(self.partition_names):
+      if part_name == self._ROOTFS:
+        partition_lib.ExtractRoot(self.tgt_image_file,
+                                  self.tgt_partitions[idx])
+        if self.payload.src_image:
+          partition_lib.ExtractRoot(self.src_image_file,
+                                    self.src_partitions[idx])
+      elif part_name == self._KERNEL:
+        partition_lib.ExtractKernel(self.tgt_image_file,
+                                    self.tgt_partitions[idx])
+        if self.payload.src_image:
+          partition_lib.ExtractKernel(self.src_image_file,
+                                      self.src_partitions[idx])
+      else:
+        # It is a normal dlc partition, so we need to just copy it there but for
+        # now just raise an error.
+        raise Error('Invalid partition %s' % part_name)
 
   def _GenerateUnsignedPayload(self):
     """Generate the unsigned delta into self.payload_file."""
     # Note that the command run here requires sudo access.
-
     logging.info('Generating unsigned payload as %s', self.payload_file)
 
+    self._ExtractPartitions()
+
+    # Makes sure we have generated postinstall config for major version 2 and
+    # platform image.
+    self._GeneratePostinstConfig(True)
+
     tgt_image = self.payload.tgt_image
-    cmd = ['cros_generate_update_payload',
-           '--output', path_util.ToChrootPath(self.payload_file),
-           '--image', path_util.ToChrootPath(self.tgt_image_file),
-           '--channel', tgt_image.channel,
-           '--board', tgt_image.board,
-           '--version', tgt_image.version,
-           '--kern_path',
-           path_util.ToChrootPath(self.tgt_partitions[self._KERNEL]),
-           '--root_path',
-           path_util.ToChrootPath(self.tgt_partitions[self._ROOTFS])]
-    cmd += self._BuildArg('--key', tgt_image, 'key', default='test')
-    cmd += self._BuildArg('--build_channel', tgt_image, 'image_channel',
+    cmd = ['delta_generator',
+           '--major_version=2',
+           '--out_file=' + path_util.ToChrootPath(self.payload_file),
+           # Target image args: (The order of partitions are important.)
+           '--partition_names=' + ':'.join(self.partition_names),
+           '--new_partitions=' +
+           ':'.join(path_util.ToChrootPath(x) for x in self.tgt_partitions),
+           '--new_postinstall_config_file=' +
+           path_util.ToChrootPath(self._postinst_config_file),
+           # These next 6 parameters are basically optional and the update
+           # engine client ignores them, but we can keep them to identify
+           # parameters of a payload by looking at itself.
+           '--new_channel=' + tgt_image.channel,
+           '--new_board=' + tgt_image.board,
+           '--new_version=' + tgt_image.version]
+    # Either all of the build options should be passed or non of them. So, set
+    # the default key to 'test' only if it didn't have a key but it had other
+    # build options like channel, board, etc.
+    default_key = 'test' if tgt_image.channel else ''
+    cmd += self._BuildArg('--new_key', tgt_image, 'key', default=default_key)
+    cmd += self._BuildArg('--new_build_channel', tgt_image, 'image_channel',
                           default=tgt_image.channel)
-    cmd += self._BuildArg('--build_version', tgt_image, 'image_version',
+    cmd += self._BuildArg('--new_build_version', tgt_image, 'image_version',
                           default=tgt_image.version)
 
     if self.payload.src_image:
       src_image = self.payload.src_image
-      cmd += ['--src_image', path_util.ToChrootPath(self.src_image_file),
-              '--src_channel', src_image.channel,
-              '--src_board', src_image.board,
-              '--src_version', src_image.version,
-              '--src_kern_path',
-              path_util.ToChrootPath(self.src_partitions[self._KERNEL]),
-              '--src_root_path',
-              path_util.ToChrootPath(self.src_partitions[self._ROOTFS])]
-      cmd += self._BuildArg('--src_key', src_image, 'key', default='test')
-      cmd += self._BuildArg('--src_build_channel', src_image, 'image_channel',
+      # Source image args:
+      cmd += ['--old_partitions=' +
+              ':'.join(path_util.ToChrootPath(x) for x in self.src_partitions),
+              # See above comment for new_channel.
+              '--old_channel=' + src_image.channel,
+              '--old_board=' + src_image.board,
+              '--old_version=' + src_image.version]
+      default_key = 'test' if src_image.channel else ''
+      cmd += self._BuildArg('--old_key', src_image, 'key', default=default_key)
+      cmd += self._BuildArg('--old_build_channel', src_image, 'image_channel',
                             default=src_image.channel)
-      cmd += self._BuildArg('--src_build_version', src_image, 'image_version',
+      cmd += self._BuildArg('--old_build_version', src_image, 'image_version',
                             default=src_image.version)
 
     # Do not run the delta_generator in parallel. It already has full
@@ -301,8 +333,6 @@ class _PaygenPayload(object):
     _semaphore.acquire()
     self._RunGeneratorCmd(cmd)
     _semaphore.release()
-
-    self._CheckPartitionFiles()
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.
@@ -604,19 +634,18 @@ class _PaygenPayload(object):
     cmd = ['check_update_payload', path_util.ToChrootPath(payload_file_name),
            '--check', '--type', 'delta' if is_delta else 'full',
            '--disabled_tests', 'move-same-src-dst-block',
-           '--part_names', self._KERNEL, self._ROOTFS,
-           '--dst_part_paths',
-           path_util.ToChrootPath(self.tgt_partitions[self._KERNEL]),
-           path_util.ToChrootPath(self.tgt_partitions[self._ROOTFS])]
+           '--part_names']
+    cmd.extend(self.partition_names)
+    cmd += ['--dst_part_paths']
+    cmd.extend(path_util.ToChrootPath(x) for x in self.tgt_partitions)
     if metadata_sig_file_name:
       cmd += ['--meta-sig', path_util.ToChrootPath(metadata_sig_file_name)]
 
     cmd += ['--metadata-size', str(self.metadata_size)]
 
     if is_delta:
-      cmd += ['--src_part_paths',
-              path_util.ToChrootPath(self.src_partitions[self._KERNEL]),
-              path_util.ToChrootPath(self.src_partitions[self._ROOTFS])]
+      cmd += ['--src_part_paths']
+      cmd.extend(path_util.ToChrootPath(x) for x in self.src_partitions)
 
     self._RunGeneratorCmd(cmd)
 
