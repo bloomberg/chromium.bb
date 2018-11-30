@@ -437,6 +437,10 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
   virtual bool IsSafeRedirectTarget(const GURL& url);
+
+  // The user agent string is given from the browser process. This is called at
+  // most once.
+  virtual void DidSetUserAgent(const std::string& user_agent);
 };
 
 }  // namespace content

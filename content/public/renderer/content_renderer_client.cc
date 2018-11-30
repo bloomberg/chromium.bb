@@ -288,4 +288,6 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
   return true;
 }
 
+void ContentRendererClient::DidSetUserAgent(const std::string& user_agent) {}
+
 }  // namespace content

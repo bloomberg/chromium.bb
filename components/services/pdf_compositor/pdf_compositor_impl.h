@@ -26,8 +26,7 @@ namespace printing {
 
 class PdfCompositorImpl : public mojom::PdfCompositor {
  public:
-  PdfCompositorImpl(
-      const std::string& creator,
+  explicit PdfCompositorImpl(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~PdfCompositorImpl() override;
 
@@ -48,6 +47,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) override;
   void SetWebContentsURL(const GURL& url) override;
+  void SetUserAgent(const std::string& user_agent) override;
 
  protected:
   // This is the uniform underlying type for both
@@ -160,7 +160,11 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       const ContentToFrameMap& subframe_content_map);
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
-  const std::string creator_;
+  // The creator of this service.
+
+  // Currently contains the service creator's user agent string if given,
+  // otherwise just use string "Chromium".
+  std::string creator_ = "Chromium";
 
   // Keep track of all frames' information indexed by frame id.
   FrameMap frame_info_map_;

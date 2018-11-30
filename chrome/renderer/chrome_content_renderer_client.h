@@ -237,6 +237,7 @@ class ChromeContentRendererClient
   blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
                              const std::string& name) override;
   bool IsSafeRedirectTarget(const GURL& url) override;
+  void DidSetUserAgent(const std::string& user_agent) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();

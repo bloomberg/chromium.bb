@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/printing_init.h"
 
+#include "chrome/common/chrome_content_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/buildflags/buildflags.h"
@@ -29,7 +30,7 @@ void InitializePrinting(content::WebContents* web_contents) {
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  CreateCompositeClientIfNeeded(web_contents);
+  CreateCompositeClientIfNeeded(web_contents, GetUserAgent());
 }
 
 }  // namespace printing

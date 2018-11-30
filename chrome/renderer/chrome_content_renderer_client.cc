@@ -362,9 +362,6 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   for (const char* origin : kPredefinedAllowedCompositorOrigins)
     allowed_compositor_origins_.insert(origin);
 #endif
-#if BUILDFLAG(ENABLE_PRINTING)
-  printing::SetAgent(GetUserAgent());
-#endif
 
   heap_profiling::SetGCHeapAllocationHookFunctions(
       &blink::WebHeap::SetAllocationHook, &blink::WebHeap::SetFreeHook);
@@ -1734,4 +1731,11 @@ bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return true;
+}
+
+void ChromeContentRendererClient::DidSetUserAgent(
+    const std::string& user_agent) {
+#if BUILDFLAG(ENABLE_PRINTING)
+  printing::SetAgent(user_agent);
+#endif
 }
