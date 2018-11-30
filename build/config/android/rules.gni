@@ -3470,9 +3470,7 @@ if (enable_java_templates) {
       _protoc_dep = "//third_party/protobuf:protoc($host_toolchain)"
       _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
       _protoc_bin = "$_protoc_out_dir/protoc"
-      _proto_runtime =
-          "//third_party/android_deps:com_google_protobuf_protobuf_lite_java"
-      _protoc_javalite_plugin_dir = "//third_party/protoc_javalite/"
+      _proto_runtime = "//third_party/protobuf:protobuf_lite_javalib"
     }
     _proto_path = invoker.proto_path
     _template_name = target_name
@@ -3505,11 +3503,6 @@ if (enable_java_templates) {
              ] + rebase_path(sources, root_build_dir)
       if (_generate_nano) {
         args += [ "--nano" ]
-      } else {
-        args += [
-          "--protoc-javalite-plugin-dir",
-          rebase_path(_protoc_javalite_plugin_dir, root_build_dir),
-        ]
       }
     }
 

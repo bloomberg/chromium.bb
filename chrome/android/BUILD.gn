@@ -315,7 +315,6 @@ android_library("chrome_java") {
     "//third_party/android_deps:android_support_v7_mediarouter_java",
     "//third_party/android_deps:android_support_v7_recyclerview_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
@@ -331,6 +330,7 @@ android_library("chrome_java") {
     "//third_party/feed:feed_lib_proto_java",
     "//third_party/gif_player:gif_player_java",
     "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/protobuf:protobuf_lite_javalib",
     "//ui/android:ui_java",
     "//ui/base/mojo:mojo_java",
     "//ui/gfx/geometry/mojo:mojo_java",
@@ -700,7 +700,6 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:android_support_design_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:android_support_v7_recyclerview_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_test_base_java",
@@ -718,6 +717,7 @@ android_library("chrome_test_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
@@ -1405,7 +1405,7 @@ android_library("browser_java_test_support") {
     ":chrome_java",
     "//base:base_java",
     "//components/sync:test_support_proto_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
   ]
 }
 
