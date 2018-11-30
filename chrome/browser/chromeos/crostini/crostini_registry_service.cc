@@ -49,6 +49,7 @@ constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
 constexpr char kAppScaledKey[] = "scaled";
+constexpr char kAppPackageIdKey[] = "package_id";
 constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
 constexpr char kAppStartupNotifyKey[] = "startup_notify";
 constexpr char kAppInstallTimeKey[] = "install_time";
@@ -306,6 +307,26 @@ bool CrostiniRegistryService::Registration::NoDisplay() const {
       pref_.FindKeyOfType(kAppNoDisplayKey, base::Value::Type::BOOLEAN);
   if (no_display)
     return no_display->GetBool();
+  return false;
+}
+
+bool CrostiniRegistryService::Registration::CanUninstall() const {
+  if (pref_.is_none())
+    return false;
+  // We can uninstall if and only if there is a package that owns the
+  // application. If no package owns the application, we don't know how to
+  // uninstall the app.
+  //
+  // We don't check other things that might prevent us from uninstalling the
+  // app. In particular, we don't check if there are other packages which
+  // depend on the owning package. This should be rare for packages that have
+  // desktop files, and it's better to show an error message (which the user can
+  // then Google to learn more) than to just not have an uninstall option at
+  // all.
+  const base::Value* package_id =
+      pref_.FindKeyOfType(kAppPackageIdKey, base::Value::Type::STRING);
+  if (package_id)
+    return !package_id->GetString().empty();
   return false;
 }
 
@@ -661,6 +682,7 @@ void CrostiniRegistryService::UpdateApplicationList(
                                base::Value(app.startup_wm_class()));
       pref_registration.SetKey(kAppStartupNotifyKey,
                                base::Value(app.startup_notify()));
+      pref_registration.SetKey(kAppPackageIdKey, base::Value(app.package_id()));
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))

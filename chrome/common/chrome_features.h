@@ -119,6 +119,8 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kContentFullscreen;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrostini;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniAppUninstallGui;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeLimitPolicy;
 #endif
 
