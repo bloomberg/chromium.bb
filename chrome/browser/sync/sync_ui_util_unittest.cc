@@ -183,8 +183,6 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
-      EXPECT_CALL(*service, IsSyncConfirmationNeeded())
-          .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequired())
           .WillRepeatedly(Return(false));
       syncer::SyncEngine::Status status;
@@ -410,9 +408,9 @@ TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile.get());
 
-  ProfileSyncServiceMock service(
+  NiceMock<ProfileSyncServiceMock> service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
-  EXPECT_CALL(service, IsSyncConfirmationNeeded()).WillRepeatedly(Return(true));
+  ASSERT_TRUE(service.IsSyncConfirmationNeeded());
 
   base::string16 actionable_error_status_label;
   base::string16 link_label;
