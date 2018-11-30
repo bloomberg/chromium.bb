@@ -911,6 +911,7 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   cras_service_available_ = true;
   GetDefaultOutputBufferSizeInternal();
   GetSystemAecSupported();
+  GetSystemAecGroupId();
   GetNodes();
   GetNumberOfOutputStreams();
 }
@@ -1698,6 +1699,31 @@ void CrasAudioHandler::HandleGetSystemAecSupported(
     return;
   }
   system_aec_supported_ = system_aec_supported.value();
+}
+
+int32_t CrasAudioHandler::system_aec_group_id() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return system_aec_group_id_;
+}
+
+// GetSystemAecGroupId() is only called in the same thread
+// as the CrasAudioHanler constructor. We are safe here without
+// thread check, because unittest may not have the task runner
+// for the current thread.
+void CrasAudioHandler::GetSystemAecGroupId() {
+  GetCrasAudioClient()->GetSystemAecGroupId(
+      base::BindOnce(&CrasAudioHandler::HandleGetSystemAecGroupId,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrasAudioHandler::HandleGetSystemAecGroupId(
+    base::Optional<int32_t> system_aec_group_id) {
+  if (!system_aec_group_id.has_value()) {
+    // If the group Id is not available, set the ID to reflect that.
+    system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
+    return;
+  }
+  system_aec_group_id_ = system_aec_group_id.value();
 }
 
 }  // namespace chromeos

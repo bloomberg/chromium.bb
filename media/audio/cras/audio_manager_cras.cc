@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -192,9 +193,21 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   // but enable it by default on devices that actually support it.
   params.set_effects(params.effects() |
                      AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
-  if (base::FeatureList::IsEnabled(features::kCrOSSystemAEC) &&
-      GetSystemAecSupportedPerBoard()) {
-    params.set_effects(params.effects() | AudioParameters::ECHO_CANCELLER);
+  if (base::FeatureList::IsEnabled(features::kCrOSSystemAEC)) {
+    if (GetSystemAecSupportedPerBoard()) {
+      const int32_t aec_group_id = GetSystemAecGroupIdPerBoard();
+
+      // Check if the system AEC has a group ID which is flagged to be
+      // deactivated by the field trial.
+      const bool system_aec_deactivated =
+          base::GetFieldTrialParamByFeatureAsBool(
+              features::kCrOSSystemAECDeactivatedGroups,
+              std::to_string(aec_group_id), false);
+
+      if (!system_aec_deactivated) {
+        params.set_effects(params.effects() | AudioParameters::ECHO_CANCELLER);
+      }
+    }
   }
 
   return params;
@@ -340,6 +353,27 @@ bool AudioManagerCras::GetSystemAecSupportedPerBoard() {
   }
   WaitEventOrShutdown(&event);
   return system_aec_supported;
+}
+
+int32_t AudioManagerCras::GetSystemAecGroupIdPerBoard() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  int32_t group_id = chromeos::CrasAudioHandler::kSystemAecGroupIdNotAvailable;
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  if (main_task_runner_->BelongsToCurrentThread()) {
+    // Unittest may use the same thread for audio thread.
+    GetSystemAecGroupIdOnMainThread(&group_id, &event);
+  } else {
+    // Using base::Unretained is safe here because we wait for callback be
+    // executed in main thread before local variables are destructed.
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioManagerCras::GetSystemAecGroupIdOnMainThread,
+                       weak_this_, base::Unretained(&group_id),
+                       base::Unretained(&event)));
+  }
+  WaitEventOrShutdown(&event);
+  return group_id;
 }
 
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
@@ -510,6 +544,16 @@ void AudioManagerCras::GetSystemAecSupportedOnMainThread(
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     *system_aec_supported =
         chromeos::CrasAudioHandler::Get()->system_aec_supported();
+  }
+  event->Signal();
+}
+
+void AudioManagerCras::GetSystemAecGroupIdOnMainThread(
+    int32_t* group_id,
+    base::WaitableEvent* event) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
+    *group_id = chromeos::CrasAudioHandler::Get()->system_aec_group_id();
   }
   event->Signal();
 }
