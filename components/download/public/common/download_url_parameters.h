@@ -215,9 +215,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     fetch_error_body_ = fetch_error_body;
   }
 
-  // Sets whether the download is to be treated as transient. A transient
-  // download is short-lived and is not shown in the UI, and will not prompt
-  // to user for target file path determination.
+  // A transient download will not be shown in the UI, and will not prompt
+  // to user for target file path determination. Transient download should be
+  // cleared properly through DownloadManager to avoid the database and
+  // in-memory DownloadItem objects accumulated for the user.
   void set_transient(bool transient) { transient_ = transient; }
 
   // Sets the optional guid for the download, the guid serves as the unique
