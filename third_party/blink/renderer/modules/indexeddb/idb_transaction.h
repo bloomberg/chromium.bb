@@ -128,6 +128,7 @@ class MODULES_EXPORT IDBTransaction final
   DOMException* error() const { return error_; }
   IDBObjectStore* objectStore(const String& name, ExceptionState&);
   void abort(ExceptionState&);
+  void commit(ExceptionState&);
 
   void RegisterRequest(IDBRequest*);
   void UnregisterRequest(IDBRequest*);

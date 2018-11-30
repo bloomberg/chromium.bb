@@ -4,6 +4,9 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -332,7 +335,6 @@ leveldb::Status IndexedDBTransaction::Commit() {
     return leveldb::Status::OK();
   DCHECK_NE(state_, COMMITTING);
 
-  DCHECK(!used_ || state_ == STARTED);
   commit_pending_ = true;
 
   // Front-end has requested a commit, but this transaction is blocked by

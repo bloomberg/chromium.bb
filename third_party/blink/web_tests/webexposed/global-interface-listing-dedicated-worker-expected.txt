@@ -615,6 +615,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter oncomplete
 [Worker]     getter onerror
 [Worker]     method abort
+[Worker]     method commit
 [Worker]     method constructor
 [Worker]     method objectStore
 [Worker]     setter onabort

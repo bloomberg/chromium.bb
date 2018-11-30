@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
@@ -359,6 +360,30 @@ void IDBTransaction::abort(ExceptionState& exception_state) {
 
   if (BackendDB())
     BackendDB()->Abort(id_);
+}
+
+void IDBTransaction::commit(ExceptionState& exception_state) {
+  if (state_ == kFinishing || state_ == kFinished) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
+    return;
+  }
+
+  if (state_ == kInactive) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
+    return;
+  }
+
+  if (!GetExecutionContext())
+    return;
+
+  state_ = kFinishing;
+
+  if (BackendDB())
+    BackendDB()->Commit(id_);
 }
 
 void IDBTransaction::RegisterRequest(IDBRequest* request) {
