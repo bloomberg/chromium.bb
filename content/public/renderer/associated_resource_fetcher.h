@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
 class GURL;

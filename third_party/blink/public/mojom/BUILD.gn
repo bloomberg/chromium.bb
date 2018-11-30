@@ -25,6 +25,7 @@ mojom("mojom_platform") {
     "dom_storage/storage_area.mojom",
     "dom_storage/storage_partition_service.mojom",
     "feature_policy/feature_policy.mojom",
+    "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "filesystem/file_system.mojom",
