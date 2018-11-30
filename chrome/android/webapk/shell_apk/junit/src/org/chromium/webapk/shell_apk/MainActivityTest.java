@@ -68,7 +68,8 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(expectedStartUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, expectedStartUrl);
     }
 
     /**
@@ -93,7 +94,8 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(expectedStartUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, expectedStartUrl);
     }
 
     /**
@@ -118,7 +120,8 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(expectedStartUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, expectedStartUrl);
     }
 
     /**
@@ -142,7 +145,8 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(intentStartUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, intentStartUrl);
     }
 
     /**
@@ -169,7 +173,8 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(expectedStartUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, expectedStartUrl);
     }
 
     /**
@@ -192,10 +197,10 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(BROWSER_PACKAGE_NAME, startActivityIntent.getPackage());
-        Assert.assertEquals(Intent.ACTION_VIEW, startActivityIntent.getAction());
-        Assert.assertEquals(startUrl, startActivityIntent.getDataString());
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        Assert.assertEquals(BROWSER_PACKAGE_NAME, startedActivityIntent.getPackage());
+        Assert.assertEquals(Intent.ACTION_VIEW, startedActivityIntent.getAction());
+        Assert.assertEquals(startUrl, startedActivityIntent.getDataString());
     }
 
     /**
@@ -218,17 +223,54 @@ public final class MainActivityTest {
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
 
-        assertWebApkLaunched(startUrl);
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, startUrl);
     }
 
-    /** Asserts that {@link BROWSER_PACKAGE_NAME} was launched in WebAPK mode. */
-    private void assertWebApkLaunched(String expectedStartUrl) {
-        Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(BROWSER_PACKAGE_NAME, startActivityIntent.getPackage());
-        Assert.assertEquals(
-                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
-        Assert.assertEquals(
-                expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
+    /**
+     * Check that extras which should be propagated from the WebAPK launch intent to the browser
+     * launch intent are in fact propagated.
+     */
+    @Test
+    public void testPropagatedDeepLinkExtras() throws Exception {
+        final String startUrl = "https://www.google.com/";
+
+        Bundle extrasToPropagate = new Bundle();
+        // WebAPK should not override these extras if they are provided in the WebAPK launch intent.
+        extrasToPropagate.putBoolean(WebApkConstants.EXTRA_FORCE_NAVIGATION, true);
+        extrasToPropagate.putLong(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, 314159);
+
+        // WebAPK should copy to the browser launch intent arbirtary extras provided in the WebAPK
+        // launch intent.
+        extrasToPropagate.putString("randomKey", "randomValue");
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
+        bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
+        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
+        launchIntent.putExtras((Bundle) extrasToPropagate.clone());
+        Robolectric.buildActivity(MainActivity.class, launchIntent).create();
+
+        Intent startedActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertWebApkLaunched(startedActivityIntent, startUrl);
+        Bundle actualExtras = startedActivityIntent.getExtras();
+        Assert.assertNotNull(actualExtras);
+        for (String key : extrasToPropagate.keySet()) {
+            Assert.assertEquals(extrasToPropagate.get(key), actualExtras.get(key));
+        }
+    }
+
+    /**
+     * Asserts that the passed in intent is an intent to launch {@link BROWSER_PACKAGE_NAME} in
+     * WebAPK mode.
+     */
+    private void assertWebApkLaunched(Intent intent, String expectedStartUrl) {
+        Assert.assertEquals(BROWSER_PACKAGE_NAME, intent.getPackage());
+        Assert.assertEquals(HostBrowserLauncher.ACTION_START_WEBAPK, intent.getAction());
+        Assert.assertEquals(expectedStartUrl, intent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
 
     private void installBrowser(String browserPackageName) {

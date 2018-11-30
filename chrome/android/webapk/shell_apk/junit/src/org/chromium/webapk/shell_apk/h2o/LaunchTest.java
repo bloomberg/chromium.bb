@@ -6,13 +6,16 @@ package org.chromium.webapk.shell_apk.h2o;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Bundle;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +32,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
+import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 
 import java.util.ArrayList;
@@ -47,6 +51,7 @@ public final class LaunchTest {
     /** Chromium version which does not support showing the splash screen within WebAPK. */
     private static final int BROWSER_H2O_INCOMPATIBLE_VERSION = 57;
 
+    private Context mAppContext;
     private ShadowApplication mShadowApplication;
     private PackageManager mPackageManager;
     private ShadowPackageManager mShadowPackageManager;
@@ -54,7 +59,8 @@ public final class LaunchTest {
     @Before
     public void setUp() {
         mShadowApplication = ShadowApplication.getInstance();
-        mPackageManager = RuntimeEnvironment.application.getPackageManager();
+        mAppContext = RuntimeEnvironment.application;
+        mPackageManager = mAppContext.getPackageManager();
         mShadowPackageManager = Shadows.shadowOf(mPackageManager);
     }
 
@@ -82,8 +88,12 @@ public final class LaunchTest {
         launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
                 true /* browserCompatibleWithSplashActivity */, launchIntent,
                 H2OTransparentLauncherActivity.class, deepLinkUrl);
-        Assert.assertEquals(2, launchedIntents.size());
+        Assert.assertEquals(5, launchedIntents.size());
         assertIntentComponentClassNameEquals(H2OMainActivity.class, launchedIntents.get(0));
+        Assert.assertEquals(BROWSER_PACKAGE_NAME, launchedIntents.get(1).getPackage());
+        assertIntentComponentClassNameEquals(
+                H2OTransparentLauncherActivity.class, launchedIntents.get(2));
+        assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(3));
 
         launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
                 false /* browserCompatibleWithSplashActivity */, launchIntent,
@@ -114,7 +124,11 @@ public final class LaunchTest {
         launchedIntents = launchAndCheckBrowserLaunched(false /* splashActivityInitiallyEnabled */,
                 true /* browserCompatibleWithSplashActivity */, launchIntent, H2OMainActivity.class,
                 DEFAULT_START_URL);
-        Assert.assertEquals(1, launchedIntents.size());
+        Assert.assertEquals(4, launchedIntents.size());
+        Assert.assertEquals(BROWSER_PACKAGE_NAME, launchedIntents.get(0).getPackage());
+        assertIntentComponentClassNameEquals(
+                H2OTransparentLauncherActivity.class, launchedIntents.get(1));
+        assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(2));
 
         launchedIntents = launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
                 false /* browserCompatibleWithSplashActivity */, launchIntent, SplashActivity.class,
@@ -180,6 +194,79 @@ public final class LaunchTest {
                 source, browserLaunchIntent.getIntExtra(WebApkConstants.EXTRA_SOURCE, -1));
     }
 
+    /**
+     * Check that the WebAPK does not propagate the {@link EXTRA_RELAUNCH} extra. When
+     * the host browser relaunches the WebAPK, the host browser might copy over all of
+     * the extras and not remove the relaunch intent. Check that this scenario does not
+     * yield an infinite loop.
+     */
+    @Test
+    @Ignore
+    public void testDoesNotPropagateRelaunchDirective() throws Exception {
+        final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
+        launchIntent.setPackage(WEBAPK_PACKAGE_NAME);
+        launchIntent.putExtra(WebApkConstants.EXTRA_RELAUNCH, true);
+
+        ArrayList<Intent> launchedIntents =
+                launchAndCheckBrowserLaunched(true /* splashActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class, deepLinkUrl);
+        Assert.assertTrue(launchedIntents.size() > 1);
+
+        Intent browserLaunchIntent = launchedIntents.get(launchedIntents.size() - 1);
+        Assert.assertFalse(browserLaunchIntent.hasExtra(WebApkConstants.EXTRA_RELAUNCH));
+    }
+
+    /**
+     * Test that WebAPK does not keep asking the host browser to relaunch the WebAPK if changing the
+     * enabled component is slow.
+     */
+    @Test
+    @Ignore
+    public void testDoesNotLoopIfEnablingSplashActivityIsSlow() {
+        // SplashActivity is disabled. Host browser is compatible with SplashActivity.
+        changeWebApkActivityEnabledSetting(mPackageManager, SplashActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        installBrowser(
+                BROWSER_PACKAGE_NAME, H2OLauncher.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH);
+
+        Intent launchIntent = new Intent(Intent.ACTION_MAIN);
+        launchIntent.setPackage(WEBAPK_PACKAGE_NAME);
+
+        // WebAPK requested host browser to relaunch WebAPK recently. The WebAPK should not ask
+        // the host browser to relaunch it again.
+        {
+            SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(mAppContext).edit();
+            editor.putLong(
+                    WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP,
+                    System.currentTimeMillis() - 1);
+            editor.apply();
+
+            Robolectric.buildActivity(H2OMainActivity.class, launchIntent).create();
+            Intent startedActivityIntent = mShadowApplication.getNextStartedActivity();
+            Assert.assertEquals(BROWSER_PACKAGE_NAME, startedActivityIntent.getPackage());
+            Assert.assertFalse(startedActivityIntent.hasExtra(WebApkConstants.EXTRA_RELAUNCH));
+        }
+
+        // WebAPK requested host browser to relaunch WebAPK a long time ago. The WebAPK should ask
+        // the host browser to relaunch it.
+        {
+            SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(mAppContext).edit();
+            editor.putLong(
+                    WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, 1);
+            editor.apply();
+
+            Robolectric.buildActivity(H2OMainActivity.class, launchIntent).create();
+            Intent startedActivityIntent = mShadowApplication.getNextStartedActivity();
+            Assert.assertEquals(BROWSER_PACKAGE_NAME, startedActivityIntent.getPackage());
+            Assert.assertTrue(startedActivityIntent.hasExtra(WebApkConstants.EXTRA_RELAUNCH));
+        }
+    }
+
     /** Checks the name of the intent's component class name. */
     private static void assertIntentComponentClassNameEquals(Class expectedClass, Intent intent) {
         Assert.assertEquals(expectedClass.getName(), intent.getComponent().getClassName());
@@ -200,17 +287,12 @@ public final class LaunchTest {
     private ArrayList<Intent> launchAndCheckBrowserLaunched(boolean splashActivityInitiallyEnabled,
             boolean browserCompatibleWithSplashActivity, Intent launchIntent,
             Class<? extends Activity> launchActivity, String expectedLaunchUrl) {
-        ComponentName h2oMainComponent =
-                new ComponentName(WEBAPK_PACKAGE_NAME, H2OMainActivity.class.getName());
-        ComponentName splashComponent =
-                new ComponentName(WEBAPK_PACKAGE_NAME, SplashActivity.class.getName());
-
-        mPackageManager.setComponentEnabledSetting(
-                splashActivityInitiallyEnabled ? splashComponent : h2oMainComponent,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-        mPackageManager.setComponentEnabledSetting(
-                splashActivityInitiallyEnabled ? h2oMainComponent : splashComponent,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        changeWebApkActivityEnabledSetting(mPackageManager,
+                splashActivityInitiallyEnabled ? SplashActivity.class : H2OMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        changeWebApkActivityEnabledSetting(mPackageManager,
+                splashActivityInitiallyEnabled ? H2OMainActivity.class : SplashActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         installBrowser(BROWSER_PACKAGE_NAME,
                 browserCompatibleWithSplashActivity
                         ? H2OLauncher.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
@@ -231,16 +313,25 @@ public final class LaunchTest {
                 expectedLaunchUrl, browserLaunchIntent.getStringExtra(WebApkConstants.EXTRA_URL));
 
         Assert.assertEquals(browserCompatibleWithSplashActivity,
-                isWebApkActivityEnabled(mPackageManager, splashComponent));
+                isWebApkActivityEnabled(mPackageManager, SplashActivity.class));
         Assert.assertEquals(!browserCompatibleWithSplashActivity,
-                isWebApkActivityEnabled(mPackageManager, h2oMainComponent));
+                isWebApkActivityEnabled(mPackageManager, H2OMainActivity.class));
 
         return launchedIntents;
     }
 
-    /** Returns whether the passed in component is enabled. */
+    /** Changes whether the passed in WebAPK activity is enabled. */
+    private static void changeWebApkActivityEnabledSetting(
+            PackageManager packageManager, Class<? extends Activity> activity, int enabledSetting) {
+        ComponentName component = new ComponentName(WEBAPK_PACKAGE_NAME, activity.getName());
+        packageManager.setComponentEnabledSetting(
+                component, enabledSetting, PackageManager.DONT_KILL_APP);
+    }
+
+    /** Returns whether the passed in WebAPK activity is enabled. */
     private static boolean isWebApkActivityEnabled(
-            PackageManager packageManager, ComponentName component) {
+            PackageManager packageManager, Class<? extends Activity> activity) {
+        ComponentName component = new ComponentName(WEBAPK_PACKAGE_NAME, activity.getName());
         int enabledSetting = packageManager.getComponentEnabledSetting(component);
         return (enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
     }
@@ -261,7 +352,21 @@ public final class LaunchTest {
 
             activityIntentChain.add(startedActivityIntent);
 
-            if (browserPackage.equals(startedActivityIntent.getPackage())) break;
+            if (browserPackage.equals(startedActivityIntent.getPackage())) {
+                if (!startedActivityIntent.hasExtra(WebApkConstants.EXTRA_RELAUNCH)) break;
+
+                // Emulate host browser relaunch behaviour.
+                String startUrl = startedActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL);
+                Intent relaunchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
+                relaunchIntent.setComponent(new ComponentName(
+                        WEBAPK_PACKAGE_NAME, H2OTransparentLauncherActivity.class.getName()));
+                Bundle startedActivityExtras = startedActivityIntent.getExtras();
+                if (startedActivityExtras != null) {
+                    relaunchIntent.putExtras(startedActivityExtras);
+                }
+                mAppContext.startActivity(relaunchIntent);
+                continue;
+            }
 
             Class<? extends Activity> startedActivityClass = null;
             try {

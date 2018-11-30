@@ -32,6 +32,8 @@ public final class WebApkConstants {
     // activity.
     public static final String EXTRA_USE_TRANSPARENT_SPLASH =
             "org.chromium.chrome.browser.webapk.transparent_splash";
+    // Tells the host browser to relaunch the WebAPK.
+    public static final String EXTRA_RELAUNCH = "org.chromium.webapk.relaunch";
 
     // Must be kept in sync with chrome/browser/android/shortcut_info.h.
     public static final int SHORTCUT_SOURCE_UNKNOWN = 0;
