@@ -416,6 +416,43 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
   }
 }
 
+TEST_F(DesktopWindowTreeHostMusTest, ClientWindowHasContent) {
+  // Opaque window has content.
+  {
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+
+    Widget widget;
+    widget.Init(params);
+    EXPECT_TRUE(widget.GetNativeWindow()->GetProperty(
+        aura::client::kClientWindowHasContent));
+  }
+
+  // Translucent window does not have content.
+  {
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+
+    Widget widget;
+    widget.Init(params);
+    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
+        aura::client::kClientWindowHasContent));
+  }
+
+  // Window with LAYER_NOT_DRAWN does not have content.
+  {
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.layer_type = ui::LAYER_NOT_DRAWN;
+
+    Widget widget;
+    widget.Init(params);
+    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
+        aura::client::kClientWindowHasContent));
+  }
+}
+
 // DesktopWindowTreeHostMusTest with --force-device-scale-factor=2.
 class DesktopWindowTreeHostMusTestHighDPI
     : public DesktopWindowTreeHostMusTest {

@@ -2189,6 +2189,7 @@ TEST(WindowTreeTest, OcclusionStateChange) {
   aura::Window* top_level2 =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level2);
+  top_level2->SetProperty(aura::client::kClientWindowHasContent, true);
   top_level2->SetBounds(gfx::Rect(0, 0, 15, 15));
   top_level2->Show();
 

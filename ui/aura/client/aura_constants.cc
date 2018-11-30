@@ -45,6 +45,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kAppType, 0);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::SizeF, kAspectRatio, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAvatarIconKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kClientWindowHasContent, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCreatedByUserGesture, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDrawAttentionKey, false);
