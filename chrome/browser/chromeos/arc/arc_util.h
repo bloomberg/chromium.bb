@@ -56,6 +56,10 @@ enum FileSystemCompatibilityState : int32_t {
 // nullptr can be safely passed to this function. In that case, returns false.
 bool IsArcAllowedForProfile(const Profile* profile);
 
+// Returns whether ARC was successfully provisioned and the Primary/Device
+// Account has been signed into ARC.
+bool IsArcProvisioned(const Profile* profile);
+
 // Returns true if the profile is unmanaged or if the policy
 // EcryptfsMigrationStrategy for the user doesn't disable the migration.
 // Specifically if the policy states to ask the user, it is also considered that

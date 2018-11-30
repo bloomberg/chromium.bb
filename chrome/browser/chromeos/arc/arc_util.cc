@@ -277,6 +277,11 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   return it->second;
 }
 
+bool IsArcProvisioned(const Profile* profile) {
+  return profile && profile->GetPrefs()->HasPrefPath(prefs::kArcSignedIn) &&
+         profile->GetPrefs()->GetBoolean(prefs::kArcSignedIn);
+}
+
 void ResetArcAllowedCheckForTesting(const Profile* profile) {
   g_profile_status_check.Get().erase(profile);
 }
