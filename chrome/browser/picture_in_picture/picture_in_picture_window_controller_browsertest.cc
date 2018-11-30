@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
-#if (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 class PictureInPicturePixelComparisonBrowserTest
     : public PictureInPictureWindowControllerBrowserTest {
  public:
@@ -222,9 +222,6 @@ class PictureInPicturePixelComparisonBrowserTest
   }
 
   bool SaveBitmap(base::FilePath& file_path, SkBitmap& bitmap) {
-    base::File file(file_path,
-                    base::File::FLAG_OPEN | base::File::FLAG_OPEN_ALWAYS);
-    CHECK(file.IsValid());
     std::vector<unsigned char> png_data;
     CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data));
     char* data = reinterpret_cast<char*>(&png_data[0]);
@@ -333,12 +330,13 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   Wait(base::TimeDelta::FromSeconds(3));
   TakeOverlayWindowScreenshot(overlay_window_views);
 
-  std::string test_image = "pixel_test_actual_0.png";
+  const base::FilePath::StringPieceType test_image =
+      FILE_PATH_LITERAL("pixel_test_actual_0.png");
   base::FilePath test_image_path = GetFilePath(test_image);
   ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
   EXPECT_TRUE(CompareImages(GetResultBitmap()));
 }
-#endif  // (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
