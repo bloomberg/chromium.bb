@@ -88,8 +88,10 @@ void MatchedPropertiesCache::Add(const ComputedStyle& style,
                                  const MatchedPropertiesVector& properties) {
   DCHECK(hash);
   Cache::AddResult add_result = cache_.insert(hash, nullptr);
-  if (add_result.is_new_entry || !add_result.stored_value->value)
-    add_result.stored_value->value = new CachedMatchedProperties;
+  if (add_result.is_new_entry || !add_result.stored_value->value) {
+    add_result.stored_value->value =
+        MakeGarbageCollected<CachedMatchedProperties>();
+  }
 
   CachedMatchedProperties* cache_item = add_result.stored_value->value.Get();
   if (!add_result.is_new_entry)

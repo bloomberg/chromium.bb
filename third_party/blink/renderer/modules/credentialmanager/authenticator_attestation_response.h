@@ -25,6 +25,10 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
       DOMArrayBuffer* attestation_object,
       Vector<mojom::AuthenticatorTransport> transports);
 
+  AuthenticatorAttestationResponse(
+      DOMArrayBuffer* client_data_json,
+      DOMArrayBuffer* attestation_object,
+      Vector<mojom::AuthenticatorTransport> transports);
   ~AuthenticatorAttestationResponse() override;
 
   DOMArrayBuffer* attestationObject() const {
@@ -36,11 +40,6 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
   void Trace(blink::Visitor*) override;
 
  private:
-  AuthenticatorAttestationResponse(
-      DOMArrayBuffer* client_data_json,
-      DOMArrayBuffer* attestation_object,
-      Vector<mojom::AuthenticatorTransport> transports);
-
   const Member<DOMArrayBuffer> attestation_object_;
   const Vector<mojom::AuthenticatorTransport> transports_;
 };

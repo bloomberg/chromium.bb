@@ -41,7 +41,7 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
   }
 
   void SetUp() override {
-    chrome_client_ = new MockDisplayCutoutChromeClient();
+    chrome_client_ = MakeGarbageCollected<MockDisplayCutoutChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);

@@ -449,7 +449,7 @@ void WorkerThread::InitializeOnWorkerThread(
 
     const KURL url_for_debugger = global_scope_creation_params->script_url;
 
-    console_message_storage_ = new ConsoleMessageStorage();
+    console_message_storage_ = MakeGarbageCollected<ConsoleMessageStorage>();
     global_scope_ =
         CreateWorkerGlobalScope(std::move(global_scope_creation_params));
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());

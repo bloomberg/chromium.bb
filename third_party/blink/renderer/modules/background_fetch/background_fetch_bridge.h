@@ -44,6 +44,7 @@ class BackgroundFetchBridge final
 
   static BackgroundFetchBridge* From(ServiceWorkerRegistration* registration);
 
+  explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
   virtual ~BackgroundFetchBridge();
 
   // Creates a new Background Fetch registration identified by |developer_id|
@@ -108,8 +109,6 @@ class BackgroundFetchBridge final
       mojom::blink::BackgroundFetchRegistrationObserverPtr observer);
 
  private:
-  explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
-
   // Returns an initialized BackgroundFetchService*. A connection will be
   // established after the first call to this method.
   mojom::blink::BackgroundFetchService* GetService();

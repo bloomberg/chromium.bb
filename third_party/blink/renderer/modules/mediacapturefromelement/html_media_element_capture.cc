@@ -169,7 +169,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   MediaStream* stream = MediaStream::Create(context, web_stream);
 
   MediaElementEventListener* listener =
-      new MediaElementEventListener(&element, stream);
+      MakeGarbageCollected<MediaElementEventListener>(&element, stream);
   element.addEventListener(event_type_names::kLoadedmetadata, listener, false);
   element.addEventListener(event_type_names::kEnded, listener, false);
 

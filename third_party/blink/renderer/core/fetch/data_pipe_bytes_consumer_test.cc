@@ -36,7 +36,9 @@ TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead) {
   DataPipeBytesConsumer* consumer = new DataPipeBytesConsumer(
       &GetDocument(), std::move(pipe.consumer_handle), &notifier);
   notifier->SignalComplete();
-  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->Run();
+  auto result =
+      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer))
+          ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ(
       kData,
@@ -65,7 +67,9 @@ TEST_F(DataPipeBytesConsumerTest, TwoPhaseRead_SignalError) {
   // and result in kError.
   notifier->SignalError(BytesConsumer::Error());
 
-  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->Run();
+  auto result =
+      (MakeGarbageCollected<BytesConsumerTestUtil::TwoPhaseReader>(consumer))
+          ->Run();
   EXPECT_EQ(Result::kError, result.first);
   EXPECT_TRUE(result.second.IsEmpty());
 }

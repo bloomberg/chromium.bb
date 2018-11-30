@@ -23,7 +23,8 @@ BackgroundFetchBridge* BackgroundFetchBridge::From(
           service_worker_registration);
 
   if (!bridge) {
-    bridge = new BackgroundFetchBridge(*service_worker_registration);
+    bridge = MakeGarbageCollected<BackgroundFetchBridge>(
+        *service_worker_registration);
     ProvideTo(*service_worker_registration, bridge);
   }
 

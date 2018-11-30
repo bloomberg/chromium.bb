@@ -93,10 +93,23 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
       const String& method_name,
       const HeapVector<Member<Request>>& requests,
       const ExceptionState& exception_state) {
-    FetchResolvedForAdd* self = new FetchResolvedForAdd(
+    FetchResolvedForAdd* self = MakeGarbageCollected<FetchResolvedForAdd>(
         script_state, cache, method_name, requests, exception_state);
     return self->BindToV8Function();
   }
+
+  FetchResolvedForAdd(ScriptState* script_state,
+                      Cache* cache,
+                      const String& method_name,
+                      const HeapVector<Member<Request>>& requests,
+                      const ExceptionState& exception_state)
+      : ScriptFunction(script_state),
+        cache_(cache),
+        method_name_(method_name),
+        requests_(requests),
+        context_type_(exception_state.Context()),
+        property_name_(exception_state.PropertyName()),
+        interface_name_(exception_state.InterfaceName()) {}
 
   ScriptValue Call(ScriptValue value) override {
     ExceptionState exception_state(GetScriptState()->GetIsolate(),
@@ -143,19 +156,6 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
   }
 
  private:
-  FetchResolvedForAdd(ScriptState* script_state,
-                      Cache* cache,
-                      const String& method_name,
-                      const HeapVector<Member<Request>>& requests,
-                      const ExceptionState& exception_state)
-      : ScriptFunction(script_state),
-        cache_(cache),
-        method_name_(method_name),
-        requests_(requests),
-        context_type_(exception_state.Context()),
-        property_name_(exception_state.PropertyName()),
-        interface_name_(exception_state.InterfaceName()) {}
-
   Member<Cache> cache_;
   const String method_name_;
   HeapVector<Member<Request>> requests_;
@@ -440,7 +440,7 @@ class Cache::CodeCacheHandleCallbackForPut final
 Cache* Cache::Create(
     GlobalFetch::ScopedFetcher* fetcher,
     mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info) {
-  return new Cache(fetcher, std::move(cache_ptr_info));
+  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info));
 }
 
 ScriptPromise Cache::match(ScriptState* script_state,
@@ -805,7 +805,8 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
   BarrierCallbackForPut* barrier_callback =
-      new BarrierCallbackForPut(requests.size(), this, method_name, resolver);
+      MakeGarbageCollected<BarrierCallbackForPut>(requests.size(), this,
+                                                  method_name, resolver);
 
   for (wtf_size_t i = 0; i < requests.size(); ++i) {
     KURL url(NullURL(), requests[i]->url());
@@ -849,8 +850,8 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsArrayBuffer();
       buffer->StartLoading(
           loader,
-          new CodeCacheHandleCallbackForPut(script_state, i, barrier_callback,
-                                            requests[i], responses[i]),
+          MakeGarbageCollected<CodeCacheHandleCallbackForPut>(
+              script_state, i, barrier_callback, requests[i], responses[i]),
           exception_state);
       if (exception_state.HadException()) {
         barrier_callback->OnError("Could not inspect response body state");
@@ -865,7 +866,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsBlobHandle(
           responses[i]->InternalMIMEType());
       buffer->StartLoading(loader,
-                           new BlobHandleCallbackForPut(
+                           MakeGarbageCollected<BlobHandleCallbackForPut>(
                                i, barrier_callback, requests[i], responses[i]),
                            exception_state);
       if (exception_state.HadException()) {

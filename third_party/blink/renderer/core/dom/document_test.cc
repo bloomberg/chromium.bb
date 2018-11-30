@@ -206,7 +206,8 @@ void TestSynchronousMutationObserver::DidMergeTextNodes(
     const NodeWithIndex& node_with_index,
     unsigned offset) {
   merge_text_nodes_records_.push_back(
-      new MergeTextNodesRecord(&node, node_with_index, offset));
+      MakeGarbageCollected<MergeTextNodesRecord>(&node, node_with_index,
+                                                 offset));
 }
 
 void TestSynchronousMutationObserver::DidMoveTreeToNewDocument(
@@ -223,8 +224,9 @@ void TestSynchronousMutationObserver::DidUpdateCharacterData(
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
-  updated_character_data_records_.push_back(new UpdateCharacterDataRecord(
-      character_data, offset, old_length, new_length));
+  updated_character_data_records_.push_back(
+      MakeGarbageCollected<UpdateCharacterDataRecord>(character_data, offset,
+                                                      old_length, new_length));
 }
 
 void TestSynchronousMutationObserver::NodeChildrenWillBeRemoved(
@@ -626,7 +628,8 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifier) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
@@ -660,14 +663,16 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().body()->AppendChild(GetDocument().createTextNode("a123456789"));
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().body(), observer.ChildrenChangedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().documentElement()->InsertBefore(
       GetDocument().createTextNode("a123456789"), GetDocument().body());
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
@@ -676,7 +681,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* merge_sample_a = GetDocument().createTextNode("a123456789");
   GetDocument().body()->AppendChild(merge_sample_a);
@@ -695,7 +701,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Node* move_sample = GetDocument().CreateRawElement(html_names::kDivTag);
   move_sample->appendChild(GetDocument().createTextNode("a123"));
@@ -710,7 +717,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().documentElement()->RemoveChild(GetDocument().body());
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().documentElement(),
@@ -718,7 +726,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   Element* const replaced_node = GetDocument().body();
   GetDocument().documentElement()->ReplaceChild(
       GetDocument().CreateRawElement(html_names::kDivTag),
@@ -735,7 +744,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
   V8TestingScope scope;
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* split_sample = GetDocument().createTextNode("0123456789");
   GetDocument().body()->AppendChild(split_sample);
@@ -746,7 +756,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* append_sample = GetDocument().createTextNode("a123456789");
   GetDocument().body()->AppendChild(append_sample);
@@ -792,7 +803,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
 }
 
 TEST_F(DocumentTest, DocumentShutdownNotifier) {
-  auto& observer = *new TestDocumentShutdownObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestDocumentShutdownObserver>(GetDocument());
 
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
@@ -825,7 +837,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   ValidationMessageClient* original_client =
       &GetPage().GetValidationMessageClient();
   MockDocumentValidationMessageClient* mock_client =
-      new MockDocumentValidationMessageClient();
+      MakeGarbageCollected<MockDocumentValidationMessageClient>();
   GetDocument().GetSettings()->SetScriptEnabled(true);
   GetPage().SetValidationMessageClientForTesting(mock_client);
   // ImplicitOpen()-CancelParsing() makes Document.loadEventFinished()

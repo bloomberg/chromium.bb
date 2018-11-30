@@ -71,7 +71,7 @@ void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
 
   CustomElementReactionQueue* reactions = map_.at(element);
   if (!reactions) {
-    reactions = new CustomElementReactionQueue();
+    reactions = MakeGarbageCollected<CustomElementReactionQueue>();
     map_.insert(element, reactions);
   }
 

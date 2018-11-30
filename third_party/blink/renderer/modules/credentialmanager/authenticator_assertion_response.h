@@ -23,6 +23,10 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
       DOMArrayBuffer* signature,
       DOMArrayBuffer* user_handle);
 
+  explicit AuthenticatorAssertionResponse(DOMArrayBuffer* client_data_json,
+                                          DOMArrayBuffer* authenticator_data,
+                                          DOMArrayBuffer* signature,
+                                          DOMArrayBuffer* user_handle);
   ~AuthenticatorAssertionResponse() override;
 
   DOMArrayBuffer* authenticatorData() const {
@@ -36,10 +40,6 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit AuthenticatorAssertionResponse(DOMArrayBuffer* client_data_json,
-                                          DOMArrayBuffer* authenticator_data,
-                                          DOMArrayBuffer* signature,
-                                          DOMArrayBuffer* user_handle);
   const Member<DOMArrayBuffer> authenticator_data_;
   const Member<DOMArrayBuffer> signature_;
   const Member<DOMArrayBuffer> user_handle_;

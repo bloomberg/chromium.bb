@@ -511,7 +511,8 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
 
   // Add an event listener to parent and ensure that hit test display items are
   // created for both the parent and child.
-  BlockPainterMockEventListener* callback = new BlockPainterMockEventListener();
+  BlockPainterMockEventListener* callback =
+      MakeGarbageCollected<BlockPainterMockEventListener>();
   auto* parent_element = GetElementById("parent");
   parent_element->addEventListener(event_type_names::kTouchstart, callback);
   UpdateAllLifecyclePhasesForTest();

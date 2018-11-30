@@ -29,14 +29,15 @@ class TestHelperFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 bool* called_flag) {
-    auto* self = new TestHelperFunction(script_state, called_flag);
+    auto* self =
+        MakeGarbageCollected<TestHelperFunction>(script_state, called_flag);
     return self->BindToV8Function();
   }
 
- private:
   TestHelperFunction(ScriptState* script_state, bool* called_flag)
       : ScriptFunction(script_state), called_flag_(called_flag) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     *called_flag_ = true;
     return value;

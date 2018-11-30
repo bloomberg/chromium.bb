@@ -79,16 +79,17 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
  public:
   class CreateFileResult : public GarbageCollected<CreateFileResult> {
    public:
-    static CreateFileResult* Create() { return new CreateFileResult(); }
+    static CreateFileResult* Create() {
+      return MakeGarbageCollected<CreateFileResult>();
+    }
+
+    CreateFileResult() : failed_(false), error_(base::File::FILE_OK) {}
 
     bool failed_;
     base::File::Error error_;
     Member<File> file_;
 
     void Trace(blink::Visitor* visitor) { visitor->Trace(file_); }
-
-   private:
-    CreateFileResult() : failed_(false), error_(base::File::FILE_OK) {}
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(

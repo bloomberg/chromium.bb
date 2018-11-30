@@ -165,8 +165,8 @@ void SourceListDirective::Parse(const UChar* begin, const UChar* end) {
       if (ContentSecurityPolicy::GetDirectiveType(host) !=
           ContentSecurityPolicy::DirectiveType::kUndefined)
         policy_->ReportDirectiveAsSourceExpression(directive_name_, host);
-      list_.push_back(new CSPSource(policy_, scheme, host, port, path,
-                                    host_wildcard, port_wildcard));
+      list_.push_back(MakeGarbageCollected<CSPSource>(
+          policy_, scheme, host, port, path, host_wildcard, port_wildcard));
     } else {
       policy_->ReportInvalidSourceExpression(
           directive_name_, String(begin_source, static_cast<wtf_size_t>(
@@ -695,19 +695,19 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetSources(
     Member<CSPSource> self) const {
   HeapVector<Member<CSPSource>> sources = list_;
   if (allow_star_) {
-    sources.push_back(new CSPSource(policy_, "ftp", String(), 0, String(),
-                                    CSPSource::kNoWildcard,
-                                    CSPSource::kNoWildcard));
-    sources.push_back(new CSPSource(policy_, "ws", String(), 0, String(),
-                                    CSPSource::kNoWildcard,
-                                    CSPSource::kNoWildcard));
-    sources.push_back(new CSPSource(policy_, "http", String(), 0, String(),
-                                    CSPSource::kNoWildcard,
-                                    CSPSource::kNoWildcard));
+    sources.push_back(MakeGarbageCollected<CSPSource>(
+        policy_, "ftp", String(), 0, String(), CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard));
+    sources.push_back(MakeGarbageCollected<CSPSource>(
+        policy_, "ws", String(), 0, String(), CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard));
+    sources.push_back(MakeGarbageCollected<CSPSource>(
+        policy_, "http", String(), 0, String(), CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard));
     if (self) {
-      sources.push_back(new CSPSource(policy_, self->GetScheme(), String(), 0,
-                                      String(), CSPSource::kNoWildcard,
-                                      CSPSource::kNoWildcard));
+      sources.push_back(MakeGarbageCollected<CSPSource>(
+          policy_, self->GetScheme(), String(), 0, String(),
+          CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     }
   } else if (allow_self_ && self) {
     sources.push_back(self);

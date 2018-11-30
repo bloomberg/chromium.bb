@@ -346,8 +346,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
 
   // 5. Let promise be a new promise.
   MediaKeySystemAccessInitializer* initializer =
-      new MediaKeySystemAccessInitializer(script_state, key_system,
-                                          supported_configurations);
+      MakeGarbageCollected<MediaKeySystemAccessInitializer>(
+          script_state, key_system, supported_configurations);
   ScriptPromise promise = initializer->Promise();
 
   // 6. Asynchronously determine support, and if allowed, create and

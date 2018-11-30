@@ -16,6 +16,7 @@ class CORE_EXPORT AudioTrackList final : public TrackListBase<AudioTrack> {
  public:
   static AudioTrackList* Create(HTMLMediaElement&);
 
+  explicit AudioTrackList(HTMLMediaElement&);
   ~AudioTrackList() override;
 
   bool HasEnabledTrack() const;
@@ -26,9 +27,6 @@ class CORE_EXPORT AudioTrackList final : public TrackListBase<AudioTrack> {
   void Trace(blink::Visitor* visitor) override {
     TrackListBase<AudioTrack>::Trace(visitor);
   }
-
- private:
-  explicit AudioTrackList(HTMLMediaElement&);
 };
 
 }  // namespace blink

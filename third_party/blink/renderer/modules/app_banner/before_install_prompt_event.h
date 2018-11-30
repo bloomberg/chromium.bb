@@ -36,6 +36,15 @@ class BeforeInstallPromptEvent final
   USING_GARBAGE_COLLECTED_MIXIN(BeforeInstallPromptEvent);
 
  public:
+  BeforeInstallPromptEvent(const AtomicString& name,
+                           LocalFrame&,
+                           mojom::blink::AppBannerServicePtr,
+                           mojom::blink::AppBannerEventRequest,
+                           const Vector<String>& platforms,
+                           bool require_gesture);
+  BeforeInstallPromptEvent(ExecutionContext*,
+                           const AtomicString& name,
+                           const BeforeInstallPromptEventInit*);
   ~BeforeInstallPromptEvent() override;
 
   static BeforeInstallPromptEvent* Create(
@@ -45,16 +54,17 @@ class BeforeInstallPromptEvent final
       mojom::blink::AppBannerEventRequest event_request,
       const Vector<String>& platforms,
       bool require_gesture) {
-    return new BeforeInstallPromptEvent(name, frame, std::move(service_ptr),
-                                        std::move(event_request), platforms,
-                                        require_gesture);
+    return MakeGarbageCollected<BeforeInstallPromptEvent>(
+        name, frame, std::move(service_ptr), std::move(event_request),
+        platforms, require_gesture);
   }
 
   static BeforeInstallPromptEvent* Create(
       ExecutionContext* execution_context,
       const AtomicString& name,
       const BeforeInstallPromptEventInit* init) {
-    return new BeforeInstallPromptEvent(execution_context, name, init);
+    return MakeGarbageCollected<BeforeInstallPromptEvent>(execution_context,
+                                                          name, init);
   }
 
   void Dispose();
@@ -72,16 +82,6 @@ class BeforeInstallPromptEvent final
   void Trace(blink::Visitor*) override;
 
  private:
-  BeforeInstallPromptEvent(const AtomicString& name,
-                           LocalFrame&,
-                           mojom::blink::AppBannerServicePtr,
-                           mojom::blink::AppBannerEventRequest,
-                           const Vector<String>& platforms,
-                           bool require_gesture);
-  BeforeInstallPromptEvent(ExecutionContext*,
-                           const AtomicString& name,
-                           const BeforeInstallPromptEventInit*);
-
   // mojom::blink::AppBannerEvent methods:
   void BannerAccepted(const String& platform) override;
   void BannerDismissed() override;

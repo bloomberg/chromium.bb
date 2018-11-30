@@ -57,6 +57,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
  public:
   static CryptoResultImpl* Create(ScriptState*);
 
+  explicit CryptoResultImpl(ScriptState*);
   ~CryptoResultImpl() override;
 
   void CompleteWithError(WebCryptoErrorType, const WebString&) override;
@@ -92,8 +93,6 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
 
     int cancelled_;
   };
-
-  explicit CryptoResultImpl(ScriptState*);
 
   void Cancel();
   void ClearResolver();

@@ -25,6 +25,8 @@ class CacheStorage final : public ScriptWrappable {
 
  public:
   static CacheStorage* Create(ExecutionContext*, GlobalFetch::ScopedFetcher*);
+
+  CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);
   ~CacheStorage() override;
 
   ScriptPromise open(ScriptState*, const String& cache_name);
@@ -39,7 +41,6 @@ class CacheStorage final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
                           const CacheQueryOptions*);

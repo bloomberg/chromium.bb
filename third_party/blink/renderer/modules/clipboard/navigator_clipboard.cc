@@ -32,10 +32,10 @@ void NavigatorClipboard::Trace(blink::Visitor* visitor) {
 
 NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
-  clipboard_ =
-      new Clipboard(GetSupplementable()->GetFrame()
-                        ? GetSupplementable()->GetFrame()->GetDocument()
-                        : nullptr);
+  clipboard_ = MakeGarbageCollected<Clipboard>(
+      GetSupplementable()->GetFrame()
+          ? GetSupplementable()->GetFrame()->GetDocument()
+          : nullptr);
 }
 
 }  // namespace blink

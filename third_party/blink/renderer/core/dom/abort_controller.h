@@ -21,6 +21,8 @@ class AbortController final : public ScriptWrappable {
 
  public:
   static AbortController* Create(ExecutionContext*);
+
+  explicit AbortController(ExecutionContext*);
   ~AbortController() override;
 
   // abort_controller.idl
@@ -34,8 +36,6 @@ class AbortController final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
-  explicit AbortController(ExecutionContext*);
-
   Member<AbortSignal> signal_;
 };
 

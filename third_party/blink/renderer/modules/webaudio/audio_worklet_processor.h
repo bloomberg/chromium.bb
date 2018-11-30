@@ -38,6 +38,9 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // |AudioWorkletGlobalScope|.
   static AudioWorkletProcessor* Create(ExecutionContext*);
 
+  AudioWorkletProcessor(AudioWorkletGlobalScope*,
+                        const String& name,
+                        MessagePort*);
   ~AudioWorkletProcessor() override = default;
 
   // |AudioWorkletHandler| invokes this method to process audio.
@@ -58,10 +61,6 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioWorkletProcessor(AudioWorkletGlobalScope*,
-                        const String& name,
-                        MessagePort*);
-
   Member<AudioWorkletGlobalScope> global_scope_;
   Member<MessagePort> processor_port_;
 

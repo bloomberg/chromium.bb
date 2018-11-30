@@ -70,7 +70,7 @@ constexpr char kAOM[] = R"HTML(
     <p id="after">After virtual AOM node.</p>
     <script>
       let parent = document.getElementById("aomParent");
-      let node = new AccessibleNode();
+      let node = MakeGarbageCollected<AccessibleNode>();
       node.role = "button";
       node.label = "Button";
       parent.accessibleNode.appendChild(node);

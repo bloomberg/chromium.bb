@@ -56,7 +56,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
  public:
   static Blob* Create(ExecutionContext*, ExceptionState&) {
-    return new Blob(BlobDataHandle::Create());
+    return MakeGarbageCollected<Blob>(BlobDataHandle::Create());
   }
 
   static Blob* Create(
@@ -66,13 +66,14 @@ class CORE_EXPORT Blob : public ScriptWrappable,
       ExceptionState&);
 
   static Blob* Create(scoped_refptr<BlobDataHandle> blob_data_handle) {
-    return new Blob(std::move(blob_data_handle));
+    return MakeGarbageCollected<Blob>(std::move(blob_data_handle));
   }
 
   static Blob* Create(const unsigned char* data,
                       size_t bytes,
                       const String& content_type);
 
+  explicit Blob(scoped_refptr<BlobDataHandle>);
   ~Blob() override;
 
   virtual unsigned long long size() const { return blob_data_handle_->size(); }
@@ -118,8 +119,6 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   bool IsBlob() const override { return true; }
 
  protected:
-  explicit Blob(scoped_refptr<BlobDataHandle>);
-
   static void PopulateBlobData(
       BlobData*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,

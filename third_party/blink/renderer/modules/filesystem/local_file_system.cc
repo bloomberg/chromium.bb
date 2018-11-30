@@ -85,7 +85,8 @@ void LocalFileSystem::ResolveURL(
     const KURL& file_system_url,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
     SynchronousType type) {
-  CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
+  CallbackWrapper* wrapper =
+      MakeGarbageCollected<CallbackWrapper>(std::move(callbacks));
   RequestFileSystemAccessInternal(
       context,
       WTF::Bind(&LocalFileSystem::ResolveURLInternal,
@@ -102,7 +103,8 @@ void LocalFileSystem::RequestFileSystem(
     long long size,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
-  CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
+  CallbackWrapper* wrapper =
+      MakeGarbageCollected<CallbackWrapper>(std::move(callbacks));
   RequestFileSystemAccessInternal(
       context,
       WTF::Bind(&LocalFileSystem::FileSystemAllowedInternal,

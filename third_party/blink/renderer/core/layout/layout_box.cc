@@ -5980,7 +5980,8 @@ void LayoutBox::AddCustomLayoutChildIfNeeded() {
   if (!definition)
     return;
 
-  EnsureRareData().layout_child_ = new CustomLayoutChild(*definition, this);
+  EnsureRareData().layout_child_ =
+      MakeGarbageCollected<CustomLayoutChild>(*definition, this);
 }
 
 void LayoutBox::ClearCustomLayoutChild() {

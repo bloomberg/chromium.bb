@@ -37,6 +37,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
                               const AudioContextOptions*,
                               ExceptionState&);
 
+  AudioContext(Document&, const WebAudioLatencyHint&);
   ~AudioContext() override;
   void Trace(blink::Visitor*) override;
 
@@ -67,7 +68,6 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void NotifySourceNodeStart() final;
 
  protected:
-  AudioContext(Document&, const WebAudioLatencyHint&);
   void Uninitialize() final;
 
  private:

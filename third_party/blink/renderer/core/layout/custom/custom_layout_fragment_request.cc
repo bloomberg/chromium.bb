@@ -118,8 +118,8 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   LayoutUnit fragment_block_size =
       is_parallel_writing_mode ? box->LogicalHeight() : box->LogicalWidth();
 
-  return new CustomLayoutFragment(this, fragment_inline_size,
-                                  fragment_block_size, isolate);
+  return MakeGarbageCollected<CustomLayoutFragment>(
+      this, fragment_inline_size, fragment_block_size, isolate);
 }
 
 LayoutBox* CustomLayoutFragmentRequest::GetLayoutBox() const {

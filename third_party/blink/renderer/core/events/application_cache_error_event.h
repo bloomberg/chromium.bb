@@ -17,6 +17,12 @@ class ApplicationCacheErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason,
+                             const String& url,
+                             int status,
+                             const String& message);
+  ApplicationCacheErrorEvent(const AtomicString& event_type,
+                             const ApplicationCacheErrorEventInit* initializer);
   ~ApplicationCacheErrorEvent() override;
 
   static ApplicationCacheErrorEvent* Create(
@@ -24,13 +30,15 @@ class ApplicationCacheErrorEvent final : public Event {
       const String& url,
       int status,
       const String& message) {
-    return new ApplicationCacheErrorEvent(reason, url, status, message);
+    return MakeGarbageCollected<ApplicationCacheErrorEvent>(reason, url, status,
+                                                            message);
   }
 
   static ApplicationCacheErrorEvent* Create(
       const AtomicString& event_type,
       const ApplicationCacheErrorEventInit* initializer) {
-    return new ApplicationCacheErrorEvent(event_type, initializer);
+    return MakeGarbageCollected<ApplicationCacheErrorEvent>(event_type,
+                                                            initializer);
   }
 
   const String& reason() const { return reason_; }
@@ -45,13 +53,6 @@ class ApplicationCacheErrorEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason,
-                             const String& url,
-                             int status,
-                             const String& message);
-  ApplicationCacheErrorEvent(const AtomicString& event_type,
-                             const ApplicationCacheErrorEventInit* initializer);
-
   String reason_;
   String url_;
   int status_;

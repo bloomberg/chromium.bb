@@ -24,6 +24,8 @@ class ComputedAccessibleNodePromiseResolver final
     : public GarbageCollectedFinalized<ComputedAccessibleNodePromiseResolver> {
  public:
   static ComputedAccessibleNodePromiseResolver* Create(ScriptState*, Element&);
+
+  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   ~ComputedAccessibleNodePromiseResolver() {}
 
   ScriptPromise Promise();
@@ -32,7 +34,6 @@ class ComputedAccessibleNodePromiseResolver final
   void Trace(blink::Visitor*);
 
  private:
-  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   void UpdateTreeAndResolve();
   class RequestAnimationFrameCallback;
 
@@ -48,6 +49,8 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
  public:
   static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*, LocalFrame*);
+
+  ComputedAccessibleNode(AXID, WebComputedAXTree*, LocalFrame*);
   ~ComputedAccessibleNode() override;
 
   void Trace(Visitor*) override;
@@ -96,7 +99,6 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
-  ComputedAccessibleNode(AXID, WebComputedAXTree*, LocalFrame*);
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;

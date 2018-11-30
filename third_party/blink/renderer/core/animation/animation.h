@@ -93,6 +93,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                            AnimationTimeline*,
                            ExceptionState&);
 
+  Animation(ExecutionContext*, DocumentTimeline&, AnimationEffect*);
   ~Animation() override;
   void Dispose();
 
@@ -233,8 +234,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  Animation(ExecutionContext*, DocumentTimeline&, AnimationEffect*);
-
   void ClearOutdated();
   void ForceServiceOnNextFrame();
 
@@ -356,6 +355,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
    public:
     static CompositorAnimationHolder* Create(Animation*);
 
+    explicit CompositorAnimationHolder(Animation*);
+
     void Detach();
 
     void Trace(blink::Visitor* visitor) { visitor->Trace(animation_); }
@@ -365,8 +366,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     }
 
    private:
-    explicit CompositorAnimationHolder(Animation*);
-
     void Dispose();
 
     std::unique_ptr<CompositorAnimation> compositor_animation_;

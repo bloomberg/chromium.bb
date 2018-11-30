@@ -212,7 +212,8 @@ TEST_F(ModuleMapTest, sequentialRequests) {
       GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
-  TestSingleModuleClient* client = new TestSingleModuleClient;
+  TestSingleModuleClient* client =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
                                  settings_object,
                                  ModuleGraphLevel::kTopLevelModuleFetch,
@@ -230,7 +231,8 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   EXPECT_TRUE(client->GetModuleScript());
 
   // Secondary request
-  TestSingleModuleClient* client2 = new TestSingleModuleClient;
+  TestSingleModuleClient* client2 =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
                                  settings_object,
                                  ModuleGraphLevel::kTopLevelModuleFetch,
@@ -259,14 +261,16 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
       GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
-  TestSingleModuleClient* client = new TestSingleModuleClient;
+  TestSingleModuleClient* client =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
                                  settings_object,
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client);
 
   // Secondary request (which should join the first request)
-  TestSingleModuleClient* client2 = new TestSingleModuleClient;
+  TestSingleModuleClient* client2 =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
                                  settings_object,
                                  ModuleGraphLevel::kTopLevelModuleFetch,

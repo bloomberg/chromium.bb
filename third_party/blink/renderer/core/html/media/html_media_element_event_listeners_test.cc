@@ -80,7 +80,7 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
   static MediaStubLocalFrameClient* Create() {
-    return new MediaStubLocalFrameClient;
+    return MakeGarbageCollected<MediaStubLocalFrameClient>();
   }
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(

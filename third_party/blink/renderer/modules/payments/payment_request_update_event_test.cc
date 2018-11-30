@@ -40,7 +40,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
   V8TestingScope scope;
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       scope.GetExecutionContext(), event_type_names::kShippingaddresschange);
-  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  MockPaymentUpdater* updater = MakeGarbageCollected<MockPaymentUpdater>();
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(updater);
   event->SetEventPhase(Event::kCapturingPhase);
@@ -62,7 +62,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
   V8TestingScope scope;
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       scope.GetExecutionContext(), event_type_names::kShippingaddresschange);
-  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  MockPaymentUpdater* updater = MakeGarbageCollected<MockPaymentUpdater>();
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(updater);
   event->SetEventPhase(Event::kCapturingPhase);
@@ -99,7 +99,7 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice) {
   V8TestingScope scope;
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       scope.GetExecutionContext(), event_type_names::kShippingaddresschange);
-  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  MockPaymentUpdater* updater = MakeGarbageCollected<MockPaymentUpdater>();
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(updater);
   event->SetEventPhase(Event::kCapturingPhase);

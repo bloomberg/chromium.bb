@@ -178,7 +178,7 @@ StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
     result.emplace_back(property_name, std::move(values));
   });
 
-  return new StylePropertyMapIterationSource(result);
+  return MakeGarbageCollected<StylePropertyMapIterationSource>(result);
 }
 
 CSSStyleValue* StylePropertyMapReadOnlyMainThread::GetShorthandProperty(

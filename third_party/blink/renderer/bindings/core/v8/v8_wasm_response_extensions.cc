@@ -222,9 +222,10 @@ void StreamFromResponseCallback(
   }
 
   FetchDataLoaderForWasmStreaming* loader =
-      new FetchDataLoaderForWasmStreaming(script_state, streaming);
-  response->BodyBuffer()->StartLoading(loader, new WasmDataLoaderClient(),
-                                       exception_state);
+      MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(script_state,
+                                                            streaming);
+  response->BodyBuffer()->StartLoading(
+      loader, MakeGarbageCollected<WasmDataLoaderClient>(), exception_state);
 }
 
 }  // namespace

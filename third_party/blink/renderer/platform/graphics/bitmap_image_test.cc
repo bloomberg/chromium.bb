@@ -233,7 +233,7 @@ class BitmapImageTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    image_observer_ = new FakeImageObserver;
+    image_observer_ = MakeGarbageCollected<FakeImageObserver>();
     image_ = BitmapImage::Create(image_observer_.Get());
   }
 

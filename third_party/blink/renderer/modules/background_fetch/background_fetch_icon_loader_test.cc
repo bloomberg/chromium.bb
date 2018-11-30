@@ -38,7 +38,8 @@ constexpr char kBackgroundFetchImageLoaderIcon3000x2000[] = "3000x2000.png";
 
 class BackgroundFetchIconLoaderTest : public PageTestBase {
  public:
-  BackgroundFetchIconLoaderTest() : loader_(new BackgroundFetchIconLoader()) {}
+  BackgroundFetchIconLoaderTest()
+      : loader_(MakeGarbageCollected<BackgroundFetchIconLoader>()) {}
   ~BackgroundFetchIconLoaderTest() override {
     loader_->Stop();
     platform_->GetURLLoaderMockFactory()

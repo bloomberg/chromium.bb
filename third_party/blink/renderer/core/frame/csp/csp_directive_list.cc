@@ -96,7 +96,8 @@ CSPDirectiveList* CSPDirectiveList::Create(
     ContentSecurityPolicyHeaderType type,
     ContentSecurityPolicyHeaderSource source,
     bool should_parse_wasm_eval) {
-  CSPDirectiveList* directives = new CSPDirectiveList(policy, type, source);
+  CSPDirectiveList* directives =
+      MakeGarbageCollected<CSPDirectiveList>(policy, type, source);
   directives->Parse(begin, end, should_parse_wasm_eval);
 
   if (!directives->CheckEval(directives->OperativeDirective(

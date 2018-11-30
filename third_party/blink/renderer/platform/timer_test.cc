@@ -617,7 +617,7 @@ TEST_F(TimerTest, RunOnHeapTimer) {
   scoped_refptr<OnHeapTimerOwner::Record> record =
       OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner =
-      new OnHeapTimerOwner(record, GetTaskRunner());
+      MakeGarbageCollected<OnHeapTimerOwner>(record, GetTaskRunner());
 
   owner->StartOneShot(TimeDelta(), FROM_HERE);
 
@@ -630,7 +630,7 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   scoped_refptr<OnHeapTimerOwner::Record> record =
       OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner =
-      new OnHeapTimerOwner(record, GetTaskRunner());
+      MakeGarbageCollected<OnHeapTimerOwner>(record, GetTaskRunner());
 
   record->Dispose();
   owner->StartOneShot(TimeDelta(), FROM_HERE);
@@ -650,7 +650,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   scoped_refptr<OnHeapTimerOwner::Record> record =
       OnHeapTimerOwner::Record::Create();
   Persistent<OnHeapTimerOwner> owner =
-      new OnHeapTimerOwner(record, GetTaskRunner());
+      MakeGarbageCollected<OnHeapTimerOwner>(record, GetTaskRunner());
 
   record->Dispose();
   owner->StartOneShot(TimeDelta(), FROM_HERE);

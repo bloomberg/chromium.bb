@@ -66,7 +66,8 @@ class CompleteUrlExecutionContext final : public NullExecutionContext {
 class NotificationDataTest : public testing::Test {
  public:
   void SetUp() override {
-    execution_context_ = new CompleteUrlExecutionContext(kNotificationBaseUrl);
+    execution_context_ =
+        MakeGarbageCollected<CompleteUrlExecutionContext>(kNotificationBaseUrl);
   }
 
   ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }

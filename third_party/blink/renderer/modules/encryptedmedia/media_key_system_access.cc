@@ -160,9 +160,9 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {
   WebMediaKeySystemConfiguration configuration = access_->GetConfiguration();
 
   // 1. Let promise be a new promise.
-  NewCdmResultPromise* helper =
-      new NewCdmResultPromise(script_state, configuration.session_types,
-                              "MediaKeySystemAccess", "createMediaKeys");
+  NewCdmResultPromise* helper = MakeGarbageCollected<NewCdmResultPromise>(
+      script_state, configuration.session_types, "MediaKeySystemAccess",
+      "createMediaKeys");
   ScriptPromise promise = helper->Promise();
 
   // 2. Asynchronously create and initialize the MediaKeys object.

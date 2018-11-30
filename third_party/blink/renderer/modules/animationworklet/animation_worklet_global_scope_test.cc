@@ -439,7 +439,7 @@ TEST_F(AnimationWorkletGlobalScopeTest, AnimatorInstanceUpdate) {
 TEST_F(AnimationWorkletGlobalScopeTest,
        ShouldRegisterItselfAfterFirstAnimatorRegistration) {
   MockAnimationWorkletProxyClient* proxy_client =
-      new MockAnimationWorkletProxyClient();
+      MakeGarbageCollected<MockAnimationWorkletProxyClient>();
   std::unique_ptr<WorkerThread> worklet =
       CreateAnimationAndPaintWorkletThread(proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon

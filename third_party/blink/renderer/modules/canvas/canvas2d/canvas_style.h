@@ -42,10 +42,14 @@ class HTMLCanvasElement;
 class CanvasStyle final : public GarbageCollected<CanvasStyle> {
  public:
   static CanvasStyle* CreateFromRGBA(RGBA32 rgba) {
-    return new CanvasStyle(rgba);
+    return MakeGarbageCollected<CanvasStyle>(rgba);
   }
   static CanvasStyle* CreateFromGradient(CanvasGradient*);
   static CanvasStyle* CreateFromPattern(CanvasPattern*);
+
+  CanvasStyle(RGBA32);
+  CanvasStyle(CanvasGradient*);
+  CanvasStyle(CanvasPattern*);
 
   String GetColor() const {
     DCHECK_EQ(type_, kColorRGBA);
@@ -65,10 +69,6 @@ class CanvasStyle final : public GarbageCollected<CanvasStyle> {
 
  private:
   enum Type { kColorRGBA, kGradient, kImagePattern };
-
-  CanvasStyle(RGBA32);
-  CanvasStyle(CanvasGradient*);
-  CanvasStyle(CanvasPattern*);
 
   Type type_;
   RGBA32 rgba_;

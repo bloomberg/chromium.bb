@@ -73,7 +73,7 @@ ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
 ContextMenuController::~ContextMenuController() = default;
 
 ContextMenuController* ContextMenuController::Create(Page* page) {
-  return new ContextMenuController(page);
+  return MakeGarbageCollected<ContextMenuController>(page);
 }
 
 void ContextMenuController::Trace(blink::Visitor* visitor) {

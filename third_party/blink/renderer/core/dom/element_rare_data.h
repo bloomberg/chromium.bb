@@ -161,7 +161,7 @@ class ElementRareData : public NodeRareData {
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
     if (!accessible_node_) {
-      accessible_node_ = new AccessibleNode(owner_element);
+      accessible_node_ = MakeGarbageCollected<AccessibleNode>(owner_element);
     }
     return accessible_node_;
   }

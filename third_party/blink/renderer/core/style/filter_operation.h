@@ -175,8 +175,11 @@ class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
  public:
   static BasicColorMatrixFilterOperation* Create(double amount,
                                                  OperationType type) {
-    return new BasicColorMatrixFilterOperation(amount, type);
+    return MakeGarbageCollected<BasicColorMatrixFilterOperation>(amount, type);
   }
+
+  BasicColorMatrixFilterOperation(double amount, OperationType type)
+      : FilterOperation(type), amount_(amount) {}
 
   double Amount() const { return amount_; }
 
@@ -190,9 +193,6 @@ class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
         static_cast<const BasicColorMatrixFilterOperation*>(&o);
     return amount_ == other->amount_;
   }
-
-  BasicColorMatrixFilterOperation(double amount, OperationType type)
-      : FilterOperation(type), amount_(amount) {}
 
   double amount_;
 };
@@ -218,8 +218,12 @@ class CORE_EXPORT BasicComponentTransferFilterOperation
  public:
   static BasicComponentTransferFilterOperation* Create(double amount,
                                                        OperationType type) {
-    return new BasicComponentTransferFilterOperation(amount, type);
+    return MakeGarbageCollected<BasicComponentTransferFilterOperation>(amount,
+                                                                       type);
   }
+
+  BasicComponentTransferFilterOperation(double amount, OperationType type)
+      : FilterOperation(type), amount_(amount) {}
 
   double Amount() const { return amount_; }
 
@@ -235,9 +239,6 @@ class CORE_EXPORT BasicComponentTransferFilterOperation
         static_cast<const BasicComponentTransferFilterOperation*>(&o);
     return amount_ == other->amount_;
   }
-
-  BasicComponentTransferFilterOperation(double amount, OperationType type)
-      : FilterOperation(type), amount_(amount) {}
 
   double amount_;
 };
@@ -259,8 +260,11 @@ DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation,
 class CORE_EXPORT BlurFilterOperation : public FilterOperation {
  public:
   static BlurFilterOperation* Create(const Length& std_deviation) {
-    return new BlurFilterOperation(std_deviation);
+    return MakeGarbageCollected<BlurFilterOperation>(std_deviation);
   }
+
+  BlurFilterOperation(const Length& std_deviation)
+      : FilterOperation(BLUR), std_deviation_(std_deviation) {}
 
   const Length& StdDeviation() const { return std_deviation_; }
 
@@ -278,9 +282,6 @@ class CORE_EXPORT BlurFilterOperation : public FilterOperation {
         static_cast<const BlurFilterOperation*>(&o);
     return std_deviation_ == other->std_deviation_;
   }
-
-  BlurFilterOperation(const Length& std_deviation)
-      : FilterOperation(BLUR), std_deviation_(std_deviation) {}
 
   Length std_deviation_;
 };
@@ -321,8 +322,11 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
  public:
   static BoxReflectFilterOperation* Create(const BoxReflection& reflection) {
-    return new BoxReflectFilterOperation(reflection);
+    return MakeGarbageCollected<BoxReflectFilterOperation>(reflection);
   }
+
+  BoxReflectFilterOperation(const BoxReflection& reflection)
+      : FilterOperation(BOX_REFLECT), reflection_(reflection) {}
 
   const BoxReflection& Reflection() const { return reflection_; }
 
@@ -334,9 +338,6 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
   FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation&) const override;
-
-  BoxReflectFilterOperation(const BoxReflection& reflection)
-      : FilterOperation(BOX_REFLECT), reflection_(reflection) {}
 
   BoxReflection reflection_;
 };

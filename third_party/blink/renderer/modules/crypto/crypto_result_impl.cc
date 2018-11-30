@@ -65,11 +65,14 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
  public:
   static Resolver* Create(ScriptState* script_state, CryptoResultImpl* result) {
     DCHECK(script_state->ContextIsValid());
-    Resolver* resolver = new Resolver(script_state, result);
+    Resolver* resolver = MakeGarbageCollected<Resolver>(script_state, result);
     resolver->PauseIfNeeded();
     resolver->KeepAliveWhilePending();
     return resolver;
   }
+
+  Resolver(ScriptState* script_state, CryptoResultImpl* result)
+      : ScriptPromiseResolver(script_state), result_(result) {}
 
   void ContextDestroyed(ExecutionContext* destroyed_context) override {
     result_->Cancel();
@@ -83,9 +86,6 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
   }
 
  private:
-  Resolver(ScriptState* script_state, CryptoResultImpl* result)
-      : ScriptPromiseResolver(script_state), result_(result) {}
-
   Member<CryptoResultImpl> result_;
 };
 
@@ -141,7 +141,7 @@ void CryptoResultImpl::ClearResolver() {
 }
 
 CryptoResultImpl* CryptoResultImpl::Create(ScriptState* script_state) {
-  return new CryptoResultImpl(script_state);
+  return MakeGarbageCollected<CryptoResultImpl>(script_state);
 }
 
 void CryptoResultImpl::CompleteWithError(WebCryptoErrorType error_type,

@@ -16,7 +16,8 @@ namespace blink {
 
 TEST(CustomElementReactionQueueTest, invokeReactions_one) {
   std::vector<char> log;
-  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  CustomElementReactionQueue* queue =
+      MakeGarbageCollected<CustomElementReactionQueue>();
   HeapVector<Member<Command>>* commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
   commands->push_back(MakeGarbageCollected<Log>('a', log));
@@ -28,7 +29,8 @@ TEST(CustomElementReactionQueueTest, invokeReactions_one) {
 
 TEST(CustomElementReactionQueueTest, invokeReactions_many) {
   std::vector<char> log;
-  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  CustomElementReactionQueue* queue =
+      MakeGarbageCollected<CustomElementReactionQueue>();
   {
     HeapVector<Member<Command>>* commands =
         MakeGarbageCollected<HeapVector<Member<Command>>>();
@@ -54,7 +56,8 @@ TEST(CustomElementReactionQueueTest, invokeReactions_many) {
 
 TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
   std::vector<char> log;
-  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  CustomElementReactionQueue* queue =
+      MakeGarbageCollected<CustomElementReactionQueue>();
 
   HeapVector<Member<Command>>* third_commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
@@ -86,7 +89,8 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
 
 TEST(CustomElementReactionQueueTest, clear_duringInvoke) {
   std::vector<char> log;
-  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  CustomElementReactionQueue* queue =
+      MakeGarbageCollected<CustomElementReactionQueue>();
 
   {
     HeapVector<Member<Command>>* commands =

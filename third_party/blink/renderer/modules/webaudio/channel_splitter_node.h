@@ -67,7 +67,6 @@ class ChannelSplitterNode final : public AudioNode {
                                      const ChannelSplitterOptions*,
                                      ExceptionState&);
 
- private:
   ChannelSplitterNode(BaseAudioContext&, unsigned number_of_outputs);
 };
 

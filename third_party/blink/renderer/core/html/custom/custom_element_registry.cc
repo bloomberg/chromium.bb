@@ -78,7 +78,8 @@ bool ThrowIfValidName(const AtomicString& name,
 
 CustomElementRegistry* CustomElementRegistry::Create(
     const LocalDOMWindow* owner) {
-  CustomElementRegistry* registry = new CustomElementRegistry(owner);
+  CustomElementRegistry* registry =
+      MakeGarbageCollected<CustomElementRegistry>(owner);
   Document* document = owner->document();
   if (V0CustomElementRegistrationContext* v0 =
           document ? document->RegistrationContext() : nullptr)

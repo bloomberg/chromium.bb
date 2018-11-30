@@ -39,7 +39,8 @@ void UpdateAnimation(Animator* animator,
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread) {
-  return new AnimationWorkletGlobalScope(std::move(creation_params), thread);
+  return MakeGarbageCollected<AnimationWorkletGlobalScope>(
+      std::move(creation_params), thread);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
@@ -191,7 +192,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
     return;
 
   AnimatorDefinition* definition =
-      new AnimatorDefinition(isolate, constructor, animate);
+      MakeGarbageCollected<AnimatorDefinition>(isolate, constructor, animate);
 
   animator_definitions_.Set(name, definition);
 }
@@ -220,7 +221,8 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
            .ToLocal(&instance))
     return nullptr;
 
-  return new Animator(isolate, definition, instance, num_effects);
+  return MakeGarbageCollected<Animator>(isolate, definition, instance,
+                                        num_effects);
 }
 
 AnimatorDefinition* AnimationWorkletGlobalScope::FindDefinitionForTest(

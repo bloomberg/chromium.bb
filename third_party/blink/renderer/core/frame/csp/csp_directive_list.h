@@ -38,6 +38,10 @@ class CORE_EXPORT CSPDirectiveList
                                   ContentSecurityPolicyHeaderSource,
                                   bool should_parse_wasm_eval = false);
 
+  CSPDirectiveList(ContentSecurityPolicy*,
+                   ContentSecurityPolicyHeaderType,
+                   ContentSecurityPolicyHeaderSource);
+
   void Parse(const UChar* begin,
              const UChar* end,
              bool should_parse_wasm_eval = false);
@@ -206,10 +210,6 @@ class CORE_EXPORT CSPDirectiveList
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
   enum RequireSRIForToken { kNone = 0, kScript = 1 << 0, kStyle = 1 << 1 };
-
-  CSPDirectiveList(ContentSecurityPolicy*,
-                   ContentSecurityPolicyHeaderType,
-                   ContentSecurityPolicyHeaderSource);
 
   bool ParseDirective(const UChar* begin,
                       const UChar* end,

@@ -242,7 +242,8 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
 
   // TODO(http://crbug.com/856257) Remove the special casing for AR and non-AR.
   if (!HasARSession()) {
-    doc->RequestAnimationFrame(new XRFrameProviderRequestCallback(this));
+    doc->RequestAnimationFrame(
+        MakeGarbageCollected<XRFrameProviderRequestCallback>(this));
   }
 }
 
@@ -336,7 +337,8 @@ void XRFrameProvider::OnNonImmersiveFrameData(
     // Try to request a regular animation frame to avoid getting stuck.
     DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
     frame_pose_ = nullptr;
-    doc->RequestAnimationFrame(new XRFrameProviderRequestCallback(this));
+    doc->RequestAnimationFrame(
+        MakeGarbageCollected<XRFrameProviderRequestCallback>(this));
     return;
   }
 

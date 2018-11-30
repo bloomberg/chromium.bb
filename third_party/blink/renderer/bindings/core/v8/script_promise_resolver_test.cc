@@ -25,14 +25,15 @@ class TestHelperFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 String* value) {
-    TestHelperFunction* self = new TestHelperFunction(script_state, value);
+    TestHelperFunction* self =
+        MakeGarbageCollected<TestHelperFunction>(script_state, value);
     return self->BindToV8Function();
   }
 
- private:
   TestHelperFunction(ScriptState* script_state, String* value)
       : ScriptFunction(script_state), value_(value) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     DCHECK(!value.IsEmpty());
     *value_ = ToCoreString(value.V8Value()
@@ -202,21 +203,19 @@ class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
  public:
   static ScriptPromiseResolverKeepAlive* Create(ScriptState* script_state) {
     ScriptPromiseResolverKeepAlive* resolver =
-        new ScriptPromiseResolverKeepAlive(script_state);
+        MakeGarbageCollected<ScriptPromiseResolverKeepAlive>(script_state);
     resolver->PauseIfNeeded();
     return resolver;
   }
 
+  explicit ScriptPromiseResolverKeepAlive(ScriptState* script_state)
+      : ScriptPromiseResolver(script_state) {}
   ~ScriptPromiseResolverKeepAlive() override { destructor_calls_++; }
 
   static void Reset() { destructor_calls_ = 0; }
   static bool IsAlive() { return !destructor_calls_; }
 
   static int destructor_calls_;
-
- private:
-  explicit ScriptPromiseResolverKeepAlive(ScriptState* script_state)
-      : ScriptPromiseResolver(script_state) {}
 };
 
 int ScriptPromiseResolverKeepAlive::destructor_calls_ = 0;

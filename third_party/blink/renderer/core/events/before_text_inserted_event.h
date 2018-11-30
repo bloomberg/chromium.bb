@@ -32,10 +32,11 @@ namespace blink {
 
 class BeforeTextInsertedEvent final : public Event {
  public:
+  explicit BeforeTextInsertedEvent(const String&);
   ~BeforeTextInsertedEvent() override;
 
   static BeforeTextInsertedEvent* Create(const String& text) {
-    return new BeforeTextInsertedEvent(text);
+    return MakeGarbageCollected<BeforeTextInsertedEvent>(text);
   }
 
   const AtomicString& InterfaceName() const override;
@@ -47,8 +48,6 @@ class BeforeTextInsertedEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit BeforeTextInsertedEvent(const String&);
-
   String text_;
 };
 

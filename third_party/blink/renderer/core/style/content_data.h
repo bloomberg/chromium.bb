@@ -147,14 +147,14 @@ class CounterContentData final : public ContentData {
     counter_ = std::move(counter);
   }
 
+  CounterContentData(std::unique_ptr<CounterContent> counter)
+      : counter_(std::move(counter)) {}
+
   bool IsCounter() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
                                    ComputedStyle&) const override;
 
  private:
-  CounterContentData(std::unique_ptr<CounterContent> counter)
-      : counter_(std::move(counter)) {}
-
   ContentData* CloneInternal() const override {
     std::unique_ptr<CounterContent> counter_data =
         std::make_unique<CounterContent>(*Counter());

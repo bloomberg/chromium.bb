@@ -34,11 +34,14 @@ class GlobalFetchImpl final
     GlobalFetchImpl* supplement =
         Supplement<T>::template From<GlobalFetchImpl>(supplementable);
     if (!supplement) {
-      supplement = new GlobalFetchImpl(execution_context);
+      supplement = MakeGarbageCollected<GlobalFetchImpl>(execution_context);
       Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return supplement;
   }
+
+  explicit GlobalFetchImpl(ExecutionContext* execution_context)
+      : fetch_manager_(FetchManager::Create(execution_context)) {}
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& input,
@@ -78,9 +81,6 @@ class GlobalFetchImpl final
   }
 
  private:
-  explicit GlobalFetchImpl(ExecutionContext* execution_context)
-      : fetch_manager_(FetchManager::Create(execution_context)) {}
-
   Member<FetchManager> fetch_manager_;
 };
 

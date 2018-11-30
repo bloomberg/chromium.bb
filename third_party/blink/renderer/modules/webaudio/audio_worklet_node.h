@@ -102,6 +102,12 @@ class AudioWorkletNode final : public AudioNode,
                                   const AudioWorkletNodeOptions*,
                                   ExceptionState&);
 
+  AudioWorkletNode(BaseAudioContext&,
+                   const String& name,
+                   const AudioWorkletNodeOptions*,
+                   const Vector<CrossThreadAudioParamInfo>,
+                   MessagePort* node_port);
+
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
@@ -115,12 +121,6 @@ class AudioWorkletNode final : public AudioNode,
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioWorkletNode(BaseAudioContext&,
-                   const String& name,
-                   const AudioWorkletNodeOptions*,
-                   const Vector<CrossThreadAudioParamInfo>,
-                   MessagePort* node_port);
-
   scoped_refptr<AudioWorkletHandler> GetWorkletHandler() const;
 
   Member<AudioParamMap> parameter_map_;

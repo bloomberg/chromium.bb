@@ -284,7 +284,8 @@ ScriptPromise BackgroundFetchManager::fetch(
   mojom::blink::BackgroundFetchOptionsPtr options_ptr =
       mojom::blink::BackgroundFetchOptions::From(options);
   if (options->icons().size()) {
-    BackgroundFetchIconLoader* loader = new BackgroundFetchIconLoader();
+    BackgroundFetchIconLoader* loader =
+        MakeGarbageCollected<BackgroundFetchIconLoader>();
     loaders_.push_back(loader);
     loader->Start(
         bridge_.Get(), execution_context, options->icons(),

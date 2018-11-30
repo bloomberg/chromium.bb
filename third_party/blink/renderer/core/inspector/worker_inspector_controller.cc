@@ -71,7 +71,7 @@ WorkerInspectorController::WorkerInspectorController(
     : debugger_(debugger),
       thread_(thread),
       inspected_frames_(nullptr),
-      probe_sink_(new CoreProbeSink()) {
+      probe_sink_(MakeGarbageCollected<CoreProbeSink>()) {
   probe_sink_->addInspectorTraceEvents(
       MakeGarbageCollected<InspectorTraceEvents>());
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {

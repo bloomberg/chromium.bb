@@ -124,11 +124,11 @@ V0CustomElementCallbackInvocation::CreateInvocation(
     V0CustomElementLifecycleCallbacks::CallbackType which) {
   switch (which) {
     case V0CustomElementLifecycleCallbacks::kCreatedCallback:
-      return new CreatedInvocation(callbacks);
+      return MakeGarbageCollected<CreatedInvocation>(callbacks);
 
     case V0CustomElementLifecycleCallbacks::kAttachedCallback:
     case V0CustomElementLifecycleCallbacks::kDetachedCallback:
-      return new AttachedDetachedInvocation(callbacks, which);
+      return MakeGarbageCollected<AttachedDetachedInvocation>(callbacks, which);
     default:
       NOTREACHED();
       return nullptr;
@@ -141,7 +141,8 @@ V0CustomElementCallbackInvocation::CreateAttributeChangedInvocation(
     const AtomicString& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
-  return new AttributeChangedInvocation(callbacks, name, old_value, new_value);
+  return MakeGarbageCollected<AttributeChangedInvocation>(callbacks, name,
+                                                          old_value, new_value);
 }
 
 void V0CustomElementCallbackInvocation::Trace(blink::Visitor* visitor) {

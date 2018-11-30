@@ -34,9 +34,12 @@ class BeforeUnloadEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  BeforeUnloadEvent();
   ~BeforeUnloadEvent() override;
 
-  static BeforeUnloadEvent* Create() { return new BeforeUnloadEvent; }
+  static BeforeUnloadEvent* Create() {
+    return MakeGarbageCollected<BeforeUnloadEvent>();
+  }
 
   bool IsBeforeUnloadEvent() const override;
 
@@ -52,8 +55,6 @@ class BeforeUnloadEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  BeforeUnloadEvent();
-
   String return_value_;
 };
 

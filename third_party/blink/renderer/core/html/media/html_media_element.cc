@@ -516,7 +516,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       audio_tracks_(AudioTrackList::Create(*this)),
       video_tracks_(VideoTrackList::Create(*this)),
       audio_source_node_(nullptr),
-      autoplay_policy_(new AutoplayPolicy(this)),
+      autoplay_policy_(MakeGarbageCollected<AutoplayPolicy>(this)),
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
       controls_list_(HTMLMediaElementControlsList::Create(this)),
@@ -3885,7 +3885,7 @@ void HTMLMediaElement::UpdateControlsVisibility() {
 
 CueTimeline& HTMLMediaElement::GetCueTimeline() {
   if (!cue_timeline_)
-    cue_timeline_ = new CueTimeline(*this);
+    cue_timeline_ = MakeGarbageCollected<CueTimeline>(*this);
   return *cue_timeline_;
 }
 

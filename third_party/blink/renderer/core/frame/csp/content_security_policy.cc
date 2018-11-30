@@ -171,9 +171,9 @@ void ContentSecurityPolicy::BindToExecutionContext(
 void ContentSecurityPolicy::SetupSelf(const SecurityOrigin& security_origin) {
   // Ensure that 'self' processes correctly.
   self_protocol_ = security_origin.Protocol();
-  self_source_ = new CSPSource(this, self_protocol_, security_origin.Host(),
-                               security_origin.Port(), String(),
-                               CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+  self_source_ = MakeGarbageCollected<CSPSource>(
+      this, self_protocol_, security_origin.Host(), security_origin.Port(),
+      String(), CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 }
 
 void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
@@ -426,9 +426,9 @@ void ContentSecurityPolicy::SetOverrideURLForSelf(const KURL& url) {
   // to an execution context.
   scoped_refptr<const SecurityOrigin> origin = SecurityOrigin::Create(url);
   self_protocol_ = origin->Protocol();
-  self_source_ =
-      new CSPSource(this, self_protocol_, origin->Host(), origin->Port(),
-                    String(), CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+  self_source_ = MakeGarbageCollected<CSPSource>(
+      this, self_protocol_, origin->Host(), origin->Port(), String(),
+      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 }
 
 Vector<CSPHeaderAndType> ContentSecurityPolicy::Headers() const {

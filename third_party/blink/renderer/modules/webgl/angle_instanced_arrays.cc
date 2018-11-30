@@ -46,7 +46,7 @@ WebGLExtensionName ANGLEInstancedArrays::GetName() const {
 
 ANGLEInstancedArrays* ANGLEInstancedArrays::Create(
     WebGLRenderingContextBase* context) {
-  return new ANGLEInstancedArrays(context);
+  return MakeGarbageCollected<ANGLEInstancedArrays>(context);
 }
 
 bool ANGLEInstancedArrays::Supported(WebGLRenderingContextBase* context) {

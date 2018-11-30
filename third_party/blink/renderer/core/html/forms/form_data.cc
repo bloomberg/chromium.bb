@@ -322,7 +322,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
 
 PairIterable<String, FormDataEntryValue>::IterationSource*
 FormData::StartIteration(ScriptState*, ExceptionState&) {
-  return new FormDataIterationSource(this);
+  return MakeGarbageCollected<FormDataIterationSource>(this);
 }
 
 // ----------------------------------------------------------------

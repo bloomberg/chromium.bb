@@ -18,6 +18,8 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
  public:
   static BluetoothCharacteristicProperties* Create(uint32_t properties);
 
+  explicit BluetoothCharacteristicProperties(uint32_t properties);
+
   // IDL exposed interface:
   bool broadcast() const;
   bool read() const;
@@ -30,8 +32,6 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
   bool writableAuxiliaries() const;
 
  private:
-  explicit BluetoothCharacteristicProperties(uint32_t properties);
-
   enum Property {
     kNone = 0,
     kBroadcast = 1 << 0,

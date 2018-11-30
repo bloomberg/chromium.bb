@@ -80,7 +80,7 @@ Animation* Animation::Create(AnimationEffect* effect,
 
   DocumentTimeline* subtimeline = ToDocumentTimeline(timeline);
 
-  Animation* animation = new Animation(
+  Animation* animation = MakeGarbageCollected<Animation>(
       subtimeline->GetDocument()->ContextDocument(), *subtimeline, effect);
 
   if (subtimeline) {
@@ -1318,7 +1318,7 @@ void Animation::Trace(blink::Visitor* visitor) {
 
 Animation::CompositorAnimationHolder*
 Animation::CompositorAnimationHolder::Create(Animation* animation) {
-  return new CompositorAnimationHolder(animation);
+  return MakeGarbageCollected<CompositorAnimationHolder>(animation);
 }
 
 Animation::CompositorAnimationHolder::CompositorAnimationHolder(

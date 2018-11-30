@@ -43,7 +43,7 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::Create(
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device) {
-  return new BluetoothRemoteGATTCharacteristic(
+  return MakeGarbageCollected<BluetoothRemoteGATTCharacteristic>(
       context, std::move(characteristic), service, device);
 }
 

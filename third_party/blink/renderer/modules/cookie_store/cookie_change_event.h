@@ -20,7 +20,9 @@ class CookieChangeEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CookieChangeEvent* Create() { return new CookieChangeEvent(); }
+  static CookieChangeEvent* Create() {
+    return MakeGarbageCollected<CookieChangeEvent>();
+  }
 
   // Used by Blink.
   //
@@ -29,15 +31,22 @@ class CookieChangeEvent final : public Event {
   static CookieChangeEvent* Create(const AtomicString& type,
                                    HeapVector<Member<CookieListItem>> changed,
                                    HeapVector<Member<CookieListItem>> deleted) {
-    return new CookieChangeEvent(type, std::move(changed), std::move(deleted));
+    return MakeGarbageCollected<CookieChangeEvent>(type, std::move(changed),
+                                                   std::move(deleted));
   }
 
   // Used by JavaScript, via the V8 bindings.
   static CookieChangeEvent* Create(const AtomicString& type,
                                    const CookieChangeEventInit* initializer) {
-    return new CookieChangeEvent(type, initializer);
+    return MakeGarbageCollected<CookieChangeEvent>(type, initializer);
   }
 
+  CookieChangeEvent();
+  CookieChangeEvent(const AtomicString& type,
+                    HeapVector<Member<CookieListItem>> changed,
+                    HeapVector<Member<CookieListItem>> deleted);
+  CookieChangeEvent(const AtomicString& type,
+                    const CookieChangeEventInit* initializer);
   ~CookieChangeEvent() override;
 
   const HeapVector<Member<CookieListItem>>& changed() const { return changed_; }
@@ -60,13 +69,6 @@ class CookieChangeEvent final : public Event {
                           HeapVector<Member<CookieListItem>>& deleted);
 
  private:
-  CookieChangeEvent();
-  CookieChangeEvent(const AtomicString& type,
-                    HeapVector<Member<CookieListItem>> changed,
-                    HeapVector<Member<CookieListItem>> deleted);
-  CookieChangeEvent(const AtomicString& type,
-                    const CookieChangeEventInit* initializer);
-
   HeapVector<Member<CookieListItem>> changed_;
   HeapVector<Member<CookieListItem>> deleted_;
 };

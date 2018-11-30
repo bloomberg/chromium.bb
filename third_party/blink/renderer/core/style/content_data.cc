@@ -43,7 +43,7 @@ ContentData* ContentData::Create(const String& text) {
 }
 
 ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
-  return new CounterContentData(std::move(counter));
+  return MakeGarbageCollected<CounterContentData>(std::move(counter));
 }
 
 ContentData* ContentData::Create(QuoteType quote) {

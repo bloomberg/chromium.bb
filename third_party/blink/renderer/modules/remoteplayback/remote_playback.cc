@@ -108,7 +108,8 @@ ScriptPromise RemotePlayback::watchAvailability(
     return promise;
   }
 
-  int id = WatchAvailabilityInternal(new AvailabilityCallbackWrapper(callback));
+  int id = WatchAvailabilityInternal(
+      MakeGarbageCollected<AvailabilityCallbackWrapper>(callback));
   if (id == kWatchAvailabilityNotSupported) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,

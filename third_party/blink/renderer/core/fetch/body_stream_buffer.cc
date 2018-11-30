@@ -198,8 +198,9 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
   auto* handle = ReleaseHandle(exception_state);
   if (exception_state.HadException())
     return;
-  loader->Start(handle, new LoaderClient(ExecutionContext::From(script_state_),
-                                         this, client));
+  loader->Start(handle,
+                MakeGarbageCollected<LoaderClient>(
+                    ExecutionContext::From(script_state_), this, client));
 }
 
 void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
@@ -228,8 +229,8 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
       return;
     }
 
-    *branch1 = new BodyStreamBuffer(script_state_, stream1);
-    *branch2 = new BodyStreamBuffer(script_state_, stream2);
+    *branch1 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream1);
+    *branch2 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream2);
     return;
   }
   BytesConsumer* dest1 = nullptr;
@@ -241,8 +242,10 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   }
   BytesConsumer::Tee(ExecutionContext::From(script_state_), handle, &dest1,
                      &dest2);
-  *branch1 = new BodyStreamBuffer(script_state_, dest1, signal_);
-  *branch2 = new BodyStreamBuffer(script_state_, dest2, signal_);
+  *branch1 =
+      MakeGarbageCollected<BodyStreamBuffer>(script_state_, dest1, signal_);
+  *branch2 =
+      MakeGarbageCollected<BodyStreamBuffer>(script_state_, dest2, signal_);
 }
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {

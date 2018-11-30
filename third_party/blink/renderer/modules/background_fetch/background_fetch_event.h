@@ -24,16 +24,21 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit* initializer) {
-    return new BackgroundFetchEvent(type, initializer, nullptr /* observer */);
+    return MakeGarbageCollected<BackgroundFetchEvent>(type, initializer,
+                                                      nullptr /* observer */);
   }
 
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit* initializer,
       WaitUntilObserver* observer) {
-    return new BackgroundFetchEvent(type, initializer, observer);
+    return MakeGarbageCollected<BackgroundFetchEvent>(type, initializer,
+                                                      observer);
   }
 
+  BackgroundFetchEvent(const AtomicString& type,
+                       const BackgroundFetchEventInit* initializer,
+                       WaitUntilObserver* observer);
   ~BackgroundFetchEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
@@ -45,10 +50,6 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   void Trace(blink::Visitor* visitor) override;
 
  protected:
-  BackgroundFetchEvent(const AtomicString& type,
-                       const BackgroundFetchEventInit* initializer,
-                       WaitUntilObserver* observer);
-
   // Corresponds to the 'registration' attribute in the idl.
   Member<BackgroundFetchRegistration> registration_;
 };

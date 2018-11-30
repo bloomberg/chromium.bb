@@ -100,12 +100,12 @@ CanvasStyle::CanvasStyle(CanvasPattern* pattern)
 
 CanvasStyle* CanvasStyle::CreateFromGradient(CanvasGradient* gradient) {
   DCHECK(gradient);
-  return new CanvasStyle(gradient);
+  return MakeGarbageCollected<CanvasStyle>(gradient);
 }
 
 CanvasStyle* CanvasStyle::CreateFromPattern(CanvasPattern* pattern) {
   DCHECK(pattern);
-  return new CanvasStyle(pattern);
+  return MakeGarbageCollected<CanvasStyle>(pattern);
 }
 
 void CanvasStyle::ApplyToFlags(PaintFlags& flags) const {

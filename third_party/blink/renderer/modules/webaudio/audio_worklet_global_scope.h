@@ -54,7 +54,11 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   static AudioWorkletGlobalScope* Create(
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerThread*);
+
+  AudioWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                          WorkerThread*);
   ~AudioWorkletGlobalScope() override;
+
   bool IsAudioWorkletGlobalScope() const final { return true; }
   void Dispose() final;
   bool IsClosing() const final { return is_closing_; }
@@ -104,9 +108,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                          WorkerThread*);
-
   bool is_closing_ = false;
 
   typedef HeapHashMap<String,

@@ -127,7 +127,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
     return nullptr;
   }
 
-  return new ConstantSourceNode(context);
+  return MakeGarbageCollected<ConstantSourceNode>(context);
 }
 
 ConstantSourceNode* ConstantSourceNode::Create(

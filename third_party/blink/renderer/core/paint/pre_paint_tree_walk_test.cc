@@ -344,7 +344,7 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
   EXPECT_FALSE(descendant.InsideBlockingTouchEventHandler());
 
   PrePaintTreeWalkMockEventListener* callback =
-      new PrePaintTreeWalkMockEventListener();
+      MakeGarbageCollected<PrePaintTreeWalkMockEventListener>();
   auto* handler_element = GetDocument().getElementById("handler");
   handler_element->addEventListener(event_type_names::kTouchstart, callback);
 

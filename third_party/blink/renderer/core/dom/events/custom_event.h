@@ -40,13 +40,18 @@ class CORE_EXPORT CustomEvent final : public Event {
  public:
   ~CustomEvent() override;
 
-  static CustomEvent* Create() { return new CustomEvent; }
+  static CustomEvent* Create() { return MakeGarbageCollected<CustomEvent>(); }
 
   static CustomEvent* Create(ScriptState* script_state,
                              const AtomicString& type,
                              const CustomEventInit* initializer) {
-    return new CustomEvent(script_state, type, initializer);
+    return MakeGarbageCollected<CustomEvent>(script_state, type, initializer);
   }
+
+  CustomEvent();
+  CustomEvent(ScriptState*,
+              const AtomicString& type,
+              const CustomEventInit* initializer);
 
   void initCustomEvent(ScriptState*,
                        const AtomicString& type,
@@ -61,11 +66,6 @@ class CORE_EXPORT CustomEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  CustomEvent();
-  CustomEvent(ScriptState*,
-              const AtomicString& type,
-              const CustomEventInit* initializer);
-
   scoped_refptr<DOMWrapperWorld> world_;
   TraceWrapperV8Reference<v8::Value> detail_;
 };

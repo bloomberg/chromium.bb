@@ -76,7 +76,7 @@ ChildListMutationAccumulator* ChildListMutationAccumulator::GetOrCreate(
   if (!result.is_new_entry) {
     accumulator = result.stored_value->value;
   } else {
-    accumulator = new ChildListMutationAccumulator(
+    accumulator = MakeGarbageCollected<ChildListMutationAccumulator>(
         &target,
         MutationObserverInterestGroup::CreateForChildListMutation(target));
     result.stored_value->value = accumulator;

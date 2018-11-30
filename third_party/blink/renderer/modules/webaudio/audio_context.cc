@@ -64,7 +64,8 @@ AudioContext* AudioContext::Create(Document& document,
         WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
   }
 
-  AudioContext* audio_context = new AudioContext(document, latency_hint);
+  AudioContext* audio_context =
+      MakeGarbageCollected<AudioContext>(document, latency_hint);
   audio_context->PauseIfNeeded();
 
   if (!audio_utilities::IsValidAudioBufferSampleRate(

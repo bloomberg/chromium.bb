@@ -84,9 +84,12 @@ class StatementCallback final : public SQLStatement::OnSuccessCallback {
  public:
   static StatementCallback* Create(
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return new StatementCallback(std::move(request_callback));
+    return MakeGarbageCollected<StatementCallback>(std::move(request_callback));
   }
 
+  explicit StatementCallback(
+      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
+      : request_callback_(std::move(request_callback)) {}
   ~StatementCallback() override = default;
 
   bool OnSuccess(SQLTransaction*, SQLResultSet* result_set) override {
@@ -122,10 +125,6 @@ class StatementCallback final : public SQLStatement::OnSuccessCallback {
   }
 
  private:
-  explicit StatementCallback(
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
-      : request_callback_(std::move(request_callback)) {}
-
   scoped_refptr<ExecuteSQLCallbackWrapper> request_callback_;
 };
 
@@ -133,9 +132,13 @@ class StatementErrorCallback final : public SQLStatement::OnErrorCallback {
  public:
   static StatementErrorCallback* Create(
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return new StatementErrorCallback(std::move(request_callback));
+    return MakeGarbageCollected<StatementErrorCallback>(
+        std::move(request_callback));
   }
 
+  explicit StatementErrorCallback(
+      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
+      : request_callback_(std::move(request_callback)) {}
   ~StatementErrorCallback() override = default;
 
   bool OnError(SQLTransaction*, SQLError* error) override {
@@ -144,10 +147,6 @@ class StatementErrorCallback final : public SQLStatement::OnErrorCallback {
   }
 
  private:
-  explicit StatementErrorCallback(
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
-      : request_callback_(std::move(request_callback)) {}
-
   scoped_refptr<ExecuteSQLCallbackWrapper> request_callback_;
 };
 
@@ -156,9 +155,15 @@ class TransactionCallback final : public SQLTransaction::OnProcessCallback {
   static TransactionCallback* Create(
       const String& sql_statement,
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return new TransactionCallback(sql_statement, std::move(request_callback));
+    return MakeGarbageCollected<TransactionCallback>(
+        sql_statement, std::move(request_callback));
   }
 
+  explicit TransactionCallback(
+      const String& sql_statement,
+      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
+      : sql_statement_(sql_statement),
+        request_callback_(std::move(request_callback)) {}
   ~TransactionCallback() override = default;
 
   bool OnProcess(SQLTransaction* transaction) override {
@@ -171,12 +176,6 @@ class TransactionCallback final : public SQLTransaction::OnProcessCallback {
   }
 
  private:
-  explicit TransactionCallback(
-      const String& sql_statement,
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
-      : sql_statement_(sql_statement),
-        request_callback_(std::move(request_callback)) {}
-
   String sql_statement_;
   scoped_refptr<ExecuteSQLCallbackWrapper> request_callback_;
 };
@@ -185,9 +184,13 @@ class TransactionErrorCallback final : public SQLTransaction::OnErrorCallback {
  public:
   static TransactionErrorCallback* Create(
       scoped_refptr<ExecuteSQLCallbackWrapper> request_callback) {
-    return new TransactionErrorCallback(std::move(request_callback));
+    return MakeGarbageCollected<TransactionErrorCallback>(
+        std::move(request_callback));
   }
 
+  explicit TransactionErrorCallback(
+      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
+      : request_callback_(std::move(request_callback)) {}
   ~TransactionErrorCallback() override = default;
 
   bool OnError(SQLError* error) override {
@@ -196,10 +199,6 @@ class TransactionErrorCallback final : public SQLTransaction::OnErrorCallback {
   }
 
  private:
-  explicit TransactionErrorCallback(
-      scoped_refptr<ExecuteSQLCallbackWrapper> request_callback)
-      : request_callback_(std::move(request_callback)) {}
-
   scoped_refptr<ExecuteSQLCallbackWrapper> request_callback_;
 };
 

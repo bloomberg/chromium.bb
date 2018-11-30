@@ -83,7 +83,7 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
                -1 /* ideal_to_chosen_icon_size */);
   } else {
     DCHECK(!loader_);
-    loader_ = new BackgroundFetchIconLoader();
+    loader_ = MakeGarbageCollected<BackgroundFetchIconLoader>();
     DCHECK(loader_);
     loader_->Start(BackgroundFetchBridge::From(service_worker_registration_),
                    ExecutionContext::From(script_state), ui_options->icons(),

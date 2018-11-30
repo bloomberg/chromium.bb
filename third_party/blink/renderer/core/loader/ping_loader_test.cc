@@ -37,7 +37,7 @@ class PingLocalFrameClient : public EmptyLocalFrameClient {
 class PingLoaderTest : public PageTestBase {
  public:
   void SetUp() override {
-    client_ = new PingLocalFrameClient;
+    client_ = MakeGarbageCollected<PingLocalFrameClient>();
     PageTestBase::SetupPageWithClients(nullptr, client_);
   }
 

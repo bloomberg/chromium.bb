@@ -51,6 +51,7 @@ struct WebCursorInfo;
 class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
   static ChromeClientImpl* Create(WebViewImpl*);
+  explicit ChromeClientImpl(WebViewImpl*);
   ~ChromeClientImpl() override;
   void Trace(Visitor* visitor) override;
 
@@ -237,8 +238,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      base::OnceCallback<void(bool)>) override;
 
  private:
-  explicit ChromeClientImpl(WebViewImpl*);
-
   bool IsChromeClientImpl() const override { return true; }
 
   void SetCursor(const WebCursorInfo&, LocalFrame*);

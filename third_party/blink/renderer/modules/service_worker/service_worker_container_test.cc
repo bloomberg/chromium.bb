@@ -55,14 +55,15 @@ struct StubScriptFunction {
    public:
     static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                   StubScriptFunction& owner) {
-      ScriptFunctionImpl* self = new ScriptFunctionImpl(script_state, owner);
+      ScriptFunctionImpl* self =
+          MakeGarbageCollected<ScriptFunctionImpl>(script_state, owner);
       return self->BindToV8Function();
     }
 
-   private:
     ScriptFunctionImpl(ScriptState* script_state, StubScriptFunction& owner)
         : ScriptFunction(script_state), owner_(owner) {}
 
+   private:
     ScriptValue Call(ScriptValue arg) override {
       owner_.arg_ = arg;
       owner_.call_count_++;

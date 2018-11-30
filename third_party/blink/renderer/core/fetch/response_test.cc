@@ -76,9 +76,9 @@ void CheckResponseStream(ScriptState* script_state,
     EXPECT_FALSE(cloned_response->BodyBuffer());
   }
   BytesConsumerTestUtil::MockFetchDataLoaderClient* client1 =
-      new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+      MakeGarbageCollected<BytesConsumerTestUtil::MockFetchDataLoaderClient>();
   BytesConsumerTestUtil::MockFetchDataLoaderClient* client2 =
-      new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+      MakeGarbageCollected<BytesConsumerTestUtil::MockFetchDataLoaderClient>();
   EXPECT_CALL(*client1, DidFetchDataLoadedString(String("Hello, world")));
   EXPECT_CALL(*client2, DidFetchDataLoadedString(String("Hello, world")));
 
@@ -92,12 +92,12 @@ void CheckResponseStream(ScriptState* script_state,
 BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
   using BytesConsumerCommand = BytesConsumerTestUtil::Command;
   BytesConsumerTestUtil::ReplayingBytesConsumer* src =
-      new BytesConsumerTestUtil::ReplayingBytesConsumer(
+      MakeGarbageCollected<BytesConsumerTestUtil::ReplayingBytesConsumer>(
           ExecutionContext::From(script_state));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "Hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
-  return new BodyStreamBuffer(script_state, src, nullptr);
+  return MakeGarbageCollected<BodyStreamBuffer>(script_state, src, nullptr);
 }
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
@@ -161,7 +161,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque) {
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   V8TestingScope scope;
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
+  BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(),
       BytesConsumer::CreateErrored(BytesConsumer::Error()), nullptr);
   FetchResponseData* fetch_response_data =
@@ -177,9 +177,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   EXPECT_FALSE(exception_state.HadException());
 
   BytesConsumerTestUtil::MockFetchDataLoaderClient* client1 =
-      new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+      MakeGarbageCollected<BytesConsumerTestUtil::MockFetchDataLoaderClient>();
   BytesConsumerTestUtil::MockFetchDataLoaderClient* client2 =
-      new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+      MakeGarbageCollected<BytesConsumerTestUtil::MockFetchDataLoaderClient>();
   EXPECT_CALL(*client1, DidFetchDataLoadFailed());
   EXPECT_CALL(*client2, DidFetchDataLoadFailed());
 

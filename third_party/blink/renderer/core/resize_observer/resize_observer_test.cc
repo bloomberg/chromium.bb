@@ -69,7 +69,7 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   main_resource.Finish();
 
   ResizeObserver::Delegate* delegate =
-      new TestResizeObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestResizeObserverDelegate>(GetDocument());
   ResizeObserver* observer = ResizeObserver::Create(GetDocument(), delegate);
   Element* dom_target = GetDocument().getElementById("domTarget");
   Element* svg_target = GetDocument().getElementById("svgTarget");

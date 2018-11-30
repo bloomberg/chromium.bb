@@ -193,6 +193,7 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
   static AudioBufferSourceNode* Create(BaseAudioContext*,
                                        AudioBufferSourceOptions*,
                                        ExceptionState&);
+  AudioBufferSourceNode(BaseAudioContext&);
   void Trace(blink::Visitor*) override;
   AudioBufferSourceHandler& GetAudioBufferSourceHandler() const;
 
@@ -216,8 +217,6 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
              ExceptionState&);
 
  private:
-  AudioBufferSourceNode(BaseAudioContext&);
-
   Member<AudioParam> playback_rate_;
   Member<AudioParam> detune_;
 };

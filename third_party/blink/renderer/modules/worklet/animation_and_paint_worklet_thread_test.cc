@@ -58,8 +58,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
   std::unique_ptr<AnimationAndPaintWorkletThread>
   CreateAnimationAndPaintWorkletThread() {
     WorkerClients* clients = WorkerClients::Create();
-    ProvideAnimationWorkletProxyClientTo(clients,
-                                         new TestAnimationWorkletProxyClient());
+    ProvideAnimationWorkletProxyClientTo(
+        clients, MakeGarbageCollected<TestAnimationWorkletProxyClient>());
 
     std::unique_ptr<AnimationAndPaintWorkletThread> thread =
         AnimationAndPaintWorkletThread::CreateForAnimationWorklet(

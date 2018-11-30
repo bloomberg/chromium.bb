@@ -72,6 +72,16 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
   static AudioBuffer* CreateFromAudioBus(AudioBus*);
 
+  explicit AudioBuffer(AudioBus*);
+  // How to initialize the contents of an AudioBuffer.  Default is to
+  // zero-initialize (|kZeroInitialize|).  Otherwise, leave the array
+  // uninitialized (|kDontInitialize|).
+  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
+  AudioBuffer(unsigned number_of_channels,
+              uint32_t number_of_frames,
+              float sample_rate,
+              InitializationPolicy allocation_policy = kZeroInitialize);
+
   // Format
   uint32_t length() const { return length_; }
   double duration() const {
@@ -107,21 +117,10 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   }
 
  private:
-  // How to initialize the contents of an AudioBuffer.  Default is to
-  // zero-initialize (|kZeroInitialize|).  Otherwise, leave the array
-  // uninitialized (|kDontInitialize|).
-  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
-
-  explicit AudioBuffer(AudioBus*);
-
   static DOMFloat32Array* CreateFloat32ArrayOrNull(
       uint32_t length,
       InitializationPolicy allocation_policy = kZeroInitialize);
 
-  AudioBuffer(unsigned number_of_channels,
-              uint32_t number_of_frames,
-              float sample_rate,
-              InitializationPolicy allocation_policy = kZeroInitialize);
   bool CreatedSuccessfully(unsigned desired_number_of_channels) const;
 
   float sample_rate_;

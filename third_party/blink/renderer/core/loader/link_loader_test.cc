@@ -35,8 +35,10 @@ class MockLinkLoaderClient final
 
  public:
   static MockLinkLoaderClient* Create(bool should_load) {
-    return new MockLinkLoaderClient(should_load);
+    return MakeGarbageCollected<MockLinkLoaderClient>(should_load);
   }
+
+  explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
 
   void Trace(blink::Visitor* visitor) override {
     LinkLoaderClient::Trace(visitor);
@@ -57,8 +59,6 @@ class MockLinkLoaderClient final
   }
 
  private:
-  explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
-
   const bool should_load_;
 };
 
@@ -500,7 +500,7 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create();
   ModulePreloadTestModulator* modulator =
-      new ModulePreloadTestModulator(&test_case);
+      MakeGarbageCollected<ModulePreloadTestModulator>(&test_case);
   Modulator::SetModulator(
       ToScriptStateForMainWorld(dummy_page_holder->GetDocument().GetFrame()),
       modulator);

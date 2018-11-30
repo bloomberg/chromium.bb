@@ -17,7 +17,7 @@
 namespace blink {
 
 BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
-  return new BarcodeDetector(context);
+  return MakeGarbageCollected<BarcodeDetector>(context);
 }
 
 BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {

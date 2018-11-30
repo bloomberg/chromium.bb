@@ -376,7 +376,7 @@ TEST_F(EventSourceParserTest, InvalidUTF8Sequence) {
 }
 
 TEST(EventSourceParserStoppingTest, StopWhileParsing) {
-  StoppingClient* client = new StoppingClient();
+  StoppingClient* client = MakeGarbageCollected<StoppingClient>();
   EventSourceParser* parser =
       MakeGarbageCollected<EventSourceParser>(AtomicString(), client);
   client->SetParser(parser);

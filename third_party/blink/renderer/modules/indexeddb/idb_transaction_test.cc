@@ -64,15 +64,13 @@ void DeactivateNewTransactions(v8::Isolate* isolate) {
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
  public:
   static FakeIDBDatabaseCallbacks* Create() {
-    return new FakeIDBDatabaseCallbacks();
+    return MakeGarbageCollected<FakeIDBDatabaseCallbacks>();
   }
+  FakeIDBDatabaseCallbacks() = default;
   void OnVersionChange(int64_t old_version, int64_t new_version) override {}
   void OnForcedClose() override {}
   void OnAbort(int64_t transaction_id, DOMException* error) override {}
   void OnComplete(int64_t transaction_id) override {}
-
- private:
-  FakeIDBDatabaseCallbacks() = default;
 };
 
 class IDBTransactionTest : public testing::Test {

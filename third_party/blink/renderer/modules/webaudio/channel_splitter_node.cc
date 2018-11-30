@@ -166,7 +166,7 @@ ChannelSplitterNode* ChannelSplitterNode::Create(
     return nullptr;
   }
 
-  return new ChannelSplitterNode(context, number_of_outputs);
+  return MakeGarbageCollected<ChannelSplitterNode>(context, number_of_outputs);
 }
 
 ChannelSplitterNode* ChannelSplitterNode::Create(

@@ -25,17 +25,18 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
       const KURL& url,
       Modulator* modulator,
       ScriptPromiseResolver* promise_resolver) {
-    return new DynamicImportTreeClient(url, modulator, promise_resolver);
+    return MakeGarbageCollected<DynamicImportTreeClient>(url, modulator,
+                                                         promise_resolver);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   DynamicImportTreeClient(const KURL& url,
                           Modulator* modulator,
                           ScriptPromiseResolver* promise_resolver)
       : url_(url), modulator_(modulator), promise_resolver_(promise_resolver) {}
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   // Implements ModuleTreeClient:
   void NotifyModuleTreeLoadFinished(ModuleScript*) final;
 

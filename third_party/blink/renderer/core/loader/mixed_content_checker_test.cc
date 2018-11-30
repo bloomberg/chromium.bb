@@ -121,7 +121,7 @@ class MixedContentCheckerMockLocalFrameClient : public EmptyLocalFrameClient {
 
 TEST(MixedContentCheckerTest, HandleCertificateError) {
   MixedContentCheckerMockLocalFrameClient* client =
-      new MixedContentCheckerMockLocalFrameClient;
+      MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
@@ -153,7 +153,7 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
 
 TEST(MixedContentCheckerTest, DetectMixedForm) {
   MixedContentCheckerMockLocalFrameClient* client =
-      new MixedContentCheckerMockLocalFrameClient;
+      MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
@@ -186,7 +186,7 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
 
 TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   MixedContentCheckerMockLocalFrameClient* client =
-      new MixedContentCheckerMockLocalFrameClient;
+      MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
   dummy_page_holder->GetFrame().GetSettings()->SetAllowRunningOfInsecureContent(

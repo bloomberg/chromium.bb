@@ -37,6 +37,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
  public:
   static CustomElementRegistry* Create(const LocalDOMWindow*);
 
+  CustomElementRegistry(const LocalDOMWindow*);
   ~CustomElementRegistry() override = default;
 
   CustomElementDefinition* define(ScriptState*,
@@ -67,8 +68,6 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  CustomElementRegistry(const LocalDOMWindow*);
-
   CustomElementDefinition* DefineInternal(ScriptState*,
                                           const AtomicString& name,
                                           CustomElementDefinitionBuilder&,

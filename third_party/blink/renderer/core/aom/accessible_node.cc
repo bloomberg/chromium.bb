@@ -218,7 +218,7 @@ AccessibleNode::~AccessibleNode() = default;
 
 // static
 AccessibleNode* AccessibleNode::Create(Document& document) {
-  return new AccessibleNode(document);
+  return MakeGarbageCollected<AccessibleNode>(document);
 }
 
 Document* AccessibleNode::GetDocument() const {

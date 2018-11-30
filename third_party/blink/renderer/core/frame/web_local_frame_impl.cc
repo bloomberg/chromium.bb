@@ -1520,11 +1520,11 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
   }
 
   if (plugin_container && plugin_container->SupportsPaginatedPrint()) {
-    print_context_ = new ChromePluginPrintContext(GetFrame(), plugin_container,
-                                                  print_params);
+    print_context_ = MakeGarbageCollected<ChromePluginPrintContext>(
+        GetFrame(), plugin_container, print_params);
   } else {
-    print_context_ =
-        new ChromePrintContext(GetFrame(), print_params.use_printing_layout);
+    print_context_ = MakeGarbageCollected<ChromePrintContext>(
+        GetFrame(), print_params.use_printing_layout);
   }
 
   FloatSize size(static_cast<float>(print_params.print_content_area.width),

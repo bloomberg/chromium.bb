@@ -19,7 +19,7 @@ TypeConverter<blink::BackgroundFetchRegistration*,
   if (!mojo_registration)
     return nullptr;
 
-  return new blink::BackgroundFetchRegistration(
+  return blink::MakeGarbageCollected<blink::BackgroundFetchRegistration>(
       mojo_registration->developer_id, mojo_registration->unique_id,
       mojo_registration->upload_total, mojo_registration->uploaded,
       mojo_registration->download_total, mojo_registration->downloaded,

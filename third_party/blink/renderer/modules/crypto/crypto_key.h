@@ -48,9 +48,10 @@ class MODULES_EXPORT CryptoKey final : public ScriptWrappable {
 
  public:
   static CryptoKey* Create(const WebCryptoKey& key) {
-    return new CryptoKey(key);
+    return MakeGarbageCollected<CryptoKey>(key);
   }
 
+  explicit CryptoKey(const WebCryptoKey&);
   ~CryptoKey() override;
 
   String type() const;
@@ -73,8 +74,6 @@ class MODULES_EXPORT CryptoKey final : public ScriptWrappable {
                              CryptoResult*);
 
  protected:
-  explicit CryptoKey(const WebCryptoKey&);
-
   const WebCryptoKey key_;
 };
 

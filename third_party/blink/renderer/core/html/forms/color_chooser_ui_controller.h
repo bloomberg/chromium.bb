@@ -49,9 +49,10 @@ class CORE_EXPORT ColorChooserUIController
  public:
   static ColorChooserUIController* Create(LocalFrame* frame,
                                           blink::ColorChooserClient* client) {
-    return new ColorChooserUIController(frame, client);
+    return MakeGarbageCollected<ColorChooserUIController>(frame, client);
   }
 
+  ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
   ~ColorChooserUIController() override;
   void Trace(blink::Visitor*) override;
 
@@ -68,8 +69,6 @@ class CORE_EXPORT ColorChooserUIController
   void DidChooseColor(uint32_t color) final;
 
  protected:
-  ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
-
   void OpenColorChooser();
   mojom::blink::ColorChooserPtr chooser_;
   Member<blink::ColorChooserClient> client_;

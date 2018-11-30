@@ -87,9 +87,9 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
 DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
   switch (type) {
     case DocumentMarker::kActiveSuggestion:
-      return new ActiveSuggestionMarkerListImpl();
+      return MakeGarbageCollected<ActiveSuggestionMarkerListImpl>();
     case DocumentMarker::kComposition:
-      return new CompositionMarkerListImpl();
+      return MakeGarbageCollected<CompositionMarkerListImpl>();
     case DocumentMarker::kSpelling:
       return MakeGarbageCollected<SpellingMarkerListImpl>();
     case DocumentMarker::kGrammar:
@@ -187,8 +187,8 @@ void DocumentMarkerController::AddCompositionMarker(
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [underline_color, thickness, background_color](
                                int start_offset, int end_offset) {
-    return new CompositionMarker(start_offset, end_offset, underline_color,
-                                 thickness, background_color);
+    return MakeGarbageCollected<CompositionMarker>(
+        start_offset, end_offset, underline_color, thickness, background_color);
   });
 }
 
@@ -200,8 +200,8 @@ void DocumentMarkerController::AddActiveSuggestionMarker(
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [underline_color, thickness, background_color](
                                int start_offset, int end_offset) {
-    return new ActiveSuggestionMarker(start_offset, end_offset, underline_color,
-                                      thickness, background_color);
+    return MakeGarbageCollected<ActiveSuggestionMarker>(
+        start_offset, end_offset, underline_color, thickness, background_color);
   });
 }
 

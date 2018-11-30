@@ -273,6 +273,13 @@ class AudioParam final : public ScriptWrappable {
       float min_value = -std::numeric_limits<float>::max(),
       float max_value = std::numeric_limits<float>::max());
 
+  AudioParam(BaseAudioContext&,
+             AudioParamType,
+             double default_value,
+             AudioParamHandler::AutomationRate rate,
+             AudioParamHandler::AutomationRateMode rate_mode,
+             float min,
+             float max);
   ~AudioParam() override;
 
   void Trace(blink::Visitor*) override;
@@ -317,14 +324,6 @@ class AudioParam final : public ScriptWrappable {
   AudioParam* cancelAndHoldAtTime(double start_time, ExceptionState&);
 
  private:
-  AudioParam(BaseAudioContext&,
-             AudioParamType,
-             double default_value,
-             AudioParamHandler::AutomationRate rate,
-             AudioParamHandler::AutomationRateMode rate_mode,
-             float min,
-             float max);
-
   void WarnIfOutsideRange(const String& param_methd, float value);
 
   scoped_refptr<AudioParamHandler> handler_;

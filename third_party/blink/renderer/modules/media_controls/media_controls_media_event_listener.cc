@@ -89,11 +89,12 @@ void MediaControlsMediaEventListener::Attach() {
     // TODO(avayvod, mlamouri): Attach can be called twice. See
     // https://crbug.com/713275.
     if (!remote_playback_availability_callback_id_.has_value()) {
-      remote_playback_availability_callback_id_ = base::make_optional(
-          remote->WatchAvailabilityInternal(new AvailabilityCallbackWrapper(
-              WTF::BindRepeating(&MediaControlsMediaEventListener::
-                                     OnRemotePlaybackAvailabilityChanged,
-                                 WrapWeakPersistent(this)))));
+      remote_playback_availability_callback_id_ =
+          base::make_optional(remote->WatchAvailabilityInternal(
+              MakeGarbageCollected<AvailabilityCallbackWrapper>(
+                  WTF::BindRepeating(&MediaControlsMediaEventListener::
+                                         OnRemotePlaybackAvailabilityChanged,
+                                     WrapWeakPersistent(this)))));
     }
   }
 }

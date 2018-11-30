@@ -46,7 +46,8 @@ class ComputedAccessibleNodePromiseResolver::RequestAnimationFrameCallback final
 ComputedAccessibleNodePromiseResolver*
 ComputedAccessibleNodePromiseResolver::Create(ScriptState* script_state,
                                               Element& element) {
-  return new ComputedAccessibleNodePromiseResolver(script_state, element);
+  return MakeGarbageCollected<ComputedAccessibleNodePromiseResolver>(
+      script_state, element);
 }
 
 ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
@@ -109,7 +110,7 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
 ComputedAccessibleNode* ComputedAccessibleNode::Create(AXID ax_id,
                                                        WebComputedAXTree* tree,
                                                        LocalFrame* frame) {
-  return new ComputedAccessibleNode(ax_id, tree, frame);
+  return MakeGarbageCollected<ComputedAccessibleNode>(ax_id, tree, frame);
 }
 
 ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,

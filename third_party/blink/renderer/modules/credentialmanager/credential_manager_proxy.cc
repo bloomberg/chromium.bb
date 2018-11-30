@@ -27,7 +27,7 @@ CredentialManagerProxy* CredentialManagerProxy::From(Document& document) {
   auto* supplement =
       Supplement<Document>::From<CredentialManagerProxy>(document);
   if (!supplement) {
-    supplement = new CredentialManagerProxy(document);
+    supplement = MakeGarbageCollected<CredentialManagerProxy>(document);
     ProvideTo(document, supplement);
   }
   return supplement;

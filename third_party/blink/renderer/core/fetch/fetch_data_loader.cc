@@ -627,29 +627,30 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsBlobHandle(
     const String& mime_type) {
-  return new FetchDataLoaderAsBlobHandle(mime_type);
+  return MakeGarbageCollected<FetchDataLoaderAsBlobHandle>(mime_type);
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsArrayBuffer() {
-  return new FetchDataLoaderAsArrayBuffer();
+  return MakeGarbageCollected<FetchDataLoaderAsArrayBuffer>();
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsFailure() {
-  return new FetchDataLoaderAsFailure();
+  return MakeGarbageCollected<FetchDataLoaderAsFailure>();
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsFormData(
     const String& multipartBoundary) {
-  return new FetchDataLoaderAsFormData(multipartBoundary);
+  return MakeGarbageCollected<FetchDataLoaderAsFormData>(multipartBoundary);
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsString() {
-  return new FetchDataLoaderAsString();
+  return MakeGarbageCollected<FetchDataLoaderAsString>();
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsDataPipe(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new FetchDataLoaderAsDataPipe(std::move(task_runner));
+  return MakeGarbageCollected<FetchDataLoaderAsDataPipe>(
+      std::move(task_runner));
 }
 
 }  // namespace blink

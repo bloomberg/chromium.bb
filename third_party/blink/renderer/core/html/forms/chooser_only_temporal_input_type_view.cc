@@ -45,7 +45,8 @@ ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(
 ChooserOnlyTemporalInputTypeView* ChooserOnlyTemporalInputTypeView::Create(
     HTMLInputElement& element,
     BaseTemporalInputType& input_type) {
-  return new ChooserOnlyTemporalInputTypeView(element, input_type);
+  return MakeGarbageCollected<ChooserOnlyTemporalInputTypeView>(element,
+                                                                input_type);
 }
 
 ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView() {

@@ -35,8 +35,14 @@ class TouchEventManagerTest : public SimTest {
 class CheckEventListenerCallback final : public EventListener {
  public:
   static CheckEventListenerCallback* Create() {
-    return new CheckEventListenerCallback();
+    return MakeGarbageCollected<CheckEventListenerCallback>();
   }
+
+  CheckEventListenerCallback()
+      : EventListener(EventListener::kCPPEventListenerType) {
+    event_received_ = false;
+  }
+
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
@@ -48,10 +54,6 @@ class CheckEventListenerCallback final : public EventListener {
   bool HasReceivedEvent() const { return event_received_; }
 
  private:
-  CheckEventListenerCallback()
-      : EventListener(EventListener::kCPPEventListenerType) {
-    event_received_ = false;
-  }
   bool event_received_;
 };
 

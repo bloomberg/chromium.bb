@@ -191,24 +191,24 @@ MutationRecord* MutationRecord::CreateChildList(Node* target,
                                                 StaticNodeList* removed,
                                                 Node* previous_sibling,
                                                 Node* next_sibling) {
-  return new ChildListRecord(target, added, removed, previous_sibling,
-                             next_sibling);
+  return MakeGarbageCollected<ChildListRecord>(target, added, removed,
+                                               previous_sibling, next_sibling);
 }
 
 MutationRecord* MutationRecord::CreateAttributes(
     Node* target,
     const QualifiedName& name,
     const AtomicString& old_value) {
-  return new AttributesRecord(target, name, old_value);
+  return MakeGarbageCollected<AttributesRecord>(target, name, old_value);
 }
 
 MutationRecord* MutationRecord::CreateCharacterData(Node* target,
                                                     const String& old_value) {
-  return new CharacterDataRecord(target, old_value);
+  return MakeGarbageCollected<CharacterDataRecord>(target, old_value);
 }
 
 MutationRecord* MutationRecord::CreateWithNullOldValue(MutationRecord* record) {
-  return new MutationRecordWithNullOldValue(record);
+  return MakeGarbageCollected<MutationRecordWithNullOldValue>(record);
 }
 
 MutationRecord::~MutationRecord() = default;

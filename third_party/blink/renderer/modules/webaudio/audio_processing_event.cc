@@ -31,19 +31,20 @@
 namespace blink {
 
 AudioProcessingEvent* AudioProcessingEvent::Create() {
-  return new AudioProcessingEvent;
+  return MakeGarbageCollected<AudioProcessingEvent>();
 }
 
 AudioProcessingEvent* AudioProcessingEvent::Create(AudioBuffer* input_buffer,
                                                    AudioBuffer* output_buffer,
                                                    double playback_time) {
-  return new AudioProcessingEvent(input_buffer, output_buffer, playback_time);
+  return MakeGarbageCollected<AudioProcessingEvent>(input_buffer, output_buffer,
+                                                    playback_time);
 }
 
 AudioProcessingEvent* AudioProcessingEvent::Create(
     const AtomicString& type,
     const AudioProcessingEventInit* initializer) {
-  return new AudioProcessingEvent(type, initializer);
+  return MakeGarbageCollected<AudioProcessingEvent>(type, initializer);
 }
 
 AudioProcessingEvent::AudioProcessingEvent() = default;

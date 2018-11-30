@@ -22,7 +22,9 @@ class Bluetooth final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Bluetooth* Create() { return new Bluetooth(); }
+  static Bluetooth* Create() { return MakeGarbageCollected<Bluetooth>(); }
+
+  Bluetooth();
 
   // IDL exposed interface:
   ScriptPromise requestDevice(ScriptState*,
@@ -35,8 +37,6 @@ class Bluetooth final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  Bluetooth();
-
   BluetoothDevice* GetBluetoothDeviceRepresentingDevice(
       mojom::blink::WebBluetoothDevicePtr,
       ScriptPromiseResolver*);

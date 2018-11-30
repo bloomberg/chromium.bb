@@ -19,7 +19,8 @@ namespace blink {
 TEST(CustomElementReactionStackTest, one) {
   std::vector<char> log;
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   HeapVector<Member<Command>>* commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
@@ -35,7 +36,8 @@ TEST(CustomElementReactionStackTest, one) {
 TEST(CustomElementReactionStackTest, multipleElements) {
   std::vector<char> log;
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
@@ -60,7 +62,8 @@ TEST(CustomElementReactionStackTest, multipleElements) {
 TEST(CustomElementReactionStackTest, popTopEmpty) {
   std::vector<char> log;
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   HeapVector<Member<Command>>* commands =
       MakeGarbageCollected<HeapVector<Member<Command>>>();
@@ -77,7 +80,8 @@ TEST(CustomElementReactionStackTest, popTopEmpty) {
 TEST(CustomElementReactionStackTest, popTop) {
   std::vector<char> log;
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
@@ -105,7 +109,8 @@ TEST(CustomElementReactionStackTest, requeueingDoesNotReorderElements) {
 
   Element* element = CreateElement("a");
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
@@ -139,7 +144,8 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
 
   Element* element = CreateElement("a");
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   {
     HeapVector<Member<Command>>* commands =
@@ -210,7 +216,8 @@ TEST(CustomElementReactionStackTest, enqueueFromReaction) {
 
   Element* element = CreateElement("a");
 
-  CustomElementReactionStack* stack = new CustomElementReactionStack();
+  CustomElementReactionStack* stack =
+      MakeGarbageCollected<CustomElementReactionStack>();
   stack->Push();
   {
     HeapVector<Member<Command>>* subcommands =

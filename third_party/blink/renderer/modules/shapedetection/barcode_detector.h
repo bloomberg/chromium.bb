@@ -22,10 +22,11 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
  public:
   static BarcodeDetector* Create(ExecutionContext*);
 
+  explicit BarcodeDetector(ExecutionContext*);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit BarcodeDetector(ExecutionContext*);
   ~BarcodeDetector() override = default;
 
   ScriptPromise DoDetect(ScriptPromiseResolver*, SkBitmap) override;

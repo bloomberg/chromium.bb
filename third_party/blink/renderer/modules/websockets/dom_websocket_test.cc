@@ -81,10 +81,15 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
  public:
   static DOMWebSocketWithMockChannel* Create(ExecutionContext* context) {
     DOMWebSocketWithMockChannel* websocket =
-        new DOMWebSocketWithMockChannel(context);
+        MakeGarbageCollected<DOMWebSocketWithMockChannel>(context);
     websocket->PauseIfNeeded();
     return websocket;
   }
+
+  explicit DOMWebSocketWithMockChannel(ExecutionContext* context)
+      : DOMWebSocket(context),
+        channel_(MockWebSocketChannel::Create()),
+        has_created_channel_(false) {}
 
   MockWebSocketChannel* Channel() { return channel_.Get(); }
 
@@ -101,11 +106,6 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
   }
 
  private:
-  explicit DOMWebSocketWithMockChannel(ExecutionContext* context)
-      : DOMWebSocket(context),
-        channel_(MockWebSocketChannel::Create()),
-        has_created_channel_(false) {}
-
   Member<MockWebSocketChannel> channel_;
   bool has_created_channel_;
 };
