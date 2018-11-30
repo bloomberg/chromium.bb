@@ -553,6 +553,28 @@ Polymer({
     this.pluginProxy_.setPointerEvents(!e.detail);
   },
 
+  /**
+   * @param {!CustomEvent} e Contains information about where the plugin
+   *     should scroll to.
+   * @private
+   */
+  onTextFocusPosition_: function(e) {
+    // TODO(tkent): This is a workaround of a preview-area scrolling
+    // issue. Blink scrolls preview-area on focus, but we don't want it.  We
+    // should adjust scroll position of PDF preview and positions of
+    // MarginContgrols here, or restructure the HTML so that the PDF review
+    // and MarginControls are on the single scrollable container.
+    // crbug.com/601341
+    this.scrollTop = 0;
+    this.scrollLeft = 0;
+
+    const position = /** @type {{ x: number, y: number }} */ (e.detail);
+    if (position.x === 0 && position.y === 0)
+      return;
+
+    this.pluginProxy_.scrollPosition(position.x, position.y);
+  },
+
   /** @private */
   onMarginsChanged_: function() {
     if (this.getSettingValue('margins') !=

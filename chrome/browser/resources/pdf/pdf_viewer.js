@@ -1084,6 +1084,12 @@ PDFViewer.prototype = {
       case 'sendKeyEvent':
         this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
         return true;
+      case 'scrollPosition':
+        var position = this.viewport_.position;
+        position.y += message.data.y;
+        position.x += message.data.x;
+        this.viewport.position = position;
+        return true;
     }
 
     return false;

@@ -60,6 +60,12 @@ cr.define('print_preview', function() {
      */
     resetPrintPreviewMode(previewUid, index, color, pages, modifiable) {}
 
+    /**
+     * @param {number} scrollX The amount to horizontally scroll in pixels.
+     * @param {number} scrollY The amount to vertically scroll in pixels.
+     */
+    scrollPosition(scrollX, scrollY) {}
+
     /** @param {!KeyEvent} e Keyboard event to forward to the plugin. */
     sendKeyEvent(e) {}
 
