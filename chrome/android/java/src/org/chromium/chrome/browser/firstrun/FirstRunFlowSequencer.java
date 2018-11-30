@@ -350,15 +350,7 @@ public abstract class FirstRunFlowSequencer  {
         Log.d(TAG, "Redirecting user through FRE.");
         if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
             boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(intent);
-            boolean isGenericFreActive = false;
-            List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-            for (WeakReference<Activity> weakActivity : activities) {
-                Activity activity = weakActivity.get();
-                if (activity instanceof FirstRunActivity) {
-                    isGenericFreActive = true;
-                    break;
-                }
-            }
+            boolean isGenericFreActive = checkIsGenericFreActive();
 
             // Launch the Generic First Run Experience if it was previously active.
             Intent freIntent = null;
@@ -368,7 +360,9 @@ public abstract class FirstRunFlowSequencer  {
                 freIntent = createGenericFirstRunIntent(
                         caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
 
-                if (maybeSwitchToTabbedMode(caller, freIntent)) {
+                if (shouldSwitchToTabbedMode(caller)) {
+                    freIntent.setClass(caller, TabbedModeFirstRunActivity.class);
+
                     // We switched to TabbedModeFRE. We need to disable animation on the original
                     // intent, to make transition seamless.
                     intent = new Intent(intent);
@@ -396,6 +390,20 @@ public abstract class FirstRunFlowSequencer  {
         return true;
     }
 
+    /** Returns whether the generic FRE is active. */
+    private static boolean checkIsGenericFreActive() {
+        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+        for (WeakReference<Activity> weakActivity : activities) {
+            Activity activity = weakActivity.get();
+            // TabbedModeFirstRunActivity extends FirstRunActivity. LightweightFirstRunActivity
+            // does not.
+            if (activity instanceof FirstRunActivity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * On tablets, where FRE activity is a dialog, transitions from fillscreen activities
      * (the ones that use TabbedModeTheme, e.g. ChromeTabbedActivity) look ugly, because
@@ -405,9 +413,9 @@ public abstract class FirstRunFlowSequencer  {
      * To solve this, we added TabbedMode FRE activity, which has the same window background
      * as TabbedModeTheme activities, but shows content in a FRE-like dialog.
      *
-     * This function attempts to switch FRE to TabbedModeFRE if certain conditions are met.
+     * This function returns whether to use the TabbedModeFRE.
      */
-    private static boolean maybeSwitchToTabbedMode(Context caller, Intent freIntent) {
+    private static boolean shouldSwitchToTabbedMode(Context caller) {
         // Caller must be an activity.
         if (!(caller instanceof Activity)) return false;
 
@@ -419,10 +427,6 @@ public abstract class FirstRunFlowSequencer  {
         TypedArray a = caller.obtainStyledAttributes(new int[] {android.R.attr.windowBackground});
         int backgroundResourceId = a.getResourceId(0 /* index */, 0);
         a.recycle();
-        if (backgroundResourceId != R.drawable.window_background) return false;
-
-        // Switch FRE -> TabbedModeFRE.
-        freIntent.setClass(caller, TabbedModeFirstRunActivity.class);
-        return true;
+        return (backgroundResourceId == R.drawable.window_background);
     }
 }
