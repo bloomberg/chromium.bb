@@ -21,7 +21,7 @@ struct PendingTask;
 namespace sequence_manager {
 namespace internal {
 
-struct AssociatedThreadId;
+class AssociatedThreadId;
 class SequencedTaskSource;
 
 // Implementation of this interface is used by SequenceManager to schedule

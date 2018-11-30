@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_time_observer.h"
@@ -199,9 +200,7 @@ void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
 }
 
 void SequenceManagerImpl::BindToCurrentThread() {
-  // Associated thread is bound early for thread controller with message pump.
-  if (associated_thread_->thread_id == kInvalidThreadId)
-    associated_thread_->BindToCurrentThread();
+  associated_thread_->BindToCurrentThread();
 }
 
 void SequenceManagerImpl::BindToCurrentThread(
@@ -920,15 +919,15 @@ scoped_refptr<SingleThreadTaskRunner> SequenceManagerImpl::GetTaskRunner() {
 }
 
 std::string SequenceManagerImpl::GetThreadName() const {
-  DCHECK_NE(kInvalidThreadId, associated_thread_->thread_id)
+  Optional<PlatformThreadId> thread_id = associated_thread_->GetBoundThreadId();
+  DCHECK(thread_id)
       << "GetThreadName() must only be called after BindToCurrentThread()'s "
       << "side-effects have been synchronized with this thread.";
-  return ThreadIdNameManager::GetInstance()->GetName(
-      associated_thread_->thread_id);
+  return ThreadIdNameManager::GetInstance()->GetName(*thread_id);
 }
 
 bool SequenceManagerImpl::IsBoundToCurrentThread() const {
-  return associated_thread_->thread_id == PlatformThread::CurrentId();
+  return associated_thread_->IsBoundToCurrentThread();
 }
 
 MessagePump* SequenceManagerImpl::GetMessagePump() const {

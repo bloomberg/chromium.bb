@@ -242,7 +242,7 @@ void TaskQueue::SetObserver(Observer* observer) {
 }
 
 bool TaskQueue::IsOnMainThread() const {
-  return associated_thread_->thread_id == PlatformThread::CurrentId();
+  return associated_thread_->IsBoundToCurrentThread();
 }
 
 Optional<MoveableAutoLock> TaskQueue::AcquireImplReadLockIfNeeded() const {

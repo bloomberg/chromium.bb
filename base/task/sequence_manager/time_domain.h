@@ -21,7 +21,7 @@ namespace sequence_manager {
 class SequenceManager;
 
 namespace internal {
-struct AssociatedThreadId;
+class AssociatedThreadId;
 class SequenceManagerImpl;
 class TaskQueueImpl;
 }  // namespace internal

@@ -722,6 +722,7 @@ jumbo_component("base") {
     "task/post_task.h",
     "task/scoped_set_task_priority_for_current_thread.cc",
     "task/scoped_set_task_priority_for_current_thread.h",
+    "task/sequence_manager/associated_thread_id.cc",
     "task/sequence_manager/associated_thread_id.h",
     "task/sequence_manager/enqueue_order.cc",
     "task/sequence_manager/enqueue_order.h",

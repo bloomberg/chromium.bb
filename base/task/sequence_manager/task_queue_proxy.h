@@ -16,7 +16,7 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-struct AssociatedThreadId;
+class AssociatedThreadId;
 class TaskQueueImpl;
 
 // Task runners are ref-counted and unaccountable, so we need a safe way
