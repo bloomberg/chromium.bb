@@ -369,6 +369,13 @@ class StorageTest(TestCase):
             (items[3], 456, items[3].content()[0]))),
         sorted(storage_api.push_calls))
 
+  def test_upload_items_empty(self):
+    server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
+    storage_api = MockedStorageApi(server_ref, {})
+    storage = isolateserver.Storage(storage_api)
+    result = storage.upload_items(())
+    self.assertEqual([], result)
+
   def test_async_push(self):
     for use_zip in (False, True):
       item = FakeItem('1234567')

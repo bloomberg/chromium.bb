@@ -612,7 +612,8 @@ class Storage(object):
         t.join()
 
     logging.info('All %s files are uploaded', len(uploaded))
-    _print_upload_stats(seen.values(), uploaded)
+    if seen:
+      _print_upload_stats(seen.values(), uploaded)
     return uploaded
 
   def _async_push(self, channel, item, push_state):
