@@ -501,7 +501,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;
-  bool ShouldOverrideVisibilityAsPrerender() const override;
   bool IsBrowserSideNavigationPending() override;
   void LoadHTMLString(const std::string& html,
                       const GURL& base_url,

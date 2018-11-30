@@ -6,7 +6,6 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/request_context_frame_type.mojom";
-import "third_party/blink/public/mojom/page/page_visibility_state.mojom";
 import "url/mojom/url.mojom";
 
 // Indicates the service worker client type.
@@ -44,9 +43,8 @@ struct ServiceWorkerClientInfo {
   // Client#type
   ServiceWorkerClientType client_type;
 
-  // WindowClient#visibilityState
-  // Set to |kHidden| if it's a non-window client.
-  PageVisibilityState page_visibility_state = PageVisibilityState.kHidden;
+  // Set to |true| if it's a non-window client.
+  bool page_hidden = true;
 
   // WindowClient#focused
   // Set to false if it's a non-window client.

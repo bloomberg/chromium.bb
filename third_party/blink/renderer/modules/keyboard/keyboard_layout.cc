@@ -29,8 +29,6 @@ constexpr char kKeyboardMapRequestFailedErrorMsg[] =
 
 }  // namespace
 
-using mojom::PageVisibilityState;
-
 KeyboardLayout::KeyboardLayout(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 

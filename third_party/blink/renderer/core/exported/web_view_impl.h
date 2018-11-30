@@ -102,7 +102,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
  public:
   static WebViewImpl* Create(WebViewClient*,
                              WebWidgetClient*,
-                             mojom::PageVisibilityState,
+                             bool is_hidden,
                              WebViewImpl* opener);
   static HashSet<WebViewImpl*>& AllInstances();
   // Returns true if popup menus should be rendered by the browser, false if
@@ -346,8 +346,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   PaintLayerCompositor* Compositor() const;
 
   PageScheduler* Scheduler() const override;
-  void SetVisibilityState(mojom::PageVisibilityState, bool) override;
-  mojom::PageVisibilityState VisibilityState() override;
+  void SetIsHidden(bool hidden, bool is_initial_state) override;
+  bool IsHidden() override;
 
   bool HasOpenedPopup() const { return page_popup_.get(); }
 
@@ -483,7 +483,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebViewImpl(WebViewClient*,
               WebWidgetClient*,
-              mojom::PageVisibilityState,
+              bool is_hidden,
               WebViewImpl* opener);
   ~WebViewImpl() override;
 

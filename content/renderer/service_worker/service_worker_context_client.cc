@@ -191,7 +191,7 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
   blink::WebServiceWorkerClientInfo web_client_info;
 
   web_client_info.uuid = blink::WebString::FromASCII(client_info->client_uuid);
-  web_client_info.page_visibility_state = client_info->page_visibility_state;
+  web_client_info.page_hidden = client_info->page_hidden;
   web_client_info.is_focused = client_info->is_focused;
   web_client_info.url = client_info->url;
   web_client_info.frame_type = client_info->frame_type;

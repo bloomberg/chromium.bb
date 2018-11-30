@@ -111,7 +111,7 @@ void SensorProxy::UpdateSuspendedStatus() {
 }
 
 bool SensorProxy::ShouldSuspendUpdates() const {
-  if (GetPage()->VisibilityState() != mojom::PageVisibilityState::kVisible)
+  if (!GetPage()->IsPageVisible())
     return true;
 
   LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();

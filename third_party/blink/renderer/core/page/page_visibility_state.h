@@ -37,8 +37,8 @@
 
 namespace blink {
 
-CORE_EXPORT String PageVisibilityStateString(mojom::PageVisibilityState);
+CORE_EXPORT String PageHiddenStateString(bool visible);
 
 }  // namespace blink
 
-#endif  // ifndef PageVisibilityState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_STATE_H_

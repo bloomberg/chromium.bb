@@ -112,16 +112,16 @@ class ScreenWakeLockTest : public testing::Test {
 
   void Show() {
     DCHECK(web_view_helper_.GetWebView());
-    web_view_helper_.GetWebView()->SetVisibilityState(
-        mojom::blink::PageVisibilityState::kVisible, false);
+    web_view_helper_.GetWebView()->SetIsHidden(
+        /*is_hidden=*/false, /*initial_state=*/false);
     // Let the notification sink through the mojo pipes.
     test::RunPendingTasks();
   }
 
   void Hide() {
     DCHECK(web_view_helper_.GetWebView());
-    web_view_helper_.GetWebView()->SetVisibilityState(
-        mojom::blink::PageVisibilityState::kHidden, false);
+    web_view_helper_.GetWebView()->SetIsHidden(
+        /*is_hidden=*/true, /*initial_state=*/false);
     // Let the notification sink through the mojo pipes.
     test::RunPendingTasks();
   }

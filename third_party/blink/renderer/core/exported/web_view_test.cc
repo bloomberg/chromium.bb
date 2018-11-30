@@ -43,7 +43,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -489,7 +488,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   frame_test_helpers::TestWebViewClient web_view_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(&web_view_client, &web_view_client,
-                      mojom::PageVisibilityState::kVisible, nullptr));
+                      /*is_hidden=*/false, nullptr));
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
   // background color.
@@ -2552,8 +2551,8 @@ TEST_F(WebViewTest, ClientTapHandling) {
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
-      nullptr, nullptr, mojom::PageVisibilityState::kVisible, nullptr));
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(
+      WebView::Create(nullptr, nullptr, /*is_hidden=*/false, nullptr));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
@@ -5223,9 +5222,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   clock.Advance(TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   clock.Advance(TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
@@ -5240,7 +5239,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
 // calculate longest input delay.
 TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><body></body></html>", base_url);
@@ -5265,7 +5264,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
@@ -5294,9 +5293,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   clock.Advance(TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   clock.Advance(TimeDelta::FromMilliseconds(1));
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,

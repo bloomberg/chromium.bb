@@ -54,7 +54,7 @@ InteractiveDetector::InteractiveDetector(
           document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &InteractiveDetector::TimeToInteractiveTimerFired),
-      initial_visibility_(document.GetPageVisibilityState()) {}
+      initially_hidden_(document.hidden()) {}
 
 void InteractiveDetector::SetNavigationStartTime(
     TimeTicks navigation_start_time) {
@@ -148,21 +148,19 @@ TimeTicks InteractiveDetector::GetLongestInputTimestamp() const {
 
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(TimeTicks event_time) {
   DCHECK(GetSupplementable());
-  if (GetSupplementable()->GetPageVisibilityState() ==
-      mojom::PageVisibilityState::kHidden) {
+  if (GetSupplementable()->hidden()) {
     return true;
   }
 
-  mojom::PageVisibilityState curr_visibility = initial_visibility_;
+  bool curr_hidden = initially_hidden_;
   TimeTicks visibility_start = page_event_times_.nav_start;
   for (auto change_event : visibility_change_events_) {
     TimeTicks visibility_end = change_event.timestamp;
-    if (curr_visibility == mojom::PageVisibilityState::kHidden &&
-        event_time < visibility_end) {
+    if (curr_hidden && event_time < visibility_end) {
       // [event_time, now] intersects a backgrounded range.
       return true;
     }
-    curr_visibility = change_event.visibility;
+    curr_hidden = change_event.was_hidden;
     visibility_start = visibility_end;
   }
 
@@ -365,9 +363,8 @@ void InteractiveDetector::OnInvalidatingInputEvent(
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
-void InteractiveDetector::OnPageVisibilityChanged(
-    mojom::PageVisibilityState visibility) {
-  visibility_change_events_.push_back({CurrentTimeTicks(), visibility});
+void InteractiveDetector::OnPageHiddenChanged(bool is_hidden) {
+  visibility_change_events_.push_back({CurrentTimeTicks(), is_hidden});
 }
 
 void InteractiveDetector::TimeToInteractiveTimerFired(TimerBase*) {

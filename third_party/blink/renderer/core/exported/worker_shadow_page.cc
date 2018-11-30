@@ -26,7 +26,7 @@ WorkerShadowPage::WorkerShadowPage(
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
                                     nullptr,
-                                    mojom::PageVisibilityState::kVisible,
+                                    /*is_hidden=*/false,
                                     nullptr)),
       main_frame_(
           WebLocalFrameImpl::CreateMainFrame(web_view_,

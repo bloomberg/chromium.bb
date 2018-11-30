@@ -200,7 +200,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
   blink::WebWidgetClient* WidgetClient() override;
 
   // Exposed for our TestRunner harness.
-  using RenderViewImpl::ApplyPageVisibility;
+  using RenderViewImpl::ApplyPageHidden;
 
  private:
   // RenderViewImpl has no public destructor.

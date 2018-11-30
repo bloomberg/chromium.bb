@@ -170,8 +170,7 @@ class ChromeContentRendererClient
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
-  bool ShouldOverrideVisibilityAsPrerender(
-      const content::RenderFrame* render_frame) override;
+  bool IsPrerenderingFrame(const content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

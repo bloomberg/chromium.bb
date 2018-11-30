@@ -38,7 +38,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -262,19 +261,19 @@ class EmptyEventListener final : public EventListener {
 
 WebView* WebView::Create(WebViewClient* client,
                          WebWidgetClient* widget_client,
-                         mojom::PageVisibilityState visibility_state,
+                         bool is_hidden,
                          WebView* opener) {
-  return WebViewImpl::Create(client, widget_client, visibility_state,
+  return WebViewImpl::Create(client, widget_client, is_hidden,
                              static_cast<WebViewImpl*>(opener));
 }
 
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
                                  WebWidgetClient* widget_client,
-                                 mojom::PageVisibilityState visibility_state,
+                                 bool is_hidden,
                                  WebViewImpl* opener) {
   // Pass the WebViewImpl's self-reference to the caller.
-  auto web_view = base::AdoptRef(
-      new WebViewImpl(client, widget_client, visibility_state, opener));
+  auto web_view =
+      base::AdoptRef(new WebViewImpl(client, widget_client, is_hidden, opener));
   web_view->AddRef();
   return web_view.get();
 }
@@ -296,7 +295,7 @@ void WebViewImpl::SetPrerendererClient(
 
 WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebWidgetClient* widget_client,
-                         mojom::PageVisibilityState visibility_state,
+                         bool is_hidden,
                          WebViewImpl* opener)
     : client_(client),
       widget_client_(widget_client),
@@ -344,7 +343,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   page_ =
       Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr);
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
-  SetVisibilityState(visibility_state, true);
+  SetIsHidden(is_hidden, /*is_initial_state=*/true);
 
   // When not compositing, keep the Page in the loop so that it will paint all
   // content into the root layer, as multiple layers can only be used when
@@ -3324,18 +3323,15 @@ PageScheduler* WebViewImpl::Scheduler() const {
   return GetPage()->GetPageScheduler();
 }
 
-void WebViewImpl::SetVisibilityState(
-    mojom::PageVisibilityState visibility_state,
-    bool is_initial_state) {
+void WebViewImpl::SetIsHidden(bool hidden, bool is_initial_state) {
   DCHECK(GetPage());
-  GetPage()->SetVisibilityState(visibility_state, is_initial_state);
-  GetPage()->GetPageScheduler()->SetPageVisible(
-      visibility_state == mojom::PageVisibilityState::kVisible);
+  GetPage()->SetIsHidden(hidden, is_initial_state);
+  GetPage()->GetPageScheduler()->SetPageVisible(!hidden);
 }
 
-mojom::PageVisibilityState WebViewImpl::VisibilityState() {
+bool WebViewImpl::IsHidden() {
   DCHECK(GetPage());
-  return GetPage()->VisibilityState();
+  return !GetPage()->IsPageVisible();
 }
 
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {

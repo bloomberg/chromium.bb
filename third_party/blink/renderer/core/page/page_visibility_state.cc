@@ -29,22 +29,13 @@
  */
 
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-String PageVisibilityStateString(mojom::PageVisibilityState state) {
-  switch (state) {
-    case mojom::PageVisibilityState::kVisible:
-      return "visible";
-    case mojom::PageVisibilityState::kHidden:
-      return "hidden";
-    case mojom::PageVisibilityState::kPrerender:
-      return "prerender";
-  }
-
-  NOTREACHED();
-  return String();
+String PageHiddenStateString(bool hidden) {
+  if (hidden)
+    return "hidden";
+  return "visible";
 }
 
 }  // namespace blink

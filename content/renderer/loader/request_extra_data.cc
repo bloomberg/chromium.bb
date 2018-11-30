@@ -11,27 +11,12 @@ using blink::WebString;
 
 namespace content {
 
-RequestExtraData::RequestExtraData()
-    : visibility_state_(blink::mojom::PageVisibilityState::kVisible),
-      render_frame_id_(MSG_ROUTING_NONE),
-      is_main_frame_(false),
-      allow_download_(true),
-      transition_type_(ui::PAGE_TRANSITION_LINK),
-      service_worker_provider_id_(kInvalidServiceWorkerProviderId),
-      originated_from_service_worker_(false),
-      initiated_in_secure_context_(false),
-      is_for_no_state_prefetch_(false),
-      block_mixed_plugin_content_(false),
-      navigation_initiated_by_renderer_(false),
-      attach_same_site_cookies_(false) {}
-
-RequestExtraData::~RequestExtraData() {
-}
+RequestExtraData::RequestExtraData() = default;
+RequestExtraData::~RequestExtraData() = default;
 
 void RequestExtraData::CopyToResourceRequest(
     network::ResourceRequest* request) const {
-  request->is_prerendering =
-      visibility_state_ == blink::mojom::PageVisibilityState::kPrerender;
+  request->is_prerendering = is_prerendering_;
   request->render_frame_id = render_frame_id_;
   request->is_main_frame = is_main_frame_;
 

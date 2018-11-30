@@ -256,7 +256,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
     : plugin_(plugin) {
   web_view_ = WebView::Create(/*client=*/this,
                               /*widget_client=*/this,
-                              blink::mojom::PageVisibilityState::kVisible,
+                              /*is_hidden=*/false,
                               /*opener=*/nullptr);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.

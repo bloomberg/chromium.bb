@@ -39,7 +39,7 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   void Trace(blink::Visitor*) override;
 
  private:
-  mojom::PageVisibilityState page_visibility_state_;
+  bool page_hidden_;
   bool is_focused_;
 };
 

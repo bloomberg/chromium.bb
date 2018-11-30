@@ -83,10 +83,6 @@ class UkmRecorder;
 
 namespace blink {
 
-namespace mojom {
-enum class PageVisibilityState : int32_t;
-}  // namespace mojom
-
 class AnimationClock;
 class AXContext;
 class AXObjectCache;
@@ -419,7 +415,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   String visibilityState() const;
-  mojom::PageVisibilityState GetPageVisibilityState() const;
+  bool IsPageVisible() const;
   bool hidden() const;
   void DidChangeVisibilityState();
 

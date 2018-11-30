@@ -126,10 +126,15 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
   // TODO(mlamouri,michaeln): it is possible to end up collecting information
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
+  blink::mojom::PageVisibilityState visibility =
+      render_frame_host->GetVisibilityState();
+  // Service workers do no prerender, this would be an invalid visibility state.
+  DCHECK_NE(visibility, blink::mojom::PageVisibilityState::kPrerender);
+  bool page_hidden = visibility != blink::mojom::PageVisibilityState::kVisible;
   return blink::mojom::ServiceWorkerClientInfo::New(
       render_frame_host->GetLastCommittedURL(), client_uuid,
-      blink::mojom::ServiceWorkerClientType::kWindow,
-      render_frame_host->GetVisibilityState(), render_frame_host->IsFocused(),
+      blink::mojom::ServiceWorkerClientType::kWindow, page_hidden,
+      render_frame_host->IsFocused(),
       render_frame_host->GetParent()
           ? network::mojom::RequestContextFrameType::kNested
           : network::mojom::RequestContextFrameType::kTopLevel,
@@ -325,10 +330,9 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       host->url(), host->client_uuid(), host_client_type,
-      blink::mojom::PageVisibilityState::kHidden,
-      false,  // is_focused
-      network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
-      host->create_time());
+      /*page_hidden=*/true,
+      /*is_focused=*/false, network::mojom::RequestContextFrameType::kNone,
+      base::TimeTicks(), host->create_time());
   out_clients->push_back(std::move(client_info));
 }
 
@@ -540,10 +544,9 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       provider_host->url(), provider_host->client_uuid(),
-      provider_host->client_type(), blink::mojom::PageVisibilityState::kHidden,
-      false,  // is_focused
-      network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
-      provider_host->create_time());
+      provider_host->client_type(), /*page_hidden=*/true,
+      /*is_focused=*/false, network::mojom::RequestContextFrameType::kNone,
+      base::TimeTicks(), provider_host->create_time());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), std::move(client_info)));

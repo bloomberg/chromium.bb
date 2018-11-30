@@ -445,7 +445,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
-      page_is_hidden_(params.hidden),
       session_storage_namespace_id_(params.session_storage_namespace_id),
       weak_ptr_factory_(this) {
   DCHECK(!session_storage_namespace_id_.empty())
@@ -467,10 +466,7 @@ void RenderViewImpl::Initialize(
 
   // Pass WidgetClient(), not |this|, as the WebWidgetClient. The method may
   // be overridden in layout tests to inject a test-only WebWidgetClient.
-  webview_ = WebView::Create(this, WidgetClient(),
-                             page_is_hidden_
-                                 ? blink::mojom::PageVisibilityState::kHidden
-                                 : blink::mojom::PageVisibilityState::kVisible,
+  webview_ = WebView::Create(this, WidgetClient(), params->hidden,
                              opener_frame ? opener_frame->View() : nullptr);
   RenderWidget::Init(std::move(show_callback), webview_->MainFrameWidget());
 
@@ -1589,8 +1585,7 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
   int delay;
   if (send_content_state_immediately_)
     delay = 0;
-  // Note this uses the browser specified visibility, ignoring pre-render.
-  else if (page_is_hidden_)
+  else if (GetWebView()->IsHidden())
     delay = kDelaySecondsForContentStateSyncHidden;
   else
     delay = kDelaySecondsForContentStateSync;
@@ -1856,13 +1851,10 @@ void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
   SetZoomLevel(zoom_level);
 }
 
-void RenderViewImpl::ApplyPageVisibility(
-    blink::mojom::PageVisibilityState visibility_state,
-    bool initial_setting) {
-  webview()->SetVisibilityState(visibility_state, initial_setting);
-  // Note: RenderWidget visibility is separately set from the IPC handlers and
-  // does not consider pre-render, and does not change when tests override the
-  // visibility of the Page.
+void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
+  webview()->SetIsHidden(hidden, initial_setting);
+  // Note: RenderWidget visibility is separately set from the IPC handlers, and
+  // does not change when tests override the visibility of the Page.
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
@@ -1959,19 +1951,7 @@ void RenderViewImpl::OnPageWasHidden() {
   SuspendVideoCaptureDevices(true);
 #endif
 
-  page_is_hidden_ = true;
-
-  blink::mojom::PageVisibilityState visibility =
-      blink::mojom::PageVisibilityState::kHidden;
-  // TODO(lfg): It's not correct to defer the page visibility to the main
-  // frame. Currently, this is done because the main frame may override the
-  // visibility of the page when prerendering. In order to fix this,
-  // prerendering must be made aware of OOPIFs. https://crbug.com/440544
-  if (RenderFrame* frame = GetMainRenderFrame()) {
-    if (frame->ShouldOverrideVisibilityAsPrerender())
-      visibility = blink::mojom::PageVisibilityState::kPrerender;
-  }
-  ApplyPageVisibility(visibility, /*initial_setting=*/false);
+  ApplyPageHidden(/*hidden=*/true, /*initial_setting=*/false);
 }
 
 void RenderViewImpl::OnPageWasShown() {
@@ -1979,34 +1959,7 @@ void RenderViewImpl::OnPageWasShown() {
   SuspendVideoCaptureDevices(false);
 #endif
 
-  page_is_hidden_ = false;
-
-  blink::mojom::PageVisibilityState visibility =
-      blink::mojom::PageVisibilityState::kVisible;
-  // TODO(lfg): It's not correct to defer the page visibility to the main
-  // frame. Currently, this is done because the main frame may override the
-  // visibility of the page when prerendering. In order to fix this,
-  // prerendering must be made aware of OOPIFs. https://crbug.com/440544
-  if (RenderFrame* frame = GetMainRenderFrame()) {
-    if (frame->ShouldOverrideVisibilityAsPrerender())
-      visibility = blink::mojom::PageVisibilityState::kPrerender;
-  }
-  ApplyPageVisibility(visibility, /*initial_setting=*/false);
-}
-
-void RenderViewImpl::ResetVisibilityState() {
-  blink::mojom::PageVisibilityState visibility =
-      page_is_hidden_ ? blink::mojom::PageVisibilityState::kHidden
-                      : blink::mojom::PageVisibilityState::kVisible;
-  // TODO(lfg): It's not correct to defer the page visibility to the main
-  // frame. Currently, this is done because the main frame may override the
-  // visibility of the page when prerendering. In order to fix this,
-  // prerendering must be made aware of OOPIFs. https://crbug.com/440544
-  if (RenderFrame* frame = GetMainRenderFrame()) {
-    if (frame->ShouldOverrideVisibilityAsPrerender())
-      visibility = blink::mojom::PageVisibilityState::kPrerender;
-  }
-  ApplyPageVisibility(visibility, /*initial_setting=*/false);
+  ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
 }
 
 void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {

@@ -1278,8 +1278,7 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
 
 bool LocalFrameView::ShouldSetCursor() const {
   Page* page = GetFrame().GetPage();
-  return page &&
-         page->VisibilityState() != mojom::PageVisibilityState::kHidden &&
+  return page && page->IsPageVisible() &&
          !frame_->GetEventHandler().IsMousePositionUnknown() &&
          page->GetFocusController().IsActive();
 }

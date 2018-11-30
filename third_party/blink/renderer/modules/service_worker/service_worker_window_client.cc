@@ -55,19 +55,19 @@ ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const WebServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
-      page_visibility_state_(info.page_visibility_state),
+      page_hidden_(info.page_hidden),
       is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
-      page_visibility_state_(info.page_visibility_state),
+      page_hidden_(info.page_hidden),
       is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::~ServiceWorkerWindowClient() = default;
 
 String ServiceWorkerWindowClient::visibilityState() const {
-  return PageVisibilityStateString(page_visibility_state_);
+  return PageHiddenStateString(page_hidden_);
 }
 
 ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {

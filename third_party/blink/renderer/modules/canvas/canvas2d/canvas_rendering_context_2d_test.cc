@@ -1193,8 +1193,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::PageVisibilityState::kHidden, false);
+  GetDocument().GetPage()->SetIsHidden(/*is_hidden=*/true,
+                                       /*is_initial_state=*/false);
   RunUntilIdle();  // Run hibernation task.
   // If enabled, hibernation should cause compositing update.
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
@@ -1206,8 +1206,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::PageVisibilityState::kVisible, false);
+  GetDocument().GetPage()->SetIsHidden(/*is_hidden=*/false,
+                                       /*is_initial_state=*/false);
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             layer->NeedsCompositingInputsUpdate());
   RunUntilIdle();  // Clear task queue.
@@ -1232,8 +1232,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::PageVisibilityState::kHidden, false);
+  GetDocument().GetPage()->SetIsHidden(/*is_hidden=*/true,
+                                       /*is_initial_state=*/false);
   RunUntilIdle();  // Run hibernation task.
 
   // Never hibernate a canvas with no resource provider
