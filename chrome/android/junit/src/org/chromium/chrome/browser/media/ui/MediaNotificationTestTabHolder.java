@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.Set;
 

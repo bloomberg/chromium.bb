@@ -23,7 +23,7 @@ import org.robolectric.shadows.ShadowNotification;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 /**
  * Test of media notifications to see whether the text updates when the tab title changes or the

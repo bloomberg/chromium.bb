@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.media_session.mojom.MediaSessionAction;
+import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.ArrayList;
 import java.util.HashSet;

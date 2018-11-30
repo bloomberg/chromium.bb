@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 import java.net.URI;
 import java.net.URISyntaxException;

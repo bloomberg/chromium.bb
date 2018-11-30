@@ -15,7 +15,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.content_public.common.MediaMetadata.MediaImage;
+import static org.chromium.services.media_session.MediaMetadata.MediaImage;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
