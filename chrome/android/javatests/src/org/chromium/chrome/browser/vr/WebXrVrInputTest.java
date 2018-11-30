@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
@@ -96,12 +97,14 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that screen touches are not registered when in VR.
+     * Tests that screen touches are not registered when in VR. Disabled on standalones because
+     * they don't have touchscreens.
      */
     @Test
     @MediumTest
     @DisableIf.
     Build(message = "Flaky on K/L crbug.com/762126", sdk_is_less_than = Build.VERSION_CODES.M)
+    @Restriction(RESTRICTION_TYPE_SVR)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsNotRegistered() throws InterruptedException {
         screenTapsNotRegisteredImpl(
@@ -110,13 +113,15 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that screen touches are not registered when in an immersive session.
+     * Tests that screen touches are not registered when in an immersive session. Disabled on
+     * standalones because they don't have touchscreens.
      */
     @Test
     @MediumTest
     @DisableIf
             .Build(message = "Flaky on K/L crbug.com/762126",
                     sdk_is_less_than = Build.VERSION_CODES.M)
+            @Restriction(RESTRICTION_TYPE_SVR)
             @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -743,8 +748,20 @@ public class WebXrVrInputTest {
                 PAGE_LOAD_TIMEOUT_S);
         WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                 POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
-        PermissionUtils.waitForPermissionPrompt();
-        PermissionUtils.acceptPermissionPrompt();
+
+        // Accept the permission prompt. Standalone devices need to be special cased since they
+        // will be in the VR Browser.
+        if (TestVrShellDelegate.isOnStandalone()) {
+            NativeUiUtils.enableMockedInput();
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {});
+            NativeUiUtils.waitForUiQuiescence();
+            NativeUiUtils.clickFallbackUiPositiveButton();
+        } else {
+            PermissionUtils.waitForPermissionPrompt();
+            PermissionUtils.acceptPermissionPrompt();
+        }
+
         WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
         // The permission toasts automatically show for ~5 seconds when entering an immersive

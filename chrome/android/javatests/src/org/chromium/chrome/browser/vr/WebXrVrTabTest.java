@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.os.Build;
@@ -66,10 +67,13 @@ public class WebXrVrTabTest {
     }
 
     /**
-     * Tests that non-focused tabs cannot get pose information.
+     * Tests that non-focused tabs cannot get pose information. Disabled on standalones because
+     * they will always be in the VR Browser, and thus shouldn't be getting inline poses even
+     * if the tab is focused.
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_SVR)
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         testPoseDataUnfocusedTabImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
@@ -77,10 +81,13 @@ public class WebXrVrTabTest {
     }
 
     /**
-     * Tests that non-focused tabs don't get WebXR rAFs called.
+     * Tests that non-focused tabs don't get WebXR rAFs called. Disabled on standalones because
+     * they will always be in the VR Browser, and thus shouldn't be getting inline poses even
+     * if the tab is focused.
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_SVR)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -137,8 +144,20 @@ public class WebXrVrTabTest {
         WebXrVrTestFramework.runJavaScriptOrFail(
                 "requestPermission({audio:true}, true /* storeValue */)", POLL_TIMEOUT_SHORT_MS,
                 mTestRule.getWebContents());
-        PermissionUtils.waitForPermissionPrompt();
-        PermissionUtils.acceptPermissionPrompt();
+
+        // Accept the permission prompt. Standalone devices need to be special cased since they
+        // will be in the VR Browser.
+        if (TestVrShellDelegate.isOnStandalone()) {
+            NativeUiUtils.enableMockedInput();
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {});
+            NativeUiUtils.waitForUiQuiescence();
+            NativeUiUtils.clickFallbackUiPositiveButton();
+        } else {
+            PermissionUtils.waitForPermissionPrompt();
+            PermissionUtils.acceptPermissionPrompt();
+        }
+
         WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
 
         if (incognito) {

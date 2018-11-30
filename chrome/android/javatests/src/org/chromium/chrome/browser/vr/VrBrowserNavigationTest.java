@@ -555,10 +555,12 @@ public class VrBrowserNavigationTest {
 
     /**
      * Tests that navigation to/from native pages works properly and that interacting with the
-     * screen doesn't cause issues. See crbug.com/737167.
+     * screen doesn't cause issues. See crbug.com/737167. Disabled on standalones because they
+     * don't have touchscreens, so the mouseSingleClickView causes issues.
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNativeNavigationAndInteraction()
             throws IllegalArgumentException, InterruptedException {
         for (String url : NATIVE_URLS_OF_INTEREST) {
