@@ -428,6 +428,15 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kLazyImageVisibleLoadTimeMetrics))
     WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(true);
 
+  WebRuntimeFeatures::EnableRestrictLazyFrameLoadingToDataSaver(
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kLazyFrameLoading,
+          "restrict-lazy-load-frames-to-data-saver-only", false));
+  WebRuntimeFeatures::EnableRestrictLazyImageLoadingToDataSaver(
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kLazyFrameLoading,
+          "restrict-lazy-load-images-to-data-saver-only", false));
+
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
 
