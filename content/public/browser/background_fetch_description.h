@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_FETCH_DESCRIPTION_H_
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_FETCH_DESCRIPTION_H_
 
+#include <stdint.h>
 #include <vector>
+
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/origin.h"
@@ -21,8 +23,8 @@ struct CONTENT_EXPORT BackgroundFetchDescription {
                              SkBitmap icon,
                              int completed_parts,
                              int total_parts,
-                             int completed_parts_size,
-                             int total_parts_size,
+                             uint64_t completed_parts_size,
+                             uint64_t total_parts_size,
                              std::vector<std::string> outstanding_guids,
                              bool start_paused);
   ~BackgroundFetchDescription();
@@ -33,8 +35,8 @@ struct CONTENT_EXPORT BackgroundFetchDescription {
   SkBitmap icon;
   int completed_parts;
   int total_parts;
-  int completed_parts_size;
-  int total_parts_size;
+  uint64_t completed_parts_size;
+  uint64_t total_parts_size;
   std::vector<std::string> outstanding_guids;
   bool start_paused;
 

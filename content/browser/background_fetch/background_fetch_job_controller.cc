@@ -101,9 +101,6 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   completed_downloads_ = completed_downloads;
   total_downloads_ = total_downloads;
 
-  // TODO(nator): Update this when we support uploads.
-  total_downloads_size_ = options_.download_total;
-
   std::vector<std::string> active_guids;
   active_guids.reserve(active_fetch_requests.size());
   for (const auto& request_info : active_fetch_requests)
@@ -112,7 +109,7 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       registration_id().unique_id(), options_.title, registration_id().origin(),
       icon_, completed_downloads, total_downloads,
-      complete_requests_downloaded_bytes_cache_, total_downloads_size_,
+      complete_requests_downloaded_bytes_cache_, options_.download_total,
       std::move(active_guids), start_paused);
 
   delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
@@ -198,7 +195,7 @@ std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchJobController::NewRegistration() const {
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
-      0 /* upload_total */, 0 /* uploaded */, total_downloads_size_,
+      0 /* upload_total */, 0 /* uploaded */, options_.download_total,
       complete_requests_downloaded_bytes_cache_,
       blink::mojom::BackgroundFetchResult::UNSET, failure_reason_);
 }
