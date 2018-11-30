@@ -87,6 +87,7 @@ bundle_data("http_server_bundle_data") {
     "data/http_server_files/opensearch.xml",
     "data/http_server_files/pony.html",
     "data/http_server_files/redirect_refresh.html",
+    "data/http_server_files/retrotv.usdz",
     "data/http_server_files/single_page_wide.pdf",
     "data/http_server_files/state_operations.html",
     "data/http_server_files/state_operations.js",

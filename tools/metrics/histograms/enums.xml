@@ -41763,6 +41763,24 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="RemotePlayback"/>
 </enum>
 
+<enum name="PresentQLPreviewController">
+  <int value="0" label="Successful">
+    The AR model was sucessesfully presented.
+  </int>
+  <int value="1" label="Invalid File">
+    The AR model cannot be presented, because the file is invalid.
+  </int>
+  <int value="2" label="Another QLPreviewController Is Presented">
+    The AR model cannot be presented, because another QLPreviewController is
+    already presented.
+  </int>
+  <int value="3" label="Another View Controller Is Presented">
+    The AR model cannot be presented, because another view controller is already
+    presented. Does not include items already counted in the more specific
+    bucket (Another QLPreviewController Is Presented).
+  </int>
+</enum>
+
 <enum name="PreTapEvents">
   <int value="0" label="no event"/>
   <int value="1" label="tapdown"/>

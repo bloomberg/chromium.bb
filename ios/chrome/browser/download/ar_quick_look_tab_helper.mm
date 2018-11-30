@@ -141,8 +141,9 @@ void ARQuickLookTabHelper::DownloadWithDestinationDir(
     web::DownloadTask* download_task,
     bool directory_created) {
   // Return early if |download_task_| has changed.
-  if (download_task != download_task_.get())
+  if (download_task != download_task_.get()) {
     return;
+  }
 
   if (!directory_created) {
     RemoveCurrentDownload();
@@ -164,8 +165,9 @@ void ARQuickLookTabHelper::DownloadWithWriter(
     web::DownloadTask* download_task,
     int writer_initialization_status) {
   // Return early if |download_task_| has changed.
-  if (download_task != download_task_.get())
+  if (download_task != download_task_.get()) {
     return;
+  }
 
   if (writer_initialization_status == net::OK) {
     download_task_->Start(std::move(writer));
