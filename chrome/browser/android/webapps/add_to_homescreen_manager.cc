@@ -77,10 +77,9 @@ void AddToHomescreenManager::AddToHomescreen(
     base::string16 user_title =
         base::android::ConvertJavaStringToUTF16(env, j_user_title);
     data_fetcher_->shortcut_info().user_title = user_title;
-    ShortcutHelper::AddToLauncherWithSkBitmap(
-        web_contents, data_fetcher_->shortcut_info(),
-        data_fetcher_->primary_icon(),
-        data_fetcher_->has_maskable_primary_icon());
+    ShortcutHelper::AddToLauncherWithSkBitmap(web_contents,
+                                              data_fetcher_->shortcut_info(),
+                                              data_fetcher_->primary_icon());
   }
 
   // Fire the appinstalled event and do install time logging.
@@ -144,6 +143,5 @@ void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
     java_bitmap = gfx::ConvertToJavaBitmap(&primary_icon);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AddToHomescreenManager_onIconAvailable(
-      env, java_ref_, java_bitmap, data_fetcher_->has_maskable_primary_icon());
+  Java_AddToHomescreenManager_onIconAvailable(env, java_ref_, java_bitmap);
 }

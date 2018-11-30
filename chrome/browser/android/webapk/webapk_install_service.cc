@@ -95,10 +95,8 @@ void WebApkInstallService::OnFinishedInstall(
     if (!web_contents)
       return;
 
-    // TODO(https://crbug.com/861643): Support maskable icons here.
     ShortcutHelper::AddToLauncherWithSkBitmap(web_contents, shortcut_info,
-                                              primary_icon,
-                                              /*is_icon_maskable=*/false);
+                                              primary_icon);
   }
 }
 

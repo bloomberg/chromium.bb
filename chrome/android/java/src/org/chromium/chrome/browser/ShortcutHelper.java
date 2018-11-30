@@ -108,30 +108,6 @@ public class ShortcutHelper {
     private static final float GENERATED_ICON_PADDING_RATIO = 1.0f / 12.0f;
     private static final float GENERATED_ICON_FONT_SIZE_RATIO = 1.0f / 3.0f;
 
-    // Constants for figuring out the amount of padding required to transform a web manifest
-    // maskable icon to an Android adaptive icon.
-    //
-    // The web standard for maskable icons specifies a larger safe zone inside the icon
-    // than Android adaptive icons define. Therefore we need to pad the image so that
-    // the maskable icon's safe zone is reduced to the dimensions expected by Android. See
-    // https://github.com/w3c/manifest/issues/555#issuecomment-404097653.
-    //
-    // The *_RATIO variables give the diameter of the safe zone divided by the width of the icon.
-    // Sources:
-    // - https://www.w3.org/TR/appmanifest/#icon-masks
-    // - https://medium.com/google-design/designing-adaptive-icons-515af294c783
-    //
-    // We subtract 1 from the scaling factor to give the amount we need to increase by, then divide
-    // it by two to get the amount of padding that we will add to both sides.
-    private static final float MASKABLE_SAFE_ZONE_RATIO = 4.0f / 5.0f;
-    private static final float ADAPTABLE_SAFE_ZONE_RATIO = 66.0f / 108.0f;
-
-    private static final float MASKABLE_TO_ADAPTABLE_SCALING_FACTOR =
-            MASKABLE_SAFE_ZONE_RATIO / ADAPTABLE_SAFE_ZONE_RATIO;
-
-    private static final float MASKABLE_ICON_PADDING_RATIO =
-            (MASKABLE_TO_ADAPTABLE_SCALING_FACTOR - 1.0f) / 2.0f;
-
     // True when Android O's ShortcutManager.requestPinShortcut() is supported.
     private static boolean sIsRequestPinShortcutSupported;
 
@@ -144,15 +120,13 @@ public class ShortcutHelper {
     public static class Delegate {
         /**
          * Request Android to add a shortcut to the home screen.
-         * @param title Title of the shortcut.
-         * @param icon Image that represents the shortcut.
-         * @param iconAdaptable Whether to create an Android Adaptable icon.
-         * @param shortcutIntent Intent to fire when the shortcut is activated.
+         * @param title  Title of the shortcut.
+         * @param icon   Image that represents the shortcut.
+         * @param intent Intent to fire when the shortcut is activated.
          */
-        public void addShortcutToHomescreen(
-                String title, Bitmap icon, boolean iconAdaptable, Intent shortcutIntent) {
+        public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
             if (isRequestPinShortcutSupported()) {
-                addShortcutWithShortcutManager(title, icon, iconAdaptable, shortcutIntent);
+                addShortcutWithShortcutManager(title, icon, shortcutIntent);
                 return;
             }
             Intent intent = createAddToHomeIntent(title, icon, shortcutIntent);
@@ -186,9 +160,9 @@ public class ShortcutHelper {
     @CalledByNative
     private static void addWebapp(final String id, final String url, final String scopeUrl,
             final String userTitle, final String name, final String shortName, final String iconUrl,
-            final Bitmap icon, boolean iconAdaptable, @WebDisplayMode final int displayMode,
-            final int orientation, final int source, final long themeColor,
-            final long backgroundColor, final String splashScreenUrl, final long callbackPointer) {
+            final Bitmap icon, @WebDisplayMode final int displayMode, final int orientation,
+            final int source, final long themeColor, final long backgroundColor,
+            final String splashScreenUrl, final long callbackPointer) {
         new AsyncTask<Intent>() {
             @Override
             protected Intent doInBackground() {
@@ -211,7 +185,7 @@ public class ShortcutHelper {
             }
             @Override
             protected void onPostExecute(final Intent resultIntent) {
-                sDelegate.addShortcutToHomescreen(userTitle, icon, iconAdaptable, resultIntent);
+                sDelegate.addShortcutToHomescreen(userTitle, icon, resultIntent);
 
                 // Store the webapp data so that it is accessible without the intent. Once this
                 // process is complete, call back to native code to start the splash image
@@ -234,14 +208,14 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(String id, String url, String userTitle, Bitmap icon,
-            boolean iconAdaptable, int source) {
+    private static void addShortcut(
+            String id, String url, String userTitle, Bitmap icon, int source) {
         Context context = ContextUtils.getApplicationContext();
         final Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
-        sDelegate.addShortcutToHomescreen(userTitle, icon, iconAdaptable, shortcutIntent);
+        sDelegate.addShortcutToHomescreen(userTitle, icon, shortcutIntent);
         if (shouldShowToastWhenAddingShortcut()) {
             showAddedToHomescreenToast(userTitle);
         }
@@ -249,17 +223,14 @@ public class ShortcutHelper {
 
     @TargetApi(Build.VERSION_CODES.O)
     private static void addShortcutWithShortcutManager(
-            String title, Bitmap bitmap, boolean isMaskableIcon, Intent shortcutIntent) {
+            String title, Bitmap icon, Intent shortcutIntent) {
         String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
         Context context = ContextUtils.getApplicationContext();
-
-        Icon icon = isMaskableIcon ? Icon.createWithAdaptiveBitmap(bitmap)
-                                   : Icon.createWithBitmap(bitmap);
 
         ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, id)
                                             .setShortLabel(title)
                                             .setLongLabel(title)
-                                            .setIcon(icon)
+                                            .setIcon(Icon.createWithBitmap(icon))
                                             .setIntent(shortcutIntent)
                                             .build();
         try {
@@ -439,12 +410,12 @@ public class ShortcutHelper {
      * Adapts a website's icon (e.g. favicon or touch icon) to make it suitable for the home screen.
      * This involves adding padding if the icon is a full sized square.
      *
+     * @param context Context used to create the intent.
      * @param webIcon The website's favicon or touch icon.
-     * @param maskable Whether the icon is suitable for creating an adaptive icon.
      * @return Bitmap Either the touch-icon or the newly created favicon.
      */
     @CalledByNative
-    public static Bitmap createHomeScreenIconFromWebIcon(Bitmap webIcon, boolean maskable) {
+    public static Bitmap createHomeScreenIconFromWebIcon(Bitmap webIcon) {
         // getLauncherLargeIconSize() is just a guess at the launcher icon size, and is often
         // wrong -- the launcher can show icons at any size it pleases. Instead of resizing the
         // icon to the supposed launcher size and then having the launcher resize the icon again,
@@ -455,21 +426,18 @@ public class ShortcutHelper {
         int maxInnerSize = Math.round(am.getLauncherLargeIconSize() * MAX_INNER_SIZE_RATIO);
         int innerSize = Math.min(maxInnerSize, Math.max(webIcon.getWidth(), webIcon.getHeight()));
 
+        int outerSize = innerSize;
         Rect innerBounds = new Rect(0, 0, innerSize, innerSize);
-        int padding = 0;
 
-        if (maskable) {
-            // See comments for MASKABLE_ICON_PADDING_RATIO.
-            padding = Math.round(MASKABLE_ICON_PADDING_RATIO * innerSize);
-        } else if (shouldPadIcon(webIcon)) {
-            // Draw the icon with padding around it if all four corners are not transparent.
-            padding = Math.round(ICON_PADDING_RATIO * innerSize);
+        // Draw the icon with padding around it if all four corners are not transparent. Otherwise,
+        // don't add padding.
+        if (shouldPadIcon(webIcon)) {
+            int padding = Math.round(ICON_PADDING_RATIO * innerSize);
+            outerSize += 2 * padding;
+            innerBounds.offset(padding, padding);
         }
 
-        int outerSize = 2 * padding + innerSize;
-        innerBounds.offset(padding, padding);
-
-        Bitmap bitmap;
+        Bitmap bitmap = null;
         try {
             bitmap = Bitmap.createBitmap(outerSize, outerSize, Bitmap.Config.ARGB_8888);
         } catch (OutOfMemoryError e) {
