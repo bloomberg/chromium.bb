@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
-#include "base/logging.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 MultiUserWindowManager* g_multi_user_window_manager_instance = nullptr;
@@ -24,10 +22,7 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
 
 MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   DCHECK(!g_multi_user_window_manager_instance);
-  // TODO(crbug.com/875111): Enable this component in Mash. The object owns a
-  // UserSwitchAnimatorChromeOS with direct ash dependencies.
-  if (!features::IsMultiProcessMash() &&
-      SessionControllerClient::IsMultiProfileAvailable()) {
+  if (SessionControllerClient::IsMultiProfileAvailable()) {
     MultiUserWindowManagerChromeOS* manager =
         new MultiUserWindowManagerChromeOS(
             user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());

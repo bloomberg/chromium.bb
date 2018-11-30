@@ -163,10 +163,8 @@ class MultiUserWindowManagerChromeOS
   // The notification registrar to track the creation of browser windows.
   content::NotificationRegistrar registrar_;
 
-  // TODO: this won't work in the multi-process mash case. What needs to happen
-  // for the multi-process case is MultiUserWindowManagerDelegate needs to be
-  // converted to a mojom that ash uses to call this code.
-  // https://crbug.com/875111.
+  // This is *only* created in classic and single-process mash cases. In
+  // multi-process mash Ash creates the MultiUserWindowManager.
   std::unique_ptr<ash::MultiUserWindowManager> ash_multi_user_window_manager_;
 
   // Only used for windows created for the window-service. For example,

@@ -5,8 +5,11 @@
 #include "ash/ws/multi_user_window_manager_bridge.h"
 
 #include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 
 namespace ash {
 
@@ -26,8 +29,19 @@ MultiUserWindowManagerBridge::~MultiUserWindowManagerBridge() {
 
 void MultiUserWindowManagerBridge::SetClient(
     mojom::MultiUserWindowManagerClientAssociatedPtrInfo client_info) {
+  multi_user_window_manager_.reset();
   client_.Bind(std::move(client_info));
-  ash::MultiUserWindowManager::Get()->SetClient(client_.get());
+  if (features::IsMultiProcessMash()) {
+    // NOTE: there is nothing stopping mulitple MultiUserWindowManagerBridges
+    // from being created (because multiple clients ask for
+    // ash::mojom::MultiUserWindowManager). This code is assuming only a single
+    // client is used at a time.
+    multi_user_window_manager_ = std::make_unique<ash::MultiUserWindowManager>(
+        client_.get(), nullptr,
+        Shell::Get()->session_controller()->GetActiveAccountId());
+  } else {
+    ash::MultiUserWindowManager::Get()->SetClient(client_.get());
+  }
 }
 
 void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,

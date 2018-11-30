@@ -54,6 +54,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // no session in progress or no active user.
   int NumberOfLoggedInUsers() const;
 
+  // Returns the active account. If no users are logged in this returns an empty
+  // AccountId.
+  AccountId GetActiveAccountId() const;
+
   // Gets the policy of adding a user session to ash.
   AddUserSessionPolicy GetAddUserPolicy() const;
 

@@ -82,6 +82,11 @@ int SessionController::NumberOfLoggedInUsers() const {
   return static_cast<int>(user_sessions_.size());
 }
 
+AccountId SessionController::GetActiveAccountId() const {
+  return user_sessions_.empty() ? AccountId()
+                                : user_sessions_[0]->user_info->account_id;
+}
+
 AddUserSessionPolicy SessionController::GetAddUserPolicy() const {
   return add_user_session_policy_;
 }
