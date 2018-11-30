@@ -370,8 +370,7 @@ class ProfileSyncService : public syncer::SyncService,
   // confirmation dialog hasn't been shown. Note that once the dialog is
   // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
   // TODO(crbug.com/839834): This method is somewhat misnamed.
-  // Virtual for testing.
-  virtual bool IsSyncConfirmationNeeded() const;
+  bool IsSyncConfirmationNeeded() const;
 
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
