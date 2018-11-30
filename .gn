@@ -317,7 +317,6 @@ check_targets = [
   "//third_party/Python-Markdown/*",
 
   # "//third_party/SPIRV-Tools/*",  # 30ish errors
-  "//third_party/WebKit/*",
   "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",

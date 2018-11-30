@@ -34,7 +34,7 @@ function getFillColor(d) {
 const colors = d3.scale.category20();
 let colorIndex = 1;
 const COLOR_MAPPING = [
-  [["third_party/WebKit"], colors(colorIndex++), "Blink"],
+  [["third_party/blink"], colors(colorIndex++), "Blink"],
   [["v8"], colors(colorIndex++), "V8"],
   [["base"], colors(colorIndex++), "//base"],
   [["content"], colors(colorIndex++), "//content"],

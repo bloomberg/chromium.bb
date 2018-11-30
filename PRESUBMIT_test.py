@@ -1377,11 +1377,11 @@ class ForwardDeclarationTest(unittest.TestCase):
   def testBlinkHeaders(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-      MockAffectedFile('third_party/WebKit/header.h', [
+      MockAffectedFile('third_party/blink/header.h', [
         'class DummyClass;',
         'struct DummyStruct;',
       ]),
-      MockAffectedFile('third_party\\WebKit\\header.h', [
+      MockAffectedFile('third_party\\blink\\header.h', [
         'class DummyClass;',
         'struct DummyStruct;',
       ])
@@ -1445,7 +1445,7 @@ class RelativeIncludesTest(unittest.TestCase):
   def testRelativeIncludeWebKitProducesError(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-      MockAffectedFile('third_party/WebKit/test.cpp',
+      MockAffectedFile('third_party/blink/test.cpp',
                        ['#include "../header.h']),
     ]
 
