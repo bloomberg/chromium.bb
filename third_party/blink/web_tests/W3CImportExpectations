@@ -453,5 +453,5 @@ external/wpt/uievents/order-of-events/mouse-events/mousemove-across-manual.html 
 external/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html [ Skip ]
 
 # Tests that fail in content_shell but pass when run manually.
-third_party/WebKit/LayoutTests/external/wpt/client-hints/accept_ch_lifetime.https.html [ Skip ]
-third_party/WebKit/LayoutTests/external/wpt/client-hints/accept_ch.https.html [ Skip ]
+external/wpt/client-hints/accept_ch_lifetime.https.html [ Skip ]
+external/wpt/client-hints/accept_ch.https.html [ Skip ]

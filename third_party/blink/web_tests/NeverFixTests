@@ -2123,7 +2123,7 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
 
 # ====== Tests incompatible with the default Site Isolation from here ======
-# See also third_party/WebKit/LayoutTests/virtual/not-site-per-process/README.md
+# See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 #
 # When modifying the list of files that behave differently with and without
 # OOPIFs, please consider modifying all the locations below:
