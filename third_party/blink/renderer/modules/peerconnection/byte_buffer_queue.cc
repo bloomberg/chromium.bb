@@ -14,7 +14,8 @@ wtf_size_t ByteBufferQueue::ReadInto(base::span<uint8_t> buffer_out) {
             .subspan(front_buffer_offset_);
     DCHECK_GT(front_buffer.size(), 0u);
     wtf_size_t buffer_read_amount =
-        std::min(buffer_out.size(), front_buffer.size());
+        std::min(static_cast<wtf_size_t>(buffer_out.size()),
+                 static_cast<wtf_size_t>(front_buffer.size()));
     memcpy(buffer_out.data(), front_buffer.data(), buffer_read_amount);
     read_amount += buffer_read_amount;
     buffer_out = buffer_out.subspan(buffer_read_amount);

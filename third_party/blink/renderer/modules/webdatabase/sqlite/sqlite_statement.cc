@@ -102,7 +102,7 @@ int SQLiteStatement::Prepare() {
 
     // Pass the length of the string including the null character to
     // sqlite3_prepare_v2; this lets SQLite avoid an extra string copy.
-    size_t length_including_null_character = query.length() + 1;
+    wtf_size_t length_including_null_character = query.length() + 1;
 
     error = sqlite3_prepare_v2(database_.Sqlite3Handle(), query.data(),
                                length_including_null_character, statement.get(),
