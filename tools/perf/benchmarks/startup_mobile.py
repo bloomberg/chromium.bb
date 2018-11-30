@@ -212,10 +212,6 @@ class _MobileStartupStorySet(story_module.StorySet):
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
   SUPPORTED_PLATFORMS = [story_module.expectations.ANDROID_NOT_WEBVIEW]
 
-  # Set |pageset_repeat| to 1 to control the amount of iterations from the
-  # stories. This would avoid setting per-story pageset_repeat at bisect time.
-  options = {'pageset_repeat': 1}
-
   def CreateCoreTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string=('navigation,loading,net,netlog,network,offline_pages,'
