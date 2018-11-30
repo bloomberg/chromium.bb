@@ -692,15 +692,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
 
-# Element.innerText doesn't work with multicol.
-crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/float-not-removed-crash.html [ Failure ]
-crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/anonymous-before-child-parent-crash.html [ Failure ]
-crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/anonymous-split-block-crash.html [ Failure ]
-crbug.com/873957 virtual/layout_ng_experimental/fast/multicol/span/clone-anonymous-block-non-inline-child-crash.html [ Failure ]
-
-### Crash site: layout_ng_block_flow.cc
-crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
-
 crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
 ### Image/text failures
@@ -710,7 +701,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-long-image.
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-repeat-x.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-repeat-y.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-continuation.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/inline/br-text-decoration.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/inline/drawStyledEmptyInlines.html [ Failure ]
@@ -721,8 +711,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-inline-in-cen
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-borders-with-bidi-override.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/inline-focus-ring-under-absolute-enclosing-relative-div.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow/
@@ -757,7 +745,6 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/japanese-lr-text.ht
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-rl-selection.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/margins.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/orthogonal-inline-block.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/orthogonal-writing-modes-available-width-absolute-crash.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-align-table-baseline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
@@ -1002,7 +989,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-resize.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/content-change-same-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/cssom-view.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/abspos-becomes-spanner.html [ Failure ]
@@ -1085,8 +1071,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/hit-test-above-or-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/hit-test-end-of-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/hit-test-end-of-column-with-line-height.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/hit-test-gap-between-pages-flipped.html [ Failure ]
-crbug.com/812457 virtual/layout_ng_experimental/fast/multicol/huge-column-count.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/huge-column-gap-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/image-inside-nested-blocks-with-border.html [ Failure ]
 crbug.com/829181 virtual/layout_ng_experimental/fast/multicol/infinitely-tall-content-in-outer-crash.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/inline-block-baseline.html [ Failure ]
@@ -1102,7 +1086,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/line-too-tall-for-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/many-lines-overflow-in-single-row-inner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/mixed-opacity-test.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/multicol-becomes-abspos-crash.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/fast/multicol/multicol-becomes-paged-auto-height.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/multicol-with-spanner-becomes-paged.html [ Failure ]
@@ -1131,14 +1114,9 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-single
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/nested-with-tall-block.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/nested-writing-mode-root-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/avoid-column-break-inside.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance10.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance1.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance3.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance4.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance5.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance-images.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/newmulticol/balance-maxheight1.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/break-before.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/newmulticol/breaks-2-columns-3.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/newmulticol/breaks-2-columns-3-no-balancing.html [ Failure ]
@@ -1168,7 +1146,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positive-leading.h
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/pushed-line-affected-by-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/relayout-and-push-float.html [ Failure ]
 crbug.com/591099 [ Mac ] virtual/layout_ng_experimental/fast/multicol/relpos-inside-inline-block.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/renderer-positioned-assert-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/rule-in-nested-with-too-tall-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/scale-transform-text.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/scrollable-basic.html [ Failure ]
@@ -1253,7 +1230,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/table-margin-colla
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-float2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/three-inner-rows.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/unbreakable-content-taller-than-height-crash.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/break-properties.html [ Failure ]
