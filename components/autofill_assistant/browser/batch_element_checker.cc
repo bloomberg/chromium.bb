@@ -15,8 +15,7 @@
 namespace autofill_assistant {
 namespace {
 // Waiting period between two checks.
-static constexpr base::TimeDelta kCheckPeriod =
-    base::TimeDelta::FromMilliseconds(100);
+static constexpr base::TimeDelta kCheckPeriod = base::TimeDelta::FromSeconds(1);
 }  // namespace
 
 BatchElementChecker::BatchElementChecker(WebController* web_controller)
