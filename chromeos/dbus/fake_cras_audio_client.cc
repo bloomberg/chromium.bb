@@ -111,6 +111,11 @@ void FakeCrasAudioClient::GetSystemAecSupported(
   std::move(callback).Run(false);
 }
 
+void FakeCrasAudioClient::GetSystemAecGroupId(
+    DBusMethodCallback<int32_t> callback) {
+  std::move(callback).Run(1);
+}
+
 void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
   std::move(callback).Run(node_list_);
 }
