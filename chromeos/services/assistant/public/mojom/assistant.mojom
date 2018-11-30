@@ -162,6 +162,13 @@ interface DeviceActions {
 
   // Enables or disables Night Light.
   SetNightLightEnabled(bool enabled);
+
+  // Open the Android app if the app is available.
+  OpenAndroidApp(AndroidAppInfo app_info) => (bool app_opened);
+
+  // Verify the status of the Android apps.
+  VerifyAndroidApp(array<AndroidAppInfo> apps_info) => (array<AndroidAppInfo>
+                                                        apps_info);
 };
 
 // Enumeration of possible completions for an Assistant interaction.
@@ -225,4 +232,16 @@ struct AssistantNotification {
 
   // Obfuscated Gaia id of the intended recipient of the user.
   string obfuscated_gaia_id;
+};
+
+// Models status of an app.
+enum AppStatus { UNKNOWN, AVAILABLE, UNAVAILABLE, VERSION_MISMATCH, DISABLED };
+
+// Models an Android app.
+struct AndroidAppInfo {
+  string package_name;
+  int32 version;
+  string localized_app_name;
+  string intent;
+  AppStatus status;
 };

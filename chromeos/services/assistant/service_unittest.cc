@@ -142,6 +142,11 @@ class FakeDeviceActions : mojom::DeviceActions {
   }
   void SetScreenBrightnessLevel(double level, bool gradual) override {}
   void SetNightLightEnabled(bool enabled) override {}
+  void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                      OpenAndroidAppCallback callback) override {}
+  void VerifyAndroidApp(
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+      VerifyAndroidAppCallback callback) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 
