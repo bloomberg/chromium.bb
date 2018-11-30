@@ -163,8 +163,10 @@
   },
   {
     "failure": {
-      "failure": {
-        "step": "git status can_fail_build"
+      "exception": {
+        "traceback": [
+          "<omitted by recipe engine>"
+        ]
       },
       "humanReason": "Infra Failure: Step('git status can_fail_build') returned 1"
     },
