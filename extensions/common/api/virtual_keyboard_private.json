@@ -213,8 +213,14 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when container mode is ready to chagne.",
-            "parameters": []
+            "description": "Called when container mode is ready to change, or if the operation failed.",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "description": "Whether the container mode changed successfully"
+              }
+            ]
           }
         ]
       },
