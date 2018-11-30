@@ -526,13 +526,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
 #define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
 #endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
-#if !defined(OS_CHROMEOS)
-  // TODO(crbug.com/900603): Enable this test for perfetto on other platforms
-  // once passing.
-  if (tracing::TracingUsesPerfettoBackend())
-    return;
-#endif
-
   TestStartAndStopTracingString(true /* enable_systrace */);
   EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }
