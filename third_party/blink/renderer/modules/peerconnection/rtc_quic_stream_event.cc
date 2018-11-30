@@ -9,13 +9,13 @@
 namespace blink {
 
 RTCQuicStreamEvent* RTCQuicStreamEvent::Create(RTCQuicStream* stream) {
-  return new RTCQuicStreamEvent(stream);
+  return MakeGarbageCollected<RTCQuicStreamEvent>(stream);
 }
 
 RTCQuicStreamEvent* RTCQuicStreamEvent::Create(
     const AtomicString& type,
     const RTCQuicStreamEventInit* initializer) {
-  return new RTCQuicStreamEvent(type, initializer);
+  return MakeGarbageCollected<RTCQuicStreamEvent>(type, initializer);
 }
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(RTCQuicStream* stream)

@@ -163,7 +163,8 @@ class ModuleMapTestModulator final : public DummyModulator {
 };
 
 ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
-    : script_state_(script_state), resolver_(new TestScriptModuleResolver) {}
+    : script_state_(script_state),
+      resolver_(MakeGarbageCollected<TestScriptModuleResolver>()) {}
 
 void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);

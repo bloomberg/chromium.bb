@@ -78,6 +78,8 @@ class V8PersistentCallbackInterface<V8TestCallbackInterface> final : public V8Pe
   using V8CallbackInterface = V8TestCallbackInterface;
 
  public:
+  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
+      : V8PersistentCallbackInterfaceBase(callback_interface) {}
   ~V8PersistentCallbackInterface() override = default;
 
   CORE_EXPORT v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
@@ -91,9 +93,6 @@ class V8PersistentCallbackInterface<V8TestCallbackInterface> final : public V8Pe
   CORE_EXPORT v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
-      : V8PersistentCallbackInterfaceBase(callback_interface) {}
-
   V8CallbackInterface* Proxy() {
     return As<V8CallbackInterface>();
   }

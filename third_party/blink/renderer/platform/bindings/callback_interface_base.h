@@ -145,7 +145,8 @@ ToV8PersistentCallbackInterface(V8CallbackInterface* callback_interface) {
       std::is_base_of<CallbackInterfaceBase, V8CallbackInterface>::value,
       "V8CallbackInterface must be a subclass of CallbackInterfaceBase.");
   return callback_interface
-             ? new V8PersistentCallbackInterface<V8CallbackInterface>(
+             ? MakeGarbageCollected<
+                   V8PersistentCallbackInterface<V8CallbackInterface>>(
                    callback_interface)
              : nullptr;
 }

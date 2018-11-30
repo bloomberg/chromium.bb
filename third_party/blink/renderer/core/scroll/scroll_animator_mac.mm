@@ -685,7 +685,7 @@ namespace blink {
 
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     blink::ScrollableArea* scrollable_area) {
-  return new ScrollAnimatorMac(scrollable_area);
+  return MakeGarbageCollected<ScrollAnimatorMac>(scrollable_area);
 }
 
 ScrollAnimatorMac::ScrollAnimatorMac(blink::ScrollableArea* scrollable_area)

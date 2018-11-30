@@ -79,6 +79,8 @@ class V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCal
   using V8CallbackInterface = {{v8_class}};
 
  public:
+  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
+      : V8PersistentCallbackInterfaceBase(callback_interface) {}
   ~V8PersistentCallbackInterface() override = default;
 
 {% for method in methods %}
@@ -89,9 +91,6 @@ class V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCal
 {% endif %}
 
  private:
-  explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
-      : V8PersistentCallbackInterfaceBase(callback_interface) {}
-
   V8CallbackInterface* Proxy() {
     return As<V8CallbackInterface>();
   }

@@ -22,7 +22,7 @@ class Receiver : public GarbageCollected<Receiver> {
 };
 
 TEST(PersistentTest, BindCancellation) {
-  Receiver* receiver = new Receiver;
+  Receiver* receiver = MakeGarbageCollected<Receiver>();
   int counter = 0;
   base::RepeatingClosure function =
       WTF::BindRepeating(&Receiver::Increment, WrapWeakPersistent(receiver),
@@ -38,7 +38,7 @@ TEST(PersistentTest, BindCancellation) {
 }
 
 TEST(PersistentTest, CrossThreadBindCancellation) {
-  Receiver* receiver = new Receiver;
+  Receiver* receiver = MakeGarbageCollected<Receiver>();
   int counter = 0;
   CrossThreadClosure function = blink::CrossThreadBind(
       &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),

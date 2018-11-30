@@ -345,11 +345,16 @@ class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
   static StyleRuleFontFeatureValues* Create(
       const CSSValueList* font_family,
       const CSSIdentifierValue* font_display) {
-    return new StyleRuleFontFeatureValues(font_family, font_display);
+    return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
+                                                            font_display);
   }
 
+  StyleRuleFontFeatureValues(const CSSValueList* font_family,
+                             const CSSIdentifierValue* font_display);
+  StyleRuleFontFeatureValues(const StyleRuleFontFeatureValues&) = default;
+
   StyleRuleFontFeatureValues* Copy() const {
-    return new StyleRuleFontFeatureValues(*this);
+    return MakeGarbageCollected<StyleRuleFontFeatureValues>(*this);
   }
 
   const CSSValueList& FontFamily() const {
@@ -361,10 +366,6 @@ class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleFontFeatureValues(const CSSValueList* font_family,
-                             const CSSIdentifierValue* font_display);
-  StyleRuleFontFeatureValues(const StyleRuleFontFeatureValues&) = default;
-
   Member<const CSSValueList> font_family_;
   Member<const CSSIdentifierValue> font_display_;
 };

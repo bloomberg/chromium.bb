@@ -382,7 +382,8 @@ AccessibilityMediaVolumeSlider::AccessibilityMediaVolumeSlider(
 AXObject* AccessibilityMediaVolumeSlider::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {
-  return new AccessibilityMediaVolumeSlider(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AccessibilityMediaVolumeSlider>(layout_object,
+                                                              ax_object_cache);
 }
 
 String AccessibilityMediaVolumeSlider::Description(

@@ -35,7 +35,8 @@ class PaintLayerScrollableAreaTestBase : public RenderingTest {
  public:
   PaintLayerScrollableAreaTestBase()
       : RenderingTest(EmptyLocalFrameClient::Create()),
-        chrome_client_(new ScrollableAreaMockChromeClient) {}
+        chrome_client_(MakeGarbageCollected<ScrollableAreaMockChromeClient>()) {
+  }
 
   ~PaintLayerScrollableAreaTestBase() override {
     testing::Mock::VerifyAndClearExpectations(&GetChromeClient());

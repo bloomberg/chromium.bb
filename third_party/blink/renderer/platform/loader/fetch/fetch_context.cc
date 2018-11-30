@@ -69,14 +69,15 @@ class NullFetchContext final : public FetchContext {
 
 FetchContext& FetchContext::NullInstance(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return *(new NullFetchContext(std::move(task_runner)));
+  return *(MakeGarbageCollected<NullFetchContext>(std::move(task_runner)));
 }
 
 FetchContext::FetchContext(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : platform_probe_sink_(new PlatformProbeSink),
+    : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()),
       task_runner_(std::move(task_runner)) {
-  platform_probe_sink_->addPlatformTraceEvents(new PlatformTraceEventsAgent);
+  platform_probe_sink_->addPlatformTraceEvents(
+      MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
 
 void FetchContext::Trace(blink::Visitor* visitor) {

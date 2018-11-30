@@ -22,13 +22,21 @@ class GamepadButtonEvent final : public GamepadEvent {
                                     Gamepad* gamepad,
                                     uint32_t button,
                                     double value) {
-    return new GamepadButtonEvent(type, bubbles, cancelable, gamepad, button,
-                                  value);
+    return MakeGarbageCollected<GamepadButtonEvent>(type, bubbles, cancelable,
+                                                    gamepad, button, value);
   }
   static GamepadButtonEvent* Create(const AtomicString& type,
                                     const GamepadButtonEventInit* initializer) {
-    return new GamepadButtonEvent(type, initializer);
+    return MakeGarbageCollected<GamepadButtonEvent>(type, initializer);
   }
+
+  GamepadButtonEvent(const AtomicString& type,
+                     Bubbles,
+                     Cancelable,
+                     Gamepad*,
+                     uint32_t button,
+                     double value);
+  GamepadButtonEvent(const AtomicString&, const GamepadButtonEventInit*);
   ~GamepadButtonEvent() override;
 
   uint32_t getButton() const { return button_; }
@@ -37,14 +45,6 @@ class GamepadButtonEvent final : public GamepadEvent {
   const AtomicString& InterfaceName() const override;
 
  private:
-  GamepadButtonEvent(const AtomicString& type,
-                     Bubbles,
-                     Cancelable,
-                     Gamepad*,
-                     uint32_t button,
-                     double value);
-  GamepadButtonEvent(const AtomicString&, const GamepadButtonEventInit*);
-
   uint32_t button_ = 0;
   double value_ = 0.0;
 };

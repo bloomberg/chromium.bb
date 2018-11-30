@@ -153,7 +153,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
  protected:
   KeyframeEffectModelBase(CompositeOperation composite,
                           scoped_refptr<TimingFunction> default_keyframe_easing)
-      : interpolation_effect_(new InterpolationEffect),
+      : interpolation_effect_(MakeGarbageCollected<InterpolationEffect>()),
         last_iteration_(0),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()),
         last_iteration_duration_(AnimationTimeDelta()),

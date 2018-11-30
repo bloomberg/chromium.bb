@@ -287,8 +287,17 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   class AnimatableMockStringKeyframe : public StringKeyframe {
    public:
     static StringKeyframe* Create(double offset) {
-      return new AnimatableMockStringKeyframe(offset);
+      return MakeGarbageCollected<AnimatableMockStringKeyframe>(offset);
     }
+
+    AnimatableMockStringKeyframe(double offset)
+        : StringKeyframe(),
+          property_specific_(
+              MakeGarbageCollected<
+                  AnimatableMockPropertySpecificStringKeyframe>(offset)) {
+      SetOffset(offset);
+    }
+
     Keyframe::PropertySpecificKeyframe* CreatePropertySpecificKeyframe(
         const PropertyHandle&,
         EffectModel::CompositeOperation,
@@ -347,12 +356,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     };
 
     Member<PropertySpecificKeyframe> property_specific_;
-    AnimatableMockStringKeyframe(double offset)
-        : StringKeyframe(),
-          property_specific_(
-              new AnimatableMockPropertySpecificStringKeyframe(offset)) {
-      SetOffset(offset);
-    }
   };
 
   StringKeyframe* CreateAnimatableReplaceKeyframe(CSSPropertyID id,

@@ -48,7 +48,7 @@ static inline bool IsWhitespace(UChar c) {
 }
 
 #define DEFINE_FUNCTION_CREATOR(Class) \
-  static Function* Create##Class() { return new Class; }
+  static Function* Create##Class() { return MakeGarbageCollected<Class>(); }
 
 class Interval {
  public:

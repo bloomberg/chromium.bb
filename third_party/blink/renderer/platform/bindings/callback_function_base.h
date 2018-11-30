@@ -124,7 +124,8 @@ ToV8PersistentCallbackFunction(V8CallbackFunction* callback_function) {
       std::is_base_of<CallbackFunctionBase, V8CallbackFunction>::value,
       "V8CallbackFunction must be a subclass of CallbackFunctionBase.");
   return callback_function
-             ? new V8PersistentCallbackFunction<V8CallbackFunction>(
+             ? MakeGarbageCollected<
+                   V8PersistentCallbackFunction<V8CallbackFunction>>(
                    callback_function)
              : nullptr;
 }

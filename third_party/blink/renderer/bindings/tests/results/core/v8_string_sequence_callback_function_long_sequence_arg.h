@@ -42,6 +42,8 @@ class V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceA
   using V8CallbackFunction = V8StringSequenceCallbackFunctionLongSequenceArg;
 
  public:
+  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
+      : V8PersistentCallbackFunctionBase(callback_function) {}
   ~V8PersistentCallbackFunction() override = default;
 
   // Returns a wrapper-tracing version of this callback function.
@@ -50,9 +52,6 @@ class V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceA
   v8::Maybe<Vector<String>> Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
-      : V8PersistentCallbackFunctionBase(callback_function) {}
-
   V8CallbackFunction* Proxy() {
     return As<V8CallbackFunction>();
   }

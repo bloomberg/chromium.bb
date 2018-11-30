@@ -24,7 +24,7 @@ class BytesConsumerTestUtil {
   class MockBytesConsumer : public BytesConsumer {
    public:
     static MockBytesConsumer* Create() {
-      return new testing::StrictMock<MockBytesConsumer>();
+      return MakeGarbageCollected<testing::StrictMock<MockBytesConsumer>>();
     }
 
     MOCK_METHOD2(BeginRead, Result(const char**, size_t*));
@@ -51,7 +51,8 @@ class BytesConsumerTestUtil {
 
    public:
     static testing::StrictMock<MockFetchDataLoaderClient>* Create() {
-      return new testing::StrictMock<MockFetchDataLoaderClient>;
+      return MakeGarbageCollected<
+          testing::StrictMock<MockFetchDataLoaderClient>>();
     }
 
     void Trace(blink::Visitor* visitor) override {

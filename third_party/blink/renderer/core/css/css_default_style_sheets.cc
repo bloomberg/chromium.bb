@@ -45,7 +45,8 @@ namespace blink {
 
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<CSSDefaultStyleSheets>,
-                      css_default_style_sheets, (new CSSDefaultStyleSheets));
+                      css_default_style_sheets,
+                      (MakeGarbageCollected<CSSDefaultStyleSheets>()));
   return *css_default_style_sheets;
 }
 

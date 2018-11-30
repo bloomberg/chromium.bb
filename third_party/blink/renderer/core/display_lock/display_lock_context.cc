@@ -166,7 +166,7 @@ DisplayLockSuspendedHandle* DisplayLockContext::suspend() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   ++suspended_count_;
   state_ = kSuspended;
-  return new DisplayLockSuspendedHandle(this);
+  return MakeGarbageCollected<DisplayLockSuspendedHandle>(this);
 }
 
 Element* DisplayLockContext::lockedElement() const {

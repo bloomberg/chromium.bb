@@ -72,7 +72,8 @@ class MainThreadWorkletTest : public PageTestBase {
         nullptr /* worker_clients */, document->AddressSpace(),
         OriginTrialContext::GetTokens(document).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
-        kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
+        kV8CacheOptionsDefault,
+        MakeGarbageCollected<WorkletModuleResponsesMap>());
     global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
         std::move(creation_params), *reporting_proxy_, &GetFrame());
     EXPECT_TRUE(global_scope_->IsMainThreadWorkletGlobalScope());

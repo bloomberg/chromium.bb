@@ -52,6 +52,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // the heap size.
   static void Initialize();
 
+  MemoryCoordinator();
+
   void RegisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
   void UnregisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
 
@@ -72,8 +74,6 @@ class PLATFORM_EXPORT MemoryCoordinator final
   friend class Internals;
 
   static void SetIsLowEndDeviceForTesting(bool);
-
-  MemoryCoordinator();
 
   void ClearMemory();
   static void ClearThreadSpecificMemory();

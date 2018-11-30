@@ -31,7 +31,7 @@ namespace blink {
 class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
  public:
   HTMLCanvasPainterTestForSPv2()
-      : chrome_client_(new StubChromeClientForSPv2) {}
+      : chrome_client_(MakeGarbageCollected<StubChromeClientForSPv2>()) {}
 
  protected:
   void SetUp() override {

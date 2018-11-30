@@ -1339,7 +1339,7 @@ protocol::Response InspectorPageAgent::generateTestReport(const String& message,
   Document* document = inspected_frames_->Root()->GetDocument();
 
   // Construct the test report.
-  TestReportBody* body = new TestReportBody(message);
+  TestReportBody* body = MakeGarbageCollected<TestReportBody>(message);
   Report* report =
       MakeGarbageCollected<Report>("test", document->Url().GetString(), body);
 

@@ -58,7 +58,8 @@ void MemoryCoordinator::SetIsLowEndDeviceForTesting(bool is_low_end_device) {
 // static
 MemoryCoordinator& MemoryCoordinator::Instance() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistent<MemoryCoordinator>,
-                                  external, (new MemoryCoordinator));
+                                  external,
+                                  (MakeGarbageCollected<MemoryCoordinator>()));
   return *external.Get();
 }
 

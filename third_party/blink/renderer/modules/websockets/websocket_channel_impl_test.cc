@@ -46,7 +46,8 @@ class MockWebSocketChannelClient
 
  public:
   static MockWebSocketChannelClient* Create() {
-    return new testing::StrictMock<MockWebSocketChannelClient>();
+    return MakeGarbageCollected<
+        testing::StrictMock<MockWebSocketChannelClient>>();
   }
 
   MockWebSocketChannelClient() = default;

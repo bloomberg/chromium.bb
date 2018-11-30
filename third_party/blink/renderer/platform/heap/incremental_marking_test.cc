@@ -223,8 +223,13 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
 
 class Object : public GarbageCollected<Object> {
  public:
-  static Object* Create() { return new Object(); }
-  static Object* Create(Object* next) { return new Object(next); }
+  static Object* Create() { return MakeGarbageCollected<Object>(); }
+  static Object* Create(Object* next) {
+    return MakeGarbageCollected<Object>(next);
+  }
+
+  Object() : next_(nullptr) {}
+  explicit Object(Object* next) : next_(next) {}
 
   void set_next(Object* next) { next_ = next; }
 
@@ -235,9 +240,6 @@ class Object : public GarbageCollected<Object> {
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
 
  private:
-  Object() : next_(nullptr) {}
-  explicit Object(Object* next) : next_(next) {}
-
   Member<Object> next_;
 };
 
@@ -402,16 +404,16 @@ class Child : public GarbageCollected<Child>,
 class ParentWithMixinPointer : public GarbageCollected<ParentWithMixinPointer> {
  public:
   static ParentWithMixinPointer* Create() {
-    return new ParentWithMixinPointer();
+    return MakeGarbageCollected<ParentWithMixinPointer>();
   }
+
+  ParentWithMixinPointer() : mixin_(nullptr) {}
 
   void set_mixin(Mixin* mixin) { mixin_ = mixin; }
 
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(mixin_); }
 
  protected:
-  ParentWithMixinPointer() : mixin_(nullptr) {}
-
   Member<Mixin> mixin_;
 };
 
@@ -698,7 +700,7 @@ class ObjectNode : public GarbageCollected<ObjectNode>,
 
 TEST(IncrementalMarkingTest, HeapDoublyLinkedListPush) {
   Object* obj = Object::Create();
-  ObjectNode* obj_node = new ObjectNode(obj);
+  ObjectNode* obj_node = MakeGarbageCollected<ObjectNode>(obj);
   HeapDoublyLinkedList<ObjectNode> list;
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj_node});
@@ -710,7 +712,7 @@ TEST(IncrementalMarkingTest, HeapDoublyLinkedListPush) {
 
 TEST(IncrementalMarkingTest, HeapDoublyLinkedListAppend) {
   Object* obj = Object::Create();
-  ObjectNode* obj_node = new ObjectNode(obj);
+  ObjectNode* obj_node = MakeGarbageCollected<ObjectNode>(obj);
   HeapDoublyLinkedList<ObjectNode> list;
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {obj_node});

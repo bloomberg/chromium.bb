@@ -27,7 +27,8 @@ namespace blink {
 class MockFunction : public ScriptFunction {
  public:
   static testing::StrictMock<MockFunction>* Create(ScriptState* script_state) {
-    return new testing::StrictMock<MockFunction>(script_state);
+    return MakeGarbageCollected<testing::StrictMock<MockFunction>>(
+        script_state);
   }
 
   v8::Local<v8::Function> Bind() { return BindToV8Function(); }
@@ -192,12 +193,12 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto* connecting_handler =
-      new testing::StrictMock<MockEventListenerForRemotePlayback>();
-  auto* connect_handler =
-      new testing::StrictMock<MockEventListenerForRemotePlayback>();
-  auto* disconnect_handler =
-      new testing::StrictMock<MockEventListenerForRemotePlayback>();
+  auto* connecting_handler = MakeGarbageCollected<
+      testing::StrictMock<MockEventListenerForRemotePlayback>>();
+  auto* connect_handler = MakeGarbageCollected<
+      testing::StrictMock<MockEventListenerForRemotePlayback>>();
+  auto* disconnect_handler = MakeGarbageCollected<
+      testing::StrictMock<MockEventListenerForRemotePlayback>>();
 
   remote_playback->addEventListener(event_type_names::kConnecting,
                                     connecting_handler);

@@ -62,12 +62,6 @@ class CORE_EXPORT V0CustomElementProcessingStack
 
   static bool InCallbackDeliveryScope() { return element_queue_start_; }
 
-  static V0CustomElementProcessingStack& Instance();
-  void Enqueue(V0CustomElementCallbackQueue*);
-
-  void Trace(blink::Visitor*);
-
- private:
   V0CustomElementProcessingStack() {
     // Add a null element as a sentinel. This makes it possible to
     // identify elements queued when there is no
@@ -80,6 +74,12 @@ class CORE_EXPORT V0CustomElementProcessingStack
     DCHECK_EQ(element_queue_end_, flattened_processing_stack_.size());
   }
 
+  static V0CustomElementProcessingStack& Instance();
+  void Enqueue(V0CustomElementCallbackQueue*);
+
+  void Trace(blink::Visitor*);
+
+ private:
   // The start of the element queue on the top of the processing
   // stack. An offset into Instance().flattened_processing_stack_.
   static wtf_size_t element_queue_start_;

@@ -52,8 +52,10 @@ class CORE_EXPORT PageScaleConstraintsSet
     : public GarbageCollected<PageScaleConstraintsSet> {
  public:
   static PageScaleConstraintsSet* Create(Page* page) {
-    return new PageScaleConstraintsSet(page);
+    return MakeGarbageCollected<PageScaleConstraintsSet>(page);
   }
+
+  PageScaleConstraintsSet(Page* page);
 
   void Trace(blink::Visitor*);
 
@@ -113,8 +115,6 @@ class CORE_EXPORT PageScaleConstraintsSet
   IntSize InitialViewportSize() const { return icb_size_; }
 
  private:
-  PageScaleConstraintsSet(Page* page);
-
   PageScaleConstraints ComputeConstraintsStack() const;
 
   void AdjustFinalConstraintsToContentsSize();

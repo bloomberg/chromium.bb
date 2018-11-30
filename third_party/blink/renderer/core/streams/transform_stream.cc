@@ -30,16 +30,11 @@ class TransformStream::Algorithm : public ScriptFunction {
   static v8::Local<v8::Function> Create(TransformStreamTransformer* transformer,
                                         ScriptState* script_state,
                                         ExceptionState& exception_state) {
-    auto* algorithm = new T(transformer, script_state, exception_state);
+    auto* algorithm =
+        MakeGarbageCollected<T>(transformer, script_state, exception_state);
     return algorithm->BindToV8Function();
   }
 
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(transformer_);
-    ScriptFunction::Trace(visitor);
-  }
-
- protected:
   Algorithm(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state)
@@ -48,6 +43,12 @@ class TransformStream::Algorithm : public ScriptFunction {
         interface_name_(exception_state.InterfaceName()),
         property_name_(exception_state.PropertyName()) {}
 
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(transformer_);
+    ScriptFunction::Trace(visitor);
+  }
+
+ protected:
   // AlgorithmScope holds the stack-allocated objects used by the CallRaw()
   // methods for FlushAlgorithm and TransformAlgorithm.
   class AlgorithmScope {

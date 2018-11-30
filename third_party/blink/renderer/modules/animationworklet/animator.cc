@@ -19,7 +19,8 @@ Animator::Animator(v8::Isolate* isolate,
                    int num_effects)
     : definition_(definition),
       instance_(isolate, instance),
-      group_effect_(new WorkletGroupEffectProxy(num_effects)) {
+      group_effect_(
+          MakeGarbageCollected<WorkletGroupEffectProxy>(num_effects)) {
   DCHECK_GE(num_effects, 1);
 }
 

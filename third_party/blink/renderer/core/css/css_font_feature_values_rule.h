@@ -18,9 +18,10 @@ class CSSFontFeatureValuesRule final : public CSSRule {
  public:
   static CSSFontFeatureValuesRule* Create(StyleRuleFontFeatureValues* rule,
                                           CSSStyleSheet* sheet) {
-    return new CSSFontFeatureValuesRule(rule, sheet);
+    return MakeGarbageCollected<CSSFontFeatureValuesRule>(rule, sheet);
   }
 
+  CSSFontFeatureValuesRule(StyleRuleFontFeatureValues*, CSSStyleSheet* parent);
   ~CSSFontFeatureValuesRule() override;
 
   void setFontFamily(const String& font_family);
@@ -38,8 +39,6 @@ class CSSFontFeatureValuesRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSFontFeatureValuesRule(StyleRuleFontFeatureValues*, CSSStyleSheet* parent);
-
   CSSRule::Type type() const override { return kFontFeatureValuesRule; }
 
   Member<StyleRuleFontFeatureValues> font_feature_values_rule_;

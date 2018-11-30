@@ -12,7 +12,7 @@ namespace blink {
 
 // static
 PerformanceLayoutJank* PerformanceLayoutJank::Create(double fraction) {
-  return new PerformanceLayoutJank(fraction);
+  return MakeGarbageCollected<PerformanceLayoutJank>(fraction);
 }
 
 PerformanceLayoutJank::PerformanceLayoutJank(double fraction)

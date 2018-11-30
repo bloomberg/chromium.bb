@@ -1305,7 +1305,7 @@ void CSPDirectiveList::SetCSPDirective(const String& name,
     return;
   }
 
-  directive = new CSPDirectiveType(name, value, policy_);
+  directive = MakeGarbageCollected<CSPDirectiveType>(name, value, policy_);
 }
 
 void CSPDirectiveList::ApplySandboxPolicy(const String& name,
@@ -1361,7 +1361,8 @@ void CSPDirectiveList::RequireTrustedTypes(const String& name,
     return;
   }
   policy_->RequireTrustedTypes();
-  trusted_types_ = new StringListDirective(name, value, policy_);
+  trusted_types_ =
+      MakeGarbageCollected<StringListDirective>(name, value, policy_);
 }
 
 void CSPDirectiveList::EnforceStrictMixedContentChecking(const String& name,

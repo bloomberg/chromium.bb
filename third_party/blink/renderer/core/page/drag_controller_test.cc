@@ -46,7 +46,7 @@ class DragControllerTest : public RenderingTest {
   DragControllerTest()
       : RenderingTest(SingleChildLocalFrameClient::Create()),
 
-        chrome_client_(new DragMockChromeClient) {}
+        chrome_client_(MakeGarbageCollected<DragMockChromeClient>()) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
   DragMockChromeClient& GetChromeClient() const override {
     return *chrome_client_;

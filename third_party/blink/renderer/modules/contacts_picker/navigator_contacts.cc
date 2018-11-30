@@ -31,7 +31,7 @@ ContactsManager* NavigatorContacts::contacts(Navigator& navigator) {
 
 ContactsManager* NavigatorContacts::contacts() {
   if (!contacts_manager_)
-    contacts_manager_ = new ContactsManager();
+    contacts_manager_ = MakeGarbageCollected<ContactsManager>();
   return contacts_manager_;
 }
 

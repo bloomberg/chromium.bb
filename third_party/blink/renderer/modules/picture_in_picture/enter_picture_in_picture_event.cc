@@ -9,13 +9,14 @@ namespace blink {
 EnterPictureInPictureEvent* EnterPictureInPictureEvent::Create(
     const AtomicString& type,
     PictureInPictureWindow* picture_in_picture_window) {
-  return new EnterPictureInPictureEvent(type, picture_in_picture_window);
+  return MakeGarbageCollected<EnterPictureInPictureEvent>(
+      type, picture_in_picture_window);
 }
 
 EnterPictureInPictureEvent* EnterPictureInPictureEvent::Create(
     const AtomicString& type,
     const EnterPictureInPictureEventInit* initializer) {
-  return new EnterPictureInPictureEvent(type, initializer);
+  return MakeGarbageCollected<EnterPictureInPictureEvent>(type, initializer);
 }
 
 PictureInPictureWindow* EnterPictureInPictureEvent::pictureInPictureWindow()

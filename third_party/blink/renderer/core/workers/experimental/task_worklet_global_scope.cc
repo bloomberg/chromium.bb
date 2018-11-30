@@ -92,7 +92,8 @@ void TaskWorkletGlobalScope::registerTask(const String& name,
     return;
   }
 
-  TaskDefinition* definition = new TaskDefinition(isolate, instance, process);
+  TaskDefinition* definition =
+      MakeGarbageCollected<TaskDefinition>(isolate, instance, process);
   task_definitions_.Set(name, definition);
 }
 

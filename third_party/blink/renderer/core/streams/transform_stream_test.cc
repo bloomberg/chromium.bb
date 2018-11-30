@@ -152,7 +152,7 @@ TEST_F(TransformStreamTest, Accessors) {
 
 TEST_F(TransformStreamTest, TransformIsCalled) {
   V8TestingScope scope;
-  auto* mock = new ::testing::StrictMock<MockTransformStreamTransformer>();
+  auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>();
   Init(mock, scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   // Need to run microtasks so the startAlgorithm promise resolves.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -172,7 +172,7 @@ TEST_F(TransformStreamTest, TransformIsCalled) {
 
 TEST_F(TransformStreamTest, FlushIsCalled) {
   V8TestingScope scope;
-  auto* mock = new ::testing::StrictMock<MockTransformStreamTransformer>();
+  auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>();
   Init(mock, scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   // Need to run microtasks so the startAlgorithm promise resolves.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());

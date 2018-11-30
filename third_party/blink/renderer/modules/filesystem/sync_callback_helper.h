@@ -53,7 +53,7 @@ class DOMFileSystemCallbacksSyncHelper final
   void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
 
   SuccessCallback* GetSuccessCallback() {
-    return new SuccessCallbackImpl(this);
+    return MakeGarbageCollected<SuccessCallbackImpl>(this);
   }
   ErrorCallbackBase* GetErrorCallback() {
     return MakeGarbageCollected<ErrorCallbackImpl>(this);
@@ -71,6 +71,9 @@ class DOMFileSystemCallbacksSyncHelper final
  private:
   class SuccessCallbackImpl final : public SuccessCallback {
    public:
+    explicit SuccessCallbackImpl(DOMFileSystemCallbacksSyncHelper* helper)
+        : helper_(helper) {}
+
     void Trace(blink::Visitor* visitor) override {
       visitor->Trace(helper_);
       SuccessCallback::Trace(visitor);
@@ -81,8 +84,6 @@ class DOMFileSystemCallbacksSyncHelper final
     }
 
    private:
-    explicit SuccessCallbackImpl(DOMFileSystemCallbacksSyncHelper* helper)
-        : helper_(helper) {}
     Member<DOMFileSystemCallbacksSyncHelper> helper_;
 
     friend class DOMFileSystemCallbacksSyncHelper;

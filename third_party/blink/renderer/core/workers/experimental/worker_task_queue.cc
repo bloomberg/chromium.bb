@@ -31,7 +31,7 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
   DCHECK(type == "user-interaction" || type == "background");
   TaskType task_type = type == "user-interaction" ? TaskType::kUserInteraction
                                                   : TaskType::kIdleTask;
-  return new WorkerTaskQueue(document, task_type);
+  return MakeGarbageCollected<WorkerTaskQueue>(document, task_type);
 }
 
 WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)

@@ -35,9 +35,21 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
       const PropertyHandle& property,
       PropertySpecificKeyframe* start_keyframe,
       PropertySpecificKeyframe* end_keyframe) {
-    return new InvalidatableInterpolation(property, start_keyframe,
-                                          end_keyframe);
+    return MakeGarbageCollected<InvalidatableInterpolation>(
+        property, start_keyframe, end_keyframe);
   }
+
+  InvalidatableInterpolation(const PropertyHandle& property,
+                             PropertySpecificKeyframe* start_keyframe,
+                             PropertySpecificKeyframe* end_keyframe)
+      : Interpolation(),
+        property_(property),
+        interpolation_types_(nullptr),
+        interpolation_types_version_(0),
+        start_keyframe_(start_keyframe),
+        end_keyframe_(end_keyframe),
+        current_fraction_(std::numeric_limits<double>::quiet_NaN()),
+        is_conversion_cached_(false) {}
 
   const PropertyHandle& GetProperty() const final { return property_; }
   void Interpolate(int iteration, double fraction) override;
@@ -58,18 +70,6 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   }
 
  private:
-  InvalidatableInterpolation(const PropertyHandle& property,
-                             PropertySpecificKeyframe* start_keyframe,
-                             PropertySpecificKeyframe* end_keyframe)
-      : Interpolation(),
-        property_(property),
-        interpolation_types_(nullptr),
-        interpolation_types_version_(0),
-        start_keyframe_(start_keyframe),
-        end_keyframe_(end_keyframe),
-        current_fraction_(std::numeric_limits<double>::quiet_NaN()),
-        is_conversion_cached_(false) {}
-
   using ConversionCheckers = InterpolationType::ConversionCheckers;
 
   std::unique_ptr<TypedInterpolationValue> MaybeConvertUnderlyingValue(

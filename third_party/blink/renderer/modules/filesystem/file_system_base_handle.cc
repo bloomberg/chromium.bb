@@ -52,9 +52,10 @@ ScriptPromise FileSystemBaseHandle::copyTo(ScriptState* script_state,
 ScriptPromise FileSystemBaseHandle::remove(ScriptState* script_state) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  filesystem()->Remove(this,
-                       new VoidCallbacks::OnDidSucceedPromiseImpl(resolver),
-                       MakeGarbageCollected<PromiseErrorCallback>(resolver));
+  filesystem()->Remove(
+      this,
+      MakeGarbageCollected<VoidCallbacks::OnDidSucceedPromiseImpl>(resolver),
+      MakeGarbageCollected<PromiseErrorCallback>(resolver));
   return result;
 }
 

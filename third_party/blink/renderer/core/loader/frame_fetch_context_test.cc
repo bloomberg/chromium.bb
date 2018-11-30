@@ -280,7 +280,8 @@ class FrameFetchContextMockedLocalFrameClientTest
     http_url = KURL("http://example.test/foo");
     main_resource_url = KURL("https://example.test");
     different_host_url = KURL("https://different.example.test/foo");
-    client = new testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
+    client = MakeGarbageCollected<
+        testing::NiceMock<FrameFetchContextMockLocalFrameClient>>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);

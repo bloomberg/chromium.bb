@@ -108,7 +108,7 @@ void DevToolsAgent::AttachDevToolsSession(
     mojom::blink::DevToolsSessionRequest io_session_request,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
   client_->DebuggerTaskStarted();
-  DevToolsSession* session = new DevToolsSession(
+  DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_request),
       std::move(io_session_request), std::move(reattach_session_state));
   sessions_.insert(session);

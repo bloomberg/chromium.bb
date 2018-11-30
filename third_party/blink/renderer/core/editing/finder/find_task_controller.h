@@ -24,8 +24,10 @@ class CORE_EXPORT FindTaskController final
  public:
   static FindTaskController* Create(WebLocalFrameImpl& owner_frame,
                                     TextFinder& text_finder) {
-    return new FindTaskController(owner_frame, text_finder);
+    return MakeGarbageCollected<FindTaskController>(owner_frame, text_finder);
   }
+
+  FindTaskController(WebLocalFrameImpl& owner_frame, TextFinder& text_finder);
 
   // Starts an effort of finding |search_text| in |owner_frame|,
   // which will be done asynchronously with idle tasks.
@@ -75,8 +77,6 @@ class CORE_EXPORT FindTaskController final
   void Trace(Visitor* visitor);
 
  private:
-  FindTaskController(WebLocalFrameImpl& owner_frame, TextFinder& text_finder);
-
   void RequestIdleFindTask(int identifier,
                            const WebString& search_text,
                            const mojom::blink::FindOptions& options);

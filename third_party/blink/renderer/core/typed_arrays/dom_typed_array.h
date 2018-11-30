@@ -33,7 +33,7 @@ class DOMTypedArray final : public DOMArrayBufferView {
   typedef typename WTFTypedArray::ValueType ValueType;
 
   static ThisType* Create(scoped_refptr<WTFTypedArray> buffer_view) {
-    return new ThisType(std::move(buffer_view));
+    return MakeGarbageCollected<ThisType>(std::move(buffer_view));
   }
   static ThisType* Create(unsigned length) {
     return Create(WTFTypedArray::Create(length));
@@ -52,7 +52,7 @@ class DOMTypedArray final : public DOMArrayBufferView {
                           unsigned length) {
     scoped_refptr<WTFTypedArray> buffer_view =
         WTFTypedArray::Create(buffer->Buffer(), byte_offset, length);
-    return new ThisType(std::move(buffer_view), buffer);
+    return MakeGarbageCollected<ThisType>(std::move(buffer_view), buffer);
   }
 
   static ThisType* CreateOrNull(unsigned length) {
@@ -60,6 +60,12 @@ class DOMTypedArray final : public DOMArrayBufferView {
         WTF::ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
     return buffer ? Create(std::move(buffer), 0, length) : nullptr;
   }
+
+  explicit DOMTypedArray(scoped_refptr<WTFTypedArray> buffer_view)
+      : DOMArrayBufferView(std::move(buffer_view)) {}
+  DOMTypedArray(scoped_refptr<WTFTypedArray> buffer_view,
+                DOMArrayBufferBase* dom_array_buffer)
+      : DOMArrayBufferView(std::move(buffer_view), dom_array_buffer) {}
 
   const WTFTypedArray* View() const {
     return static_cast<const WTFTypedArray*>(DOMArrayBufferView::View());
@@ -77,13 +83,6 @@ class DOMTypedArray final : public DOMArrayBufferView {
 
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
-
- private:
-  explicit DOMTypedArray(scoped_refptr<WTFTypedArray> buffer_view)
-      : DOMArrayBufferView(std::move(buffer_view)) {}
-  DOMTypedArray(scoped_refptr<WTFTypedArray> buffer_view,
-                DOMArrayBufferBase* dom_array_buffer)
-      : DOMArrayBufferView(std::move(buffer_view), dom_array_buffer) {}
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

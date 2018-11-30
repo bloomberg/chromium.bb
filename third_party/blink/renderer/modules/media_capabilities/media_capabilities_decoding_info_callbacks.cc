@@ -34,7 +34,7 @@ void MediaCapabilitiesDecodingInfoCallbacks::OnSuccess(
     // is supported.
     DCHECK(result->supported);
 
-    info->setKeySystemAccess(new MediaKeySystemAccess(
+    info->setKeySystemAccess(MakeGarbageCollected<MediaKeySystemAccess>(
         std::move(result->content_decryption_module_access)));
   }
 

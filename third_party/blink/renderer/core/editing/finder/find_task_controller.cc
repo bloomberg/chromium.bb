@@ -32,27 +32,10 @@ class FindTaskController::IdleFindTask
                               int identifier,
                               const WebString& search_text,
                               const mojom::blink::FindOptions& options) {
-    return new IdleFindTask(controller, document, identifier, search_text,
-                            options);
+    return MakeGarbageCollected<IdleFindTask>(controller, document, identifier,
+                                              search_text, options);
   }
 
-  void Dispose() {
-    DCHECK_GT(callback_handle_, 0);
-    document_->CancelIdleCallback(callback_handle_);
-  }
-
-  void ForceInvocationForTesting() {
-    invoke(IdleDeadline::Create(CurrentTimeTicks() + kFindTaskTestTimeout,
-                                IdleDeadline::CallbackType::kCalledWhenIdle));
-  }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(controller_);
-    visitor->Trace(document_);
-    ScriptedIdleTaskController::IdleTask::Trace(visitor);
-  }
-
- private:
   IdleFindTask(FindTaskController* controller,
                Document* document,
                int identifier,
@@ -73,6 +56,23 @@ class FindTaskController::IdleFindTask
     callback_handle_ = document_->RequestIdleCallback(this, request_options);
   }
 
+  void Dispose() {
+    DCHECK_GT(callback_handle_, 0);
+    document_->CancelIdleCallback(callback_handle_);
+  }
+
+  void ForceInvocationForTesting() {
+    invoke(IdleDeadline::Create(CurrentTimeTicks() + kFindTaskTestTimeout,
+                                IdleDeadline::CallbackType::kCalledWhenIdle));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(controller_);
+    visitor->Trace(document_);
+    ScriptedIdleTaskController::IdleTask::Trace(visitor);
+  }
+
+ private:
   void invoke(IdleDeadline* deadline) override {
     if (!controller_->ShouldFindMatches(search_text_, *options_)) {
       controller_->DidFinishTask(identifier_, search_text_, *options_,

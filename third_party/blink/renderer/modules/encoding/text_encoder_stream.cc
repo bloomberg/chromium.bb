@@ -161,7 +161,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
 
 TextEncoderStream* TextEncoderStream::Create(ScriptState* script_state,
                                              ExceptionState& exception_state) {
-  return new TextEncoderStream(script_state, exception_state);
+  return MakeGarbageCollected<TextEncoderStream>(script_state, exception_state);
 }
 
 TextEncoderStream::~TextEncoderStream() = default;
@@ -191,8 +191,8 @@ TextEncoderStream::TextEncoderStream(ScriptState* script_state,
                                       "Cannot queue task to retain wrapper");
     return;
   }
-  transform_->Init(new Transformer(script_state), script_state,
-                   exception_state);
+  transform_->Init(MakeGarbageCollected<Transformer>(script_state),
+                   script_state, exception_state);
 }
 
 }  // namespace blink

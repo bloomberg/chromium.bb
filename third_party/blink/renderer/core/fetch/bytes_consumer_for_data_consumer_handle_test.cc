@@ -40,7 +40,7 @@ class MockBytesConsumerClient
 
  public:
   static MockBytesConsumerClient* Create() {
-    return new testing::StrictMock<MockBytesConsumerClient>();
+    return MakeGarbageCollected<testing::StrictMock<MockBytesConsumerClient>>();
   }
   MOCK_METHOD0(OnStateChange, void());
   String DebugName() const override { return "MockBytesConsumerClient"; }
@@ -62,7 +62,7 @@ class MockDataConsumerHandle final : public WebDataConsumerHandle {
     void Trace(blink::Visitor* visitor) {}
   };
 
-  MockDataConsumerHandle() : proxy_(new MockReaderProxy) {}
+  MockDataConsumerHandle() : proxy_(MakeGarbageCollected<MockReaderProxy>()) {}
   MockReaderProxy* Proxy() { return proxy_; }
   const char* DebugName() const override { return "MockDataConsumerHandle"; }
 

@@ -22,7 +22,7 @@ namespace blink {
 
 Worklet::Worklet(Document* document)
     : ContextLifecycleObserver(document),
-      module_responses_map_(new WorkletModuleResponsesMap) {
+      module_responses_map_(MakeGarbageCollected<WorkletModuleResponsesMap>()) {
   DCHECK(IsMainThread());
 }
 
