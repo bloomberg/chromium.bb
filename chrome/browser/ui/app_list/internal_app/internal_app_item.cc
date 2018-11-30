@@ -41,6 +41,9 @@ InternalAppItem::InternalAppItem(
     UpdateFromSync(sync_item);
   else
     SetDefaultPositionIfApplicable(model_updater);
+
+  // Set model updater last to avoid being called during construction.
+  set_model_updater(model_updater);
 }
 
 InternalAppItem::~InternalAppItem() = default;
