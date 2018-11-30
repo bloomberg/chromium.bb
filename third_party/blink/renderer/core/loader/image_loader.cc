@@ -30,6 +30,9 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -99,6 +102,24 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
           html_image->getAttribute(html_names::kHeightAttr), &height) &&
       width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
     return false;
+  }
+  // Avoid lazyloading if width or height is specified in inline style and is
+  // small enough. This heuristic helps avoid double fetching tracking pixels.
+  if (const auto* property_set = html_image->InlineStyle()) {
+    const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+    const CSSValue* height =
+        property_set->GetPropertyCSSValue(CSSPropertyHeight);
+    if (width && width->IsPrimitiveValue() && height &&
+        height->IsPrimitiveValue()) {
+      const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
+      const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
+      if (height_prim->IsPx() &&
+          (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+          width_prim->IsPx() &&
+          (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad)) {
+        return false;
+      }
+    }
   }
   return frame->GetDocument()->GetSettings() &&
          frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
