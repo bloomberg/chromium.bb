@@ -589,6 +589,17 @@ const AtomicString& HTMLElement::EventNameForAttributeName(
 
 void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
   Element::AttributeChanged(params);
+  if (params.name == html_names::kDisabledAttr &&
+      params.old_value.IsNull() != params.new_value.IsNull()) {
+    if (IsFormAssociatedCustomElement()) {
+      EnsureElementInternals().DisabledAttributeChanged();
+      if (params.reason == AttributeModificationReason::kDirectly &&
+          IsDisabledFormControl() &&
+          AdjustedFocusedElementInTreeScope() == this)
+        blur();
+    }
+    return;
+  }
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
   // adjustedFocusedElementInTreeScope() is not trivial. We should check
@@ -1461,6 +1472,24 @@ ElementInternals* HTMLElement::attachInternals(
 bool HTMLElement::IsFormAssociatedCustomElement() const {
   return GetCustomElementState() == CustomElementState::kCustom &&
          GetCustomElementDefinition()->IsFormAssociated();
+}
+
+bool HTMLElement::SupportsFocus() const {
+  return Element::SupportsFocus() && !IsDisabledFormControl();
+};
+
+bool HTMLElement::IsDisabledFormControl() const {
+  if (!IsFormAssociatedCustomElement())
+    return false;
+  return const_cast<HTMLElement*>(this)
+      ->EnsureElementInternals()
+      .IsActuallyDisabled();
+}
+
+bool HTMLElement::MatchesEnabledPseudoClass() const {
+  return IsFormAssociatedCustomElement() && !const_cast<HTMLElement*>(this)
+                                                 ->EnsureElementInternals()
+                                                 .IsActuallyDisabled();
 }
 
 }  // namespace blink

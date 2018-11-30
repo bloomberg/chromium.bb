@@ -89,6 +89,8 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   bool Valid() const;
   virtual void setCustomValidity(const String&);
 
+  virtual void DisabledAttributeChanged();
+
   void FormAttributeTargetChanged();
   void InsertedInto(ContainerNode&);
   void RemovedFrom(ContainerNode&);
@@ -118,8 +120,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual void DidChangeForm();
 
   String CustomValidationMessage() const;
-
-  virtual void DisabledAttributeChanged();
 
   // False; There are no FIELDSET ancestors.
   // True; There might be a FIELDSET ancestor, and thre might be no
