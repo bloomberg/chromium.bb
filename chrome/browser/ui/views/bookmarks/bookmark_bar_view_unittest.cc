@@ -42,10 +42,6 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewTest() {}
 
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-  }
-
   void TearDown() override {
     test_helper_.reset();
     bookmark_bar_view_.reset();
@@ -381,8 +377,14 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::Widget widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+#if !defined(OS_CHROMEOS)
+  // On Chrome OS, this always creates a NativeWidgetAura, but it should create
+  // a DesktopNativeWidgetAura for Mash. We can get by without manually creating
+  // it because AshTestViewsDelegate and MusClient will do the right thing
+  // automatically.
   params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
       params, &widget, nullptr);
+#endif
   widget.Init(params);
   widget.Show();
   widget.GetRootView()->AddChildView(bookmark_bar_view_.get());

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
@@ -109,6 +110,9 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   }
 
  private:
+  // Not used in non-Mash, but harmless.
+  ImmersiveContextMus immersive_context_;
+
   // Not owned.
   ImmersiveModeController* controller_;
 
@@ -302,6 +306,7 @@ TEST_F(ImmersiveModeControllerAshTest,
   // Make sure the fullscreen control popup doesn't show up.
   ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
                             base::TimeTicks(), 0, 0);
+  ASSERT_TRUE(browser_view()->fullscreen_control_host_for_test());
   browser_view()->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
   EXPECT_FALSE(browser_view()->fullscreen_control_host_for_test()->IsVisible());
 }
@@ -323,6 +328,7 @@ TEST_F(ImmersiveModeControllerAshTest, LockedFullscreenDisablesImmersive) {
   // Make sure the fullscreen control popup doesn't show up.
   ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
                             base::TimeTicks(), 0, 0);
+  ASSERT_TRUE(browser_view()->fullscreen_control_host_for_test());
   browser_view()->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
   EXPECT_FALSE(browser_view()->fullscreen_control_host_for_test()->IsVisible());
 }

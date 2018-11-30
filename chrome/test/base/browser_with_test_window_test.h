@@ -34,6 +34,7 @@ class GURL;
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {
+class MusClient;
 class TestViewsDelegate;
 }
 #endif
@@ -194,6 +195,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   AshTestEnvironmentChrome ash_test_environment_;
   ash::AshTestHelper ash_test_helper_;
+  std::unique_ptr<views::MusClient> mus_client_;
 #elif defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif

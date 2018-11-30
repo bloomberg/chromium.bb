@@ -388,23 +388,6 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
                          ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
 }
 
-// Creates a window with TYPE_APP shelf item type and the given app_id.
-views::Widget* CreateShelfAppWindow(const std::string& app_id) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(5, 5, 20, 20);
-  views::Widget* widget = new views::Widget();
-  widget->Init(params);
-
-  aura::Window* window = widget->GetNativeWindow();
-  const ash::ShelfID shelf_id(app_id);
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
-  window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
-
-  widget->Show();
-  widget->Activate();
-  return widget;
-}
-
 }  // namespace
 
 // A test ChromeLauncherController subclass that uses TestShelfController.
@@ -1047,6 +1030,25 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                          appinfo.name, std::string());
   }
 
+  // Creates a window with TYPE_APP shelf item type and the given app_id.
+  views::Widget* CreateShelfAppWindow(const std::string& app_id) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    params.context = GetContext();
+    params.bounds = gfx::Rect(5, 5, 20, 20);
+    views::Widget* widget = new views::Widget();
+    widget->Init(params);
+
+    aura::Window* window = widget->GetNativeWindow();
+    const ash::ShelfID shelf_id(app_id);
+    window->SetProperty(ash::kShelfIDKey,
+                        new std::string(shelf_id.Serialize()));
+    window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
+
+    widget->Show();
+    widget->Activate();
+    return widget;
+  }
+
   // Needed for extension service & friends to work.
   scoped_refptr<Extension> extension_chrome_;
   scoped_refptr<Extension> extension1_;
@@ -1075,9 +1077,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
  private:
   TestBrowserWindow* CreateTestBrowserWindowAura() {
-    std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
+    std::unique_ptr<aura::Window> window(new aura::Window(
+        nullptr, aura::client::WINDOW_TYPE_NORMAL, GetContext()->env()));
     window->set_id(0);
-    window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(window.get(), GetContext(),
                                           gfx::Rect(200, 200));
