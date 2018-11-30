@@ -421,7 +421,7 @@ testcase.dirRenameWithoutChangingCurrent = async function() {
   const appId = await setupForDirectoryTreeContextMenuTest();
   const downloadsQuery =
       '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
-  await remoteCall.expandDirectoryTreeFor(appId, downloadsQuery);
+  await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
   await remoteCall.waitForElement(
       appId, `[full-path-for-testing="${RootPath.DOWNLOADS_PATH}/photos"]`);
   await renamePhotosDirectoryTo(
