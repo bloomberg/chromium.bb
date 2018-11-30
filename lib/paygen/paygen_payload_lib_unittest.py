@@ -15,7 +15,6 @@ import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 
@@ -113,7 +112,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     return paygen_payload_lib._PaygenPayload(
         payload=payload,
-        cache=self.cache,
         work_dir=work_dir,
         sign=sign,
         verify=False)
@@ -642,85 +640,13 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         mock.call('/work/delta.json', 'gs://full_old_foo/boo.json'),
     ])
 
-  def testDefaultPayloadUri(self):
-    """Test paygen_payload_lib.DefaultPayloadUri."""
-
-    # Test a Full Payload
-    result = paygen_payload_lib.DefaultPayloadUri(self.full_payload,
-                                                  random_str='abc123')
-    self.assertEqual(
-        result,
-        'gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/payloads/'
-        'chromeos_1620.0.0_x86-alex_dev-channel_full_mp-v3.bin-abc123.signed')
-
-    # Test a Delta Payload
-    result = paygen_payload_lib.DefaultPayloadUri(self.delta_payload,
-                                                  random_str='abc123')
-    self.assertEqual(
-        result,
-        'gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/payloads/'
-        'chromeos_1620.0.0-4171.0.0_x86-alex_dev-channel_delta_mp-v3.bin-'
-        'abc123.signed')
-
-    # Test changing channel, board, and keys
-    src_image = gspaths.Image(
-        channel='dev-channel',
-        board='x86-alex',
-        version='3588.0.0',
-        key='premp')
-    tgt_image = gspaths.Image(
-        channel='stable-channel',
-        board='x86-alex-he',
-        version='3590.0.0',
-        key='mp-v3')
-    payload = gspaths.Payload(src_image=src_image, tgt_image=tgt_image)
-
-    result = paygen_payload_lib.DefaultPayloadUri(payload,
-                                                  random_str='abc123')
-    self.assertEqual(
-        result,
-        'gs://chromeos-releases/stable-channel/x86-alex-he/3590.0.0/payloads/'
-        'chromeos_3588.0.0-3590.0.0_x86-alex-he_stable-channel_delta_mp-v3.bin-'
-        'abc123.signed')
-
-  def testFillInPayloadUri(self):
-    """Test filling in the payload URI of a gspaths.Payload object."""
-    # Assert that it doesn't change if already present.
-    pre_uri = self.full_payload.uri
-    paygen_payload_lib.FillInPayloadUri(self.full_payload,
-                                        random_str='abc123')
-    self.assertEqual(self.full_payload.uri,
-                     pre_uri)
-
-    # Test that it does change if not present.
-    payload = gspaths.Payload(tgt_image=self.old_image)
-    paygen_payload_lib.FillInPayloadUri(payload,
-                                        random_str='abc123')
-    self.assertEqual(
-        payload.uri,
-        'gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/payloads/'
-        'chromeos_1620.0.0_x86-alex_dev-channel_full_mp-v3.bin-abc123.signed')
-
-  def testFindExistingPayloads(self):
-    """Test finding already existing payloads."""
-    # Set up the test replay script.
-    ls_mock = self.PatchObject(gs.GSContext, 'LS', return_value=['foo_result'])
-
-    self.assertEqual(
-        paygen_payload_lib.FindExistingPayloads(self.full_payload),
-        ['foo_result'])
-
-    ls_mock.assert_called_once_with(
-        'gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/payloads/'
-        'chromeos_1620.0.0_x86-alex_dev-channel_full_mp-v3.bin-*.signed')
-
   def testFindCacheDir(self):
     """Test calculating the location of the cache directory."""
-    result = paygen_payload_lib.FindCacheDir()
+    gen = self._GetStdGenerator(work_dir='/foo')
 
     # The correct result is based on the system cache directory, which changes.
     # Ensure it ends with the right directory name.
-    self.assertEqual(os.path.basename(result), 'paygen_cache')
+    self.assertEqual(os.path.basename(gen._FindCacheDir()), 'paygen_cache')
 
 
 class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
@@ -738,7 +664,6 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
 
     paygen_payload_lib.CreateAndUploadPayload(
         payload=payload,
-        cache=self.cache,
         sign=sign)
 
     self.assertExists(output_uri)

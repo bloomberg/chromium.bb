@@ -244,9 +244,77 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
                                           (self.basic_image,
                                            self.special_image))
 
+  def testDefaultPayloadUri(self):
+    """Test paygen_payload_lib.DefaultPayloadUri."""
+
+    # Test a Full Payload
+    result = paygen_build_lib._DefaultPayloadUri(self.mp_full_payload,
+                                                 random_str='abc123')
+    self.assertEqual(
+        result,
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/'
+        'chromeos_1.2.3_foo-board_foo-channel_full_mp-v2.bin-abc123.signed')
+
+    # Test a Delta Payload
+    result = paygen_build_lib._DefaultPayloadUri(self.mp_delta_payload,
+                                                 random_str='abc123')
+    self.assertEqual(
+        result,
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/chromeos_1.0.0-1'
+        '.2.3_foo-board_foo-channel_delta_mp-v2.bin-abc123.signed')
+
+    # Test changing channel, board, and keys
+    src_image = gspaths.Image(
+        channel='dev-channel',
+        board='x86-alex',
+        version='3588.0.0',
+        key='premp')
+    tgt_image = gspaths.Image(
+        channel='stable-channel',
+        board='x86-alex-he',
+        version='3590.0.0',
+        key='mp-v3')
+    payload = gspaths.Payload(src_image=src_image, tgt_image=tgt_image)
+
+    result = paygen_build_lib._DefaultPayloadUri(payload, random_str='abc123')
+    self.assertEqual(
+        result,
+        'gs://chromeos-releases/stable-channel/x86-alex-he/3590.0.0/payloads/'
+        'chromeos_3588.0.0-3590.0.0_x86-alex-he_stable-channel_delta_mp-v3.bin-'
+        'abc123.signed')
+
 
 class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
   """Test discovery of images."""
+
+  def testFillInPayloadUri(self):
+    """Test filling in the payload URI of a gspaths.Payload object."""
+    # Assert that it doesn't change if already present.
+    pre_uri = self.mp_full_payload.uri = 'some-random-uri'
+    paygen_build_lib._FillInPayloadUri(self.mp_full_payload,
+                                       random_str='abc123')
+    self.assertEqual(self.mp_full_payload.uri, pre_uri)
+
+    # Test that it does change if not present.
+    payload = gspaths.Payload(tgt_image=self.basic_image)
+    paygen_build_lib._FillInPayloadUri(payload, random_str='abc123')
+    self.assertEqual(
+        payload.uri,
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/'
+        'chromeos_1.2.3_foo-board_foo-channel_full_mp-v2.bin-abc123.signed')
+
+  def testFindExistingPayloads(self):
+    """Test finding already existing payloads."""
+    # Set up the test replay script.
+    ls_mock = self.PatchObject(gs.GSContext, 'LS', return_value=['foo_result'])
+
+    paygen = self._GetPaygenBuildInstance()
+    self.assertEqual(paygen._FindExistingPayloads(self.mp_full_payload),
+                     ['foo_result'])
+
+    ls_mock.assert_called_once_with(
+        'gs://crt/foo-channel/foo-board/1.2.3/payloads/'
+        'chromeos_1.2.3_foo-board_foo-channel_full_mp-v2.bin-*.signed')
 
   def testDiscoverImages(self):
     """Test _DiscoverSignedImages."""
@@ -762,10 +830,10 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         poolMock.call_args_list,
-        [mock.call(paygen_build_lib._GenerateSinglePayload,
-                   [(self.mp_full_payload, True, False),
-                    (self.mp_delta_payload, True, False),
-                    (self.test_delta_payload, False, False)])])
+        [mock.call(paygen_payload_lib.CreateAndUploadPayload,
+                   [(self.mp_full_payload, True, True, False),
+                    (self.mp_delta_payload, True, True, False),
+                    (self.test_delta_payload, False, True, False)])])
 
   def testGeneratePayloadsDryrun(self):
     """Ensure we correctly pass along the dryrun flag."""
@@ -778,25 +846,10 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         poolMock.call_args_list,
-        [mock.call(paygen_build_lib._GenerateSinglePayload,
-                   [(self.mp_full_payload, True, True),
-                    (self.mp_delta_payload, True, True),
-                    (self.test_delta_payload, False, True)])])
-
-  def testGeneratePayloadInProcess(self):
-    """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
-    createMock = self.PatchObject(
-        paygen_payload_lib, 'CreateAndUploadPayload')
-
-    paygen_build_lib._GenerateSinglePayload(
-        self.test_delta_payload, False, False)
-
-    self.assertEqual(
-        createMock.call_args_list,
-        [mock.call(self.test_delta_payload,
-                   mock.ANY,
-                   sign=False,
-                   dry_run=False)])
+        [mock.call(paygen_payload_lib.CreateAndUploadPayload,
+                   [(self.mp_full_payload, True, True, True),
+                    (self.mp_delta_payload, True, True, True),
+                    (self.test_delta_payload, False, True, True)])])
 
   def testCleanupBuild(self):
     """Test PaygenBuild._CleanupBuild."""
@@ -829,7 +882,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
     self.mockCleanup = self.PatchObject(
         paygen_build_lib.PaygenBuild, '_CleanupBuild')
     self.mockExisting = self.PatchObject(
-        paygen_payload_lib, 'FindExistingPayloads')
+        paygen_build_lib.PaygenBuild, '_FindExistingPayloads')
 
   def testCreatePayloadsLockedBuild(self):
     self.mockLock.side_effect = gslock.LockNotAcquired

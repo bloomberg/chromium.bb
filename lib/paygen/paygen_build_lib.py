@@ -29,7 +29,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import parallel
 from chromite.lib import retry_util
-from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
@@ -216,27 +215,89 @@ def _FilterForTest(artifacts):
           if i.image_type == 'test']
 
 
-def _GenerateSinglePayload(payload, sign, dry_run):
-  """Generate a single payload.
+def _DefaultPayloadUri(payload, random_str=None):
+  """Compute the default output URI for a payload.
 
-  This is intended to be safe to call inside a new process.
+  For a glob that matches all potential URIs for this
+  payload, pass in a random_str of '*'.
 
   Args:
-    payload: gspath.Payload object defining the payloads to generate.
-    sign: boolean to decide if payload should be signed.
-    dry_run: boolean saying if this is a dry run.
+    payload: gspaths.Payload instance.
+    random_str: A hook to force a specific random_str. None means generate it.
+
+  Returns:
+    Default URI for the payload.
   """
-  # This cache dir will be shared with other processes, but we need our
-  # own instance of the cache manager to properly coordinate.
-  cache_dir = paygen_payload_lib.FindCacheDir()
-  with download_cache.DownloadCache(
-      cache_dir, cache_size=PaygenBuild.CACHE_SIZE) as cache:
-    # Actually generate the payload.
-    paygen_payload_lib.CreateAndUploadPayload(
-        payload,
-        cache,
-        sign=sign,
-        dry_run=dry_run)
+  src_version = None
+  if payload.src_image:
+    src_version = payload.src_image['version']
+
+  if gspaths.IsImage(payload.tgt_image):
+    # Signed payload.
+    return gspaths.ChromeosReleases.PayloadUri(
+        channel=payload.tgt_image.channel,
+        board=payload.tgt_image.board,
+        version=payload.tgt_image.version,
+        random_str=random_str,
+        key=payload.tgt_image.key,
+        image_channel=payload.tgt_image.image_channel,
+        image_version=payload.tgt_image.image_version,
+        src_version=src_version,
+        bucket=payload.tgt_image.bucket)
+  elif gspaths.IsUnsignedImageArchive(payload.tgt_image):
+    # Unsigned test payload.
+    return gspaths.ChromeosReleases.PayloadUri(
+        channel=payload.tgt_image.channel,
+        board=payload.tgt_image.board,
+        version=payload.tgt_image.version,
+        random_str=random_str,
+        src_version=src_version,
+        bucket=payload.tgt_image.bucket)
+  else:
+    raise Error('Unknown image type %s' % type(payload.tgt_image))
+
+
+def _FillInPayloadUri(payload, random_str=None):
+  """Fill in default output URI for a payload if missing.
+
+  Args:
+    payload: gspaths.Payload instance.
+    random_str: A hook to force a specific random_str. None means generate it.
+  """
+  if not payload.uri:
+    payload.uri = _DefaultPayloadUri(payload, random_str)
+
+
+def _FilterNonPayloadUris(payload_uris):
+  """Filters out non-payloads from a list of GS URIs.
+
+  This essentially filters out known auxiliary artifacts whose names resemble /
+  derive from a respective payload name, such as files with .log and
+  .metadata-signature extensions.
+
+  Args:
+    payload_uris: a list of GS URIs (potentially) corresopnding to payloads
+
+  Returns:
+    A filtered list of URIs.
+  """
+  return [uri for uri in payload_uris
+          if not (uri.endswith('.log') or uri.endswith('.metadata-signature'))]
+
+
+# If the downloaded JSON is bad, a ValueError exception will be rasied.
+# This appears to be a sporadic GS flake that a retry can fix.
+def _GetJson(uri):
+  """Downloads JSON from URI and parses it.
+
+  Argps:
+    uri: The URI of a JSON file at the given GS URI.
+
+  Returns:
+    Valid JSON retrieved from given uri.
+  """
+  downloaded_json = gs.GSContext().Cat(uri)
+  return json.loads(downloaded_json)
 
 
 class PayloadTest(utils.RestrictedAttrDict):
@@ -286,9 +347,6 @@ class PaygenBuild(object):
   It operates across a single build at a time, and is responsible for locking
   that build and for flagging it as finished when all payloads are generated.
   """
-  # 50 GB of cache.
-  CACHE_SIZE = 50 * 1024 * 1024 * 1024
-
   # Relative subpath for dumping control files inside the temp directory.
   CONTROL_FILE_SUBDIR = os.path.join('autotest', 'au_control_files')
 
@@ -659,10 +717,10 @@ class PaygenBuild(object):
             full_test_payload, source_build.channel, source_build.version))
 
     for p in payloads:
-      paygen_payload_lib.FillInPayloadUri(p)
+      _FillInPayloadUri(p)
 
     for t in payload_tests:
-      paygen_payload_lib.FillInPayloadUri(t.payload)
+      _FillInPayloadUri(t.payload)
 
     return payloads, payload_tests
 
@@ -680,10 +738,12 @@ class PaygenBuild(object):
     """
     payloads_args = [(payload,
                       isinstance(payload.tgt_image, gspaths.Image),
+                      True,
                       self._dry_run)
                      for payload in payloads]
 
-    parallel.RunTasksInProcessPool(_GenerateSinglePayload, payloads_args)
+    parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
+                                   payloads_args)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
@@ -852,6 +912,22 @@ class PaygenBuild(object):
             bucket=self._build.bucket),
         recursive=True, ignore_missing=True)
 
+  def _FindExistingPayloads(self, payload):
+    """Look to see if any matching payloads already exist.
+
+    Since payload names contain a random component, there can be multiple
+    names for a given payload. This function lists all existing payloads
+    that match the default URI for the given payload.
+
+    Args:
+      payload: gspaths.Payload instance.
+
+    Returns:
+      List of URIs for existing payloads that match the default payload pattern.
+    """
+    search_uri = _DefaultPayloadUri(payload, random_str='*')
+    return _FilterNonPayloadUris(self._ctx.LS(search_uri))
+
   def CreatePayloads(self):
     """Get lock on this build, and Process if we succeed.
 
@@ -878,7 +954,7 @@ class PaygenBuild(object):
         # this run will be skipping any actual work.
         for p in payloads:
           try:
-            result = paygen_payload_lib.FindExistingPayloads(p)
+            result = self._FindExistingPayloads(p)
             if result:
               p.exists = True
               p.uri = result[0]
@@ -999,19 +1075,3 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
                       cmd_result.to_raise)
     else:
       raise cmd_result.to_raise
-
-
-# If the downloaded JSON is bad, a ValueError exception will be rasied.
-# This appears to be a sporadic GS flake that a retry can fix.
-def _GetJson(uri):
-  """Downloads JSON from URI and parses it.
-
-  Args:
-    uri: The URI of a JSON file at the given GS URI.
-
-  Returns:
-    Valid JSON retrieved from given uri.
-  """
-  ctx = gs.GSContext()
-  downloaded_json = ctx.Cat(uri)
-  return json.loads(downloaded_json)

@@ -18,9 +18,9 @@ import threading
 from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
@@ -47,6 +47,9 @@ class PayloadVerificationError(Error):
 class _PaygenPayload(object):
   """Class to manage the process of generating and signing a payload."""
 
+  # 50 GB of cache.
+  CACHE_SIZE = 50 * 1024 * 1024 * 1024
+
   # What keys do we sign payloads with, and what size are they?
   PAYLOAD_SIGNATURE_KEYSETS = ('update_signer',)
   PAYLOAD_SIGNATURE_SIZES_BYTES = (2048 / 8,)  # aka 2048 bits in bytes.
@@ -58,20 +61,18 @@ class _PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'root'
 
-  def __init__(self, payload, cache, work_dir, sign, verify, dry_run=False):
+  def __init__(self, payload, work_dir, sign, verify, dry_run=False):
     """Init for _PaygenPayload.
 
     Args:
       payload: An instance of gspaths.Payload describing the payload to
                generate.
-      cache: An instance of DownloadCache for retrieving files.
       work_dir: A working directory for output files. Can NOT be shared.
       sign: Boolean saying if the payload should be signed (normally, you do).
       verify: whether the payload should be verified after being generated
       dry_run: do not do any actual work
     """
     self.payload = payload
-    self.cache = cache
     self.work_dir = work_dir
     self._verify = verify
     self._dry_run = dry_run
@@ -108,6 +109,11 @@ class _PaygenPayload(object):
           payload.tgt_image.version,
           payload.tgt_image.bucket)
 
+    # This cache dir will be shared with other processes, but we need our own
+    # instance of the cache manager to properly coordinate.
+    self._cache = download_cache.DownloadCache(
+        self._FindCacheDir(), cache_size=_PaygenPayload.CACHE_SIZE)
+
   def _MetadataUri(self, uri):
     """Given a payload uri, find the uri for the metadata signature."""
     return uri + '.metadata-signature'
@@ -119,6 +125,14 @@ class _PaygenPayload(object):
   def _JsonUri(self, uri):
     """Given a payload uri, find the uri for the json payload description."""
     return uri + '.json'
+
+  def _FindCacheDir(self):
+    """Helper for deciding what cache directory to use.
+
+    Returns:
+      Returns a directory suitable for use with a DownloadCache.
+    """
+    return os.path.join(path_util.GetCacheDir(), 'paygen_cache')
 
   def _RunGeneratorCmd(self, cmd):
     """Wrapper for RunCommand in chroot.
@@ -218,7 +232,7 @@ class _PaygenPayload(object):
       download_file = image_file
 
     # Download the image file or archive.
-    self.cache.GetFileCopy(image.uri, download_file)
+    self._cache.GetFileCopy(image.uri, download_file)
 
     # If we downloaded an archive, extract the image file from it.
     if extract_file:
@@ -629,117 +643,25 @@ class _PaygenPayload(object):
       logging.info('dry-run mode; skipping Create+Verify+Upload steps')
       return
 
+    logging.info('* Starting payload generation')
+    start_time = datetime.datetime.now()
+
     self._Create()
     if self._verify:
       self._VerifyPayload()
     self._UploadResults()
 
-
-def DefaultPayloadUri(payload, random_str=None):
-  """Compute the default output URI for a payload.
-
-  For a glob that matches all potential URIs for this
-  payload, pass in a random_str of '*'.
-
-  Args:
-    payload: gspaths.Payload instance.
-    random_str: A hook to force a specific random_str. None means generate it.
-
-  Returns:
-    Default URI for the payload.
-  """
-  src_version = None
-  if payload.src_image:
-    src_version = payload.src_image['version']
-
-  if gspaths.IsImage(payload.tgt_image):
-    # Signed payload.
-    return gspaths.ChromeosReleases.PayloadUri(
-        channel=payload.tgt_image.channel,
-        board=payload.tgt_image.board,
-        version=payload.tgt_image.version,
-        random_str=random_str,
-        key=payload.tgt_image.key,
-        image_channel=payload.tgt_image.image_channel,
-        image_version=payload.tgt_image.image_version,
-        src_version=src_version,
-        bucket=payload.tgt_image.bucket)
-  elif gspaths.IsUnsignedImageArchive(payload.tgt_image):
-    # Unsigned test payload.
-    return gspaths.ChromeosReleases.PayloadUri(
-        channel=payload.tgt_image.channel,
-        board=payload.tgt_image.board,
-        version=payload.tgt_image.version,
-        random_str=random_str,
-        src_version=src_version,
-        bucket=payload.tgt_image.bucket)
-  else:
-    raise Error('Unknown image type %s' % type(payload.tgt_image))
+    end_time = datetime.datetime.now()
+    logging.info('* Finished payload generation in %s', end_time - start_time)
 
 
-def FillInPayloadUri(payload, random_str=None):
-  """Fill in default output URI for a payload if missing.
-
-  Args:
-    payload: gspaths.Payload instance.
-    random_str: A hook to force a specific random_str. None means generate it.
-  """
-  if not payload.uri:
-    payload.uri = DefaultPayloadUri(payload, random_str)
-
-
-def _FilterNonPayloadUris(payload_uris):
-  """Filters out non-payloads from a list of GS URIs.
-
-  This essentially filters out known auxiliary artifacts whose names resemble /
-  derive from a respective payload name, such as files with .log and
-  .metadata-signature extensions.
-
-  Args:
-    payload_uris: a list of GS URIs (potentially) corresopnding to payloads
-
-  Returns:
-    A filtered list of URIs.
-  """
-  return [uri for uri in payload_uris
-          if not (uri.endswith('.log') or uri.endswith('.metadata-signature'))]
-
-
-def FindExistingPayloads(payload):
-  """Look to see if any matching payloads already exist.
-
-  Since payload names contain a random component, there can be multiple
-  names for a given payload. This function lists all existing payloads
-  that match the default URI for the given payload.
-
-  Args:
-    payload: gspaths.Payload instance.
-
-  Returns:
-    List of URIs for existing payloads that match the default payload pattern.
-  """
-  ctx = gs.GSContext()
-  search_uri = DefaultPayloadUri(payload, random_str='*')
-  return _FilterNonPayloadUris(ctx.LS(search_uri))
-
-
-def FindCacheDir():
-  """Helper for deciding what cache directory to use.
-
-  Returns:
-    Returns a directory suitable for use with a DownloadCache.
-  """
-  # Discover which directory to use for caching
-  return os.path.join(path_util.GetCacheDir(), 'paygen_cache')
-
-
-def CreateAndUploadPayload(payload, cache, sign=True, verify=True,
-                           dry_run=False):
+def CreateAndUploadPayload(payload, sign=True, verify=True, dry_run=False):
   """Helper to create a PaygenPayloadLib instance and use it.
 
+  Mainly can be used as a single function to help with parallelism.
+
   Args:
-    payload: An instance of utils.Payload describing the payload to generate.
-    cache: An instance of DownloadCache for retrieving files.
+    payload: An instance of gspaths.Payload describing the payload to generate.
     sign: Boolean saying if the payload should be signed (normally, you do).
     verify: whether the payload should be verified (default: True)
     dry_run: don't perform actual work
@@ -747,11 +669,4 @@ def CreateAndUploadPayload(payload, cache, sign=True, verify=True,
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
   with chroot_util.TempDirInChroot() as work_dir:
-    logging.info('* Starting payload generation')
-    start_time = datetime.datetime.now()
-
-    _PaygenPayload(payload, cache, work_dir, sign, verify,
-                   dry_run=dry_run).Run()
-
-    end_time = datetime.datetime.now()
-    logging.info('* Finished payload generation in %s', end_time - start_time)
+    _PaygenPayload(payload, work_dir, sign, verify, dry_run=dry_run).Run()
