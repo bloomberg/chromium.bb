@@ -65,7 +65,7 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     GpuServiceImpl* gpu_service_impl,
-    gpu::CommandBufferTaskExecutor* task_executor,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -74,7 +74,7 @@ GpuDisplayProvider::GpuDisplayProvider(
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_impl_(gpu_service_impl),
-      task_executor_(task_executor),
+      task_executor_(std::move(task_executor)),
       gpu_channel_manager_delegate_(gpu_channel_manager_delegate),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),

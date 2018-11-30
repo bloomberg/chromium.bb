@@ -87,7 +87,7 @@ void UmaRecordContextLost(ContextLostReason reason) {
 }  // namespace
 
 VizProcessContextProvider::VizProcessContextProvider(
-    gpu::CommandBufferTaskExecutor* task_executor,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -95,8 +95,9 @@ VizProcessContextProvider::VizProcessContextProvider(
     const gpu::SharedMemoryLimits& limits,
     bool requires_alpha_channel)
     : attributes_(CreateAttributes(requires_alpha_channel)) {
-  InitializeContext(task_executor, surface_handle, gpu_memory_buffer_manager,
-                    image_factory, gpu_channel_manager_delegate, limits);
+  InitializeContext(std::move(task_executor), surface_handle,
+                    gpu_memory_buffer_manager, image_factory,
+                    gpu_channel_manager_delegate, limits);
 
   if (context_result_ == gpu::ContextResult::kSuccess) {
     // |gles2_implementation_| is owned here so bind an unretained pointer or
@@ -200,7 +201,7 @@ uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
 }
 
 void VizProcessContextProvider::InitializeContext(
-    gpu::CommandBufferTaskExecutor* task_executor,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -209,7 +210,7 @@ void VizProcessContextProvider::InitializeContext(
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
   command_buffer_ =
-      std::make_unique<gpu::InProcessCommandBuffer>(task_executor);
+      std::make_unique<gpu::InProcessCommandBuffer>(std::move(task_executor));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,

@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(GPU_THREAD_HOLDER) InProcessGpuThreadHolder
 
   // Returns a task executor that runs commands on the GPU thread. The task
   // executor will be created the first time this is called.
-  CommandBufferTaskExecutor* GetTaskExecutor();
+  scoped_refptr<CommandBufferTaskExecutor> GetTaskExecutor();
 
  private:
   void InitializeOnGpuThread(base::WaitableEvent* completion);
@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(GPU_THREAD_HOLDER) InProcessGpuThreadHolder
 
   std::unique_ptr<SyncPointManager> sync_point_manager_;
   std::unique_ptr<Scheduler> scheduler_;
-  std::unique_ptr<CommandBufferTaskExecutor> task_executor_;
+  scoped_refptr<CommandBufferTaskExecutor> task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThreadHolder);
 };
