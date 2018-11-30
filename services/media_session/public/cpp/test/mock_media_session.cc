@@ -39,6 +39,16 @@ void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
   }
 }
 
+void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
+    const base::Optional<MediaMetadata>& metadata) {
+  session_metadata_ = metadata;
+
+  if (waiting_for_metadata_) {
+    run_loop_.Quit();
+    waiting_for_metadata_ = false;
+  }
+}
+
 void MockMediaSessionMojoObserver::WaitForState(
     mojom::MediaSessionInfo::SessionState wanted_state) {
   if (session_info_ && session_info_->state == wanted_state)
@@ -55,6 +65,16 @@ void MockMediaSessionMojoObserver::WaitForPlaybackState(
 
   wanted_playback_state_ = wanted_state;
   run_loop_.Run();
+}
+
+const base::Optional<MediaMetadata>&
+MockMediaSessionMojoObserver::WaitForMetadata() {
+  if (!session_metadata_.has_value()) {
+    waiting_for_metadata_ = true;
+    run_loop_.Run();
+  }
+
+  return session_metadata_.value();
 }
 
 MockMediaSession::MockMediaSession() = default;
@@ -215,6 +235,13 @@ mojom::MediaSessionInfo::SessionState MockMediaSession::GetState() const {
 
 void MockMediaSession::FlushForTesting() {
   afr_client_.FlushForTesting();
+}
+
+void MockMediaSession::SimulateMetadataChanged(
+    const base::Optional<MediaMetadata>& metadata) {
+  observers_.ForAllPtrs([&metadata](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionMetadataChanged(metadata);
+  });
 }
 
 void MockMediaSession::SetState(mojom::MediaSessionInfo::SessionState state) {

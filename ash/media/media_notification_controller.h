@@ -43,6 +43,8 @@ class ASH_EXPORT MediaNotificationController
   // media_session::mojom::MediaSessionObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
 
   void FlushForTesting();
   void SetMediaControllerForTesting(

@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "services/media_session/media_session_service.h"
+#include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -457,6 +459,110 @@ TEST_F(MediaControllerTest, ActiveController_Seek) {
   controller().FlushForTesting();
 
   EXPECT_EQ(1, media_session.seek_count());
+}
+
+TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Abandoned) {
+  MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.album = base::ASCIIToUTF16("album");
+
+  test::MockMediaSession media_session;
+  base::Optional<MediaMetadata> test_metadata(metadata);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session.SimulateMetadataChanged(test_metadata);
+  media_session.AbandonAudioFocusFromClient();
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    EXPECT_FALSE(observer.WaitForMetadata());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Empty) {
+  test::MockMediaSession media_session;
+  base::Optional<MediaMetadata> test_metadata;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    media_session.SimulateMetadataChanged(test_metadata);
+    EXPECT_EQ(test_metadata, observer.WaitForMetadata());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
+  MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.album = base::ASCIIToUTF16("album");
+
+  test::MockMediaSession media_session;
+  base::Optional<MediaMetadata> test_metadata(metadata);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    media_session.SimulateMetadataChanged(test_metadata);
+    EXPECT_EQ(metadata, *observer.WaitForMetadata());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_Empty) {
+  test::MockMediaSession media_session;
+  base::Optional<MediaMetadata> test_metadata;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session.SimulateMetadataChanged(test_metadata);
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    EXPECT_EQ(test_metadata, observer.WaitForMetadata());
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_WithInfo) {
+  MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.album = base::ASCIIToUTF16("album");
+
+  test::MockMediaSession media_session;
+  base::Optional<MediaMetadata> test_metadata(metadata);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  media_session.SimulateMetadataChanged(test_metadata);
+
+  {
+    test::MockMediaSessionMojoObserver observer(controller());
+    EXPECT_EQ(metadata, *observer.WaitForMetadata());
+  }
 }
 
 }  // namespace media_session

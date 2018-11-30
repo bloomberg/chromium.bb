@@ -45,10 +45,11 @@ void MediaController::ToggleSuspendResume() {
 void MediaController::AddObserver(mojom::MediaSessionObserverPtr observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Flush the new observer with the latest session info. If there is no info
-  // then we will update |observer| when |MediaSessionInfoChanged| is called.
+  // Flush the new observer with the state. We always flush the metadata as that
+  // is optional so null is a valid value whereas the session info is required.
   if (!session_info_.is_null())
     observer->MediaSessionInfoChanged(session_info_.Clone());
+  observer->MediaSessionMetadataChanged(session_metadata_);
 
   observers_.AddPtr(std::move(observer));
 }
@@ -61,6 +62,17 @@ void MediaController::MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) {
   });
 
   session_info_ = std::move(info);
+}
+
+void MediaController::MediaSessionMetadataChanged(
+    const base::Optional<MediaMetadata>& metadata) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  observers_.ForAllPtrs([&metadata](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionMetadataChanged(metadata);
+  });
+
+  session_metadata_ = metadata;
 }
 
 void MediaController::PreviousTrack() {
@@ -91,6 +103,8 @@ bool MediaController::SetMediaSession(mojom::MediaSession* session) {
 
   if (changed) {
     session_binding_.Close();
+    session_info_.reset();
+    session_metadata_.reset();
 
     if (session) {
       // Add |this| as an observer for |session|.

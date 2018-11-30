@@ -211,6 +211,11 @@ void MediaSessionImpl::NotifyMediaSessionMetadataChange(
     const base::Optional<media_session::MediaMetadata>& metadata) {
   for (auto& observer : observers_)
     observer.MediaSessionMetadataChanged(metadata);
+
+  mojo_observers_.ForAllPtrs(
+      [&metadata](media_session::mojom::MediaSessionObserver* observer) {
+        observer->MediaSessionMetadataChanged(metadata);
+      });
 }
 
 void MediaSessionImpl::NotifyMediaSessionActionsChange(
@@ -742,6 +747,9 @@ void MediaSessionImpl::GetMediaSessionInfo(
 void MediaSessionImpl::AddObserver(
     media_session::mojom::MediaSessionObserverPtr observer) {
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+  observer->MediaSessionMetadataChanged(
+      routed_service_ ? routed_service_->metadata() : base::nullopt);
+
   mojo_observers_.AddPtr(std::move(observer));
 }
 

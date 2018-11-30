@@ -17,6 +17,7 @@
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_metadata.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
@@ -155,6 +156,10 @@ class MediaSessionImplServiceRoutingTest
 
   MediaSessionServiceImpl* ComputeServiceForRouting() {
     return MediaSessionImpl::Get(contents())->ComputeServiceForRouting();
+  }
+
+  MediaSessionImpl* GetMediaSession() {
+    return MediaSessionImpl::Get(contents());
   }
 
   TestRenderFrameHost* main_frame_;
@@ -544,6 +549,37 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime);
   run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverMetadataWhenControllable) {
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.title = base::ASCIIToUTF16("title");
+  expected_metadata.artist = base::ASCIIToUTF16("artist");
+  expected_metadata.album = base::ASCIIToUTF16("album");
+
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    services_[main_frame_]->SetMetadata(expected_metadata);
+    EXPECT_EQ(expected_metadata, *observer.WaitForMetadata());
+  }
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverMetadataEmptyWhenControllable) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    services_[main_frame_]->SetMetadata(base::nullopt);
+    EXPECT_FALSE(observer.WaitForMetadata());
+  }
 }
 
 }  // namespace content
