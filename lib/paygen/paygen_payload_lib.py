@@ -256,8 +256,13 @@ class PaygenPayload(object):
     else:
       download_file = image_file
 
-    # Download the image file or archive.
-    self._cache.GetFileCopy(image.uri, download_file)
+    # Download the image file or archive. If it was just a local file, ignore
+    # caching and do a simple copy. TODO(crbug.com/926034): Add a caching
+    # mechanism for local files.
+    if urilib.GetUriType(image.uri) == urilib.TYPE_LOCAL:
+      filelib.Copy(image.uri, download_file)
+    else:
+      self._cache.GetFileCopy(image.uri, download_file)
 
     # If we downloaded an archive, extract the image file from it.
     if extract_file:
@@ -735,3 +740,36 @@ def CreateAndUploadPayload(payload, sign=True, verify=True):
   # from both inside and outside the chroot.
   with chroot_util.TempDirInChroot() as work_dir:
     PaygenPayload(payload, work_dir, sign, verify).Run()
+
+
+def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
+                          private_key=None, check=None,
+                          out_metadata_hash_file=None):
+  """Generates output payload and verifies its integrity if needed.
+
+  Args:
+    tgt_image: The path (or uri) to the image.
+    payload: The path (or uri) to the output payload
+    src_image: The path (or uri) to the source image. If passed, a delta payload
+        is generated.
+    work_dir: A working directory inside the chroot. The None, caller has the
+        responsibility to cleanup this directory after this function returns.
+    private_key: The private key to sign the payload.
+    check: If True, it will check the integrity of the generated payload.
+    out_metadata_hash_file: The output metadata hash file.
+  """
+  tgt_image = gspaths.Image(uri=tgt_image)
+  src_image = gspaths.Image(uri=src_image) if src_image else None
+  payload = gspaths.Payload(tgt_image=tgt_image, src_image=src_image,
+                            uri=payload)
+  with chroot_util.TempDirInChroot() as temp_dir:
+    work_dir = work_dir or temp_dir
+    paygen = PaygenPayload(payload, work_dir, private_key is not None, check,
+                           private_key=private_key)
+    paygen.Run()
+
+    # TODO(ahassani): These are basically a hack because devserver is still need
+    # the metadata hash file to sign it. But signing logic has been moved to
+    # paygen and in the future this is not needed anymore.
+    if out_metadata_hash_file:
+      shutil.copy(paygen.metadata_hash_file, out_metadata_hash_file)

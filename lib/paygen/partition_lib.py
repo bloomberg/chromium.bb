@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import shutil
 import tempfile
 
 from chromite.lib import constants
@@ -90,26 +89,24 @@ def ExtractKernel(image, kern_out):
       PatchKernel(image, kern_out)
 
 
-def ExtractRoot(image, root_out, root_pretruncate=None):
+def ExtractRoot(image, root_out, truncate=True):
   """Extract the rootfs partition from a gpt image.
 
   Args:
     image: The input image file.
     root_out: The output root partition file.
-    root_pretruncate: The output root partition before being truncated.
+    truncate: If true, truncate the partition to the file system size.
   """
   ExtractPartition(image, constants.PART_ROOT_A, root_out)
 
-  if root_pretruncate:
-    logging.info('Saving pre-truncated root as %s.', root_pretruncate)
-    shutil.copyfile(root_out, root_pretruncate)
+  if not truncate:
+    return
 
   # We only update the filesystem part of the partition, which is stored in the
-  # gpt script.
+  # gpt script. So we need to truncated it to the file system size if asked for.
   root_out_size = Ext2FileSystemSize(root_out)
   if root_out_size:
     with open(root_out, 'a') as root:
-      logging.info('Root size currently %d bytes.', os.path.getsize(root_out))
       root.truncate(root_out_size)
     logging.info('Truncated root to %d bytes.', root_out_size)
   else:

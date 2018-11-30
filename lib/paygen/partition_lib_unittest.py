@@ -15,29 +15,26 @@ from chromite.lib import osutils
 
 from chromite.lib.paygen import partition_lib
 
-class ExtractRootTest(cros_test_lib.MockTempDirTestCase):
-  """Test partition_lib.ExtractRoot"""
+class PartitionLibTest(cros_test_lib.MockTempDirTestCase):
+  """Test partition_lib functions."""
+
   def testTruncate(self):
     """Test truncating on extraction."""
     root = os.path.join(self.tempdir, 'root.bin')
-    root_pretruncate = os.path.join(self.tempdir, 'root_pretruncate.bin')
 
     content = '0123456789'
     osutils.WriteFile(root, content)
-    self.PatchObject(partition_lib, 'ExtractPartition',
-                     return_value=root)
-    self.PatchObject(partition_lib, 'Ext2FileSystemSize',
-                     return_value=2)
+    self.PatchObject(partition_lib, 'ExtractPartition')
+    self.PatchObject(partition_lib, 'Ext2FileSystemSize', return_value=2)
 
-    partition_lib.ExtractRoot(None, root, root_pretruncate)
+    partition_lib.ExtractRoot(None, root, truncate=False)
+    self.assertEqual(osutils.ReadFile(root), content)
+
+    partition_lib.ExtractRoot(None, root)
     self.assertEqual(osutils.ReadFile(root), content[:2])
-    self.assertEqual(osutils.ReadFile(root_pretruncate), content)
 
-
-class Ext2FileSystemSizeTest(cros_test_lib.MockTestCase):
-  """Test partition_lib.Ext2FileSystemSize"""
   def testExt2FileSystemSize(self):
-    """Test on simple output."""
+    """Test getting filesystem size on a simple output."""
     block_size = 4096
     block_count = 123
 
@@ -52,9 +49,6 @@ Block count: %d
     size = partition_lib.Ext2FileSystemSize('/dev/null')
     self.assertEqual(size, block_size * block_count)
 
-
-class ExtractPartitionTest(cros_test_lib.MockTempDirTestCase):
-  """Test partition_lib.ExtractPartition"""
   def testExtractPartition(self):
     """Tests extraction on a simple image."""
     part_a_bin = '0123'
