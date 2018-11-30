@@ -555,7 +555,7 @@ void PaymentSheetViewController::StyledLabelLinkClicked(
   // The only thing that can trigger this is the user clicking on the "settings"
   // link in the data attribution text.
   chrome::ShowSettingsSubPageForProfile(dialog()->GetProfile(),
-                                        chrome::kAutofillSubPage);
+                                        chrome::kPaymentsSubPage);
 }
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {

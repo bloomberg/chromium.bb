@@ -271,6 +271,7 @@ const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 // chrome_autocomplete_provider_client.cc to be listed by the built-in
 // AutocompleteProvider.
 
+const char kAddressesSubPage[] = "addresses";
 const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";

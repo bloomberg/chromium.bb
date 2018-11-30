@@ -62,13 +62,6 @@ Polymer({
     /** @private */
     havePlayStoreApp_: Boolean,
 
-    /**
-     * TODO(jdoerrie): https://crbug.com/854562.
-     * Remove once Autofill Home is launched.
-     * @private
-     */
-    autofillHomeEnabled_: Boolean,
-
     /** @private */
     lastSearchQuery_: {
       type: String,
@@ -153,9 +146,6 @@ Polymer({
         loadTimeData.getBoolean('enableMultideviceSettings');
     this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&
         loadTimeData.getBoolean('havePlayStoreApp');
-    this.autofillHomeEnabled_ =
-        loadTimeData.valueExists('autofillHomeEnabled') &&
-        loadTimeData.getBoolean('autofillHomeEnabled');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';

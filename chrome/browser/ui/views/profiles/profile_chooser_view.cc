@@ -633,7 +633,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == addresses_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_AddressesClicked"));
-    chrome::ShowSettingsSubPage(browser_, chrome::kAutofillSubPage);
+    chrome::ShowSettingsSubPage(browser_, chrome::kAddressesSubPage);
   } else if (sender == guest_profile_button_) {
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);

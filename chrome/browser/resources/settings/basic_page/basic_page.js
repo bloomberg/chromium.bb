@@ -28,10 +28,6 @@ Polymer({
     havePlayStoreApp: Boolean,
     // </if>
 
-    // TODO(jdoerrie): https://crbug.com/854562.
-    // Remove once Autofill Home is launched.
-    autofillHomeEnabled: Boolean,
-
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
 
@@ -257,19 +253,6 @@ Polymer({
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.multidevice'));
     return this.showMultidevice && this.showPage_(visibility);
-  },
-
-  /**
-   * @return {boolean} Whether to show the passwords and forms settings page.
-   * TODO(jdoerrie): https://crbug.com/854562. With Autofill Home enabled,
-   * the passwords and autofill sections are moved from the advanced page
-   * to the people page. Remove once Autofill Home is fully launched.
-   * @private
-   */
-  shouldShowPasswordsAndForms_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.passwordAndForms'));
-    return !this.autofillHomeEnabled && this.showPage_(visibility);
   },
 
   /**

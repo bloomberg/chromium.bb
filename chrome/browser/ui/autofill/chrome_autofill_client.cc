@@ -228,7 +228,7 @@ void ChromeAutofillClient::ShowAutofillSettings(
     if (show_credit_card_settings) {
       chrome::ShowSettingsSubPage(browser, chrome::kPaymentsSubPage);
     } else {
-      chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
+      chrome::ShowSettingsSubPage(browser, chrome::kAddressesSubPage);
     }
   }
 #endif  // #if defined(OS_ANDROID)

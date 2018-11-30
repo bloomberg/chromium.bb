@@ -29,8 +29,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/passwords_section.html',
+  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([

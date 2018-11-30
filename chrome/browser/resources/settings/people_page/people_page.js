@@ -25,9 +25,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private Filter applied to passwords and password exceptions. */
-    passwordFilter_: String,
-
     // <if expr="not chromeos">
     /**
      * This flag is used to conditionally show a set of new sign-in UIs to the
@@ -57,10 +54,6 @@ Polymer({
         return loadTimeData.getBoolean('unifiedConsentEnabled');
       },
     },
-
-    // TODO(jdoerrie): https://crbug.com/854562.
-    // Remove once Autofill Home is launched.
-    autofillHomeEnabled: Boolean,
 
     /**
      * The current sync status, supplied by SyncBrowserProxy.
@@ -133,16 +126,6 @@ Polymer({
               '#sync-setup' :
               '#sync-status';
           map.set(settings.routes.SYNC.path, `${syncId} .subpage-arrow button`);
-        }
-        if (settings.routes.MANAGE_PASSWORDS) {
-          map.set(
-              settings.routes.MANAGE_PASSWORDS.path, '#passwordManagerButton');
-        }
-        if (settings.routes.AUTOFILL) {
-          map.set(settings.routes.AUTOFILL.path, '#addressesManagerButton');
-        }
-        if (settings.routes.PAYMENTS) {
-          map.set(settings.routes.PAYMENTS.path, '#paymentManagerButton');
         }
         // <if expr="not chromeos">
         if (settings.routes.MANAGE_PROFILE) {
@@ -308,37 +291,6 @@ Polymer({
   /** @private */
   onSigninTap_: function() {
     this.syncBrowserProxy_.startSignIn();
-  },
-
-  /**
-   * Shows a page to manage passwords. This is either the passwords sub page or
-   * the Google Password Manager page.
-   * @param {!Event} event
-   * @private
-   */
-  onPasswordsTap_: function(event) {
-    loadTimeData.getBoolean('navigateToGooglePasswordManager') ?
-        settings.PeopleBrowserProxyImpl.getInstance().openURL(
-            loadTimeData.getString('googlePasswordManagerUrl')) :
-        settings.navigateTo(settings.routes.MANAGE_PASSWORDS);
-  },
-
-  /**
-   * Shows the manage autofill addresses sub page.
-   * @param {!Event} event
-   * @private
-   */
-  onAutofillTap_: function(event) {
-    settings.navigateTo(settings.routes.AUTOFILL);
-  },
-
-  /**
-   * Shows the manage payment information sub page.
-   * @param {!Event} event
-   * @private
-   */
-  onPaymentsTap_: function(event) {
-    settings.navigateTo(settings.routes.PAYMENTS);
   },
 
   /** @private */

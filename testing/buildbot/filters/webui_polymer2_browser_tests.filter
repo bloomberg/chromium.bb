@@ -38,6 +38,7 @@
 ActiveDirectoryJoinTest.*
 AppManagementAppTest.*
 AudioPlayerBrowserTest.*
+AutofillBrowserTest.*
 BluetoothInternalsTest.*
 CertificateViewerModalUITest.*
 CertificateViewerModalUITestAsync.*
@@ -101,6 +102,7 @@ CrSettingsAndroidAppsPageTest.*
 CrSettingsAnimatedPagesTest.*
 CrSettingsAppearanceFontsPageTest.*
 CrSettingsAppearancePageTest.*
+CrSettingsAutofillPageTest.*
 CrSettingsAutofillSectionTest.*
 CrSettingsBluetoothPageTest.*
 CrSettingsCategoryDefaultSettingTest.*
@@ -247,7 +249,6 @@ NTP4WebUITest.*
 OnboardingWelcomeEmailChooserTest.*
 OnboardingWelcomeWelcomeAppTest.*
 OpenAudioFiles/*
-PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
 PrintPreviewBaseSettingsSectionTest.*
@@ -274,7 +275,7 @@ PrintPreviewSettingsSelectTest.*
 PrintPreviewSystemDialogBrowserTest.*
 RestrictedFileSystemExtensionApiTest.*
 SandboxStatusUITest.*
-SettingsA11yManagePasswords.*
+SettingsA11yPasswords.*
 SettingsA11ySignOut.*
 SettingsAccessibilityTest.*
 SettingsAdvancedPageBrowserTest.*
