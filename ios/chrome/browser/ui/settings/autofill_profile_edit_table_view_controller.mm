@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
@@ -186,6 +187,13 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   [model addSectionWithIdentifier:SectionIdentifierFields];
   for (size_t i = 0; i < base::size(kFieldsToDisplay); ++i) {
     const AutofillFieldDisplayInfo& field = kFieldsToDisplay[i];
+
+    if ((field.autofillType == autofill::COMPANY_NAME) &&
+        !base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableCompanyName)) {
+      continue;
+    }
+
     AutofillEditItem* item =
         [[AutofillEditItem alloc] initWithType:ItemTypeField];
     item.textFieldName = l10n_util::GetNSString(field.displayStringID);
