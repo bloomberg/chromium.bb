@@ -64,8 +64,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
+  autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -79,8 +79,6 @@ class AwAutofillClient : public autofill::AutofillClient,
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
-  void ConfirmAccountNameFixFlow(
-      base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmMigrateLocalCardToCloud(
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<autofill::MigratableCreditCard>&
@@ -95,6 +93,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ConfirmSaveCreditCardLocally(const autofill::CreditCard& card,
                                     bool show_prompt,
                                     base::OnceClosure callback) override;
+  void ConfirmAccountNameFixFlow(
+      base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmSaveCreditCardToCloud(
       const autofill::CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
@@ -104,8 +104,6 @@ class AwAutofillClient : public autofill::AutofillClient,
       UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
-  void LoadRiskData(
-      base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowAutofillPopup(
@@ -129,6 +127,10 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+
+  // RiskDataLoader:
+  void LoadRiskData(
+      base::OnceCallback<void(const std::string&)> callback) override;
 
   void Dismissed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void SuggestionSelected(JNIEnv* env,

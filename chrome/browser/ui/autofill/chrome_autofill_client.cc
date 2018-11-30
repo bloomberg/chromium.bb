@@ -86,39 +86,6 @@
 
 namespace autofill {
 
-ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      payments_client_(std::make_unique<payments::PaymentsClient>(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->GetURLLoaderFactory(),
-          GetPrefs(),
-          GetIdentityManager(),
-          GetPersonalDataManager(),
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->IsOffTheRecord())),
-      form_data_importer_(std::make_unique<FormDataImporter>(
-          this,
-          payments_client_.get(),
-          GetPersonalDataManager(),
-          GetPersonalDataManager()->app_locale())),
-      unmask_controller_(
-          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())
-              ->IsOffTheRecord()) {
-#if !defined(OS_ANDROID)
-  // Since ZoomController is also a WebContentsObserver, we need to be careful
-  // about disconnecting from it since the relative order of destruction of
-  // WebContentsObservers is not guaranteed. ZoomController silently clears
-  // its ZoomObserver list during WebContentsDestroyed() so there's no need
-  // to explicitly remove ourselves on destruction.
-  zoom::ZoomController* zoom_controller =
-      zoom::ZoomController::FromWebContents(web_contents);
-  // There may not always be a ZoomController, e.g. in tests.
-  if (zoom_controller)
-    zoom_controller->AddObserver(this);
-#endif
-}
-
 ChromeAutofillClient::~ChromeAutofillClient() {
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
   // requires that the WebContents instance still be valid and it is not at
@@ -162,12 +129,12 @@ identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }
 
-payments::PaymentsClient* ChromeAutofillClient::GetPaymentsClient() {
-  return payments_client_.get();
-}
-
 FormDataImporter* ChromeAutofillClient::GetFormDataImporter() {
   return form_data_importer_.get();
+}
+
+payments::PaymentsClient* ChromeAutofillClient::GetPaymentsClient() {
+  return payments_client_.get();
 }
 
 LegacyStrikeDatabase* ChromeAutofillClient::GetLegacyStrikeDatabase() {
@@ -381,11 +348,6 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 #endif
 }
 
-void ChromeAutofillClient::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  ::autofill::LoadRiskData(0, web_contents(), std::move(callback));
-}
-
 bool ChromeAutofillClient::HasCreditCardScanFeature() {
   return CreditCardScannerController::HasCreditCardScanFeature();
 }
@@ -440,36 +402,6 @@ void ChromeAutofillClient::HideAutofillPopup() {
 bool ChromeAutofillClient::IsAutocompleteEnabled() {
   return prefs::IsAutocompleteEnabled(GetPrefs());
 }
-
-bool ChromeAutofillClient::AreServerCardsSupported() {
-  // When in VR, server side cards are not supported.
-  return !vr::VrTabHelper::IsInVr(web_contents());
-}
-
-void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
-#if defined(OS_ANDROID)
-  // Ignore virtual keyboard showing and hiding a strip of suggestions.
-  if (!width_changed)
-    return;
-#endif
-
-  HideAutofillPopup();
-}
-
-void ChromeAutofillClient::WebContentsDestroyed() {
-  HideAutofillPopup();
-}
-
-void ChromeAutofillClient::DidAttachInterstitialPage() {
-  HideAutofillPopup();
-}
-
-#if !defined(OS_ANDROID)
-void ChromeAutofillClient::OnZoomChanged(
-    const zoom::ZoomController::ZoomChangedEventData& data) {
-  HideAutofillPopup();
-}
-#endif  // !defined(OS_ANDROID)
 
 void ChromeAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
@@ -528,6 +460,11 @@ bool ChromeAutofillClient::ShouldShowSigninPromo() {
 #endif
 }
 
+bool ChromeAutofillClient::AreServerCardsSupported() {
+  // When in VR, server side cards are not supported.
+  return !vr::VrTabHelper::IsInVr(web_contents());
+}
+
 void ChromeAutofillClient::ExecuteCommand(int id) {
 #if defined(OS_ANDROID)
   if (id == autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
@@ -539,6 +476,69 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
               signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
     }
   }
+#endif
+}
+
+void ChromeAutofillClient::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  ::autofill::LoadRiskData(0, web_contents(), std::move(callback));
+}
+
+void ChromeAutofillClient::MainFrameWasResized(bool width_changed) {
+#if defined(OS_ANDROID)
+  // Ignore virtual keyboard showing and hiding a strip of suggestions.
+  if (!width_changed)
+    return;
+#endif
+
+  HideAutofillPopup();
+}
+
+void ChromeAutofillClient::WebContentsDestroyed() {
+  HideAutofillPopup();
+}
+
+void ChromeAutofillClient::DidAttachInterstitialPage() {
+  HideAutofillPopup();
+}
+
+#if !defined(OS_ANDROID)
+void ChromeAutofillClient::OnZoomChanged(
+    const zoom::ZoomController::ZoomChangedEventData& data) {
+  HideAutofillPopup();
+}
+#endif  // !defined(OS_ANDROID)
+
+ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      payments_client_(std::make_unique<payments::PaymentsClient>(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->GetURLLoaderFactory(),
+          GetPrefs(),
+          GetIdentityManager(),
+          GetPersonalDataManager(),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsOffTheRecord())),
+      form_data_importer_(std::make_unique<FormDataImporter>(
+          this,
+          payments_client_.get(),
+          GetPersonalDataManager(),
+          GetPersonalDataManager()->app_locale())),
+      unmask_controller_(
+          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsOffTheRecord()) {
+#if !defined(OS_ANDROID)
+  // Since ZoomController is also a WebContentsObserver, we need to be careful
+  // about disconnecting from it since the relative order of destruction of
+  // WebContentsObservers is not guaranteed. ZoomController silently clears
+  // its ZoomObserver list during WebContentsDestroyed() so there's no need
+  // to explicitly remove ourselves on destruction.
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
+  // There may not always be a ZoomController, e.g. in tests.
+  if (zoom_controller)
+    zoom_controller->AddObserver(this);
 #endif
 }
 

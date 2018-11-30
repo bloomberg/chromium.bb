@@ -56,8 +56,8 @@ class ChromeAutofillClient
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  payments::PaymentsClient* GetPaymentsClient() override;
   FormDataImporter* GetFormDataImporter() override;
+  payments::PaymentsClient* GetPaymentsClient() override;
   LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -82,6 +82,10 @@ class ChromeAutofillClient
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
                                     bool show_prompt,
                                     base::OnceClosure callback) override;
+#if defined(OS_ANDROID)
+  void ConfirmAccountNameFixFlow(
+      base::OnceCallback<void(const base::string16&)> callback) override;
+#endif  // defined(OS_ANDROID)
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
@@ -89,15 +93,8 @@ class ChromeAutofillClient
       bool should_request_expiration_date_from_user,
       bool show_prompt,
       UserAcceptedUploadCallback callback) override;
-#if defined(OS_ANDROID)
-  void ConfirmAccountNameFixFlow(
-      base::OnceCallback<void(const base::string16&)> callback) override;
-#endif  // defined(OS_ANDROID)
-
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
-  void LoadRiskData(
-      base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowAutofillPopup(
@@ -122,6 +119,10 @@ class ChromeAutofillClient
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
 
+  // RiskDataLoader:
+  void LoadRiskData(
+      base::OnceCallback<void(const std::string&)> callback) override;
+
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
@@ -142,8 +143,6 @@ class ChromeAutofillClient
   friend class content::WebContentsUserData<ChromeAutofillClient>;
 
   explicit ChromeAutofillClient(content::WebContents* web_contents);
-
-  void ShowHttpNotSecureExplanation();
 
   Profile* GetProfile() const;
   base::string16 GetAccountHolderName();

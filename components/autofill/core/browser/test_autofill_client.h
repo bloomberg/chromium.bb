@@ -31,7 +31,7 @@ class TestAutofillClient : public AutofillClient {
   TestAutofillClient();
   ~TestAutofillClient() override;
 
-  // AutofillClient implementation.
+  // AutofillClient:
   PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
@@ -67,7 +67,6 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
 #endif  // defined(OS_ANDROID)
-
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
@@ -77,8 +76,6 @@ class TestAutofillClient : public AutofillClient {
       UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
-  void LoadRiskData(
-      base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(const CreditCardScanCallback& callback) override;
   void ShowAutofillPopup(
@@ -105,6 +102,11 @@ class TestAutofillClient : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+
+  // RiskDataLoader:
+  void LoadRiskData(
+      base::OnceCallback<void(const std::string&)> callback) override;
+
   // Initializes UKM source from form_origin_. This needs to be called
   // in unittests after calling Purge for ukm recorder to re-initialize
   // sources.

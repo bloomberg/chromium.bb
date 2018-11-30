@@ -114,6 +114,10 @@ PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
+scoped_refptr<AutofillWebDataService> ChromeAutofillClientIOS::GetDatabase() {
+  return autofill_web_data_service_;
+}
+
 PrefService* ChromeAutofillClientIOS::GetPrefs() {
   return pref_service_;
 }
@@ -188,6 +192,24 @@ void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
   unmask_controller_.OnVerificationResult(result);
 }
 
+void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
+    std::unique_ptr<base::DictionaryValue> legal_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    LocalCardMigrationCallback start_migrating_cards_callback) {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+  NOTIMPLEMENTED();
+}
+
 void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
@@ -207,24 +229,6 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
           std::make_unique<base::DictionaryValue>(), GetLegacyStrikeDatabase(),
           /*upload_save_card_callback=*/UserAcceptedUploadCallback(),
           /*local_save_card_callback=*/std::move(callback), GetPrefs())));
-}
-
-void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
-    base::OnceClosure show_migration_dialog_closure) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    LocalCardMigrationCallback start_migrating_cards_callback) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
-    const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
-  NOTIMPLEMENTED();
 }
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -262,11 +266,6 @@ void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(
   }
 }
 
-void ChromeAutofillClientIOS::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  std::move(callback).Run(ios::GetChromeBrowserProvider()->GetRiskData());
-}
-
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
 }
@@ -285,18 +284,18 @@ void ChromeAutofillClientIOS::ShowAutofillPopup(
   [bridge_ showAutofillPopup:suggestions popupDelegate:delegate];
 }
 
+void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  NOTREACHED();
+}
+
 void ChromeAutofillClientIOS::HideAutofillPopup() {
   [bridge_ hideAutofillPopup];
 }
 
 bool ChromeAutofillClientIOS::IsAutocompleteEnabled() {
   return prefs::IsAutocompleteEnabled(GetPrefs());
-}
-
-void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  NOTREACHED();
 }
 
 void ChromeAutofillClientIOS::PropagateAutofillPredictions(
@@ -311,10 +310,6 @@ void ChromeAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-scoped_refptr<AutofillWebDataService> ChromeAutofillClientIOS::GetDatabase() {
-  return autofill_web_data_service_;
-}
-
 void ChromeAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {
   InsecureInputTabHelper::GetOrCreateForWebState(web_state_)
       ->DidInteractWithNonsecureCreditCardInput();
@@ -328,12 +323,17 @@ bool ChromeAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }
 
+bool ChromeAutofillClientIOS::AreServerCardsSupported() {
+  return true;
+}
+
 void ChromeAutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool ChromeAutofillClientIOS::AreServerCardsSupported() {
-  return true;
+void ChromeAutofillClientIOS::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run(ios::GetChromeBrowserProvider()->GetRiskData());
 }
 
 }  // namespace autofill

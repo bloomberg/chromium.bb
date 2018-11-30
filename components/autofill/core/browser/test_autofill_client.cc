@@ -61,10 +61,6 @@ ukm::SourceId TestAutofillClient::GetUkmSourceId() {
   return source_id_;
 }
 
-void TestAutofillClient::InitializeUKMSources() {
-  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
-}
-
 AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
   return &test_address_normalizer_;
 }
@@ -149,11 +145,6 @@ void TestAutofillClient::ConfirmCreditCardFillAssist(
   std::move(callback).Run();
 }
 
-void TestAutofillClient::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  std::move(callback).Run("some risk data");
-}
-
 bool TestAutofillClient::HasCreditCardScanFeature() {
   return false;
 }
@@ -202,10 +193,19 @@ bool TestAutofillClient::ShouldShowSigninPromo() {
   return false;
 }
 
-void TestAutofillClient::ExecuteCommand(int id) {}
-
 bool TestAutofillClient::AreServerCardsSupported() {
   return true;
+}
+
+void TestAutofillClient::ExecuteCommand(int id) {}
+
+void TestAutofillClient::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run("some risk data");
+}
+
+void TestAutofillClient::InitializeUKMSources() {
+  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
 }
 
 void TestAutofillClient::set_form_origin(const GURL& url) {
