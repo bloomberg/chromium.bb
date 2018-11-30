@@ -56,10 +56,12 @@ class TapVisualizerApp : public service_manager::Service,
 
   service_manager::ServiceBinding service_binding_;
 
+  // Must be released after |display_id_to_renderer_| which indirectly depends
+  // on aura.
+  std::unique_ptr<views::AuraInit> aura_init_;
+
   // Maps display::Display::id() to the renderer for that display.
   std::map<int64_t, std::unique_ptr<TapRenderer>> display_id_to_renderer_;
-
-  std::unique_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(TapVisualizerApp);
 };
