@@ -145,7 +145,7 @@ Polymer({
    * @private
    */
   handleImport_: function(useHardwareBacked, anchor) {
-    var browserProxy =
+    const browserProxy =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)

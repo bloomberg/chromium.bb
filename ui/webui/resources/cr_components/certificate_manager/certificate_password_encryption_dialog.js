@@ -62,7 +62,7 @@ Polymer({
 
   /** @private */
   validate_: function() {
-    var isValid =
+    const isValid =
         this.password_ != '' && this.password_ == this.confirmPassword_;
     this.$.ok.disabled = !isValid;
   },
