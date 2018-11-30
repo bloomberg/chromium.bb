@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
+#include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
@@ -19,13 +20,15 @@ class PrefRegistrySimple;
 namespace ash {
 
 class LoginDataDispatcher;
+class SystemTrayNotifier;
 
 // LoginScreenController implements mojom::LoginScreen and wraps the
 // mojom::LoginScreenClient interface. This lets a consumer of ash provide a
 // LoginScreenClient, which we will dispatch to if one has been provided to us.
 // This could send requests to LoginScreenClient and also handle requests from
 // LoginScreenClient through mojo.
-class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
+class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
+                                         public SystemTrayFocusObserver {
  public:
   // The current authentication stage. Used to get more verbose logging.
   enum class AuthenticationStage {
@@ -41,7 +44,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   using OnAuthenticateCallback =
       base::OnceCallback<void(base::Optional<bool> success)>;
 
-  LoginScreenController();
+  explicit LoginScreenController(SystemTrayNotifier* system_tray_notifier);
   ~LoginScreenController() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
@@ -169,6 +172,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Common code that is called when the login/lock screen is shown.
   void OnShow();
 
+  // SystemTrayFocusObserver:
+  void OnFocusLeavingSystemTray(bool reverse) override;
+
   // Client interface in chrome browser. May be null in tests.
   mojom::LoginScreenClientPtr login_screen_client_;
 
@@ -176,6 +182,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   mojo::BindingSet<mojom::LoginScreen> bindings_;
 
   AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
+
+  SystemTrayNotifier* system_tray_notifier_;
 
   base::ObserverList<LoginScreenControllerObserver>::Unchecked observers_;
 

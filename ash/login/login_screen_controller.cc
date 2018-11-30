@@ -21,6 +21,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,9 +60,15 @@ void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
 
 }  // namespace
 
-LoginScreenController::LoginScreenController() : weak_factory_(this) {}
+LoginScreenController::LoginScreenController(
+    SystemTrayNotifier* system_tray_notifier)
+    : system_tray_notifier_(system_tray_notifier), weak_factory_(this) {
+  system_tray_notifier_->AddSystemTrayFocusObserver(this);
+}
 
-LoginScreenController::~LoginScreenController() = default;
+LoginScreenController::~LoginScreenController() {
+  system_tray_notifier_->RemoveSystemTrayFocusObserver(this);
+}
 
 // static
 void LoginScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
@@ -557,6 +564,12 @@ void LoginScreenController::OnShow() {
     LOG(FATAL) << "Unexpected authentication stage "
                << static_cast<int>(authentication_stage_);
   }
+}
+
+void LoginScreenController::OnFocusLeavingSystemTray(bool reverse) {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->OnFocusLeavingSystemTray(reverse);
 }
 
 }  // namespace ash

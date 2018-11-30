@@ -326,4 +326,9 @@ interface LoginScreenClient {
 
   // Show the help app for when users have trouble signing in to their account.
   ShowAccountAccessHelpApp();
+
+  // Called when the keyboard focus is about to leave from the sytem tray in
+  // the login screen / OOBE. |reverse| is true when the focus moves in the
+  // reversed direction.
+  OnFocusLeavingSystemTray(bool reverse);
 };

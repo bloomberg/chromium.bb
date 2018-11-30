@@ -14,9 +14,7 @@ specific_include_rules = {
   # TODO(mash): Fix. https://crbug.com/854346
   "webui_login_view.*": [
      "+ash/accelerators/accelerator_controller.h",
-     "+ash/public/cpp/ash_features.h",
      "+ash/shell.h",
-     "+ash/system",
   ],
   # TODO(jdufault): Deprecate. https://crbug.com/792654
   "login_display_host_webui\.cc": [

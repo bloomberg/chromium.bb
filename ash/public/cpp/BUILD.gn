@@ -112,6 +112,7 @@ component("cpp") {
     "shell_window_ids.h",
     "stylus_utils.cc",
     "stylus_utils.h",
+    "system_tray_focus_observer.h",
     "tablet_mode.cc",
     "tablet_mode.h",
     "wallpaper_types.h",

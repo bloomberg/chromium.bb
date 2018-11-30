@@ -12,6 +12,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -241,6 +242,18 @@ TEST_F(LoginScreenControllerTest, ShowLoginScreenRequiresWallpaper) {
   EXPECT_TRUE(ash::LockScreen::Get()->is_shown());
 
   ash::LockScreen::Get()->Destroy();
+}
+
+TEST_F(LoginScreenControllerTest, SystemTrayFocus) {
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+
+  EXPECT_CALL(*client, OnFocusLeavingSystemTray(true)).Times(1);
+  Shell::Get()->system_tray_notifier()->NotifyFocusOut(true);
+  Shell::Get()->login_screen_controller()->FlushForTesting();
+
+  EXPECT_CALL(*client, OnFocusLeavingSystemTray(false)).Times(1);
+  Shell::Get()->system_tray_notifier()->NotifyFocusOut(false);
+  Shell::Get()->login_screen_controller()->FlushForTesting();
 }
 
 }  // namespace

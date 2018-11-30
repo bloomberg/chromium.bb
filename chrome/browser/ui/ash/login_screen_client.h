@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
 
+#include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -72,6 +74,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
 
   chromeos::LoginAuthRecorder* auth_recorder();
 
+  void AddSystemTrayFocusObserver(ash::SystemTrayFocusObserver* observer);
+  void RemoveSystemTrayFocusObserver(ash::SystemTrayFocusObserver* observer);
+
   // ash::mojom::LoginScreenClient:
   void AuthenticateUserWithPasswordOrPin(
       const AccountId& account_id,
@@ -109,6 +114,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void LaunchArcKioskApp(const AccountId& account_id) override;
   void ShowResetScreen() override;
   void ShowAccountAccessHelpApp() override;
+  void OnFocusLeavingSystemTray(bool reverse) override;
 
  private:
   void SetPublicSessionKeyboardLayout(
@@ -125,6 +131,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
 
   // Captures authentication related user metrics for login screen.
   std::unique_ptr<chromeos::LoginAuthRecorder> auth_recorder_;
+
+  base::ObserverList<ash::SystemTrayFocusObserver>::Unchecked
+      system_tray_focus_observers_;
 
   base::WeakPtrFactory<LoginScreenClient> weak_ptr_factory_;
 
