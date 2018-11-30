@@ -12,7 +12,6 @@
 
 #include <memory>
 
-#include "base/memory/linked_ptr.h"
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -30,7 +29,7 @@ class DXVAVideoDecodeAccelerator;
 class DXVAPictureBuffer {
  public:
   enum State { UNUSED, BOUND, COPYING, IN_CLIENT, WAITING_TO_REUSE };
-  static linked_ptr<DXVAPictureBuffer> Create(
+  static std::unique_ptr<DXVAPictureBuffer> Create(
       const DXVAVideoDecodeAccelerator& decoder,
       const PictureBuffer& buffer,
       EGLConfig egl_config);

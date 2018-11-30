@@ -105,48 +105,46 @@ enum {
 };
 
 // static
-linked_ptr<DXVAPictureBuffer> DXVAPictureBuffer::Create(
+std::unique_ptr<DXVAPictureBuffer> DXVAPictureBuffer::Create(
     const DXVAVideoDecodeAccelerator& decoder,
     const PictureBuffer& buffer,
     EGLConfig egl_config) {
   switch (decoder.GetPictureBufferMechanism()) {
     case DXVAVideoDecodeAccelerator::PictureBufferMechanism::BIND: {
-      linked_ptr<EGLStreamPictureBuffer> picture_buffer(
-          new EGLStreamPictureBuffer(buffer));
+      auto picture_buffer = std::make_unique<EGLStreamPictureBuffer>(buffer);
       if (!picture_buffer->Initialize())
-        return linked_ptr<DXVAPictureBuffer>(nullptr);
+        return nullptr;
 
       return picture_buffer;
     }
     case DXVAVideoDecodeAccelerator::PictureBufferMechanism::
         DELAYED_COPY_TO_NV12: {
-      linked_ptr<EGLStreamDelayedCopyPictureBuffer> picture_buffer(
-          new EGLStreamDelayedCopyPictureBuffer(buffer));
+      auto picture_buffer =
+          std::make_unique<EGLStreamDelayedCopyPictureBuffer>(buffer);
       if (!picture_buffer->Initialize(decoder))
-        return linked_ptr<DXVAPictureBuffer>(nullptr);
+        return nullptr;
 
       return picture_buffer;
     }
     case DXVAVideoDecodeAccelerator::PictureBufferMechanism::COPY_TO_NV12: {
-      linked_ptr<EGLStreamCopyPictureBuffer> picture_buffer(
-          new EGLStreamCopyPictureBuffer(buffer));
+      auto picture_buffer =
+          std::make_unique<EGLStreamCopyPictureBuffer>(buffer);
       if (!picture_buffer->Initialize(decoder))
-        return linked_ptr<DXVAPictureBuffer>(nullptr);
+        return nullptr;
 
       return picture_buffer;
     }
     case DXVAVideoDecodeAccelerator::PictureBufferMechanism::COPY_TO_RGB: {
-      linked_ptr<PbufferPictureBuffer> picture_buffer(
-          new PbufferPictureBuffer(buffer));
+      auto picture_buffer = std::make_unique<PbufferPictureBuffer>(buffer);
 
       if (!picture_buffer->Initialize(decoder, egl_config))
-        return linked_ptr<DXVAPictureBuffer>(nullptr);
+        return nullptr;
 
       return picture_buffer;
     }
   }
   NOTREACHED();
-  return linked_ptr<DXVAPictureBuffer>(nullptr);
+  return nullptr;
 }
 
 DXVAPictureBuffer::~DXVAPictureBuffer() {}

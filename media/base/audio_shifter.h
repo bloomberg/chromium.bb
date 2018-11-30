@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/containers/circular_deque.h"
-#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/multi_channel_resampler.h"
@@ -41,14 +40,14 @@ class MEDIA_EXPORT AudioShifter {
   // |max_buffer_size| is how much audio we are allowed to buffer.
   // Often, this can be set fairly large as Push() will limit the
   // size when it specifies when to play the audio.
-  // |clock_accuracy| is used to determine if a skip has occured
+  // |clock_accuracy| is used to determine if a skip has occurred
   // in the audio (as opposed to an inaccuracy in the timestamp.)
   // It also limits the smallest amount of buffering allowed.
   // |adjustement_time| specifies how long time should be used
   // to adjust the audio. This should normally at least a few
   // seconds. The larger the value, the smoother and less audible
   // the transitions will be. (But it means that perfect audio
-  // sync will take longer to achive.)
+  // sync will take longer to achieve.)
   // |rate| is audio frames per second, eg 48000.
   // |channels| is number of channels in input and output audio.
   // TODO(hubbe): Allow input rate and output rate to be different
@@ -71,9 +70,9 @@ class MEDIA_EXPORT AudioShifter {
   // Given audio from an a microphone, a reasonable way to calculate
   // playout_time would be now + 30ms.
   // Ideally playout_time is some time in the future, in which case
-  // the samples will be buffered until the approperiate time. If
+  // the samples will be buffered until the appropriate time. If
   // playout_time is in the past, everything will still work, and we'll
-  // try to keep the buffring to a minimum.
+  // try to keep the buffering to a minimum.
   void Push(std::unique_ptr<AudioBus> input, base::TimeTicks playout_time);
 
   // Fills out |output| with samples. Tries to stretch/shrink the audio
@@ -87,15 +86,13 @@ private:
   void ResamplerCallback(int frame_delay, AudioBus* destination);
 
   struct AudioQueueEntry {
-    AudioQueueEntry(base::TimeTicks target_playout_time_,
-                    std::unique_ptr<AudioBus> audio_);
-    AudioQueueEntry(const AudioQueueEntry& other);
+    AudioQueueEntry(base::TimeTicks target_playout_time,
+                    std::unique_ptr<AudioBus> audio);
+    AudioQueueEntry(AudioQueueEntry&& other);
     ~AudioQueueEntry();
     base::TimeTicks target_playout_time;
-    linked_ptr<AudioBus> audio;
+    std::unique_ptr<AudioBus> audio;
   };
-
-  using AudioShifterQueue = base::circular_deque<AudioQueueEntry>;
 
   // Set from constructor.
   const base::TimeDelta max_buffer_size_;
@@ -116,18 +113,19 @@ private:
   size_t position_;
 
   // Queue of data provided to us.
-  AudioShifterQueue queue_;
+  base::circular_deque<AudioQueueEntry> queue_;
 
-  // Timestamp from alst Pull() call.
+  // Timestamp from last Pull() call.
   base::TimeTicks previous_playout_time_;
-  // Number of rames requested in last Pull call.
+
+  // Number of frames requested in last Pull call.
   size_t previous_requested_samples_;
 
   // Timestamp at the end of last audio bus
   // consumed by resampler.
   base::TimeTicks end_of_last_consumed_audiobus_;
 
-  // If Push() timestamps are in the past, we have to decidede the playout delay
+  // If Push() timestamps are in the past, we have to decide the playout delay
   // ourselves. The delay is then stored here.
   base::TimeDelta bias_;
 

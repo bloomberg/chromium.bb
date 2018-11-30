@@ -79,11 +79,11 @@ class ClockSmoother {
 };
 
 AudioShifter::AudioQueueEntry::AudioQueueEntry(
-    base::TimeTicks target_playout_time_,
-    std::unique_ptr<AudioBus> audio_)
-    : target_playout_time(target_playout_time_), audio(audio_.release()) {}
+    base::TimeTicks target_playout_time,
+    std::unique_ptr<AudioBus> audio)
+    : target_playout_time(target_playout_time), audio(std::move(audio)) {}
 
-AudioShifter::AudioQueueEntry::AudioQueueEntry(const AudioQueueEntry& other) =
+AudioShifter::AudioQueueEntry::AudioQueueEntry(AudioQueueEntry&& other) =
     default;
 
 AudioShifter::AudioQueueEntry::~AudioQueueEntry() = default;

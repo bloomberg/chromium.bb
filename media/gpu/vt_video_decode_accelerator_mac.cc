@@ -408,7 +408,7 @@ bool InitializeVideoToolbox() {
 
 VTVideoDecodeAccelerator::Task::Task(TaskType type) : type(type) {}
 
-VTVideoDecodeAccelerator::Task::Task(const Task& other) = default;
+VTVideoDecodeAccelerator::Task::Task(Task&& other) = default;
 
 VTVideoDecodeAccelerator::Task::~Task() {}
 
@@ -426,8 +426,8 @@ VTVideoDecodeAccelerator::PictureInfo::PictureInfo(uint32_t client_texture_id,
 VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {}
 
 bool VTVideoDecodeAccelerator::FrameOrder::operator()(
-    const linked_ptr<Frame>& lhs,
-    const linked_ptr<Frame>& rhs) const {
+    const std::unique_ptr<Frame>& lhs,
+    const std::unique_ptr<Frame>& rhs) const {
   // TODO(sandersd): When it is provided, use the bitstream timestamp.
   if (lhs->pic_order_cnt != rhs->pic_order_cnt)
     return lhs->pic_order_cnt > rhs->pic_order_cnt;
@@ -1037,9 +1037,9 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   }
 
   Task task(TASK_FRAME);
-  task.frame = pending_frames_[bitstream_id];
+  task.frame = std::move(pending_frames_[bitstream_id]);
   pending_frames_.erase(bitstream_id);
-  task_queue_.push(task);
+  task_queue_.push(std::move(task));
   ProcessWorkQueues();
 }
 
@@ -1092,7 +1092,7 @@ void VTVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
   assigned_bitstream_ids_.insert(bitstream_id);
 
   Frame* frame = new Frame(bitstream_id);
-  pending_frames_[bitstream_id] = make_linked_ptr(frame);
+  pending_frames_[bitstream_id] = base::WrapUnique(frame);
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&VTVideoDecodeAccelerator::DecodeTask,
@@ -1186,7 +1186,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
   if (task_queue_.empty())
     return false;
 
-  const Task& task = task_queue_.front();
+  Task& task = task_queue_.front();
   switch (task.type) {
     case TASK_FRAME: {
       bool reorder_queue_has_space =
@@ -1199,7 +1199,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
         DVLOG(2) << "Decode(" << task.frame->bitstream_id << ") complete";
         assigned_bitstream_ids_.erase(task.frame->bitstream_id);
         client_->NotifyEndOfBitstreamBuffer(task.frame->bitstream_id);
-        reorder_queue_.push(task.frame);
+        reorder_queue_.push(std::move(task.frame));
         task_queue_.pop();
         return true;
       }
@@ -1243,7 +1243,7 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
   if (reorder_queue_.empty())
     return false;
 
-  // If the next task is a flush (because there is a pending flush or becuase
+  // If the next task is a flush (because there is a pending flush or because
   // the next frame is an IDR), then we don't need a full reorder buffer to send
   // the next frame.
   bool flushing =
