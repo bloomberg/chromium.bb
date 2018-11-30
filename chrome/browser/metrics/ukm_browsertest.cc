@@ -158,7 +158,7 @@ class UkmBrowserTestBase : public SyncTest {
 #endif
         scoped_unified_consent_(
             is_unified_consent_enabled
-                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                ? unified_consent::UnifiedConsentFeatureState::kEnabled
                 : unified_consent::UnifiedConsentFeatureState::kDisabled) {
   }
 

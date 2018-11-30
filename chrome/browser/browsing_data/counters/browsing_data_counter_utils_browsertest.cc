@@ -43,7 +43,7 @@ class BrowsingDataCounterUtilsBrowserTest
 #endif
         scoped_unified_consent_(
             GetParam()
-                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                ? unified_consent::UnifiedConsentFeatureState::kEnabled
                 : unified_consent::UnifiedConsentFeatureState::kDisabled) {
   }
   ~BrowsingDataCounterUtilsBrowserTest() override = default;

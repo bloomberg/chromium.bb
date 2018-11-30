@@ -65,17 +65,6 @@ class UnifiedConsentService : public KeyedService,
   // in this method.
   void EnableGoogleServices();
 
-  // Returns true if all criteria is met to show the consent bump.
-  bool ShouldShowConsentBump();
-  // Marks the consent bump as shown. Any future calls to
-  // |ShouldShowConsentBump| are guaranteed to return false.
-  void MarkConsentBumpShown();
-  // Records the consent bump suppress reason and updates the state whether the
-  // consent bump should be shown. Note: In some cases, e.g. sync paused,
-  // |ShouldShowConsentBump| will still return true.
-  void RecordConsentBumpSuppressReason(
-      metrics::ConsentBumpSuppressReason suppress_reason);
-
   // KeyedService:
   void Shutdown() override;
 
@@ -92,23 +81,12 @@ class UnifiedConsentService : public KeyedService,
   // Migration helpers.
   MigrationState GetMigrationState();
   void SetMigrationState(MigrationState migration_state);
-  // Called when the unified consent service is created. This sets the
-  // |kShouldShowUnifiedConsentBump| pref to true if the user is eligible and
-  // calls |UpdateSettingsForMigration| at the end.
+  // Called when the unified consent service is created.
   void MigrateProfileToUnifiedConsent();
   // Updates the settings preferences for the migration when the sync engine is
   // initialized. When it is not, this function will be called again from
   // |OnStateChanged| when the sync engine is initialized.
   void UpdateSettingsForMigration();
-
-  // Checks if all on-by-default non-personalized services are on.
-  bool AreAllOnByDefaultPrivacySettingsOn();
-
-  // This method is called on startup to check the eligibility criteria for
-  // showing the consent bump. The check is only done when the profile was
-  // eligible before. If the user is not eligible anymore, the
-  // kShouldShowUnifiedConsentBump pref is set to false.
-  void CheckConsentBumpEligibility();
 
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;

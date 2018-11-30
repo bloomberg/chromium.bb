@@ -347,11 +347,6 @@ const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
 
-const char kForceUnifiedConsentBumpName[] = "Force Unified Consent Bump";
-const char kForceUnifiedConsentBumpDescription[] =
-    "Force the unified consent bump UI to be shown on every start-up. This "
-    "flag is for debug purpose, to test the UI.";
-
 const char kUsdzPreviewName[] = "Preview USDZ format 3D models";
 const char kUsdzPreviewDescription[] =
     "Enables previewing USDZ format 3D models in AR Quick Look.";
