@@ -454,13 +454,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test")
-          .AddPermission("<all_urls>")
           .SetManifestKey("optional_permissions",
                           ListBuilder().Append("https://example.com/*").Build())
           .Build();
-  ScriptingPermissionsModifier modifier(profile(), extension.get());
-
-  modifier.SetWithholdHostPermissions(true);
 
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 
@@ -478,6 +474,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
               testing::UnorderedElementsAre("https://example.com/*"));
 
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
   modifier.RemoveAllGrantedHostPermissions();
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 }
