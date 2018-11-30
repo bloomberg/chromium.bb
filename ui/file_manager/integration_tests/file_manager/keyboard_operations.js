@@ -11,19 +11,19 @@
  * @param {string} appId The Files app windowId.
  * @return {Promise} Promise to be fulfilled after clicking the OK button.
  */
-function waitAndAcceptDialog(appId) {
+async function waitAndAcceptDialog(appId) {
   const okButton = '.cr-dialog-ok';
-  return new Promise(function(resolve) {
-    // Wait for the Ok button to appear.
-    remoteCall.waitForElement(appId, okButton).then(resolve);
-  }).then(function() {
-    // Click the Ok button.
-    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [okButton]);
-  }).then(function(result) {
-    chrome.test.assertTrue(result, 'Dialog Ok button click failed');
-    // Wait until the dialog closes.
-    return remoteCall.waitForElementLost(appId, '.cr-dialog-container');
-  });
+
+  // Wait for the Ok button to appear.
+  await remoteCall.waitForElement(appId, okButton);
+
+  // Click the Ok button.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [okButton]),
+      'Dialog Ok button click failed');
+
+  // Wait until the dialog closes.
+  await remoteCall.waitForElementLost(appId, '.cr-dialog-container');
 }
 
 /**
@@ -45,14 +45,11 @@ function getVisibleDirectoryTreeItemNames(appId) {
  */
 function waitForDirectoryTreeItem(appId, name) {
   let caller = getCaller();
-  return repeatUntil(function() {
-    return getVisibleDirectoryTreeItemNames(appId).then(function(names) {
-      if (names.indexOf(name) !== -1) {
-        return true;
-      } else {
-        return pending(caller, 'Directory tree item %s not found.', name);
-      }
-    });
+  return repeatUntil(async () => {
+    if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) !== -1) {
+      return true;
+    }
+    return pending(caller, 'Directory tree item %s not found.', name);
   });
 }
 
@@ -65,14 +62,11 @@ function waitForDirectoryTreeItem(appId, name) {
  */
 function waitForDirectoryTreeItemLost(appId, name) {
   let caller = getCaller();
-  return repeatUntil(function() {
-    return getVisibleDirectoryTreeItemNames(appId).then(function(names) {
-      if (names.indexOf(name) === -1) {
-        return true;
-      } else {
-        return pending(caller, 'Directory tree item %s still exists.', name);
-      }
-    });
+  return repeatUntil(async () => {
+    if ((await getVisibleDirectoryTreeItemNames(appId)).indexOf(name) === -1) {
+      return true;
+    }
+    return pending(caller, 'Directory tree item %s still exists.', name);
   });
 }
 
@@ -81,30 +75,22 @@ function waitForDirectoryTreeItemLost(appId, name) {
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  */
-function keyboardCopy(path) {
-  let appId;
+async function keyboardCopy(path) {
+  const {appId} = await setupAndWaitUntilReady(
+      null, path, null, [ENTRIES.world], [ENTRIES.world]);
 
-  return new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, path, resolve, [ENTRIES.world], [ENTRIES.world]);
-  }).then(function(results) {
-    appId = results.windowId;
-    // Copy the file into the same file list.
-    return remoteCall.callRemoteTestUtil('copyFile', appId, ['world.ogv']);
-  }).then(function(result) {
-    chrome.test.assertTrue(result, 'copyFile failed');
-    // Check: the copied file should appear in the file list.
-    const expectedEntryRows = [ENTRIES.world.getExpectedRow()].concat(
-        [['world (1).ogv', '59 KB', 'OGG video']]);
-    return remoteCall.waitForFiles(
-        appId, expectedEntryRows, {ignoreLastModifiedTime: true});
-  }).then(() => {
-    return remoteCall.callRemoteTestUtil(
-        'getFileList', appId, []);
-  }).then(function(files) {
-    // The mtimes should not match.
-    chrome.test.assertTrue(files[0][3] != files[1][3], files[1][3]);
-  });
+  // Copy the file into the same file list.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('copyFile', appId, ['world.ogv']),
+      'copyFile failed');
+  // Check: the copied file should appear in the file list.
+  const expectedEntryRows = [ENTRIES.world.getExpectedRow()].concat(
+      [['world (1).ogv', '59 KB', 'OGG video']]);
+  await remoteCall.waitForFiles(
+      appId, expectedEntryRows, {ignoreLastModifiedTime: true});
+  const files = await remoteCall.callRemoteTestUtil('getFileList', appId, []);
+  // The mtimes should not match.
+  chrome.test.assertTrue(files[0][3] != files[1][3], files[1][3]);
 }
 
 /**
@@ -112,24 +98,20 @@ function keyboardCopy(path) {
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  */
-function keyboardDelete(path) {
-  let appId;
+async function keyboardDelete(path) {
+  const {appId} = await setupAndWaitUntilReady(
+      null, path, null, [ENTRIES.hello], [ENTRIES.hello]);
 
-  return new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, path, resolve, [ENTRIES.hello], [ENTRIES.hello]);
-  }).then(function(results) {
-    appId = results.windowId;
-    // Delete the file from the file list.
-    return remoteCall.callRemoteTestUtil('deleteFile', appId, ['hello.txt']);
-  }).then(function(result) {
-    chrome.test.assertTrue(result, 'deleteFile failed');
-    // Run the delete entry confirmation dialog.
-    return waitAndAcceptDialog(appId);
-  }).then(function() {
-    // Check: the file list should be empty.
-    return remoteCall.waitForFiles(appId, []);
-  });
+  // Delete the file from the file list.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('deleteFile', appId, ['hello.txt']),
+      'deleteFile failed');
+
+  // Run the delete entry confirmation dialog.
+  await waitAndAcceptDialog(appId);
+
+  // Check: the file list should be empty.
+  await remoteCall.waitForFiles(appId, []);
 }
 
 /**
@@ -139,33 +121,29 @@ function keyboardDelete(path) {
  * @param {string} path The path to be tested, Downloads or Drive.
  * @param {string} treeItem The directory tree item selector.
  */
-function keyboardDeleteFolder(path, treeItem) {
-  let appId;
+async function keyboardDeleteFolder(path, treeItem) {
+  const {appId} = await setupAndWaitUntilReady(
+      null, path, null, [ENTRIES.photos], [ENTRIES.photos]);
 
-  return new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, path, resolve, [ENTRIES.photos], [ENTRIES.photos]);
-  }).then(function(results) {
-    appId = results.windowId;
-    // Expand the directory tree |treeItem|.
-    return expandRoot(appId, treeItem);
-  }).then(function() {
-    // Check: the folder should be shown in the directory tree.
-    return waitForDirectoryTreeItem(appId, 'photos');
-  }).then(function() {
-    // Delete the folder entry from the file list.
-    return remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos']);
-  }).then(function(result) {
-    chrome.test.assertTrue(result, 'deleteFile failed');
-    // Run the delete entry confirmation dialog.
-    return waitAndAcceptDialog(appId);
-  }).then(function() {
-    // Check: the file list should be empty.
-    return remoteCall.waitForFiles(appId, []);
-  }).then(function() {
-    // Check: the folder should not be shown in the directory tree.
-    return waitForDirectoryTreeItemLost(appId, 'photos');
-  });
+  // Expand the directory tree |treeItem|.
+  await expandRoot(appId, treeItem);
+
+  // Check: the folder should be shown in the directory tree.
+  await waitForDirectoryTreeItem(appId, 'photos');
+
+  // Delete the folder entry from the file list.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos']),
+      'deleteFile failed');
+
+  // Run the delete entry confirmation dialog.
+  await waitAndAcceptDialog(appId);
+
+  // Check: the file list should be empty.
+  await remoteCall.waitForFiles(appId, []);
+
+  // Check: the folder should not be shown in the directory tree.
+  await waitForDirectoryTreeItemLost(appId, 'photos');
 }
 
 /**
@@ -176,32 +154,29 @@ function keyboardDeleteFolder(path, treeItem) {
  * @param {string} newName New name of a file.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function renameFile(appId, oldName, newName) {
+async function renameFile(appId, oldName, newName) {
   const textInput = '#file-list .table-row[renaming] input.rename';
 
-  return Promise.resolve().then(function() {
-    // Select the file.
-    return remoteCall.callRemoteTestUtil('selectFile', appId, [oldName]);
-  }).then(function(result) {
-    chrome.test.assertTrue(result, 'selectFile failed');
-    // Press Ctrl+Enter key to rename the file.
-    const key = ['#file-list', 'Enter', true, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Check: the renaming text input should be shown in the file list.
-    return remoteCall.waitForElement(appId, textInput);
-  }).then(function() {
-    // Type new file name.
-    return remoteCall.callRemoteTestUtil(
-        'inputText', appId, [textInput, newName]);
-  }).then(function() {
-    // Send Enter key to the text input.
-    const key = [textInput, 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-  });
+  // Select the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('selectFile', appId, [oldName]),
+      'selectFile failed');
+
+  // Press Ctrl+Enter key to rename the file.
+  const key = ['#file-list', 'Enter', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Check: the renaming text input should be shown in the file list.
+  await remoteCall.waitForElement(appId, textInput);
+
+  // Type new file name.
+  await remoteCall.callRemoteTestUtil('inputText', appId, [textInput, newName]);
+
+  // Send Enter key to the text input.
+  const key2 = [textInput, 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key2));
 }
 
 /**
@@ -212,70 +187,63 @@ function renameFile(appId, oldName, newName) {
  * @param {string} treeItem The directory tree item selector.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function testRenameFolder(path, treeItem) {
-  let appId;
-
+async function testRenameFolder(path, treeItem) {
   const textInput = '#file-list .table-row[renaming] input.rename';
+  const {appId} = await setupAndWaitUntilReady(
+      null, path, null, [ENTRIES.photos], [ENTRIES.photos]);
 
-  return new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, path, resolve, [ENTRIES.photos], [ENTRIES.photos]);
-  }).then(function(results) {
-    // Expand the directory tree |treeItem|.
-    appId = results.windowId;
-    return expandRoot(appId, treeItem);
-  }).then(function() {
-    // Check: the photos folder should be shown in the directory tree.
-    return waitForDirectoryTreeItem(appId, 'photos');
-  }).then(function() {
-    // Focus the file-list.
-    return remoteCall.callRemoteTestUtil('focus', appId, ['#file-list']);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Press ArrowDown to select the photos folder.
-    const select = ['#file-list', 'ArrowDown', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, select);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Await file list item selection.
-    const selectedItem = '#file-list .table-row[selected]';
-    return remoteCall.waitForElement(appId, selectedItem);
-  }).then(function() {
-    // Press Ctrl+Enter to rename the photos folder.
-    const key = ['#file-list', 'Enter', true, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Check: the renaming text input should be shown in the file list.
-    return remoteCall.waitForElement(appId, textInput);
-  }).then(function() {
-    // Type the new folder name.
-    return remoteCall.callRemoteTestUtil(
-        'inputText', appId, [textInput, 'bbq photos']);
-  }).then(function() {
-    // Send Enter to the list to attempt to enter the directory.
-    const key = ['#list-container', 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Send Enter to the text input to complete renaming.
-    const key = [textInput, 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Wait until renaming is complete.
-    const renamingItem = '#file-list .table-row[renaming]';
-    return remoteCall.waitForElementLost(appId, renamingItem);
-  }).then(function() {
-    // Check: the renamed folder should be shown in the file list.
-    const expectedRows = [['bbq photos', '--', 'Folder', '']];
-    return remoteCall.waitForFiles(
-        appId, expectedRows, {ignoreLastModifiedTime: true});
-  }).then(function() {
-    // Check: the renamed folder should be shown in the directory tree.
-    return waitForDirectoryTreeItem(appId, 'bbq photos');
-  });
+  // Expand the directory tree |treeItem|.
+  await expandRoot(appId, treeItem);
+
+  // Check: the photos folder should be shown in the directory tree.
+  await waitForDirectoryTreeItem(appId, 'photos');
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('focus', appId, ['#file-list']));
+
+  // Press ArrowDown to select the photos folder.
+  const select = ['#file-list', 'ArrowDown', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, select));
+
+  // Await file list item selection.
+  const selectedItem = '#file-list .table-row[selected]';
+  await remoteCall.waitForElement(appId, selectedItem);
+
+  // Press Ctrl+Enter to rename the photos folder.
+  let key = ['#file-list', 'Enter', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Check: the renaming text input should be shown in the file list.
+  await remoteCall.waitForElement(appId, textInput);
+
+  // Type the new folder name.
+  await remoteCall.callRemoteTestUtil(
+      'inputText', appId, [textInput, 'bbq photos']);
+
+  // Send Enter to the list to attempt to enter the directory.
+  key = ['#list-container', 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Send Enter to the text input to complete renaming.
+  key = [textInput, 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Wait until renaming is complete.
+  const renamingItem = '#file-list .table-row[renaming]';
+  await remoteCall.waitForElementLost(appId, renamingItem);
+
+  // Check: the renamed folder should be shown in the file list.
+  const expectedRows = [['bbq photos', '--', 'Folder', '']];
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
+
+  // Check: the renamed folder should be shown in the directory tree.
+  await waitForDirectoryTreeItem(appId, 'bbq photos');
 }
+
 
 /**
  * Tests renaming a file.
@@ -283,76 +251,69 @@ function testRenameFolder(path, treeItem) {
  * @param {string} path Initial path (Downloads or Drive).
  * @return {Promise} Promise to be fulfilled on success.
  */
-function testRenameFile(path) {
-  let appId;
-
+async function testRenameFile(path) {
   const newFile = [['New File Name.txt', '51 bytes', 'Plain text', '']];
 
-  return new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, path, resolve, [ENTRIES.hello], [ENTRIES.hello]);
-  }).then(function(results) {
-    // Rename the file.
-    appId = results.windowId;
-    return renameFile(appId, 'hello.txt', 'New File Name.txt');
-  }).then(function() {
-    // Wait until renaming completes.
-    return remoteCall.waitForElementLost(appId, '#file-list [renaming]');
-  }).then(function() {
-    // Check: the new file name should be shown in the file list.
-    return remoteCall.waitForFiles(
-        appId, newFile, {ignoreLastModifiedTime: true});
-  }).then(function() {
-    // Try renaming the new file to an invalid file name.
-    return renameFile(appId, 'New File Name.txt', '.hidden file');
-  }).then(function() {
-    // Check: the error dialog should be shown.
-    return waitAndAcceptDialog(appId);
-  }).then(function() {
-    // Check: the new file name should not be changed.
-    return remoteCall.waitForFiles(
-        appId, newFile, {ignoreLastModifiedTime: true});
-  });
+  const {appId} = await setupAndWaitUntilReady(
+      null, path, null, [ENTRIES.hello], [ENTRIES.hello]);
+
+  // Rename the file.
+  await renameFile(appId, 'hello.txt', 'New File Name.txt');
+
+  // Wait until renaming completes.
+  await remoteCall.waitForElementLost(appId, '#file-list [renaming]');
+
+  // Check: the new file name should be shown in the file list.
+  await remoteCall.waitForFiles(appId, newFile, {ignoreLastModifiedTime: true});
+
+  // Try renaming the new file to an invalid file name.
+  await renameFile(appId, 'New File Name.txt', '.hidden file');
+
+  // Check: the error dialog should be shown.
+  await waitAndAcceptDialog(appId);
+
+  // Check: the new file name should not be changed.
+  await remoteCall.waitForFiles(appId, newFile, {ignoreLastModifiedTime: true});
 }
 
 testcase.keyboardCopyDownloads = function() {
-  testPromise(keyboardCopy(RootPath.DOWNLOADS));
+  return keyboardCopy(RootPath.DOWNLOADS);
 };
 
 testcase.keyboardCopyDrive = function() {
-  testPromise(keyboardCopy(RootPath.DRIVE));
+  return keyboardCopy(RootPath.DRIVE);
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  testPromise(keyboardDelete(RootPath.DOWNLOADS));
+  return keyboardDelete(RootPath.DOWNLOADS);
 };
 
 testcase.keyboardDeleteDrive = function() {
-  testPromise(keyboardDelete(RootPath.DRIVE));
+  return keyboardDelete(RootPath.DRIVE);
 };
 
 testcase.keyboardDeleteFolderDownloads = function() {
-  testPromise(keyboardDeleteFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS));
+  return keyboardDeleteFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
 };
 
 testcase.keyboardDeleteFolderDrive = function() {
-  testPromise(keyboardDeleteFolder(RootPath.DRIVE, TREEITEM_DRIVE));
+  return keyboardDeleteFolder(RootPath.DRIVE, TREEITEM_DRIVE);
 };
 
 testcase.renameFileDownloads = function() {
-  testPromise(testRenameFile(RootPath.DOWNLOADS));
+  return testRenameFile(RootPath.DOWNLOADS);
 };
 
 testcase.renameFileDrive = function() {
-  testPromise(testRenameFile(RootPath.DRIVE));
+  return testRenameFile(RootPath.DRIVE);
 };
 
 testcase.renameNewFolderDownloads = function() {
-  testPromise(testRenameFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS));
+  return testRenameFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
 };
 
 testcase.renameNewFolderDrive = function() {
-  testPromise(testRenameFolder(RootPath.DRIVE, TREEITEM_DRIVE));
+  return testRenameFolder(RootPath.DRIVE, TREEITEM_DRIVE);
 };
 
 /**
@@ -392,67 +353,41 @@ testcase.keyboardSelectDriveDirectoryTree = async function() {
  * Tests that while the delete dialog is displayed, it is not possible to press
  * CONTROL-C to copy a file.
  */
-testcase.keyboardDisableCopyWhenDialogDisplayed = function() {
-  let appId = null;
+testcase.keyboardDisableCopyWhenDialogDisplayed = async function() {
+  // Open Files app.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DOWNLOADS, null, [ENTRIES.hello], []);
 
-  StepsRunner.run([
-    // Open Files app.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello], []);
-    },
-    // Select a file for deletion.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['hello.txt'], this.next);
-    },
-    // Wait for the entry to be selected.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'selectFile failed');
-      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
-    },
-    // Start delete to bring up the delete dialog.
-    function(result) {
-      // Click delete button in the toolbar.
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['button#delete-button'], this.next);
-    },
-    // Confirm that the delete confirmation dialog is shown.
-    function(result) {
-      remoteCall.waitForElement(appId, '.cr-dialog-container.shown')
-          .then(this.next);
-    },
-    // Try to copy file. We need to use execCommand as the command handler that
-    // interprets key strokes will drop events if there is a dialog on screen.
-    function() {
-      remoteCall.callRemoteTestUtil('execCommand', appId, ['copy'], this.next);
-    },
-    // Press Cancel button to stop the delete operation.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['button.cr-dialog-cancel'], this.next);
-    },
-    // Wait for dialog to disappear.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown')
-          .then(this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      const key = ['#file-list', 'v', true, false, false];
-      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
-    },
-    // Check no files were pasted.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const files = TestEntryInfo.getExpectedRows([ENTRIES.hello]);
-      remoteCall.waitForFiles(appId, files).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
+  // Select a file for deletion.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']),
+      'selectFile failed');
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Click delete button in the toolbar.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['button#delete-button']);
+
+  // Confirm that the delete confirmation dialog is shown.
+  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
+
+  // Try to copy file. We need to use execCommand as the command handler that
+  // interprets key strokes will drop events if there is a dialog on screen.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']));
+
+  // Press Cancel button to stop the delete operation.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['button.cr-dialog-cancel']));
+
+  // Wait for dialog to disappear.
+  chrome.test.assertTrue(
+      await remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown'));
+  const key = ['#file-list', 'v', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Check no files were pasted.
+  const files = TestEntryInfo.getExpectedRows([ENTRIES.hello]);
+  await remoteCall.waitForFiles(appId, files);
 };
