@@ -698,6 +698,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="CANCEL"/>
   <int value="4" label="MENU_SHARE"/>
   <int value="5" label="MENU_DELETE"/>
+  <int value="6" label="RETRY"/>
 </enum>
 
 <enum name="Android.DownloadManager.Menu.Actions">

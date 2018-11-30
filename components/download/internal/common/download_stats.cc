@@ -473,6 +473,9 @@ std::string CreateHistogramNameWithSuffix(const std::string& name,
     case DownloadSource::CONTEXT_MENU:
       suffix = "ContextMenu";
       break;
+    case DownloadSource::RETRY:
+      suffix = "Retry";
+      break;
   }
 
   return name + "." + suffix;

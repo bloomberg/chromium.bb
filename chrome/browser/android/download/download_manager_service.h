@@ -84,6 +84,12 @@ class DownloadManagerService
                       const JavaParamRef<jstring>& jdownload_guid,
                       bool is_off_the_record);
 
+  // Called to retry a download.
+  void RetryDownload(JNIEnv* env,
+                     jobject obj,
+                     const JavaParamRef<jstring>& jdownload_guid,
+                     bool is_off_the_record);
+
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
   void CancelDownload(JNIEnv* env,
@@ -161,6 +167,10 @@ class DownloadManagerService
   void ResumeDownloadInternal(const std::string& download_guid,
                               bool is_off_the_record);
 
+  // Helper function to retry the download.
+  void RetryDownloadInternal(const std::string& download_guid,
+                             bool is_off_the_record);
+
   // Helper function to cancel a download.
   void CancelDownloadInternal(const std::string& download_guid,
                               bool is_off_the_record);
@@ -210,13 +220,7 @@ class DownloadManagerService
   };
   int pending_get_downloads_actions_;
 
-  enum DownloadAction {
-    RESUME,
-    PAUSE,
-    CANCEL,
-    REMOVE,
-    UNKNOWN
-  };
+  enum DownloadAction { RESUME, RETRY, PAUSE, CANCEL, REMOVE, UNKNOWN };
   using PendingDownloadActions = std::map<std::string, DownloadAction>;
   PendingDownloadActions pending_actions_;
 
