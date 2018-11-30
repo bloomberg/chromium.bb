@@ -511,9 +511,14 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   if (IsGCForbidden())
     return;
 
-  // This completeSweep() will do nothing in common cases since we've
-  // called completeSweep() before V8 starts minor/major GCs.
   if (gc_type == BlinkGC::kV8MajorGC) {
+    // In case of unified heap garbage collections a V8 major GC also collects
+    // the Blink heap.
+    if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+      return;
+
+    // This CompleteSweep() will do nothing in common cases since we've
+    // called CompleteSweep() before V8 starts minor/major GCs.
     // TODO(ulan): Try removing this for Major V8 GC too.
     CompleteSweep();
     DCHECK(!IsSweepingInProgress());
@@ -535,13 +540,10 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
               << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
       SchedulePreciseGC();
     }
-    return;
-  }
-  if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
+  } else if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleV8FollowupGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
-    return;
   }
 }
 
