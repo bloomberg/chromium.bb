@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -258,6 +260,7 @@ void LoginDisplayHostCommon::ShutdownDisplayHost() {
   if (shutting_down_)
     return;
 
+  ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
   shutting_down_ = true;
   registrar_.RemoveAll();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
