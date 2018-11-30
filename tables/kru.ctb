@@ -18,5 +18,6 @@
 #  <http://www.gnu.org/licenses/>.
 
 # Table for Kurukh
+include basic-spaces.uti
 include devanagari.cti
 include text_nabcc.dis
