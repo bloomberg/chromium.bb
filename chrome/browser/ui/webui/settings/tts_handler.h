@@ -15,7 +15,8 @@ namespace settings {
 
 // Chrome "/manageAccessibility/tts/*" settings page UI handler.
 class TtsHandler : public SettingsPageUIHandler,
-                   public content::VoicesChangedDelegate {
+                   public content::VoicesChangedDelegate,
+                   public content::UtteranceEventDelegate {
  public:
   TtsHandler();
   ~TtsHandler() override;
@@ -31,6 +32,12 @@ class TtsHandler : public SettingsPageUIHandler,
 
   // VoicesChangedDelegate implementation.
   void OnVoicesChanged() override;
+
+  // UtteranceEventDelegate implementation.
+  void OnTtsEvent(content::Utterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  const std::string& error_message) override;
 
  private:
   void WakeTtsEngine(const base::ListValue* args);
