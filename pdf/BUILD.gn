@@ -21,11 +21,6 @@ if (enable_pdf) {
 
   config("pdf_common_config") {
     if (pdf_engine == 0) {
-      defines = [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
-      if (pdf_enable_xfa) {
-        defines += [ "PDF_ENABLE_XFA" ]
-      }
-
       include_dirs = [ "//third_party/pdfium" ]
     }
   }
@@ -173,6 +168,11 @@ if (enable_pdf) {
 
     if (pdf_engine == 0) {
       configs += [ "//v8:external_startup_data" ]
+      deps += [
+        # Explicitly depend on PDFium to pick up its public configs, which are
+        # not transitive, possibly because the "pdf" target is a static_library.
+        "//third_party/pdfium",
+      ]
       sources += [
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
