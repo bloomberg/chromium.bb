@@ -2098,18 +2098,24 @@ static int active_edge_sb(const AV1_COMP *cpi, int mi_row, int mi_col) {
          active_v_edge(cpi, mi_col, cpi->common.seq_params.mib_size);
 }
 
-// Performs a motion search in SIMPLE_TRANSLATION mode using
-// reference frame ref. Returns the sad of the result
+// Performs a motion search in SIMPLE_TRANSLATION mode using reference frame
+// ref. Note that this sets the offset of mbmi, so we will need to reset it
+// after calling this function.
 static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                                  int mi_col, BLOCK_SIZE bsize, int ref,
                                  int num_planes, int use_subpixel) {
+  assert(num_planes == 1 &&
+         "Currently simple_motion_search only supports luma plane");
+
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
 
+  set_offsets(cpi, &xd->tile, x, mi_row, mi_col, bsize);
+
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  mbmi->sb_type = bsize;
   mbmi->ref_frame[0] = ref;
   mbmi->ref_frame[1] = NONE_FRAME;
-  mbmi->sb_type = bsize;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
 
   YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
@@ -2127,8 +2133,6 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   int cost_list[5];
   const int ref_idx = 0;
   int var;
-
-  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
 
   if (scaled_ref_frame) {
     backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
@@ -3479,20 +3483,12 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
   MACROBLOCKD *xd = &x->e_mbd;
-  DECLARE_ALIGNED(16, uint16_t, pred_buffer[MAX_SB_SQUARE]);
-  int pred_stride = 128;
 
   // Perform a single motion search in Y_PLANE to make a prediction
   const MV_REFERENCE_FRAME ref =
       cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
   const int use_subpixel = 0;
   const int num_planes = 1;
-
-  uint8_t *const pred_buf = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-                                ? CONVERT_TO_BYTEPTR(pred_buffer)
-                                : (uint8_t *)pred_buffer;
-  xd->plane[0].dst.buf = pred_buf;
-  xd->plane[0].dst.stride = pred_stride;
 
   simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, num_planes,
                        use_subpixel);
@@ -3507,11 +3503,13 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   // VARIANCE
   const uint8_t *src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
+  const uint8_t *dst = xd->plane[0].dst.buf;
+  const int dst_stride = xd->plane[0].dst.stride;
   unsigned int sse = 0;
 
   // Whole block
   const unsigned int var =
-      cpi->fn_ptr[bsize].vf(src, src_stride, pred_buf, pred_stride, &sse);
+      cpi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, &sse);
   features[f_idx++] = logf(1.0f + (float)var);
 
   // Regional
@@ -3523,10 +3521,9 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
     const int x_idx = (r_idx & 1) * bw / 2;
     const int y_idx = (r_idx >> 1) * bh / 2;
     const int src_offset = y_idx * src_stride + x_idx;
-    const int pred_offset = y_idx * pred_stride + x_idx;
-    const unsigned int sub_var =
-        cpi->fn_ptr[subsize].vf(src + src_offset, src_stride,
-                                pred_buf + pred_offset, pred_stride, &sse);
+    const int dst_offset = y_idx * dst_stride + x_idx;
+    const unsigned int sub_var = cpi->fn_ptr[subsize].vf(
+        src + src_offset, src_stride, dst + dst_offset, dst_stride, &sse);
     const float var_ratio = (1.0f + (float)sub_var) / (4.0f + (float)var);
     features[f_idx++] = var_ratio;
   }
