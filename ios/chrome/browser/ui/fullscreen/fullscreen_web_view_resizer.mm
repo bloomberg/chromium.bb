@@ -95,13 +95,7 @@
   if (!self.webState || !self.webState->GetView().superview)
     return;
 
-  UIEdgeInsets newInsets =
-      UIEdgeInsetsMake(self.model->GetCollapsedToolbarHeight() +
-                           progress * (self.model->GetExpandedToolbarHeight() -
-                                       self.model->GetCollapsedToolbarHeight()),
-                       0, progress * self.model->GetBottomToolbarHeight(), 0);
-
-  [self updateForInsets:newInsets];
+  [self updateForInsets:self.model->GetToolbarInsetsAtProgress(progress)];
 }
 
 // Updates the WebState view, resizing it such as |insets| is the insets between
