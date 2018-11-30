@@ -70,9 +70,6 @@ class CastWindowManager {
   // Remove the registration of a system gesture events handler.
   virtual void RemoveGestureHandler(CastGestureHandler* handler) = 0;
 
-  // Enable/Disable color inversion.
-  virtual void SetColorInversion(bool enable) = 0;
-
   // Enable/disable the handling of all touch events.
   virtual void SetTouchInputDisabled(bool disabled) = 0;
 

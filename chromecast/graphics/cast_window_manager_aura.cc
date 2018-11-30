@@ -318,12 +318,6 @@ void CastWindowManagerAura::CastWindowManagerAura::RemoveGestureHandler(
   system_gesture_dispatcher_->RemoveGestureHandler(handler);
 }
 
-void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(
-    bool enable) {
-  DCHECK(window_tree_host_);
-  window_tree_host_->window()->layer()->SetLayerInverted(enable);
-}
-
 CastGestureHandler* CastWindowManagerAura::GetGestureHandler() const {
   return system_gesture_dispatcher_.get();
 }

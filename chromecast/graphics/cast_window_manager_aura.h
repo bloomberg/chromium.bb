@@ -71,8 +71,6 @@ class CastWindowManagerAura : public CastWindowManager,
 
   void RemoveGestureHandler(CastGestureHandler* handler) override;
 
-  void SetColorInversion(bool enable) override;
-
   CastWindowTreeHost* window_tree_host() const;
 
   CastGestureHandler* GetGestureHandler() const;
