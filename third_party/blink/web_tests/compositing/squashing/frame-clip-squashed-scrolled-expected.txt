@@ -19,21 +19,10 @@
       "transform": 1
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false,
-      "transform": 1
-    },
-    {
       "name": "LayoutBlockFlow DIV",
       "contentsOpaque": true,
       "drawsContent": false,
       "transform": 2
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV)",
-      "position": [8, 8],
-      "bounds": [102, 2002],
-      "transform": 1
     }
   ],
   "transforms": [
@@ -55,8 +44,7 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     }
   ]
 }
