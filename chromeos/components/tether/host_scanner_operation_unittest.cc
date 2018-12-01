@@ -384,6 +384,9 @@ TEST_F(
 }
 
 TEST_F(HostScannerOperationTest, DISABLED_TestMultipleDevices) {
+  // TODO(khorimoto): Test the case for when the response is
+  // TetherAvailabilityResponse_ResponseCode_LAST_PROVISIONING_FAILED, which
+  // is currently equivalent to a SuccessfulTetherAvailabilityResponse.
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
   EXPECT_CALL(*mock_tether_host_response_recorder_,

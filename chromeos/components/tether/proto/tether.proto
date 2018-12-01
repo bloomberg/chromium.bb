@@ -73,6 +73,7 @@ message TetherAvailabilityResponse {
     NO_SIM_CARD = 4;
     NOTIFICATIONS_DISABLED_LEGACY = 5;
     NOTIFICATIONS_DISABLED_WITH_NOTIFICATION_CHANNEL = 6;
+    LAST_PROVISIONING_FAILED = 7;
   }
 
   optional ResponseCode response_code = 1;
