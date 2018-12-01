@@ -1801,6 +1801,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'scripts': 'chromium_mac_scripts',
         },
       },
       'Mac Retina Debug (AMD)': {
@@ -1823,6 +1824,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'scripts': 'chromium_mac_scripts',
         },
       },
       'Win10 Debug (NVIDIA)': {
@@ -3058,7 +3060,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
-          'scripts': 'chromium_scripts',
+          'scripts': 'chromium_mac_scripts',
         },
       },
       'Mac10.13 Tests (dbg)': {
