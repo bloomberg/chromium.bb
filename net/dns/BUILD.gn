@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//net/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 enable_built_in_dns = !is_ios && !is_proto_quic
 
@@ -507,4 +507,17 @@ fuzzer_test("net_host_resolver_impl_fuzzer") {
     "//net:test_support",
   ]
   dict = "//net/data/fuzzer_dictionaries/net_host_resolver_impl_fuzzer.dict"
+}
+
+if (is_win) {
+  fuzzer_test("net_dns_parse_domain_ascii_win_fuzzer") {
+    sources = [
+      "dns_parse_domain_ascii_win_fuzzer.cc",
+    ]
+    deps = [
+      "//base",
+      "//net",
+      "//net:net_fuzzer_test_support",
+    ]
+  }
 }

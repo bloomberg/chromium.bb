@@ -138,35 +138,6 @@ std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(
   return out;
 }
 
-// Converts a base::string16 domain name to ASCII, possibly using punycode.
-// Returns true if the conversion succeeds and output is not empty. In case of
-// failure, |domain| might become dirty.
-bool ParseDomainASCII(base::StringPiece16 widestr, std::string* domain) {
-  DCHECK(domain);
-  if (widestr.empty())
-    return false;
-
-  // Check if already ASCII.
-  if (base::IsStringASCII(widestr)) {
-    domain->assign(widestr.begin(), widestr.end());
-    return true;
-  }
-
-  // Otherwise try to convert it from IDN to punycode.
-  const int kInitialBufferSize = 256;
-  url::RawCanonOutputT<base::char16, kInitialBufferSize> punycode;
-  if (!url::IDNToASCII(widestr.data(), widestr.length(), &punycode))
-    return false;
-
-  // |punycode_output| should now be ASCII; convert it to a std::string.
-  // (We could use UTF16ToASCII() instead, but that requires an extra string
-  // copy. Since ASCII is a subset of UTF8 the following is equivalent).
-  bool success = base::UTF16ToUTF8(punycode.data(), punycode.length(), domain);
-  DCHECK(success);
-  DCHECK(base::IsStringASCII(*domain));
-  return success && !domain->empty();
-}
-
 bool ReadDevolutionSetting(const RegistryReader& reader,
                            DnsSystemSettings::DevolutionSetting* setting) {
   return reader.ReadDword(L"UseDomainNameDevolution", &setting->enabled) &&
@@ -464,6 +435,32 @@ DnsSystemSettings::DnsSystemSettings()
 }
 
 DnsSystemSettings::~DnsSystemSettings() {
+}
+
+bool ParseDomainASCII(base::StringPiece16 widestr, std::string* domain) {
+  DCHECK(domain);
+  if (widestr.empty())
+    return false;
+
+  // Check if already ASCII.
+  if (base::IsStringASCII(widestr)) {
+    domain->assign(widestr.begin(), widestr.end());
+    return true;
+  }
+
+  // Otherwise try to convert it from IDN to punycode.
+  const int kInitialBufferSize = 256;
+  url::RawCanonOutputT<base::char16, kInitialBufferSize> punycode;
+  if (!url::IDNToASCII(widestr.data(), widestr.length(), &punycode))
+    return false;
+
+  // |punycode_output| should now be ASCII; convert it to a std::string.
+  // (We could use UTF16ToASCII() instead, but that requires an extra string
+  // copy. Since ASCII is a subset of UTF8 the following is equivalent).
+  bool success = base::UTF16ToUTF8(punycode.data(), punycode.length(), domain);
+  DCHECK(success);
+  DCHECK(base::IsStringASCII(*domain));
+  return success && !domain->empty();
 }
 
 bool ParseSearchList(const base::string16& value,
