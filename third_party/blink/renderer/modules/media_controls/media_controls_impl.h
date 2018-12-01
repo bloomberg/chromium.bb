@@ -288,6 +288,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void UpdateOverflowMenuWanted() const;
   void UpdateScrubbingMessageFits() const;
+  void UpdateOverflowAndTrackListCSSClassForPip() const;
   void UpdateSizingCSSClass();
   void MaybeRecordElementsDisplayed() const;
 

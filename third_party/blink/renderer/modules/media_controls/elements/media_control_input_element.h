@@ -25,6 +25,8 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Creates an overflow menu element with the given button as a child.
   HTMLElement* CreateOverflowElement(MediaControlInputElement*);
 
+  bool OverflowElementIsWanted();
+
   // Implements MediaControlElementBase.
   void SetOverflowElementIsWanted(bool) final;
   void MaybeRecordDisplayed() final;
