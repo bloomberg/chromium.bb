@@ -4532,6 +4532,11 @@
     ],
     "scripts": [
       {
+        "name": "check_static_initializers",
+        "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
         "name": "webkit_lint",
         "script": "webkit_lint.py",
         "swarming": {}

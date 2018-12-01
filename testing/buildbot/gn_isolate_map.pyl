@@ -67,6 +67,9 @@
 # The optional "script" field is used when "type" == "script", and
 # specifies the GN path to the corresponding python file, e.g.
 # "//testing/scripts/foo.py".
+#
+# The optional "skip_usage_check" field indicates that we should skip the check
+# that the target is used in at least one buildbot json file.
 
 {
   "All_syzygy": {
@@ -920,6 +923,16 @@
     "args": [
       "../../tools/metrics/metrics_python_tests.py"
     ]
+  },
+  "nacl_helper": {
+    "label": "//components/nacl/loader:nacl_helper",
+    "type": "additional_compile_target",
+    "skip_usage_check": True,
+  },
+  "nacl_helper_bootstrap": {
+    "label": "//native_client/src/trusted/service_runtime/linux:bootstrap",
+    "type": "additional_compile_target",
+    "skip_usage_check": True,
   },
   "nacl_helper_nonsfi_unittests": {
     "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
