@@ -478,9 +478,6 @@ const base::Feature kPreloadLockScreen{"PreloadLockScreen",
 // https://crbug.com/829414.
 const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-// Enables the new Print Preview UI.
-const base::Feature kNewPrintPreview{"NewPrintPreview",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kNupPrinting{"NupPrinting",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

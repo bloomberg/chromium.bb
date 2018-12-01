@@ -405,28 +405,6 @@
         <include name="IDR_POLICY_TOOL_CSS" file="resources\policy_tool.css" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_JS" file="resources\policy_tool.js" type="BINDATA" compress="gzip" />
       </if>
-      <if expr="enable_print_preview">
-        <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER"
-                 file="resources\print_preview\images\1x\printer.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER"
-                 file="resources\print_preview\images\2x\printer.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER_SHARED"
-                 file="resources\print_preview\images\1x\printer_shared.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER_SHARED"
-                 file="resources\print_preview\images\2x\printer_shared.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER"
-                 file="../../ui/webui/resources/images/business.svg" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC"
-                 file="resources\print_preview\images\google_doc.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_PDF"
-                 file="resources\print_preview\images\pdf.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE"
-                 file="resources\print_preview\images\mobile.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED"
-                 file="resources\print_preview\images\mobile_shared.png" type="BINDATA" />
-      </if>
       <include name="IDR_SITE_ENGAGEMENT_HTML" file="resources\engagement\site_engagement.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_SITE_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\engagement\site_engagement_details.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
