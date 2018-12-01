@@ -19,6 +19,20 @@ WebGL, Skia/Ganesh, Aura), then in a debug build you can use the
 GPU service process. (From the point of view of a GPU client, it's calling
 OpenGL ES functions - but the real driver calls are made in the GPU process.)
 
+You can also use this flag in a release build by specifying the GN argument:
+
+```
+enable_gpu_client_logging=true
+```
+
+It's typically necessary to specify the `--enable-logging=stderr` flag as well:
+
+```
+--enable-gpu-client-logging --enable-logging=stderr
+```
+
+The output looks like this:
+
 ```
 [4782:4782:1219/141706:INFO:gles2_implementation.cc(1026)] [.WebGLRenderingContext] glUseProgram(3)
 [4782:4782:1219/141706:INFO:gles2_implementation_impl_autogen.h(401)] [.WebGLRenderingContext] glGenBuffers(1, 0x7fffc9e1269c)
