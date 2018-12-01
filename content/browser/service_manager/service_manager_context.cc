@@ -675,13 +675,8 @@ ServiceManagerContext::ServiceManagerContext(
         metrics::mojom::kMetricsServiceName, info);
   }
 
-  ContentBrowserClient::StaticServiceMap services;
-  GetContentClient()->browser()->RegisterInProcessServices(
-      &services, packaged_services_connection_.get());
-  for (const auto& entry : services) {
-    packaged_services_connection_->AddEmbeddedService(entry.first,
-                                                      entry.second);
-  }
+  GetContentClient()->browser()->RegisterIOThreadServiceHandlers(
+      packaged_services_connection_.get());
 
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call

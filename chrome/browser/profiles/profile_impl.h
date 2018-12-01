@@ -98,7 +98,6 @@ class ProfileImpl : public Profile {
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
-  void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
@@ -190,11 +189,6 @@ class ProfileImpl : public Profile {
   void UpdateIsEphemeralInStorage();
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
-  std::unique_ptr<service_manager::Service> CreateMultiDeviceSetupService();
-#endif  // defined(OS_CHROMEOS)
 
   PrefChangeRegistrar pref_change_registrar_;
 

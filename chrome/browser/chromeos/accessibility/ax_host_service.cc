@@ -15,7 +15,8 @@ AXHostService* AXHostService::instance_ = nullptr;
 
 bool AXHostService::automation_enabled_ = false;
 
-AXHostService::AXHostService() {
+AXHostService::AXHostService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   DCHECK(!instance_);
   instance_ = this;
   registry_.AddInterface<ax::mojom::AXHost>(
