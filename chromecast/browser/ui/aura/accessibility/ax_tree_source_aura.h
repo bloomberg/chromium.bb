@@ -8,26 +8,21 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/views/accessibility/ax_root_obj_wrapper.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
 // This class exposes the views hierarchy as an accessibility tree permitting
 // use with other accessibility classes.
 class AXTreeSourceAura : public views::AXTreeSourceViews {
  public:
-  AXTreeSourceAura();
+  AXTreeSourceAura(views::AXAuraObjWrapper* root, const ui::AXTreeID& tree_id);
   ~AXTreeSourceAura() override;
 
   // AXTreeSource:
   bool GetTreeData(ui::AXTreeData* data) const override;
-  views::AXAuraObjWrapper* GetRoot() const override;
   void SerializeNode(views::AXAuraObjWrapper* node,
                      ui::AXNodeData* out_data) const override;
 
  private:
-  // A root object representing the entire desktop.
-  std::unique_ptr<AXRootObjWrapper> desktop_root_;
-
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceAura);
 };
 

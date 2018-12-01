@@ -18,6 +18,8 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
+class AXRootObjWrapper;
+
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
@@ -82,6 +84,9 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   // Whether automation support for views is enabled.
   bool enabled_;
+
+  // Root object representing the entire desktop. Must outlive |current_tree_|.
+  std::unique_ptr<AXRootObjWrapper> desktop_root_;
 
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).

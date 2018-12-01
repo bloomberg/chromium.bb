@@ -14,11 +14,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/accessibility/ax_tree_source_views.h"
+
+class AXRootObjWrapper;
 
 namespace base {
 template <typename T>
@@ -94,10 +96,13 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // Whether automation support for views is enabled.
   bool enabled_;
 
+  // Root object representing the entire desktop. Must outlive |current_tree_|.
+  std::unique_ptr<AXRootObjWrapper> desktop_root_;
+
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).
   // A tree becomes active when an event is fired on a descendant view.
-  std::unique_ptr<AXTreeSourceAura> current_tree_;
+  std::unique_ptr<views::AXTreeSourceViews> current_tree_;
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.

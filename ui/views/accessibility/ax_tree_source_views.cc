@@ -17,6 +17,15 @@
 
 namespace views {
 
+AXTreeSourceViews::AXTreeSourceViews(AXAuraObjWrapper* root,
+                                     const ui::AXTreeID& tree_id)
+    : root_(root), tree_id_(tree_id) {
+  DCHECK(root_);
+  DCHECK_NE(tree_id_, ui::AXTreeIDUnknown());
+}
+
+AXTreeSourceViews::~AXTreeSourceViews() = default;
+
 void AXTreeSourceViews::HandleAccessibleAction(const ui::AXActionData& action) {
   int id = action.target_node_id;
 
@@ -96,6 +105,12 @@ void AXTreeSourceViews::SerializeNode(AXAuraObjWrapper* node,
                                       ui::AXNodeData* out_data) const {
   node->Serialize(out_data);
 
+  if (out_data->role == ax::mojom::Role::kWindow ||
+      out_data->role == ax::mojom::Role::kDialog) {
+    // Add clips children flag by default to these roles.
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
+  }
+
   // Converts the global coordinates reported by each AXAuraObjWrapper
   // into parent-relative coordinates to be used in the accessibility
   // tree. That way when any Window, Widget, or View moves (and fires
@@ -125,18 +140,6 @@ std::string AXTreeSourceViews::ToString(AXAuraObjWrapper* root,
     output += ToString(child, prefix);
 
   return output;
-}
-
-AXTreeSourceViews::AXTreeSourceViews() = default;
-
-AXTreeSourceViews::~AXTreeSourceViews() = default;
-
-void AXTreeSourceViews::Init(AXAuraObjWrapper* root,
-                             const ui::AXTreeID& tree_id) {
-  DCHECK(root);
-  DCHECK_NE(tree_id, ui::AXTreeIDUnknown());
-  root_ = root;
-  tree_id_ = tree_id;
 }
 
 }  // namespace views
