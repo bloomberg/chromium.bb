@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -191,7 +192,8 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
     return;
   }
 
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.ScrollingCoordinator.UpdateTime");
+  SCOPED_UMA_AND_UKM_TIMER(frame_view->EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kScrollingCoordinator);
   TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPaint");
 
   // TODO(pdr): Move the scroll gesture region logic to use touch action rects.

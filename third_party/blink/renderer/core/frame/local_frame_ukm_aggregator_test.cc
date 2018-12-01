@@ -123,6 +123,8 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedPerSecond) {
   auto entries = recorder().GetEntriesByName("Blink.UpdateTime");
   EXPECT_EQ(entries.size(), 4u);
 
+  float expected_average_ratio =
+      floor(100.0 / (float)LocalFrameUkmAggregator::kCount);
   for (auto* entry : entries) {
     for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
       EXPECT_TRUE(
@@ -142,7 +144,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedPerSecond) {
       const int64_t* metric1_average_ratio =
           ukm::TestUkmRecorder::GetEntryMetric(entry,
                                                GetAverageRatioMetricName(i));
-      EXPECT_NEAR(*metric1_average_ratio, 14.0, 0.001);
+      EXPECT_NEAR(*metric1_average_ratio, expected_average_ratio, 0.001);
 
       EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(
           entry, GetWorstCaseRatioMetricName(i)));
