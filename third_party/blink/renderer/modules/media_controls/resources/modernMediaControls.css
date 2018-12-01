@@ -198,6 +198,7 @@ video::-internal-media-controls-picture-in-picture-button {
   border-width: 0;
   background-color: initial;
   color: inherit;
+  cursor: pointer;
 }
 
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-play-button" i],
@@ -416,6 +417,7 @@ video::-webkit-media-controls-timeline {
   padding-right: 16px;
   margin: 0;
   background: transparent;
+  cursor: pointer;
   /* This prevents layout issues in quirks mode */
   box-sizing: unset !important;
 }
@@ -574,6 +576,7 @@ video::-webkit-media-controls-volume-slider {
   margin: 0;
   padding: 22px 0; /* (48px button panel height - 4px slider height) / 2  */
   background: transparent;
+  cursor: pointer;
   /* This prevents layout issues in quirks mode. */
   box-sizing: unset !important;
 }
@@ -678,6 +681,7 @@ video::-internal-media-controls-overflow-menu-list-item {
   line-height: 48px;
   padding-left: 16px;
   padding-right: 16px;
+  cursor: pointer;
 }
 
 video::-webkit-media-controls div[pseudo="-internal-media-controls-text-track-list" i].pip-presented,
