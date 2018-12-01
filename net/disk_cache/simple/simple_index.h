@@ -151,7 +151,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   using EntrySet = std::unordered_map<uint64_t, EntryMetadata>;
 
-  static void InsertInEntrySet(uint64_t entry_hash,
+  // Insert an entry in the given set if there is not already entry present.
+  // Returns true if the set was modified.
+  static bool InsertInEntrySet(uint64_t entry_hash,
                                const EntryMetadata& entry_metadata,
                                EntrySet* entry_set);
 
@@ -167,6 +169,10 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // range between |initial_time| and |end_time| where open intervals are
   // possible according to the definition given in |DoomEntriesBetween()| in the
   // disk cache backend interface.
+  //
+  // Access times are not updated in net::APP_CACHE mode.  GetEntriesBetween()
+  // should only be called with null times indicating the full range when in
+  // this mode.
   std::unique_ptr<HashList> GetEntriesBetween(const base::Time initial_time,
                                               const base::Time end_time);
 
@@ -203,19 +209,26 @@ class NET_EXPORT_PRIVATE SimpleIndex
   }
 #endif
 
+  // Return true if a pending disk write has been scheduled from
+  // PostponeWritingToDisk().
+  bool HasPendingWrite() const;
+
  private:
   friend class SimpleIndexTest;
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, DiskWriteQueued);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, DiskWriteExecuted);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, DiskWritePostponed);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexAppCacheTest, DiskWriteQueued);
 
   void StartEvictionIfNeeded();
   void EvictionDone(int result);
 
   void PostponeWritingToDisk();
 
-  void UpdateEntryIteratorSize(EntrySet::iterator* it,
+  // Update the size of the entry pointed to by the given iterator.  Return
+  // true if the new size actually results in a change.
+  bool UpdateEntryIteratorSize(EntrySet::iterator* it,
                                base::StrictNumeric<uint32_t> entry_size);
 
   // Must run on IO Thread.
