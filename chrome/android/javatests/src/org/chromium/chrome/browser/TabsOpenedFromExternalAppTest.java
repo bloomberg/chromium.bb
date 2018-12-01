@@ -39,6 +39,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -783,9 +785,11 @@ public class TabsOpenedFromExternalAppTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"enable-spdy-proxy-auth", "enable-features=DataReductionProxyDecidesTransform"})
-    public void testLaunchWebLiteURL() throws InterruptedException {
+    @CommandLineFlags.Add("enable-spdy-proxy-auth")
+    @EnableFeatures(
+            {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
+    public void
+    testLaunchWebLiteURL() throws InterruptedException {
         mActivityTestRule.startMainActivityFromLauncher();
 
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -804,8 +808,8 @@ public class TabsOpenedFromExternalAppTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"enable-spdy-proxy-auth", "disable-features=DataReductionProxyDecidesTransform"})
+    @CommandLineFlags.Add("enable-spdy-proxy-auth")
+    @DisableFeatures("DataReductionProxyDecidesTransform")
     public void testLaunchWebLiteURLNoPreviews() throws InterruptedException {
         mActivityTestRule.startMainActivityFromLauncher();
 

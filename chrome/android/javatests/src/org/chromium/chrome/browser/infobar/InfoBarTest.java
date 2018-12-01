@@ -38,6 +38,8 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -255,7 +257,7 @@ public class InfoBarTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
+    @DisableFeatures(ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testInfoBarForGeolocation() throws InterruptedException, TimeoutException {
@@ -281,7 +283,7 @@ public class InfoBarTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
+    @DisableFeatures(ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser"})
     @RetryOnFailure
     public void testInfoBarForGeolocationDisappearsOnBack()
@@ -311,6 +313,7 @@ public class InfoBarTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
+    @EnableFeatures("DataReductionProxyEnabledWithNetworkService")
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testDataReductionPromoInfoBar() {
@@ -600,7 +603,7 @@ public class InfoBarTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
+    @DisableFeatures(ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testInfoBarContainerSwapsWebContents()
