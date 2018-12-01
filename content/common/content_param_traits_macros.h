@@ -17,7 +17,6 @@
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
@@ -43,8 +42,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PageVisibilityState,
-                          blink::mojom::PageVisibilityState::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 IPC_ENUM_TRAITS_MAX_VALUE(ws::mojom::ImeTextSpanThickness,

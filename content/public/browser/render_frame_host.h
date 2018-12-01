@@ -13,13 +13,13 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/page_visibility_state.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect.h"
@@ -242,7 +242,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the visibility state of the frame. The different visibility states
   // of a frame are defined in Blink.
-  virtual blink::mojom::PageVisibilityState GetVisibilityState() = 0;
+  virtual PageVisibilityState GetVisibilityState() = 0;
 
   // Returns whether the RenderFrame in the renderer process has been created
   // and still has a connection.  This is valid for all frames.

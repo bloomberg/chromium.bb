@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
 
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"

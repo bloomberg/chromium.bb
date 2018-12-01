@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/scoped_web_frame.h"
 
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"

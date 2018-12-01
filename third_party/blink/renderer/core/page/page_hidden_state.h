@@ -28,14 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_HIDDEN_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_HIDDEN_STATE_H_
+
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-String PageHiddenStateString(bool hidden) {
-  if (hidden)
-    return "hidden";
-  return "visible";
-}
+CORE_EXPORT String PageHiddenStateString(bool visible);
 
 }  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_HIDDEN_STATE_H_

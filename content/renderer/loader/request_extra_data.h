@@ -15,7 +15,6 @@
 #include "content/renderer/loader/frame_request_blocker.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "ui/base/page_transition_types.h"
