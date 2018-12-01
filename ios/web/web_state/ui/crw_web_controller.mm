@@ -1414,7 +1414,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // redirects can not change the origin. It is possible to have more than one
     // pending navigations, so the redirect does not necesserily belong to the
     // pending navigation item.
-    if (!IsPlaceholderUrl(requestURL) &&
+    if (!placeholderNavigation &&
         item->GetURL().GetOrigin() == requestURL.GetOrigin()) {
       self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
     }
@@ -1471,7 +1471,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   context->SetIsPost([self isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
 
-  if (!IsWKInternalUrl(requestURL)) {
+  if (!IsWKInternalUrl(requestURL) && !placeholderNavigation) {
     _webStateImpl->SetIsLoading(true);
 
     // WKBasedNavigationManager triggers HTML load when placeholder navigation
@@ -1874,7 +1874,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
-      [self registerLoadRequestForURL:placeholderURL
+      [self registerLoadRequestForURL:originalURL
                sameDocumentNavigation:NO
                        hasUserGesture:NO
                 placeholderNavigation:YES];
@@ -4357,8 +4357,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       action.navigationType == WKNavigationTypeBackForward) {
     // WKBackForwardList would have already been updated for back/forward
     // navigation. Create the pending item here to match.
+    GURL contextURL = IsPlaceholderUrl(requestURL)
+                          ? ExtractUrlFromPlaceholderUrl(requestURL)
+                          : requestURL;
     std::unique_ptr<web::NavigationContextImpl> context =
-        [self registerLoadRequestForURL:requestURL
+        [self registerLoadRequestForURL:contextURL
                  sameDocumentNavigation:NO
                          hasUserGesture:[_pendingNavigationInfo hasUserGesture]
                   placeholderNavigation:IsPlaceholderUrl(requestURL)];
@@ -4604,8 +4607,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     }
 
-    if (context->GetUrl() != webViewURL &&
-        !context->IsPlaceholderNavigation()) {
+    if (!context->IsPlaceholderNavigation() &&
+        context->GetUrl() != webViewURL) {
       // Update last seen URL because it may be changed by WKWebView (f.e. by
       // performing characters escaping).
       web::NavigationItem* item = web::GetItemWithUniqueID(
@@ -4793,7 +4796,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // webView.backForwardList.currentItem.URL will return the right committed
     // URL (crbug.com/784480).
     webViewURL = currentWKItemURL;
-  } else if (context && context->GetUrl() == currentWKItemURL) {
+  } else if (context && !context->IsPlaceholderNavigation() &&
+             context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
     // is a known edge case where |webView.URL| is wrong.
     // TODO(crbug.com/826013): Remove this workaround.
@@ -5008,7 +5012,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // TODO(crbug.com/864769): Remove this guard after fixing root cause of
   // invariant violation in production.
   if (context && item) {
-    if (context->GetUrl() == currentWKItemURL) {
+    GURL navigationURL = context->IsPlaceholderNavigation()
+                             ? CreatePlaceholderUrlForUrl(context->GetUrl())
+                             : context->GetUrl();
+    if (navigationURL == currentWKItemURL) {
       // If webView.backForwardList.currentItem.URL matches |context|, then this
       // is a known edge case where |webView.URL| is wrong.
       // TODO(crbug.com/826013): Remove this workaround.
@@ -5666,8 +5673,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   ProceduralBlock defaultNavigationBlock = ^{
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
+    GURL contextURL = IsPlaceholderUrl(navigationURL)
+                          ? ExtractUrlFromPlaceholderUrl(navigationURL)
+                          : navigationURL;
     std::unique_ptr<web::NavigationContextImpl> navigationContext =
-        [self registerLoadRequestForURL:navigationURL
+        [self registerLoadRequestForURL:contextURL
                                referrer:self.currentNavItemReferrer
                              transition:self.currentTransition
                  sameDocumentNavigation:sameDocumentNavigation
