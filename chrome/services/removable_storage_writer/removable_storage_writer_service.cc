@@ -12,29 +12,34 @@
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace {
 
 void OnRemovableStorageWriterGetterRequest(
-    service_manager::ServiceKeepalive* keepalive,
+    service_manager::ServiceContextRefFactory* ref_factory,
     chrome::mojom::RemovableStorageWriterRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<RemovableStorageWriter>(keepalive->CreateRef()),
+      std::make_unique<RemovableStorageWriter>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-RemovableStorageWriterService::RemovableStorageWriterService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+RemovableStorageWriterService::RemovableStorageWriterService() = default;
 
 RemovableStorageWriterService::~RemovableStorageWriterService() = default;
 
+std::unique_ptr<service_manager::Service>
+RemovableStorageWriterService::CreateService() {
+  return std::make_unique<RemovableStorageWriterService>();
+}
+
 void RemovableStorageWriterService::OnStart() {
-  registry_.AddInterface(base::BindRepeating(
-      &OnRemovableStorageWriterGetterRequest, &service_keepalive_));
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
+  registry_.AddInterface(
+      base::Bind(&OnRemovableStorageWriterGetterRequest, ref_factory_.get()));
 }
 
 void RemovableStorageWriterService::OnBindInterface(

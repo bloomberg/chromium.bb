@@ -44,7 +44,7 @@ XRTestHookRegistration::~XRTestHookRegistration() {
 }
 
 XRTestHookRegistration::XRTestHookRegistration(
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 
 }  // namespace device

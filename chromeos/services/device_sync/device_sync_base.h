@@ -35,8 +35,6 @@ class DeviceSyncBase : public mojom::DeviceSync {
   // service receives a request.
   void BindRequest(mojom::DeviceSyncRequest request);
 
-  void CloseAllBindings();
-
  protected:
   explicit DeviceSyncBase(gcm::GCMDriver* gcm_driver);
 

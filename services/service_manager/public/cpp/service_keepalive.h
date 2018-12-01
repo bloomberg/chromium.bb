@@ -45,11 +45,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
     // Invoked whenever the ServiceKeepalive detects that the service has been
     // idle for at least the idle time delta specified (if any) upon
     // construction of the ServiceKeepalive.
-    virtual void OnIdleTimeout() {}
+    virtual void OnIdleTimeout() = 0;
 
     // Invoked whenever the ServiceKeepalive detects new activity again after
     // having been idle for any amount of time.
-    virtual void OnIdleTimeoutCancelled() {}
+    virtual void OnIdleTimeoutCancelled() = 0;
   };
 
   ServiceKeepalive(ServiceBinding* binding,

@@ -18,7 +18,6 @@ class MultiDeviceSetupBase : public mojom::MultiDeviceSetup {
   ~MultiDeviceSetupBase() override;
 
   void BindRequest(mojom::MultiDeviceSetupRequest request);
-  void CloseAllBindings();
 
   // Sets the device with the given ID as the multi-device host for this
   // account.

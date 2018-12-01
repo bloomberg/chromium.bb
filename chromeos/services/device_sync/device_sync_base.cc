@@ -64,10 +64,6 @@ void DeviceSyncBase::BindRequest(mojom::DeviceSyncRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void DeviceSyncBase::CloseAllBindings() {
-  bindings_.CloseAllBindings();
-}
-
 void DeviceSyncBase::NotifyOnEnrollmentFinished() {
   observers_.ForAllPtrs(
       [](auto* observer) { observer->OnEnrollmentFinished(); });

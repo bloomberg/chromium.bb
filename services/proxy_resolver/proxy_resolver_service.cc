@@ -11,14 +11,18 @@
 
 namespace proxy_resolver {
 
-ProxyResolverService::ProxyResolverService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+ProxyResolverService::ProxyResolverService() = default;
 
 ProxyResolverService::~ProxyResolverService() = default;
 
+std::unique_ptr<service_manager::Service>
+ProxyResolverService::CreateService() {
+  return std::make_unique<ProxyResolverService>();
+}
+
 void ProxyResolverService::OnStart() {
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
   registry_.AddInterface(
       base::Bind(&ProxyResolverService::OnProxyResolverFactoryRequest,
                  base::Unretained(this)));
@@ -33,7 +37,7 @@ void ProxyResolverService::OnBindInterface(
 
 void ProxyResolverService::OnProxyResolverFactoryRequest(
     proxy_resolver::mojom::ProxyResolverFactoryRequest request) {
-  proxy_resolver_factory_.BindRequest(std::move(request), &service_keepalive_);
+  proxy_resolver_factory_.BindRequest(std::move(request), ref_factory_.get());
 }
 
 }  // namespace proxy_resolver

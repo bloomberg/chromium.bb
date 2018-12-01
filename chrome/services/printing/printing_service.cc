@@ -20,46 +20,52 @@ namespace {
 
 #if defined(OS_WIN)
 void OnPdfToEmfConverterFactoryRequest(
-    service_manager::ServiceKeepalive* keepalive,
+    service_manager::ServiceContextRefFactory* ref_factory,
     printing::mojom::PdfToEmfConverterFactoryRequest request) {
   mojo::MakeStrongBinding(std::make_unique<printing::PdfToEmfConverterFactory>(
-                              keepalive->CreateRef()),
+                              ref_factory->CreateRef()),
                           std::move(request));
 }
 #endif
 
 void OnPdfToPwgRasterConverterRequest(
-    service_manager::ServiceKeepalive* keepalive,
+    service_manager::ServiceContextRefFactory* ref_factory,
     printing::mojom::PdfToPwgRasterConverterRequest request) {
   mojo::MakeStrongBinding(std::make_unique<printing::PdfToPwgRasterConverter>(
-                              keepalive->CreateRef()),
+                              ref_factory->CreateRef()),
                           std::move(request));
 }
 
-void OnPdfNupConverterRequest(service_manager::ServiceKeepalive* keepalive,
-                              printing::mojom::PdfNupConverterRequest request) {
+void OnPdfNupConverterRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    printing::mojom::PdfNupConverterRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<printing::PdfNupConverter>(keepalive->CreateRef()),
+      std::make_unique<printing::PdfNupConverter>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-PrintingService::PrintingService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+PrintingService::PrintingService() = default;
 
 PrintingService::~PrintingService() = default;
 
+std::unique_ptr<service_manager::Service> PrintingService::CreateService() {
+  return std::make_unique<PrintingService>();
+}
+
 void PrintingService::OnStart() {
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
 #if defined(OS_WIN)
-  registry_.AddInterface(base::BindRepeating(&OnPdfToEmfConverterFactoryRequest,
-                                             &service_keepalive_));
-#endif
-  registry_.AddInterface(base::BindRepeating(&OnPdfToPwgRasterConverterRequest,
-                                             &service_keepalive_));
   registry_.AddInterface(
-      base::BindRepeating(&OnPdfNupConverterRequest, &service_keepalive_));
+      base::Bind(&OnPdfToEmfConverterFactoryRequest, ref_factory_.get()));
+#endif
+  registry_.AddInterface(
+      base::Bind(&OnPdfToPwgRasterConverterRequest, ref_factory_.get()));
+
+  registry_.AddInterface(
+      base::Bind(&OnPdfNupConverterRequest, ref_factory_.get()));
 }
 
 void PrintingService::OnBindInterface(

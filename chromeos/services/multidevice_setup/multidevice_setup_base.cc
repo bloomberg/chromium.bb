@@ -16,10 +16,6 @@ void MultiDeviceSetupBase::BindRequest(mojom::MultiDeviceSetupRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MultiDeviceSetupBase::CloseAllBindings() {
-  bindings_.CloseAllBindings();
-}
-
 }  // namespace multidevice_setup
 
 }  // namespace chromeos

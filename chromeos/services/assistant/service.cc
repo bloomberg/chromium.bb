@@ -22,6 +22,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/assistant/internal/internal_constants.h"

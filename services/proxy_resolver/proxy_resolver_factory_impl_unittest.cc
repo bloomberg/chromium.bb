@@ -17,7 +17,7 @@
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,26 +108,22 @@ class TestProxyResolverFactoryImpl : public ProxyResolverFactoryImpl {
 
 class ProxyResolverFactoryImplTest
     : public testing::Test,
-      public mojom::ProxyResolverFactoryRequestClient,
-      public service_manager::ServiceKeepalive::Observer {
+      public mojom::ProxyResolverFactoryRequestClient {
  public:
   ProxyResolverFactoryImplTest()
-      : service_keepalive_(
-            static_cast<service_manager::ServiceBinding*>(nullptr),
-            base::TimeDelta()) {
-    service_keepalive_.AddObserver(this);
+      : service_ref_factory_(
+            base::Bind(&ProxyResolverFactoryImplTest::OnNoServiceRefs,
+                       base::Unretained(this))) {
     std::unique_ptr<TestProxyResolverFactory> test_factory =
         std::make_unique<TestProxyResolverFactory>(&waiter_);
     mock_factory_ = test_factory.get();
     mock_factory_impl_ =
         std::make_unique<TestProxyResolverFactoryImpl>(std::move(test_factory));
     mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory_),
-                                    &service_keepalive_);
+                                    &service_ref_factory_);
   }
 
-  ~ProxyResolverFactoryImplTest() override {
-    service_keepalive_.RemoveObserver(this);
-  }
+  ~ProxyResolverFactoryImplTest() override {}
 
   void OnConnectionError() { waiter_.NotifyEvent(CONNECTION_ERROR); }
 
@@ -148,23 +144,22 @@ class ProxyResolverFactoryImplTest
                   mojom::HostResolverRequestClientPtr client) override {}
 
   void WaitForNoServiceRefs() {
-    DCHECK(!service_keepalive_ref_run_loop_);
+    DCHECK(!service_ref_run_loop_);
 
-    if (service_keepalive_.HasNoRefs())
+    if (service_ref_factory_.HasNoRefs())
       return;
 
-    service_keepalive_ref_run_loop_ = std::make_unique<base::RunLoop>();
-    service_keepalive_ref_run_loop_->Run();
-    service_keepalive_ref_run_loop_.reset();
+    service_ref_run_loop_ = std::make_unique<base::RunLoop>();
+    service_ref_run_loop_->Run();
+    service_ref_run_loop_.reset();
 
-    EXPECT_TRUE(service_keepalive_.HasNoRefs());
+    EXPECT_TRUE(service_ref_factory_.HasNoRefs());
   }
 
  protected:
-  // service_manager::ServiceKeepalive::Observer:
-  void OnIdleTimeout() override {
-    if (service_keepalive_ref_run_loop_)
-      service_keepalive_ref_run_loop_->Quit();
+  void OnNoServiceRefs() {
+    if (service_ref_run_loop_)
+      service_ref_run_loop_->Quit();
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -172,8 +167,8 @@ class ProxyResolverFactoryImplTest
   TestProxyResolverFactory* mock_factory_;
   mojom::ProxyResolverFactoryPtr factory_;
 
-  service_manager::ServiceKeepalive service_keepalive_;
-  std::unique_ptr<base::RunLoop> service_keepalive_ref_run_loop_;
+  service_manager::ServiceContextRefFactory service_ref_factory_;
+  std::unique_ptr<base::RunLoop> service_ref_run_loop_;
 
   int instances_destroyed_ = 0;
   net::CompletionOnceCallback create_callback_;
@@ -202,15 +197,15 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
                  base::Unretained(this))));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   proxy_resolver.reset();
   waiter_.WaitForEvent(RESOLVER_DESTROYED);
   EXPECT_EQ(1, instances_destroyed_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   factory_.reset();
   WaitForNoServiceRefs();
@@ -240,10 +235,10 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverFactory) {
                  base::Unretained(this))));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   proxy_resolver.reset();
   waiter_.WaitForEvent(RESOLVER_DESTROYED);
@@ -294,19 +289,19 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectClientDuringResolverCreation) {
 TEST_F(ProxyResolverFactoryImplTest, MultipleFactories) {
   // Creating |factory_| should have resulted in an outstanding service
   // reference.
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   // Creating another shouldn't change that.
   mojom::ProxyResolverFactoryPtr factory2;
   mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory2),
-                                  &service_keepalive_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+                                  &service_ref_factory_);
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   // Destroying one factory while keeping the other around should not release
   // the reference.
   factory_.reset();
   task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
 
   // Destroying the second factory should release the reference.
   factory2.reset();
@@ -315,8 +310,8 @@ TEST_F(ProxyResolverFactoryImplTest, MultipleFactories) {
   // Test that creating and then destroying a new factory gets and releases a
   // reference again.
   mock_factory_impl_->BindRequest(mojo::MakeRequest(&factory2),
-                                  &service_keepalive_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+                                  &service_ref_factory_);
+  EXPECT_FALSE(service_ref_factory_.HasNoRefs());
   factory2.reset();
   WaitForNoServiceRefs();
 }

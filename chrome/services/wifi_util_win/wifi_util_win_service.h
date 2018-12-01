@@ -6,15 +6,16 @@
 #define CHROME_SERVICES_WIFI_UTIL_WIN_WIFI_UTIL_WIN_SERVICE_H_
 
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 class WifiUtilWinService : public service_manager::Service {
  public:
-  explicit WifiUtilWinService(service_manager::mojom::ServiceRequest request);
+  WifiUtilWinService();
   ~WifiUtilWinService() override;
+
+  // Factory method for creating the service.
+  static std::unique_ptr<service_manager::Service> CreateService();
 
   // Lifescycle events that occur after the service has started to spinup.
   void OnStart() override;
@@ -23,8 +24,8 @@ class WifiUtilWinService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  service_manager::ServiceBinding service_binding_;
-  service_manager::ServiceKeepalive service_keepalive_;
+  // State needed to manage service lifecycle and lifecycle of bound clients.
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiUtilWinService);

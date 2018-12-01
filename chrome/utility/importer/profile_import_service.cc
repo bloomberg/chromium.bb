@@ -16,25 +16,30 @@
 
 namespace {
 
-void OnProfileImportRequest(service_manager::ServiceKeepalive* keepalive,
-                            chrome::mojom::ProfileImportRequest request) {
+void OnProfileImportRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    chrome::mojom::ProfileImportRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<ProfileImportImpl>(keepalive->CreateRef()),
+      std::make_unique<ProfileImportImpl>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-ProfileImportService::ProfileImportService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+ProfileImportService::ProfileImportService() {}
 
-ProfileImportService::~ProfileImportService() = default;
+ProfileImportService::~ProfileImportService() {}
+
+std::unique_ptr<service_manager::Service>
+ProfileImportService::CreateService() {
+  return std::make_unique<ProfileImportService>();
+}
 
 void ProfileImportService::OnStart() {
+  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
+      context()->CreateQuitClosure()));
   registry_.AddInterface(
-      base::BindRepeating(&OnProfileImportRequest, &service_keepalive_));
+      base::Bind(&OnProfileImportRequest, ref_factory_.get()));
 
 #if defined(OS_MACOSX)
   std::string dylib_path = GetFirefoxDylibPath().value();

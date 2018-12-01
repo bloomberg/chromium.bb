@@ -13,8 +13,6 @@
 #include "build/build_config.h"
 #include "services/content/public/cpp/buildflags.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
@@ -42,8 +40,7 @@ class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
     kUseEnvironmentUI,
   };
 
-  SimpleBrowserService(service_manager::mojom::ServiceRequest request,
-                       UIInitializationMode mode);
+  explicit SimpleBrowserService(UIInitializationMode mode);
   ~SimpleBrowserService() override;
 
  private:
@@ -54,7 +51,6 @@ class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
-  service_manager::ServiceBinding service_binding_;
   const UIInitializationMode ui_initialization_mode_;
 
 #if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)

@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/file_util_service.h"
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -29,16 +28,17 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
  public:
   SandboxedDMGAnalyzerTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        file_util_service_(test_connector_factory_.RegisterInstance(
-            chrome::mojom::kFileUtilServiceName)) {}
+        test_connector_factory_(
+            service_manager::TestConnectorFactory::CreateForUniqueService(
+                std::make_unique<FileUtilService>())),
+        connector_(test_connector_factory_->CreateConnector()) {}
 
   void AnalyzeFile(const base::FilePath& path,
                    safe_browsing::ArchiveAnalyzerResults* results) {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedDMGAnalyzer> analyzer(new SandboxedDMGAnalyzer(
-        path, results_getter.GetCallback(),
-        test_connector_factory_.GetDefaultConnector()));
+        path, results_getter.GetCallback(), connector_.get()));
     analyzer->Start();
     run_loop.Run();
   }
@@ -80,8 +80,8 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
-  service_manager::TestConnectorFactory test_connector_factory_;
-  FileUtilService file_util_service_;
+  std::unique_ptr<service_manager::TestConnectorFactory> test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {

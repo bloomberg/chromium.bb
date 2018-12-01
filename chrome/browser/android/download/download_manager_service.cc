@@ -34,6 +34,7 @@
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 using base::android::JavaParamRef;
@@ -64,6 +65,21 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
       item->GetStartTime().ToJavaTime(), item->GetEndTime().ToJavaTime(),
       item->GetFileExternallyRemoved());
 }
+
+class ServiceImpl : public service_manager::Service {
+ public:
+  ServiceImpl() = default;
+  ~ServiceImpl() override = default;
+
+ private:
+  // service_manager::Service:
+  void OnStart() override {
+    DownloadManagerService::GetInstance()->NotifyServiceStarted(
+        context()->connector()->Clone());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+};
 
 }  // namespace
 
@@ -152,9 +168,14 @@ DownloadManagerService::DownloadManagerService()
 
 DownloadManagerService::~DownloadManagerService() {}
 
-void DownloadManagerService::BindServiceRequest(
-    service_manager::mojom::ServiceRequest request) {
-  service_binding_.Bind(std::move(request));
+std::unique_ptr<service_manager::Service>
+DownloadManagerService::CreateServiceManagerServiceInstance() {
+  return std::make_unique<ServiceImpl>();
+}
+
+void DownloadManagerService::NotifyServiceStarted(
+    std::unique_ptr<service_manager::Connector> connector) {
+  connector_ = std::move(connector);
 }
 
 void DownloadManagerService::Init(JNIEnv* env,
@@ -610,7 +631,7 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
       nullptr, data_dir.Append(chrome::kInitialProfile),
       download::InProgressDownloadManager::IsOriginSecureCallback(),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
-  content::GetNetworkServiceFromConnector(service_binding_.GetConnector());
+  content::GetNetworkServiceFromConnector(connector_.get());
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
   in_progress_manager_->set_url_loader_factory_getter(

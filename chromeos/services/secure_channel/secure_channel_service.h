@@ -10,8 +10,6 @@
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace chromeos {
 
@@ -24,7 +22,9 @@ class SecureChannelBase;
 // implementation and shares it among all connection requests.
 class SecureChannelService : public service_manager::Service {
  public:
-  explicit SecureChannelService(service_manager::mojom::ServiceRequest request);
+  static std::unique_ptr<service_manager::Service> CreateService();
+
+  SecureChannelService();
   ~SecureChannelService() override;
 
  protected:
@@ -35,7 +35,6 @@ class SecureChannelService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  service_manager::ServiceBinding service_binding_;
   std::unique_ptr<SecureChannelBase> secure_channel_;
   service_manager::BinderRegistry registry_;
 

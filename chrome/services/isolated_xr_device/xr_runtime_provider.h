@@ -7,7 +7,8 @@
 
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace device {
 class OculusDevice;
@@ -18,14 +19,14 @@ class IsolatedXRRuntimeProvider
     : public device::mojom::IsolatedXRRuntimeProvider {
  public:
   IsolatedXRRuntimeProvider(
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~IsolatedXRRuntimeProvider() final;
 
   void RequestDevices(
       device::mojom::IsolatedXRRuntimeProviderClientPtr client) override;
 
  private:
-  const std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref_;
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   IsolatedXRRuntimeProvider();
 

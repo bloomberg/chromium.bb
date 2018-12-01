@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/file_util_service.h"
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
@@ -75,8 +74,10 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 
   SandboxedZipAnalyzerTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        file_util_service_(test_connector_factory_.RegisterInstance(
-            chrome::mojom::kFileUtilServiceName)) {}
+        test_connector_factory_(
+            service_manager::TestConnectorFactory::CreateForUniqueService(
+                std::make_unique<FileUtilService>())),
+        connector_(test_connector_factory_->CreateConnector()) {}
 
   void SetUp() override {
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
@@ -91,8 +92,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedZipAnalyzer> analyzer(new SandboxedZipAnalyzer(
-        file_path, results_getter.GetCallback(),
-        test_connector_factory_.GetDefaultConnector()));
+        file_path, results_getter.GetCallback(), connector_.get()));
     analyzer->Start();
     run_loop.Run();
   }
@@ -186,8 +186,9 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
-  service_manager::TestConnectorFactory test_connector_factory_;
-  FileUtilService file_util_service_;
+  std::unique_ptr<service_manager::TestConnectorFactory>
+      test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 // static

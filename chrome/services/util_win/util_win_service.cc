@@ -13,24 +13,29 @@
 
 namespace {
 
-void OnShellUtilWinRequest(service_manager::ServiceKeepalive* keepalive,
-                           chrome::mojom::ShellUtilWinRequest request) {
+void OnShellUtilWinRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    chrome::mojom::ShellUtilWinRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<ShellUtilWinImpl>(keepalive->CreateRef()),
+      std::make_unique<ShellUtilWinImpl>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-UtilWinService::UtilWinService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+UtilWinService::UtilWinService() = default;
 
 UtilWinService::~UtilWinService() = default;
 
+std::unique_ptr<service_manager::Service> UtilWinService::CreateService() {
+  return std::unique_ptr<service_manager::Service>(new UtilWinService());
+}
+
 void UtilWinService::OnStart() {
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::BindRepeating(&OnShellUtilWinRequest, &service_keepalive_));
+      base::Bind(&OnShellUtilWinRequest, ref_factory_.get()));
 }
 
 void UtilWinService::OnBindInterface(

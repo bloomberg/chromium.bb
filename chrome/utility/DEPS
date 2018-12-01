@@ -19,8 +19,6 @@ include_rules = [
   "+chrome/services/util_win/public/mojom",
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",
-  "+chromeos/assistant/buildflags.h",
-  "+chromeos/services/assistant",
   "+chromeos/services/ime/ime_service.h",
   "+chromeos/services/ime/public/mojom",
   "+components/crash/core/common/crash_keys.h",

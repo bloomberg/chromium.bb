@@ -333,6 +333,13 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
           const base::FilePath& partition_path,
           bool in_memory) = 0;
 
+  using StaticServiceMap =
+      std::map<std::string, service_manager::EmbeddedServiceInfo>;
+
+  // Registers per-browser-context services to be loaded in the browser process
+  // by the Service Manager.
+  virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.
   virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
