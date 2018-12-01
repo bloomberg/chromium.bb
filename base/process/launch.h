@@ -199,7 +199,16 @@ struct BASE_EXPORT LaunchOptions {
   // PA_HND() macro. The child retrieves the handle
   // |zx_take_startup_handle(id)|. The supplied handles are consumed by
   // LaunchProcess() even on failure.
+  // Note that PA_USER1 ids are reserved for use by AddHandleToTransfer(), below
+  // and by convention PA_USER0 is reserved for use by the embedding
+  // application.
   HandlesToTransferVector handles_to_transfer;
+
+  // Allocates a unique id for |handle| in |handles_to_transfer|, inserts it,
+  // and returns the generated id.
+  static uint32_t AddHandleToTransfer(
+      HandlesToTransferVector* handles_to_transfer,
+      zx_handle_t handle);
 
   // Specifies which basic capabilities to grant to the child process.
   // By default the child process will receive the caller's complete namespace,

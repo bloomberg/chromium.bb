@@ -93,6 +93,15 @@ fdio_spawn_action_t FdioSpawnActionAddHandle(uint32_t id, zx_handle_t handle) {
 
 }  // namespace
 
+// static
+uint32_t LaunchOptions::AddHandleToTransfer(
+    HandlesToTransferVector* handles_to_transfer,
+    zx_handle_t handle) {
+  uint32_t handle_id = PA_HND(PA_USER1, handles_to_transfer->size());
+  handles_to_transfer->push_back({handle_id, handle});
+  return handle_id;
+}
+
 Process LaunchProcess(const CommandLine& cmdline,
                       const LaunchOptions& options) {
   return LaunchProcess(cmdline.argv(), options);
