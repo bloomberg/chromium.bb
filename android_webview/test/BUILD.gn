@@ -52,6 +52,7 @@ android_apk("webview_instrumentation_apk") {
     "//components/policy/android:policy_java_test_support",
     "//content/public/android:content_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
     "//third_party/junit",
     "//ui/android:ui_java",
   ]
@@ -77,6 +78,8 @@ android_apk("webview_instrumentation_apk") {
     ":libdrawgl",
     ":libstandalonelibwebviewchromium",
   ]
+
+  loadable_modules = [ "$root_out_dir/libcrashpad_handler.so" ]
 
   native_lib_version_rule = "//build/util:chrome_version_json"
   _native_lib_file =

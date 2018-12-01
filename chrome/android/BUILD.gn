@@ -1340,6 +1340,7 @@ if (!android_64bit_target_cpu ||
     ]
     deps = [
       "//android_webview:common",
+      "//components/crash/android:crashpad_main",
     ]
 
     export_java_symbols = true

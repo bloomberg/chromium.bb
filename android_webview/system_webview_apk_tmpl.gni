@@ -18,7 +18,10 @@ template("system_webview_apk_tmpl") {
       "//android_webview/glue",
       "//android_webview/support_library:support_lib_glue_java",
       "//base:base_java",
+      "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
     ]
+
+    loadable_modules = [ "$root_out_dir/libcrashpad_handler.so" ]
 
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep
@@ -30,6 +33,12 @@ template("system_webview_apk_tmpl") {
       shared_libraries = [ "//android_webview:libwebviewchromium" ]
       if (build_apk_secondary_abi && android_64bit_target_cpu) {
         secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
+        deps += [ "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so($android_secondary_abi_toolchain)" ]
+        toolchain_out_dir = get_label_info(
+                "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so($android_secondary_abi_toolchain)",
+                "root_out_dir")
+        secondary_abi_loadable_modules =
+            [ "${toolchain_out_dir}/libcrashpad_handler.so" ]
       }
     } else {
       # Include placeholder libraries to ensure we are treated as the desired

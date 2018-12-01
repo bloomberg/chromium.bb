@@ -64,3 +64,31 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+_java_handler_jni_sources =
+    [ "java/src/org/chromium/components/crash/browser/CrashpadMain.java" ]
+
+generate_jni("java_handler_jni_headers") {
+  sources = _java_handler_jni_sources
+  jni_package = "crashpad"
+}
+
+android_library("handler_java") {
+  deps = [
+    "//base:base_java",
+  ]
+  java_files = _java_handler_jni_sources
+}
+
+static_library("crashpad_main") {
+  sources = [
+    "crashpad_main.cc",
+  ]
+
+  deps = [
+    ":java_handler_jni_headers",
+    "//base",
+    "//third_party/crashpad/crashpad/client",
+    "//third_party/crashpad/crashpad/handler",
+  ]
+}

@@ -429,6 +429,7 @@ if (android_64bit_target_cpu) {
   shared_library("monochrome") {
     deps = [
       ":webview_entry_point",
+      "//components/crash/android:crashpad_main",
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
