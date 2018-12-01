@@ -31690,6 +31690,8 @@ from previous Chrome versions.
   <int value="10" label="TPM error"/>
   <int value="11" label="Failed to get username hash"/>
   <int value="12" label="Failed to get OAuth2 token"/>
+  <int value="13" label="Cryptohome missing from disk"/>
+  <int value="14" label="Authentication disabled for user"/>
 </enum>
 
 <enum name="LoginIsKnownUser">

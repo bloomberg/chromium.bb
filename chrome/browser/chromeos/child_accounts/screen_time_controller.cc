@@ -10,9 +10,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -173,7 +173,7 @@ void ScreenTimeController::UpdateTimeLimitsMessage(
       chromeos::ProfileHelper::Get()
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
-  LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
       account_id, !visible,
       visible ? next_unlock_time : base::Optional<base::Time>());
 }
