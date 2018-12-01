@@ -50,11 +50,19 @@ p { font-family: serif; font-style: italic; }
 <script src="../../resources/testharnessreport.js"></script>
 <script>
     setup({ explicit_done: true });
-    function testLetterSpaceAndLigature(element) {
-        var elementWidthWithLigatureAndLetterSpacing = element.getBoundingClientRect().width;
+    function testLetterSpaceAndFeatureLigature() {
+        var elementWidthWithFeatureLigatureAndLetterSpacing = dligSpan.getBoundingClientRect().width;
         var elementWidthWithLetterSpacing = letterSpace.getBoundingClientRect().width;
         test(function() {
-            assert_equals(elementWidthWithLigatureAndLetterSpacing, elementWidthWithLetterSpacing, "Ligature not applied due to letter spacing.");
+            assert_not_equals(elementWidthWithFeatureLigatureAndLetterSpacing, elementWidthWithLetterSpacing, "Ligature applied despite letter spacing.");
+            }, "Ligature expected to be applied despite letter spacing.");
+    }
+
+   function testLetterSpaceAndVariantLigature() {
+        var elementWidthWithVariantLigatureAndLetterSpacing = fontVariantSpan.getBoundingClientRect().width;
+        var elementWidthWithLetterSpacing = letterSpace.getBoundingClientRect().width;
+        test(function() {
+            assert_equals(elementWidthWithVariantLigatureAndLetterSpacing, elementWidthWithLetterSpacing, "Ligature not applied due to letter spacing.");
             }, "Ligature expected not to be applied due to letter spacing.");
     }
 
@@ -67,8 +75,8 @@ p { font-family: serif; font-style: italic; }
     }
 
     function runTest() {
-        testLetterSpaceAndLigature(dligSpan);
-        testLetterSpaceAndLigature(fontVariantSpan);
+        testLetterSpaceAndFeatureLigature();
+        testLetterSpaceAndVariantLigature();
         testLetterSpaceDoesNotPreventOnum();
         done();
     }
