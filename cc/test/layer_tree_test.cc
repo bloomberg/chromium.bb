@@ -235,6 +235,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidFinishImplFrameOnThread(this);
   }
 
+  void WillSendBeginMainFrame() override {
+    LayerTreeHostImpl::WillSendBeginMainFrame();
+    test_hooks_->WillSendBeginMainFrameOnThread(this);
+  }
+
   void DidSendBeginMainFrame() override {
     LayerTreeHostImpl::DidSendBeginMainFrame();
     test_hooks_->DidSendBeginMainFrameOnThread(this);
