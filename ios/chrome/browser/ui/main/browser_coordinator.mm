@@ -44,6 +44,9 @@
                                   RepostFormTabHelperDelegate,
                                   WebStateListObserving>
 
+// Whether the coordinator is started.
+@property(nonatomic, assign, getter=isStarted) BOOL started;
+
 // Handles command dispatching.
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
 
@@ -99,6 +102,9 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  if (self.started)
+    return;
+
   DCHECK(self.browserState);
   DCHECK(!self.viewController);
   self.dispatcher = [[CommandDispatcher alloc] init];
@@ -110,9 +116,12 @@
   [self installDelegatesForAllWebStates];
   [self addWebStateListObserver];
   [super start];
+  self.started = YES;
 }
 
 - (void)stop {
+  if (!self.started)
+    return;
   [super stop];
   [self removeWebStateListObserver];
   [self uninstallDelegatesForAllWebStates];
@@ -120,6 +129,7 @@
   [self stopChildCoordinators];
   [self destroyViewController];
   self.dispatcher = nil;
+  self.started = NO;
 }
 
 #pragma mark - Public
