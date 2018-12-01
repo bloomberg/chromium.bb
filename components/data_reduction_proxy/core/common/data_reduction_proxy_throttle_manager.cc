@@ -40,6 +40,9 @@ void DataReductionProxyThrottleManager::MarkProxiesAsBad(
     base::TimeDelta bypass_duration,
     const net::ProxyList& bad_proxies,
     mojom::DataReductionProxy::MarkProxiesAsBadCallback callback) {
+  // There is no need to handle the case where |callback| is never invoked
+  // (possible on connection error). That would imply disconnection from the
+  // browser, which is not recoverable.
   data_reduction_proxy_->MarkProxiesAsBad(bypass_duration, bad_proxies,
                                           std::move(callback));
 }

@@ -144,9 +144,6 @@ void DataReductionProxyURLLoaderThrottle::MarkProxiesAsBad(
   for (const auto& proxy : bad_proxies)
     proxy_list.AddProxyServer(proxy);
 
-  // TODO(https://crbug.com/721403): Does this need to handle the case where
-  // |callback| is never invoked (which can happen on a connection error in
-  // |data_reduction_proxy_|).
   auto callback = base::BindOnce(
       &DataReductionProxyURLLoaderThrottle::OnMarkProxiesAsBadComplete,
       base::Unretained(this));
