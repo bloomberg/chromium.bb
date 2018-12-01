@@ -21,7 +21,7 @@ SQLITE_ALTER_TABLE statement succeeded.
 SQLITE_TRANSACTION statement failed: could not prepare statement (23 not authorized)
 SQLITE_ATTACH statement failed: could not prepare statement (23 not authorized)
 SQLITE_DETACH statement failed: could not prepare statement (23 not authorized)
-SQLITE_REINDEX statement succeeded.
+SQLITE_REINDEX statement failed: could not prepare statement (1 near "REINDEX": syntax error)
 SQLITE_ANALYZE statement failed: could not prepare statement (23 not authorized)
 SQLITE_DROP_INDEX statement succeeded.
 SQLITE_DROP_TEMP_TABLE statement succeeded.
@@ -60,7 +60,7 @@ SQLITE_ALTER_TABLE statement failed: could not prepare statement (23 not authori
 SQLITE_TRANSACTION statement failed: could not prepare statement (23 not authorized)
 SQLITE_ATTACH statement failed: could not prepare statement (23 not authorized)
 SQLITE_DETACH statement failed: could not prepare statement (23 not authorized)
-SQLITE_REINDEX statement failed: could not prepare statement (23 not authorized)
+SQLITE_REINDEX statement failed: could not prepare statement (1 near "REINDEX": syntax error)
 SQLITE_ANALYZE statement failed: could not prepare statement (23 not authorized)
 SQLITE_DROP_INDEX statement failed: could not prepare statement (23 not authorized)
 SQLITE_DROP_TEMP_TABLE statement failed: could not prepare statement (23 not authorized)
