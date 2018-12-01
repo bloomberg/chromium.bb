@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/local_card_migration_controller_observer.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_controller_impl.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -40,7 +40,7 @@ enum class LocalCardMigrationFlowStep {
 // Controller controls the step of migration flow and is responsible
 // for interacting with LocalCardMigrationIconView.
 class ManageMigrationUiController
-    : public content::WebContentsObserver,
+    : public LocalCardMigrationControllerObserver,
       public content::WebContentsUserData<ManageMigrationUiController> {
  public:
   ~ManageMigrationUiController() override;
@@ -57,7 +57,7 @@ class ManageMigrationUiController
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards);
 
-  void OnUserClickingCreditCardIcon();
+  void OnUserClickedCreditCardIcon();
 
   LocalCardMigrationFlowStep GetFlowStep() const;
 
@@ -66,6 +66,9 @@ class ManageMigrationUiController
   LocalCardMigrationBubble* GetBubbleView() const;
 
   LocalCardMigrationDialog* GetDialogView() const;
+
+  // LocalCardMigrationControllerObserver:
+  void OnMigrationNoLongerAvailable() override;
 
  protected:
   explicit ManageMigrationUiController(content::WebContents* web_contents);

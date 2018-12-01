@@ -66,6 +66,11 @@ void LocalCardMigrationBubbleControllerImpl::ReshowBubble() {
   ShowBubbleImplementation();
 }
 
+void LocalCardMigrationBubbleControllerImpl::AddObserver(
+    LocalCardMigrationControllerObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
 LocalCardMigrationBubble*
 LocalCardMigrationBubbleControllerImpl::local_card_migration_bubble_view()
     const {
@@ -117,6 +122,9 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
   // Otherwise, get rid of the bubble and icon.
   local_card_migration_bubble_closure_.Reset();
   bool bubble_was_visible = local_card_migration_bubble_;
+  for (LocalCardMigrationControllerObserver& observer : observer_list_) {
+    observer.OnMigrationNoLongerAvailable();
+  }
   if (bubble_was_visible) {
     local_card_migration_bubble_->Hide();
     OnBubbleClosed();
