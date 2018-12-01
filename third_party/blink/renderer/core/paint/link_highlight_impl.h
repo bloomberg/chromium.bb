@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/link_highlight.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
@@ -47,12 +48,12 @@ class PictureLayer;
 
 namespace blink {
 
+class GraphicsContext;
 class GraphicsLayer;
 class LayoutBoxModelObject;
 class Node;
 
 class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
-                                            public cc::ContentLayerClient,
                                             public CompositorAnimationDelegate,
                                             public CompositorAnimationClient {
  public:
@@ -66,13 +67,6 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   // (see |geometry_needs_update_| and |Invalidate()|) which is based on raster
   // invalidation of the owning graphics layer.
   void UpdateGeometry();
-
-  // cc::ContentLayerClient implementation.
-  gfx::Rect PaintableRegion() override;
-  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting painting_control) override;
-  bool FillsBoundsCompletely() const override { return false; }
-  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
   // CompositorAnimationDelegate implementation.
   void NotifyAnimationStarted(double monotonic_time, int group) override;
@@ -93,9 +87,16 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   Node* GetNode() const { return node_; }
 
-  CompositorElementId element_id();
+  CompositorElementId element_id() const;
 
-  const EffectPaintPropertyNode* effect() override;
+  const EffectPaintPropertyNode* effect() const override;
+
+  void Paint(GraphicsContext&);
+
+  wtf_size_t FragmentCountForTesting() const { return fragments_.size(); }
+  cc::PictureLayer* LayerForTesting(size_t index) const {
+    return fragments_[index].Layer();
+  }
 
  private:
   LinkHighlightImpl(Node*);
@@ -110,8 +111,28 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   // changed size since the last call to this function.
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
-  scoped_refptr<cc::PictureLayer> content_layer_;
-  Path path_;
+  class LinkHighlightFragment : public cc::ContentLayerClient {
+   public:
+    LinkHighlightFragment(CompositorElementId);
+
+    cc::PictureLayer* Layer() const { return layer_.get(); }
+    const Path& GetPath() const { return path_; }
+    void SetPath(const Path& path) { path_ = path; }
+    void SetColor(const Color& color) { color_ = color; }
+
+    // cc::ContentLayerClient implementation.
+    gfx::Rect PaintableRegion() override;
+    scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+        PaintingControlSetting painting_control) override;
+    bool FillsBoundsCompletely() const override { return false; }
+    size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+
+   private:
+    scoped_refptr<cc::PictureLayer> layer_;
+    Path path_;
+    Color color_;
+  };
+  Vector<LinkHighlightFragment> fragments_;
 
   Persistent<Node> node_;
   GraphicsLayer* current_graphics_layer_;

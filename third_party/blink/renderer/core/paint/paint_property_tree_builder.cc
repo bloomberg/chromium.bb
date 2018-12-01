@@ -982,31 +982,43 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
-  if (NeedsPaintPropertyUpdate()) {
-    if (NeedsLinkHighlightEffect(object_)) {
-      // While the link highlight uses the current transform space for
-      // positioning, it's parent effect is the root so that it is not affected
-      // by enclosing filters.
-      const auto& parent = EffectPaintPropertyNode::Root();
-      EffectPaintPropertyNode::State link_highlight_state;
-      link_highlight_state.local_transform_space = context_.current.transform;
-      link_highlight_state.compositor_element_id =
-          object_.GetFrame()->GetPage()->GetLinkHighlights().element_id(
-              object_);
-      link_highlight_state.direct_compositing_reasons =
-          CompositingReason::kActiveOpacityAnimation;
-      // Unlike other property nodes, link highlight effect nodes are guaranteed
-      // to be leaf nodes and do not require subtree invalidation, so we do not
-      // call |OnUpdate| here.
-      properties_->UpdateLinkHighlightEffect(parent,
-                                             std::move(link_highlight_state));
-    } else {
-      // Unlike other property nodes, link highlight effect nodes are guaranteed
-      // to be leaf nodes and do not require subtree invalidation, so we do not
-      // call |OnClear| here.
-      properties_->ClearLinkHighlightEffect();
-    }
+  if (!NeedsPaintPropertyUpdate())
+    return;
+
+  DCHECK(properties_);
+
+  if (!NeedsLinkHighlightEffect(object_)) {
+    // Unlike other property nodes, link highlight effect nodes are guaranteed
+    // to be leaf nodes and do not require subtree invalidation, so we do not
+    // call |OnClear| here.
+    properties_->ClearLinkHighlightEffect();
+    return;
   }
+
+  if (&fragment_data_ != &object_.FirstFragment()) {
+    // All fragments share the same LinkHighlightEffect node.
+    DCHECK(object_.FirstFragment().PaintProperties());
+    DCHECK(object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
+    properties_->SetLinkHighlightEffect(
+        object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
+    return;
+  }
+
+  // While the link highlight uses the current transform space for
+  // positioning, it's parent effect is the root so that it is not affected
+  // by enclosing filters.
+  const auto& parent = EffectPaintPropertyNode::Root();
+  EffectPaintPropertyNode::State link_highlight_state;
+  link_highlight_state.local_transform_space = context_.current.transform;
+  link_highlight_state.compositor_element_id =
+      object_.GetFrame()->GetPage()->GetLinkHighlights().element_id(object_);
+  link_highlight_state.direct_compositing_reasons =
+      CompositingReason::kActiveOpacityAnimation;
+  // Unlike other property nodes, link highlight effect nodes are guaranteed
+  // to be leaf nodes and do not require subtree invalidation, so we do not
+  // call |OnUpdate| here.
+  properties_->UpdateLinkHighlightEffect(parent,
+                                         std::move(link_highlight_state));
 }
 
 static bool NeedsFilter(const LayoutObject& object) {
@@ -1854,28 +1866,34 @@ static LayoutRect BoundingBoxInPaginationContainer(
         &enclosing_pagination_layer);
   }
 
-  // Non-boxes paint in the space of their containing block.
-  if (!object.IsBox()) {
-    const LayoutBox& containining_block = *object.ContainingBlock();
-    LayoutRect bounds_rect;
+  LayoutRect local_bounds;
+  const LayoutBox* local_space_object = nullptr;
+  if (object.IsBox()) {
+    local_space_object = ToLayoutBox(&object);
+    local_bounds = local_space_object->BorderBoxRect();
+  } else {
+    // Non-boxes paint in the space of their containing block.
+    local_space_object = object.ContainingBlock();
     // For non-SVG we can get a more accurate result with LocalVisualRect,
     // instead of falling back to the bounds of the enclosing block.
     if (!object.IsSVG()) {
-      bounds_rect = object.LocalVisualRect();
-      containining_block.FlipForWritingMode(bounds_rect);
+      local_bounds = object.LocalVisualRect();
+      local_space_object->FlipForWritingMode(local_bounds);
     } else {
-      bounds_rect = LayoutRect(SVGLayoutSupport::LocalVisualRect(object));
+      local_bounds = LayoutRect(SVGLayoutSupport::LocalVisualRect(object));
     }
+  }
 
-    return MapLocalRectToAncestorLayer(containining_block, bounds_rect,
-                                       enclosing_pagination_layer);
+  // The link highlight covers block visual overflows, continuations, etc. which
+  // may intersect with more fragments than the object itself.
+  if (NeedsLinkHighlightEffect(object)) {
+    local_bounds.Unite(UnionRect(object.PhysicalOutlineRects(
+        LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow)));
   }
 
   // Compute the bounding box without transforms.
-  // The object is guaranteed to be a box due to the logic above.
-  const LayoutBox& box = ToLayoutBox(object);
-  auto bounding_box = MapLocalRectToAncestorLayer(box, box.BorderBoxRect(),
-                                                  enclosing_pagination_layer);
+  auto bounding_box = MapLocalRectToAncestorLayer(
+      *local_space_object, local_bounds, enclosing_pagination_layer);
 
   if (!IsRepeatingTableSection(object))
     return bounding_box;
@@ -2864,11 +2882,11 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
       object_.StyleRef().ClipPath() || NeedsPaintOffsetTranslation(object_) ||
       NeedsStickyTranslation(object_) || NeedsTransform(object_) ||
       NeedsClipPathClip(object_) || NeedsEffect(object_) ||
-      NeedsLinkHighlightEffect(object_) ||
       NeedsTransformForNonRootSVG(object_) || NeedsFilter(object_) ||
       NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
       NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
       NeedsReplacedContentTransform(object_) ||
+      NeedsLinkHighlightEffect(object_) ||
       NeedsScrollOrScrollTranslation(object_);
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 

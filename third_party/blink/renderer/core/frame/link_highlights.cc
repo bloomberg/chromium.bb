@@ -132,4 +132,10 @@ CompositorElementId LinkHighlights::element_id(const LayoutObject& object) {
   return CompositorElementId();
 }
 
+void LinkHighlights::Paint(GraphicsContext& context) const {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  for (const auto& highlight : link_highlights_)
+    highlight->Paint(context);
+}
+
 }  // namespace blink

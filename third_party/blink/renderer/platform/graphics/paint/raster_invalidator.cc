@@ -160,6 +160,10 @@ void RasterInvalidator::GenerateRasterInvalidations(
     mapper.SwitchToChunk(new_chunk);
     auto& new_chunk_info = new_chunks_info.emplace_back(*this, mapper, it);
 
+    // Foreign layers take care of raster invalidation by themselves.
+    if (DisplayItem::IsForeignLayerType(new_chunk.id.type))
+      continue;
+
     if (!new_chunk.is_cacheable) {
       AddRasterInvalidation(new_chunk_info.bounds_in_layer, new_chunk.id.client,
                             PaintInvalidationReason::kChunkUncacheable,
