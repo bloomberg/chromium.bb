@@ -11,10 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,12 +96,15 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
         kFourthSeed, kStartPeriodMs + 2 * kBeaconSeedDurationMs,
         kStartPeriodMs + 3 * kBeaconSeedDurationMs));
 
-    RemoteDeviceRef device_1 = RemoteDeviceRefBuilder()
-                                   .SetPublicKey("publicKey1")
-                                   .SetBeaconSeeds(beacon_seeds_)
-                                   .Build();
-    RemoteDeviceRef device_2 =
-        RemoteDeviceRefBuilder().SetPublicKey("publicKey2").Build();
+    chromeos::multidevice::RemoteDeviceRef device_1 =
+        chromeos::multidevice::RemoteDeviceRefBuilder()
+            .SetPublicKey("publicKey1")
+            .SetBeaconSeeds(beacon_seeds_)
+            .Build();
+    chromeos::multidevice::RemoteDeviceRef device_2 =
+        chromeos::multidevice::RemoteDeviceRefBuilder()
+            .SetPublicKey("publicKey2")
+            .Build();
     test_remote_devices_ = {device_1, device_2};
   }
 
@@ -121,7 +124,7 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
   std::unique_ptr<BackgroundEidGenerator> eid_generator_;
   base::SimpleTestClock test_clock_;
   std::vector<BeaconSeed> beacon_seeds_;
-  RemoteDeviceRefList test_remote_devices_;
+  chromeos::multidevice::RemoteDeviceRefList test_remote_devices_;
 };
 
 TEST_F(CryptAuthBackgroundEidGeneratorTest,
@@ -227,7 +230,8 @@ TEST_F(CryptAuthBackgroundEidGeneratorTest,
 // Test the case where the account has other devices, but their beacon seeds
 // don't match the incoming advertisement. |beacon_seeds_[0]| corresponds to
 // |kDeviceId1|. Since |kDeviceId1| is not present in the device ids passed to
-// IdentifyRemoteDeviceByAdvertisement(), no match is expected to be found.
+// IdentifyRemoteDeviceByAdvertisement(), no match is
+// expected to be found.
 TEST_F(CryptAuthBackgroundEidGeneratorTest,
        IdentifyRemoteDeviceByAdvertisement_NoMatchingRemoteDevices) {
   SetTestTime(kStartPeriodMs + kEidPeriodMs / 2);

@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/remote_device.h"
+#include "chromeos/components/multidevice/remote_device.h"
 
 #include "base/base64.h"
 #include "base/stl_util.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 namespace {
 
 // Returns true if both vectors of BeaconSeeds are equal.
-bool AreBeaconSeedsEqual(const std::vector<BeaconSeed> beacon_seeds1,
-                         const std::vector<BeaconSeed> beacon_seeds2) {
+bool AreBeaconSeedsEqual(
+    const std::vector<cryptauth::BeaconSeed> beacon_seeds1,
+    const std::vector<cryptauth::BeaconSeed> beacon_seeds2) {
   if (beacon_seeds1.size() != beacon_seeds2.size())
     return false;
 
   for (size_t i = 0; i < beacon_seeds1.size(); ++i) {
-    const BeaconSeed& seed1 = beacon_seeds1[i];
-    const BeaconSeed& seed2 = beacon_seeds2[i];
+    const cryptauth::BeaconSeed& seed1 = beacon_seeds1[i];
+    const cryptauth::BeaconSeed& seed2 = beacon_seeds2[i];
     if (seed1.start_time_millis() != seed2.start_time_millis() ||
         seed1.end_time_millis() != seed2.end_time_millis() ||
         seed1.data() != seed2.data()) {
@@ -47,8 +50,9 @@ RemoteDevice::RemoteDevice(
     const std::string& public_key,
     const std::string& persistent_symmetric_key,
     int64_t last_update_time_millis,
-    const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
-    const std::vector<BeaconSeed>& beacon_seeds)
+    const std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>&
+        software_features,
+    const std::vector<cryptauth::BeaconSeed>& beacon_seeds)
     : user_id(user_id),
       name(name),
       public_key(public_key),
@@ -81,4 +85,6 @@ bool RemoteDevice::operator<(const RemoteDevice& other) const {
   return GetDeviceId().compare(other.GetDeviceId()) < 0;
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

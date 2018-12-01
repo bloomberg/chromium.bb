@@ -144,7 +144,7 @@ class BleConnectionManager : public BleScanner::Observer {
 
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       device::BluetoothDevice* bluetooth_device,
       bool is_background_advertisement) override;
 

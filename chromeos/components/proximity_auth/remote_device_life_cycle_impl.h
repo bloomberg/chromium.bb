@@ -11,12 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 namespace secure_channel {
@@ -38,14 +38,14 @@ class RemoteDeviceLifeCycleImpl
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
   RemoteDeviceLifeCycleImpl(
-      cryptauth::RemoteDeviceRef remote_device,
-      base::Optional<cryptauth::RemoteDeviceRef> local_device,
+      chromeos::multidevice::RemoteDeviceRef remote_device,
+      base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~RemoteDeviceLifeCycleImpl() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
+  chromeos::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
   chromeos::secure_channel::ClientChannel* GetChannel() const override;
 
   RemoteDeviceLifeCycle::State GetState() const override;
@@ -78,10 +78,10 @@ class RemoteDeviceLifeCycleImpl
   void OnDisconnected() override;
 
   // The remote device being controlled.
-  const cryptauth::RemoteDeviceRef remote_device_;
+  const chromeos::multidevice::RemoteDeviceRef remote_device_;
 
   // Represents this device (i.e. this Chromebook) for a particular profile.
-  base::Optional<cryptauth::RemoteDeviceRef> local_device_;
+  base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device_;
 
   // The entrypoint to the SecureChannel API.
   chromeos::secure_channel::SecureChannelClient* secure_channel_client_;

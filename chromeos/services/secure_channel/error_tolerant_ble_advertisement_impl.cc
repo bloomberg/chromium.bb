@@ -11,10 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/ble_synchronizer.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 

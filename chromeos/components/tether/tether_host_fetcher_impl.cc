@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "components/cryptauth/remote_device.h"
+#include "chromeos/components/multidevice/remote_device.h"
 
 namespace chromeos {
 
@@ -98,7 +98,7 @@ void TetherHostFetcherImpl::OnReady() {
 }
 
 void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
-  cryptauth::RemoteDeviceRefList updated_list = GenerateHostDeviceList();
+  multidevice::RemoteDeviceRefList updated_list = GenerateHostDeviceList();
   if (updated_list == current_remote_device_list_)
     return;
 
@@ -106,8 +106,9 @@ void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
   NotifyTetherHostsUpdated();
 }
 
-cryptauth::RemoteDeviceRefList TetherHostFetcherImpl::GenerateHostDeviceList() {
-  cryptauth::RemoteDeviceRefList host_list;
+multidevice::RemoteDeviceRefList
+TetherHostFetcherImpl::GenerateHostDeviceList() {
+  multidevice::RemoteDeviceRefList host_list;
 
   TetherHostSource tether_host_source =
       IsInLegacyHostMode() ? TetherHostSource::DEVICE_SYNC_CLIENT
@@ -124,15 +125,15 @@ cryptauth::RemoteDeviceRefList TetherHostFetcherImpl::GenerateHostDeviceList() {
   }
 
   if (tether_host_source == TetherHostSource::DEVICE_SYNC_CLIENT) {
-    for (const cryptauth::RemoteDeviceRef& remote_device_ref :
+    for (const multidevice::RemoteDeviceRef& remote_device_ref :
          device_sync_client_->GetSyncedDevices()) {
-      cryptauth::SoftwareFeatureState magic_tether_host_state =
+      multidevice::SoftwareFeatureState magic_tether_host_state =
           remote_device_ref.GetSoftwareFeatureState(
               cryptauth::SoftwareFeature::MAGIC_TETHER_HOST);
       if (magic_tether_host_state ==
-              cryptauth::SoftwareFeatureState::kSupported ||
+              multidevice::SoftwareFeatureState::kSupported ||
           magic_tether_host_state ==
-              cryptauth::SoftwareFeatureState::kEnabled) {
+              multidevice::SoftwareFeatureState::kEnabled) {
         host_list.push_back(remote_device_ref);
       }
     }
@@ -148,25 +149,26 @@ bool TetherHostFetcherImpl::IsInLegacyHostMode() {
     return false;
 
   bool has_supported_tether_host = false;
-  for (const cryptauth::RemoteDeviceRef& remote_device_ref :
+  for (const multidevice::RemoteDeviceRef& remote_device_ref :
        device_sync_client_->GetSyncedDevices()) {
-    cryptauth::SoftwareFeatureState better_together_host_state =
+    multidevice::SoftwareFeatureState better_together_host_state =
         remote_device_ref.GetSoftwareFeatureState(
             cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
     // If there's any valid Better Together host, don't support legacy mode.
     if (better_together_host_state ==
-            cryptauth::SoftwareFeatureState::kSupported ||
+            multidevice::SoftwareFeatureState::kSupported ||
         better_together_host_state ==
-            cryptauth::SoftwareFeatureState::kEnabled) {
+            multidevice::SoftwareFeatureState::kEnabled) {
       return false;
     }
 
-    cryptauth::SoftwareFeatureState magic_tether_host_state =
+    multidevice::SoftwareFeatureState magic_tether_host_state =
         remote_device_ref.GetSoftwareFeatureState(
             cryptauth::SoftwareFeature::MAGIC_TETHER_HOST);
     if (magic_tether_host_state ==
-            cryptauth::SoftwareFeatureState::kSupported ||
-        magic_tether_host_state == cryptauth::SoftwareFeatureState::kEnabled) {
+            multidevice::SoftwareFeatureState::kSupported ||
+        magic_tether_host_state ==
+            multidevice::SoftwareFeatureState::kEnabled) {
       has_supported_tether_host = true;
     }
   }

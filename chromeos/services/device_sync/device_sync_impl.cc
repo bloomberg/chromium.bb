@@ -272,9 +272,11 @@ bool DeviceSyncImpl::PendingSetSoftwareFeatureRequest::IsFulfilled() const {
     return false;
 
   if (enabled_)
-    return features_map_it->second == cryptauth::SoftwareFeatureState::kEnabled;
+    return features_map_it->second ==
+           multidevice::SoftwareFeatureState::kEnabled;
 
-  return features_map_it->second == cryptauth::SoftwareFeatureState::kSupported;
+  return features_map_it->second ==
+         multidevice::SoftwareFeatureState::kSupported;
 }
 
 void DeviceSyncImpl::PendingSetSoftwareFeatureRequest::InvokeCallback(
@@ -615,7 +617,7 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
                   << "fully initialized.";
 }
 
-base::Optional<cryptauth::RemoteDevice>
+base::Optional<multidevice::RemoteDevice>
 DeviceSyncImpl::GetSyncedDeviceWithPublicKey(
     const std::string& public_key) const {
   DCHECK(status_ == Status::READY)
@@ -672,7 +674,7 @@ void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
         callback,
     const std::vector<cryptauth::ExternalDeviceInfo>& eligible_device_infos,
     const std::vector<cryptauth::IneligibleDevice>& ineligible_devices) {
-  std::vector<cryptauth::RemoteDevice> eligible_remote_devices;
+  std::vector<multidevice::RemoteDevice> eligible_remote_devices;
   for (const auto& eligible_device_info : eligible_device_infos) {
     auto possible_device =
         GetSyncedDeviceWithPublicKey(eligible_device_info.public_key());
@@ -684,7 +686,7 @@ void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
     }
   }
 
-  std::vector<cryptauth::RemoteDevice> ineligible_remote_devices;
+  std::vector<multidevice::RemoteDevice> ineligible_remote_devices;
   for (const auto& ineligible_device : ineligible_devices) {
     auto possible_device =
         GetSyncedDeviceWithPublicKey(ineligible_device.device().public_key());

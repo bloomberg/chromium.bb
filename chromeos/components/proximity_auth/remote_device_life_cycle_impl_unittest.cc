@@ -15,12 +15,12 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,8 +39,8 @@ namespace {
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
   TestableRemoteDeviceLifeCycleImpl(
-      cryptauth::RemoteDeviceRef remote_device,
-      base::Optional<cryptauth::RemoteDeviceRef> local_device,
+      chromeos::multidevice::RemoteDeviceRef remote_device,
+      base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client)
       : RemoteDeviceLifeCycleImpl(remote_device,
                                   local_device,
@@ -50,7 +50,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
   ~TestableRemoteDeviceLifeCycleImpl() override {}
 
  private:
-  const cryptauth::RemoteDeviceRef remote_device_;
+  const chromeos::multidevice::RemoteDeviceRef remote_device_;
 
   DISALLOW_COPY_AND_ASSIGN(TestableRemoteDeviceLifeCycleImpl);
 };
@@ -62,8 +62,10 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
       public RemoteDeviceLifeCycle::Observer {
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : test_remote_device_(cryptauth::CreateRemoteDeviceRefForTest()),
-        test_local_device_(cryptauth::CreateRemoteDeviceRefForTest()),
+      : test_remote_device_(
+            chromeos::multidevice::CreateRemoteDeviceRefForTest()),
+        test_local_device_(
+            chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         fake_secure_channel_client_(
             std::make_unique<
                 chromeos::secure_channel::FakeSecureChannelClient>()),
@@ -150,8 +152,8 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
                void(RemoteDeviceLifeCycle::State old_state,
                     RemoteDeviceLifeCycle::State new_state));
 
-  cryptauth::RemoteDeviceRef test_remote_device_;
-  cryptauth::RemoteDeviceRef test_local_device_;
+  chromeos::multidevice::RemoteDeviceRef test_remote_device_;
+  chromeos::multidevice::RemoteDeviceRef test_local_device_;
   std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   TestableRemoteDeviceLifeCycleImpl life_cycle_;

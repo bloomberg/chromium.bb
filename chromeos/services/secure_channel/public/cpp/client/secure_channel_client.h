@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -54,13 +54,13 @@ class SecureChannelClient {
   virtual ~SecureChannelClient() = default;
 
   virtual std::unique_ptr<ConnectionAttempt> InitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) = 0;
   virtual std::unique_ptr<ConnectionAttempt> ListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) = 0;
 

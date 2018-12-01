@@ -10,10 +10,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +47,7 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
  protected:
   CryptAuthBleAdvertisementGeneratorTest()
       : test_remote_device_(
-            RemoteDeviceRefBuilder()
+            chromeos::multidevice::RemoteDeviceRefBuilder()
                 .SetBeaconSeeds(CreateBeaconSeedsForDevice("remote device id"))
                 .Build()),
         fake_advertisement_("advertisement1", 1000L, 2000L) {}
@@ -63,13 +63,13 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
   void TearDown() override { generator_.reset(); }
 
   std::unique_ptr<DataWithTimestamp> CallGenerateBleAdvertisement(
-      RemoteDeviceRef remote_device,
+      chromeos::multidevice::RemoteDeviceRef remote_device,
       const std::string& local_device_public_key) {
     return generator_->GenerateBleAdvertisementInternal(
         remote_device, local_device_public_key);
   }
 
-  const RemoteDeviceRef test_remote_device_;
+  const chromeos::multidevice::RemoteDeviceRef test_remote_device_;
   const DataWithTimestamp fake_advertisement_;
 
   MockForegroundEidGenerator* mock_eid_generator_;
@@ -86,8 +86,9 @@ TEST_F(CryptAuthBleAdvertisementGeneratorTest, EmptyPublicKey) {
 }
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, EmptyBeaconSeeds) {
-  EXPECT_FALSE(CallGenerateBleAdvertisement(CreateRemoteDeviceRefForTest(),
-                                            kLocalDevicePublicKey));
+  EXPECT_FALSE(CallGenerateBleAdvertisement(
+      chromeos::multidevice::CreateRemoteDeviceRefForTest(),
+      kLocalDevicePublicKey));
 }
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, CannotGenerateAdvertisement) {

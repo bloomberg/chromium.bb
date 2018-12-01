@@ -6,11 +6,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace chromeos {
@@ -214,7 +214,7 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
     int sequence_number) {
   DCHECK(secure_channel_.get() == secure_channel);
   PA_LOG(VERBOSE) << "Message sent successfully to device with ID \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id_)
                   << "\"; message sequence number: " << sequence_number;
   manager_->NotifyMessageSent(sequence_number);
@@ -249,7 +249,7 @@ void BleConnectionManager::RegisterRemoteDevice(
   has_registered_observer_ = true;
 
   PA_LOG(VERBOSE) << "Register - Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\", Request ID: " << request_id
                   << ", Priority: " << connection_priority;
@@ -270,14 +270,14 @@ void BleConnectionManager::UnregisterRemoteDevice(
   if (!connection_metadata) {
     PA_LOG(WARNING) << "Tried to unregister device, but was not registered - "
                     << "Device ID: \""
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << "\", Request ID: " << request_id;
     return;
   }
 
   PA_LOG(VERBOSE) << "Unregister - Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\", Request ID: " << request_id;
 
@@ -313,14 +313,14 @@ int BleConnectionManager::SendMessage(const std::string& device_id,
           cryptauth::SecureChannel::Status::AUTHENTICATED) {
     PA_LOG(ERROR) << "SendMessage(): Error - no authenticated channel. "
                   << "Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\", Message: \"" << message << "\"";
     return -1;
   }
 
   PA_LOG(VERBOSE) << "SendMessage(): Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\", Message: \"" << message << "\"";
   return connection_metadata->SendMessage(message);
@@ -354,7 +354,7 @@ void BleConnectionManager::RemoveMetricsObserver(MetricsObserver* observer) {
 }
 
 void BleConnectionManager::OnReceivedAdvertisementFromDevice(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     bool is_background_advertisement) {
   const std::string device_id = remote_device.GetDeviceId();
@@ -461,7 +461,7 @@ void BleConnectionManager::UpdateConnectionAttempts() {
   // modified during iteration.
   for (const auto& device_id_to_stop : device_ids_to_stop) {
     PA_LOG(VERBOSE) << "Connection attempt for device ID \""
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id_to_stop)
                     << "\" interrupted by higher-priority connection.";
     EndUnsuccessfulAttempt(
@@ -502,7 +502,7 @@ void BleConnectionManager::StartConnectionAttempt(
   DCHECK(connection_metadata);
 
   PA_LOG(VERBOSE) << "Attempting connection - Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\"";
 
@@ -550,7 +550,7 @@ void BleConnectionManager::StopConnectionAttemptAndMoveToEndOfQueue(
 void BleConnectionManager::OnConnectionAttemptTimeout(
     const std::string& device_id) {
   PA_LOG(VERBOSE) << "Connection attempt timeout - Device ID \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\".";
   EndUnsuccessfulAttempt(
@@ -595,7 +595,7 @@ void BleConnectionManager::NotifyAdvertisementReceived(
 void BleConnectionManager::NotifyMessageReceived(std::string device_id,
                                                  std::string payload) {
   PA_LOG(VERBOSE) << "Message received - Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\", Message: \"" << payload << "\".";
   for (auto& observer : observer_list_)
@@ -608,7 +608,7 @@ void BleConnectionManager::NotifySecureChannelStatusChanged(
     cryptauth::SecureChannel::Status new_status,
     StateChangeDetail state_change_detail) {
   PA_LOG(VERBOSE) << "Status change - Device ID: \""
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << "\": "
                   << cryptauth::SecureChannel::StatusToString(old_status)

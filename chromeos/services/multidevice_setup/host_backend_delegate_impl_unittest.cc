@@ -11,10 +11,10 @@
 #include "base/optional.h"
 #include "base/timer/mock_timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +37,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
  protected:
   MultiDeviceSetupHostBackendDelegateImplTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupHostBackendDelegateImplTest() override = default;
 
   // testing::Test:
@@ -59,7 +59,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
   void TearDown() override { delegate_->RemoveObserver(observer_.get()); }
 
   void CreateDelegate(
-      const base::Optional<cryptauth::RemoteDeviceRef>& initial_host,
+      const base::Optional<multidevice::RemoteDeviceRef>& initial_host,
       const std::string& initial_pending_host_request = kNoPendingRequest) {
     SetHostInDeviceSyncClient(initial_host);
     test_pref_service_->SetString(kPendingRequestHostIdPrefName,
@@ -104,9 +104,10 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
   }
 
   void SimulateNewHostDevicesSynced(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device_after_sync,
+      const base::Optional<multidevice::RemoteDeviceRef>&
+          host_device_after_sync,
       bool expected_to_fulfill_pending_request) {
-    base::Optional<cryptauth::RemoteDeviceRef> host_device_before_call =
+    base::Optional<multidevice::RemoteDeviceRef> host_device_before_call =
         delegate_->GetMultiDeviceHostFromBackend();
     bool host_changed = host_device_before_call != host_device_after_sync;
     size_t num_host_change_events_before_call =
@@ -138,7 +139,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
   }
 
   void AttemptToSetMultiDeviceHostOnBackend(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
     bool attempting_to_set_host_which_already_exists =
         host_device == delegate_->GetMultiDeviceHostFromBackend();
     size_t num_pending_host_request_change_events_before_call =
@@ -174,7 +175,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
   }
 
   void SetHostInDeviceSyncClient(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
     for (const auto& remote_device : test_devices_) {
       bool should_be_host =
           host_device != base::nullopt &&
@@ -183,8 +184,8 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
       GetMutableRemoteDevice(remote_device)
           ->software_features
               [cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-          should_be_host ? cryptauth::SoftwareFeatureState::kEnabled
-                         : cryptauth::SoftwareFeatureState::kSupported;
+          should_be_host ? multidevice::SoftwareFeatureState::kEnabled
+                         : multidevice::SoftwareFeatureState::kSupported;
     }
   }
 
@@ -202,12 +203,12 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
 
   HostBackendDelegate* delegate() { return delegate_.get(); }
 
-  const cryptauth::RemoteDeviceRefList& test_devices() const {
+  const multidevice::RemoteDeviceRefList& test_devices() const {
     return test_devices_;
   }
 
  private:
-  cryptauth::RemoteDeviceRefList test_devices_;
+  multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeEligibleHostDevicesProvider>
       fake_eligible_host_devices_provider_;
@@ -513,7 +514,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
 TEST_F(MultiDeviceSetupHostBackendDelegateImplTest, TryToSetNonEligibleHost) {
   // Make all test devices ineligible.
   fake_eligible_host_devices_provider()->set_eligible_host_devices(
-      cryptauth::RemoteDeviceRefList());
+      multidevice::RemoteDeviceRefList());
 
   CreateDelegate(base::nullopt /* initial_host */);
 

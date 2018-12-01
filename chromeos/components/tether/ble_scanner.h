@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace device {
 class BluetoothDevice;
@@ -23,7 +23,7 @@ class BleScanner {
   class Observer {
    public:
     virtual void OnReceivedAdvertisementFromDevice(
-        cryptauth::RemoteDeviceRef remote_device,
+        multidevice::RemoteDeviceRef remote_device,
         device::BluetoothDevice* bluetooth_device,
         bool is_background_advertisement) {}
     virtual void OnDiscoverySessionStateChanged(bool discovery_session_active) {
@@ -53,7 +53,7 @@ class BleScanner {
 
  protected:
   void NotifyReceivedAdvertisementFromDevice(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       device::BluetoothDevice* bluetooth_device,
       bool is_background_advertisement);
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);

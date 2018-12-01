@@ -20,7 +20,7 @@ mojom::HostStatusObserverPtr FakeHostStatusObserver::GenerateInterfacePtr() {
 
 void FakeHostStatusObserver::OnHostStatusChanged(
     mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDevice>& host_device) {
+    const base::Optional<multidevice::RemoteDevice>& host_device) {
   host_status_updates_.emplace_back(host_status, host_device);
 }
 

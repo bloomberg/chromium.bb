@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/expiring_remote_device_cache.h"
+#include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 
 #include <algorithm>
 
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 class ExpiringRemoteDeviceCacheTest : public testing::Test {
  protected:
   ExpiringRemoteDeviceCacheTest()
       : test_remote_device_list_(CreateRemoteDeviceListForTest(5)),
-        test_remote_device_ref_list_(CreateRemoteDeviceRefListForTest(5)){};
+        test_remote_device_ref_list_(CreateRemoteDeviceRefListForTest(5)) {}
 
   // testing::Test:
   void SetUp() override {
@@ -71,4 +73,6 @@ TEST_F(ExpiringRemoteDeviceCacheTest, TestUpdateRemoteDevice) {
   VerifyCacheRemoteDevices(test_remote_device_ref_list_);
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

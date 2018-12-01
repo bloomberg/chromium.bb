@@ -17,15 +17,15 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 
-namespace cryptauth {
-class RemoteDeviceCache;
-}  // namespace cryptauth
-
 namespace proximity_auth {
 class ProximityAuthLocalStatePrefManager;
 }  // namespace proximity_auth
 
 namespace chromeos {
+
+namespace multidevice {
+class RemoteDeviceCache;
+}  // namespace multidevice
 
 namespace secure_channel {
 class SecureChannelClient;
@@ -151,7 +151,7 @@ class EasyUnlockServiceSignin
   // The timestamp for the most recent time when a user pod was focused.
   base::TimeTicks user_pod_last_focused_timestamp_;
 
-  std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   // Handles wrapping the user's challenge with the TPM.
   std::unique_ptr<EasyUnlockChallengeWrapper> challenge_wrapper_;

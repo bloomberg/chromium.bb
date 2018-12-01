@@ -8,13 +8,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/foreground_eid_generator.h"
-#include "components/cryptauth/remote_device_cache.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -57,12 +57,12 @@ BleServiceDataHelperImpl::Factory::~Factory() = default;
 
 std::unique_ptr<BleServiceDataHelper>
 BleServiceDataHelperImpl::Factory::BuildInstance(
-    cryptauth::RemoteDeviceCache* remote_device_cache) {
+    multidevice::RemoteDeviceCache* remote_device_cache) {
   return base::WrapUnique(new BleServiceDataHelperImpl(remote_device_cache));
 }
 
 BleServiceDataHelperImpl::BleServiceDataHelperImpl(
-    cryptauth::RemoteDeviceCache* remote_device_cache)
+    multidevice::RemoteDeviceCache* remote_device_cache)
     : remote_device_cache_(remote_device_cache),
       background_eid_generator_(
           std::make_unique<cryptauth::BackgroundEidGenerator>()),
@@ -74,20 +74,20 @@ BleServiceDataHelperImpl::~BleServiceDataHelperImpl() = default;
 std::unique_ptr<cryptauth::DataWithTimestamp>
 BleServiceDataHelperImpl::GenerateForegroundAdvertisement(
     const DeviceIdPair& device_id_pair) {
-  base::Optional<cryptauth::RemoteDeviceRef> local_device =
+  base::Optional<multidevice::RemoteDeviceRef> local_device =
       remote_device_cache_->GetRemoteDevice(device_id_pair.local_device_id());
   if (!local_device) {
     PA_LOG(ERROR) << "Requested local device does not exist: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id_pair.local_device_id());
     return nullptr;
   }
 
-  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+  base::Optional<multidevice::RemoteDeviceRef> remote_device =
       remote_device_cache_->GetRemoteDevice(device_id_pair.remote_device_id());
   if (!remote_device) {
     PA_LOG(ERROR) << "Requested remote device does not exist: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id_pair.remote_device_id());
     return nullptr;
   }
@@ -106,7 +106,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     if (!remote_device_cache_->GetRemoteDevice(
             device_id_pair.local_device_id())) {
       PA_LOG(ERROR) << "Requested local device does not exist"
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id_pair.local_device_id());
       continue;
     }
@@ -114,7 +114,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     if (!remote_device_cache_->GetRemoteDevice(
             device_id_pair.remote_device_id())) {
       PA_LOG(ERROR) << "Requested remote device does not exist"
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id_pair.remote_device_id());
       continue;
     }
@@ -157,7 +157,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
       identified_device_id.empty() &&
       service_data.size() >= kMinNumBytesInServiceData &&
       service_data.size() <= kMaxNumBytesInBackgroundServiceData) {
-    cryptauth::RemoteDeviceRefList remote_devices;
+    multidevice::RemoteDeviceRefList remote_devices;
     std::transform(remote_device_ids.begin(), remote_device_ids.end(),
                    std::back_inserter(remote_devices), [this](auto device_id) {
                      return *remote_device_cache_->GetRemoteDevice(device_id);

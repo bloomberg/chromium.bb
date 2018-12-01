@@ -14,6 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/device_sync_service.h"
@@ -30,7 +31,6 @@
 #include "components/cryptauth/fake_remote_device_provider.h"
 #include "components/cryptauth/fake_software_feature_manager.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/software_feature_manager_impl.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -62,9 +62,9 @@ const cryptauth::GcmDeviceInfo& GetTestGcmDeviceInfo() {
   return *gcm_device_info;
 }
 
-cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
-  cryptauth::RemoteDeviceList devices =
-      cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices);
+multidevice::RemoteDeviceList GenerateTestRemoteDevices() {
+  multidevice::RemoteDeviceList devices =
+      multidevice::CreateRemoteDeviceListForTest(kNumTestDevices);
 
   // One of the synced devices refers to the current (i.e., local) device.
   // Arbitrarily choose the 0th device as the local one and set its public key
@@ -75,7 +75,7 @@ cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
 }
 
 std::vector<cryptauth::ExternalDeviceInfo> GenerateTestExternalDeviceInfos(
-    const cryptauth::RemoteDeviceList& remote_devices) {
+    const multidevice::RemoteDeviceList& remote_devices) {
   std::vector<cryptauth::ExternalDeviceInfo> device_infos;
 
   for (const auto& remote_device : remote_devices) {
@@ -261,7 +261,7 @@ class FakeRemoteDeviceProviderFactory
     : public cryptauth::RemoteDeviceProviderImpl::Factory {
  public:
   FakeRemoteDeviceProviderFactory(
-      const cryptauth::RemoteDeviceList& initial_devices,
+      const multidevice::RemoteDeviceList& initial_devices,
       identity::IdentityManager* identity_manager,
       FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory,
       FakeCryptAuthEnrollmentManagerFactory*
@@ -300,7 +300,7 @@ class FakeRemoteDeviceProviderFactory
   }
 
  private:
-  const cryptauth::RemoteDeviceList& initial_devices_;
+  const multidevice::RemoteDeviceList& initial_devices_;
 
   identity::IdentityManager* identity_manager_;
   FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory_;
@@ -593,8 +593,8 @@ class DeviceSyncServiceTest : public testing::Test {
   // |updated_devices| is provided, these devices will set on the
   // FakeRemoteDeviceProvider.
   void SimulateSync(bool success,
-                    const cryptauth::RemoteDeviceList& updated_devices =
-                        cryptauth::RemoteDeviceList()) {
+                    const multidevice::RemoteDeviceList& updated_devices =
+                        multidevice::RemoteDeviceList()) {
     cryptauth::FakeCryptAuthDeviceManager* device_manager =
         fake_cryptauth_device_manager_factory_->instance();
     cryptauth::FakeRemoteDeviceProvider* remote_device_provider =
@@ -628,7 +628,7 @@ class DeviceSyncServiceTest : public testing::Test {
     EXPECT_EQ(1u, fake_device_sync_observer()->num_sync_events());
   }
 
-  const cryptauth::RemoteDeviceList& test_devices() { return test_devices_; }
+  const multidevice::RemoteDeviceList& test_devices() { return test_devices_; }
 
   const std::vector<cryptauth::ExternalDeviceInfo>& test_device_infos() {
     return test_device_infos_;
@@ -749,7 +749,8 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_force_sync_now_result_;
   }
 
-  const base::Optional<cryptauth::RemoteDevice>& CallGetLocalDeviceMetadata() {
+  const base::Optional<multidevice::RemoteDevice>&
+  CallGetLocalDeviceMetadata() {
     base::RunLoop run_loop;
     device_sync_->GetLocalDeviceMetadata(base::BindOnce(
         &DeviceSyncServiceTest::OnGetLocalDeviceMetadataCompleted,
@@ -758,7 +759,7 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_local_device_metadata_result_;
   }
 
-  const base::Optional<cryptauth::RemoteDeviceList>& CallGetSyncedDevices() {
+  const base::Optional<multidevice::RemoteDeviceList>& CallGetSyncedDevices() {
     base::RunLoop run_loop;
     device_sync_->GetSyncedDevices(
         base::BindOnce(&DeviceSyncServiceTest::OnGetSyncedDevicesCompleted,
@@ -863,14 +864,14 @@ class DeviceSyncServiceTest : public testing::Test {
 
   void OnGetLocalDeviceMetadataCompleted(
       base::OnceClosure quit_closure,
-      const base::Optional<cryptauth::RemoteDevice>& local_device_metadata) {
+      const base::Optional<multidevice::RemoteDevice>& local_device_metadata) {
     last_local_device_metadata_result_ = local_device_metadata;
     std::move(quit_closure).Run();
   }
 
   void OnGetSyncedDevicesCompleted(
       base::OnceClosure quit_closure,
-      const base::Optional<cryptauth::RemoteDeviceList>& synced_devices) {
+      const base::Optional<multidevice::RemoteDeviceList>& synced_devices) {
     last_synced_devices_result_ = synced_devices;
     std::move(quit_closure).Run();
   }
@@ -918,7 +919,7 @@ class DeviceSyncServiceTest : public testing::Test {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceList test_devices_;
+  const multidevice::RemoteDeviceList test_devices_;
   const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
   const std::vector<cryptauth::IneligibleDevice> test_ineligible_devices_;
 
@@ -949,8 +950,8 @@ class DeviceSyncServiceTest : public testing::Test {
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
-  base::Optional<cryptauth::RemoteDeviceList> last_synced_devices_result_;
-  base::Optional<cryptauth::RemoteDevice> last_local_device_metadata_result_;
+  base::Optional<multidevice::RemoteDeviceList> last_synced_devices_result_;
+  base::Optional<multidevice::RemoteDevice> last_local_device_metadata_result_;
   std::unique_ptr<mojom::NetworkRequestResult>
       last_set_software_feature_state_response_;
   std::unique_ptr<std::pair<mojom::NetworkRequestResult,
@@ -1102,8 +1103,8 @@ TEST_F(DeviceSyncServiceTest, SyncedDeviceUpdates) {
 
   // Create a new list which is the same as the initial test devices except that
   // the first device is removed.
-  cryptauth::RemoteDeviceList updated_device_list(test_devices().begin() + 1,
-                                                  test_devices().end());
+  multidevice::RemoteDeviceList updated_device_list(test_devices().begin() + 1,
+                                                    test_devices().end());
   EXPECT_EQ(kNumTestDevices - 1, updated_device_list.size());
 
   // Simulate successful sync which does change the synced device list.
@@ -1123,10 +1124,10 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
   EXPECT_EQ(0u, set_software_calls.size());
 
   // Set the BETTER_TOGETHER_HOST field to "supported".
-  cryptauth::RemoteDevice device_for_test = test_devices()[0];
+  multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
       .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
@@ -1153,7 +1154,7 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
   // Simulate a sync which includes the device with the correct "enabled" state.
   device_for_test
       .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kEnabled;
+      multidevice::SoftwareFeatureState::kEnabled;
   base::RunLoop().RunUntilIdle();
   SimulateSync(true /* success */, {device_for_test});
   base::RunLoop().RunUntilIdle();
@@ -1181,10 +1182,10 @@ TEST_F(DeviceSyncServiceTest,
   EXPECT_EQ(0u, set_software_calls.size());
 
   // Set the BETTER_TOGETHER_HOST field to "supported".
-  cryptauth::RemoteDevice device_for_test = test_devices()[0];
+  multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
       .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
@@ -1230,10 +1231,10 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
   EXPECT_EQ(0u, set_software_calls.size());
 
   // Set the BETTER_TOGETHER_HOST field to "supported".
-  cryptauth::RemoteDevice device_for_test = test_devices()[0];
+  multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
       .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
@@ -1298,11 +1299,11 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess,
             last_response->first);
   EXPECT_EQ(last_response->second->eligible_devices,
-            cryptauth::RemoteDeviceList(test_devices().begin(),
-                                        test_devices().begin()));
+            multidevice::RemoteDeviceList(test_devices().begin(),
+                                          test_devices().begin()));
   EXPECT_EQ(last_response->second->ineligible_devices,
-            cryptauth::RemoteDeviceList(test_devices().begin() + 1,
-                                        test_devices().end()));
+            multidevice::RemoteDeviceList(test_devices().begin() + 1,
+                                          test_devices().end()));
 
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", false, 0);

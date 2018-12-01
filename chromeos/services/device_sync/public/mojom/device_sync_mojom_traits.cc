@@ -5,7 +5,7 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
 
 #include "base/logging.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -49,58 +49,60 @@ bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
   return true;
 }
 
-std::string
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-             cryptauth::RemoteDevice>::device_id(const cryptauth::RemoteDevice&
-                                                     remote_device) {
+std::string StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+                         chromeos::multidevice::RemoteDevice>::
+    device_id(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.GetDeviceId();
 }
 
 const std::string&
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-             cryptauth::RemoteDevice>::user_id(const cryptauth::RemoteDevice&
-                                                   remote_device) {
+             chromeos::multidevice::RemoteDevice>::
+    user_id(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.user_id;
 }
 
-const std::string& StructTraits<
-    chromeos::device_sync::mojom::RemoteDeviceDataView,
-    cryptauth::RemoteDevice>::device_name(const cryptauth::RemoteDevice&
-                                              remote_device) {
+const std::string&
+StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+             chromeos::multidevice::RemoteDevice>::
+    device_name(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.name;
 }
 
 const std::string&
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-             cryptauth::RemoteDevice>::
-    persistent_symmetric_key(const cryptauth::RemoteDevice& remote_device) {
+             chromeos::multidevice::RemoteDevice>::
+    persistent_symmetric_key(
+        const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.persistent_symmetric_key;
 }
 
 base::Time StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-                        cryptauth::RemoteDevice>::
-    last_update_time(const cryptauth::RemoteDevice& remote_device) {
+                        chromeos::multidevice::RemoteDevice>::
+    last_update_time(const chromeos::multidevice::RemoteDevice& remote_device) {
   return base::Time::FromJavaTime(remote_device.last_update_time_millis);
 }
 
-const std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>&
+const std::map<cryptauth::SoftwareFeature,
+               chromeos::multidevice::SoftwareFeatureState>&
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-             cryptauth::RemoteDevice>::
-    software_features(const cryptauth::RemoteDevice& remote_device) {
+             chromeos::multidevice::RemoteDevice>::
+    software_features(
+        const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.software_features;
 }
 
-const std::vector<cryptauth::BeaconSeed>& StructTraits<
-    chromeos::device_sync::mojom::RemoteDeviceDataView,
-    cryptauth::RemoteDevice>::beacon_seeds(const cryptauth::RemoteDevice&
-                                               remote_device) {
+const std::vector<cryptauth::BeaconSeed>&
+StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+             chromeos::multidevice::RemoteDevice>::
+    beacon_seeds(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.beacon_seeds;
 }
 
 bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-                  cryptauth::RemoteDevice>::
+                  chromeos::multidevice::RemoteDevice>::
     Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
-         cryptauth::RemoteDevice* out) {
+         chromeos::multidevice::RemoteDevice* out) {
   std::string device_id;
   base::Time last_update_time;
 
@@ -113,7 +115,8 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
     return false;
   }
 
-  out->public_key = cryptauth::RemoteDeviceRef::DerivePublicKey(device_id);
+  out->public_key =
+      chromeos::multidevice::RemoteDeviceRef::DerivePublicKey(device_id);
   out->last_update_time_millis = last_update_time.ToJavaTime();
 
   return true;
@@ -187,16 +190,16 @@ bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
   return false;
 }
 
-chromeos::device_sync::mojom::SoftwareFeatureState EnumTraits<
-    chromeos::device_sync::mojom::SoftwareFeatureState,
-    cryptauth::SoftwareFeatureState>::ToMojom(cryptauth::SoftwareFeatureState
-                                                  input) {
+chromeos::device_sync::mojom::SoftwareFeatureState
+EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
+           chromeos::multidevice::SoftwareFeatureState>::
+    ToMojom(chromeos::multidevice::SoftwareFeatureState input) {
   switch (input) {
-    case cryptauth::SoftwareFeatureState::kNotSupported:
+    case chromeos::multidevice::SoftwareFeatureState::kNotSupported:
       return chromeos::device_sync::mojom::SoftwareFeatureState::kNotSupported;
-    case cryptauth::SoftwareFeatureState::kSupported:
+    case chromeos::multidevice::SoftwareFeatureState::kSupported:
       return chromeos::device_sync::mojom::SoftwareFeatureState::kSupported;
-    case cryptauth::SoftwareFeatureState::kEnabled:
+    case chromeos::multidevice::SoftwareFeatureState::kEnabled:
       return chromeos::device_sync::mojom::SoftwareFeatureState::kEnabled;
   }
 
@@ -205,18 +208,18 @@ chromeos::device_sync::mojom::SoftwareFeatureState EnumTraits<
 }
 
 bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
-                cryptauth::SoftwareFeatureState>::
+                chromeos::multidevice::SoftwareFeatureState>::
     FromMojom(chromeos::device_sync::mojom::SoftwareFeatureState input,
-              cryptauth::SoftwareFeatureState* out) {
+              chromeos::multidevice::SoftwareFeatureState* out) {
   switch (input) {
     case chromeos::device_sync::mojom::SoftwareFeatureState::kNotSupported:
-      *out = cryptauth::SoftwareFeatureState::kNotSupported;
+      *out = chromeos::multidevice::SoftwareFeatureState::kNotSupported;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeatureState::kSupported:
-      *out = cryptauth::SoftwareFeatureState::kSupported;
+      *out = chromeos::multidevice::SoftwareFeatureState::kSupported;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeatureState::kEnabled:
-      *out = cryptauth::SoftwareFeatureState::kEnabled;
+      *out = chromeos::multidevice::SoftwareFeatureState::kEnabled;
       return true;
   }
 

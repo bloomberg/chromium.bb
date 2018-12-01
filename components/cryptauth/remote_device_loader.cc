@@ -10,31 +10,33 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/proto/enum_util.h"
-#include "components/cryptauth/remote_device.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {
 
 namespace {
 
-std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+std::map<cryptauth::SoftwareFeature,
+         chromeos::multidevice::SoftwareFeatureState>
 GetSoftwareFeatureToStateMap(const cryptauth::ExternalDeviceInfo& device) {
-  std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+  std::map<cryptauth::SoftwareFeature,
+           chromeos::multidevice::SoftwareFeatureState>
       software_feature_to_state_map;
 
   for (int i = 0; i < device.supported_software_features_size(); ++i) {
     software_feature_to_state_map[SoftwareFeatureStringToEnum(
         device.supported_software_features(i))] =
-        cryptauth::SoftwareFeatureState::kSupported;
+        chromeos::multidevice::SoftwareFeatureState::kSupported;
   }
 
   for (int i = 0; i < device.enabled_software_features_size(); ++i) {
     software_feature_to_state_map[SoftwareFeatureStringToEnum(
         device.enabled_software_features(i))] =
-        cryptauth::SoftwareFeatureState::kEnabled;
+        chromeos::multidevice::SoftwareFeatureState::kEnabled;
   }
 
   return software_feature_to_state_map;
@@ -130,7 +132,7 @@ void RemoteDeviceLoader::OnPSKDerived(
   for (const BeaconSeed& beacon_seed : device.beacon_seeds())
     beacon_seeds.push_back(beacon_seed);
 
-  RemoteDevice remote_device(
+  chromeos::multidevice::RemoteDevice remote_device(
       user_id_, device.friendly_device_name(), device.public_key(), psk,
       device.last_update_time_millis(), GetSoftwareFeatureToStateMap(device),
       beacon_seeds);

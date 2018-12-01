@@ -24,6 +24,7 @@ static_library("ble") {
 
   deps = [
     "//base",
+    "//chromeos/components/multidevice",
 
     # TODO (hansberry): This component has a circular dependency
     # with the root cryptauth target. It is whitelisted in that target for
@@ -48,6 +49,7 @@ static_library("test_support") {
   deps = [
     ":ble",
     "//base",
+    "//chromeos/components/multidevice",
     "//components/cryptauth",
     "//components/cryptauth/ble",
   ]
@@ -72,6 +74,7 @@ source_set("unit_tests") {
   deps = [
     ":ble",
     "//base/test:test_support",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/components/proximity_auth/logging",
     "//components/cryptauth",
     "//components/cryptauth:test_support",

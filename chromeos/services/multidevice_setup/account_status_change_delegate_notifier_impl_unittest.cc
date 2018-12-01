@@ -10,14 +10,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,20 +35,20 @@ const char kFakePhoneNameA[] = "Phony Phone A";
 const char kFakePhoneKeyB[] = "fake-phone-key-B";
 const char kFakePhoneNameB[] = "Phony Phone B";
 
-const cryptauth::RemoteDeviceRef kFakePhone =
-    cryptauth::RemoteDeviceRefBuilder()
+const multidevice::RemoteDeviceRef kFakePhone =
+    multidevice::RemoteDeviceRefBuilder()
         .SetPublicKey(kFakePhoneKey)
         .SetName(kFakePhoneName)
         .Build();
 
 // Alternate hosts for multi host tests
-const cryptauth::RemoteDeviceRef kFakePhoneA =
-    cryptauth::RemoteDeviceRefBuilder()
+const multidevice::RemoteDeviceRef kFakePhoneA =
+    multidevice::RemoteDeviceRefBuilder()
         .SetPublicKey("fake-phone-key-A")
         .SetName("Phony Phone A")
         .Build();
-const cryptauth::RemoteDeviceRef kFakePhoneB =
-    cryptauth::RemoteDeviceRefBuilder()
+const multidevice::RemoteDeviceRef kFakePhoneB =
+    multidevice::RemoteDeviceRefBuilder()
         .SetPublicKey("fake-phone-key-B")
         .SetName("Phony Phone B")
         .Build();
@@ -85,9 +85,9 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
             fake_oobe_completion_tracker_.get(), test_clock_.get());
   }
 
-  cryptauth::RemoteDeviceRef BuildFakePhone(std::string public_key,
-                                            std::string name) {
-    return cryptauth::RemoteDeviceRefBuilder()
+  multidevice::RemoteDeviceRef BuildFakePhone(std::string public_key,
+                                              std::string name) {
+    return multidevice::RemoteDeviceRefBuilder()
         .SetPublicKey(public_key)
         .SetName(name)
         .Build();
@@ -95,14 +95,14 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   void SetHostWithStatus(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
     fake_host_status_provider_->SetHostWithStatus(host_status, host_device);
     delegate_notifier_->FlushForTesting();
   }
 
   // Simulates finding a potential host, going through setup flow with it, and
   // verifying it.
-  void SetUpHost(const cryptauth::RemoteDeviceRef& host_device) {
+  void SetUpHost(const multidevice::RemoteDeviceRef& host_device) {
     SetHostWithStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet,
                       base::nullopt /* host_device */);
     fake_host_device_timestamp_manager_->set_was_host_set_from_this_chromebook(
@@ -135,7 +135,7 @@ class MultiDeviceSetupAccountStatusChangeDelegateNotifierTest
 
   void SetHostFromPreviousSession(std::string old_host_key) {
     std::string old_host_device_id =
-        cryptauth::RemoteDevice::GenerateDeviceId(old_host_key);
+        multidevice::RemoteDevice::GenerateDeviceId(old_host_key);
     test_pref_service_->SetString(
         AccountStatusChangeDelegateNotifierImpl::
             kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName,
@@ -387,7 +387,7 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        NotifiesObserverForHostSwitchEvents) {
-  const cryptauth::RemoteDeviceRef fakePhone =
+  const multidevice::RemoteDeviceRef fakePhone =
       BuildFakePhone(kFakePhoneKey, kFakePhoneName);
 
   BuildAccountStatusChangeDelegateNotifier();
@@ -450,7 +450,7 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        VerifyingSetHostTriggersNoHostSwtichEvent) {
-  const cryptauth::RemoteDeviceRef fakePhone =
+  const multidevice::RemoteDeviceRef fakePhone =
       BuildFakePhone(kFakePhoneKey, kFakePhoneName);
 
   BuildAccountStatusChangeDelegateNotifier();
@@ -566,7 +566,7 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        OnlyVerifiedHostCausesChromebookAddedEvent) {
-  const cryptauth::RemoteDeviceRef fakePhone =
+  const multidevice::RemoteDeviceRef fakePhone =
       BuildFakePhone(kFakePhoneKey, kFakePhoneName);
 
   BuildAccountStatusChangeDelegateNotifier();
@@ -620,7 +620,7 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        ChromebookAddedEventBlockedIfHostWasSetFromThisChromebook) {
-  const cryptauth::RemoteDeviceRef fakePhone =
+  const multidevice::RemoteDeviceRef fakePhone =
       BuildFakePhone(kFakePhoneKey, kFakePhoneName);
 
   BuildAccountStatusChangeDelegateNotifier();
@@ -671,9 +671,9 @@ TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
 
 TEST_F(MultiDeviceSetupAccountStatusChangeDelegateNotifierTest,
        VerifiedHostIdStaysUpToDateInPrefs) {
-  const cryptauth::RemoteDeviceRef fakePhone =
+  const multidevice::RemoteDeviceRef fakePhone =
       BuildFakePhone(kFakePhoneKey, kFakePhoneName);
-  const cryptauth::RemoteDeviceRef fakePhoneA =
+  const multidevice::RemoteDeviceRef fakePhoneA =
       BuildFakePhone(kFakePhoneKeyA, kFakePhoneNameA);
 
   BuildAccountStatusChangeDelegateNotifier();

@@ -10,9 +10,9 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace device {
 class BluetoothDevice;
@@ -30,7 +30,7 @@ class BleScanner {
    public:
     virtual ~Delegate() = default;
     virtual void OnReceivedAdvertisement(
-        cryptauth::RemoteDeviceRef remote_device,
+        multidevice::RemoteDeviceRef remote_device,
         device::BluetoothDevice* bluetooth_device,
         ConnectionRole connection_role) = 0;
   };
@@ -52,7 +52,7 @@ class BleScanner {
   bool HasScanFilter(const ScanFilter& scan_filter);
 
  protected:
-  BleScanner(Delegate* delegate);
+  explicit BleScanner(Delegate* delegate);
 
   virtual void HandleScanFilterChange() = 0;
 
@@ -61,7 +61,7 @@ class BleScanner {
   DeviceIdPairSet GetAllDeviceIdPairs();
 
   void NotifyReceivedAdvertisementFromDevice(
-      const cryptauth::RemoteDeviceRef& remote_device,
+      const multidevice::RemoteDeviceRef& remote_device,
       device::BluetoothDevice* bluetooth_device,
       ConnectionRole connection_role);
 

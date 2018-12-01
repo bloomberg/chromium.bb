@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "components/cryptauth/data_with_timestamp.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -34,7 +34,7 @@ class FakeBleServiceDataHelper : public BleServiceDataHelper {
 
   // Sets the identified device to be returned by a IdentifyRemoteDevice() call.
   void SetIdentifiedDevice(const std::string& service_data,
-                           cryptauth::RemoteDeviceRef identified_device,
+                           multidevice::RemoteDeviceRef identified_device,
                            bool is_background_advertisement);
 
  private:

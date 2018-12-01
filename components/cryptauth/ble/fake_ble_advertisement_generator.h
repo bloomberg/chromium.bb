@@ -27,7 +27,7 @@ class FakeBleAdvertisementGenerator : public BleAdvertisementGenerator {
 
  protected:
   std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisementInternal(
-      RemoteDeviceRef remote_device,
+      chromeos::multidevice::RemoteDeviceRef remote_device,
       const std::string& local_device_public_key) override;
 
  private:

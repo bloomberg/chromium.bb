@@ -22,10 +22,10 @@ namespace tether {
 
 namespace {
 
-cryptauth::RemoteDeviceRefList PrioritizeDevices(
-    const cryptauth::RemoteDeviceRefList& devices_to_connect,
+multidevice::RemoteDeviceRefList PrioritizeDevices(
+    const multidevice::RemoteDeviceRefList& devices_to_connect,
     HostScanDevicePrioritizer* host_scan_device_prioritizer) {
-  cryptauth::RemoteDeviceRefList mutable_devices_to_connect =
+  multidevice::RemoteDeviceRefList mutable_devices_to_connect =
       devices_to_connect;
   host_scan_device_prioritizer->SortByHostScanOrder(
       &mutable_devices_to_connect);
@@ -85,7 +85,7 @@ HostScannerOperation::Factory*
 // static
 std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::NewInstance(
-    const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    const multidevice::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -107,7 +107,7 @@ void HostScannerOperation::Factory::SetInstanceForTesting(Factory* factory) {
 
 std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::BuildInstance(
-    const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    const multidevice::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -120,7 +120,7 @@ HostScannerOperation::Factory::BuildInstance(
 }
 
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const DeviceStatus& device_status,
     bool setup_required)
     : remote_device(remote_device),
@@ -138,7 +138,7 @@ bool operator==(const HostScannerOperation::ScannedDeviceInfo& first,
 }
 
 HostScannerOperation::HostScannerOperation(
-    const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    const multidevice::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -175,7 +175,7 @@ void HostScannerOperation::NotifyObserversOfScannedDeviceList(
 }
 
 void HostScannerOperation::OnDeviceAuthenticated(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   DCHECK(!base::ContainsKey(
       device_id_to_tether_availability_request_start_time_map_,
       remote_device.GetDeviceId()));
@@ -188,7 +188,7 @@ void HostScannerOperation::OnDeviceAuthenticated(
 
 void HostScannerOperation::OnMessageReceived(
     std::unique_ptr<MessageWrapper> message_wrapper,
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   if (message_wrapper->GetMessageType() !=
       MessageType::TETHER_AVAILABILITY_RESPONSE) {
     // If another type of message has been received, ignore it.

@@ -11,16 +11,17 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/remote_device.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace cryptauth {
 
 class SecureMessageDelegate;
 
-// Loads a collection of RemoteDevice objects from the given ExternalDeviceInfo
-// protos that were synced from CryptAuth. We need to derive the PSK, which is
-// a symmetric key used to authenticate each remote device.
+// Loads a collection of chromeos::multidevice::RemoteDevice objects from the
+// given ExternalDeviceInfo protos that were synced from CryptAuth. We need to
+// derive the PSK, which is a symmetric key used to authenticate each remote
+// device.
 class RemoteDeviceLoader {
  public:
   class Factory {
@@ -48,7 +49,7 @@ class RemoteDeviceLoader {
 
   // Creates the instance:
   // |device_info_list|: The ExternalDeviceInfo objects to convert to
-  //                     RemoteDevice.
+  //                     chromeos::multidevice::RemoteDevice.
   // |user_private_key|: The private key of the user's local device. Used to
   //                     derive the PSK.
   // |secure_message_delegate|: Used to derive each persistent symmetric key.
@@ -61,8 +62,9 @@ class RemoteDeviceLoader {
 
   virtual ~RemoteDeviceLoader();
 
-  // Loads the RemoteDevice objects. |callback| will be invoked upon completion.
-  typedef base::Callback<void(const cryptauth::RemoteDeviceList&)>
+  // Loads the chromeos::multidevice::RemoteDevice objects. |callback| will be
+  // invoked upon completion.
+  typedef base::Callback<void(const chromeos::multidevice::RemoteDeviceList&)>
       RemoteDeviceCallback;
   virtual void Load(const RemoteDeviceCallback& callback);
 
@@ -84,11 +86,11 @@ class RemoteDeviceLoader {
   // Performs the PSK key derivation.
   std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
 
-  // Invoked when the RemoteDevices are loaded.
+  // Invoked when the chromeos::multidevice::RemoteDevices are loaded.
   RemoteDeviceCallback callback_;
 
-  // The collection of RemoteDevices to return.
-  cryptauth::RemoteDeviceList remote_devices_;
+  // The collection of chromeos::multidevice::RemoteDevices to return.
+  chromeos::multidevice::RemoteDeviceList remote_devices_;
 
   base::WeakPtrFactory<RemoteDeviceLoader> weak_ptr_factory_;
 

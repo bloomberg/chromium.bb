@@ -17,15 +17,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -99,7 +99,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  true /* connected */),
         fake_client_channel_(
             std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
-        remote_device_(cryptauth::RemoteDeviceRefBuilder()
+        remote_device_(chromeos::multidevice::RemoteDeviceRefBuilder()
                            .SetUserId(kRemoteDeviceUserId)
                            .SetName(kRemoteDeviceName)
                            .Build()),
@@ -162,7 +162,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   NiceMock<device::MockBluetoothDevice> remote_bluetooth_device_;
   std::unique_ptr<chromeos::secure_channel::FakeClientChannel>
       fake_client_channel_;
-  cryptauth::RemoteDeviceRef remote_device_;
+  chromeos::multidevice::RemoteDeviceRef remote_device_;
 
   // ProximityAuthPrefManager mock.
   std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
@@ -417,10 +417,11 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   InitializeTest(true /* multidevice_flags_enabled */);
 
   // Note: A device without a recorded name will have "Unknown" as its name.
-  cryptauth::RemoteDeviceRef remote_device = cryptauth::RemoteDeviceRefBuilder()
-                                                 .SetUserId(kRemoteDeviceUserId)
-                                                 .SetName(std::string())
-                                                 .Build();
+  chromeos::multidevice::RemoteDeviceRef remote_device =
+      chromeos::multidevice::RemoteDeviceRefBuilder()
+          .SetUserId(kRemoteDeviceUserId)
+          .SetName(std::string())
+          .Build();
 
   ProximityMonitorImpl monitor(remote_device, fake_client_channel_.get(),
                                pref_manager_.get());

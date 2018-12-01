@@ -11,9 +11,9 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -334,7 +334,7 @@ bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
 
     return device_sync_client_->GetLocalDeviceMetadata()
                ->GetSoftwareFeatureState(pair.second) !=
-           cryptauth::SoftwareFeatureState::kNotSupported;
+           multidevice::SoftwareFeatureState::kNotSupported;
   }
 
   NOTREACHED();
@@ -343,7 +343,7 @@ bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
 
 bool FeatureStateManagerImpl::HasSufficientSecurity(
     mojom::Feature feature,
-    const cryptauth::RemoteDeviceRef& host_device) {
+    const multidevice::RemoteDeviceRef& host_device) {
   if (feature != mojom::Feature::kSmartLock)
     return true;
 
@@ -352,12 +352,12 @@ bool FeatureStateManagerImpl::HasSufficientSecurity(
   // enabled.
   return host_device.GetSoftwareFeatureState(
              cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) !=
-         cryptauth::SoftwareFeatureState::kSupported;
+         multidevice::SoftwareFeatureState::kSupported;
 }
 
 bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
     mojom::Feature feature,
-    const cryptauth::RemoteDeviceRef& host_device) {
+    const multidevice::RemoteDeviceRef& host_device) {
   static const std::pair<mojom::Feature, cryptauth::SoftwareFeature>
       kFeatureAndHostSoftwareFeaturePairs[] = {
           {mojom::Feature::kBetterTogetherSuite,
@@ -374,7 +374,7 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
       continue;
 
     return host_device.GetSoftwareFeatureState(pair.second) ==
-           cryptauth::SoftwareFeatureState::kEnabled;
+           multidevice::SoftwareFeatureState::kEnabled;
   }
 
   NOTREACHED();

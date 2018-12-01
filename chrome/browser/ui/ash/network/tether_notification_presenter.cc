@@ -124,7 +124,7 @@ TetherNotificationPresenter::TetherNotificationPresenter(
 TetherNotificationPresenter::~TetherNotificationPresenter() = default;
 
 void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     int signal_strength) {
   PA_LOG(VERBOSE) << "Displaying \"potential hotspot nearby\" notification for "
                   << "device with name \"" << remote_device.name() << "\". "

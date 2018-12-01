@@ -7,7 +7,7 @@
 #include <functional>
 
 #include "base/hash.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -48,10 +48,10 @@ size_t DeviceIdPairHash::operator()(const DeviceIdPair& device_id_pair) const {
 std::ostream& operator<<(std::ostream& stream,
                          const DeviceIdPair& device_id_pair) {
   stream << "{remote_id: \""
-         << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+         << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                 device_id_pair.remote_device_id())
          << "\", local_id: \""
-         << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+         << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                 device_id_pair.local_device_id())
          << "\"}";
   return stream;

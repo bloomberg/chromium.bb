@@ -71,13 +71,13 @@ class TetherConnectorImpl : public TetherConnector,
 
   // ConnectTetheringOperation::Observer:
   void OnConnectTetheringRequestSent(
-      cryptauth::RemoteDeviceRef remote_device) override;
+      multidevice::RemoteDeviceRef remote_device) override;
   void OnSuccessfulConnectTetheringResponse(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       const std::string& ssid,
       const std::string& password) override;
   void OnConnectTetheringFailure(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       ConnectTetheringOperation::HostResponseErrorCode error_code) override;
 
  private:
@@ -91,7 +91,7 @@ class TetherConnectorImpl : public TetherConnector,
 
   void OnTetherHostToConnectFetched(
       const std::string& device_id,
-      base::Optional<cryptauth::RemoteDeviceRef> tether_host_to_connect);
+      base::Optional<multidevice::RemoteDeviceRef> tether_host_to_connect);
   void OnWifiConnection(const std::string& device_id,
                         const std::string& wifi_network_guid);
   HostConnectionMetricsLogger::ConnectionToHostResult

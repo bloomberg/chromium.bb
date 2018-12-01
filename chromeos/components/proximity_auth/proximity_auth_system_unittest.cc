@@ -9,6 +9,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/fake_lock_handler.h"
 #include "chromeos/components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -18,14 +21,10 @@
 #include "chromeos/components/proximity_auth/unlock_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using cryptauth::RemoteDevice;
-using cryptauth::RemoteDeviceRefList;
+using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::InSequence;
@@ -33,7 +32,6 @@ using testing::NiceMock;
 using testing::NotNull;
 using testing::Return;
 using testing::SaveArg;
-using testing::_;
 
 namespace proximity_auth {
 
@@ -42,20 +40,22 @@ namespace {
 const char kUser1[] = "user1";
 const char kUser2[] = "user2";
 
-void CompareRemoteDeviceRefLists(const RemoteDeviceRefList& list1,
-                                 const RemoteDeviceRefList& list2) {
+void CompareRemoteDeviceRefLists(
+    const chromeos::multidevice::RemoteDeviceRefList& list1,
+    const chromeos::multidevice::RemoteDeviceRefList& list2) {
   ASSERT_EQ(list1.size(), list2.size());
   for (size_t i = 0; i < list1.size(); ++i) {
-    cryptauth::RemoteDeviceRef device1 = list1[i];
-    cryptauth::RemoteDeviceRef device2 = list2[i];
+    chromeos::multidevice::RemoteDeviceRef device1 = list1[i];
+    chromeos::multidevice::RemoteDeviceRef device2 = list2[i];
     EXPECT_EQ(device1.public_key(), device2.public_key());
   }
 }
 
 // Creates a RemoteDeviceRef object for |user_id| with |name|.
-cryptauth::RemoteDeviceRef CreateRemoteDevice(const std::string& user_id,
-                                              const std::string& name) {
-  return cryptauth::RemoteDeviceRefBuilder()
+chromeos::multidevice::RemoteDeviceRef CreateRemoteDevice(
+    const std::string& user_id,
+    const std::string& name) {
+  return chromeos::multidevice::RemoteDeviceRefBuilder()
       .SetUserId(user_id)
       .SetName(name)
       .Build();
@@ -106,8 +106,9 @@ class TestableProximityAuthSystem : public ProximityAuthSystem {
 
  private:
   std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
-      cryptauth::RemoteDeviceRef remote_device,
-      base::Optional<cryptauth::RemoteDeviceRef> local_device) override {
+      chromeos::multidevice::RemoteDeviceRef remote_device,
+      base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device)
+      override {
     std::unique_ptr<FakeRemoteDeviceLifeCycle> life_cycle(
         new FakeRemoteDeviceLifeCycle(remote_device, local_device));
     life_cycle_ = life_cycle.get();
@@ -201,11 +202,11 @@ class ProximityAuthSystemTest : public testing::Test {
   std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
 
-  cryptauth::RemoteDeviceRef user1_local_device_;
-  cryptauth::RemoteDeviceRef user2_local_device_;
+  chromeos::multidevice::RemoteDeviceRef user1_local_device_;
+  chromeos::multidevice::RemoteDeviceRef user2_local_device_;
 
-  cryptauth::RemoteDeviceRefList user1_remote_devices_;
-  cryptauth::RemoteDeviceRefList user2_remote_devices_;
+  chromeos::multidevice::RemoteDeviceRefList user1_remote_devices_;
+  chromeos::multidevice::RemoteDeviceRefList user2_remote_devices_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
@@ -234,7 +235,7 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
       proximity_auth_system_->GetRemoteDevicesForUser(account2));
 
   CompareRemoteDeviceRefLists(
-      RemoteDeviceRefList(),
+      chromeos::multidevice::RemoteDeviceRefList(),
       proximity_auth_system_->GetRemoteDevicesForUser(
           AccountId::FromUserEmail("non_existent_user@google.com")));
 }

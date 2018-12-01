@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/software_feature_state.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 std::ostream& operator<<(std::ostream& stream,
                          const SoftwareFeatureState& state) {
@@ -22,4 +24,6 @@ std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

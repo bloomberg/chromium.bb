@@ -4,8 +4,8 @@
 
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 
-#include "components/cryptauth/remote_device.h"
-#include "components/cryptauth/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 
 namespace chromeos {
 
@@ -25,11 +25,11 @@ void FakeDeviceSyncClient::ForceSyncNow(
   force_sync_now_callback_queue_.push(std::move(callback));
 }
 
-cryptauth::RemoteDeviceRefList FakeDeviceSyncClient::GetSyncedDevices() {
+multidevice::RemoteDeviceRefList FakeDeviceSyncClient::GetSyncedDevices() {
   return synced_devices_;
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 FakeDeviceSyncClient::GetLocalDeviceMetadata() {
   return local_device_metadata_;
 }
@@ -97,8 +97,8 @@ void FakeDeviceSyncClient::InvokePendingSetSoftwareFeatureStateCallback(
 
 void FakeDeviceSyncClient::InvokePendingFindEligibleDevicesCallback(
     mojom::NetworkRequestResult result_code,
-    cryptauth::RemoteDeviceRefList eligible_devices,
-    cryptauth::RemoteDeviceRefList ineligible_devices) {
+    multidevice::RemoteDeviceRefList eligible_devices,
+    multidevice::RemoteDeviceRefList ineligible_devices) {
   DCHECK(find_eligible_devices_callback_queue_.size() > 0);
   std::move(find_eligible_devices_callback_queue_.front())
       .Run(result_code, eligible_devices, ineligible_devices);

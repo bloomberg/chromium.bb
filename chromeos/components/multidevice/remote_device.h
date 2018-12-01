@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H_
-#define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/software_feature_state.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 struct RemoteDevice {
  public:
@@ -24,18 +26,18 @@ struct RemoteDevice {
   std::string public_key;
   std::string persistent_symmetric_key;
   int64_t last_update_time_millis;
-  std::map<SoftwareFeature, SoftwareFeatureState> software_features;
-  std::vector<BeaconSeed> beacon_seeds;
+  std::map<cryptauth::SoftwareFeature, SoftwareFeatureState> software_features;
+  std::vector<cryptauth::BeaconSeed> beacon_seeds;
 
   RemoteDevice();
-  RemoteDevice(
-      const std::string& user_id,
-      const std::string& name,
-      const std::string& public_key,
-      const std::string& persistent_symmetric_key,
-      int64_t last_update_time_millis,
-      const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
-      const std::vector<BeaconSeed>& beacon_seeds);
+  RemoteDevice(const std::string& user_id,
+               const std::string& name,
+               const std::string& public_key,
+               const std::string& persistent_symmetric_key,
+               int64_t last_update_time_millis,
+               const std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>&
+                   software_features,
+               const std::vector<cryptauth::BeaconSeed>& beacon_seeds);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 
@@ -50,6 +52,8 @@ struct RemoteDevice {
 
 typedef std::vector<RemoteDevice> RemoteDeviceList;
 
-}  // namespace cryptauth
+}  // namespace multidevice
 
-#endif  // COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_H_

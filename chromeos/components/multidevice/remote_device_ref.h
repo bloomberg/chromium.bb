@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_REF_H_
-#define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_REF_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_REF_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_REF_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
-#include "components/cryptauth/software_feature_state.h"
 
 namespace chromeos {
 class EasyUnlockServiceRegular;
@@ -32,7 +32,9 @@ namespace proximity_auth {
 class ProximityAuthWebUIHandler;
 }  // namespace proximity_auth
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 // Contains metadata specific to a device associated with a user's account.
 // Because this metadata contains large and expensive data types, and that data
@@ -65,13 +67,13 @@ class RemoteDeviceRef {
   int64_t last_update_time_millis() const {
     return remote_device_->last_update_time_millis;
   }
-  const std::vector<BeaconSeed>& beacon_seeds() const {
+  const std::vector<cryptauth::BeaconSeed>& beacon_seeds() const {
     return remote_device_->beacon_seeds;
   }
 
   std::string GetDeviceId() const;
   SoftwareFeatureState GetSoftwareFeatureState(
-      const SoftwareFeature& software_feature) const;
+      const cryptauth::SoftwareFeature& software_feature) const;
 
   // Returns a shortened device ID for the purpose of concise logging (device
   // IDs are often so long that logs are difficult to read). Note that this
@@ -88,8 +90,8 @@ class RemoteDeviceRef {
   friend class RemoteDeviceCache;
   friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
-  friend bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
-                           cryptauth::RemoteDeviceRef remote_device_ref);
+  friend bool IsSameDevice(const RemoteDevice& remote_device,
+                           RemoteDeviceRef remote_device_ref);
   friend RemoteDevice* GetMutableRemoteDevice(
       const RemoteDeviceRef& remote_device_ref);
   FRIEND_TEST_ALL_PREFIXES(RemoteDeviceRefTest, TestFields);
@@ -114,6 +116,8 @@ class RemoteDeviceRef {
 
 typedef std::vector<RemoteDeviceRef> RemoteDeviceRefList;
 
-}  // namespace cryptauth
+}  // namespace multidevice
 
-#endif  // COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_REF_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_REF_H_

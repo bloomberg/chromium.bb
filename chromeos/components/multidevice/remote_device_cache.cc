@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 // static
 RemoteDeviceCache::Factory* RemoteDeviceCache::Factory::test_factory_ = nullptr;
@@ -75,4 +77,6 @@ base::Optional<RemoteDeviceRef> RemoteDeviceCache::GetRemoteDevice(
   return RemoteDeviceRef(remote_device_map_.at(device_id));
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

@@ -19,10 +19,10 @@ namespace {
 
 const char kTetherFeature[] = "magic_tether";
 
-cryptauth::RemoteDeviceRefList RemoveDuplicatesFromVector(
-    const cryptauth::RemoteDeviceRefList& remote_devices) {
-  cryptauth::RemoteDeviceRefList updated_remote_devices;
-  std::set<cryptauth::RemoteDeviceRef> remote_devices_set;
+multidevice::RemoteDeviceRefList RemoveDuplicatesFromVector(
+    const multidevice::RemoteDeviceRefList& remote_devices) {
+  multidevice::RemoteDeviceRefList updated_remote_devices;
+  std::set<multidevice::RemoteDeviceRef> remote_devices_set;
   for (const auto& remote_device : remote_devices) {
     // Only add the device to the output vector if it has not already been put
     // into the set.
@@ -38,7 +38,7 @@ cryptauth::RemoteDeviceRefList RemoveDuplicatesFromVector(
 
 MessageTransferOperation::ConnectionAttemptDelegate::ConnectionAttemptDelegate(
     MessageTransferOperation* operation,
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<secure_channel::ConnectionAttempt> connection_attempt)
     : operation_(operation),
       remote_device_(remote_device),
@@ -62,7 +62,7 @@ void MessageTransferOperation::ConnectionAttemptDelegate::OnConnection(
 
 MessageTransferOperation::ClientChannelObserver::ClientChannelObserver(
     MessageTransferOperation* operation,
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<secure_channel::ClientChannel> client_channel)
     : operation_(operation),
       remote_device_(remote_device),
@@ -84,7 +84,7 @@ void MessageTransferOperation::ClientChannelObserver::OnMessageReceived(
 }
 
 MessageTransferOperation::MessageTransferOperation(
-    const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    const multidevice::RemoteDeviceRefList& devices_to_connect,
     secure_channel::ConnectionPriority connection_priority,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client)
@@ -106,7 +106,7 @@ MessageTransferOperation::~MessageTransferOperation() {
   // connections will continue to stay alive until the Tether component is shut
   // down (see crbug.com/761106). Note that a copy of |remote_devices_| is used
   // here because UnregisterDevice() will modify |remote_devices_| internally.
-  cryptauth::RemoteDeviceRefList remote_devices_copy = remote_devices_;
+  multidevice::RemoteDeviceRefList remote_devices_copy = remote_devices_;
   for (const auto& remote_device : remote_devices_copy)
     UnregisterDevice(remote_device);
 }
@@ -139,7 +139,7 @@ void MessageTransferOperation::Initialize() {
 
 void MessageTransferOperation::OnMessageReceived(const std::string& device_id,
                                                  const std::string& payload) {
-  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+  base::Optional<multidevice::RemoteDeviceRef> remote_device =
       GetRemoteDevice(device_id);
   if (!remote_device) {
     // If the device from which the message has been received does not
@@ -156,13 +156,13 @@ void MessageTransferOperation::OnMessageReceived(const std::string& device_id,
 }
 
 void MessageTransferOperation::UnregisterDevice(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   // Note: This function may be called from the destructor. It is invalid to
   // invoke any virtual methods if |shutting_down_| is true.
 
   // Make a copy of |remote_device| before continuing, since the code below may
   // cause the original reference to be deleted.
-  cryptauth::RemoteDeviceRef remote_device_copy = remote_device;
+  multidevice::RemoteDeviceRef remote_device_copy = remote_device;
 
   remote_devices_.erase(std::remove(remote_devices_.begin(),
                                     remote_devices_.end(), remote_device_copy),
@@ -181,7 +181,7 @@ void MessageTransferOperation::UnregisterDevice(
 }
 
 int MessageTransferOperation::SendMessageToDevice(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<MessageWrapper> message_wrapper) {
   DCHECK(base::ContainsKey(remote_device_to_client_channel_observer_map_,
                            remote_device));
@@ -201,7 +201,7 @@ uint32_t MessageTransferOperation::GetMessageTimeoutSeconds() {
 }
 
 void MessageTransferOperation::OnConnectionAttemptFailure(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     secure_channel::mojom::ConnectionAttemptFailureReason reason) {
   PA_LOG(WARNING) << "Failed to connect to device "
                   << remote_device.GetTruncatedDeviceIdForLogs()
@@ -210,7 +210,7 @@ void MessageTransferOperation::OnConnectionAttemptFailure(
 }
 
 void MessageTransferOperation::OnConnection(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<secure_channel::ClientChannel> channel) {
   remote_device_to_client_channel_observer_map_[remote_device] =
       std::make_unique<ClientChannelObserver>(this, remote_device,
@@ -227,24 +227,24 @@ void MessageTransferOperation::OnConnection(
 }
 
 void MessageTransferOperation::OnDisconnected(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   PA_LOG(VERBOSE) << "Remote device disconnected from this device: "
                   << remote_device.GetTruncatedDeviceIdForLogs();
   UnregisterDevice(remote_device);
 }
 
 void MessageTransferOperation::StartConnectionTimerForDevice(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   StartTimerForDevice(remote_device, kConnectionTimeoutSeconds);
 }
 
 void MessageTransferOperation::StartMessageTimerForDevice(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   StartTimerForDevice(remote_device, GetMessageTimeoutSeconds());
 }
 
 void MessageTransferOperation::StartTimerForDevice(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     uint32_t timeout_seconds) {
   PA_LOG(VERBOSE) << "Starting timer for operation with message type "
                   << message_type_for_connection_ << " from device with ID "
@@ -259,7 +259,7 @@ void MessageTransferOperation::StartTimerForDevice(
 }
 
 void MessageTransferOperation::StopTimerForDeviceIfRunning(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   if (!remote_device_to_timer_map_[remote_device])
     return;
 
@@ -268,7 +268,7 @@ void MessageTransferOperation::StopTimerForDeviceIfRunning(
 }
 
 void MessageTransferOperation::OnTimeout(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   PA_LOG(WARNING) << "Timed out operation for message type "
                   << message_type_for_connection_ << " from device with ID "
                   << remote_device.GetTruncatedDeviceIdForLogs() << ".";
@@ -277,7 +277,7 @@ void MessageTransferOperation::OnTimeout(
   UnregisterDevice(remote_device);
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 MessageTransferOperation::GetRemoteDevice(const std::string& device_id) {
   for (auto& remote_device : remote_devices_) {
     if (remote_device.GetDeviceId() == device_id)

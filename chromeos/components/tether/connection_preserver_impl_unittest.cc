@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/timer_factory.h"
@@ -22,7 +23,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -56,10 +56,10 @@ std::string CreateConfigurationJsonString(const std::string& guid,
 class ConnectionPreserverImplTest : public NetworkStateTest {
  protected:
   ConnectionPreserverImplTest()
-      : test_local_device_(cryptauth::RemoteDeviceRefBuilder()
+      : test_local_device_(multidevice::RemoteDeviceRefBuilder()
                                .SetPublicKey("local device")
                                .Build()),
-        test_remote_devices_(cryptauth::CreateRemoteDeviceRefListForTest(3)) {
+        test_remote_devices_(multidevice::CreateRemoteDeviceRefListForTest(3)) {
     std::transform(
         test_remote_devices_.begin(), test_remote_devices_.end(),
         std::back_inserter(test_remote_device_ids_),
@@ -104,7 +104,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
     DBusThreadManager::Shutdown();
   }
 
-  void SimulateSuccessfulHostScan(cryptauth::RemoteDeviceRef remote_device,
+  void SimulateSuccessfulHostScan(multidevice::RemoteDeviceRef remote_device,
                                   bool should_remain_registered) {
     // |connection_preserver_| should only grab |fake_connection_attempt| if
     // it is intended to keep the connection open.
@@ -152,7 +152,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
   }
 
   void VerifyChannelForRemoteDeviceDestroyed(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       bool expect_destroyed) {
     if (expect_destroyed) {
       EXPECT_TRUE(remote_device_to_client_channel_destruction_count_map_
@@ -172,19 +172,20 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
     return previously_connected_host_ids_;
   }
 
-  void OnClientChannelDestroyed(cryptauth::RemoteDeviceRef remote_device) {
+  void OnClientChannelDestroyed(multidevice::RemoteDeviceRef remote_device) {
     remote_device_to_client_channel_destruction_count_map_[remote_device]++;
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  const cryptauth::RemoteDeviceRef test_local_device_;
-  const cryptauth::RemoteDeviceRefList test_remote_devices_;
+  const multidevice::RemoteDeviceRef test_local_device_;
+  const multidevice::RemoteDeviceRefList test_remote_devices_;
   std::vector<std::string> test_remote_device_ids_;
 
-  base::flat_map<cryptauth::RemoteDeviceRef, secure_channel::FakeClientChannel*>
+  base::flat_map<multidevice::RemoteDeviceRef,
+                 secure_channel::FakeClientChannel*>
       remote_device_to_fake_client_channel_map_;
-  base::flat_map<cryptauth::RemoteDeviceRef, int>
+  base::flat_map<multidevice::RemoteDeviceRef, int>
       remote_device_to_client_channel_destruction_count_map_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;

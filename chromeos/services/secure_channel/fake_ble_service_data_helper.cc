@@ -27,7 +27,7 @@ void FakeBleServiceDataHelper::RemoveAdvertisement(
 
 void FakeBleServiceDataHelper::SetIdentifiedDevice(
     const std::string& service_data,
-    cryptauth::RemoteDeviceRef identified_device,
+    multidevice::RemoteDeviceRef identified_device,
     bool is_background_advertisement) {
   service_data_to_device_with_background_bool_map_.insert(
       {service_data, DeviceWithBackgroundBool(identified_device,

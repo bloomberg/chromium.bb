@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -40,22 +40,22 @@ class TetherHostFetcher {
 
   // Fetches all tether hosts.
   using TetherHostListCallback =
-      base::Callback<void(const cryptauth::RemoteDeviceRefList&)>;
+      base::Callback<void(const multidevice::RemoteDeviceRefList&)>;
   virtual void FetchAllTetherHosts(const TetherHostListCallback& callback) = 0;
 
   // Fetches the tether host with the ID |device_id|.
   using TetherHostCallback =
-      base::Callback<void(base::Optional<cryptauth::RemoteDeviceRef>)>;
+      base::Callback<void(base::Optional<multidevice::RemoteDeviceRef>)>;
   virtual void FetchTetherHost(const std::string& device_id,
                                const TetherHostCallback& callback) = 0;
 
  protected:
   void ProcessFetchAllTetherHostsRequest(
-      const cryptauth::RemoteDeviceRefList& remote_device_list,
+      const multidevice::RemoteDeviceRefList& remote_device_list,
       const TetherHostListCallback& callback);
   void ProcessFetchSingleTetherHostRequest(
       const std::string& device_id,
-      const cryptauth::RemoteDeviceRefList& remote_device_list,
+      const multidevice::RemoteDeviceRefList& remote_device_list,
       const TetherHostCallback& callback);
 
   void NotifyTetherHostsUpdated();

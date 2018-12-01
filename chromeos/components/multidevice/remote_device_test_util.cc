@@ -5,11 +5,13 @@
 #include <map>
 #include <string>
 
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 
 #include "base/base64.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 // Attributes of the default test remote device.
 const char kTestRemoteDeviceUserId[] = "example@gmail.com";
@@ -46,13 +48,13 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSupportsMobileHotspot(
     bool supports_mobile_hotspot) {
   remote_device_
       ->software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
-      supports_mobile_hotspot ? cryptauth::SoftwareFeatureState::kSupported
-                              : cryptauth::SoftwareFeatureState::kNotSupported;
+      supports_mobile_hotspot ? SoftwareFeatureState::kSupported
+                              : SoftwareFeatureState::kNotSupported;
   return *this;
 }
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSoftwareFeatureState(
-    const SoftwareFeature feature,
+    const cryptauth::SoftwareFeature feature,
     const SoftwareFeatureState new_state) {
   remote_device_->software_features[feature] = new_state;
   return *this;
@@ -65,7 +67,7 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetLastUpdateTimeMillis(
 }
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetBeaconSeeds(
-    const std::vector<BeaconSeed>& beacon_seeds) {
+    const std::vector<cryptauth::BeaconSeed>& beacon_seeds) {
   remote_device_->beacon_seeds = beacon_seeds;
   return *this;
 }
@@ -75,12 +77,11 @@ RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
 }
 
 RemoteDevice CreateRemoteDeviceForTest() {
-  std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
-      software_features;
+  std::map<cryptauth::SoftwareFeature, SoftwareFeatureState> software_features;
   software_features[cryptauth::SoftwareFeature::EASY_UNLOCK_HOST] =
-      cryptauth::SoftwareFeatureState::kEnabled;
+      SoftwareFeatureState::kEnabled;
   software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      SoftwareFeatureState::kSupported;
 
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
                       kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
@@ -123,12 +124,14 @@ RemoteDevice* GetMutableRemoteDevice(const RemoteDeviceRef& remote_device_ref) {
   return const_cast<RemoteDevice*>(remote_device);
 }
 
-bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
-                  cryptauth::RemoteDeviceRef remote_device_ref) {
+bool IsSameDevice(const RemoteDevice& remote_device,
+                  RemoteDeviceRef remote_device_ref) {
   if (!remote_device_ref.remote_device_)
     return false;
 
   return remote_device == *remote_device_ref.remote_device_;
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

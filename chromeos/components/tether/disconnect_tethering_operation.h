@@ -27,7 +27,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   class Factory {
    public:
     static std::unique_ptr<DisconnectTetheringOperation> NewInstance(
-        cryptauth::RemoteDeviceRef device_to_connect,
+        multidevice::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
 
@@ -35,7 +35,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
 
    protected:
     virtual std::unique_ptr<DisconnectTetheringOperation> BuildInstance(
-        cryptauth::RemoteDeviceRef device_to_connect,
+        multidevice::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
 
@@ -59,14 +59,15 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
 
  protected:
   DisconnectTetheringOperation(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client);
 
   void NotifyObserversOperationFinished(bool success);
 
   // MessageTransferOperation:
-  void OnDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) override;
+  void OnDeviceAuthenticated(
+      multidevice::RemoteDeviceRef remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
   void OnMessageSent(int sequence_number) override;
@@ -77,7 +78,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   void SetClockForTest(base::Clock* clock_for_test);
 
   base::ObserverList<Observer>::Unchecked observer_list_;
-  cryptauth::RemoteDeviceRef remote_device_;
+  multidevice::RemoteDeviceRef remote_device_;
   int disconnect_message_sequence_number_ = -1;
   bool has_sent_message_;
 

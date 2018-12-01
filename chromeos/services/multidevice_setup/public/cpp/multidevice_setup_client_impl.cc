@@ -50,7 +50,7 @@ MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     : host_status_observer_binding_(this),
       feature_state_observer_binding_(this),
       remote_device_cache_(
-          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()),
+          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
   connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
@@ -119,7 +119,7 @@ void MultiDeviceSetupClientImpl::TriggerEventForDebugging(
 
 void MultiDeviceSetupClientImpl::OnHostStatusChanged(
     mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDevice>& host_device) {
+    const base::Optional<multidevice::RemoteDevice>& host_device) {
   if (host_device) {
     remote_device_cache_->SetRemoteDevices({*host_device});
     host_status_with_device_ = std::make_pair(
@@ -141,10 +141,10 @@ void MultiDeviceSetupClientImpl::OnFeatureStatesChanged(
 
 void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
     GetEligibleHostDevicesCallback callback,
-    const cryptauth::RemoteDeviceList& eligible_host_devices) {
+    const multidevice::RemoteDeviceList& eligible_host_devices) {
   remote_device_cache_->SetRemoteDevices(eligible_host_devices);
 
-  cryptauth::RemoteDeviceRefList eligible_host_device_refs;
+  multidevice::RemoteDeviceRefList eligible_host_device_refs;
   std::transform(
       eligible_host_devices.begin(), eligible_host_devices.end(),
       std::back_inserter(eligible_host_device_refs),

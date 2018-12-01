@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/connection_observer.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +28,8 @@ namespace {
 
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(cryptauth::CreateRemoteDeviceRefForTest()) {}
+  MockConnection()
+      : Connection(chromeos::multidevice::CreateRemoteDeviceRefForTest()) {}
   ~MockConnection() {}
 
   MOCK_METHOD1(SetPaused, void(bool paused));

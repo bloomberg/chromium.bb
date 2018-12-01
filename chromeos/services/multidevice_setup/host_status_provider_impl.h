@@ -6,12 +6,12 @@
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_HOST_STATUS_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
 #include "chromeos/services/multidevice_setup/host_verifier.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 

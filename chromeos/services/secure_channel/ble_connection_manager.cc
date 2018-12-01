@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -188,7 +188,7 @@ BleConnectionManager::GetDetailsForRemoteDevice(
     PA_LOG(ERROR) << "BleConnectionManager::GetDetailsForRemoteDevice(): Tried "
                   << "to get details for a remote device, but no device with "
                   << "the provided ID existed. ID: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          remote_device_id);
     NOTREACHED();
   }

@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {
@@ -39,16 +39,16 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       mojom::NetworkRequestResult result_code);
   void InvokePendingFindEligibleDevicesCallback(
       mojom::NetworkRequestResult result_code,
-      cryptauth::RemoteDeviceRefList eligible_devices,
-      cryptauth::RemoteDeviceRefList ineligible_devices);
+      multidevice::RemoteDeviceRefList eligible_devices,
+      multidevice::RemoteDeviceRefList ineligible_devices);
   void InvokePendingGetDebugInfoCallback(mojom::DebugInfoPtr debug_info_ptr);
 
-  void set_synced_devices(cryptauth::RemoteDeviceRefList synced_devices) {
+  void set_synced_devices(multidevice::RemoteDeviceRefList synced_devices) {
     synced_devices_ = synced_devices;
   }
 
   void set_local_device_metadata(
-      base::Optional<cryptauth::RemoteDeviceRef> local_device_metadata) {
+      base::Optional<multidevice::RemoteDeviceRef> local_device_metadata) {
     local_device_metadata_ = local_device_metadata;
   }
 
@@ -61,8 +61,9 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   void ForceEnrollmentNow(
       mojom::DeviceSync::ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(mojom::DeviceSync::ForceSyncNowCallback callback) override;
-  cryptauth::RemoteDeviceRefList GetSyncedDevices() override;
-  base::Optional<cryptauth::RemoteDeviceRef> GetLocalDeviceMetadata() override;
+  multidevice::RemoteDeviceRefList GetSyncedDevices() override;
+  base::Optional<multidevice::RemoteDeviceRef> GetLocalDeviceMetadata()
+      override;
   void SetSoftwareFeatureState(
       const std::string public_key,
       cryptauth::SoftwareFeature software_feature,
@@ -73,8 +74,8 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
                            FindEligibleDevicesCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
 
-  cryptauth::RemoteDeviceRefList synced_devices_;
-  base::Optional<cryptauth::RemoteDeviceRef> local_device_metadata_;
+  multidevice::RemoteDeviceRefList synced_devices_;
+  base::Optional<multidevice::RemoteDeviceRef> local_device_metadata_;
 
   std::queue<mojom::DeviceSync::ForceEnrollmentNowCallback>
       force_enrollment_now_callback_queue_;

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
@@ -16,7 +17,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -46,7 +46,7 @@ std::string CreateConfigurationJsonString(bool is_connected) {
 class CrashRecoveryManagerImplTest : public NetworkStateTest {
  protected:
   CrashRecoveryManagerImplTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefListForTest(1u)[0]) {}
   ~CrashRecoveryManagerImplTest() override = default;
 
   void SetUp() override {
@@ -120,7 +120,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeHostScanCache> fake_host_scan_cache_;

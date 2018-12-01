@@ -5,9 +5,9 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
 
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,15 +43,17 @@ TEST(DeviceSyncMojomStructTraitsTest, BeaconSeed) {
 }
 
 TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
-  std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
-      software_features = std::map<cryptauth::SoftwareFeature,
-                                   cryptauth::SoftwareFeatureState>();
+  std::map<cryptauth::SoftwareFeature,
+           chromeos::multidevice::SoftwareFeatureState>
+      software_features =
+          std::map<cryptauth::SoftwareFeature,
+                   chromeos::multidevice::SoftwareFeatureState>();
   software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      chromeos::multidevice::SoftwareFeatureState::kSupported;
   software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kEnabled;
+      chromeos::multidevice::SoftwareFeatureState::kEnabled;
 
-  cryptauth::RemoteDevice input;
+  chromeos::multidevice::RemoteDevice input;
   input.user_id = "userId";
   input.name = "name";
   input.public_key = "publicKey";
@@ -60,7 +62,7 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   input.software_features = software_features;
   input.beacon_seeds = {CreateTestBeaconSeed()};
 
-  cryptauth::RemoteDevice output;
+  chromeos::multidevice::RemoteDevice output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
               chromeos::device_sync::mojom::RemoteDevice>(&input, &output));
 

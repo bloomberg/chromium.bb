@@ -17,6 +17,7 @@ test("chromeos_components_unittests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/components/drivefs:unit_tests",
+    "//chromeos/components/multidevice:unit_tests",
     "//chromeos/components/nearby:unit_tests",
     "//chromeos/components/proximity_auth:unit_tests",
     "//chromeos/components/tether:unit_tests",

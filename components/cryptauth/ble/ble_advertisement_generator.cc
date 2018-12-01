@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -18,7 +18,7 @@ BleAdvertisementGenerator* BleAdvertisementGenerator::instance_ = nullptr;
 // static
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisement(
-    RemoteDeviceRef remote_device,
+    chromeos::multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   if (!instance_)
     instance_ = new BleAdvertisementGenerator();
@@ -40,7 +40,7 @@ BleAdvertisementGenerator::~BleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    RemoteDeviceRef remote_device,
+    chromeos::multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   if (local_device_public_key.empty()) {
     PA_LOG(WARNING) << "Local device's public key is empty. Cannot advertise "

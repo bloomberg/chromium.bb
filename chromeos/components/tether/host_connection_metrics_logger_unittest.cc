@@ -8,9 +8,9 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_active_host.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -26,7 +26,7 @@ const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 class HostConnectionMetricsLoggerTest : public testing::Test {
  protected:
   HostConnectionMetricsLoggerTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2u)) {}
 
   void SetUp() override {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
@@ -107,7 +107,7 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
     fake_active_host_->SetActiveHostConnecting(device_id, kTetherNetworkGuid);
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<HostConnectionMetricsLogger> metrics_logger_;

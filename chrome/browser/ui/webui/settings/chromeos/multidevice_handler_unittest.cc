@@ -8,10 +8,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +56,7 @@ GenerateDefaultFeatureStatesMap() {
 void VerifyPageContentDict(
     const base::Value* value,
     multidevice_setup::mojom::HostStatus expected_host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& expected_host_device,
+    const base::Optional<multidevice::RemoteDeviceRef>& expected_host_device,
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
   const base::DictionaryValue* page_content_dict;
@@ -107,7 +107,7 @@ void VerifyPageContentDict(
 class MultideviceHandlerTest : public testing::Test {
  protected:
   MultideviceHandlerTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
   ~MultideviceHandlerTest() override = default;
 
   // testing::Test:
@@ -181,7 +181,7 @@ class MultideviceHandlerTest : public testing::Test {
 
   void SimulateHostStatusUpdate(
       multidevice_setup::mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     fake_multidevice_setup_client_->SetHostStatusWithDevice(
@@ -272,7 +272,7 @@ class MultideviceHandlerTest : public testing::Test {
     return fake_android_sms_app_helper_delegate_;
   }
 
-  const cryptauth::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
  private:
   void VerifyPageContent(const base::Value* value) {

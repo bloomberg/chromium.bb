@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/ble_scanner.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace device {
 class BluetoothDevice;
@@ -26,7 +26,7 @@ class FakeBleScanner : public BleScanner {
   // IsDiscoverySessionActive() will simply return whether at least once device
   // is registered; otherwise, that value must be determined manually via
   // set_is_discovery_session_active().
-  FakeBleScanner(bool automatically_update_discovery_session);
+  explicit FakeBleScanner(bool automatically_update_discovery_session);
   ~FakeBleScanner() override;
 
   const std::vector<std::string>& registered_device_ids() {
@@ -42,7 +42,7 @@ class FakeBleScanner : public BleScanner {
   }
 
   void NotifyReceivedAdvertisementFromDevice(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       device::BluetoothDevice* bluetooth_device,
       bool is_background_advertisement);
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);

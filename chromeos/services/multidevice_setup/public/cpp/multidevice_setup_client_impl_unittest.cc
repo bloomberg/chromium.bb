@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
@@ -20,7 +21,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,12 +96,12 @@ class TestMultiDeviceSetupClientObserver
   DISALLOW_COPY_AND_ASSIGN(TestMultiDeviceSetupClientObserver);
 };
 
-base::Optional<cryptauth::RemoteDevice> GetRemoteDeviceFromRef(
-    const base::Optional<cryptauth::RemoteDeviceRef>& remote_device_ref) {
+base::Optional<multidevice::RemoteDevice> GetRemoteDeviceFromRef(
+    const base::Optional<multidevice::RemoteDeviceRef>& remote_device_ref) {
   if (!remote_device_ref)
-    return base::Optional<cryptauth::RemoteDevice>();
+    return base::Optional<multidevice::RemoteDevice>();
 
-  return *cryptauth::GetMutableRemoteDevice(*remote_device_ref);
+  return *multidevice::GetMutableRemoteDevice(*remote_device_ref);
 }
 
 }  // namespace
@@ -110,9 +110,9 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
  protected:
   MultiDeviceSetupClientImplTest()
       : test_remote_device_list_(
-            cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices)),
+            multidevice::CreateRemoteDeviceListForTest(kNumTestDevices)),
         test_remote_device_ref_list_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
 
   // testing::Test:
   void SetUp() override {
@@ -197,7 +197,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   }
 
   void CallGetEligibleHostDevices(
-      const cryptauth::RemoteDeviceList& expected_eligible_host_devices) {
+      const multidevice::RemoteDeviceList& expected_eligible_host_devices) {
     base::RunLoop run_loop;
 
     client_->GetEligibleHostDevices(base::BindOnce(
@@ -332,8 +332,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
 
   MultiDeviceSetupClient* client() { return client_.get(); }
 
-  cryptauth::RemoteDeviceList test_remote_device_list_;
-  const cryptauth::RemoteDeviceRefList test_remote_device_ref_list_;
+  multidevice::RemoteDeviceList test_remote_device_list_;
+  const multidevice::RemoteDeviceRefList test_remote_device_ref_list_;
   std::unique_ptr<TestMultiDeviceSetupClientObserver> test_observer_;
 
  private:
@@ -345,8 +345,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   // stores devices in an unordered_map -- retrieved devices thus need to be
   // sorted before comparison.
   void VerifyRemoteDeviceRefListAndRemoteDeviceListAreEqual(
-      cryptauth::RemoteDeviceRefList remote_device_ref_list,
-      cryptauth::RemoteDeviceList remote_device_list) {
+      multidevice::RemoteDeviceRefList remote_device_ref_list,
+      multidevice::RemoteDeviceList remote_device_list) {
     std::sort(remote_device_list.begin(), remote_device_list.end());
     std::sort(remote_device_ref_list.begin(), remote_device_ref_list.end());
 
@@ -359,7 +359,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
 
   void OnGetEligibleHostDevicesCompleted(
       base::OnceClosure quit_closure,
-      const cryptauth::RemoteDeviceRefList& eligible_host_devices) {
+      const multidevice::RemoteDeviceRefList& eligible_host_devices) {
     eligible_host_devices_ = eligible_host_devices;
     std::move(quit_closure).Run();
   }
@@ -372,7 +372,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   void OnGetHostStatusCompleted(
       base::OnceClosure quit_closure,
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
     get_host_status_result_ = std::make_pair(host_status, host_device);
     std::move(quit_closure).Run();
   }
@@ -412,10 +412,10 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   std::unique_ptr<MultiDeviceSetupService> service_;
   std::unique_ptr<MultiDeviceSetupClient> client_;
 
-  base::Optional<cryptauth::RemoteDeviceRefList> eligible_host_devices_;
+  base::Optional<multidevice::RemoteDeviceRefList> eligible_host_devices_;
   base::Optional<bool> set_host_device_success_;
-  base::Optional<
-      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDeviceRef>>>
+  base::Optional<std::pair<mojom::HostStatus,
+                           base::Optional<multidevice::RemoteDeviceRef>>>
       get_host_status_result_;
   base::Optional<bool> set_feature_enabled_state_success_;
   base::Optional<base::flat_map<mojom::Feature, mojom::FeatureState>>

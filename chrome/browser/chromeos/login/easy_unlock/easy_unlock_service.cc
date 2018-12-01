@@ -633,8 +633,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
-    const cryptauth::RemoteDeviceRefList& remote_devices,
-    base::Optional<cryptauth::RemoteDeviceRef> local_device) {
+    const multidevice::RemoteDeviceRefList& remote_devices,
+    base::Optional<multidevice::RemoteDeviceRef> local_device) {
   UMA_HISTOGRAM_COUNTS_100("SmartLock.EnabledDevicesCount",
                            remote_devices.size());
 

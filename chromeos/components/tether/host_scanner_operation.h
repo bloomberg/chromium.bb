@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -41,7 +41,7 @@ class HostScannerOperation : public MessageTransferOperation {
   class Factory {
    public:
     static std::unique_ptr<HostScannerOperation> NewInstance(
-        const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        const multidevice::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -52,7 +52,7 @@ class HostScannerOperation : public MessageTransferOperation {
 
    protected:
     virtual std::unique_ptr<HostScannerOperation> BuildInstance(
-        const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        const multidevice::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -64,7 +64,7 @@ class HostScannerOperation : public MessageTransferOperation {
   };
 
   struct ScannedDeviceInfo {
-    ScannedDeviceInfo(cryptauth::RemoteDeviceRef remote_device,
+    ScannedDeviceInfo(multidevice::RemoteDeviceRef remote_device,
                       const DeviceStatus& device_status,
                       bool setup_required);
     ~ScannedDeviceInfo();
@@ -72,7 +72,7 @@ class HostScannerOperation : public MessageTransferOperation {
     friend bool operator==(const ScannedDeviceInfo& first,
                            const ScannedDeviceInfo& second);
 
-    cryptauth::RemoteDeviceRef remote_device;
+    multidevice::RemoteDeviceRef remote_device;
     DeviceStatus device_status;
     bool setup_required;
   };
@@ -85,7 +85,7 @@ class HostScannerOperation : public MessageTransferOperation {
     // |is_final_scan_result| = true.
     virtual void OnTetherAvailabilityResponse(
         const std::vector<ScannedDeviceInfo>& scanned_device_list_so_far,
-        const cryptauth::RemoteDeviceRefList&
+        const multidevice::RemoteDeviceRefList&
             gms_core_notifications_disabled_devices,
         bool is_final_scan_result) = 0;
   };
@@ -97,7 +97,7 @@ class HostScannerOperation : public MessageTransferOperation {
 
  protected:
   HostScannerOperation(
-      const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      const multidevice::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -107,9 +107,10 @@ class HostScannerOperation : public MessageTransferOperation {
   void NotifyObserversOfScannedDeviceList(bool is_final_scan_result);
 
   // MessageTransferOperation:
-  void OnDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) override;
+  void OnDeviceAuthenticated(
+      multidevice::RemoteDeviceRef remote_device) override;
   void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
-                         cryptauth::RemoteDeviceRef remote_device) override;
+                         multidevice::RemoteDeviceRef remote_device) override;
   void OnOperationStarted() override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
@@ -131,7 +132,7 @@ class HostScannerOperation : public MessageTransferOperation {
   scoped_refptr<base::TaskRunner> task_runner_;
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  cryptauth::RemoteDeviceRefList gms_core_notifications_disabled_devices_;
+  multidevice::RemoteDeviceRefList gms_core_notifications_disabled_devices_;
 
   std::map<std::string, base::Time>
       device_id_to_tether_availability_request_start_time_map_;

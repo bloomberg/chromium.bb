@@ -32,7 +32,7 @@ class TimerFactory;
 class MessageTransferOperation {
  public:
   MessageTransferOperation(
-      const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      const multidevice::RemoteDeviceRefList& devices_to_connect,
       secure_channel::ConnectionPriority connection_priority,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client);
@@ -45,26 +45,26 @@ class MessageTransferOperation {
  protected:
   // Unregisters |remote_device| for the MessageType returned by
   // GetMessageTypeForConnection().
-  void UnregisterDevice(cryptauth::RemoteDeviceRef remote_device);
+  void UnregisterDevice(multidevice::RemoteDeviceRef remote_device);
 
   // Sends |message_wrapper|'s message to |remote_device| and returns the
   // associated message's sequence number.
-  int SendMessageToDevice(cryptauth::RemoteDeviceRef remote_device,
+  int SendMessageToDevice(multidevice::RemoteDeviceRef remote_device,
                           std::unique_ptr<MessageWrapper> message_wrapper);
 
   // Callback executed whena device is authenticated (i.e., it is in a state
   // which allows messages to be sent/received). Should be overridden by derived
   // classes which intend to send a message to |remote_device| as soon as an
   // authenticated channel has been established to that device.
-  virtual void OnDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
-  }
+  virtual void OnDeviceAuthenticated(
+      multidevice::RemoteDeviceRef remote_device) {}
 
   // Callback executed when a tether protocol message is received. Should be
   // overriden by derived classes which intend to handle messages received from
   // |remote_device|.
   virtual void OnMessageReceived(
       std::unique_ptr<MessageWrapper> message_wrapper,
-      cryptauth::RemoteDeviceRef remote_device) {}
+      multidevice::RemoteDeviceRef remote_device) {}
 
   // Callback executed when any message is received on the "magic_tether"
   // feature.
@@ -91,7 +91,7 @@ class MessageTransferOperation {
   // ShouldOperationUseTimeout() returns false, this method is never used.
   virtual uint32_t GetMessageTimeoutSeconds();
 
-  cryptauth::RemoteDeviceRefList& remote_devices() { return remote_devices_; }
+  multidevice::RemoteDeviceRefList& remote_devices() { return remote_devices_; }
 
  private:
   friend class ConnectTetheringOperationTest;
@@ -104,7 +104,7 @@ class MessageTransferOperation {
    public:
     ConnectionAttemptDelegate(
         MessageTransferOperation* operation,
-        cryptauth::RemoteDeviceRef remote_device,
+        multidevice::RemoteDeviceRef remote_device,
         std::unique_ptr<secure_channel::ConnectionAttempt> connection_attempt);
     ~ConnectionAttemptDelegate() override;
 
@@ -116,7 +116,7 @@ class MessageTransferOperation {
 
    private:
     MessageTransferOperation* operation_;
-    cryptauth::RemoteDeviceRef remote_device_;
+    multidevice::RemoteDeviceRef remote_device_;
     std::unique_ptr<secure_channel::ConnectionAttempt> connection_attempt_;
   };
 
@@ -124,7 +124,7 @@ class MessageTransferOperation {
    public:
     ClientChannelObserver(
         MessageTransferOperation* operation,
-        cryptauth::RemoteDeviceRef remote_device,
+        multidevice::RemoteDeviceRef remote_device,
         std::unique_ptr<secure_channel::ClientChannel> client_channel);
     ~ClientChannelObserver() override;
 
@@ -136,7 +136,7 @@ class MessageTransferOperation {
 
    private:
     MessageTransferOperation* operation_;
-    cryptauth::RemoteDeviceRef remote_device_;
+    multidevice::RemoteDeviceRef remote_device_;
     std::unique_ptr<secure_channel::ClientChannel> client_channel_;
   };
 
@@ -152,31 +152,32 @@ class MessageTransferOperation {
   static constexpr const uint32_t kDefaultMessageTimeoutSeconds = 10;
 
   void OnConnectionAttemptFailure(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       secure_channel::mojom::ConnectionAttemptFailureReason reason);
-  void OnConnection(cryptauth::RemoteDeviceRef remote_device,
+  void OnConnection(multidevice::RemoteDeviceRef remote_device,
                     std::unique_ptr<secure_channel::ClientChannel> channel);
-  void OnDisconnected(cryptauth::RemoteDeviceRef remote_device);
+  void OnDisconnected(multidevice::RemoteDeviceRef remote_device);
 
   // Start the timer while waiting for a connection to |remote_device|. See
   // |kConnectionTimeoutSeconds|.
-  void StartConnectionTimerForDevice(cryptauth::RemoteDeviceRef remote_device);
+  void StartConnectionTimerForDevice(
+      multidevice::RemoteDeviceRef remote_device);
 
   // Start the timer while waiting for messages to be sent to and received by
   // |remote_device|. See |kDefaultMessageTimeoutSeconds|.
-  void StartMessageTimerForDevice(cryptauth::RemoteDeviceRef remote_device);
+  void StartMessageTimerForDevice(multidevice::RemoteDeviceRef remote_device);
 
-  void StartTimerForDevice(cryptauth::RemoteDeviceRef remote_device,
+  void StartTimerForDevice(multidevice::RemoteDeviceRef remote_device,
                            uint32_t timeout_seconds);
-  void StopTimerForDeviceIfRunning(cryptauth::RemoteDeviceRef remote_device);
-  void OnTimeout(cryptauth::RemoteDeviceRef remote_device);
-  base::Optional<cryptauth::RemoteDeviceRef> GetRemoteDevice(
+  void StopTimerForDeviceIfRunning(multidevice::RemoteDeviceRef remote_device);
+  void OnTimeout(multidevice::RemoteDeviceRef remote_device);
+  base::Optional<multidevice::RemoteDeviceRef> GetRemoteDevice(
       const std::string& device_id);
 
   void SetTimerFactoryForTest(
       std::unique_ptr<TimerFactory> timer_factory_for_test);
 
-  cryptauth::RemoteDeviceRefList remote_devices_;
+  multidevice::RemoteDeviceRefList remote_devices_;
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
   const secure_channel::ConnectionPriority connection_priority_;
@@ -187,15 +188,15 @@ class MessageTransferOperation {
   bool shutting_down_ = false;
   MessageType message_type_for_connection_;
 
-  base::flat_map<cryptauth::RemoteDeviceRef,
+  base::flat_map<multidevice::RemoteDeviceRef,
                  std::unique_ptr<ConnectionAttemptDelegate>>
       remote_device_to_connection_attempt_delegate_map_;
-  base::flat_map<cryptauth::RemoteDeviceRef,
+  base::flat_map<multidevice::RemoteDeviceRef,
                  std::unique_ptr<ClientChannelObserver>>
       remote_device_to_client_channel_observer_map_;
   int next_message_sequence_number_ = 0;
 
-  base::flat_map<cryptauth::RemoteDeviceRef,
+  base::flat_map<multidevice::RemoteDeviceRef,
                  std::unique_ptr<base::OneShotTimer>>
       remote_device_to_timer_map_;
   base::WeakPtrFactory<MessageTransferOperation> weak_ptr_factory_;

@@ -19,7 +19,7 @@ FakeBleScanner::FakeBleScanner(bool automatically_update_discovery_session)
 FakeBleScanner::~FakeBleScanner() = default;
 
 void FakeBleScanner::NotifyReceivedAdvertisementFromDevice(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     bool is_background_advertisement) {
   BleScanner::NotifyReceivedAdvertisementFromDevice(

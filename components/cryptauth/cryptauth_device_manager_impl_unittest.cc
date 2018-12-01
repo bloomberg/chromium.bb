@@ -17,13 +17,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/mock_sync_scheduler.h"
 #include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/pref_names.h"
 #include "components/cryptauth/proto/enum_util.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -320,11 +320,12 @@ void ExpectSyncedDevicesAndPrefAreEqual(
 
         SoftwareFeature software_feature =
             SoftwareFeatureStringToEnum(it.first);
-        switch (static_cast<SoftwareFeatureState>(software_feature_state)) {
-          case SoftwareFeatureState::kEnabled:
+        switch (static_cast<chromeos::multidevice::SoftwareFeatureState>(
+            software_feature_state)) {
+          case chromeos::multidevice::SoftwareFeatureState::kEnabled:
             enabled_software_features.push_back(software_feature);
             FALLTHROUGH;
-          case SoftwareFeatureState::kSupported:
+          case chromeos::multidevice::SoftwareFeatureState::kSupported:
             supported_software_features.push_back(software_feature);
             break;
           default:

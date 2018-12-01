@@ -22,6 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_component.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -52,7 +53,6 @@
 #include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_remote_device_provider.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -72,15 +72,16 @@ namespace {
 const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
 const size_t kNumTestDevices = 5;
 
-cryptauth::RemoteDeviceRefList CreateTestDevices() {
-  cryptauth::RemoteDeviceRefList list;
+chromeos::multidevice::RemoteDeviceRefList CreateTestDevices() {
+  chromeos::multidevice::RemoteDeviceRefList list;
   for (size_t i = 0; i < kNumTestDevices; ++i) {
-    list.push_back(cryptauth::RemoteDeviceRefBuilder()
-                       .SetSupportsMobileHotspot(true)
-                       .SetSoftwareFeatureState(
-                           cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
-                           cryptauth::SoftwareFeatureState::kSupported)
-                       .Build());
+    list.push_back(
+        chromeos::multidevice::RemoteDeviceRefBuilder()
+            .SetSupportsMobileHotspot(true)
+            .SetSoftwareFeatureState(
+                cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                chromeos::multidevice::SoftwareFeatureState::kSupported)
+            .Build());
   }
   return list;
 }
@@ -234,7 +235,7 @@ class FakeTetherHostFetcherFactory
     : public chromeos::tether::TetherHostFetcherImpl::Factory {
  public:
   FakeTetherHostFetcherFactory(
-      const cryptauth::RemoteDeviceRefList& initial_devices)
+      const chromeos::multidevice::RemoteDeviceRefList& initial_devices)
       : initial_devices_(initial_devices) {}
   virtual ~FakeTetherHostFetcherFactory() = default;
 
@@ -255,7 +256,7 @@ class FakeTetherHostFetcherFactory
   }
 
  private:
-  cryptauth::RemoteDeviceRefList initial_devices_;
+  chromeos::multidevice::RemoteDeviceRefList initial_devices_;
   chromeos::tether::FakeTetherHostFetcher* last_created_ = nullptr;
 };
 
@@ -572,7 +573,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     shutdown_reason_verified_ = true;
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const chromeos::multidevice::RemoteDeviceRefList test_devices_;
   const content::TestBrowserThreadBundle thread_bundle_;
   base::test::ScopedFeatureList scoped_feature_list_;
 

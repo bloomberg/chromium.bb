@@ -126,7 +126,7 @@ class BleConnectionManagerImpl : public BleConnectionManager,
       const DeviceIdPair& device_id_pair) override;
 
   // BleScanner::Delegate:
-  void OnReceivedAdvertisement(cryptauth::RemoteDeviceRef remote_device,
+  void OnReceivedAdvertisement(multidevice::RemoteDeviceRef remote_device,
                                device::BluetoothDevice* bluetooth_device,
                                ConnectionRole connection_role) override;
 

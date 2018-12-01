@@ -175,7 +175,7 @@ void MultiDeviceSetupImpl::AddFeatureStateObserver(
 
 void MultiDeviceSetupImpl::GetEligibleHostDevices(
     GetEligibleHostDevicesCallback callback) {
-  std::vector<cryptauth::RemoteDevice> eligible_remote_devices;
+  std::vector<multidevice::RemoteDevice> eligible_remote_devices;
   for (const auto& remote_device_ref :
        eligible_host_devices_provider_->GetEligibleHostDevices()) {
     eligible_remote_devices.push_back(remote_device_ref.GetRemoteDevice());
@@ -218,9 +218,9 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
   HostStatusProvider::HostStatusWithDevice host_status_with_device =
       host_status_provider_->GetHostWithStatus();
 
-  // The Mojo API requires a raw cryptauth::RemoteDevice instead of a
-  // cryptauth::RemoteDeviceRef.
-  base::Optional<cryptauth::RemoteDevice> device_for_callback;
+  // The Mojo API requires a raw multidevice::RemoteDevice instead of a
+  // multidevice::RemoteDeviceRef.
+  base::Optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();
@@ -319,9 +319,9 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   mojom::HostStatus status_for_callback = host_status_with_device.host_status();
 
-  // The Mojo API requires a raw cryptauth::RemoteDevice instead of a
-  // cryptauth::RemoteDeviceRef.
-  base::Optional<cryptauth::RemoteDevice> device_for_callback;
+  // The Mojo API requires a raw multidevice::RemoteDevice instead of a
+  // multidevice::RemoteDeviceRef.
+  base::Optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();
@@ -343,7 +343,7 @@ void MultiDeviceSetupImpl::OnFeatureStatesChange(
 }
 
 bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {
-  cryptauth::RemoteDeviceRefList eligible_devices =
+  multidevice::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
   auto it =
       std::find_if(eligible_devices.begin(), eligible_devices.end(),

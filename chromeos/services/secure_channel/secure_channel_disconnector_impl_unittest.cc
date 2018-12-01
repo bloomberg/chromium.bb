@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -37,7 +37,7 @@ class SecureChannelSecureChannelDisconnectorImplTest : public testing::Test {
   CallDisconnectSecureChannel() {
     auto fake_secure_channel = std::make_unique<cryptauth::FakeSecureChannel>(
         std::make_unique<cryptauth::FakeConnection>(
-            cryptauth::CreateRemoteDeviceRefForTest()));
+            multidevice::CreateRemoteDeviceRefForTest()));
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::CONNECTED);
 
