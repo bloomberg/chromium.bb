@@ -44,7 +44,6 @@ constexpr BrowsingDataRemoveMask kRemoveMask =
     BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE |
     BrowsingDataRemoveMask::REMOVE_PASSWORDS |
     BrowsingDataRemoveMask::REMOVE_WEBSQL |
-    BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS |
     BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE |
     BrowsingDataRemoveMask::REMOVE_VISITED_LINKS |
     BrowsingDataRemoveMask::REMOVE_LAST_USER_ACCOUNT;

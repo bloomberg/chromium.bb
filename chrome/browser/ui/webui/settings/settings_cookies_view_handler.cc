@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -79,11 +78,6 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
        IDS_SETTINGS_COOKIES_FILE_SYSTEM},
       {CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM,
        IDS_SETTINGS_COOKIES_FILE_SYSTEM},
-
-      {CookieTreeNode::DetailedInfo::TYPE_CHANNEL_IDS,
-       IDS_SETTINGS_COOKIES_CHANNEL_ID},
-      {CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID,
-       IDS_SETTINGS_COOKIES_CHANNEL_ID},
 
       {CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKERS,
        IDS_SETTINGS_COOKIES_SERVICE_WORKER},
@@ -283,7 +277,6 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataSharedWorkerHelper(storage_partition,
                                            profile->GetResourceContext()),
@@ -492,7 +485,7 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   // The layers in the CookieTree are:
   //   root - Top level.
   //   site - www.google.com, example.com, etc.
-  //   category - Cookies, Channel ID, Local Storage, etc.
+  //   category - Cookies, Local Storage, etc.
   //   item - Info on the actual thing.
   // Gather list of sites with some highlights of the categories and items.
   std::unique_ptr<base::ListValue> site_list(new base::ListValue);

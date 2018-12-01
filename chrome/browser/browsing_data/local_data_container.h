@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
-#include "net/ssl/channel_id_store.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -53,7 +51,6 @@ typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
-typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
 typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
     SharedWorkerInfoList;
@@ -82,7 +79,6 @@ class LocalDataContainer {
       scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
       scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
       scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
-      scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
       scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
       scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
       scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
@@ -105,7 +101,6 @@ class LocalDataContainer {
   friend class CookieTreeIndexedDBNode;
   friend class CookieTreeFileSystemNode;
   friend class CookieTreeQuotaNode;
-  friend class CookieTreeChannelIDNode;
   friend class CookieTreeServiceWorkerNode;
   friend class CookieTreeSharedWorkerNode;
   friend class CookieTreeCacheStorageNode;
@@ -125,7 +120,6 @@ class LocalDataContainer {
   void OnFileSystemModelInfoLoaded(
       const FileSystemInfoList& file_system_info);
   void OnQuotaModelInfoLoaded(const QuotaInfoList& quota_info);
-  void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
   void OnServiceWorkerModelInfoLoaded(
       const ServiceWorkerUsageInfoList& service_worker_info);
   void OnSharedWorkerInfoLoaded(const SharedWorkerInfoList& shared_worker_info);
@@ -144,7 +138,6 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
-  scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
   scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper_;
   scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
@@ -161,7 +154,6 @@ class LocalDataContainer {
   IndexedDBInfoList indexed_db_info_list_;
   FileSystemInfoList file_system_info_list_;
   QuotaInfoList quota_info_list_;
-  ChannelIDList channel_id_list_;
   ServiceWorkerUsageInfoList service_worker_info_list_;
   SharedWorkerInfoList shared_worker_info_list_;
   CacheStorageUsageInfoList cache_storage_info_list_;

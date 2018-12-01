@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -249,7 +248,6 @@ void StorageHandler::UpdateBrowsingDataSize() {
             storage_partition->GetIndexedDBContext()),
         BrowsingDataFileSystemHelper::Create(
             storage_partition->GetFileSystemContext()),
-        BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(
             storage_partition->GetServiceWorkerContext()),
         new BrowsingDataCacheStorageHelper(

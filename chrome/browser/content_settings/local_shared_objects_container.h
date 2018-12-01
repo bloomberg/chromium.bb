@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 
 class CannedBrowsingDataAppCacheHelper;
-class CannedBrowsingDataChannelIDHelper;
 class CannedBrowsingDataCookieHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataFileSystemHelper;
@@ -47,9 +46,6 @@ class LocalSharedObjectsContainer {
   CannedBrowsingDataAppCacheHelper* appcaches() const {
     return appcaches_.get();
   }
-  CannedBrowsingDataChannelIDHelper* channel_ids() const {
-    return channel_ids_.get();
-  }
   CannedBrowsingDataCookieHelper* cookies() const { return cookies_.get(); }
   CannedBrowsingDataDatabaseHelper* databases() const {
     return databases_.get();
@@ -78,7 +74,6 @@ class LocalSharedObjectsContainer {
 
  private:
   scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
-  scoped_refptr<CannedBrowsingDataChannelIDHelper> channel_ids_;
   scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
   scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
   scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
