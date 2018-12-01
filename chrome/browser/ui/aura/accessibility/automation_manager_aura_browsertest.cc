@@ -16,17 +16,19 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_tree_source_views.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
-// Given an AXTreeSourceAura and a node within that tree, recursively search
+// Given an AXTreeSourceViews and a node within that tree, recursively search
 // for all nodes who have a child tree id of |target_ax_tree_id|, meaning
 // that they're a parent of a particular web contents.
 void FindAllHostsOfWebContentsWithAXTreeID(
-    AXTreeSourceAura* tree,
+    views::AXTreeSourceViews* tree,
     views::AXAuraObjWrapper* node,
     ui::AXTreeID target_ax_tree_id,
     std::vector<views::AXAuraObjWrapper*>* web_hosts) {

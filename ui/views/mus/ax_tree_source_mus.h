@@ -16,7 +16,7 @@ class AXAuraObjWrapper;
 // This class exposes the views hierarchy as an accessibility tree permitting
 // use with other accessibility classes. Only used for out-of-process views
 // apps (e.g. Chrome OS shortcut_viewer app). The browser process uses
-// AXTreeSourceAura.
+// AXTreeSourceViews directly.
 class VIEWS_MUS_EXPORT AXTreeSourceMus : public AXTreeSourceViews {
  public:
   // |root| must outlive this object.

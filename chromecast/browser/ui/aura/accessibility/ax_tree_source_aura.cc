@@ -4,23 +4,18 @@
 
 #include "chromecast/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 
-#include <stddef.h>
-
-#include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
-#include "ui/views/accessibility/ax_view_obj_wrapper.h"
 
-AXTreeSourceAura::AXTreeSourceAura()
-    : desktop_root_(std::make_unique<AXRootObjWrapper>(
-          AutomationManagerAura::GetInstance())) {}
+AXTreeSourceAura::AXTreeSourceAura(views::AXAuraObjWrapper* root,
+                                   const ui::AXTreeID& tree_id)
+    : AXTreeSourceViews(root, tree_id) {}
 
 AXTreeSourceAura::~AXTreeSourceAura() = default;
 
 bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
-  tree_data->tree_id = ui::DesktopAXTreeID();
   AXTreeSourceViews::GetTreeData(tree_data);
 
   // TODO(b/111911092): AXTreeData::focus_id represents the node within the
@@ -39,10 +34,6 @@ bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
   return true;
 }
 
-views::AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
-  return desktop_root_.get();
-}
-
 void AXTreeSourceAura::SerializeNode(views::AXAuraObjWrapper* node,
                                      ui::AXNodeData* out_data) const {
   AXTreeSourceViews::SerializeNode(node, out_data);
@@ -51,10 +42,5 @@ void AXTreeSourceAura::SerializeNode(views::AXAuraObjWrapper* node,
     // TODO(rmrossi) : Figure out whether this will ever be required
     // for chromecast.
     LOG(FATAL) << "Unhandled role";
-  } else if (out_data->role == ax::mojom::Role::kWindow ||
-             out_data->role == ax::mojom::Role::kDialog) {
-    // Add clips children flag by default to these roles.
-    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
   }
 }
-
