@@ -19,10 +19,10 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -99,11 +99,11 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
     is_visible_ = false;
   } else {
     switch (contents->GetMainFrame()->GetVisibilityState()) {
-      case blink::mojom::PageVisibilityState::kHidden:
-      case blink::mojom::PageVisibilityState::kPrerender:
+      case content::PageVisibilityState::kHidden:
+      case content::PageVisibilityState::kPrerender:
         is_visible_ = false;
         break;
-      case blink::mojom::PageVisibilityState::kVisible:
+      case content::PageVisibilityState::kVisible:
         is_visible_ = true;
         break;
     }

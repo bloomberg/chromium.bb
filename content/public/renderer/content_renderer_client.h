@@ -24,7 +24,6 @@
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/decode_capabilities.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"

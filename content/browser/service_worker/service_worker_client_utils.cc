@@ -29,6 +29,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -36,7 +37,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 
@@ -126,11 +126,10 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
   // TODO(mlamouri,michaeln): it is possible to end up collecting information
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
-  blink::mojom::PageVisibilityState visibility =
-      render_frame_host->GetVisibilityState();
+  PageVisibilityState visibility = render_frame_host->GetVisibilityState();
   // Service workers do no prerender, this would be an invalid visibility state.
-  DCHECK_NE(visibility, blink::mojom::PageVisibilityState::kPrerender);
-  bool page_hidden = visibility != blink::mojom::PageVisibilityState::kVisible;
+  DCHECK_NE(visibility, PageVisibilityState::kPrerender);
+  bool page_hidden = visibility != PageVisibilityState::kVisible;
   return blink::mojom::ServiceWorkerClientInfo::New(
       render_frame_host->GetLastCommittedURL(), client_uuid,
       blink::mojom::ServiceWorkerClientType::kWindow, page_hidden,

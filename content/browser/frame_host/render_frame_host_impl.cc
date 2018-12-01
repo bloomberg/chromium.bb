@@ -123,6 +123,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -175,7 +176,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h"
@@ -1262,7 +1262,7 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   return remote_associated_interfaces_.get();
 }
 
-blink::mojom::PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
+PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // Works around the crashes seen in https://crbug.com/501863, where the
   // active WebContents from a browser iterator may contain a render frame
   // detached from the frame tree. This tries to find a RenderWidgetHost
@@ -1278,12 +1278,11 @@ blink::mojom::PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
     frame = frame->GetParent();
   }
   if (!frame)
-    return blink::mojom::PageVisibilityState::kHidden;
+    return PageVisibilityState::kHidden;
 
-  blink::mojom::PageVisibilityState visibility_state =
-      GetRenderWidgetHost()->is_hidden()
-          ? blink::mojom::PageVisibilityState::kHidden
-          : blink::mojom::PageVisibilityState::kVisible;
+  PageVisibilityState visibility_state = GetRenderWidgetHost()->is_hidden()
+                                             ? PageVisibilityState::kHidden
+                                             : PageVisibilityState::kVisible;
   GetContentClient()->browser()->OverridePageVisibilityState(this,
                                                              &visibility_state);
   return visibility_state;

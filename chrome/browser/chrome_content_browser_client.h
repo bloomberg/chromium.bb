@@ -360,7 +360,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url) override;
   void OverridePageVisibilityState(
       content::RenderFrameHost* render_frame_host,
-      blink::mojom::PageVisibilityState* visibility_state) override;
+      content::PageVisibilityState* visibility_state) override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

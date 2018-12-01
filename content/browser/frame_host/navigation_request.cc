@@ -1407,7 +1407,7 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
-              blink::mojom::PageVisibilityState::kPrerender,
+              PageVisibilityState::kPrerender,
           upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,

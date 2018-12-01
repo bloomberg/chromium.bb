@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"

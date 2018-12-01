@@ -308,7 +308,6 @@
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -4294,7 +4293,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 
 void ChromeContentBrowserClient::OverridePageVisibilityState(
     RenderFrameHost* render_frame_host,
-    blink::mojom::PageVisibilityState* visibility_state) {
+    content::PageVisibilityState* visibility_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents =
@@ -4306,7 +4305,7 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
           web_contents->GetBrowserContext());
   if (prerender_manager &&
       prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
-    *visibility_state = blink::mojom::PageVisibilityState::kPrerender;
+    *visibility_state = content::PageVisibilityState::kPrerender;
   }
 }
 
