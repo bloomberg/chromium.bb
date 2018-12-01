@@ -648,6 +648,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/*',
         ['mac', 'nvidia'], bug=756537)
 
+    self.Flaky(
+        'conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['mac', 'debug', 'nvidia'], bug=907599)
+
     # Mac AMD
     # TODO(kbr): uncomment the following two exepectations after test
     # has been made more robust.
@@ -880,7 +884,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'no_passthrough', 'nvidia'], bug=694354)
 
     # Linux NVIDIA Quadro P400
-    self.Fail('conformance2/rendering/blitframebuffer-size-overflow.html',
+    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=830046)
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
@@ -956,8 +960,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
         ['linux', 'nvidia'], bug=906846)
-    self.Flaky('conformance2/rendering/blitframebuffer-test.html',
-        ['linux', 'nvidia'], bug=906889)
 
     # Linux NVIDIA Quadro P400, OpenGL backend
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
