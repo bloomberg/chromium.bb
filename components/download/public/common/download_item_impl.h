@@ -181,6 +181,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
+      bool paused,
       bool opened,
       base::Time last_access_time,
       bool transient,
@@ -705,6 +706,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // True if the item was downloaded temporarily.
   bool is_temporary_ = false;
+
+  // True if the item was explicity paused by the user. This should be checked
+  // in conjunction with the download state to determine whether the download
+  // was truly paused.
+  bool paused_ = false;
 
   // Did the user open the item either directly or indirectly (such as by
   // setting always open files of this type)? The shelf also sets this field

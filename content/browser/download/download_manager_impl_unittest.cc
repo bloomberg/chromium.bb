@@ -751,7 +751,7 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
       base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       download::DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false,
       base::Time::Now(), true,
       std::vector<download::DownloadItem::ReceivedSlice>());
   in_progress_manager->AddDownloadItem(std::move(in_progress_item));

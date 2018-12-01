@@ -30,6 +30,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                        DOWNLOAD_INTERRUPT_REASON_NONE,
                        false,
+                       false,
                        base::Time(),
                        true,
                        DownloadItem::ReceivedSlices()) {}

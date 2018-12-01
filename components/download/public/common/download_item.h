@@ -205,8 +205,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // reason.
   virtual DownloadInterruptReason GetLastReason() const = 0;
 
-  // The download is currently paused. Calling Resume() will transition out of
-  // this paused state.
+  // Returns whether download is currently paused explicitly by the user. The
+  // download state should be checked in conjunction with this method to
+  // determine whether the download was truly paused. Calling Resume() will
+  // transition out of this paused state.
   virtual bool IsPaused() const = 0;
 
   // DEPRECATED. True if this is a temporary download and should not be
