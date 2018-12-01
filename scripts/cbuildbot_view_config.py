@@ -19,6 +19,8 @@ def GetParser():
 
   parser.add_argument('-f', '--full', action='store_true', default=False,
                       help='Dump fully expanded configs.')
+  parser.add_argument('-c', '--csv', action='store_true', default=False,
+                      help='Dump fully expanded configs as CSV.')
   parser.add_argument('-u', '--update_config', action='store_true',
                       default=False, help='Update the site config json dump.')
 
@@ -34,5 +36,7 @@ def main(argv):
              'w') if options.update_config else sys.stdout) as filehandle:
     if options.full:
       filehandle.write(site_config.DumpExpandedConfigToString())
+    elif options.csv:
+      filehandle.write(site_config.DumpConfigCsv())
     else:
       filehandle.write(site_config.SaveConfigToString())

@@ -688,6 +688,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
     # Make sure we can dump long content without crashing.
     self.assertNotEqual(site_config.DumpExpandedConfigToString(), '')
     self.assertNotEqual(loaded.DumpExpandedConfigToString(), '')
+    self.assertNotEqual(loaded.DumpConfigCsv(), '')
 
     return loaded
 

@@ -1660,6 +1660,66 @@ class SiteConfig(dict):
     """
     return PrettyJsonDict(self)
 
+  def DumpConfigCsv(self):
+    """Dump the SiteConfig to CSV with all configs fully expanded.
+
+    This supports configuration analysis and debugging.
+    """
+    raw_config = json.loads(self.DumpExpandedConfigToString())
+    header_keys = {'builder_name', 'test_type', 'device'}
+    csv_rows = []
+    for builder_name, values in raw_config.items():
+      row = {'builder_name': builder_name}
+      tests = {}
+      raw_devices = []
+      for key, value in values.items():
+        header_keys.add(key)
+        if value:
+          if isinstance(value, list):
+            if '_tests' in key:
+              tests[key] = value
+            elif key == 'models':
+              raw_devices = value
+            else:
+              # Ignoring this for now for test analysis.
+              if key != 'child_configs':
+                row[key] = ' | '.join(str(array_val) for array_val in value)
+          else:
+            row[key] = value
+
+      if tests:
+        for test_type, test_entries in tests.items():
+          for test_entry in test_entries:
+            test_row = copy.deepcopy(row)
+            test_row['test_type'] = test_type
+            raw_test = json.loads(test_entry)
+            for test_key, test_value in raw_test.items():
+              if test_value:
+                header_keys.add(test_key)
+                test_row[test_key] = test_value
+            csv_rows.append(test_row)
+            if raw_devices:
+              for raw_device in raw_devices:
+                device = json.loads(raw_device)
+                test_suite = test_row.get('suite', '')
+                test_suites = device.get('test_suites', [])
+                if test_suite and test_suites and test_suite in test_suites:
+                  device_row = copy.deepcopy(test_row)
+                  device_row['device'] = device['name']
+                  csv_rows.append(device_row)
+      else:
+        csv_rows.append(row)
+
+    csv_result = [','.join(header_keys)]
+    for csv_row in csv_rows:
+      row_values = []
+      for header_key in header_keys:
+        row_values.append('"%s"' % str(csv_row.get(header_key, '')))
+      csv_result.append(','.join(row_values))
+
+    return '\n'.join(csv_result)
+
+
 #
 # Functions related to working with GE Data.
 #
