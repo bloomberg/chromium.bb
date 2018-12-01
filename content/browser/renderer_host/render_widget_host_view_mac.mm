@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -655,6 +656,24 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   const TextInputManager::TextSelection* selection = GetTextSelection();
   if (!selection)
     return;
+
+  if (!selection->range().IsValid()) {
+    LOG(ERROR) << "Invalid selection range.";
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
+  gfx::Range text_range(selection->offset(),
+                        selection->text().length() + selection->offset());
+  if (selection->range().GetMin() < text_range.GetMin() ||
+      selection->range().GetMax() > text_range.GetMax()) {
+    LOG(ERROR) << "Selection with range " << selection->range().ToString()
+               << " in a chunk of text which only covers "
+               << text_range.ToString() << ".";
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
   ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
                                     selection->range());
 }
