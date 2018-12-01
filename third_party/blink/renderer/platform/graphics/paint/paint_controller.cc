@@ -718,6 +718,9 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
   if (IsSkippingCache())
     return;
 
+  if (DisplayItem::IsForeignLayerType(id.type))
+    return;
+
   auto it = new_paint_chunk_indices_by_client_.find(&id.client);
   if (it != new_paint_chunk_indices_by_client_.end()) {
     const auto& indices = it->value;

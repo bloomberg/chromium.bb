@@ -173,6 +173,13 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_EFFECT(LinkHighlightEffect, link_highlight_effect_);
   ADD_EFFECT(EffectIsolationNode, effect_isolation_node_);
 
+  // For a fragmented link highlight, we only need one LinkHighlightEffect node.
+  // PaintPropertyTreeBuilder uses this method to let the subsequent fragments
+  // share the same LinkHighlightEffect node created for the first fragment.
+  void SetLinkHighlightEffect(const EffectPaintPropertyNode* effect) {
+    link_highlight_effect_ = const_cast<EffectPaintPropertyNode*>(effect);
+  }
+
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
   // |    Clips to a fragment's bounds.

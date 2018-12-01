@@ -77,6 +77,7 @@ class PLATFORM_EXPORT Path {
   Path& operator=(const Path&);
   Path& operator=(const SkPath&);
   bool operator==(const Path&) const;
+  bool operator!=(const Path& other) const { return !(*this == other); }
 
   bool Contains(const FloatPoint&) const;
   bool Contains(const FloatPoint&, WindRule) const;

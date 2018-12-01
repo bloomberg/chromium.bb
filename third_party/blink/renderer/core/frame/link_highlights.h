@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class GraphicsContext;
 class Page;
 class LinkHighlightImpl;
 class CompositorAnimationHost;
@@ -21,6 +22,12 @@ class WebLayerTreeView;
 class LocalFrame;
 class LayoutObject;
 
+// TODO(wangxianzhu): Since the tap disambiguation feature was removed,
+// (http://crrev.com/c/579263), LinkHighlights no longer needs to manage
+// multiple link highlights. Rename this class to LinkHighlight and move
+// it under core/page, and rename LinkHighlightImpl (core/paint) to
+// LinkHighlightPainter. This will be convenient to do when we remove
+// GraphicsLayer for CompositeAfterPaint.
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollectedFinalized<LinkHighlights> {
  public:
@@ -55,12 +62,16 @@ class CORE_EXPORT LinkHighlights final
 
   CompositorElementId element_id(const LayoutObject& object);
 
+  // For CompositeAfterPaint.
+  void Paint(GraphicsContext&) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, verifyWebViewImplIntegration);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetDuringNodeRemoval);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetLayerTreeView);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, MultiColumn);
 
   void RemoveAllHighlights();
 

@@ -2808,6 +2808,8 @@ void LocalFrameView::PaintTree() {
 
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
+      frame_->GetPage()->GetLinkHighlights().Paint(graphics_context);
+
       paint_controller_->CommitNewDisplayItems();
     }
   } else {
@@ -2836,14 +2838,13 @@ void LocalFrameView::PaintTree() {
         PaintGraphicsLayerRecursively(layer_for_scroll_corner);
       }
     }
-  }
 
-  // TODO(chrishtr): Link highlights don't currently paint themselves,
-  // it's still driven by cc. Fix this.
-  // This uses an invalidation approach based on graphics layer raster
-  // invalidation so it must be after paint. This adds/removes link highlight
-  // layers so it must be before |CollectDrawableLayersForLayerListRecursively|.
-  frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
+    // This uses an invalidation approach based on graphics layer raster
+    // invalidation so it must be after paint. This adds/removes link highlight
+    // layers so it must be before
+    // |CollectDrawableLayersForLayerListRecursively|.
+    frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
+  }
 
   frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
   frame_->GetPage()->PaintPageColorOverlay();

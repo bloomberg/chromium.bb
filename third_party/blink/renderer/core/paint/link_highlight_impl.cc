@@ -54,11 +54,12 @@
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -81,17 +82,12 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
       start_time_(CurrentTimeTicks()),
       unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
-  content_layer_ = cc::PictureLayer::Create(this);
-  content_layer_->SetTransformOrigin(FloatPoint3D());
+  fragments_.emplace_back(element_id());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
   compositor_animation_->SetAnimationDelegate(this);
-
   compositor_animation_->AttachElement(element_id());
-  content_layer_->SetIsDrawable(true);
-  content_layer_->SetOpacity(1);
-  content_layer_->SetElementId(element_id());
   geometry_needs_update_ = true;
 }
 
@@ -116,6 +112,8 @@ void LinkHighlightImpl::ReleaseResources() {
 
 void LinkHighlightImpl::AttachLinkHighlightToCompositingLayer(
     const LayoutBoxModelObject& paint_invalidation_container) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   GraphicsLayer* new_graphics_layer =
       paint_invalidation_container.Layer()->GraphicsLayerBacking(
           node_->GetLayoutObject());
@@ -149,6 +147,8 @@ static void AddQuadToPath(const FloatQuad& quad, Path& path) {
 
 void LinkHighlightImpl::ComputeQuads(const Node& node,
                                      Vector<FloatQuad>& out_quads) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   if (!node.GetLayoutObject())
     return;
 
@@ -172,6 +172,8 @@ void LinkHighlightImpl::ComputeQuads(const Node& node,
 
 bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     const LayoutBoxModelObject& paint_invalidation_container) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   if (!node_ || !node_->GetLayoutObject() || !current_graphics_layer_)
     return false;
 
@@ -185,7 +187,6 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   // Get quads for node in absolute coordinates.
   Vector<FloatQuad> quads;
   ComputeQuads(*node_, quads);
-  DCHECK(quads.size());
   Path new_path;
 
   for (wtf_size_t quad_index = 0; quad_index < quads.size(); ++quad_index) {
@@ -237,37 +238,51 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   FloatRect bounding_rect = new_path.BoundingRect();
   new_path.Translate(-ToFloatSize(bounding_rect.Location()));
 
-  bool path_has_changed = !(new_path == path_);
+  DCHECK_EQ(1u, fragments_.size());
+  fragments_[0].SetColor(
+      node_->GetLayoutObject()->StyleRef().TapHighlightColor());
+  auto* layer = fragments_[0].Layer();
+
+  bool path_has_changed = new_path != fragments_[0].GetPath();
   if (path_has_changed) {
-    path_ = new_path;
-    content_layer_->SetBounds(
+    fragments_[0].SetPath(new_path);
+    layer->SetBounds(
         static_cast<gfx::Size>(EnclosingIntRect(bounding_rect).Size()));
   }
 
-  content_layer_->SetPosition(bounding_rect.Location());
+  layer->SetPosition(bounding_rect.Location());
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     FloatPoint offset(current_graphics_layer_->GetOffsetFromTransformNode());
     offset.MoveBy(bounding_rect.Location());
-    content_layer_->SetOffsetToTransformParent(
-        gfx::Vector2dF(offset.X(), offset.Y()));
+    layer->SetOffsetToTransformParent(gfx::Vector2dF(offset.X(), offset.Y()));
   }
 
   return path_has_changed;
 }
 
-gfx::Rect LinkHighlightImpl::PaintableRegion() {
-  return gfx::Rect(content_layer_->bounds());
+LinkHighlightImpl::LinkHighlightFragment::LinkHighlightFragment(
+    CompositorElementId element_id) {
+  layer_ = cc::PictureLayer::Create(this);
+  layer_->SetTransformOrigin(FloatPoint3D());
+  layer_->SetIsDrawable(true);
+  layer_->SetOpacity(1);
+
+  // The element id is required for animating layers in layer trees but not
+  // required when using layer lists.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    layer_->SetElementId(element_id);
+}
+
+gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() {
+  return gfx::Rect(layer_->bounds());
 }
 
 scoped_refptr<cc::DisplayItemList>
-LinkHighlightImpl::PaintContentsToDisplayList(
+LinkHighlightImpl::LinkHighlightFragment::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
-  if (!node_ || !node_->GetLayoutObject()) {
-    display_list->Finalize();
-    return display_list;
-  }
 
   PaintRecorder recorder;
   gfx::Rect record_bounds = PaintableRegion();
@@ -277,8 +292,7 @@ LinkHighlightImpl::PaintContentsToDisplayList(
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(
-      node_->GetLayoutObject()->StyleRef().TapHighlightColor().Rgb());
+  flags.setColor(color_.Rgb());
   canvas->drawPath(path_.GetSkPath(), flags);
 
   display_list->StartPaint();
@@ -299,7 +313,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   constexpr auto kFadeDuration = TimeDelta::FromMilliseconds(100);
   constexpr auto kMinPreFadeDuration = TimeDelta::FromMilliseconds(100);
 
-  content_layer_->SetOpacity(kStartOpacity);
+  for (auto& fragment : fragments_)
+    fragment.Layer()->SetOpacity(kStartOpacity);
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
@@ -326,7 +341,6 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       CompositorKeyframeModel::Create(
           *curve, compositor_target_property::OPACITY, 0, 0);
 
-  content_layer_->SetIsDrawable(true);
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
@@ -348,12 +362,9 @@ void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
   ReleaseResources();
 }
 
-class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
-  String DebugName() const final { return "LinkHighlight"; }
-  LayoutRect VisualRect() const final { return LayoutRect(); }
-};
-
 void LinkHighlightImpl::UpdateGeometry() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   if (!node_ || !node_->GetLayoutObject()) {
     ClearGraphicsLayerLinkHighlightPointer();
     ReleaseResources();
@@ -374,14 +385,13 @@ void LinkHighlightImpl::UpdateGeometry() {
     // We only need to invalidate the layer if the highlight size has changed,
     // otherwise we can just re-position the layer without needing to
     // repaint.
-    content_layer_->SetNeedsDisplay();
+    Layer()->SetNeedsDisplay();
 
     if (current_graphics_layer_) {
       gfx::Rect rect = gfx::ToEnclosingRect(
           gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
       current_graphics_layer_->TrackRasterInvalidation(
-          LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
-          PaintInvalidationReason::kFullLayer);
+          *this, IntRect(rect), PaintInvalidationReason::kFullLayer);
     }
   }
 }
@@ -398,18 +408,20 @@ void LinkHighlightImpl::Invalidate() {
 }
 
 cc::Layer* LinkHighlightImpl::Layer() {
-  return content_layer_.get();
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  DCHECK_EQ(1u, fragments_.size());
+  return fragments_[0].Layer();
 }
 
 CompositorAnimation* LinkHighlightImpl::GetCompositorAnimation() const {
   return compositor_animation_.get();
 }
 
-CompositorElementId LinkHighlightImpl::element_id() {
+CompositorElementId LinkHighlightImpl::element_id() const {
   return CompositorElementIdFromUniqueObjectId(unique_id_);
 }
 
-const EffectPaintPropertyNode* LinkHighlightImpl::effect() {
+const EffectPaintPropertyNode* LinkHighlightImpl::effect() const {
   if (!node_)
     return nullptr;
 
@@ -419,6 +431,78 @@ const EffectPaintPropertyNode* LinkHighlightImpl::effect() {
   }
 
   return nullptr;
+}
+
+void LinkHighlightImpl::Paint(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (!node_ || !node_->GetLayoutObject()) {
+    ReleaseResources();
+    return;
+  }
+
+  const auto* object = node_->GetLayoutObject();
+  static const FloatSize rect_rounding_radii(3, 3);
+  auto color = node_->GetLayoutObject()->StyleRef().TapHighlightColor();
+
+  // For now, we'll only use rounded rects if we have a single rect because
+  // otherwise we may sometimes get a chain of adjacent boxes (e.g. for text
+  // nodes) which end up looking like sausage links: these should ideally be
+  // merged into a single rect before creating the path.
+  bool use_rounded_rects = !node_->GetDocument()
+                                .GetSettings()
+                                ->GetMockGestureTapHighlightsEnabled() &&
+                           !object->FirstFragment().NextFragment();
+
+  size_t index = 0;
+  for (const auto* fragment = &object->FirstFragment(); fragment;
+       fragment = fragment->NextFragment(), ++index) {
+    auto rects = object->PhysicalOutlineRects(
+        fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
+    if (rects.size() > 1)
+      use_rounded_rects = false;
+
+    Path new_path;
+    for (auto& rect : rects) {
+      FloatRect snapped_rect(PixelSnappedIntRect(rect));
+      if (use_rounded_rects)
+        new_path.AddRoundedRect(snapped_rect, rect_rounding_radii);
+      else
+        new_path.AddRect(snapped_rect);
+    }
+
+    if (index == fragments_.size())
+      fragments_.emplace_back(element_id());
+
+    auto& link_highlight_fragment = fragments_[index];
+    link_highlight_fragment.SetColor(color);
+
+    auto bounding_rect = new_path.BoundingRect();
+    new_path.Translate(-ToFloatSize(bounding_rect.Location()));
+
+    auto* layer = link_highlight_fragment.Layer();
+    if (link_highlight_fragment.GetPath() != new_path) {
+      link_highlight_fragment.SetPath(new_path);
+      layer->SetBounds(gfx::Size(EnclosingIntRect(bounding_rect).Size()));
+      layer->SetNeedsDisplay();
+    }
+    // Always set offset because it is excluded from the above equality check.
+    layer->SetOffsetToTransformParent(
+        gfx::Vector2dF(bounding_rect.X(), bounding_rect.Y()));
+
+    auto property_tree_state = fragment->LocalBorderBoxProperties();
+    DCHECK(fragment->PaintProperties());
+    DCHECK(fragment->PaintProperties()->LinkHighlightEffect());
+    property_tree_state.SetEffect(
+        fragment->PaintProperties()->LinkHighlightEffect());
+    ScopedPaintChunkProperties paint_chunk_properties(
+        context.GetPaintController(), property_tree_state, *this,
+        DisplayItem::kForeignLayerLinkHighlight);
+
+    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer);
+  }
+
+  if (index < fragments_.size())
+    fragments_.Shrink(index);
 }
 
 }  // namespace blink

@@ -16,6 +16,8 @@ namespace blink {
 
 class EffectPaintPropertyNode;
 
+// TODO(wangxianzhu): Combine this class into the core implmentation for
+// CompositeAfterPaint.
 class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
  public:
   ~LinkHighlight() override {}
@@ -24,7 +26,7 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
   virtual void ClearCurrentGraphicsLayer() = 0;
   virtual cc::Layer* Layer() = 0;
 
-  virtual const EffectPaintPropertyNode* effect() = 0;
+  virtual const EffectPaintPropertyNode* effect() const = 0;
 
   // DisplayItemClient methods
   String DebugName() const final { return "LinkHighlight"; }
