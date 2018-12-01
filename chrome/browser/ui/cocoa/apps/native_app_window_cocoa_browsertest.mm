@@ -165,7 +165,7 @@ class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
   }
   ~MockExtensionAppShimHandler() override {}
 
-  MOCK_METHOD2(FindHost, AppShimHandler::Host*(Profile*, const std::string&));
+  MOCK_METHOD2(FindHost, AppShimHost*(Profile*, const std::string&));
 };
 
 }  // namespace
