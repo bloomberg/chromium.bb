@@ -70,10 +70,6 @@
         text-decoration: none;
       }
 
-      .three-line {
-        min-height: var(--cr-section-three-line-min-height);
-      }
-
       .section {
         @apply --cr-section;
       }
@@ -147,8 +143,10 @@
 
       extensions-toggle-row {
         @apply --cr-section;
+        padding-bottom: 16px;
         padding-inline-end: 0;
         padding-inline-start: 0;
+        padding-top: 16px;
         --toggle-row-label-padding: var(--cr-section-padding);
       }
 
@@ -351,7 +349,7 @@
             <template is="dom-if"
               if="[[shouldShowIncognitoOption_(
                   data.incognitoAccess.isEnabled, incognitoAvailable)]]">
-              <extensions-toggle-row id="allow-incognito" class="three-line"
+              <extensions-toggle-row id="allow-incognito"
                   checked="[[data.incognitoAccess.isActive]]"
                   on-change="onAllowIncognitoChange_">
                 <div>
