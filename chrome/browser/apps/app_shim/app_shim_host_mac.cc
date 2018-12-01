@@ -141,9 +141,6 @@ void AppShimHost::QuitApp() {
     handler->OnShimQuit(this);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// AppShimHost, apps::AppShimHandler::Host
-
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
   DCHECK(!has_sent_on_launch_complete_);
   launch_result_.emplace(result);
