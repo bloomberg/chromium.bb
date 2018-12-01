@@ -742,14 +742,12 @@ class TestGitCl(TestCase):
     codereview_file = StringIO.StringIO('GERRIT_HOST: true')
     self.calls = [
       ((['git', 'config', '--unset-all', 'rietveld.cc'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.private'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
         CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.project'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
         CERR1),
       ((['git', 'config', 'gerrit.host', 'true'],), ''),
