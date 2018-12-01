@@ -114,6 +114,13 @@ config("chromium_sqlite3_compile_options") {
     # Chrome does not use sqlite3_column_decltype().
     "SQLITE_OMIT_DECLTYPE",
 
+    # EXPLAIN's output is not stable across releases [1], so it should not be
+    # used in Chrome. Skipping the EXPLAIN machinery also results in
+    # non-trivial binary savings.
+    #
+    # [1] https://www.sqlite.org/lang_explain.html
+    "SQLITE_OMIT_EXPLAIN",
+
     # Chrome does not use sqlite3_{get,free}_table().
     "SQLITE_OMIT_GET_TABLE",
 
@@ -126,6 +133,15 @@ config("chromium_sqlite3_compile_options") {
 
     # Chrome doesn't use TCL variables.
     "SQLITE_OMIT_TCL_VARIABLE",
+
+    # The REINDEX statemnt is only useful if a collation sequence's definition
+    # changes [1]. Chrome never defines its own collation sequences [2, 3], so
+    # it never needs to call REINDEX.
+    #
+    # [1] https://www.sqlite.org/lang_reindex.html
+    # [2] https://www.sqlite.org/datatype3.html#collating_sequences
+    # [3] https://www.sqlite.org/c3ref/create_collation.html
+    "SQLITE_OMIT_REINDEX",
 
     # Chrome doesn't use sqlite3_{profile,trace}().
     "SQLITE_OMIT_TRACE",
