@@ -7,12 +7,11 @@
 
 #include "base/macros.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 namespace views {
-
-class TableView;
 
 // Views used to render the header for the table.
 class VIEWS_EXPORT TableHeader : public views::View {
@@ -30,6 +29,9 @@ class VIEWS_EXPORT TableHeader : public views::View {
   ~TableHeader() override;
 
   const gfx::FontList& font_list() const { return font_list_; }
+
+  void ResizeColumnViaKeyboard(int index,
+                               TableView::AdvanceDirection direction);
 
   // views::View overrides.
   void Layout() override;

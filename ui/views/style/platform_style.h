@@ -55,6 +55,11 @@ class VIEWS_EXPORT PlatformStyle {
   // Otherwise, Return does nothing unless it is handled by an accelerator.
   static const bool kReturnClicksFocusedControl;
 
+  // Whether cursor left and right can be used in a TableView to select and
+  // resize columns and whether a focus ring should be shown around the active
+  // cell.
+  static const bool kTableViewSupportsKeyboardNavigationByCell;
+
   // Whether selecting a row in a TreeView selects the entire row or only the
   // label for that row.
   static const bool kTreeViewSelectionPaintsEntireRow;
