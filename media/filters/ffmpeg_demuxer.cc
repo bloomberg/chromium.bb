@@ -220,6 +220,22 @@ static void SetTimeProperty(MediaLogEvent* event,
     event->params.SetDouble(key, value.InSecondsF());
 }
 
+static int ReadFrameAndDiscardEmpty(AVFormatContext* context,
+                                    AVPacket* packet) {
+  // Skip empty packets in a tight loop to avoid timing out fuzzers.
+  int result;
+  bool drop_packet;
+  do {
+    result = av_read_frame(context, packet);
+    drop_packet = (!packet->data || !packet->size) && result >= 0;
+    DLOG_IF(WARNING, drop_packet)
+        << "Dropping empty packet, size: " << packet->size
+        << ", data: " << static_cast<void*>(packet->data);
+  } while (drop_packet);
+
+  return result;
+}
+
 std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
@@ -1817,9 +1833,10 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
   pending_read_ = true;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
-      base::Bind(&FFmpegDemuxer::OnReadFrameDone, weak_factory_.GetWeakPtr(),
-                 base::Passed(&packet)));
+      base::BindOnce(&ReadFrameAndDiscardEmpty, glue_->format_context(),
+                     packet_ptr),
+      base::BindOnce(&FFmpegDemuxer::OnReadFrameDone,
+                     weak_factory_.GetWeakPtr(), std::move(packet)));
 }
 
 void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
@@ -1870,11 +1887,11 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   // giving us a bad stream index.  See http://crbug.com/698549 for example.
   if (packet->stream_index >= 0 &&
       static_cast<size_t>(packet->stream_index) < streams_.size()) {
-    // Drop empty packets since they're ignored on the decoder side anyways.
-    if (!packet->data || !packet->size) {
-      DLOG(WARNING) << "Dropping empty packet, size: " << packet->size
-                    << ", data: " << static_cast<void*>(packet->data);
-    } else if (auto& demuxer_stream = streams_[packet->stream_index]) {
+    // This is ensured by ReadFrameAndDiscardEmpty.
+    DCHECK(packet->data);
+    DCHECK(packet->size);
+
+    if (auto& demuxer_stream = streams_[packet->stream_index]) {
       if (demuxer_stream->IsEnabled())
         demuxer_stream->EnqueuePacket(std::move(packet));
 
