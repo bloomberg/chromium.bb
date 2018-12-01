@@ -26,6 +26,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
+#include "third_party/crashpad/crashpad/client/client_argv_handling.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_handler_client.h"
@@ -36,6 +37,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "base/android/java_exception_reporter.h"
+#include "base/android/path_utils.h"
 #endif  // OS_ANDROID
 
 namespace crashpad {
@@ -81,6 +83,12 @@ class SandboxedHandler {
     }
     base::ScopedFD local_connection(fds[0]);
     base::ScopedFD handlers_socket(fds[1]);
+
+    // SELinux may block the handler from setting SO_PASSCRED on this socket.
+    // Attempt to set it here, but the handler can still try if this fails.
+    int optval = 1;
+    socklen_t optlen = sizeof(optval);
+    setsockopt(handlers_socket.get(), SOL_SOCKET, SO_PASSCRED, &optval, optlen);
 
     iovec iov;
     iov.iov_base = &signo;
@@ -186,9 +194,64 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
   }
 }
 
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+#define CURRENT_ABI "armeabi-v7a"
+#elif defined(__arm__)
+#define CURRENT_ABI "armeabi"
+#elif defined(__i386__)
+#define CURRENT_ABI "x86"
+#elif defined(__mips__)
+#define CURRENT_ABI "mips"
+#elif defined(__x86_64__)
+#define CURRENT_ABI "x86_64"
+#elif defined(__aarch64__)
+#define CURRENT_ABI "arm64-v8a"
+#else
+#error "Unsupported target abi"
+#endif
+
+// Copies and extends the current environment with CLASSPATH and LD_LIBRARY_PATH
+// set to library paths in the APK.
+bool BuildEnvironmentWithApk(std::vector<std::string>* result) {
+  DCHECK(result->empty());
+
+  base::FilePath apk_path;
+  if (!base::android::GetPathToBaseApk(&apk_path)) {
+    return false;
+  }
+
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  static constexpr char kClasspathVar[] = "CLASSPATH";
+  std::string classpath;
+  env->GetVar(kClasspathVar, &classpath);
+  classpath = apk_path.value() + ":" + classpath;
+
+  static constexpr char kLdLibraryPathVar[] = "LD_LIBRARY_PATH";
+  std::string library_path;
+  env->GetVar(kLdLibraryPathVar, &library_path);
+  library_path = apk_path.value() + "!/lib/" CURRENT_ABI ":" + library_path;
+
+  result->push_back("CLASSPATH=" + classpath);
+  result->push_back("LD_LIBRARY_PATH=" + library_path);
+  for (char** envp = environ; *envp != nullptr; ++envp) {
+    if ((strncmp(*envp, kClasspathVar, strlen(kClasspathVar)) == 0 &&
+         (*envp)[strlen(kClasspathVar)] == '=') ||
+        (strncmp(*envp, kLdLibraryPathVar, strlen(kLdLibraryPathVar)) == 0 &&
+         (*envp)[strlen(kLdLibraryPathVar)] == '=')) {
+      continue;
+    }
+    result->push_back(*envp);
+  }
+
+  return true;
+}
+
+const char kCrashpadJavaMain[] =
+    "org.chromium.components.crash.browser.CrashpadMain";
+
 #endif  // OS_ANDROID
 
-bool BuildHandlerArgs(base::FilePath* database_path,
+void BuildHandlerArgs(base::FilePath* database_path,
                       base::FilePath* metrics_path,
                       std::string* url,
                       std::map<std::string, std::string>* process_annotations,
@@ -241,7 +304,6 @@ bool BuildHandlerArgs(base::FilePath* database_path,
   // so that minidumps produced by Crashpad's generate_dump tool will
   // contain these annotations.
   arguments->push_back("--monitor-self-annotation=ptype=crashpad-handler");
-  return true;
 }
 
 bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
@@ -291,29 +353,43 @@ class HandlerStarter {
   }
 
   base::FilePath Initialize() {
-    base::FilePath exe_dir;
-    base::FilePath handler_path;
-    if (!GetHandlerPath(&exe_dir, &handler_path)) {
-      return base::FilePath();
-    }
-
-    if (!SetLdLibraryPath(exe_dir)) {
-      return base::FilePath();
-    }
-
     base::FilePath database_path;
     base::FilePath metrics_path;
     std::string url;
     std::map<std::string, std::string> process_annotations;
     std::vector<std::string> arguments;
-    if (!BuildHandlerArgs(&database_path, &metrics_path, &url,
-                          &process_annotations, &arguments)) {
-      return base::FilePath();
+    BuildHandlerArgs(&database_path, &metrics_path, &url, &process_annotations,
+                     &arguments);
+
+    base::FilePath exe_dir;
+    base::FilePath handler_path;
+    if (!GetHandlerPath(&exe_dir, &handler_path)) {
+      return database_path;
     }
 
     if (crashpad::SetSanitizationInfo(&browser_sanitization_info_)) {
       arguments.push_back(base::StringPrintf("--sanitization-information=%p",
                                              &browser_sanitization_info_));
+    }
+
+#if defined(OS_ANDROID)
+    if (!base::PathExists(handler_path)) {
+      use_java_handler_ = true;
+      std::vector<std::string> env;
+      if (!BuildEnvironmentWithApk(&env)) {
+        return database_path;
+      }
+
+      bool result = GetCrashpadClient().StartJavaHandlerAtCrash(
+          kCrashpadJavaMain, &env, database_path, metrics_path, url,
+          process_annotations, arguments);
+      DCHECK(result);
+      return database_path;
+    }
+#endif
+
+    if (!SetLdLibraryPath(exe_dir)) {
+      return database_path;
     }
 
     bool result = GetCrashpadClient().StartHandlerAtCrash(
@@ -324,23 +400,35 @@ class HandlerStarter {
   }
 
   bool StartHandlerForClient(int fd) {
+    base::FilePath database_path;
+    base::FilePath metrics_path;
+    std::string url;
+    std::map<std::string, std::string> process_annotations;
+    std::vector<std::string> arguments;
+    BuildHandlerArgs(&database_path, &metrics_path, &url, &process_annotations,
+                     &arguments);
+
     base::FilePath exe_dir;
     base::FilePath handler_path;
     if (!GetHandlerPath(&exe_dir, &handler_path)) {
       return false;
     }
 
-    if (!SetLdLibraryPath(exe_dir)) {
-      return false;
-    }
+#if defined(OS_ANDROID)
+    if (use_java_handler_) {
+      std::vector<std::string> env;
+      if (!BuildEnvironmentWithApk(&env)) {
+        return false;
+      }
 
-    base::FilePath database_path;
-    base::FilePath metrics_path;
-    std::string url;
-    std::map<std::string, std::string> process_annotations;
-    std::vector<std::string> arguments;
-    if (!BuildHandlerArgs(&database_path, &metrics_path, &url,
-                          &process_annotations, &arguments)) {
+      bool result = GetCrashpadClient().StartJavaHandlerForClient(
+          kCrashpadJavaMain, &env, database_path, metrics_path, url,
+          process_annotations, arguments, fd);
+      return result;
+    }
+#endif
+
+    if (!SetLdLibraryPath(exe_dir)) {
       return false;
     }
 
@@ -354,6 +442,9 @@ class HandlerStarter {
   ~HandlerStarter() = delete;
 
   crashpad::SanitizationInformation browser_sanitization_info_;
+#if defined(OS_ANDROID)
+  bool use_java_handler_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(HandlerStarter);
 };
