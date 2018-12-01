@@ -102,6 +102,11 @@ cr.define('md_history', function() {
         notify: true,
       },
 
+      listBlurred: {
+        type: Boolean,
+        notify: true,
+      },
+
       ironListTabIndex: {
         type: Number,
         observer: 'ironListTabIndexChanged_',
@@ -130,9 +135,6 @@ cr.define('md_history', function() {
 
     /** @private {boolean} */
     isShiftKeyDown_: false,
-
-    /** @private {boolean} */
-    blurred_: false,
 
     /** @override */
     attached: function() {
@@ -177,13 +179,14 @@ cr.define('md_history', function() {
       // last child item will be focused before the row itself. Since this is
       // the desired behavior, do not shift focus to the first item in these
       // cases.
-      const restoreFocusToFirst = this.blurred_ && e.composedPath()[0] === this;
+      const restoreFocusToFirst =
+          this.listBlurred && e.composedPath()[0] === this;
 
       if (this.lastFocused && !restoreFocusToFirst)
         this.row_.getEquivalentElement(this.lastFocused).focus();
       else
         this.row_.getFirstFocusable().focus();
-      this.blurred_ = false;
+      this.listBlurred = false;
     },
 
     /**
@@ -194,7 +197,7 @@ cr.define('md_history', function() {
       const node =
           e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
       if (!this.parentNode.contains(node))
-        this.blurred_ = true;
+        this.listBlurred = true;
     },
 
     /** @param {!KeyboardEvent} e */

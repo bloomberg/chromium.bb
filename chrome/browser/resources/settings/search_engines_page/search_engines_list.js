@@ -25,6 +25,9 @@ Polymer({
     /** @private {Object}*/
     lastFocused_: Object,
 
+    /** @private */
+    listBlurred_: Boolean,
+
     fixedHeight: {
       type: Boolean,
       value: false,
