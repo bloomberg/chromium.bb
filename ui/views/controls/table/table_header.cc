@@ -22,19 +22,22 @@ namespace views {
 
 namespace {
 
-const int kVerticalPadding = 4;
-
 // The minimum width we allow a column to go down to.
-const int kMinColumnWidth = 10;
+constexpr int kMinColumnWidth = 10;
+
+// Amount that a column is resized when using the keyboard.
+constexpr int kResizeKeyboardAmount = 5;
+
+constexpr int kVerticalPadding = 4;
 
 // Distace from edge columns can be resized by.
-const int kResizePadding = 5;
+constexpr int kResizePadding = 5;
 
 // Amount of space above/below the separator.
-const int kSeparatorPadding = 4;
+constexpr int kSeparatorPadding = 4;
 
 // Size of the sort indicator (doesn't include padding).
-const int kSortIndicatorSize = 8;
+constexpr int kSortIndicatorSize = 8;
 
 }  // namespace
 
@@ -229,6 +232,29 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
 void TableHeader::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SetBackground(CreateSolidBackground(
       theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderBackground)));
+}
+
+void TableHeader::ResizeColumnViaKeyboard(
+    int index,
+    TableView::AdvanceDirection direction) {
+  DCHECK_GE(index, 0);
+  const TableView::VisibleColumn& column = table_->GetVisibleColumn(index);
+  const int needed_for_title =
+      gfx::GetStringWidth(column.column.title, font_list_) +
+      2 * kHorizontalPadding;
+
+  int new_width = column.width;
+  switch (direction) {
+    case TableView::ADVANCE_INCREMENT:
+      new_width += kResizeKeyboardAmount;
+      break;
+    case TableView::ADVANCE_DECREMENT:
+      new_width -= kResizeKeyboardAmount;
+      break;
+  }
+
+  table_->SetVisibleColumnWidth(
+      index, std::max({kMinColumnWidth, needed_for_title, new_width}));
 }
 
 bool TableHeader::StartResize(const ui::LocatedEvent& event) {

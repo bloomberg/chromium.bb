@@ -54,6 +54,14 @@ class VIEWS_EXPORT TableView
   // Internal class name.
   static const char kViewClassName[];
 
+  // Used by AdvanceActiveVisibleColumn(), AdvanceSelection() and
+  // ResizeColumnViaKeyboard() to determine the direction to change the
+  // selection.
+  enum AdvanceDirection {
+    ADVANCE_DECREMENT,
+    ADVANCE_INCREMENT,
+  };
+
   // Used to track a visible column. Useful only for the header.
   struct VIEWS_EXPORT VisibleColumn {
     VisibleColumn();
@@ -135,6 +143,10 @@ class VIEWS_EXPORT TableView
   void set_observer(TableViewObserver* observer) { observer_ = observer; }
   TableViewObserver* observer() const { return observer_; }
 
+  int GetActiveVisibleColumnIndex() const;
+
+  void SetActiveVisibleColumnIndex(int index);
+
   const std::vector<VisibleColumn>& visible_columns() const {
     return visible_columns_;
   }
@@ -181,6 +193,7 @@ class VIEWS_EXPORT TableView
   bool GetTooltipTextOrigin(const gfx::Point& p,
                             gfx::Point* loc) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
   // ui::TableModelObserver overrides:
   void OnModelChanged() override;
@@ -213,13 +226,6 @@ class VIEWS_EXPORT TableView
     int max_row;
     int min_column;
     int max_column;
-  };
-
-  // Used by AdvanceSelection() to determine the direction to change the
-  // selection.
-  enum AdvanceDirection {
-    ADVANCE_DECREMENT,
-    ADVANCE_INCREMENT,
   };
 
   // Returns the horizontal margin between the bounds of a cell and its
@@ -275,6 +281,10 @@ class VIEWS_EXPORT TableView
   // Returns the TableColumn matching the specified id.
   ui::TableColumn FindColumnByID(int id) const;
 
+  // Advances the active visible column (from the active visible column index)
+  // in the specified direction.
+  void AdvanceActiveVisibleColumn(AdvanceDirection direction);
+
   // Sets the selection to the specified index (in terms of the view).
   void SelectByViewIndex(int view_index);
 
@@ -314,6 +324,10 @@ class VIEWS_EXPORT TableView
   // The set of visible columns. The values of these point to |columns_|. This
   // may contain a subset of |columns_|.
   std::vector<VisibleColumn> visible_columns_;
+
+  // The active visible column. Used for keyboard access to functionality such
+  // as sorting and resizing. -1 if no visible column is active.
+  int active_visible_column_index_;
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.
