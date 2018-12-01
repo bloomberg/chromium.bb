@@ -406,7 +406,7 @@ struct PlatformChallengeResponse {
 CHECK_TYPE(PlatformChallengeResponse, 24, 48);
 
 // The current status of the associated key. The valid types are defined in the
-// spec: https://w3c.github.io/encrypted-media/#idl-def-MediaKeyStatus
+// spec: https://w3c.github.io/encrypted-media/#dom-mediakeystatus
 enum KeyStatus : uint32_t {
   kUsable = 0,
   kInternalError = 1,
@@ -460,7 +460,7 @@ enum InitDataType : uint32_t { kCenc = 0, kKeyIds = 1, kWebM = 2 };
 CHECK_TYPE(InitDataType, 4, 4);
 
 // The type of session to create. The valid types are defined in the spec:
-// https://w3c.github.io/encrypted-media/#idl-def-SessionType
+// https://w3c.github.io/encrypted-media/#dom-mediakeysessiontype
 enum SessionType : uint32_t {
   kTemporary = 0,
   kPersistentLicense = 1,
@@ -469,7 +469,7 @@ enum SessionType : uint32_t {
 CHECK_TYPE(SessionType, 4, 4);
 
 // The type of the message event.  The valid types are defined in the spec:
-// https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
+// https://w3c.github.io/encrypted-media/#dom-mediakeymessagetype
 enum MessageType : uint32_t {
   kLicenseRequest = 0,
   kLicenseRenewal = 1,
