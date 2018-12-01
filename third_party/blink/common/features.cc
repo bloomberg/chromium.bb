@@ -33,6 +33,11 @@ const base::Feature kFirstContentfulPaintPlusPlus{
 const base::Feature kJankTracking{"JankTracking",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable a new compositing mode called BlinkGenPropertyTrees where Blink
+// generates the compositor property trees. See: https://crbug.com/836884.
+const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
 

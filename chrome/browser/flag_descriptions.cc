@@ -618,6 +618,11 @@ const char kLayeredAPIDescription[] =
     "layered APIs. The syntax and the APIs exposed are experimental and will "
     "change over time.";
 
+const char kEnableBlinkGenPropertyTreesName[] = "Enable BlinkGenPropertyTrees";
+const char kEnableBlinkGenPropertyTreesDescription[] =
+    "Enable a new compositing mode where Blink generates the compositor "
+    "property trees.";
+
 const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";

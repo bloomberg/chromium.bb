@@ -30269,6 +30269,7 @@ from previous Chrome versions.
   <int value="-374657496" label="OmniboxEnableClipboardProvider:enabled"/>
   <int value="-374423260" label="OmniboxTabSwitchSuggestions:disabled"/>
   <int value="-373233195" label="SyncUSSAutofillWalletData:enabled"/>
+  <int value="-372171039" label="BlinkGenPropertyTrees:disabled"/>
   <int value="-367474066" label="DialogTouchBar:enabled"/>
   <int value="-366949535" label="KeyboardShortcutViewerApp:enabled"/>
   <int value="-365920680" label="ImageCaptureAPI:disabled"/>
@@ -31272,6 +31273,7 @@ from previous Chrome versions.
   <int value="1454363479" label="disable-storage-manager"/>
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>
   <int value="1455881930" label="V8VmFuture:enabled"/>
+  <int value="1458255488" label="BlinkGenPropertyTrees:enabled"/>
   <int value="1458583431" label="arc-use-auth-endpoint"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
