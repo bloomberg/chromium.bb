@@ -96,8 +96,11 @@ TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
 }
 
 TEST_F(AddUniqueUrlsTaskTest, SingleDuplicateUrlNotAdded) {
-  std::vector<PrefetchURL> urls;
-  urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
+  // Add the same URL twice in a single round. Only one entry should be added.
+  std::vector<PrefetchURL> urls = {
+      {kClientId1, kTestURL1, kTestTitle1},
+      {kClientId2, kTestURL1, kTestTitle2},
+  };
   RunTask(std::make_unique<AddUniqueUrlsTask>(dispatcher(), store(),
                                               kTestNamespace, urls));
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
@@ -112,6 +115,7 @@ TEST_F(AddUniqueUrlsTaskTest, SingleDuplicateUrlNotAdded) {
                                               kTestNamespace, urls));
   // The task schedule count should not have changed with no new URLs.
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
+  EXPECT_EQ(1UL, GetAllItems().size());
 }
 
 TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItAlreadyExists) {
