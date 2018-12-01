@@ -39,7 +39,6 @@ class CONTENT_EXPORT CacheStorageOperation {
 
  private:
   void NotifyOperationSlow();
-  void RecordOperationSlowness();
 
   // The operation's closure to run.
   base::OnceClosure closure_;

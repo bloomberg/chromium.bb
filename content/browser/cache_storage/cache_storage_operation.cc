@@ -25,11 +25,13 @@ CacheStorageOperation::CacheStorageOperation(
       weak_ptr_factory_(this) {}
 
 CacheStorageOperation::~CacheStorageOperation() {
-  CACHE_STORAGE_SCHEDULER_UMA(LONG_TIMES, "OperationDuration2", client_type_,
-                              op_type_, base::TimeTicks::Now() - start_ticks_);
+  RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kOperationDuration,
+                                 client_type_, op_type_,
+                                 base::TimeTicks::Now() - start_ticks_);
 
   if (!was_slow_)
-    RecordOperationSlowness();
+    RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kIsOperationSlow,
+                                   client_type_, op_type_, was_slow_);
 }
 
 void CacheStorageOperation::Run() {
@@ -45,13 +47,8 @@ void CacheStorageOperation::Run() {
 
 void CacheStorageOperation::NotifyOperationSlow() {
   was_slow_ = true;
-  RecordOperationSlowness();
-}
-
-void CacheStorageOperation::RecordOperationSlowness() {
-  // Wrap the UMA macro in a method to reduce code bloat.
-  CACHE_STORAGE_SCHEDULER_UMA(BOOLEAN, "IsOperationSlow", client_type_,
-                              op_type_, was_slow_);
+  RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kIsOperationSlow,
+                                 client_type_, op_type_, was_slow_);
 }
 
 }  // namespace content
