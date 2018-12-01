@@ -5,7 +5,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 
 #include "base/containers/flat_map.h"
-#include "components/cryptauth/remote_device.h"
+#include "chromeos/components/multidevice/remote_device.h"
 
 namespace chromeos {
 
@@ -18,7 +18,7 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
   // Mojo invokes a crash when these callbacks are deleted without being called.
   for (auto& get_eligible_hosts_arg : get_eligible_hosts_args_) {
     if (get_eligible_hosts_arg)
-      std::move(get_eligible_hosts_arg).Run(cryptauth::RemoteDeviceList());
+      std::move(get_eligible_hosts_arg).Run(multidevice::RemoteDeviceList());
   }
 
   for (auto& set_host_arg : set_host_args_) {
@@ -82,7 +82,7 @@ bool FakeMultiDeviceSetup::HasAtLeastOneFeatureStateObserver() {
 
 void FakeMultiDeviceSetup::NotifyHostStatusChanged(
     mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDevice>& host_device) {
+    const base::Optional<multidevice::RemoteDevice>& host_device) {
   host_status_observers_.ForAllPtrs(
       [&host_status, &host_device](mojom::HostStatusObserver* observer) {
         observer->OnHostStatusChanged(host_status, host_device);

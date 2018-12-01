@@ -19,7 +19,7 @@
 namespace cryptauth {
 namespace {
 
-// Prefixes for RemoteDevice fields.
+// Prefixes for chromeos::multidevice::RemoteDevice fields.
 const char kDeviceNamePrefix[] = "device";
 const char kPublicKeyPrefix[] = "pk";
 
@@ -60,7 +60,7 @@ class CryptAuthRemoteDeviceLoaderTest : public testing::Test {
   ~CryptAuthRemoteDeviceLoaderTest() {}
 
   void OnRemoteDevicesLoaded(
-      const cryptauth::RemoteDeviceList& remote_devices) {
+      const chromeos::multidevice::RemoteDeviceList& remote_devices) {
     remote_devices_ = remote_devices;
     LoadCompleted();
   }
@@ -69,15 +69,15 @@ class CryptAuthRemoteDeviceLoaderTest : public testing::Test {
 
  protected:
   // Handles deriving the PSK. Ownership will be passed to the
-  // RemoteDeviceLoader under test.
+  // chromeos::multidevice::RemoteDeviceLoader under test.
   std::unique_ptr<cryptauth::FakeSecureMessageDelegate>
       secure_message_delegate_;
 
   // The private key of the user local device.
   std::string user_private_key_;
 
-  // Stores the result of the RemoteDeviceLoader.
-  cryptauth::RemoteDeviceList remote_devices_;
+  // Stores the result of the chromeos::multidevice::RemoteDeviceLoader.
+  chromeos::multidevice::RemoteDeviceList remote_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthRemoteDeviceLoaderTest);
 };
@@ -170,11 +170,11 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
 
   EXPECT_EQ(1u, remote_devices_.size());
 
-  EXPECT_EQ(SoftwareFeatureState::kSupported,
+  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kSupported,
             remote_devices_[0].software_features[BETTER_TOGETHER_CLIENT]);
-  EXPECT_EQ(SoftwareFeatureState::kEnabled,
+  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kEnabled,
             remote_devices_[0].software_features[BETTER_TOGETHER_HOST]);
-  EXPECT_EQ(SoftwareFeatureState::kNotSupported,
+  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kNotSupported,
             remote_devices_[0].software_features[MAGIC_TETHER_HOST]);
 }
 

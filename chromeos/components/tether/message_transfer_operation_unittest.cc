@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"
@@ -15,7 +16,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +38,7 @@ const char kTetherFeature[] = "magic_tether";
 // order to create a concrete instantiation of the class.
 class TestOperation : public MessageTransferOperation {
  public:
-  TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
+  TestOperation(const multidevice::RemoteDeviceRefList& devices_to_connect,
                 device_sync::DeviceSyncClient* device_sync_client,
                 secure_channel::SecureChannelClient* secure_channel_client)
       : MessageTransferOperation(devices_to_connect,
@@ -47,7 +47,7 @@ class TestOperation : public MessageTransferOperation {
                                  secure_channel_client) {}
   ~TestOperation() override = default;
 
-  bool HasDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
+  bool HasDeviceAuthenticated(multidevice::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
     if (iter == device_map_.end())
       return false;
@@ -56,7 +56,7 @@ class TestOperation : public MessageTransferOperation {
   }
 
   std::vector<std::shared_ptr<MessageWrapper>> GetReceivedMessages(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
     if (iter == device_map_.end())
       return std::vector<std::shared_ptr<MessageWrapper>>();
@@ -66,12 +66,12 @@ class TestOperation : public MessageTransferOperation {
 
   // MessageTransferOperation:
   void OnDeviceAuthenticated(
-      cryptauth::RemoteDeviceRef remote_device) override {
+      multidevice::RemoteDeviceRef remote_device) override {
     device_map_[remote_device].has_device_authenticated = true;
   }
 
   void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
-                         cryptauth::RemoteDeviceRef remote_device) override {
+                         multidevice::RemoteDeviceRef remote_device) override {
     device_map_[remote_device].received_messages.push_back(
         std::move(message_wrapper));
 
@@ -118,7 +118,7 @@ class TestOperation : public MessageTransferOperation {
     std::vector<std::shared_ptr<MessageWrapper>> received_messages;
   };
 
-  base::flat_map<cryptauth::RemoteDeviceRef, DeviceMapValue> device_map_;
+  base::flat_map<multidevice::RemoteDeviceRef, DeviceMapValue> device_map_;
 
   uint32_t timeout_seconds_ = kTestTimeoutSeconds;
   bool should_unregister_device_on_message_received_ = false;
@@ -172,10 +172,10 @@ TetherAvailabilityResponse CreateTetherAvailabilityResponse() {
 class MessageTransferOperationTest : public testing::Test {
  protected:
   MessageTransferOperationTest()
-      : test_local_device_(cryptauth::RemoteDeviceRefBuilder()
+      : test_local_device_(multidevice::RemoteDeviceRefBuilder()
                                .SetPublicKey("local device")
                                .Build()),
-        test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)) {}
+        test_devices_(multidevice::CreateRemoteDeviceRefListForTest(4)) {}
 
   void SetUp() override {
     fake_device_sync_client_ =
@@ -185,7 +185,7 @@ class MessageTransferOperationTest : public testing::Test {
         std::make_unique<secure_channel::FakeSecureChannelClient>();
   }
 
-  void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
+  void ConstructOperation(multidevice::RemoteDeviceRefList remote_devices) {
     test_timer_factory_ = new TestTimerFactory();
 
     for (auto remote_device : remote_devices) {
@@ -235,7 +235,7 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void CreateAuthenticatedChannelForDevice(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     test_timer_factory_->set_device_id_for_next_timer(
         remote_device.GetDeviceId());
 
@@ -248,42 +248,43 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   base::MockOneShotTimer* GetTimerForDevice(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     return test_timer_factory_->GetTimerForDeviceId(
         remote_device.GetDeviceId());
   }
 
   void VerifyDefaultTimerCreatedForDevice(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     VerifyTimerCreatedForDevice(remote_device, kTestTimeoutSeconds);
   }
 
   void VerifyConnectionTimerCreatedForDevice(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     VerifyTimerCreatedForDevice(
         remote_device, MessageTransferOperation::kConnectionTimeoutSeconds);
   }
 
-  void VerifyTimerCreatedForDevice(cryptauth::RemoteDeviceRef remote_device,
+  void VerifyTimerCreatedForDevice(multidevice::RemoteDeviceRef remote_device,
                                    uint32_t timeout_seconds) {
     EXPECT_TRUE(GetTimerForDevice(remote_device));
     EXPECT_EQ(base::TimeDelta::FromSeconds(timeout_seconds),
               GetTimerForDevice(remote_device)->GetCurrentDelay());
   }
 
-  int SendMessageToDevice(cryptauth::RemoteDeviceRef remote_device,
+  int SendMessageToDevice(multidevice::RemoteDeviceRef remote_device,
                           std::unique_ptr<MessageWrapper> message_wrapper) {
     return operation_->SendMessageToDevice(test_devices_[0],
                                            std::move(message_wrapper));
   }
 
-  const cryptauth::RemoteDeviceRef test_local_device_;
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRef test_local_device_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
-  base::flat_map<cryptauth::RemoteDeviceRef,
+  base::flat_map<multidevice::RemoteDeviceRef,
                  secure_channel::FakeConnectionAttempt*>
       remote_device_to_fake_connection_attempt_map_;
-  base::flat_map<cryptauth::RemoteDeviceRef, secure_channel::FakeClientChannel*>
+  base::flat_map<multidevice::RemoteDeviceRef,
+                 secure_channel::FakeClientChannel*>
       remote_device_to_fake_client_channel_map_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
@@ -297,7 +298,7 @@ class MessageTransferOperationTest : public testing::Test {
 };
 
 TEST_F(MessageTransferOperationTest, TestFailedConnection) {
-  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
+  ConstructOperation(multidevice::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
 
   remote_device_to_fake_connection_attempt_map_[test_devices_[0]]
@@ -313,7 +314,7 @@ TEST_F(MessageTransferOperationTest, TestFailedConnection) {
 
 TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionSendAndReceiveMessage) {
-  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
+  ConstructOperation(multidevice::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
 
   // Simulate how subclasses behave after a successful response: unregister the
@@ -353,7 +354,7 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest, TestTimesOutBeforeAuthentication) {
-  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
+  ConstructOperation(multidevice::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
 
   GetTimerForDevice(test_devices_[0])->Fire();
@@ -361,7 +362,7 @@ TEST_F(MessageTransferOperationTest, TestTimesOutBeforeAuthentication) {
 }
 
 TEST_F(MessageTransferOperationTest, TestAuthenticatesButThenTimesOut) {
-  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
+  ConstructOperation(multidevice::RemoteDeviceRefList{test_devices_[0]});
   InitializeOperation();
 
   CreateAuthenticatedChannelForDevice(test_devices_[0]);
@@ -376,7 +377,7 @@ TEST_F(MessageTransferOperationTest, TestAuthenticatesButThenTimesOut) {
 TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
   // Construct with two copies of the same device.
   ConstructOperation(
-      cryptauth::RemoteDeviceRefList{test_devices_[0], test_devices_[0]});
+      multidevice::RemoteDeviceRefList{test_devices_[0], test_devices_[0]});
   InitializeOperation();
 
   CreateAuthenticatedChannelForDevice(test_devices_[0]);

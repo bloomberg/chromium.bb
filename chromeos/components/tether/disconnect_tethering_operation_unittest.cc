@@ -11,12 +11,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -64,7 +64,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
  protected:
   DisconnectTetheringOperationTest()
       : disconnect_tethering_request_string_(CreateDisconnectTetheringString()),
-        test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
+        test_device_(multidevice::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     fake_device_sync_client_ =
@@ -115,7 +115,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
   }
 
   const std::string disconnect_tethering_request_string_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>

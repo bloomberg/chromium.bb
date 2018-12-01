@@ -1725,6 +1725,7 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos/android_sms:android_sms_urls",
       "//chromeos:cryptohome_proto",
+      "//chromeos/components/multidevice",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
       "//chromeos/components/proximity_auth/webui",

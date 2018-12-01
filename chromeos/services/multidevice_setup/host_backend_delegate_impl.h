@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -57,17 +57,17 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
 
   // HostBackendDelegate:
   void AttemptToSetMultiDeviceHostOnBackend(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) override;
   bool HasPendingHostRequest() override;
-  base::Optional<cryptauth::RemoteDeviceRef> GetPendingHostRequest()
+  base::Optional<multidevice::RemoteDeviceRef> GetPendingHostRequest()
       const override;
-  base::Optional<cryptauth::RemoteDeviceRef> GetMultiDeviceHostFromBackend()
+  base::Optional<multidevice::RemoteDeviceRef> GetMultiDeviceHostFromBackend()
       const override;
 
   // DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;
 
-  bool IsHostEligible(const cryptauth::RemoteDeviceRef& provided_host);
+  bool IsHostEligible(const multidevice::RemoteDeviceRef& provided_host);
 
   // Sets the pending host request. To signal that the request is to remove the
   // current host, pass kPendingRemovalOfCurrentHost. To signal that there is no
@@ -75,9 +75,9 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   void SetPendingHostRequest(const std::string& host_device_id);
 
   void AttemptNetworkRequest(bool is_retry);
-  base::Optional<cryptauth::RemoteDeviceRef> GetHostFromDeviceSync();
+  base::Optional<multidevice::RemoteDeviceRef> GetHostFromDeviceSync();
   void OnSetSoftwareFeatureStateResult(
-      cryptauth::RemoteDeviceRef device_for_request,
+      multidevice::RemoteDeviceRef device_for_request,
       bool attempted_to_enable,
       device_sync::mojom::NetworkRequestResult result_code);
 
@@ -87,7 +87,7 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   std::unique_ptr<base::OneShotTimer> timer_;
 
   // The most-recent snapshot of the host on the back-end.
-  base::Optional<cryptauth::RemoteDeviceRef> host_from_last_sync_;
+  base::Optional<multidevice::RemoteDeviceRef> host_from_last_sync_;
 
   base::WeakPtrFactory<HostBackendDelegateImpl> weak_ptr_factory_;
 

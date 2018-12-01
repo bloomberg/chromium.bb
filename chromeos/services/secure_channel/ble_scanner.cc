@@ -50,7 +50,7 @@ DeviceIdPairSet BleScanner::GetAllDeviceIdPairs() {
 }
 
 void BleScanner::NotifyReceivedAdvertisementFromDevice(
-    const cryptauth::RemoteDeviceRef& remote_device,
+    const multidevice::RemoteDeviceRef& remote_device,
     device::BluetoothDevice* bluetooth_device,
     ConnectionRole connection_role) {
   delegate_->OnReceivedAdvertisement(remote_device, bluetooth_device,

@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/ble_advertiser.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -22,7 +22,7 @@ class FakeBleAdvertiser : public BleAdvertiser {
   // AreAdvertisementsRegistered() will simply return whether at least one
   // device should be advertising; otherwise, that value must be determined
   // manually via set_is_discovery_session_active().
-  FakeBleAdvertiser(bool automatically_update_active_advertisements);
+  explicit FakeBleAdvertiser(bool automatically_update_active_advertisements);
   ~FakeBleAdvertiser() override;
 
   const std::vector<std::string>& registered_device_ids() {

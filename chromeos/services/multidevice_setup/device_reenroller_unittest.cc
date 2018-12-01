@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -18,7 +18,7 @@ namespace multidevice_setup {
 class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
  protected:
   MultiDeviceSetupDeviceReenrollerTest()
-      : test_local_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+      : test_local_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
   ~MultiDeviceSetupDeviceReenrollerTest() override = default;
 
   // testing::Test:
@@ -34,8 +34,8 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
 
   void SetLocalDeviceMetadataSoftwareFeaturesMap(
       const std::map<cryptauth::SoftwareFeature,
-                     cryptauth::SoftwareFeatureState>& map) {
-    cryptauth::GetMutableRemoteDevice(test_local_device_)->software_features =
+                     multidevice::SoftwareFeatureState>& map) {
+    multidevice::GetMutableRemoteDevice(test_local_device_)->software_features =
         map;
     fake_device_sync_client_->set_local_device_metadata(test_local_device_);
   }
@@ -81,7 +81,7 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
   }
 
  private:
-  cryptauth::RemoteDeviceRef test_local_device_;
+  multidevice::RemoteDeviceRef test_local_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
@@ -98,11 +98,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Set the current GcmDeviceInfo supported software features to contain the
   // same set.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -125,11 +125,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Remove one supported software feature in the GcmDeviceInfo.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
       std::vector<cryptauth::SoftwareFeature>{
@@ -146,9 +146,9 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   fake_device_sync_client()->NotifyEnrollmentFinished();
   EXPECT_EQ(1, fake_device_sync_client()->GetForceSyncNowCallbackQueueSize());
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   fake_device_sync_client()->InvokePendingForceSyncNowCallback(
       true /* success */);
   fake_device_sync_client()->NotifyNewDevicesSynced();
@@ -161,11 +161,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
       std::vector<cryptauth::SoftwareFeature>{
@@ -184,13 +184,13 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   fake_device_sync_client()->NotifyEnrollmentFinished();
   EXPECT_EQ(1, fake_device_sync_client()->GetForceSyncNowCallbackQueueSize());
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   fake_device_sync_client()->InvokePendingForceSyncNowCallback(
       true /* success */);
   fake_device_sync_client()->NotifyNewDevicesSynced();
@@ -203,11 +203,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo to trigger a
   // re-enrollment attempt.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -236,11 +236,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo to trigger a
   // re-enrollment attempt.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -274,11 +274,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo to trigger a
   // re-enrollment attempt.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -298,11 +298,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   EXPECT_EQ(1, fake_device_sync_client()->GetForceSyncNowCallbackQueueSize());
   // Assume local device metadata was not updated correctly.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   fake_device_sync_client()->InvokePendingForceSyncNowCallback(
       true /* success */);
   fake_device_sync_client()->NotifyNewDevicesSynced();
@@ -319,13 +319,13 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
       std::vector<cryptauth::SoftwareFeature>{
@@ -346,15 +346,15 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   fake_device_sync_client()->NotifyEnrollmentFinished();
   EXPECT_EQ(1, fake_device_sync_client()->GetForceSyncNowCallbackQueueSize());
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   fake_device_sync_client()->InvokePendingForceSyncNowCallback(
       true /* success */);
   fake_device_sync_client()->NotifyNewDevicesSynced();
@@ -368,13 +368,13 @@ TEST_F(
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Add one more supported software feature in the GcmDeviceInfo.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
       std::vector<cryptauth::SoftwareFeature>{
@@ -398,11 +398,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Set the current GcmDeviceInfo supported software features to contain the
   // same set.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -427,11 +427,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Set the current GcmDeviceInfo supported software features to contain the
   // same set.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -456,11 +456,11 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
   // Set the current local device metadata to contain a sample of supported
   // software features.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported},
+           multidevice::SoftwareFeatureState::kSupported},
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
   // Set the current GcmDeviceInfo supported software features to contain the
   // same set.
   SetFakeGcmDeviceInfoProviderWithSupportedSoftwareFeatures(
@@ -474,9 +474,9 @@ TEST_F(MultiDeviceSetupDeviceReenrollerTest,
 
   // Remove a feature from the metadata.
   SetLocalDeviceMetadataSoftwareFeaturesMap(
-      std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>{
+      std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>{
           {cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-           cryptauth::SoftwareFeatureState::kSupported}});
+           multidevice::SoftwareFeatureState::kSupported}});
 
   fake_device_sync_client()->NotifyNewDevicesSynced();
 

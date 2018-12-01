@@ -17,12 +17,12 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "components/cryptauth/proto/enum_util.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -105,17 +105,18 @@ std::unique_ptr<base::DictionaryValue> CreateSyncStateDictionary(
   return sync_state;
 }
 
-std::string GenerateFeaturesString(const cryptauth::RemoteDeviceRef& device) {
+std::string GenerateFeaturesString(
+    const chromeos::multidevice::RemoteDeviceRef& device) {
   std::stringstream ss;
   ss << "{";
 
   bool logged_feature = false;
   for (const auto& software_feature : kAllSoftareFeatures) {
-    cryptauth::SoftwareFeatureState state =
+    chromeos::multidevice::SoftwareFeatureState state =
         device.GetSoftwareFeatureState(software_feature);
 
     // Only log features with values.
-    if (state == cryptauth::SoftwareFeatureState::kNotSupported)
+    if (state == chromeos::multidevice::SoftwareFeatureState::kNotSupported)
       continue;
 
     logged_feature = true;
@@ -341,8 +342,8 @@ ProximityAuthWebUIHandler::GetRemoteDevicesList() {
 }
 
 void ProximityAuthWebUIHandler::StartRemoteDeviceLifeCycle(
-    cryptauth::RemoteDeviceRef remote_device) {
-  base::Optional<cryptauth::RemoteDeviceRef> local_device;
+    chromeos::multidevice::RemoteDeviceRef remote_device) {
+  base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device;
   local_device = device_sync_client_->GetLocalDeviceMetadata();
 
   selected_remote_device_ = remote_device;
@@ -366,7 +367,7 @@ void ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle() {
 
 std::unique_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
-    const cryptauth::RemoteDeviceRef& remote_device) {
+    const chromeos::multidevice::RemoteDeviceRef& remote_device) {
   // Set the fields in the ExternalDeviceInfo proto.
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
@@ -374,14 +375,16 @@ ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
   dictionary->SetString(kExternalDevicePublicKeyTruncated,
                         remote_device.GetTruncatedDeviceIdForLogs());
   dictionary->SetString(kExternalDeviceFriendlyName, remote_device.name());
-  dictionary->SetBoolean(kExternalDeviceUnlockKey,
-                         remote_device.GetSoftwareFeatureState(
-                             cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
-                             cryptauth::SoftwareFeatureState::kEnabled);
-  dictionary->SetBoolean(kExternalDeviceMobileHotspot,
-                         remote_device.GetSoftwareFeatureState(
-                             cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
-                             cryptauth::SoftwareFeatureState::kSupported);
+  dictionary->SetBoolean(
+      kExternalDeviceUnlockKey,
+      remote_device.GetSoftwareFeatureState(
+          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+          chromeos::multidevice::SoftwareFeatureState::kEnabled);
+  dictionary->SetBoolean(
+      kExternalDeviceMobileHotspot,
+      remote_device.GetSoftwareFeatureState(
+          cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
+          chromeos::multidevice::SoftwareFeatureState::kSupported);
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
   dictionary->SetString(kExternalDeviceFeatureStates,
@@ -480,7 +483,7 @@ void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
     const std::string public_key,
     chromeos::device_sync::mojom::NetworkRequestResult result_code) {
   std::string device_id =
-      cryptauth::RemoteDeviceRef::GenerateDeviceId(public_key);
+      chromeos::multidevice::RemoteDeviceRef::GenerateDeviceId(public_key);
 
   if (result_code ==
       chromeos::device_sync::mojom::NetworkRequestResult::kSuccess) {
@@ -494,8 +497,8 @@ void ProximityAuthWebUIHandler::OnSetSoftwareFeatureState(
 
 void ProximityAuthWebUIHandler::OnFindEligibleDevices(
     chromeos::device_sync::mojom::NetworkRequestResult result_code,
-    cryptauth::RemoteDeviceRefList eligible_devices,
-    cryptauth::RemoteDeviceRefList ineligible_devices) {
+    chromeos::multidevice::RemoteDeviceRefList eligible_devices,
+    chromeos::multidevice::RemoteDeviceRefList ineligible_devices) {
   if (result_code !=
       chromeos::device_sync::mojom::NetworkRequestResult::kSuccess) {
     PA_LOG(ERROR) << "Failed to find eligible devices: " << result_code;

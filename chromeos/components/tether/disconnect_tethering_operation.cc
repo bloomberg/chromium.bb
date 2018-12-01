@@ -24,7 +24,7 @@ DisconnectTetheringOperation::Factory*
 // static
 std::unique_ptr<DisconnectTetheringOperation>
 DisconnectTetheringOperation::Factory::NewInstance(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client) {
   if (!factory_instance_) {
@@ -42,7 +42,7 @@ void DisconnectTetheringOperation::Factory::SetInstanceForTesting(
 
 std::unique_ptr<DisconnectTetheringOperation>
 DisconnectTetheringOperation::Factory::BuildInstance(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client) {
   return base::WrapUnique(new DisconnectTetheringOperation(
@@ -50,11 +50,11 @@ DisconnectTetheringOperation::Factory::BuildInstance(
 }
 
 DisconnectTetheringOperation::DisconnectTetheringOperation(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client)
     : MessageTransferOperation(
-          cryptauth::RemoteDeviceRefList{device_to_connect},
+          multidevice::RemoteDeviceRefList{device_to_connect},
           secure_channel::ConnectionPriority::kHigh,
           device_sync_client,
           secure_channel_client),
@@ -80,7 +80,7 @@ void DisconnectTetheringOperation::NotifyObserversOperationFinished(
 }
 
 void DisconnectTetheringOperation::OnDeviceAuthenticated(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
 
   disconnect_message_sequence_number_ = SendMessageToDevice(

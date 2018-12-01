@@ -8,13 +8,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/ble/fake_ble_advertisement_generator.h"
 #include "components/cryptauth/fake_background_eid_generator.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
-#include "components/cryptauth/remote_device_cache.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -74,8 +74,8 @@ std::vector<cryptauth::BeaconSeed> CreateFakeBeaconSeeds(int id) {
   return seeds;
 }
 
-cryptauth::RemoteDeviceRef CreateLocalDevice(int id) {
-  return cryptauth::RemoteDeviceRefBuilder()
+multidevice::RemoteDeviceRef CreateLocalDevice(int id) {
+  return multidevice::RemoteDeviceRefBuilder()
       .SetPublicKey("local public key " + std::to_string(id))
       .SetBeaconSeeds(CreateFakeBeaconSeeds(id))
       .Build();
@@ -89,7 +89,7 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
       : test_local_device_1_(CreateLocalDevice(1)),
         test_local_device_2_(CreateLocalDevice(2)),
         test_remote_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)),
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)),
         fake_advertisement_(
             cryptauth::DataWithTimestamp("advertisement1", 1000L, 2000L)) {
     device_id_pair_set_.emplace(test_remote_devices_[0].GetDeviceId(),
@@ -122,15 +122,17 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
     fake_background_eid_generator_ = fake_background_eid_generator.get();
 
     remote_device_cache_ =
-        cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance();
+        multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance();
 
-    cryptauth::RemoteDeviceList devices;
-    devices.push_back(*cryptauth::GetMutableRemoteDevice(test_local_device_1_));
-    devices.push_back(*cryptauth::GetMutableRemoteDevice(test_local_device_2_));
+    multidevice::RemoteDeviceList devices;
+    devices.push_back(
+        *multidevice::GetMutableRemoteDevice(test_local_device_1_));
+    devices.push_back(
+        *multidevice::GetMutableRemoteDevice(test_local_device_2_));
     std::transform(
         test_remote_devices_.begin(), test_remote_devices_.end(),
         std::back_inserter(devices), [](auto remote_device_ref) {
-          return *cryptauth::GetMutableRemoteDevice(remote_device_ref);
+          return *multidevice::GetMutableRemoteDevice(remote_device_ref);
         });
     remote_device_cache_->SetRemoteDevices(devices);
 
@@ -151,13 +153,13 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
   cryptauth::MockForegroundEidGenerator* mock_foreground_eid_generator_;
   cryptauth::FakeBackgroundEidGenerator* fake_background_eid_generator_;
 
-  std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   std::unique_ptr<BleServiceDataHelper> helper_;
 
-  cryptauth::RemoteDeviceRef test_local_device_1_;
-  cryptauth::RemoteDeviceRef test_local_device_2_;
-  cryptauth::RemoteDeviceRefList test_remote_devices_;
+  multidevice::RemoteDeviceRef test_local_device_1_;
+  multidevice::RemoteDeviceRef test_local_device_2_;
+  multidevice::RemoteDeviceRefList test_remote_devices_;
   secure_channel::DeviceIdPairSet device_id_pair_set_;
 
   cryptauth::DataWithTimestamp fake_advertisement_;

@@ -12,6 +12,7 @@ source_set("cpp") {
 
   public_deps = [
     "//base",
+    "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/public/mojom",
     "//services/service_manager/public/cpp",
@@ -51,6 +52,8 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/services/device_sync",
     "//chromeos/services/device_sync:test_support",
     "//components/cryptauth",

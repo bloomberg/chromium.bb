@@ -74,7 +74,7 @@ SecureChannelImpl::SecureChannelImpl(
     : bluetooth_adapter_(std::move(bluetooth_adapter)),
       timer_factory_(TimerFactoryImpl::Factory::Get()->BuildInstance()),
       remote_device_cache_(
-          cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()),
+          multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       ble_service_data_helper_(
           BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
               remote_device_cache_.get())),
@@ -95,8 +95,8 @@ SecureChannelImpl::SecureChannelImpl(
 SecureChannelImpl::~SecureChannelImpl() = default;
 
 void SecureChannelImpl::ListenForConnectionFromDevice(
-    const cryptauth::RemoteDevice& device_to_connect,
-    const cryptauth::RemoteDevice& local_device,
+    const multidevice::RemoteDevice& device_to_connect,
+    const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr delegate) {
@@ -109,8 +109,8 @@ void SecureChannelImpl::ListenForConnectionFromDevice(
 }
 
 void SecureChannelImpl::InitiateConnectionToDevice(
-    const cryptauth::RemoteDevice& device_to_connect,
-    const cryptauth::RemoteDevice& local_device,
+    const multidevice::RemoteDevice& device_to_connect,
+    const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr delegate) {
@@ -184,8 +184,8 @@ void SecureChannelImpl::OnConnection(
 
 void SecureChannelImpl::ProcessConnectionRequest(
     ApiFunctionName api_fn_name,
-    const cryptauth::RemoteDevice& device_to_connect,
-    const cryptauth::RemoteDevice& local_device,
+    const multidevice::RemoteDevice& device_to_connect,
+    const multidevice::RemoteDevice& local_device,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionRole connection_role,
     ConnectionPriority connection_priority,
@@ -233,7 +233,7 @@ void SecureChannelImpl::ProcessConnectionRequest(
                       << "request to active channel. Request: "
                       << *client_connection_parameters
                       << ", Local device ID: \""
-                      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                      << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                              local_device.GetDeviceId())
                       << "\""
                       << ", Role: " << connection_role
@@ -248,7 +248,7 @@ void SecureChannelImpl::ProcessConnectionRequest(
                       << "pending connection attempt. Request: "
                       << *client_connection_parameters
                       << ", Local device ID: \""
-                      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                      << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                              local_device.GetDeviceId())
                       << "\""
                       << ", Role: " << connection_role
@@ -267,7 +267,7 @@ void SecureChannelImpl::ProcessConnectionRequest(
           << "Waiting for connection to disconnect completely before "
           << "continuing. Request: " << *client_connection_parameters
           << ", Local device ID: \""
-          << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+          << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                  local_device.GetDeviceId())
           << "\""
           << ", Role: " << connection_role
@@ -305,7 +305,7 @@ bool SecureChannelImpl::CheckForInvalidRequest(
 
 bool SecureChannelImpl::CheckForInvalidInputDevice(
     ApiFunctionName api_fn_name,
-    const cryptauth::RemoteDevice& device,
+    const multidevice::RemoteDevice& device,
     ClientConnectionParameters* client_connection_parameters,
     bool is_local_device) {
   base::Optional<InvalidRemoteDeviceReason> potential_invalid_reason =
@@ -360,7 +360,7 @@ bool SecureChannelImpl::CheckIfBluetoothAdapterDisabledOrNotPresent(
 base::Optional<SecureChannelImpl::InvalidRemoteDeviceReason>
 SecureChannelImpl::AddDeviceToCacheIfPossible(
     ApiFunctionName api_fn_name,
-    const cryptauth::RemoteDevice& device) {
+    const multidevice::RemoteDevice& device) {
   if (device.public_key.empty()) {
     PA_LOG(WARNING) << "SecureChannelImpl::" << api_fn_name << "(): "
                     << "Provided device has an invalid public key. Cannot "

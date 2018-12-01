@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
@@ -13,8 +15,6 @@
 #include "chromeos/components/tether/fake_tether_session_completion_logger.h"
 #include "chromeos/components/tether/fake_wifi_hotspot_disconnector.h"
 #include "chromeos/components/tether/tether_session_completion_logger.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -31,7 +31,7 @@ const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 class TetherDisconnectorImplTest : public testing::Test {
  public:
   TetherDisconnectorImplTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2u)) {}
   ~TetherDisconnectorImplTest() override = default;
 
   void SetUp() override {
@@ -107,7 +107,7 @@ class TetherDisconnectorImplTest : public testing::Test {
                      ->last_session_completion_reason());
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeWifiHotspotDisconnector> fake_wifi_hotspot_disconnector_;

@@ -9,10 +9,10 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device_test_util.h"
-#include "components/cryptauth/software_feature_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -30,7 +30,7 @@ class MultiDeviceSetupEligibleHostDevicesProviderImplTest
  protected:
   MultiDeviceSetupEligibleHostDevicesProviderImplTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupEligibleHostDevicesProviderImplTest() override = default;
 
   // testing::Test:
@@ -47,12 +47,12 @@ class MultiDeviceSetupEligibleHostDevicesProviderImplTest
     return fake_device_sync_client_.get();
   }
 
-  cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+  multidevice::RemoteDeviceRefList& test_devices() { return test_devices_; }
 
   EligibleHostDevicesProvider* provider() { return provider_.get(); }
 
  private:
-  cryptauth::RemoteDeviceRefList test_devices_;
+  multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
 
@@ -68,12 +68,13 @@ TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest, Empty) {
 TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest, NoEligibleDevices) {
   GetMutableRemoteDevice(test_devices()[0])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kNotSupported;
+      multidevice::SoftwareFeatureState::kNotSupported;
   GetMutableRemoteDevice(test_devices()[1])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kNotSupported;
+      multidevice::SoftwareFeatureState::kNotSupported;
 
-  cryptauth::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1]};
+  multidevice::RemoteDeviceRefList devices{test_devices()[0],
+                                           test_devices()[1]};
   fake_device_sync_client()->set_synced_devices(devices);
   fake_device_sync_client()->NotifyNewDevicesSynced();
 
@@ -85,31 +86,31 @@ TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
   // Devices 0, 1, and 2 are supported.
   GetMutableRemoteDevice(test_devices()[0])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
   GetMutableRemoteDevice(test_devices()[1])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
   GetMutableRemoteDevice(test_devices()[2])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kSupported;
+      multidevice::SoftwareFeatureState::kSupported;
 
   // Device 3 is enabled.
   GetMutableRemoteDevice(test_devices()[3])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kEnabled;
+      multidevice::SoftwareFeatureState::kEnabled;
 
   // Device 4 is not supported.
   GetMutableRemoteDevice(test_devices()[4])
       ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-      cryptauth::SoftwareFeatureState::kNotSupported;
+      multidevice::SoftwareFeatureState::kNotSupported;
 
-  cryptauth::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
-                                         test_devices()[2], test_devices()[3],
-                                         test_devices()[4]};
+  multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
+                                           test_devices()[2], test_devices()[3],
+                                           test_devices()[4]};
   fake_device_sync_client()->set_synced_devices(devices);
   fake_device_sync_client()->NotifyNewDevicesSynced();
 
-  base::flat_set<cryptauth::RemoteDeviceRef> eligible_devices =
+  base::flat_set<multidevice::RemoteDeviceRef> eligible_devices =
       provider()->GetEligibleHostDevices();
   EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[0]));
   EXPECT_TRUE(base::ContainsKey(eligible_devices, test_devices()[1]));

@@ -7,23 +7,23 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace proximity_auth {
 
 class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
  public:
   explicit FakeRemoteDeviceLifeCycle(
-      cryptauth::RemoteDeviceRef remote_device,
-      base::Optional<cryptauth::RemoteDeviceRef> local_device);
+      chromeos::multidevice::RemoteDeviceRef remote_device,
+      base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device);
   ~FakeRemoteDeviceLifeCycle() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
+  chromeos::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
   chromeos::secure_channel::ClientChannel* GetChannel() const override;
   State GetState() const override;
   Messenger* GetMessenger() override;
@@ -41,13 +41,15 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
 
   bool started() { return started_; }
 
-  cryptauth::RemoteDeviceRef local_device() { return *local_device_; }
+  chromeos::multidevice::RemoteDeviceRef local_device() {
+    return *local_device_;
+  }
 
   base::ObserverList<Observer>::Unchecked& observers() { return observers_; }
 
  private:
-  cryptauth::RemoteDeviceRef remote_device_;
-  base::Optional<cryptauth::RemoteDeviceRef> local_device_;
+  chromeos::multidevice::RemoteDeviceRef remote_device_;
+  base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device_;
   base::ObserverList<Observer>::Unchecked observers_;
   bool started_;
   State state_;

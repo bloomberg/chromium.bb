@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/software_feature_state.h"
 
 namespace chromeos {
 
@@ -53,7 +53,7 @@ EligibleHostDevicesProviderImpl::~EligibleHostDevicesProviderImpl() {
   device_sync_client_->RemoveObserver(this);
 }
 
-cryptauth::RemoteDeviceRefList
+multidevice::RemoteDeviceRefList
 EligibleHostDevicesProviderImpl::GetEligibleHostDevices() const {
   return eligible_devices_from_last_sync_;
 }
@@ -65,11 +65,11 @@ void EligibleHostDevicesProviderImpl::OnNewDevicesSynced() {
 void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
   eligible_devices_from_last_sync_.clear();
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
-    cryptauth::SoftwareFeatureState host_state =
+    multidevice::SoftwareFeatureState host_state =
         remote_device.GetSoftwareFeatureState(
             cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
-    if (host_state == cryptauth::SoftwareFeatureState::kSupported ||
-        host_state == cryptauth::SoftwareFeatureState::kEnabled) {
+    if (host_state == multidevice::SoftwareFeatureState::kSupported ||
+        host_state == multidevice::SoftwareFeatureState::kEnabled) {
       eligible_devices_from_last_sync_.push_back(remote_device);
     }
   }

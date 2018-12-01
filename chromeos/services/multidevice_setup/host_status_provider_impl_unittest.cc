@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -30,7 +30,7 @@ class MultiDeviceSetupHostStatusProviderImplTest : public testing::Test {
  protected:
   MultiDeviceSetupHostStatusProviderImplTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupHostStatusProviderImplTest() override = default;
 
   // testing::Test:
@@ -67,7 +67,7 @@ class MultiDeviceSetupHostStatusProviderImplTest : public testing::Test {
   // verifies that the observer received that update at the specified index.
   void VerifyCurrentStatus(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device,
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device,
       const base::Optional<size_t>& expected_observer_index) {
     HostStatusProvider::HostStatusWithDevice status_with_device(host_status,
                                                                 host_device);
@@ -83,7 +83,7 @@ class MultiDeviceSetupHostStatusProviderImplTest : public testing::Test {
     return fake_observer_->host_status_updates().size();
   }
 
-  const cryptauth::RemoteDeviceRefList& test_devices() const {
+  const multidevice::RemoteDeviceRefList& test_devices() const {
     return test_devices_;
   }
 
@@ -94,7 +94,7 @@ class MultiDeviceSetupHostStatusProviderImplTest : public testing::Test {
   FakeHostVerifier* fake_host_verifier() { return fake_host_verifier_.get(); }
 
  private:
-  cryptauth::RemoteDeviceRefList test_devices_;
+  multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeEligibleHostDevicesProvider>
       fake_eligible_host_devices_provider_;

@@ -13,8 +13,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/network/network_connect.h"
-#include "components/cryptauth/remote_device_test_util.h"
 
 namespace {
 const int kTestNetworkSignalStrength = 50;
@@ -84,7 +84,7 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
 
  protected:
   TetherNotificationPresenterTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -184,7 +184,7 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
     has_verified_metrics_ = true;
   }
 
-  cryptauth::RemoteDeviceRef test_device_;
+  multidevice::RemoteDeviceRef test_device_;
 
   base::HistogramTester histogram_tester_;
   bool has_verified_metrics_;

@@ -218,6 +218,8 @@ static_library("test_support") {
   deps = [
     "//base",
     "//chromeos",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp:test_support",
 
@@ -287,6 +289,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos",
     "//chromeos:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp:test_support",
 

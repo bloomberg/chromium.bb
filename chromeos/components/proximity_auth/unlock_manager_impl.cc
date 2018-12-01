@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/components/proximity_auth/metrics.h"
@@ -18,7 +19,6 @@
 #include "chromeos/components/proximity_auth/proximity_monitor_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 using chromeos::DBusThreadManager;
@@ -395,7 +395,8 @@ void UnlockManagerImpl::SendSignInChallenge() {
 void UnlockManagerImpl::OnGetConnectionMetadata(
     chromeos::secure_channel::mojom::ConnectionMetadataPtr
         connection_metadata_ptr) {
-  cryptauth::RemoteDeviceRef remote_device = life_cycle_->GetRemoteDevice();
+  chromeos::multidevice::RemoteDeviceRef remote_device =
+      life_cycle_->GetRemoteDevice();
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_id(), remote_device.public_key(),
       connection_metadata_ptr->channel_binding_data,

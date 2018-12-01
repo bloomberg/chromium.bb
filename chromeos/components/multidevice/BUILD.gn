@@ -1,0 +1,65 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos, "MultiDevice is Chrome OS only")
+
+static_library("multidevice") {
+  sources = [
+    "expiring_remote_device_cache.cc",
+    "expiring_remote_device_cache.h",
+    "remote_device.cc",
+    "remote_device.h",
+    "remote_device_cache.cc",
+    "remote_device_cache.h",
+    "remote_device_ref.cc",
+    "remote_device_ref.h",
+    "software_feature_state.cc",
+    "software_feature_state.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos",
+    "//components/cryptauth/proto",
+    "//components/cryptauth/proto:util",
+    "//components/prefs",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "remote_device_test_util.cc",
+    "remote_device_test_util.h",
+  ]
+
+  public_deps = [
+    ":multidevice",
+  ]
+
+  deps = [
+    "//base",
+    "//components/cryptauth/proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "expiring_remote_device_cache_unittest.cc",
+    "remote_device_cache_unittest.cc",
+    "remote_device_ref_unittest.cc",
+  ]
+
+  deps = [
+    ":multidevice",
+    ":test_support",
+    "//base/test:test_support",
+    "//components/cryptauth/proto",
+    "//components/cryptauth/proto",
+    "//testing/gtest",
+  ]
+}

@@ -54,7 +54,7 @@ RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
       user_private_key_(user_private_key),
       weak_ptr_factory_(this) {
   device_manager_->AddObserver(this);
-  remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
+  remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
       device_manager->GetSyncedDevices(), user_id, user_private_key,
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
   remote_device_loader_->Load(
@@ -72,7 +72,7 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
   if (sync_result == CryptAuthDeviceManager::SyncResult::SUCCESS &&
       device_change_result ==
           CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
-    remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
+    remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
         device_manager_->GetSyncedDevices(), user_id_, user_private_key_,
         cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 
@@ -83,7 +83,7 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
 }
 
 void RemoteDeviceProviderImpl::OnRemoteDevicesLoaded(
-    const RemoteDeviceList& synced_remote_devices) {
+    const chromeos::multidevice::RemoteDeviceList& synced_remote_devices) {
   synced_remote_devices_ = synced_remote_devices;
   remote_device_loader_.reset();
 
@@ -93,7 +93,8 @@ void RemoteDeviceProviderImpl::OnRemoteDevicesLoaded(
   RemoteDeviceProvider::NotifyObserversDeviceListChanged();
 }
 
-const RemoteDeviceList& RemoteDeviceProviderImpl::GetSyncedDevices() const {
+const chromeos::multidevice::RemoteDeviceList&
+RemoteDeviceProviderImpl::GetSyncedDevices() const {
   return synced_remote_devices_;
 }
 

@@ -12,7 +12,7 @@ FakeEligibleHostDevicesProvider::FakeEligibleHostDevicesProvider() = default;
 
 FakeEligibleHostDevicesProvider::~FakeEligibleHostDevicesProvider() = default;
 
-cryptauth::RemoteDeviceRefList
+multidevice::RemoteDeviceRefList
 FakeEligibleHostDevicesProvider::GetEligibleHostDevices() const {
   return eligible_host_devices_;
 }

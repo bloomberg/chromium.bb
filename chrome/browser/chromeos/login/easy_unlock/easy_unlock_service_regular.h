@@ -15,12 +15,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/network_request_error.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -79,10 +79,11 @@ class EasyUnlockServiceRegular
   void LoadRemoteDevices();
 
   // Called when |remote_device_loader_| completes.
-  void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
+  void OnRemoteDevicesLoaded(
+      const multidevice::RemoteDeviceList& remote_devices);
 
   void UseLoadedRemoteDevices(
-      const cryptauth::RemoteDeviceRefList& remote_devices);
+      const multidevice::RemoteDeviceRefList& remote_devices);
 
   // EasyUnlockService implementation:
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
@@ -161,7 +162,7 @@ class EasyUnlockServiceRegular
   // Otherwise, hardlock the device.
   void RefreshCryptohomeKeysIfPossible();
 
-  cryptauth::RemoteDeviceRefList GetUnlockKeys();
+  multidevice::RemoteDeviceRefList GetUnlockKeys();
 
   ScopedObserver<cryptauth::CryptAuthDeviceManager, EasyUnlockServiceRegular>
       scoped_crypt_auth_device_manager_observer_;
@@ -206,7 +207,7 @@ class EasyUnlockServiceRegular
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
-  cryptauth::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
+  multidevice::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
 
   // Caches feature state of Smart Lock. This service should only actively be
   // running if its value is kEnabledByUser. Populated by using

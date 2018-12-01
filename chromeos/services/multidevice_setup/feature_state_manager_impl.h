@@ -76,9 +76,9 @@ class FeatureStateManagerImpl : public FeatureStateManager,
   bool IsAllowedByPolicy(mojom::Feature feature);
   bool IsSupportedByChromebook(mojom::Feature feature);
   bool HasSufficientSecurity(mojom::Feature feature,
-                             const cryptauth::RemoteDeviceRef& host_device);
+                             const multidevice::RemoteDeviceRef& host_device);
   bool HasBeenActivatedByPhone(mojom::Feature feature,
-                               const cryptauth::RemoteDeviceRef& host_device);
+                               const multidevice::RemoteDeviceRef& host_device);
   bool RequiresFurtherSetup(mojom::Feature feature);
   mojom::FeatureState GetEnabledOrDisabledState(mojom::Feature feature);
 

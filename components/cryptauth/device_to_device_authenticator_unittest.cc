@@ -14,11 +14,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/device_to_device_responder_operations.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/session_keys.h"
 #include "components/cryptauth/wire_message.h"
@@ -66,7 +66,7 @@ void SaveValidateHelloMessageResult(bool* validated_out,
 // Connection implementation for testing.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(RemoteDeviceRef remote_device)
+  FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device)
       : Connection(remote_device), connection_blocked_(false) {}
   ~FakeConnection() override {}
 
@@ -143,7 +143,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   CryptAuthDeviceToDeviceAuthenticatorTest()
-      : remote_device_(CreateRemoteDeviceRefForTest()),
+      : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         connection_(remote_device_),
         secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,
@@ -201,7 +201,7 @@ class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   std::string SimulateResponderAuth(const std::string& hello_message) {
     std::string remote_device_private_key =
         secure_message_delegate_->GetPrivateKeyForPublicKey(
-            kTestRemoteDevicePublicKey);
+            chromeos::multidevice::kTestRemoteDevicePublicKey);
 
     std::string responder_auth_message;
     DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
@@ -227,7 +227,7 @@ class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   MOCK_METHOD1(OnAuthenticationResultProxy, void(Authenticator::Result result));
 
   // Contains information about the remote device.
-  const RemoteDeviceRef remote_device_;
+  const chromeos::multidevice::RemoteDeviceRef remote_device_;
 
   // Simulates the connection to the remote device.
   FakeConnection connection_;

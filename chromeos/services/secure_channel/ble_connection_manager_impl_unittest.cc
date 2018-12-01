@@ -16,6 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -34,7 +35,6 @@
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_channel.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -218,7 +218,7 @@ class FakeWeaveClientConnectionFactory
  private:
   // cryptauth::BluetoothLowEnergyWeaveClientConnection::Factory:
   std::unique_ptr<cryptauth::Connection> BuildInstance(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       device::BluetoothDevice* bluetooth_device,
@@ -332,7 +332,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~SecureChannelBleConnectionManagerImplTest() override = default;
 
   // testing::Test:
@@ -548,7 +548,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   // Returns the SecureChannel created by this call.
   cryptauth::FakeSecureChannel* SimulateConnectionEstablished(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       ConnectionRole connection_role) {
     auto mock_bluetooth_device = std::make_unique<device::MockBluetoothDevice>(
         mock_adapter_.get(), 0u /* bluetooth_class */, "name", "address",
@@ -711,7 +711,9 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+  const multidevice::RemoteDeviceRefList& test_devices() {
+    return test_devices_;
+  }
 
   base::SimpleTestClock* test_clock() { return test_clock_.get(); }
 
@@ -848,7 +850,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     return fake_secure_channel_disconnector_factory_->instance();
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   base::HistogramTester histogram_tester_;
 

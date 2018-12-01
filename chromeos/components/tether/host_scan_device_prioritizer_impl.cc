@@ -20,14 +20,14 @@ namespace tether {
 namespace {
 
 // Returns true if |remote_device1| should be ordered before |remote_device2|.
-bool CompareRemoteDevices(cryptauth::RemoteDeviceRef remote_device1,
-                          cryptauth::RemoteDeviceRef remote_device2) {
+bool CompareRemoteDevices(multidevice::RemoteDeviceRef remote_device1,
+                          multidevice::RemoteDeviceRef remote_device2) {
   return remote_device1.last_update_time_millis() >
          remote_device2.last_update_time_millis();
 }
 
 void SortRemoteDevicesByLastUpdateTime(
-    cryptauth::RemoteDeviceRefList* remote_devices) {
+    multidevice::RemoteDeviceRefList* remote_devices) {
   std::sort(remote_devices->begin(), remote_devices->end(),
             &CompareRemoteDevices);
 }
@@ -41,7 +41,7 @@ HostScanDevicePrioritizerImpl::HostScanDevicePrioritizerImpl(
 HostScanDevicePrioritizerImpl::~HostScanDevicePrioritizerImpl() = default;
 
 void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
-    cryptauth::RemoteDeviceRefList* remote_devices) const {
+    multidevice::RemoteDeviceRefList* remote_devices) const {
   // First, fetch the hosts which have previously responded.
   std::vector<std::string> prioritized_ids =
       tether_host_response_recorder_->GetPreviouslyAvailableHostIds();
@@ -71,7 +71,7 @@ void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
         continue;
       }
 
-      cryptauth::RemoteDeviceRef device_to_move = *remote_devices_it;
+      multidevice::RemoteDeviceRef device_to_move = *remote_devices_it;
       remote_devices->erase(remote_devices_it);
       remote_devices->emplace(remote_devices->begin(), device_to_move);
       break;

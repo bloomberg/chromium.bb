@@ -7,14 +7,14 @@
 #include <memory>
 
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/host_scan_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state_test.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
@@ -53,7 +53,7 @@ class NotificationRemoverTest : public NetworkStateTest {
 
   void NotifyPotentialHotspotNearby() {
     notification_presenter_->NotifyPotentialHotspotNearby(
-        cryptauth::CreateRemoteDeviceRefForTest(), 100 /* signal_strength */);
+        multidevice::CreateRemoteDeviceRefForTest(), 100 /* signal_strength */);
   }
 
   void SetAndRemoveHostScanResult() {

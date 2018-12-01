@@ -4,7 +4,7 @@
 
 #include "components/cryptauth/ble/fake_ble_advertisement_generator.h"
 
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -14,7 +14,7 @@ FakeBleAdvertisementGenerator::~FakeBleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 FakeBleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    RemoteDeviceRef remote_device,
+    chromeos::multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   return std::move(advertisement_);
 }

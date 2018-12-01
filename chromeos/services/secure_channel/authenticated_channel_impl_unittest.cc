@@ -14,11 +14,11 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -30,12 +30,12 @@ const mojom::ConnectionCreationDetail kTestConnectionCreationDetails[] = {
         REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
 const int32_t kTestRssi = -24;
-const std::string kTestChannelBindingData = "channel_binding_data";
+const char kTestChannelBindingData[] = "channel_binding_data";
 
 class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
  protected:
   SecureChannelAuthenticatedChannelImplTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
 
   ~SecureChannelAuthenticatedChannelImplTest() override = default;
 
@@ -128,7 +128,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   int num_times_send_message_called_ = 0;
 

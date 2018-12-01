@@ -53,8 +53,8 @@ SecureChannelClientImpl::~SecureChannelClientImpl() = default;
 
 std::unique_ptr<ConnectionAttempt>
 SecureChannelClientImpl::InitiateConnectionToDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
   auto connection_attempt =
@@ -75,8 +75,8 @@ SecureChannelClientImpl::InitiateConnectionToDevice(
 
 std::unique_ptr<ConnectionAttempt>
 SecureChannelClientImpl::ListenForConnectionFromDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
   auto connection_attempt =
@@ -97,8 +97,8 @@ SecureChannelClientImpl::ListenForConnectionFromDevice(
 }
 
 void SecureChannelClientImpl::PerformInitiateConnectionToDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr connection_delegate_ptr) {
@@ -108,8 +108,8 @@ void SecureChannelClientImpl::PerformInitiateConnectionToDevice(
 }
 
 void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr connection_delegate_ptr) {

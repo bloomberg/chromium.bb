@@ -22,8 +22,8 @@ const char kSmartLockFeatureName[] = "easy_unlock";
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    cryptauth::RemoteDeviceRef remote_device,
-    base::Optional<cryptauth::RemoteDeviceRef> local_device,
+    chromeos::multidevice::RemoteDeviceRef remote_device,
+    base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device,
     chromeos::secure_channel::SecureChannelClient* secure_channel_client)
     : remote_device_(remote_device),
       local_device_(local_device),
@@ -39,7 +39,8 @@ void RemoteDeviceLifeCycleImpl::Start() {
   FindConnection();
 }
 
-cryptauth::RemoteDeviceRef RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+chromeos::multidevice::RemoteDeviceRef
+RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
   return remote_device_;
 }
 

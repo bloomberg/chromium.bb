@@ -27,10 +27,10 @@ const char kNoDevice[] = "";
 // The number of minutes to wait before retrying a failed attempt.
 const int kNumMinutesBetweenRetries = 5;
 
-bool IsEasyUnlockHost(const cryptauth::RemoteDeviceRef& device) {
+bool IsEasyUnlockHost(const multidevice::RemoteDeviceRef& device) {
   return device.GetSoftwareFeatureState(
              cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
-         cryptauth::SoftwareFeatureState::kEnabled;
+         multidevice::SoftwareFeatureState::kEnabled;
 }
 
 }  // namespace
@@ -111,7 +111,7 @@ void GrandfatheredEasyUnlockHostDisabler::OnHostChangedOnBackend() {
 void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
   timer_->Stop();
 
-  base::Optional<cryptauth::RemoteDeviceRef> host_to_disable =
+  base::Optional<multidevice::RemoteDeviceRef> host_to_disable =
       GetEasyUnlockHostToDisable();
 
   if (!host_to_disable)
@@ -129,7 +129,7 @@ void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
 }
 
 void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
-    cryptauth::RemoteDeviceRef device,
+    multidevice::RemoteDeviceRef device,
     device_sync::mojom::NetworkRequestResult result_code) {
   bool success =
       result_code == device_sync::mojom::NetworkRequestResult::kSuccess;
@@ -163,12 +163,12 @@ void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
 }
 
 void GrandfatheredEasyUnlockHostDisabler::SetPotentialEasyUnlockHostToDisable(
-    base::Optional<cryptauth::RemoteDeviceRef> device) {
+    base::Optional<multidevice::RemoteDeviceRef> device) {
   pref_service_->SetString(kEasyUnlockHostIdToDisablePrefName,
                            device ? device->GetDeviceId() : kNoDevice);
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   std::string device_id =
       pref_service_->GetString(kEasyUnlockHostIdToDisablePrefName);
@@ -176,7 +176,7 @@ GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   if (device_id == kNoDevice)
     return base::nullopt;
 
-  cryptauth::RemoteDeviceRefList synced_devices =
+  multidevice::RemoteDeviceRefList synced_devices =
       device_sync_client_->GetSyncedDevices();
   auto it = std::find_if(synced_devices.begin(), synced_devices.end(),
                          [&device_id](const auto& remote_device) {

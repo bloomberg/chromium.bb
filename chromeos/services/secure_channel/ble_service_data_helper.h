@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "components/cryptauth/data_with_timestamp.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -34,7 +34,8 @@ class BleServiceDataHelper {
 
   // Remote device paired with a boolean of whether the device was identified
   // via the background advertisement scheme.
-  using DeviceWithBackgroundBool = std::pair<cryptauth::RemoteDeviceRef, bool>;
+  using DeviceWithBackgroundBool =
+      std::pair<multidevice::RemoteDeviceRef, bool>;
 
   // Identifies the device that produced a BLE advertisement with service data
   // |service_data|. If no device can be identified, base::nullopt is returned.

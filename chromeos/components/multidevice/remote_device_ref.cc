@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 #include "base/base64.h"
 #include "base/stl_util.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 // static
 std::string RemoteDeviceRef::GenerateDeviceId(const std::string& public_key) {
@@ -41,7 +43,7 @@ RemoteDeviceRef::RemoteDeviceRef(const RemoteDeviceRef& other) = default;
 RemoteDeviceRef::~RemoteDeviceRef() = default;
 
 SoftwareFeatureState RemoteDeviceRef::GetSoftwareFeatureState(
-    const SoftwareFeature& software_feature) const {
+    const cryptauth::SoftwareFeature& software_feature) const {
   if (!base::ContainsKey(remote_device_->software_features, software_feature))
     return SoftwareFeatureState::kNotSupported;
 
@@ -72,4 +74,6 @@ const RemoteDevice& RemoteDeviceRef::GetRemoteDevice() const {
   return *remote_device_;
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

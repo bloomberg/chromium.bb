@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -156,7 +156,7 @@ void CrashRecoveryManagerImpl::RestoreConnectedState(
 void CrashRecoveryManagerImpl::OnActiveHostFetched(
     const base::Closure& on_restoration_finished,
     ActiveHost::ActiveHostStatus active_host_status,
-    base::Optional<cryptauth::RemoteDeviceRef> active_host,
+    base::Optional<multidevice::RemoteDeviceRef> active_host,
     const std::string& tether_network_guid,
     const std::string& wifi_network_guid) {
   DCHECK(ActiveHost::ActiveHostStatus::CONNECTED == active_host_status);

@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/cryptauth/remote_device.h"
+#include "chromeos/components/multidevice/remote_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 class RemoteDeviceRefTest : public testing::Test {
  protected:
@@ -18,16 +20,17 @@ class RemoteDeviceRefTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+    std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>
         software_feature_to_state_map;
     software_feature_to_state_map
         [cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT] =
-            cryptauth::SoftwareFeatureState::kSupported;
+            SoftwareFeatureState::kSupported;
     software_feature_to_state_map
         [cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-            cryptauth::SoftwareFeatureState::kEnabled;
+            SoftwareFeatureState::kEnabled;
 
-    std::vector<BeaconSeed> beacon_seeds({BeaconSeed(), BeaconSeed()});
+    std::vector<cryptauth::BeaconSeed> beacon_seeds(
+        {cryptauth::BeaconSeed(), cryptauth::BeaconSeed()});
 
     remote_device_ = std::make_shared<RemoteDevice>(
         "user_id", "name", "public_key", "persistent_symmetric_key",
@@ -53,13 +56,13 @@ TEST_F(RemoteDeviceRefTest, TestFields) {
             remote_device_ref.last_update_time_millis());
   EXPECT_EQ(&remote_device_->beacon_seeds, &remote_device_ref.beacon_seeds());
 
-  EXPECT_EQ(cryptauth::SoftwareFeatureState::kNotSupported,
+  EXPECT_EQ(SoftwareFeatureState::kNotSupported,
             remote_device_ref.GetSoftwareFeatureState(
                 cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT));
-  EXPECT_EQ(cryptauth::SoftwareFeatureState::kSupported,
+  EXPECT_EQ(SoftwareFeatureState::kSupported,
             remote_device_ref.GetSoftwareFeatureState(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT));
-  EXPECT_EQ(cryptauth::SoftwareFeatureState::kEnabled,
+  EXPECT_EQ(SoftwareFeatureState::kEnabled,
             remote_device_ref.GetSoftwareFeatureState(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST));
 
@@ -79,4 +82,6 @@ TEST_F(RemoteDeviceRefTest, TestCopyAndAssign) {
   EXPECT_EQ(remote_device_ref_3, remote_device_ref_1);
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

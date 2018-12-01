@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/fake_authenticator.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/cryptauth/wire_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,8 +148,9 @@ class TestAuthenticatorFactory final
   Authenticator* last_instance_;
 };
 
-RemoteDeviceRef CreateTestRemoteDevice() {
-  RemoteDeviceRef remote_device = CreateRemoteDeviceRefListForTest(1)[0];
+chromeos::multidevice::RemoteDeviceRef CreateTestRemoteDevice() {
+  chromeos::multidevice::RemoteDeviceRef remote_device =
+      chromeos::multidevice::CreateRemoteDeviceRefListForTest(1)[0];
   return remote_device;
 }
 
@@ -378,7 +379,7 @@ class CryptAuthSecureChannelTest : public testing::Test {
 
   std::unique_ptr<TestAuthenticatorFactory> test_authenticator_factory_;
 
-  const RemoteDeviceRef test_device_;
+  const chromeos::multidevice::RemoteDeviceRef test_device_;
 
   base::Optional<int32_t> rssi_;
 

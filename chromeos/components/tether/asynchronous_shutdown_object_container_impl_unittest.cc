@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_component_impl.h"
@@ -16,7 +17,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/fake_remote_device_provider.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +51,7 @@ class FakeRemoteDeviceProviderFactory
 class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
  protected:
   AsynchronousShutdownObjectContainerImplTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefListForTest(1u)[0]) {}
 
   void SetUp() override {
     was_shutdown_callback_invoked_ = false;
@@ -98,7 +98,7 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
   void OnShutdownComplete() { was_shutdown_callback_invoked_ = true; }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::FakeSecureChannelClient>

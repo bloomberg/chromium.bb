@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/expiring_remote_device_cache.h"
+#include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 
 #include "base/stl_util.h"
-#include "components/cryptauth/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 ExpiringRemoteDeviceCache::ExpiringRemoteDeviceCache()
     : remote_device_cache_(RemoteDeviceCache::Factory::Get()->BuildInstance()) {
@@ -47,4 +49,6 @@ base::Optional<RemoteDeviceRef> ExpiringRemoteDeviceCache::GetRemoteDevice(
   return remote_device_cache_->GetRemoteDevice(device_id);
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

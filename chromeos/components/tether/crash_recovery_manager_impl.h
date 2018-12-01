@@ -63,7 +63,7 @@ class CrashRecoveryManagerImpl : public CrashRecoveryManager {
   void OnActiveHostFetched(
       const base::Closure& on_restoration_finished,
       ActiveHost::ActiveHostStatus active_host_status,
-      base::Optional<cryptauth::RemoteDeviceRef> active_host,
+      base::Optional<multidevice::RemoteDeviceRef> active_host,
       const std::string& tether_network_guid,
       const std::string& wifi_network_guid);
 

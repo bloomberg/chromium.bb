@@ -37,7 +37,7 @@ ConnectTetheringOperation::Factory*
 // static
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostResponseRecorder* tether_host_response_recorder,
@@ -58,7 +58,7 @@ void ConnectTetheringOperation::Factory::SetInstanceForTesting(
 
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostResponseRecorder* tether_host_response_recorder,
@@ -69,13 +69,13 @@ ConnectTetheringOperation::Factory::BuildInstance(
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
-    cryptauth::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required)
     : MessageTransferOperation(
-          cryptauth::RemoteDeviceRefList{device_to_connect},
+          multidevice::RemoteDeviceRefList{device_to_connect},
           secure_channel::ConnectionPriority::kHigh,
           device_sync_client,
           secure_channel_client),
@@ -96,7 +96,7 @@ void ConnectTetheringOperation::RemoveObserver(Observer* observer) {
 }
 
 void ConnectTetheringOperation::OnDeviceAuthenticated(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   connect_tethering_request_start_time_ = clock_->Now();
   connect_message_sequence_number_ = SendMessageToDevice(
@@ -106,7 +106,7 @@ void ConnectTetheringOperation::OnDeviceAuthenticated(
 
 void ConnectTetheringOperation::OnMessageReceived(
     std::unique_ptr<MessageWrapper> message_wrapper,
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   if (message_wrapper->GetMessageType() !=
       MessageType::CONNECT_TETHERING_RESPONSE) {
     // If another type of message has been received, ignore it.

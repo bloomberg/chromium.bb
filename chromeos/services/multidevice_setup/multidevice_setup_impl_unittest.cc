@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
@@ -36,7 +37,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,18 +50,18 @@ const size_t kNumTestDevices = 3;
 
 const char kValidAuthToken[] = "validAuthToken";
 
-cryptauth::RemoteDeviceList RefListToRawList(
-    const cryptauth::RemoteDeviceRefList& ref_list) {
-  cryptauth::RemoteDeviceList raw_list;
+multidevice::RemoteDeviceList RefListToRawList(
+    const multidevice::RemoteDeviceRefList& ref_list) {
+  multidevice::RemoteDeviceList raw_list;
   std::transform(ref_list.begin(), ref_list.end(), std::back_inserter(raw_list),
-                 [](const cryptauth::RemoteDeviceRef ref) {
+                 [](const multidevice::RemoteDeviceRef ref) {
                    return *GetMutableRemoteDevice(ref);
                  });
   return raw_list;
 }
 
-base::Optional<cryptauth::RemoteDevice> RefToRaw(
-    const base::Optional<cryptauth::RemoteDeviceRef>& ref) {
+base::Optional<multidevice::RemoteDevice> RefToRaw(
+    const base::Optional<multidevice::RemoteDeviceRef>& ref) {
   if (!ref)
     return base::nullopt;
 
@@ -488,7 +488,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
  protected:
   MultiDeviceSetupImplTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupImplTest() override = default;
 
   void SetUp() override {
@@ -620,14 +620,14 @@ class MultiDeviceSetupImplTest : public testing::Test {
     EXPECT_TRUE(fake_account_status_change_delegate_notifier()->delegate());
   }
 
-  cryptauth::RemoteDeviceList CallGetEligibleHostDevices() {
+  multidevice::RemoteDeviceList CallGetEligibleHostDevices() {
     base::RunLoop run_loop;
     multidevice_setup_->GetEligibleHostDevices(
         base::BindOnce(&MultiDeviceSetupImplTest::OnEligibleDevicesFetched,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
-    cryptauth::RemoteDeviceList eligible_devices_list =
+    multidevice::RemoteDeviceList eligible_devices_list =
         *last_eligible_devices_list_;
     last_eligible_devices_list_.reset();
 
@@ -664,7 +664,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return success;
   }
 
-  std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+  std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>
   CallGetHostStatus() {
     base::RunLoop run_loop;
     multidevice_setup_->GetHostStatus(
@@ -672,7 +672,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
-    std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+    std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>
         host_status_update = *last_host_status_;
     last_host_status_.reset();
 
@@ -742,10 +742,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   void VerifyCurrentHostStatus(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device,
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device,
       FakeHostStatusObserver* observer = nullptr,
       size_t expected_observer_index = 0u) {
-    std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>
+    std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>
         host_status_and_device = CallGetHostStatus();
     EXPECT_EQ(host_status, host_status_and_device.first);
     EXPECT_EQ(RefToRaw(host_device), host_status_and_device.second);
@@ -798,14 +798,14 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return fake_account_status_change_delegate_notifier_factory_->instance();
   }
 
-  cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+  multidevice::RemoteDeviceRefList& test_devices() { return test_devices_; }
 
   MultiDeviceSetupBase* multidevice_setup() { return multidevice_setup_.get(); }
 
  private:
   void OnEligibleDevicesFetched(
       base::OnceClosure quit_closure,
-      const cryptauth::RemoteDeviceList& eligible_devices_list) {
+      const multidevice::RemoteDeviceList& eligible_devices_list) {
     EXPECT_FALSE(last_eligible_devices_list_);
     last_eligible_devices_list_ = eligible_devices_list;
     std::move(quit_closure).Run();
@@ -827,7 +827,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
   void OnHostStatusReceived(
       base::OnceClosure quit_closure,
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDevice>& host_device) {
+      const base::Optional<multidevice::RemoteDevice>& host_device) {
     EXPECT_FALSE(last_host_status_);
     last_host_status_ = std::make_pair(host_status, host_device);
     std::move(quit_closure).Run();
@@ -862,7 +862,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  cryptauth::RemoteDeviceRefList test_devices_;
+  multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
@@ -896,11 +896,11 @@ class MultiDeviceSetupImplTest : public testing::Test {
       fake_account_status_change_delegate_;
 
   base::Optional<bool> last_debug_event_success_;
-  base::Optional<cryptauth::RemoteDeviceList> last_eligible_devices_list_;
+  base::Optional<multidevice::RemoteDeviceList> last_eligible_devices_list_;
   base::Optional<bool> last_set_host_success_;
   base::Optional<bool> last_set_host_without_auth_success_;
   base::Optional<
-      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>
+      std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>>
       last_host_status_;
   base::Optional<bool> last_set_feature_enabled_state_success_;
   base::Optional<base::flat_map<mojom::Feature, mojom::FeatureState>>
@@ -1229,7 +1229,7 @@ TEST_F(MultiDeviceSetupImplTest, TestSetHostDeviceWithoutAuthToken) {
 }
 
 TEST_F(MultiDeviceSetupImplTest, GetEligibleHostDevicesSortedByTimestamp) {
-  cryptauth::RemoteDeviceRefList devices = test_devices();
+  multidevice::RemoteDeviceRefList devices = test_devices();
 
   // Update the devices in the list such that they are sorted from
   // least-recently-updated to most-recently-updated. This is the opposite order

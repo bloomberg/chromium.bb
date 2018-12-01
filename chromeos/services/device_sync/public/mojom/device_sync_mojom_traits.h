@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
@@ -31,25 +31,26 @@ class StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
 
 template <>
 class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-                   cryptauth::RemoteDevice> {
+                   chromeos::multidevice::RemoteDevice> {
  public:
-  static std::string device_id(const cryptauth::RemoteDevice& remote_device);
+  static std::string device_id(
+      const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::string& user_id(
-      const cryptauth::RemoteDevice& remote_device);
+      const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::string& device_name(
-      const cryptauth::RemoteDevice& remote_device);
+      const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::string& persistent_symmetric_key(
-      const cryptauth::RemoteDevice& remote_device);
+      const chromeos::multidevice::RemoteDevice& remote_device);
   static base::Time last_update_time(
-      const cryptauth::RemoteDevice& remote_device);
+      const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::map<cryptauth::SoftwareFeature,
-                        cryptauth::SoftwareFeatureState>&
-  software_features(const cryptauth::RemoteDevice& remote_device);
+                        chromeos::multidevice::SoftwareFeatureState>&
+  software_features(const chromeos::multidevice::RemoteDevice& remote_device);
   static const std::vector<cryptauth::BeaconSeed>& beacon_seeds(
-      const cryptauth::RemoteDevice& remote_device);
+      const chromeos::multidevice::RemoteDevice& remote_device);
 
   static bool Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
-                   cryptauth::RemoteDevice* out);
+                   chromeos::multidevice::RemoteDevice* out);
 };
 
 template <>
@@ -64,13 +65,13 @@ class EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
 
 template <>
 class EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
-                 cryptauth::SoftwareFeatureState> {
+                 chromeos::multidevice::SoftwareFeatureState> {
  public:
   static chromeos::device_sync::mojom::SoftwareFeatureState ToMojom(
-      cryptauth::SoftwareFeatureState input);
+      chromeos::multidevice::SoftwareFeatureState input);
   static bool FromMojom(
       chromeos::device_sync::mojom::SoftwareFeatureState input,
-      cryptauth::SoftwareFeatureState* out);
+      chromeos::multidevice::SoftwareFeatureState* out);
 };
 
 }  // namespace mojo

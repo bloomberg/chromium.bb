@@ -5,7 +5,7 @@
 #include "chromeos/services/secure_channel/connection_details.h"
 
 #include "base/logging.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -40,7 +40,7 @@ bool ConnectionDetails::operator<(const ConnectionDetails& other) const {
 std::ostream& operator<<(std::ostream& stream,
                          const ConnectionDetails& details) {
   stream << "{id: \""
-         << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+         << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                 details.device_id())
          << "\", medium: \"" << details.connection_medium() << "\"}";
   return stream;

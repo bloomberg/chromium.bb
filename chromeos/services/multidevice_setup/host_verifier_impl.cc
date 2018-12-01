@@ -108,7 +108,7 @@ HostVerifierImpl::~HostVerifierImpl() {
 }
 
 bool HostVerifierImpl::IsHostVerified() {
-  base::Optional<cryptauth::RemoteDeviceRef> current_host =
+  base::Optional<multidevice::RemoteDeviceRef> current_host =
       host_backend_delegate_->GetMultiDeviceHostFromBackend();
   if (!current_host)
     return false;
@@ -124,7 +124,7 @@ bool HostVerifierImpl::IsHostVerified() {
   // considered verified.
   for (const auto& software_feature : kPotentialHostFeatures) {
     if (current_host->GetSoftwareFeatureState(software_feature) ==
-        cryptauth::SoftwareFeatureState::kEnabled) {
+        multidevice::SoftwareFeatureState::kEnabled) {
       return true;
     }
   }
@@ -231,7 +231,7 @@ void HostVerifierImpl::StartTimer(const base::Time& time_to_fire) {
 }
 
 void HostVerifierImpl::AttemptHostVerification() {
-  base::Optional<cryptauth::RemoteDeviceRef> current_host =
+  base::Optional<multidevice::RemoteDeviceRef> current_host =
       host_backend_delegate_->GetMultiDeviceHostFromBackend();
   if (!current_host) {
     PA_LOG(WARNING) << "HostVerifierImpl::AttemptHostVerification(): Cannot "

@@ -12,6 +12,7 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/fake_channel.h"
 #include "chromeos/services/secure_channel/fake_secure_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel_impl.h"
@@ -23,7 +24,6 @@
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,9 +120,9 @@ class SecureChannelClientImplTest : public testing::Test {
  protected:
   SecureChannelClientImplTest()
       : test_remote_device_list_(
-            cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices)),
+            multidevice::CreateRemoteDeviceListForTest(kNumTestDevices)),
         test_remote_device_ref_list_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
 
   // testing::Test:
   void SetUp() override {
@@ -160,8 +160,8 @@ class SecureChannelClientImplTest : public testing::Test {
   }
 
   std::unique_ptr<FakeConnectionAttempt> CallListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     auto connection_attempt = client_->ListenForConnectionFromDevice(
@@ -179,8 +179,8 @@ class SecureChannelClientImplTest : public testing::Test {
   }
 
   std::unique_ptr<FakeConnectionAttempt> CallInitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     auto connection_attempt = client_->InitiateConnectionToDevice(
@@ -218,8 +218,8 @@ class SecureChannelClientImplTest : public testing::Test {
 
   std::unique_ptr<SecureChannelClient> client_;
 
-  const cryptauth::RemoteDeviceList test_remote_device_list_;
-  const cryptauth::RemoteDeviceRefList test_remote_device_ref_list_;
+  const multidevice::RemoteDeviceList test_remote_device_list_;
+  const multidevice::RemoteDeviceRefList test_remote_device_ref_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecureChannelClientImplTest);

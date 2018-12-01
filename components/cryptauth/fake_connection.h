@@ -16,8 +16,9 @@ class ConnectionObserver;
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(RemoteDeviceRef remote_device);
-  FakeConnection(RemoteDeviceRef remote_device, bool should_auto_connect);
+  FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device);
+  FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device,
+                 bool should_auto_connect);
   ~FakeConnection() override;
 
   void set_rssi_to_return(const base::Optional<int32_t>& rssi_to_return) {

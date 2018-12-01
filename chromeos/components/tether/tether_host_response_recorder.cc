@@ -44,7 +44,7 @@ void TetherHostResponseRecorder::RemoveObserver(Observer* observer) {
 }
 
 void TetherHostResponseRecorder::RecordSuccessfulTetherAvailabilityResponse(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   AddRecentResponse(remote_device.GetDeviceId(),
                     prefs::kMostRecentTetherAvailablilityResponderIds);
 }
@@ -55,7 +55,7 @@ TetherHostResponseRecorder::GetPreviouslyAvailableHostIds() const {
 }
 
 void TetherHostResponseRecorder::RecordSuccessfulConnectTetheringResponse(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   if (AddRecentResponse(remote_device.GetDeviceId(),
                         prefs::kMostRecentConnectTetheringResponderIds)) {
     NotifyObserversPreviouslyConnectedHostIdsChanged();

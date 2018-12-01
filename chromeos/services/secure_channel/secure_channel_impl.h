@@ -12,12 +12,12 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/services/secure_channel/active_connection_manager.h"
 #include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "components/cryptauth/remote_device_cache.h"
 
 namespace device {
 class BluetoothAdapter;
@@ -89,14 +89,14 @@ class SecureChannelImpl : public mojom::SecureChannel,
 
   // mojom::SecureChannel:
   void ListenForConnectionFromDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;
   void InitiateConnectionToDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;
@@ -112,8 +112,8 @@ class SecureChannelImpl : public mojom::SecureChannel,
 
   void ProcessConnectionRequest(
       ApiFunctionName api_fn_name,
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role,
       ConnectionPriority connection_priority,
@@ -133,7 +133,7 @@ class SecureChannelImpl : public mojom::SecureChannel,
   // Returns whether the request was rejected.
   bool CheckForInvalidInputDevice(
       ApiFunctionName api_fn_name,
-      const cryptauth::RemoteDevice& device,
+      const multidevice::RemoteDevice& device,
       ClientConnectionParameters* client_connection_parameters,
       bool is_local_device);
 
@@ -148,11 +148,11 @@ class SecureChannelImpl : public mojom::SecureChannel,
   // device is not added to the cache.
   base::Optional<InvalidRemoteDeviceReason> AddDeviceToCacheIfPossible(
       ApiFunctionName api_fn_name,
-      const cryptauth::RemoteDevice& device);
+      const multidevice::RemoteDevice& device);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TimerFactory> timer_factory_;
-  std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
   std::unique_ptr<BleServiceDataHelper> ble_service_data_helper_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;
   std::unique_ptr<PendingConnectionManager> pending_connection_manager_;

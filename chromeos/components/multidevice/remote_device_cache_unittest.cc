@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 
 #include <algorithm>
 
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 class RemoteDeviceCacheTest : public testing::Test {
  protected:
   RemoteDeviceCacheTest()
       : test_remote_device_list_(CreateRemoteDeviceListForTest(5)),
-        test_remote_device_ref_list_(CreateRemoteDeviceRefListForTest(5)){};
+        test_remote_device_ref_list_(CreateRemoteDeviceRefListForTest(5)) {}
 
   // testing::Test:
   void SetUp() override {
@@ -69,12 +71,11 @@ TEST_F(RemoteDeviceCacheTest,
 TEST_F(RemoteDeviceCacheTest,
        TestSetRemoteDevices_RemoteDeviceRefsRemainValidAfterValidCacheUpdate) {
   // Store the device with a last update time of 1000.
-  cryptauth::RemoteDevice remote_device =
-      cryptauth::CreateRemoteDeviceForTest();
+  RemoteDevice remote_device = CreateRemoteDeviceForTest();
   remote_device.last_update_time_millis = 1000;
   cache_->SetRemoteDevices({remote_device});
 
-  cryptauth::RemoteDeviceRef remote_device_ref =
+  RemoteDeviceRef remote_device_ref =
       *cache_->GetRemoteDevice(remote_device.GetDeviceId());
   EXPECT_EQ(remote_device.name, remote_device_ref.name());
 
@@ -93,12 +94,11 @@ TEST_F(
     RemoteDeviceCacheTest,
     DISABLED_TestSetRemoteDevices_RemoteDeviceCacheDoesNotUpdateWithStaleRemoteDevice) {
   // Store the device with a last update time of 1000.
-  cryptauth::RemoteDevice remote_device =
-      cryptauth::CreateRemoteDeviceForTest();
+  RemoteDevice remote_device = CreateRemoteDeviceForTest();
   remote_device.last_update_time_millis = 1000;
   cache_->SetRemoteDevices({remote_device});
 
-  cryptauth::RemoteDeviceRef remote_device_ref =
+  RemoteDeviceRef remote_device_ref =
       *cache_->GetRemoteDevice(remote_device.GetDeviceId());
   EXPECT_EQ(remote_device.name, remote_device_ref.name());
 
@@ -114,4 +114,6 @@ TEST_F(
   EXPECT_EQ(prev_name, remote_device_ref.name());
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

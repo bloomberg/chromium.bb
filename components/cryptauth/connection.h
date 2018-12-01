@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -31,7 +31,7 @@ class Connection {
   };
 
   // Constructs a connection to the given |remote_device|.
-  explicit Connection(RemoteDeviceRef remote_device);
+  explicit Connection(chromeos::multidevice::RemoteDeviceRef remote_device);
   virtual ~Connection();
 
   // Returns true iff the connection's status is CONNECTED.
@@ -48,7 +48,9 @@ class Connection {
   virtual void AddObserver(ConnectionObserver* observer);
   virtual void RemoveObserver(ConnectionObserver* observer);
 
-  RemoteDeviceRef remote_device() const { return remote_device_; }
+  chromeos::multidevice::RemoteDeviceRef remote_device() const {
+    return remote_device_;
+  }
 
   // Returns the RSSI of the connection; if no derived class overrides this
   // function, base::nullopt is returned.
@@ -103,7 +105,7 @@ class Connection {
 
  private:
   // The remote device corresponding to this connection.
-  const RemoteDeviceRef remote_device_;
+  const chromeos::multidevice::RemoteDeviceRef remote_device_;
 
   // The current status of the connection.
   Status status_;

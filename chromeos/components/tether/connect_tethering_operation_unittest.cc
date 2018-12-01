@@ -15,6 +15,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
@@ -26,7 +27,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,13 +49,14 @@ class MockOperationObserver : public ConnectTetheringOperation::Observer {
   MockOperationObserver() = default;
   ~MockOperationObserver() = default;
 
-  MOCK_METHOD1(OnConnectTetheringRequestSent, void(cryptauth::RemoteDeviceRef));
+  MOCK_METHOD1(OnConnectTetheringRequestSent,
+               void(multidevice::RemoteDeviceRef));
   MOCK_METHOD3(OnSuccessfulConnectTetheringResponse,
-               void(cryptauth::RemoteDeviceRef,
+               void(multidevice::RemoteDeviceRef,
                     const std::string&,
                     const std::string&));
   MOCK_METHOD2(OnConnectTetheringFailure,
-               void(cryptauth::RemoteDeviceRef,
+               void(multidevice::RemoteDeviceRef,
                     ConnectTetheringOperation::HostResponseErrorCode));
 
  private:
@@ -89,10 +90,10 @@ class TestTimerFactory : public TimerFactory {
 class ConnectTetheringOperationTest : public testing::Test {
  protected:
   ConnectTetheringOperationTest()
-      : test_local_device_(cryptauth::RemoteDeviceRefBuilder()
+      : test_local_device_(multidevice::RemoteDeviceRefBuilder()
                                .SetPublicKey("local device")
                                .Build()),
-        remote_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+        remote_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
 
   void SetUp() override {
     mock_tether_host_response_recorder_ =
@@ -138,7 +139,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   }
 
   void ConnectAuthenticatedChannelForDevice(
-      cryptauth::RemoteDeviceRef remote_device) {
+      multidevice::RemoteDeviceRef remote_device) {
     auto fake_client_channel =
         std::make_unique<secure_channel::FakeClientChannel>();
     remote_device_to_fake_client_channel_map_[remote_device] =
@@ -147,13 +148,14 @@ class ConnectTetheringOperationTest : public testing::Test {
         ->NotifyConnection(std::move(fake_client_channel));
   }
 
-  const cryptauth::RemoteDeviceRef test_local_device_;
-  const cryptauth::RemoteDeviceRef remote_device_;
+  const multidevice::RemoteDeviceRef test_local_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
 
-  base::flat_map<cryptauth::RemoteDeviceRef,
+  base::flat_map<multidevice::RemoteDeviceRef,
                  secure_channel::FakeConnectionAttempt*>
       remote_device_to_fake_connection_attempt_map_;
-  base::flat_map<cryptauth::RemoteDeviceRef, secure_channel::FakeClientChannel*>
+  base::flat_map<multidevice::RemoteDeviceRef,
+                 secure_channel::FakeClientChannel*>
       remote_device_to_fake_client_channel_map_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;

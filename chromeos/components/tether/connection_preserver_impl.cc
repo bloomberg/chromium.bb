@@ -5,12 +5,12 @@
 #include "chromeos/components/tether/connection_preserver_impl.h"
 
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -72,7 +72,7 @@ void ConnectionPreserverImpl::HandleSuccessfulTetherAvailabilityResponse(
   } else {
     PA_LOG(VERBOSE)
         << "The connection to device with ID "
-        << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+        << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
         << " was not preserved; another device has higher priority.";
   }
 }
@@ -80,7 +80,7 @@ void ConnectionPreserverImpl::HandleSuccessfulTetherAvailabilityResponse(
 void ConnectionPreserverImpl::OnConnectionAttemptFailure(
     secure_channel::mojom::ConnectionAttemptFailureReason reason) {
   PA_LOG(WARNING) << "Failed to connect to device "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_)
                   << ", error: " << reason;
   RemovePreservedConnectionIfPresent();
@@ -89,7 +89,7 @@ void ConnectionPreserverImpl::OnConnectionAttemptFailure(
 void ConnectionPreserverImpl::OnConnection(
     std::unique_ptr<secure_channel::ClientChannel> channel) {
   PA_LOG(VERBOSE) << "Successfully preserved connection for device: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_);
 
   // Simply hold on to the ClientChannel until the connection should no longer
@@ -99,7 +99,7 @@ void ConnectionPreserverImpl::OnConnection(
 
 void ConnectionPreserverImpl::OnDisconnected() {
   PA_LOG(VERBOSE) << "Remote device disconnected from this device: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_);
   RemovePreservedConnectionIfPresent();
 }
@@ -157,17 +157,17 @@ void ConnectionPreserverImpl::SetPreservedConnection(
   DCHECK(preserved_connection_device_id_.empty());
 
   PA_LOG(VERBOSE) << "Preserving connection to device with ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ".";
 
   preserved_connection_device_id_ = device_id;
 
-  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+  base::Optional<multidevice::RemoteDeviceRef> remote_device =
       GetRemoteDevice(preserved_connection_device_id_);
   if (!remote_device) {
     PA_LOG(ERROR) << "Given invalid remote device ID: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_);
     RemovePreservedConnectionIfPresent();
     return;
@@ -189,7 +189,7 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
     return;
 
   PA_LOG(VERBOSE) << "Removing preserved connection to device with ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_)
                   << ".";
 
@@ -200,7 +200,7 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
   preserved_connection_timer_->Stop();
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 ConnectionPreserverImpl::GetRemoteDevice(const std::string device_id) {
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     if (remote_device.GetDeviceId() == device_id)

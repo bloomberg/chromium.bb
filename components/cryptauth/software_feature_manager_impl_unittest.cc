@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/proto/enum_util.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,10 +35,11 @@ const char kBetterTogetherClientCallbackBluetoothAddress[] =
 
 std::vector<cryptauth::ExternalDeviceInfo>
 CreateExternalDeviceInfosForRemoteDevices(
-    const cryptauth::RemoteDeviceRefList remote_devices) {
+    const chromeos::multidevice::RemoteDeviceRefList remote_devices) {
   std::vector<cryptauth::ExternalDeviceInfo> device_infos;
   for (const auto& remote_device : remote_devices) {
-    // Add an ExternalDeviceInfo with the same public key as the RemoteDevice.
+    // Add an ExternalDeviceInfo with the same public key as the
+    // chromeos::multidevice::RemoteDevice.
     cryptauth::ExternalDeviceInfo info;
     info.set_public_key(remote_device.public_key());
     device_infos.push_back(info);
@@ -55,7 +56,7 @@ class CryptAuthSoftwareFeatureManagerImplTest
   CryptAuthSoftwareFeatureManagerImplTest()
       : all_test_external_device_infos_(
             CreateExternalDeviceInfosForRemoteDevices(
-                cryptauth::CreateRemoteDeviceRefListForTest(5))),
+                chromeos::multidevice::CreateRemoteDeviceRefListForTest(5))),
         test_eligible_external_devices_infos_(
             {all_test_external_device_infos_[0],
              all_test_external_device_infos_[1],

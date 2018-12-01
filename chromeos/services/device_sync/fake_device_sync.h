@@ -35,9 +35,9 @@ class FakeDeviceSync : public DeviceSyncBase {
   }
 
   void InvokePendingGetLocalDeviceMetadataCallback(
-      const base::Optional<cryptauth::RemoteDevice>& local_device_metadata);
+      const base::Optional<multidevice::RemoteDevice>& local_device_metadata);
   void InvokePendingGetSyncedDevicesCallback(
-      const base::Optional<std::vector<cryptauth::RemoteDevice>>&
+      const base::Optional<std::vector<multidevice::RemoteDevice>>&
           remote_devices);
   void InvokePendingSetSoftwareFeatureStateCallback(
       mojom::NetworkRequestResult result_code);

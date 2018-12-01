@@ -32,7 +32,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
 
   void NotifyHostStatusChanged(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDevice>& host_device);
+      const base::Optional<multidevice::RemoteDevice>& host_device);
   void NotifyFeatureStateChanged(
       const base::flat_map<mojom::Feature, mojom::FeatureState>&
           feature_states);

@@ -183,7 +183,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void InitializeCryptAuthManagementObjects();
   void CompleteInitializationAfterSuccessfulEnrollment();
 
-  base::Optional<cryptauth::RemoteDevice> GetSyncedDeviceWithPublicKey(
+  base::Optional<multidevice::RemoteDevice> GetSyncedDeviceWithPublicKey(
       const std::string& public_key) const;
 
   void OnSetSoftwareFeatureStateSuccess();

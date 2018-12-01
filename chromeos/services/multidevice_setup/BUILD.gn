@@ -56,6 +56,7 @@ static_library("multidevice_setup") {
 
   deps = [
     "//base",
+    "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
@@ -109,6 +110,7 @@ static_library("test_support") {
   deps = [
     ":multidevice_setup",
     "//base",
+    "//chromeos/components/multidevice",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/cryptauth",
     "//testing/gmock",
@@ -140,6 +142,8 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",

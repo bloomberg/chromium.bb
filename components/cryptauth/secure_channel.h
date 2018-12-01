@@ -8,11 +8,11 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/device_to_device_authenticator.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 
 namespace cryptauth {

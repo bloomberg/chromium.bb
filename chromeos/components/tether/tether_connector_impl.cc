@@ -29,7 +29,7 @@ namespace {
 void OnDisconnectFromWifiFailure(const std::string& device_id,
                                  const std::string& error_name) {
   PA_LOG(WARNING) << "Failed to disconnect from tether hotspot for device ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ". Error: " << error_name;
 }
@@ -149,7 +149,7 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
 }
 
 void TetherConnectorImpl::OnConnectTetheringRequestSent(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   // If setup is required for the phone, display a notification so that the
   // user knows to follow instructions on the phone. Note that the notification
   // is displayed only after a request has been sent successfully. If the
@@ -169,7 +169,7 @@ void TetherConnectorImpl::OnConnectTetheringRequestSent(
 }
 
 void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const std::string& ssid,
     const std::string& password) {
   if (device_id_pending_connection_ != remote_device.GetDeviceId()) {
@@ -204,7 +204,7 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
 }
 
 void TetherConnectorImpl::OnConnectTetheringFailure(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     ConnectTetheringOperation::HostResponseErrorCode error_code) {
   std::string device_id_copy = remote_device.GetDeviceId();
   if (device_id_pending_connection_ != device_id_copy) {
@@ -230,10 +230,10 @@ void TetherConnectorImpl::OnConnectTetheringFailure(
 
 void TetherConnectorImpl::OnTetherHostToConnectFetched(
     const std::string& device_id,
-    base::Optional<cryptauth::RemoteDeviceRef> tether_host_to_connect) {
+    base::Optional<multidevice::RemoteDeviceRef> tether_host_to_connect) {
   if (device_id_pending_connection_ != device_id) {
     PA_LOG(VERBOSE) << "Device to connect to has changed while device with ID "
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << " was being fetched.";
     return;
@@ -241,7 +241,7 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
 
   if (!tether_host_to_connect) {
     PA_LOG(ERROR) << "Could not fetch tether host with device ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ". Cannot connect.";
     SetConnectionFailed(
@@ -333,14 +333,14 @@ void TetherConnectorImpl::OnWifiConnection(
     if (wifi_network_guid.empty()) {
       PA_LOG(WARNING)
           << "Failed to connect to Wi-Fi hotspot for device with ID "
-          << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+          << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
           << ", "
           << "but the connection to that device was canceled.";
       return;
     }
 
     PA_LOG(VERBOSE) << "Connected to Wi-Fi hotspot for device with ID "
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << ", but the connection to that device was canceled. "
                     << "Disconnecting.";
@@ -358,7 +358,7 @@ void TetherConnectorImpl::OnWifiConnection(
     // If the Wi-Fi network ID is empty, then the connection did not succeed.
     PA_LOG(ERROR) << "Failed to connect to the hotspot belonging to the device "
                   << "with ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ".";
 
