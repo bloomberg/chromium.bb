@@ -64,8 +64,6 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -96,10 +94,6 @@ void IgnoreArgumentHelper(base::OnceClosure callback, T unused_argument) {
 template <typename T>
 base::OnceCallback<void(T)> IgnoreArgument(base::OnceClosure callback) {
   return base::BindOnce(&IgnoreArgumentHelper<T>, std::move(callback));
-}
-
-bool AllDomainsPredicate(const std::string& domain) {
-  return true;
 }
 
 void BookmarkClearedAdapter(std::unique_ptr<BookmarkRemoverHelper> remover,
@@ -136,36 +130,6 @@ void ClearCookies(
   cookie_store->DeleteAllCreatedInTimeRangeAsync(
       creation_range, AdaptCallbackForRepeating(base::BindOnce(
                           &DeleteCallbackAdapter, std::move(callback))));
-}
-
-// Clears SSL connection pool and then invoke callback.
-void OnClearedChannelIDs(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  // Need to close open SSL connections which may be using the channel ids we
-  // are deleting.
-  // TODO(crbug.com/166069): Make the server bound cert service/store have
-  // observers that can notify relevant things directly.
-  request_context_getter->GetURLRequestContext()
-      ->ssl_config_service()
-      ->NotifySSLConfigChange();
-  std::move(callback).Run();
-}
-
-// Clears channel IDs.
-void ClearChannelIDs(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  net::ChannelIDService* channel_id_service =
-      request_context_getter->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
-      base::BindRepeating(&AllDomainsPredicate), delete_begin, delete_end,
-      AdaptCallbackForRepeating(base::BindOnce(
-          &OnClearedChannelIDs, request_context_getter, std::move(callback))));
 }
 
 }  // namespace
@@ -257,11 +221,6 @@ void BrowsingDataRemoverImpl::Remove(browsing_data::TimePeriod time_period,
   DCHECK(!browser_state_->IsOffTheRecord() ||
          time_period == browsing_data::TimePeriod::ALL_TIME);
 
-  // Cookies and server bound certificates should have the same lifetime.
-  DCHECK_EQ(
-      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
-      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
-
   // Partial clearing of downloads, bookmarks or reading lists is not supported.
   DCHECK(
       !(IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS) ||
@@ -336,17 +295,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
         base::BindOnce(
             &ClearCookies, context_getter_,
             net::CookieDeletionInfo::TimeRange(delete_begin, delete_end),
-            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                           current_task_runner, FROM_HERE,
-                           CreatePendingTaskCompletionClosure())));
-  }
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
-    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
-    base::PostTaskWithTraits(
-        FROM_HERE, task_traits,
-        base::BindOnce(
-            &ClearChannelIDs, context_getter_, delete_begin, delete_end,
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
                            current_task_runner, FROM_HERE,
                            CreatePendingTaskCompletionClosure())));

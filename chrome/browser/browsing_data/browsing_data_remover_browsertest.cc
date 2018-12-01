@@ -538,7 +538,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataSharedWorkerHelper(storage_partition,
                                            profile->GetResourceContext()),

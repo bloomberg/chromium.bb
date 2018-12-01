@@ -22,7 +22,6 @@ enum class BrowsingDataRemoveMask {
   REMOVE_LOCAL_STORAGE = 1 << 7,
   REMOVE_PASSWORDS = 1 << 8,
   REMOVE_WEBSQL = 1 << 9,
-  REMOVE_CHANNEL_IDS = 1 << 10,
   REMOVE_CACHE_STORAGE = 1 << 11,
   REMOVE_VISITED_LINKS = 1 << 12,
   REMOVE_BOOKMARKS = 1 << 13,
@@ -30,10 +29,10 @@ enum class BrowsingDataRemoveMask {
   REMOVE_LAST_USER_ACCOUNT = 1 << 15,
 
   // "Site data" includes cookies, appcache, indexed DBs, local storage, webSQL,
-  // cache storage, channel ids and visited links.
+  // cache storage, and visited links.
   REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_INDEXEDDB |
                      REMOVE_LOCAL_STORAGE | REMOVE_CACHE_STORAGE |
-                     REMOVE_WEBSQL | REMOVE_CHANNEL_IDS | REMOVE_VISITED_LINKS,
+                     REMOVE_WEBSQL | REMOVE_VISITED_LINKS,
 
   // Includes all the available remove options. Meant to be used by clients that
   // wish to wipe as much data as possible from a ChromeBrowserState, to make it

@@ -84,7 +84,6 @@ class ChromeBrowsingDataRemoverDelegate
     // "Site data" includes storage backend accessible to websites and some
     // additional metadata kept by the browser (e.g. site usage data).
     DATA_TYPE_SITE_DATA = content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-                          content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
                           content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
                           DATA_TYPE_PLUGIN_DATA |
 #if defined(OS_ANDROID)

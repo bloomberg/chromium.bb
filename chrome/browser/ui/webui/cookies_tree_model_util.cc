@@ -51,7 +51,6 @@ const char kKeyDesc[] = "desc";
 const char kKeySize[] = "size";
 const char kKeyOrigin[] = "origin";
 const char kKeyManifest[] = "manifest";
-const char kKeyServerId[] = "serverId";
 
 const char kKeyAccessed[] = "accessed";
 const char kKeyCreated[] = "created";
@@ -64,8 +63,6 @@ const char kKeyTemporary[] = "temporary";
 const char kKeyTotalUsage[] = "totalUsage";
 const char kKeyTemporaryUsage[] = "temporaryUsage";
 const char kKeyPersistentUsage[] = "persistentUsage";
-
-const char kKeyCertType[] = "certType";
 
 const int64_t kNegligibleUsage = 1024;  // 1KiB
 
@@ -230,20 +227,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyPersistentUsage,
                       base::UTF16ToUTF8(ui::FormatBytes(
                           quota_info.persistent_usage)));
-      break;
-    }
-    case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID: {
-      dict->SetString(kKeyType, "channel_id");
-
-      const net::ChannelIDStore::ChannelID& channel_id =
-          *node.GetDetailedInfo().channel_id;
-
-      dict->SetString(kKeyServerId, channel_id.server_identifier());
-      dict->SetString(kKeyCertType,
-                      l10n_util::GetStringUTF8(IDS_CLIENT_CERT_ECDSA_SIGN));
-      dict->SetString(kKeyCreated, base::UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(
-              channel_id.creation_time())));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER: {

@@ -2396,7 +2396,6 @@ test("unit_tests") {
     "../browser/browser_about_handler_unittest.cc",
     "../browser/browsing_data/browsing_data_appcache_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_cache_storage_helper_unittest.cc",
-    "../browser/browsing_data/browsing_data_channel_id_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_cookie_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_database_helper_unittest.cc",
     "../browser/browsing_data/browsing_data_file_system_helper_unittest.cc",

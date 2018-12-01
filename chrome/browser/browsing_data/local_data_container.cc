@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 
 #include "base/bind.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -23,7 +22,6 @@ LocalDataContainer::LocalDataContainer(
     scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
     scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
     scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
-    scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
     scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
     scoped_refptr<BrowsingDataSharedWorkerHelper> shared_worker_helper,
     scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
@@ -37,7 +35,6 @@ LocalDataContainer::LocalDataContainer(
       indexed_db_helper_(std::move(indexed_db_helper)),
       file_system_helper_(std::move(file_system_helper)),
       quota_helper_(std::move(quota_helper)),
-      channel_id_helper_(std::move(channel_id_helper)),
       service_worker_helper_(std::move(service_worker_helper)),
       shared_worker_helper_(std::move(shared_worker_helper)),
       cache_storage_helper_(std::move(cache_storage_helper)),
@@ -105,13 +102,6 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
     batches_started_++;
     quota_helper_->StartFetching(
         base::Bind(&LocalDataContainer::OnQuotaModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  if (channel_id_helper_.get()) {
-    batches_started_++;
-    channel_id_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnChannelIDModelInfoLoaded,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -223,13 +213,6 @@ void LocalDataContainer::OnQuotaModelInfoLoaded(
   quota_info_list_ = quota_info;
   DCHECK(model_);
   model_->PopulateQuotaInfo(this);
-}
-
-void LocalDataContainer::OnChannelIDModelInfoLoaded(
-    const ChannelIDList& channel_id_list) {
-  channel_id_list_ = channel_id_list;
-  DCHECK(model_);
-  model_->PopulateChannelIDInfo(this);
 }
 
 void LocalDataContainer::OnServiceWorkerModelInfoLoaded(

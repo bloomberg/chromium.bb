@@ -8,16 +8,11 @@
 #include <set>
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/ssl/channel_id_store.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 class Profile;
 class BrowsingDataFlashLSOHelper;
 class HostContentSettingsMap;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
 struct SessionStorageUsageInfo;
@@ -59,10 +54,6 @@ class SiteDataCountingHelper {
   void GetQuotaOriginsCallback(const std::set<url::Origin>& origin_set,
                                blink::mojom::StorageType type);
   void SitesWithFlashDataCallback(const std::vector<std::string>& sites);
-  void GetChannelIDsOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
-  void GetChannelIDsCallback(
-      const net::ChannelIDStore::ChannelIDList& channel_ids);
 
   void Done(const std::vector<GURL>& origins);
 
