@@ -5,6 +5,7 @@
 #ifndef MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
 #define MEDIA_LEARNING_COMMON_TRAINING_EXAMPLE_H_
 
+#include <deque>
 #include <initializer_list>
 #include <ostream>
 #include <vector>
@@ -49,11 +50,15 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
   // Copy / assignment is allowed.
 };
 
-// Collection of training examples.  We use a vector since we allow duplicates.
+// Collection of training examples.
+// TODO(liberato): This should probably move to impl/ .
 class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
     : public base::RefCountedThreadSafe<TrainingDataStorage> {
  public:
-  using StorageVector = std::vector<TrainingExample>;
+  // We store examples in a deque, since we don't want to invalidate pointers in
+  // TrainingData collections (see below) as new examples are added.  Deques
+  // promise not to do that when inserting at either end.
+  using StorageVector = std::deque<TrainingExample>;
   using const_iterator = StorageVector::const_iterator;
 
   TrainingDataStorage();
@@ -61,31 +66,31 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
   StorageVector::const_iterator begin() const { return examples_.begin(); }
   StorageVector::const_iterator end() const { return examples_.end(); }
 
+  // Note that it's okay to add examples at any time.
   void push_back(const TrainingExample& example) {
     examples_.push_back(example);
   }
 
-  // Returns true if and only if |example| is included in our data.  Note that
-  // this checks that the pointer itself is included, so that one might tell if
-  // an example is backed by this storage or not.  It does not care if there is
-  // an example in our storage that would TrainingExample::operator==(*example).
-  bool contains(const TrainingExample* example) const {
-    return (example >= examples_.data()) &&
-           (example < examples_.data() + examples_.size());
-  }
+  // Notice that there's no option to clear storage; that might invalidate
+  // outstanding pointers in TrainingData (see below).  Instead, just create a
+  // new TrainingDataStorage.
+
+  // Return the number of examples that we store.
+  size_t size() const { return examples_.size(); }
 
  private:
   friend class base::RefCountedThreadSafe<TrainingDataStorage>;
 
   ~TrainingDataStorage();
 
-  std::vector<TrainingExample> examples_;
+  StorageVector examples_;
 
   DISALLOW_COPY_AND_ASSIGN(TrainingDataStorage);
 };
 
 // Collection of pointers to training data.  References would be more convenient
 // but they're not allowed.
+// TODO(liberato): This should probably move to impl/ .
 class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
  public:
   using ExampleVector = std::vector<const TrainingExample*>;
@@ -107,7 +112,6 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   void push_back(const TrainingExample* example) {
     DCHECK(backing_storage_);
-    DCHECK(backing_storage_->contains(example));
     examples_.push_back(example);
   }
 

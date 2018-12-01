@@ -90,17 +90,6 @@ TEST_F(LearnerTrainingExampleTest, StoragePushBack) {
   EXPECT_EQ(*storage->begin(), example);
 }
 
-TEST_F(LearnerTrainingExampleTest, StorageCheckWorks) {
-  // Verify that TrainingDataStorage can tell if an example is in its storage.
-  TrainingExample example({FeatureValue(123)}, TargetValue(789));
-  scoped_refptr<TrainingDataStorage> storage =
-      base::MakeRefCounted<TrainingDataStorage>();
-  storage->push_back(example);
-
-  EXPECT_TRUE(storage->contains(&(*storage->begin())));
-  EXPECT_FALSE(storage->contains(&example));
-}
-
 TEST_F(LearnerTrainingExampleTest, TrainingDataPushBack) {
   TrainingExample example({FeatureValue(123)}, TargetValue(789));
   scoped_refptr<TrainingDataStorage> storage =

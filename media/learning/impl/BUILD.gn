@@ -36,6 +36,7 @@ source_set("unit_tests") {
 
   sources = [
     "learning_session_impl_unittest.cc",
+    "learning_task_controller_impl_unittest.cc",
     "random_tree_trainer_unittest.cc",
     "target_distribution_unittest.cc",
   ]
