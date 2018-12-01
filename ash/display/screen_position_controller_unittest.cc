@@ -247,7 +247,7 @@ TEST_F(ScreenPositionControllerTest, ConvertHostPointToScreenZoomScale) {
   EXPECT_EQ("37,187", ConvertHostPointToScreen(60, 300));
   // The point is on the 2nd host. Point on 2nd host (60,150) -
   // - screen [+(150,0)]
-  EXPECT_EQ("184,49", ConvertHostPointToScreen(60, 450));
+  EXPECT_EQ("185,50", ConvertHostPointToScreen(60, 450));
 
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
