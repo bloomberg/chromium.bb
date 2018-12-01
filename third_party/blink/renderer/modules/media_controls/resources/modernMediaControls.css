@@ -680,10 +680,10 @@ video::-internal-media-controls-overflow-menu-list-item {
   padding-right: 16px;
 }
 
-video::-internal-media-controls-text-track-list,
-video::-internal-media-controls-overflow-menu-list {
+video::-webkit-media-controls div[pseudo="-internal-media-controls-text-track-list" i].pip-presented,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].pip-presented {
   max-width: 260px;
-  width: 95%;
+  width: 100%;
 }
 
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,

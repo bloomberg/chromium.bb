@@ -127,6 +127,10 @@ void MediaControlInputElement::RemoveOverflowSubtitleElement() {
   overflow_menu_subtitle_ = nullptr;
 }
 
+bool MediaControlInputElement::OverflowElementIsWanted() {
+  return overflow_element_ && overflow_element_->IsWanted();
+}
+
 void MediaControlInputElement::SetOverflowElementIsWanted(bool wanted) {
   if (!overflow_element_)
     return;
