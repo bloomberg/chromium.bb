@@ -256,7 +256,6 @@ PrintPreviewCustomMarginsTest.*
 PrintPreviewDestinationDialogTest.*
 PrintPreviewDestinationItemTest.*
 PrintPreviewDestinationListTest.*
-PrintPreviewDestinationSearchTest.*
 PrintPreviewDestinationSelectTest.*
 PrintPreviewDestinationSettingsTest.*
 PrintPreviewHeaderTest.*

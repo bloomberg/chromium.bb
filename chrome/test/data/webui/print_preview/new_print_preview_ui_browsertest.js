@@ -8,7 +8,6 @@ const ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
-GEN('#include "chrome/common/chrome_features.h"');
 
 function PrintPreviewSettingsSectionsTest() {}
 
@@ -16,11 +15,6 @@ const NewPrintPreviewTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/';
-  }
-
-  /** @override */
-  get featureList() {
-    return ['features::kNewPrintPreview', ''];
   }
 
   /** @override */

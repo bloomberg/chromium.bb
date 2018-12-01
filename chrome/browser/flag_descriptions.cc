@@ -670,11 +670,6 @@ const char kEnableNetworkServiceInProcessName[] =
 const char kEnableNetworkServiceInProcessDescription[] =
     "Runs the network service in the browser process.";
 
-const char kEnableNewPrintPreview[] = "Enable new Print Preview UI";
-const char kEnableNewPrintPreviewDescription[] =
-    "If enabled, Print Preview will display a newer UI. This feature is "
-    "activated if either this flag or #upcoming-ui-features is enabled.";
-
 const char kEnableNightLightName[] = "Enable Night Light";
 const char kEnableNightLightDescription[] =
     "Enable the Night Light feature which controls the color temperature of "

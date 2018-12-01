@@ -121,11 +121,7 @@ js2gtest("browser_tests_js_webui") {
     ]
   }
   if (enable_print_preview) {
-    sources += [
-      "print_preview/new_print_preview_ui_browsertest.js",
-      "print_preview/print_preview_destination_search_test.js",
-      "print_preview/print_preview_ui_browsertest.js",
-    ]
+    sources += [ "print_preview/new_print_preview_ui_browsertest.js" ]
   }
   deps = [
     "//chrome/browser/ui",

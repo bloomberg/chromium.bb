@@ -10,17 +10,11 @@ const ROOT_PATH = '../../../../../';
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
-GEN('#include "chrome/common/chrome_features.h"');
 
 const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
     throw 'this is abstract and should be overriden by subclasses';
-  }
-
-  /** @override */
-  get featureList() {
-    return ['features::kNewPrintPreview', ''];
   }
 
   /** @override */

@@ -380,25 +380,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 #endif
 }
 
-void AddPrintPreviewImages(content::WebUIDataSource* source) {
-  source->AddResourcePath("images/1x/printer.png",
-                          IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER);
-  source->AddResourcePath("images/2x/printer.png",
-                          IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER);
-  source->AddResourcePath("images/1x/printer_shared.png",
-                          IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER_SHARED);
-  source->AddResourcePath("images/2x/printer_shared.png",
-                          IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER_SHARED);
-  source->AddResourcePath("images/business.svg",
-                          IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER);
-  source->AddResourcePath("images/google_doc.png",
-                          IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
-  source->AddResourcePath("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);
-  source->AddResourcePath("images/mobile.png", IDR_PRINT_PREVIEW_IMAGES_MOBILE);
-  source->AddResourcePath("images/mobile_shared.png",
-                          IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
-}
-
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 #if defined(OS_CHROMEOS)
   source->AddBoolean("useSystemDefaultPrinter", false);
@@ -518,11 +499,10 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 }
 
-content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
+content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
   AddPrintPreviewStrings(source);
-  AddPrintPreviewImages(source);
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
@@ -538,19 +518,6 @@ content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   }
   source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
 #endif
-  SetupPrintPreviewPlugin(source);
-  AddPrintPreviewFlags(source, profile);
-  return source;
-}
-
-content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
-  AddPrintPreviewStrings(source);
-  source->SetJsonPath("strings.js");
-  source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
-  AddPrintPreviewImages(source);
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;
@@ -580,16 +547,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(CreatePrintPreviewHandlers(web_ui)) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-
-  bool new_print_preview_enabled =
-      base::FeatureList::IsEnabled(features::kNewPrintPreview) ||
-      base::FeatureList::IsEnabled(features::kExperimentalUi);
-  if (new_print_preview_enabled) {
-    content::WebUIDataSource::Add(profile,
-                                  CreateNewPrintPreviewUISource(profile));
-  } else {
-    content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
-  }
+  content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));

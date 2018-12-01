@@ -425,9 +425,6 @@ extern const char kEnableNetworkServiceDescription[];
 extern const char kEnableNetworkServiceInProcessName[];
 extern const char kEnableNetworkServiceInProcessDescription[];
 
-extern const char kEnableNewPrintPreview[];
-extern const char kEnableNewPrintPreviewDescription[];
-
 extern const char kEnableNightLightName[];
 extern const char kEnableNightLightDescription[];
 
