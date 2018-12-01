@@ -15,8 +15,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 // A |ash::mojom::PrefConnector| implementation that provides ash with access to
 // a |prefs::mojom::PrefStoreConnector| for a requested profile.
@@ -26,7 +24,7 @@
 class AshPrefConnector : public ash::mojom::PrefConnector,
                          public service_manager::Service {
  public:
-  explicit AshPrefConnector(service_manager::mojom::ServiceRequest request);
+  AshPrefConnector();
   ~AshPrefConnector() override;
 
  private:
@@ -47,11 +45,10 @@ class AshPrefConnector : public ash::mojom::PrefConnector,
 
   prefs::mojom::PrefStoreConnector& GetPrefStoreConnector();
 
-  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<ash::mojom::PrefConnector> connector_bindings_;
 
-  base::WeakPtrFactory<AshPrefConnector> weak_factory_{this};
+  base::WeakPtrFactory<AshPrefConnector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPrefConnector);
 };

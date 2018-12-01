@@ -9,6 +9,7 @@
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {
 
@@ -18,27 +19,21 @@ DeviceSyncService::DeviceSyncService(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      identity_manager_(identity_manager),
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       gcm_device_info_provider_(gcm_device_info_provider),
       url_loader_factory_(std::move(url_loader_factory)) {}
 
-DeviceSyncService::~DeviceSyncService() {
-  // Subclasses may hold onto message response callbacks. It's important that
-  // all bindings are closed by the time those callbacks are destroyed, or they
-  // will DCHECK.
-  if (device_sync_)
-    device_sync_->CloseAllBindings();
-}
+DeviceSyncService::~DeviceSyncService() = default;
 
 void DeviceSyncService::OnStart() {
   PA_LOG(VERBOSE) << "DeviceSyncService::OnStart()";
 
+  // context() cannot be invoked until after the constructor is run, so
+  // |device_sync_impl_| cannot be initialized until OnStart().
   device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
-      identity_manager_, gcm_driver_, service_binding_.GetConnector(),
+      identity_manager_, gcm_driver_, context()->connector(),
       gcm_device_info_provider_, url_loader_factory_,
       std::make_unique<base::OneShotTimer>());
 

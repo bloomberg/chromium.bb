@@ -875,8 +875,9 @@ float GetDeviceScaleAdjustment() {
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
 
-void StartDownloadManager(service_manager::mojom::ServiceRequest request) {
-  DownloadManagerService::GetInstance()->BindServiceRequest(std::move(request));
+std::unique_ptr<service_manager::Service> StartDownloadManager() {
+  return DownloadManagerService::GetInstance()
+      ->CreateServiceManagerServiceInstance();
 }
 #endif  // defined(OS_ANDROID)
 
@@ -3725,22 +3726,61 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
-void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
+void ChromeContentBrowserClient::RegisterInProcessServices(
+    StaticServiceMap* services,
     content::ServiceManagerConnection* connection) {
   connection->AddServiceRequestHandler(
       chrome::mojom::kServiceName,
       ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
 
 #if defined(OS_ANDROID)
-  connection->AddServiceRequestHandler(
-      proxy_resolver::mojom::kProxyResolverServiceName,
-      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunAsyncUntilTermination(
-            std::make_unique<proxy_resolver::ProxyResolverService>(
-                std::move(request)));
-      }));
-  connection->AddServiceRequestHandler(
-      "download_manager", base::BindRepeating(&StartDownloadManager));
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+    services->insert(
+        std::make_pair(proxy_resolver::mojom::kProxyResolverServiceName, info));
+  }
+
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&StartDownloadManager);
+    services->emplace("download_manager", info);
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(
+        &chromeos::secure_channel::SecureChannelService::CreateService);
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->emplace(chromeos::secure_channel::mojom::kServiceName, info);
+  }
+#endif
+
+// Platform specific in process services registeration should be added here.
+// The call of
+// |g_browser_process->platform_part()->RegisterInProcessServices()| is
+// removed since the registeration could happen before |g_browser_process|
+// is created.
+#if defined(OS_CHROMEOS)
+  ash_service_registry::RegisterInProcessServices(services, connection);
+#endif
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLaunchInProcessSimpleBrowserSwitch)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<simple_browser::SimpleBrowserService>(
+              simple_browser::SimpleBrowserService::UIInitializationMode::
+                  kUseEnvironmentUI);
+        });
+    info.task_runner = base::SequencedTaskRunnerHandle::Get();
+    services->emplace(simple_browser::mojom::kServiceName, std::move(info));
+  }
 #endif
 }
 
@@ -3864,29 +3904,8 @@ void ChromeContentBrowserClient::HandleServiceRequest(
   }
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLaunchInProcessSimpleBrowserSwitch) &&
-      service_name == simple_browser::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<simple_browser::SimpleBrowserService>(
-            std::move(request), simple_browser::SimpleBrowserService::
-                                    UIInitializationMode::kUseEnvironmentUI));
-  }
-#endif
-
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      service_name == chromeos::secure_channel::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::secure_channel::SecureChannelService>(
-            std::move(request)));
-  }
-
-  auto service = ash_service_registry::HandleServiceRequest(service_name,
-                                                            std::move(request));
-  if (service)
-    service_manager::Service::RunAsyncUntilTermination(std::move(service));
+  ash_service_registry::HandleServiceRequest(service_name, std::move(request));
 #endif
 }
 

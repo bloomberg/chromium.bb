@@ -34,7 +34,6 @@ void MultiDeviceSetupService::RegisterProfilePrefs(
 }
 
 MultiDeviceSetupService::MultiDeviceSetupService(
-    service_manager::mojom::ServiceRequest request,
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
@@ -44,8 +43,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
     std::unique_ptr<AndroidSmsPairingStateTracker>
         android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
-    : service_binding_(this, std::move(request)),
-      multidevice_setup_(
+    : multidevice_setup_(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
               pref_service,
               device_sync_client,
@@ -58,13 +56,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
           PrivilegedHostDeviceSetterImpl::Factory::Get()->BuildInstance(
               multidevice_setup_.get())) {}
 
-MultiDeviceSetupService::~MultiDeviceSetupService() {
-  // Subclasses may hold onto message response callbacks. It's important that
-  // all bindings are closed by the time those callbacks are destroyed, or they
-  // will DCHECK.
-  if (multidevice_setup_)
-    multidevice_setup_->CloseAllBindings();
-}
+MultiDeviceSetupService::~MultiDeviceSetupService() = default;
 
 void MultiDeviceSetupService::OnStart() {
   PA_LOG(VERBOSE) << "MultiDeviceSetupService::OnStart()";

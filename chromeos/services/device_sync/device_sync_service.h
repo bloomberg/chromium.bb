@@ -11,7 +11,6 @@
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace cryptauth {
 class GcmDeviceInfoProvider;
@@ -44,19 +43,17 @@ class DeviceSyncService : public service_manager::Service {
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      service_manager::mojom::ServiceRequest request);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~DeviceSyncService() override;
 
- private:
+ protected:
   // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  service_manager::ServiceBinding service_binding_;
-
+ private:
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;

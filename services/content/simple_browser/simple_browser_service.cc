@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "services/content/simple_browser/window.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_LINUX)
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"  // nogncheck
@@ -18,25 +19,22 @@
 namespace simple_browser {
 
 SimpleBrowserService::SimpleBrowserService(
-    service_manager::mojom::ServiceRequest request,
     UIInitializationMode ui_initialization_mode)
-    : service_binding_(this, std::move(request)),
-      ui_initialization_mode_(ui_initialization_mode) {}
+    : ui_initialization_mode_(ui_initialization_mode) {}
 
 SimpleBrowserService::~SimpleBrowserService() = default;
 
 void SimpleBrowserService::OnStart() {
   if (ui_initialization_mode_ == UIInitializationMode::kInitializeUI) {
 #if defined(OS_LINUX)
-    font_loader_ =
-        sk_make_sp<font_service::FontLoader>(service_binding_.GetConnector());
+    font_loader_ = sk_make_sp<font_service::FontLoader>(context()->connector());
     SkFontConfigInterface::SetGlobal(font_loader_);
 #endif
 
 #if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
     views::AuraInit::InitParams params;
-    params.connector = service_binding_.GetConnector();
-    params.identity = service_binding_.identity();
+    params.connector = context()->connector();
+    params.identity = context()->identity();
     params.register_path_provider = false;
     aura_init_ = views::AuraInit::Create(params);
     CHECK(aura_init_);
@@ -46,7 +44,7 @@ void SimpleBrowserService::OnStart() {
 #endif
   }
 
-  window_ = std::make_unique<Window>(service_binding_.GetConnector());
+  window_ = std::make_unique<Window>(context()->connector());
 }
 
 }  // namespace simple_browser

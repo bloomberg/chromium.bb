@@ -41,7 +41,7 @@ constexpr Service kCommonServices[] = {
 };
 
 // Services unique to mash. Note that the non-mash case also has an Ash service,
-// it's just handled differently (see HandleServiceRequest()).
+// it's just registered differently (see RegisterInProcessServices()).
 constexpr Service kMashServices[] = {
     {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME},
     {ws::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME},
@@ -71,19 +71,38 @@ void RegisterOutOfProcessServices(
   }
 }
 
-std::unique_ptr<service_manager::Service> HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void RegisterInProcessServices(
+    content::ContentBrowserClient::StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<AshPrefConnector>();
+        });
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    (*services)[ash::mojom::kPrefConnectorServiceName] = info;
+  }
+
+  {
+    // Register the accessibility host service.
+    service_manager::EmbeddedServiceInfo info;
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<AXHostService>();
+        });
+    (*services)[ax::mojom::kAXHostServiceName] = info;
+  }
+}
+
+void HandleServiceRequest(const std::string& service_name,
+                          service_manager::mojom::ServiceRequest request) {
   if (!features::IsMultiProcessMash() &&
       service_name == ash::mojom::kServiceName) {
-    return std::make_unique<ash::AshService>(std::move(request));
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<ash::AshService>(std::move(request)));
   }
-  if (service_name == ash::mojom::kPrefConnectorServiceName)
-    return std::make_unique<AshPrefConnector>(std::move(request));
-  if (service_name == ax::mojom::kAXHostServiceName)
-    return std::make_unique<AXHostService>(std::move(request));
-
-  return nullptr;
 }
 
 bool IsAshRelatedServiceName(const std::string& name) {

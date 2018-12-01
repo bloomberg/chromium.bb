@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace net {
 class ProxyResolverV8TracingFactory;
@@ -28,11 +28,11 @@ class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
 
   ~ProxyResolverFactoryImpl() override;
 
-  // Binds |request| to |this|. If |this| has no ServiceKeepaliveRef, creates
-  // one, and only destroys all refs once all bound requests, and all
-  // ProxyResolvers they are used to create are destroyed.
+  // Binds |request| to |this|. If |this| has no ServiceContextRef, creates one,
+  // and only destroys all refs once all bound requests, and all ProxyResolvers
+  // they are used to create are destroyed.
   void BindRequest(proxy_resolver::mojom::ProxyResolverFactoryRequest request,
-                   service_manager::ServiceKeepalive* service_keepalive);
+                   service_manager::ServiceContextRefFactory* ref_factory);
 
  protected:
   // Visible for tests.
@@ -53,7 +53,7 @@ class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
 
   void OnConnectionError();
 
-  std::unique_ptr<service_manager::ServiceKeepaliveRef> service_keepalive_ref_;
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   const std::unique_ptr<net::ProxyResolverV8TracingFactory>
       proxy_resolver_impl_factory_;

@@ -20,9 +20,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 using base::android::JavaParamRef;
 
@@ -35,8 +34,7 @@ class DownloadItem;
 class DownloadManagerService
     : public download::AllDownloadItemNotifier::Observer,
       public DownloadHistory::Observer,
-      public content::NotificationObserver,
-      public service_manager::Service {
+      public content::NotificationObserver {
  public:
   static void OnDownloadCanceled(
       download::DownloadItem* download,
@@ -51,7 +49,11 @@ class DownloadManagerService
   DownloadManagerService();
   ~DownloadManagerService() override;
 
-  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
+  std::unique_ptr<service_manager::Service>
+  CreateServiceManagerServiceInstance();
+
+  void NotifyServiceStarted(
+      std::unique_ptr<service_manager::Connector> connector);
 
   // Called to Initialize this object. If |is_full_browser_started| is false,
   // it means only the service manager is launched. OnFullBrowserStarted() will
@@ -205,8 +207,6 @@ class DownloadManagerService
     resume_callback_for_testing_ = resume_cb;
   }
 
-  service_manager::ServiceBinding service_binding_{this};
-
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
@@ -238,6 +238,9 @@ class DownloadManagerService
   // In-progress download manager when download is running as a service. Will
   // pass this object to DownloadManagerImpl once it is created.
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
+
+  // Connector to the service manager to get the network service.
+  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };

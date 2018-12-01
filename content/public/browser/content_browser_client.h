@@ -955,16 +955,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
-  // Registers services to be run in the browser process. |connection| is the
-  // ServiceManagerConnection service are registered with. Use
-  // |ServiceManagerConnection::AddServiceRequestHandler| to register each
-  // service.
-  //
-  // NOTE: This should ONLY be overridden to register services which MUST run on
-  // the IO thread. For other in-process services, use |HandleServiceRequest|
-  // below.
-  virtual void RegisterIOThreadServiceHandlers(
-      ServiceManagerConnection* connection) {}
+  using StaticServiceMap =
+      std::map<std::string, service_manager::EmbeddedServiceInfo>;
+
+  // Registers services to be loaded in the browser process by the Service
+  // Manager. |connection| is the ServiceManagerConnection service are
+  // registered with.
+  virtual void RegisterInProcessServices(StaticServiceMap* services,
+                                         ServiceManagerConnection* connection) {
+  }
 
   virtual void OverrideOnBindInterface(
       const service_manager::BindSourceInfo& remote_info,
@@ -998,10 +997,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Handles a Service request for the service named |service_name|. If the
   // client knows how to run |service_name|, it should bind |request|
-  // accordingly. Note that this runs on the main thread, so if a service may
-  // need to start and run on the IO thread while the main thread is blocking on
-  // something, the service should instead by registered in
-  // |RegisterIOThreadServiceHandlers| above.
+  // accordingly.
   virtual void HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);

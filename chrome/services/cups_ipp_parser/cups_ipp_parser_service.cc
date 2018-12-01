@@ -10,25 +10,29 @@
 
 namespace {
 
-void OnIppParserRequest(service_manager::ServiceKeepalive* keepalive,
+void OnIppParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
                         chrome::mojom::IppParserRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<chrome::IppParser>(keepalive->CreateRef()),
+      std::make_unique<chrome::IppParser>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-CupsIppParserService::CupsIppParserService(
-    service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+CupsIppParserService::CupsIppParserService() = default;
 
 CupsIppParserService::~CupsIppParserService() = default;
 
+std::unique_ptr<service_manager::Service>
+CupsIppParserService::CreateService() {
+  return std::make_unique<CupsIppParserService>();
+}
+
 void CupsIppParserService::OnStart() {
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::BindRepeating(&OnIppParserRequest, &service_keepalive_));
+      base::BindRepeating(&OnIppParserRequest, ref_factory_.get()));
 
   DVLOG(1) << "CupsIppParserService started.";
 }

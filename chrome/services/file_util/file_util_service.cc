@@ -21,39 +21,44 @@ namespace {
 
 #if defined(FULL_SAFE_BROWSING)
 void OnSafeArchiveAnalyzerRequest(
-    service_manager::ServiceKeepalive* keepalive,
+    service_manager::ServiceContextRefFactory* ref_factory,
     chrome::mojom::SafeArchiveAnalyzerRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<SafeArchiveAnalyzer>(keepalive->CreateRef()),
+      std::make_unique<SafeArchiveAnalyzer>(ref_factory->CreateRef()),
       std::move(request));
 }
 #endif
 
 #if defined(OS_CHROMEOS)
-void OnZipFileCreatorRequest(service_manager::ServiceKeepalive* keepalive,
-                             chrome::mojom::ZipFileCreatorRequest request) {
+void OnZipFileCreatorRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    chrome::mojom::ZipFileCreatorRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<chrome::ZipFileCreator>(keepalive->CreateRef()),
+      std::make_unique<chrome::ZipFileCreator>(ref_factory->CreateRef()),
       std::move(request));
 }
 #endif
 
 }  // namespace
 
-FileUtilService::FileUtilService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      service_keepalive_(&service_binding_, base::TimeDelta()) {}
+FileUtilService::FileUtilService() = default;
 
 FileUtilService::~FileUtilService() = default;
 
+std::unique_ptr<service_manager::Service> FileUtilService::CreateService() {
+  return std::make_unique<FileUtilService>();
+}
+
 void FileUtilService::OnStart() {
+  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
+      context()->CreateQuitClosure());
 #if defined(OS_CHROMEOS)
   registry_.AddInterface(
-      base::BindRepeating(&OnZipFileCreatorRequest, &service_keepalive_));
+      base::Bind(&OnZipFileCreatorRequest, ref_factory_.get()));
 #endif
 #if defined(FULL_SAFE_BROWSING)
   registry_.AddInterface(
-      base::BindRepeating(&OnSafeArchiveAnalyzerRequest, &service_keepalive_));
+      base::Bind(&OnSafeArchiveAnalyzerRequest, ref_factory_.get()));
 #endif
 }
 

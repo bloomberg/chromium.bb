@@ -11,17 +11,18 @@
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace proxy_resolver {
 
 class ProxyResolverService : public service_manager::Service {
  public:
-  explicit ProxyResolverService(service_manager::mojom::ServiceRequest request);
+  ProxyResolverService();
   ~ProxyResolverService() override;
+
+  // Factory method for creating the service.
+  static std::unique_ptr<service_manager::Service> CreateService();
 
   // Lifescycle events that occur after the service has started to spinup.
   void OnStart() override;
@@ -33,12 +34,13 @@ class ProxyResolverService : public service_manager::Service {
   void OnProxyResolverFactoryRequest(
       proxy_resolver::mojom::ProxyResolverFactoryRequest request);
 
-  service_manager::ServiceBinding service_binding_;
-  service_manager::ServiceKeepalive service_keepalive_;
-
   ProxyResolverFactoryImpl proxy_resolver_factory_;
 
   service_manager::BinderRegistry registry_;
+
+  // State needed to manage service lifecycle and lifecycle of bound clients.
+  // Should be last in the list, just like a WeakPtrFactory.
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverService);
 };

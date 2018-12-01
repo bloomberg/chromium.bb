@@ -72,7 +72,7 @@ void ServiceKeepalive::OnTimerExpired() {
 
   if (context_)
     context_->CreateQuitClosure().Run();
-  else if (binding_)
+  else
     binding_->RequestClose();
 }
 

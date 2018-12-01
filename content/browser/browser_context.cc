@@ -665,6 +665,12 @@ void BrowserContext::Initialize(
       connection->AddEmbeddedService(content::mojom::kServiceName, info);
     }
 
+    ContentBrowserClient::StaticServiceMap services;
+    browser_context->RegisterInProcessServices(&services);
+    for (const auto& entry : services) {
+      connection->AddEmbeddedService(entry.first, entry.second);
+    }
+
     RegisterCommonBrowserInterfaces(connection);
     connection->Start();
   }
