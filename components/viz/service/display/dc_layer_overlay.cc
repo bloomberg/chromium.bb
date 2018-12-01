@@ -121,8 +121,6 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad,
     DCLayerOverlay* dc_layer_overlay) {
-  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
-    return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
   DCLayerResult result;
   switch (quad->material) {
@@ -136,6 +134,12 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
   }
   if (result != DC_LAYER_SUCCESS)
     return result;
+
+  // Hardware protected video must use Direct Composition Overlay
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver &&
+      dc_layer_overlay->protected_video_type !=
+          ui::ProtectedVideoType::kHardwareProtected)
+    return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
   // To support software protected video on machines without hardware overlay
   // capability. Don't do dc layer overlay if no hardware support.
