@@ -108,14 +108,14 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void construction_checks_active_tabbed_activities() {
+    public void testConstructionChecksActiveTabbedActivities() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
     }
 
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void activity_state_changes_increment_state_counters()
+    public void testActivityStateChangesIncrementStateCounters()
             throws InterruptedException, TimeoutException {
         assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
@@ -137,7 +137,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void ntp_opening_triggers_initialize_only_once() throws InterruptedException {
+    public void testNtpOpeningTriggersInitializeOnlyOnce() throws InterruptedException {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
@@ -154,7 +154,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void history_deletion_triggers_clear_all() throws InterruptedException {
+    public void testHistoryDeletionTriggersClearAll() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onHistoryDeleted();
         verify(mAppLifecycleListener, times(1)).onClearAll();
@@ -167,7 +167,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void cached_data_removal_triggers_clear_all() throws InterruptedException {
+    public void testCachedDataRemovalTriggersClearAll() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onCachedDataCleared();
         verify(mAppLifecycleListener, times(1)).onClearAll();
@@ -180,7 +180,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void signout_triggers_clear_all() throws InterruptedException {
+    public void testSignoutTriggersClearAll() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedOut();
         verify(mAppLifecycleListener, times(1)).onClearAll();
@@ -193,7 +193,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void signin_triggers_clear_all() throws InterruptedException {
+    public void testSigninTriggersClearAll() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedIn();
         verify(mAppLifecycleListener, times(1)).onClearAll();
@@ -206,7 +206,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void second_window_does_not_trigger_foreground_or_background()
+    public void testSecondWindowDoesNotTriggerForegroundOrBackground()
             throws InterruptedException, TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
 
@@ -231,7 +231,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void multi_window_does_not_cause_multiple_initialize() throws InterruptedException {
+    public void testMultiWindowDoesNotCauseMultipleInitialize() throws InterruptedException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
 
@@ -245,7 +245,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void resume_triggers_scheduler_foregrounded()
+    public void testResumeTriggersSchedulerForegrounded()
             throws InterruptedException, TimeoutException {
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
@@ -255,7 +255,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    public void clear_data_after_disabling_does_not_crash() {
+    public void testClearDataAfterDisablingDoesNotCrash() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
             PrefServiceBridge.getInstance().setBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED, false);
