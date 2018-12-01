@@ -201,7 +201,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
   EXPECT_FALSE(request.custom_proxy_use_alternate_proxy_list);
 }
 
-TEST_F(DataReductionProxyURLLoaderThrottleTest, RestartBypassProxyAndCache) {
+void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
   MockMojoDataReductionProxy* drp;
@@ -221,18 +221,44 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, RestartBypassProxyAndCache) {
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
 
+  net::ProxyServer proxy_used_for_response =
+      response_came_from_drp
+          ? drp_server.proxy_server()
+          : net::ProxyServer::FromPacString("HTTPS otherproxy");
+
   network::ResourceResponseHead response_head;
-  response_head.proxy_server = drp_server.proxy_server();
+  response_head.proxy_server = proxy_used_for_response;
   response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   response_head.headers->AddHeader("Chrome-Proxy: block-once");
 
-  // The request should be restarted immediately.
   throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
   EXPECT_FALSE(defer);
   EXPECT_EQ(0u, delegate.resume_called);
-  EXPECT_EQ(1u, delegate.restart_with_flags_called);
-  EXPECT_EQ(net::LOAD_BYPASS_PROXY | net::LOAD_BYPASS_CACHE,
-            delegate.restart_additional_load_flags);
+
+  // If the response came from a DRP server, the Chrome-Proxy response header
+  // should result in the request being restarted. Otherwise the Chrome-Proxy
+  // response header is disregarded.
+  if (response_came_from_drp) {
+    EXPECT_EQ(1u, delegate.restart_with_flags_called);
+    EXPECT_EQ(net::LOAD_BYPASS_PROXY | net::LOAD_BYPASS_CACHE,
+              delegate.restart_additional_load_flags);
+  } else {
+    EXPECT_EQ(0u, delegate.restart_with_flags_called);
+  }
+}
+
+// Tests that when "Chrome-Proxy: block-once" is received from a DRP response
+// the request is immediately restarted.
+TEST_F(DataReductionProxyURLLoaderThrottleTest, RestartBypassProxyAndCache) {
+  RestartBypassProxyAndCacheHelper(/*response_was_from_drp=*/true);
+}
+
+// Tests that when "Chrome-proxy: block-once" is received from a non-DRP server
+// it is not interpreted as a special DRP directive (the request is NOT
+// restarted).
+TEST_F(DataReductionProxyURLLoaderThrottleTest,
+       ChromeProxyDisregardedForNonDrp) {
+  RestartBypassProxyAndCacheHelper(/*response_was_from_drp=*/false);
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
