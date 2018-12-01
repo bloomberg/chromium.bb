@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -37,6 +38,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/window_util.h"
@@ -480,6 +483,14 @@ void WindowState::OnRevertDrag(const gfx::Point& location) {
     delegate_->OnDragFinished(/*canceled=*/true, location);
 }
 
+void WindowState::OnActivationLost() {
+  if (IsPip()) {
+    views::Widget::GetWidgetForNativeWindow(window())
+        ->widget_delegate()
+        ->set_can_activate(false);
+  }
+}
+
 display::Display WindowState::GetDisplay() {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
 }
@@ -667,10 +678,14 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
 }
 
 void WindowState::UpdatePipState(bool was_pip) {
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window());
+
   if (IsPip()) {
+    Shell::Get()->focus_cycler()->AddWidget(widget);
     ::wm::SetWindowVisibilityAnimationType(
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
   } else if (was_pip) {
+    Shell::Get()->focus_cycler()->RemoveWidget(widget);
     ::wm::SetWindowVisibilityAnimationType(
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
   }
@@ -770,6 +785,10 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void WindowState::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window_, window);
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    Shell::Get()->focus_cycler()->RemoveWidget(widget);
+
   immersive_gesture_drag_handler_.reset();
   current_state_->OnWindowDestroying(this);
   delegate_.reset();

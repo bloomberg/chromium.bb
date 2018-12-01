@@ -12,6 +12,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -104,12 +105,25 @@ void FocusCycler::RotateFocus(Direction direction) {
 }
 
 bool FocusCycler::FocusWidget(views::Widget* widget) {
+  // If the target is PIP window, temporarily make it activatable.
+  if (wm::GetWindowState(widget->GetNativeWindow())->IsPip())
+    widget->widget_delegate()->set_can_activate(true);
+
   // Note: It is not necessary to set the focus directly to the pane since that
   // will be taken care of by the widget activation.
   widget_activating_ = widget;
   widget->Activate();
   widget_activating_ = NULL;
   return widget->IsActive();
+}
+
+views::Widget* FocusCycler::FindWidget(
+    base::RepeatingCallback<bool(views::Widget*)> callback) {
+  for (auto* widget : widgets_) {
+    if (callback.Run(widget))
+      return widget;
+  }
+  return nullptr;
 }
 
 }  // namespace ash
