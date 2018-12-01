@@ -124,18 +124,14 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     MultiDeviceSetupInitializer::Factory::SetFactoryForTesting(
         fake_multidevice_setup_impl_factory_.get());
 
-    auto multidevice_setup_service = std::make_unique<MultiDeviceSetupService>(
+    service_ = std::make_unique<MultiDeviceSetupService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName),
         nullptr /* pref_service */, nullptr /* device_sync_client */,
         nullptr /* auth_token_validator */,
         nullptr /* oobe_completion_tracker */,
         nullptr /* android_sms_app_helper_delegate */,
         nullptr /* android_sms_pairing_state_tracker */,
         nullptr /* gcm_device_info_provider */);
-
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(multidevice_setup_service));
-    connector_ = connector_factory_->CreateConnector();
   }
 
   void InitializeClient(
@@ -145,7 +141,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
       const MultiDeviceSetupClient::FeatureStatesMap& feature_states_map =
           MultiDeviceSetupClient::GenerateDefaultFeatureStatesMap()) {
     client_ = MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
-        connector_.get());
+        connector_factory_.GetDefaultConnector());
     SendPendingMojoMessages();
 
     // When |client_| is created, it requests the current host status and
@@ -412,8 +408,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   FakeMultiDeviceSetup* fake_multidevice_setup_;
   std::unique_ptr<FakeMultiDeviceSetupInitializerFactory>
       fake_multidevice_setup_impl_factory_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MultiDeviceSetupService> service_;
   std::unique_ptr<MultiDeviceSetupClient> client_;
 
   base::Optional<multidevice::RemoteDeviceRefList> eligible_host_devices_;

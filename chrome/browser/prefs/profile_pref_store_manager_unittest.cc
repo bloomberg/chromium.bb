@@ -39,7 +39,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -235,7 +234,6 @@ class ProfilePrefStoreManagerTest : public testing::Test,
             std::move(validation_delegate));
     InitializePrefStore(pref_store.get());
     pref_store = nullptr;
-    pref_service_context_.reset();
   }
 
   void DestroyPrefStore() {
@@ -253,7 +251,6 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       // case...
       base::RunLoop().RunUntilIdle();
     }
-    pref_service_context_.reset();
   }
 
   void InitializePrefStore(PersistentPrefStore* pref_store) {
@@ -353,21 +350,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
     reset_recorded_ = true;
   }
 
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle handle) {
-    service_manager::BindSourceInfo source(
-        service_manager::Identity(content::mojom::kBrowserServiceName,
-                                  service_manager::kSystemInstanceGroup,
-                                  base::Token{}, base::Token::CreateRandom()),
-        service_manager::CapabilitySet());
-    static_cast<service_manager::mojom::Service*>(pref_service_context_.get())
-        ->OnBindInterface(source, interface_name, std::move(handle),
-                          base::DoNothing());
-  }
-
   base::test::ScopedFeatureList feature_list_;
   bool reset_recorded_;
-  std::unique_ptr<service_manager::ServiceContext> pref_service_context_;
   service_manager::mojom::ConnectorRequest connector_request_;
   mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_bindings_;

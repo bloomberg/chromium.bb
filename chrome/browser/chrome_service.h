@@ -8,7 +8,6 @@
 #include "base/no_destructor.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {

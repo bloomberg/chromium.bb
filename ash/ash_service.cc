@@ -29,8 +29,6 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/gpu_host/gpu_host.h"
 #include "services/ws/host_context_factory.h"
 #include "services/ws/public/cpp/gpu/gpu.h"

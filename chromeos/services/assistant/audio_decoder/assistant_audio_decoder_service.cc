@@ -14,30 +14,25 @@ namespace assistant {
 namespace {
 
 void OnAudioDecoderFactoryRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
+    service_manager::ServiceKeepalive* keepalive,
     mojom::AssistantAudioDecoderFactoryRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<AssistantAudioDecoderFactory>(ref_factory->CreateRef()),
+      std::make_unique<AssistantAudioDecoderFactory>(keepalive->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-AssistantAudioDecoderService::AssistantAudioDecoderService() = default;
+AssistantAudioDecoderService::AssistantAudioDecoderService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      service_keepalive_(&service_binding_, base::TimeDelta()) {}
 
 AssistantAudioDecoderService::~AssistantAudioDecoderService() = default;
 
-std::unique_ptr<service_manager::Service>
-AssistantAudioDecoderService::CreateService() {
-  return std::make_unique<AssistantAudioDecoderService>();
-}
-
 void AssistantAudioDecoderService::OnStart() {
-  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::BindRepeating(&OnAudioDecoderFactoryRequest, ref_factory_.get()),
-      base::ThreadTaskRunnerHandle::Get());
+      base::BindRepeating(&OnAudioDecoderFactoryRequest, &service_keepalive_));
 }
 
 void AssistantAudioDecoderService::OnBindInterface(

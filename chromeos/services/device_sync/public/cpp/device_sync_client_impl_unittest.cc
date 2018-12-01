@@ -166,13 +166,11 @@ class DeviceSyncClientImplTest : public testing::Test {
               return nullptr;
             }));
 
-    auto device_sync_service = std::make_unique<DeviceSyncService>(
+    service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
-        fake_gcm_device_info_provider_.get(), shared_url_loader_factory);
-
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(device_sync_service));
+        fake_gcm_device_info_provider_.get(), shared_url_loader_factory,
+        connector_factory_.RegisterInstance(
+            chromeos::device_sync::mojom::kServiceName));
 
     test_observer_ = std::make_unique<TestDeviceSyncClientObserver>();
 
@@ -180,14 +178,11 @@ class DeviceSyncClientImplTest : public testing::Test {
   }
 
   void CreateClient() {
-    std::unique_ptr<service_manager::Connector> connector =
-        connector_factory_->CreateConnector();
-
     // DeviceSyncClient's constructor posts two tasks to the TaskRunner. Idle
     // the TaskRunner so that the tasks can be run via a RunLoop later on.
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    client_ = base::WrapUnique(
-        new DeviceSyncClientImpl(connector.get(), test_task_runner));
+    client_ = base::WrapUnique(new DeviceSyncClientImpl(
+        connector_factory_.GetDefaultConnector(), test_task_runner));
     test_task_runner->RunUntilIdle();
   }
 
@@ -430,7 +425,8 @@ class DeviceSyncClientImplTest : public testing::Test {
       fake_gcm_device_info_provider_;
   FakeDeviceSync* fake_device_sync_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<DeviceSyncService> service_;
   std::unique_ptr<TestDeviceSyncClientObserver> test_observer_;
 
   std::unique_ptr<DeviceSyncClientImpl> client_;
