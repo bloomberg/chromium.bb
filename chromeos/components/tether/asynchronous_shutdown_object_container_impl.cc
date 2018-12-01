@@ -88,8 +88,7 @@ AsynchronousShutdownObjectContainerImpl::
           network_configuration_remover_.get())) {}
 
 AsynchronousShutdownObjectContainerImpl::
-    ~AsynchronousShutdownObjectContainerImpl() {
-}
+    ~AsynchronousShutdownObjectContainerImpl() = default;
 
 void AsynchronousShutdownObjectContainerImpl::Shutdown(
     const base::Closure& shutdown_complete_callback) {
