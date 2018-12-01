@@ -3371,10 +3371,6 @@ void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);
-  if (url_index_->HasReachedMaxParallelPreload()) {
-    base::UmaHistogramMediumTimes("Media.TimeToFirstFrame.SRC.ManyVideos",
-                                  elapsed);
-  }
 }
 
 void WebMediaPlayerImpl::RecordTimingUMA(const std::string& key,

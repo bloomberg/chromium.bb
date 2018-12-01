@@ -80,11 +80,11 @@ void ResourceMultiBufferDataProvider::Start() {
   }
 
   // Prepare the request.
-  auto request = std::make_unique<WebURLRequest>(url_data_->url());
-  request->SetRequestContext(is_client_audio_element_
-                                 ? blink::mojom::RequestContextType::AUDIO
-                                 : blink::mojom::RequestContextType::VIDEO);
-  request->SetHTTPHeaderField(
+  WebURLRequest request(url_data_->url());
+  request.SetRequestContext(is_client_audio_element_
+                                ? blink::mojom::RequestContextType::AUDIO
+                                : blink::mojom::RequestContextType::VIDEO);
+  request.SetHTTPHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kRange),
       WebString::FromUTF8(
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
@@ -94,8 +94,8 @@ void ResourceMultiBufferDataProvider::Start() {
     // This lets the data reduction proxy know that we don't have anything
     // previously cached data for this resource. We can only send it if this is
     // the first request for this resource.
-    request->SetHTTPHeaderField(WebString::FromUTF8("chrome-proxy"),
-                                WebString::FromUTF8("frfr"));
+    request.SetHTTPHeaderField(WebString::FromUTF8("chrome-proxy"),
+                               WebString::FromUTF8("frfr"));
   }
 
   // We would like to send an if-match header with the request to
@@ -105,7 +105,7 @@ void ResourceMultiBufferDataProvider::Start() {
   // along the way. See crbug/504194 and crbug/689989 for more information.
 
   // Disable compression, compression for audio/video doesn't make sense...
-  request->SetHTTPHeaderField(
+  request.SetHTTPHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
       WebString::FromUTF8("identity;q=1, *;q=0"));
 
@@ -117,24 +117,16 @@ void ResourceMultiBufferDataProvider::Start() {
     options.preflight_policy =
         network::mojom::CorsPreflightPolicy::kPreventPreflight;
 
-    request->SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
+    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
-      request->SetFetchCredentialsMode(
+      request.SetFetchCredentialsMode(
           network::mojom::FetchCredentialsMode::kSameOrigin);
     }
   }
 
-  url_data_->WaitToLoad(
-      base::BindOnce(&ResourceMultiBufferDataProvider::StartLoading,
-                     weak_factory_.GetWeakPtr(), std::move(request), options));
-}
-
-void ResourceMultiBufferDataProvider::StartLoading(
-    std::unique_ptr<WebURLRequest> request,
-    const blink::WebAssociatedURLLoaderOptions& options) {
   active_loader_ =
       url_data_->url_index()->fetch_context()->CreateUrlLoader(options);
-  active_loader_->LoadAsynchronously(*request, this);
+  active_loader_->LoadAsynchronously(request, this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
