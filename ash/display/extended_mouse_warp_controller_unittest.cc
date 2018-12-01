@@ -5,15 +5,23 @@
 #include "ash/display/extended_mouse_warp_controller.h"
 
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/screen_position_controller.h"
+#include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/env.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -42,6 +50,28 @@ class ExtendedMouseWarpControllerTest : public AshTestBase {
 
   const gfx::Rect& GetIndicatorBounds(int64_t id) {
     return GetWarpRegion(0)->GetIndicatorBoundsForTest(id);
+  }
+
+  const gfx::Rect& GetIndicatorNativeBounds(int64_t id) {
+    return GetWarpRegion(0)->GetIndicatorNativeBoundsForTest(id);
+  }
+
+  // Send mouse event with native event through AshWindowTreeHostPlatform.
+  void DispatchMouseEventWithNative(AshWindowTreeHostPlatform* host,
+                                    const gfx::Point& location_in_host_native,
+                                    ui::EventType event_type,
+                                    int event_flag1,
+                                    int event_flag2) {
+    ui::MouseEvent native_event(event_type, location_in_host_native,
+                                location_in_host_native, ui::EventTimeForNow(),
+                                event_flag1, event_flag2);
+    ui::MouseEvent mouseev(&native_event);
+    host->DispatchEventFromQueue(&mouseev);
+
+    // The test relies on the last_mouse_location, which will be updated by
+    // a synthesized event posted asynchronusly. Wait until the synthesized
+    // event is handled and last mouse location is updated.
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -354,6 +384,109 @@ TEST_F(ExtendedMouseWarpControllerTest,
   EXPECT_EQ(gfx::Rect(900, 500, 200, 1),
             region_1->GetIndicatorBoundsForTest(display_2_id));
   event_filter()->HideSharedEdgeIndicator();
+}
+
+// Check that the point in the rotated secondary display's warp region is
+// converted correctly from native host coordinates to screen DIP coordinates.
+// (see https://crbug.com/905035)
+TEST_F(ExtendedMouseWarpControllerTest,
+       CheckHostPointToScreenInMouseWarpRegion) {
+  // Zoom factor is needed to trigger rounding error which occured in previous
+  // code.
+  UpdateDisplay("50+50-200x200@0.8,50+300-300x100/r");
+
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
+
+  // Check the primary display's size and scale.
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]);
+  ASSERT_EQ("250x250", primary_display.size().ToString());
+  ASSERT_EQ(0.8f, primary_display.device_scale_factor());
+
+  // Create a window to be dragged in primary display.
+  std::unique_ptr<aura::test::TestWindowDelegate> test_window_delegate =
+      std::make_unique<aura::test::TestWindowDelegate>();
+  test_window_delegate->set_window_component(HTCAPTION);
+  const gfx::Size initial_window_size(100, 100);
+  std::unique_ptr<aura::Window> test_window(
+      CreateTestWindowInShellWithDelegateAndType(
+          test_window_delegate.get(), aura::client::WINDOW_TYPE_NORMAL, 0,
+          gfx::Rect(initial_window_size)));
+  ASSERT_EQ(root_windows[0], test_window->GetRootWindow());
+  ASSERT_FALSE(test_window->HasCapture());
+
+  AshWindowTreeHostPlatform* window_host =
+      static_cast<AshWindowTreeHostPlatform*>(root_windows[0]->GetHost());
+
+  // Move mouse cursor and capture the window.
+  gfx::Point location_in_host_native(0, 0);
+  DispatchMouseEventWithNative(window_host, location_in_host_native,
+                               ui::ET_MOUSE_MOVED, ui::EF_NONE, ui::EF_NONE);
+  DispatchMouseEventWithNative(window_host, location_in_host_native,
+                               ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
+
+  // Window should be captured.
+  ASSERT_TRUE(test_window->HasCapture());
+
+  int64_t display_0_id = primary_display.id();
+  const gfx::Rect indicator_in_primary_display =
+      GetIndicatorNativeBounds(display_0_id);
+  int64_t display_1_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[1])
+                             .id();
+  const gfx::Rect indicator_in_secondary_display =
+      GetIndicatorNativeBounds(display_1_id);
+
+  gfx::Point location_in_screen_native, location_in_screen_dip;
+
+  // Move mouse cursor to the warp region of first display.
+  location_in_screen_native = indicator_in_primary_display.CenterPoint();
+  location_in_host_native =
+      location_in_screen_native -
+      root_windows[0]->GetHost()->GetBoundsInPixels().OffsetFromOrigin();
+  DispatchMouseEventWithNative(window_host, location_in_host_native,
+                               ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON,
+                               0);
+
+  // Mouse cursor should be warped into secondary display.
+  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  EXPECT_TRUE(
+      root_windows[1]->GetBoundsInScreen().Contains(location_in_screen_dip));
+
+  // Move mouse cursor to the warp region of secondary display.
+  location_in_screen_native = indicator_in_secondary_display.CenterPoint();
+  location_in_host_native =
+      location_in_screen_native -
+      root_windows[0]->GetHost()->GetBoundsInPixels().OffsetFromOrigin();
+  DispatchMouseEventWithNative(window_host, location_in_host_native,
+                               ui::ET_MOUSE_DRAGGED, ui::EF_LEFT_MOUSE_BUTTON,
+                               0);
+
+  // Mouse cursor should be warped into first display.
+  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  EXPECT_TRUE(
+      root_windows[0]->GetBoundsInScreen().Contains(location_in_screen_dip));
+
+  // After mouse warping, x-coordinate of mouse location in native coordinates
+  // should be 2 px away from end. Primary display has zoom factor of 0.8. So
+  // the offset in screen coordinates should be 2/0.8, which is 2.5. The end of
+  // primary display in screen coordinates is 250. So x-coordinate of mouse
+  // cursor in screen coordinates should be 247.
+  EXPECT_EQ(247, Shell::Get()->aura_env()->last_mouse_location().x());
+
+  // Get cursor's location in host native coordinates.
+  gfx::Point location_in_host_dip;
+  location_in_screen_dip = Shell::Get()->aura_env()->last_mouse_location();
+  location_in_host_dip = location_in_screen_dip;
+  ::wm::ConvertPointFromScreen(root_windows[0], &location_in_host_dip);
+  location_in_host_native = location_in_host_dip;
+  root_windows[0]->GetHost()->ConvertDIPToPixels(&location_in_host_native);
+
+  // Release mouse button.
+  DispatchMouseEventWithNative(window_host, location_in_host_native,
+                               ui::ET_MOUSE_RELEASED, ui::EF_LEFT_MOUSE_BUTTON,
+                               ui::EF_LEFT_MOUSE_BUTTON);
 }
 
 }  // namespace ash

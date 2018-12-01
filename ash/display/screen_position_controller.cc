@@ -51,9 +51,13 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
     // display's coordinate system to anothers may cause events in the
     // primary's coordinate system which fall in the extended display.
 
-    gfx::Point location_in_native(point_in_root);
+    gfx::Point location_in_native(*point);
 
-    root_window->GetHost()->ConvertDIPToScreenInPixels(&location_in_native);
+    // |point| is in the native host window coordinate. Convert it to the native
+    // screen coordinate.
+    const gfx::Point& host_origin =
+        root_window->GetHost()->GetBoundsInPixels().origin();
+    location_in_native.Offset(host_origin.x(), host_origin.y());
 
     for (size_t i = 0; i < root_windows.size(); ++i) {
       aura::WindowTreeHost* host = root_windows[i]->GetHost();
