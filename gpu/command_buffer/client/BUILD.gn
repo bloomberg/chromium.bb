@@ -4,6 +4,11 @@
 
 import("//build/config/jumbo.gni")
 
+declare_args() {
+  # Enable GPU client logging without DCHECK being on.
+  enable_gpu_client_logging = false
+}
+
 # The files here go into the "gpu" component in a component build (with
 # "command_buffer_client" and "gles2_cmd_helper" just forwarding) and goes into
 # separate static libraries in non-component build.
@@ -205,6 +210,9 @@ jumbo_component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
+  if (enable_gpu_client_logging) {
+    defines += [ "GPU_ENABLE_CLIENT_LOGGING" ]
+  }
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
@@ -295,6 +303,9 @@ jumbo_component("gles2_implementation_no_check") {
     "GLES2_IMPL_IMPLEMENTATION",
     "GLES2_CONFORMANCE_TESTS=1",
   ]
+  if (enable_gpu_client_logging) {
+    defines += [ "GPU_ENABLE_CLIENT_LOGGING" ]
+  }
 
   deps = [
     ":client",
