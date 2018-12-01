@@ -119,6 +119,9 @@ Polymer({
 
     /** @private {!PasswordManagerProxy.UiEntryWithPassword} */
     lastFocused_: Object,
+
+    /** @private */
+    listBlurred_: Boolean,
   },
 
   listeners: {

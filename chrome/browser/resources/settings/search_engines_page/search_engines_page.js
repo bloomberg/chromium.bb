@@ -63,6 +63,9 @@ Polymer({
     /** @private {HTMLElement} */
     omniboxExtensionlastFocused_: Object,
 
+    /** @private {boolean} */
+    omniboxExtensionListBlurred_: Boolean,
+
     /** @private {?SearchEngine} */
     dialogModel_: {
       type: Object,
