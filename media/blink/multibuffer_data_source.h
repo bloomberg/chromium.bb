@@ -122,8 +122,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   }
 
  protected:
-  UrlData* url_data() const { return url_data_and_loading_state_.url_data(); }
-
   void OnRedirect(const scoped_refptr<UrlData>& destination);
 
   // A factory method to create a BufferedResourceLoader based on the read
@@ -212,7 +210,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
   // URL of the resource requested.
-  UrlData::UrlDataWithLoadingState url_data_and_loading_state_;
+  scoped_refptr<UrlData> url_data_;
 
   // A resource reader for the media resource.
   std::unique_ptr<MultiBufferReader> reader_;
