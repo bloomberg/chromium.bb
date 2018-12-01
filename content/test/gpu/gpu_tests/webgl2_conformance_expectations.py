@@ -124,10 +124,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelodoffset.html',
         bug=794335)
 
-    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
-        ['mac', 'linux'], bug=809233)
-    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
-        ['win', 'nvidia', 'opengl'], bug=809594)
     self.Fail('conformance2/uniforms/' +
         'incompatible-texture-type-for-sampler.html',
         bug=809237)
@@ -349,6 +345,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=794341)
     self.Fail('conformance2/rendering/attrib-type-match.html',
         ['passthrough', 'opengl'], bug=814905)
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['passthrough', 'opengl'], bug=2994) # ANGLE bug
 
     # Passthrough command decoder / OpenGL / Windows
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
@@ -386,8 +384,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=854100)
-    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=809594)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
@@ -1298,8 +1294,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'])
 
     # Basic failures that need to be investigated on multiple devices
-    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
-        ['android'], bug=809233)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['android'], bug=709351)
     # Video uploads to some texture formats new in WebGL 2.0 are

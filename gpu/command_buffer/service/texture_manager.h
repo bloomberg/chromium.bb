@@ -329,7 +329,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                        uint64_t client_tracing_id,
                        const std::string& dump_name) const;
 
-  void ApplyFormatWorkarounds(FeatureInfo* feature_info);
+  void ApplyFormatWorkarounds(const FeatureInfo* feature_info);
 
   bool EmulatingRGB();
 
@@ -575,7 +575,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
 
-  void UpdateBaseLevel(GLint base_level);
+  void UpdateBaseLevel(GLint base_level, const FeatureInfo* feature_info);
   void UpdateMaxLevel(GLint max_level);
   void UpdateNumMipLevels();
 
