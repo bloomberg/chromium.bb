@@ -392,6 +392,9 @@ extern const char kEnableHttpFormWarningDescription[];
 extern const char kLayeredAPIName[];
 extern const char kLayeredAPIDescription[];
 
+extern const char kEnableBlinkGenPropertyTreesName[];
+extern const char kEnableBlinkGenPropertyTreesDescription[];
+
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 

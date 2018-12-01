@@ -3868,6 +3868,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLayeredAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLayeredAPI)},
 
+    {"enable-blink-gen-property-trees",
+     flag_descriptions::kEnableBlinkGenPropertyTreesName,
+     flag_descriptions::kEnableBlinkGenPropertyTreesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kBlinkGenPropertyTrees)},
+
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
      flag_descriptions::kEnableLayoutNGDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kLayoutNG)},
