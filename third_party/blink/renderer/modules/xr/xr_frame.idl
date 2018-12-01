@@ -11,7 +11,7 @@
   readonly attribute XRSession session;
   readonly attribute FrozenArray<XRView> views;
 
-  XRDevicePose? getDevicePose(XRCoordinateSystem coordinateSystem);
-  XRInputPose? getInputPose(XRInputSource inputSource,
+  [RaisesException] XRDevicePose? getDevicePose(XRCoordinateSystem coordinateSystem);
+  [RaisesException] XRInputPose? getInputPose(XRInputSource inputSource,
                             XRCoordinateSystem coordinateSystem);
 };

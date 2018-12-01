@@ -487,9 +487,9 @@ void XRSession::OnFrame(
   if (!base_layer_)
     return;
 
-  XRFrame* presentation_frame = CreatePresentationFrame();
-
   if (pending_frame_) {
+    XRFrame* presentation_frame = CreatePresentationFrame();
+
     pending_frame_ = false;
 
     // Make sure that any frame-bounded changed to the views array take effect.
@@ -521,6 +521,9 @@ void XRSession::OnFrame(
     // OnFrameEnd if it's still valid.
     if (!ended_)
       frame_base_layer->OnFrameEnd();
+
+    // Ensure the XRFrame cannot be used outside the callbacks.
+    presentation_frame->Deactivate();
   }
 }
 
@@ -633,6 +636,9 @@ void XRSession::OnSelectStart(XRInputSource* input_source) {
 
   if (event->defaultPrevented())
     input_source->selection_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
 }
 
 void XRSession::OnSelectEnd(XRInputSource* input_source) {
@@ -655,6 +661,9 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
 
   if (event->defaultPrevented())
     input_source->selection_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
 }
 
 void XRSession::OnSelect(XRInputSource* input_source) {
@@ -672,6 +681,9 @@ void XRSession::OnSelect(XRInputSource* input_source) {
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect, input_source);
     DispatchEvent(*event);
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
   }
 }
 
