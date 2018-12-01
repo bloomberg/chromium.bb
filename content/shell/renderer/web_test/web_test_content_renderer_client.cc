@@ -150,10 +150,9 @@ bool WebTestContentRendererClient::IsIdleMediaSuspendEnabled() {
 }
 
 bool WebTestContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Blink uses an outdated test server on Windows and older versions of macOS.
-  // Until those are fixed, suppress the warning. See https://crbug.com/747666
-  // and https://crbug.com/905831.
+#if defined(OS_MACOSX)
+  // Blink uses an outdated test server on older versions of macOS. Until those
+  // are fixed, suppress the warning. See https://crbug.com/905831.
   return true;
 #else
   return false;

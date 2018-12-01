@@ -1211,6 +1211,8 @@ class Port(object):
         httpd_path = self.path_to_apache()
         intentional_syntax_error = 'INTENTIONAL_SYNTAX_ERROR'
         cmd = [httpd_path,
+               '-t',
+               '-f', self.path_to_apache_config_file(),
                '-C', 'HttpProtocolOptions Unsafe',
                '-C', intentional_syntax_error]
         env = self.setup_environ_for_server()

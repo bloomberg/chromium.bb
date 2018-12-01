@@ -5167,8 +5167,8 @@ void RenderFrameImpl::ReportLegacyTLSVersion(const blink::WebURL& url) {
     return;
 
   // Allow the embedded to suppress these warnings. This is a workaround for an
-  // outdated test server used by Blink tests on Windows and macOS. See
-  // https://crbug.com/747666 and https://crbug.com/905831.
+  // outdated test server used by Blink tests on macOS. See
+  // https://crbug.com/905831.
   if (GetContentClient()
           ->renderer()
           ->SuppressLegacyTLSVersionConsoleMessage()) {
