@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_BROWSER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 
 namespace features {
 
@@ -17,6 +18,10 @@ namespace features {
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kDoubleTapToZoomInTabletMode;
+#endif
+
+#if !defined(OS_ANDROID)
+extern const base::Feature kWebUIDarkMode;
 #endif
 
 }  // namespace features
