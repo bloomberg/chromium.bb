@@ -416,8 +416,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true to suppress the warning for deprecated TLS versions.
   //
   // This is a workaround for an outdated test server used by Blink tests on
-  // Windows and macOS. See https://crbug.com/747666 and
-  // https://crbug.com/905831.
+  // macOS. See https://crbug.com/905831.
   virtual bool SuppressLegacyTLSVersionConsoleMessage();
 
   // Asks the embedder to bind |service_request| to its renderer-side service

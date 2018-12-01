@@ -1,58 +1,72 @@
 Name: Apache2 (+ PHP)
 Short Name: httpd
 URL: http://www.apache.org
-Version: 2.2.25
+Version: 2.4.37
 Security Critical: no
 License: Apache Version 2.0
 License File: NOT_SHIPPED
 
 Description:
 
-This is a checked-in copy of Apache 2.2.25 for Win 32.
-
+This is a checked-in copy of Apache2 with OpenSSL and PHP for Windows.
 It is used by the Blink layout tests.
 
-To recreate this directory (assuming an msys bash shell; adjust your
-checkout path from /d/src/checkout/src as needed):
+To update, you'll need to fetch Apache2 and PHP. PHP can be found at
+http://windows.php.net/downloads/releases/archives/. Make sure your Apache
+binary matches the PHP one and your PHP build is the TS (thread-safe) one. As
+of writing, PHP builds against the binaries at
+https://www.apachelounge.com/download/.
 
-  % cd /d/src/checkout/src/third_party
-  % mv apache-win32 apache-win32.bak
-  % curl -o httpd.msi https://archive.apache.org/dist/httpd/binaries/win32/httpd-2.2.25-win32-x86-openssl-0.9.8y.msi
-  % curl -o httpd.msi.sha1 https://archive.apache.org/dist/httpd/binaries/win32/httpd-2.2.25-win32-x86-openssl-0.9.8y.msi.sha1
-  % cat httpd.msi.sha1; sha1sum httpd.msi
+The most recent update used:
 
-Manually verify that the SHA-1 hash of httpd.msi matches the one distributed in httpd.msi.sha1
+33afeb018e0cee8592d44abbf72fda37f6a35586aeb5f4b4c1b717c681d82dd8  httpd-2.4.37-win64-VC15.zip
+cf4f192bfab0b59b6af64a2ce9f4a0394ebce1a695d0f1a478c4443e601f9f87  php-7.2.12-Win32-VC15-x64.zip
 
-  % rm httpd.msi.sha1
-  % cmd
-  > start /wait msiexec /i httpd.msi /q INSTALLDIR=d:\src\checkout\src\third_party\apache-win32
-  > exit
-  # stop running apache processes if the installer started them.
-  % cp -p apache-win32.bak/README.chromium apache-win32
-  % cp -p apache-win32.bak/remove_files_not_needed_for_chromium.sh apache-win32
-  % mkdir php
-  % curl -o php/php.zip http://windows.php.net/downloads/releases/archives/php-5.4.24-Win32-VC9-x86.zip
-  % (cd php && unzip php/php.zip)
-  % cp -p php/php5ts.dll apache-win32/bin
-  % cp -p php/php5apache2_2.dll apache-win32/modules
-  % (cd apache-win32 && ./remove_files_not_needed_for_chromium.sh)
+To update:
 
+ 1. Go to the Chromium third_party directory and back up apache-win32,
+    for example by renaming it as apache-win32.bak.
 
-To upload the large files (executables, DLLs) to google storage (contact
-chrome-infrastructure-team@ in order to get permission to write to the
-chrome-apache-win32 Google Cloud Storage bucket):
+ 2. Download Apache2, unpack, and move to "apache-win32". This directory
+    should contain metadata files and bin/ and modules/ subdirectories.
 
-  % find apache-win32/bin -name '*.exe' -o -name '*.dll' -o -name '*.so' | upload_to_google_storage.py --bucket chromium-apache-win32 -
-  % find apache-win32/modules -name '*.so'  | upload_to_google_storage.py --bucket chromium-apache-win32 -
+ 3. Copy ".gitignore" and "README.chromium" to the new apache-win32 directory.
 
-To prune the files that were uploaded so that we can check in the rest:
+ 4. Download PHP and unpack; copy "readme-redist-bins.txt" to your Apache
+    directory, copy "php*ts.dll" to bin/, and copy "php*apache2_*.dll" to modules/.
 
-  % find apache-win32/bin -name '*.exe' -o -name '*.dll' -o -name '*.so' | xargs rm
-  % find apache-win32/modules -name '*.so' | xargs rm
-  % git add apache-win32
+ 5. It might be necessary to copy other DLL files to the directories
+    where the relevant binaries are present. Update
+    remove_files_not_needed_for_chromium.sh accordingly.
 
-And, to clean up the temp files used in the above:
+ 6. Verify that Apache2 works, for example by running "run-blink-httpd"
+    in the Blink tools directory. Update the win-httpd.conf configuration
+    file if necessary.
 
-  % rm -fr httpd.msi php apache-win32.bak
+ 7. Update filenames as necessary and delete files that aren't need for Chromium
+    using remove_files_not_needed_for_chromium.sh.
 
-You might need to uninstall apache via the control panel as well.
+ 8. Copy vsruntime{version}.dll from the corresponding MSVC version to
+    bin/. (Note VC15/MSVC2017 and VC14/MSVC2015 are both version 140.) See also
+    Microsoft's documentation:
+    https://docs.microsoft.com/en-us/cpp/ide/determining-which-dlls-to-redistribute?view=vs-2017
+
+ 9. Copy the UCRT DLLs from the Windows SDK. Note this includes both
+    api-ms-win-*.dll and ucrtbase.dll. See also Microsoft's documentation:
+    https://docs.microsoft.com/en-us/cpp/ide/universal-crt-deployment?view=vs-2017
+    We use the Local Deployment option because some of Chromium's bots do not
+    include a full install. https://crbug.com/910745
+
+10. Upload the executables and DLLs to Google Storage, to the
+    chromium-apache-win32 bucket. See http://g.co/bugatrooper in order to get
+    permission to upload. Upload all exe, dll and so binaries, e.g.:
+
+    % find apache-win32/bin -name '*.exe' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+    % find apache-win32/bin -name '*.dll' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+    % find apache-win32/modules -name '*.so' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+    % find apache-win32/modules -name '*.dll' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+
+11. Optionally, prune the files that were uploaded and run gclient runhooks to
+    verify that they are re-downloaded. Remember to clean up any temp files used
+    in the above process before uploading a CL. The CL should contain sha1 files
+    but not actual binaries.
