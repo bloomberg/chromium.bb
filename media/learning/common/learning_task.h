@@ -23,16 +23,11 @@ namespace learning {
 // registering tasks.
 struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // Not all models support all feature / target descriptions.  For example,
-  // NaiveBayes requires kUnordered features.  Similarly, kLogLinear doesn't
+  // NaiveBayes requires kUnordered features.  Similarly, LogLinear woudln't
   // support kUnordered features or targets.  kRandomForest might support more
   // combination of orderings and types.
-  //
-  // Also note that not all of these are implemented yet.
   enum class Model {
-    kMostCommonTarget,
-    kNaiveBayes,
     kRandomForest,
-    kLogLinear,
   };
 
   enum class Ordering {
@@ -81,7 +76,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // Unique name for this learner.
   std::string name;
 
-  Model model = Model::kMostCommonTarget;
+  Model model = Model::kRandomForest;
 
   std::vector<ValueDescription> feature_descriptions;
 
@@ -91,6 +86,13 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
 
   // TODO(liberato): add training parameters, like smoothing constants.  It's
   // okay if some of these are model-specific.
+  // TODO(liberato): switch to base::DictionaryValue?
+
+  // Number of examples before we'll train a model.
+  size_t min_data_set_size = 10u;
+
+  // Should the accuracy of this model be recorded to UMA?
+  bool record_accuracy_via_uma = true;
 };
 
 }  // namespace learning
