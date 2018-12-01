@@ -6,16 +6,51 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/net/url_request_abort_on_end_job.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
+namespace {
 
-typedef ContentBrowserTest WebKitBrowserTest;
-
-const char kAsyncScriptThatAbortsOnEndPage[] =
+constexpr char kAsyncScriptThatAbortsOnEndPage[] =
     "/webkit/async_script_abort_on_end.html";
+
+constexpr char k400AbortOnEndUrl[] = "http://url.handled.by.abort.on.end/400";
+
+bool AbortOnEndInterceptor(URLLoaderInterceptor::RequestParams* params) {
+  if (params->url_request.url.spec() != k400AbortOnEndUrl)
+    return false;
+
+  std::string headers =
+      "HTTP/1.1 400 This is not OK\n"
+      "Content-type: text/plain\n";
+  net::HttpResponseInfo info;
+  info.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+  network::ResourceResponseHead response;
+  response.headers = info.headers;
+  response.headers->GetMimeType(&response.mime_type);
+  params->client->OnReceiveResponse(response);
+
+  std::string body = "some data\r\n";
+  uint32_t bytes_written = body.size();
+  mojo::DataPipe data_pipe(body.size());
+  CHECK_EQ(MOJO_RESULT_OK,
+           data_pipe.producer_handle->WriteData(
+               body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+  params->client->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
+
+  params->client->OnComplete(
+      network::URLLoaderCompletionStatus(net::ERR_CONNECTION_ABORTED));
+  return true;
+}
+
+}  // namespace
+
+using WebKitBrowserTest = ContentBrowserTest;
 
 // This is a browser test because it is hard to reproduce reliably in a
 // layout test without races. http://crbug.com/75604 deals with a request
@@ -25,7 +60,7 @@ const char kAsyncScriptThatAbortsOnEndPage[] =
 
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  URLRequestAbortOnEndJob::AddUrlHandler();
+  URLLoaderInterceptor interceptor(base::BindRepeating(&AbortOnEndInterceptor));
   GURL url = embedded_test_server()->GetURL(kAsyncScriptThatAbortsOnEndPage);
 
   NavigateToURL(shell(), url);
@@ -47,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 const char kXsltBadImportPage[] = "/webkit/xslt-bad-import.html";
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  URLRequestAbortOnEndJob::AddUrlHandler();
+  URLLoaderInterceptor interceptor(base::BindRepeating(&AbortOnEndInterceptor));
   GURL url = embedded_test_server()->GetURL(kXsltBadImportPage);
 
   NavigateToURL(shell(), url);

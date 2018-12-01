@@ -247,8 +247,6 @@ jumbo_static_library("test_support") {
     "mock_widget_impl.h",
     "mock_widget_input_handler.cc",
     "mock_widget_input_handler.h",
-    "net/url_request_abort_on_end_job.cc",
-    "net/url_request_abort_on_end_job.h",
     "not_implemented_network_url_loader_factory.cc",
     "not_implemented_network_url_loader_factory.h",
     "ppapi_unittest.cc",
