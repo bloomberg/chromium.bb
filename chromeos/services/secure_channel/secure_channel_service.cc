@@ -11,13 +11,9 @@ namespace chromeos {
 
 namespace secure_channel {
 
-// static
-std::unique_ptr<service_manager::Service>
-SecureChannelService::CreateService() {
-  return std::make_unique<SecureChannelService>();
-}
-
-SecureChannelService::SecureChannelService() = default;
+SecureChannelService::SecureChannelService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 SecureChannelService::~SecureChannelService() = default;
 

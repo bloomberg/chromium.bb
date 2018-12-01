@@ -56,14 +56,6 @@
 extern sandbox::TargetServices* g_utility_target_services;
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/assistant/buildflags.h"  // nogncheck
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif
-
 namespace content {
 
 namespace {
@@ -138,17 +130,6 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 
   GetContentClient()->utility()->RegisterAudioBinders(audio_registry_.get());
 
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  {
-    service_manager::EmbeddedServiceInfo assistant_audio_decoder_info;
-    assistant_audio_decoder_info.factory = base::BindRepeating(
-        &chromeos::assistant::AssistantAudioDecoderService::CreateService);
-    services->emplace(chromeos::assistant::mojom::kAudioDecoderServiceName,
-                      assistant_audio_decoder_info);
-  }
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif
 }
 
 bool UtilityServiceFactory::HandleServiceRequest(

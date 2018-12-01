@@ -16,17 +16,15 @@ namespace proxy_resolver {
 class ProxyResolverServiceTest : public testing::Test {
  public:
   ProxyResolverServiceTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<ProxyResolverService>())),
-        connector_(connector_factory_->CreateConnector()) {}
-
-  ~ProxyResolverServiceTest() override {}
+      : service_(std::make_unique<ProxyResolverService>(
+            connector_factory_.RegisterInstance(
+                mojom::kProxyResolverServiceName))) {}
+  ~ProxyResolverServiceTest() override = default;
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<ProxyResolverService> service_;
 };
 
 // Check that destroying the service while there's a live ProxyResolverFactory
@@ -34,13 +32,14 @@ class ProxyResolverServiceTest : public testing::Test {
 // the underlying ProxyResolverFactoryImpl is.
 TEST_F(ProxyResolverServiceTest, ShutdownServiceWithLiveProxyResolverFactory) {
   mojom::ProxyResolverFactoryPtr proxy_resolver_factory;
-  connector_->BindInterface(mojom::kProxyResolverServiceName,
-                            &proxy_resolver_factory);
+  connector_factory_.GetDefaultConnector()->BindInterface(
+      mojom::kProxyResolverServiceName, &proxy_resolver_factory);
+
   // Wait for the ProxyFactory to be bound.
   task_environment_.RunUntilIdle();
 
   // Simulate the service being destroyed. No crash should occur.
-  connector_.reset();
+  service_.reset();
 
   // Destroying the ProxyResolverFactory shouldn't result in a crash, either.
   proxy_resolver_factory.reset();

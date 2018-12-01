@@ -11,29 +11,25 @@
 namespace {
 
 void OnMediaParserFactoryRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
+    service_manager::ServiceKeepalive* keepalive,
     chrome::mojom::MediaParserFactoryRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<MediaParserFactory>(ref_factory->CreateRef()),
+      std::make_unique<MediaParserFactory>(keepalive->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-MediaGalleryUtilService::MediaGalleryUtilService() = default;
+MediaGalleryUtilService::MediaGalleryUtilService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      service_keepalive_(&service_binding_, base::TimeDelta()) {}
 
 MediaGalleryUtilService::~MediaGalleryUtilService() = default;
 
-std::unique_ptr<service_manager::Service>
-MediaGalleryUtilService::CreateService() {
-  return std::make_unique<MediaGalleryUtilService>();
-}
-
 void MediaGalleryUtilService::OnStart() {
-  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::Bind(&OnMediaParserFactoryRequest, ref_factory_.get()));
+      base::BindRepeating(&OnMediaParserFactoryRequest, &service_keepalive_));
 }
 
 void MediaGalleryUtilService::OnBindInterface(

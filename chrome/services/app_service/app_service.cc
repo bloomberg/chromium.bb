@@ -10,7 +10,8 @@
 
 namespace apps {
 
-AppService::AppService() = default;
+AppService::AppService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 AppService::~AppService() = default;
 

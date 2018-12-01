@@ -318,13 +318,6 @@ bool LocaleNotChanged(const std::string& pref_locale,
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_ANDROID)
-std::unique_ptr<service_manager::Service> CreateAppService(Profile* profile) {
-  // TODO(crbug.com/826982): use |profile| to fetch existing registries.
-  return std::make_unique<apps::AppService>();
-}
-#endif
-
 }  // namespace
 
 // static
@@ -1152,41 +1145,6 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
       .get();
 }
 
-void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
-#if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    service_manager::EmbeddedServiceInfo info;
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    info.factory = base::BindRepeating(&ProfileImpl::CreateDeviceSyncService,
-                                       base::Unretained(this));
-    services->emplace(chromeos::device_sync::mojom::kServiceName, info);
-  }
-
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    service_manager::EmbeddedServiceInfo info;
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    info.factory = base::BindRepeating(
-        &ProfileImpl::CreateMultiDeviceSetupService, base::Unretained(this));
-    services->emplace(chromeos::multidevice_setup::mojom::kServiceName, info);
-  }
-
-#endif
-
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kAppService)) {
-    // Binding the App Service here means that its preferences will be stored in
-    // the primary Preferences file for this profile.
-    service_manager::EmbeddedServiceInfo info;
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    info.factory =
-        base::BindRepeating(&CreateAppService, base::Unretained(this));
-    services->emplace(apps::mojom::kServiceName, info);
-  }
-#endif
-}
-
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
@@ -1203,7 +1161,44 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         ->CreatePrefService(std::move(request));
   }
 
+#if !defined(OS_ANDROID)
+  if (service_name == apps::mojom::kServiceName) {
+    // TODO(crbug.com/826982): Use the current profile to fetch existing
+    // registries.
+    return std::make_unique<apps::AppService>(std::move(request));
+  }
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      service_name == chromeos::device_sync::mojom::kServiceName) {
+    return std::make_unique<chromeos::device_sync::DeviceSyncService>(
+        IdentityManagerFactory::GetForProfile(this),
+        gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
+        chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
+        GetURLLoaderFactory(), std::move(request));
+  }
+
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      service_name == chromeos::multidevice_setup::mojom::kServiceName) {
+    return std::make_unique<
+        chromeos::multidevice_setup::MultiDeviceSetupService>(
+        std::move(request), GetPrefs(),
+        chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
+        chromeos::multidevice_setup::AuthTokenValidatorFactory ::GetForProfile(
+            this),
+        chromeos::multidevice_setup::OobeCompletionTrackerFactory::
+            GetForProfile(this),
+        std::make_unique<
+            chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
+        std::make_unique<
+            chromeos::multidevice_setup::AndroidSmsPairingStateTrackerImpl>(
+            this),
+        chromeos::GcmDeviceInfoProviderImpl::GetInstance());
+  }
+
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (service_name == chromeos::assistant::mojom::kServiceName) {
     return std::make_unique<chromeos::assistant::Service>(
@@ -1211,8 +1206,9 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::IO}));
   }
-#endif
-#endif
+#endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
+
+#endif  // defined(OS_CHROMEOS)
 
   return nullptr;
 }
@@ -1446,31 +1442,3 @@ void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
 
   *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
 }
-
-#if defined(OS_CHROMEOS)
-std::unique_ptr<service_manager::Service>
-ProfileImpl::CreateDeviceSyncService() {
-  return std::make_unique<chromeos::device_sync::DeviceSyncService>(
-      IdentityManagerFactory::GetForProfile(this),
-      gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
-      chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
-      GetURLLoaderFactory());
-}
-
-std::unique_ptr<service_manager::Service>
-ProfileImpl::CreateMultiDeviceSetupService() {
-  return std::make_unique<chromeos::multidevice_setup::MultiDeviceSetupService>(
-      GetPrefs(),
-      chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
-      chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
-          this),
-      chromeos::multidevice_setup::OobeCompletionTrackerFactory::GetForProfile(
-          this),
-      std::make_unique<
-          chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
-      std::make_unique<
-          chromeos::multidevice_setup::AndroidSmsPairingStateTrackerImpl>(this),
-      chromeos::GcmDeviceInfoProviderImpl::GetInstance());
-}
-
-#endif  // defined(OS_CHROMEOS)

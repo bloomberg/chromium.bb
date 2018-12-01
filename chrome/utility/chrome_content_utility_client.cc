@@ -69,9 +69,15 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/utility/mash_service_factory.h"
+#include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
-#endif
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
@@ -113,14 +119,9 @@ namespace {
 base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
     Leaky g_network_binder_creation_callback = LAZY_INSTANCE_INITIALIZER;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void RegisterRemovableStorageWriterService(
-    ChromeContentUtilityClient::StaticServiceMap* services) {
-  service_manager::EmbeddedServiceInfo service_info;
-  service_info.factory =
-      base::BindRepeating(&RemovableStorageWriterService::CreateService);
-  services->emplace(chrome::mojom::kRemovableStorageWriterServiceName,
-                    service_info);
+#if !defined(OS_ANDROID)
+void TerminateThisProcess() {
+  content::UtilityThread::Get()->ReleaseProcess();
 }
 #endif
 
@@ -185,94 +186,11 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 
 void ChromeContentUtilityClient::RegisterServices(
     ChromeContentUtilityClient::StaticServiceMap* services) {
-  if (utility_process_running_elevated_) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&WifiUtilWinService::CreateService);
-    services->emplace(chrome::mojom::kWifiUtilWinServiceName, service_info);
-
-    RegisterRemovableStorageWriterService(services);
-#endif
-    return;
-  }
-
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
-  service_manager::EmbeddedServiceInfo service_info;
-  service_info.factory =
-      base::BindRepeating(&device::XrDeviceService::CreateXrDeviceService);
-  services->emplace(device::mojom::kVrIsolatedServiceName, service_info);
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-  service_manager::EmbeddedServiceInfo printing_info;
-  printing_info.factory =
-      base::BindRepeating(&printing::PrintingService::CreateService);
-  services->emplace(printing::mojom::kChromePrintingServiceName, printing_info);
-#endif
-
   service_manager::EmbeddedServiceInfo profiling_info;
   profiling_info.task_runner = content::ChildThread::Get()->GetIOTaskRunner();
   profiling_info.factory =
       base::BindRepeating(&heap_profiling::HeapProfilingService::CreateService);
   services->emplace(heap_profiling::mojom::kServiceName, profiling_info);
-
-#if !defined(OS_ANDROID)
-  service_manager::EmbeddedServiceInfo proxy_resolver_info;
-  proxy_resolver_info.task_runner =
-      content::ChildThread::Get()->GetIOTaskRunner();
-  proxy_resolver_info.factory =
-      base::BindRepeating(&proxy_resolver::ProxyResolverService::CreateService);
-  services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
-                    proxy_resolver_info);
-
-  service_manager::EmbeddedServiceInfo profile_import_info;
-  profile_import_info.factory =
-      base::BindRepeating(&ProfileImportService::CreateService);
-  services->emplace(chrome::mojom::kProfileImportServiceName,
-                    profile_import_info);
-#endif
-
-#if defined(OS_WIN)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::BindRepeating(&UtilWinService::CreateService);
-    services->emplace(chrome::mojom::kUtilWinServiceName, service_info);
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&CupsIppParserService::CreateService);
-    services->emplace(chrome::mojom::kCupsIppParserServiceName, service_info);
-  }
-#endif
-
-#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::BindRepeating(&FileUtilService::CreateService);
-    services->emplace(chrome::mojom::kFileUtilServiceName, service_info);
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-  // On Windows the service is running elevated.
-  RegisterRemovableStorageWriterService(services);
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&MediaGalleryUtilService::CreateService);
-    services->emplace(chrome::mojom::kMediaGalleryUtilServiceName,
-                      service_info);
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
@@ -289,36 +207,112 @@ void ChromeContentUtilityClient::RegisterServices(
     services->emplace(mirroring::mojom::kServiceName, mirroring_info);
   }
 #endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<simple_browser::SimpleBrowserService>(
-              simple_browser::SimpleBrowserService::UIInitializationMode::
-                  kInitializeUI);
-        });
-    services->emplace(simple_browser::mojom::kServiceName, service_info);
-  }
-#endif
 }
 
 std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
+  if (utility_process_running_elevated_) {
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
+    if (service_name == chrome::mojom::kWifiUtilWinServiceName)
+      return std::make_unique<WifiUtilWinService>(std::move(request));
+
+    if (service_name == chrome::mojom::kRemovableStorageWriterServiceName) {
+      return std::make_unique<RemovableStorageWriterService>(
+          std::move(request));
+    }
+#endif
+
+    return nullptr;
+  }
+
   if (service_name == unzip::mojom::kServiceName)
     return std::make_unique<unzip::UnzipService>(std::move(request));
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (service_name == printing::mojom::kServiceName)
+    return printing::CreatePdfCompositorService(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+  if (service_name == device::mojom::kVrIsolatedServiceName)
+    return std::make_unique<device::XrDeviceService>(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
+  if (service_name == printing::mojom::kChromePrintingServiceName)
+    return std::make_unique<printing::PrintingService>(std::move(request));
+#endif
 
 #if !defined(OS_ANDROID)
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
+
+  if (service_name == chrome::mojom::kProfileImportServiceName)
+    return std::make_unique<ProfileImportService>(std::move(request));
+
+  if (service_name == proxy_resolver::mojom::kProxyResolverServiceName) {
+    // Proxy resolver is a bit of a special case since it needs to run on the
+    // IO thread. We spin it up there and have it terminate the process from the
+    // main thread when going away.
+    auto termination_closure =
+        base::BindOnce(base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+                       base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                       base::BindOnce(&TerminateThisProcess));
+    content::ChildThread::Get()->GetIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](service_manager::mojom::ServiceRequest request,
+               base::OnceClosure termination_closure) {
+              auto service =
+                  std::make_unique<proxy_resolver::ProxyResolverService>(
+                      std::move(request));
+              auto* raw_service = service.get();
+              raw_service->set_termination_closure(base::BindOnce(
+                  [](std::unique_ptr<service_manager::Service> service,
+                     base::OnceClosure termination_closure) {
+                    service.reset();
+                    std::move(termination_closure).Run();
+                  },
+                  std::move(service), std::move(termination_closure)));
+            },
+            std::move(request), std::move(termination_closure)));
+
+    // And we return a dummy Service which never terminates, because the
+    // ServiceFactory implementation interprets a null return as an indication
+    // of failure.
+    return std::make_unique<service_manager::Service>();
+  }
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == printing::mojom::kServiceName) {
-    return printing::CreatePdfCompositorService(std::move(request));
+#if defined(OS_WIN)
+  if (service_name == chrome::mojom::kUtilWinServiceName)
+    return std::make_unique<UtilWinService>(std::move(request));
+#endif
+
+#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+  if (service_name == chrome::mojom::kFileUtilServiceName)
+    return std::make_unique<FileUtilService>(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
+  // On Windows the service is running elevated.
+  if (service_name == chrome::mojom::kRemovableStorageWriterServiceName)
+    return std::make_unique<RemovableStorageWriterService>(std::move(request));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+  if (service_name == chrome::mojom::kMediaGalleryUtilServiceName)
+    return std::make_unique<MediaGalleryUtilService>(std::move(request));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
+  if (service_name == simple_browser::mojom::kServiceName) {
+    return std::make_unique<simple_browser::SimpleBrowserService>(
+        std::move(request), simple_browser::SimpleBrowserService::
+                                UIInitializationMode::kInitializeUI);
   }
 #endif
 
@@ -326,11 +320,23 @@ ChromeContentUtilityClient::HandleServiceRequest(
   if (service_name == chromeos::ime::mojom::kServiceName)
     return std::make_unique<chromeos::ime::ImeService>(std::move(request));
 
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (service_name == chrome::mojom::kCupsIppParserServiceName)
+    return std::make_unique<CupsIppParserService>(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {
+    return std::make_unique<chromeos::assistant::AssistantAudioDecoderService>(
+        std::move(request));
+  }
+#endif
+
   return mash_service_factory_->HandleServiceRequest(service_name,
                                                      std::move(request));
-#else
+#else   // defined(OS_CHROMEOS)
   return nullptr;
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(

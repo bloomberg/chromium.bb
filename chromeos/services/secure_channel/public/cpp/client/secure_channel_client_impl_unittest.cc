@@ -147,16 +147,12 @@ class SecureChannelClientImplTest : public testing::Test {
     test_connection_attempt_delegate_ =
         std::make_unique<TestConnectionAttemptDelegate>();
 
-    auto secure_channel_service = std::make_unique<SecureChannelService>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(secure_channel_service));
-
-    connector_ = connector_factory_->CreateConnector();
+    service_ = std::make_unique<SecureChannelService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     client_ = SecureChannelClientImpl::Factory::Get()->BuildInstance(
-        connector_.get(), test_task_runner_);
+        connector_factory_.GetDefaultConnector(), test_task_runner_);
   }
 
   void TearDown() override {
@@ -216,8 +212,8 @@ class SecureChannelClientImplTest : public testing::Test {
       fake_client_channel_impl_factory_;
   std::unique_ptr<TestConnectionAttemptDelegate>
       test_connection_attempt_delegate_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<SecureChannelService> service_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<SecureChannelClient> client_;

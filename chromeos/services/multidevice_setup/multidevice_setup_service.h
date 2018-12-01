@@ -10,6 +10,8 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -39,6 +41,7 @@ class OobeCompletionTracker;
 class MultiDeviceSetupService : public service_manager::Service {
  public:
   MultiDeviceSetupService(
+      service_manager::mojom::ServiceRequest request,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
@@ -58,6 +61,8 @@ class MultiDeviceSetupService : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  service_manager::ServiceBinding service_binding_;
 
   std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_;
   std::unique_ptr<PrivilegedHostDeviceSetterBase>

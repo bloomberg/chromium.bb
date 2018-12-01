@@ -13,28 +13,25 @@
 namespace {
 
 void OnWifiCredentialsGetterRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
+    service_manager::ServiceKeepalive* keepalive,
     chrome::mojom::WiFiCredentialsGetterRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<WiFiCredentialsGetter>(ref_factory->CreateRef()),
+      std::make_unique<WiFiCredentialsGetter>(keepalive->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-WifiUtilWinService::WifiUtilWinService() = default;
+WifiUtilWinService::WifiUtilWinService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      service_keepalive_(&service_binding_, base::TimeDelta()) {}
 
 WifiUtilWinService::~WifiUtilWinService() = default;
 
-std::unique_ptr<service_manager::Service> WifiUtilWinService::CreateService() {
-  return std::make_unique<WifiUtilWinService>();
-}
-
 void WifiUtilWinService::OnStart() {
-  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      context()->CreateQuitClosure());
-  registry_.AddInterface(
-      base::Bind(&OnWifiCredentialsGetterRequest, ref_factory_.get()));
+  registry_.AddInterface(base::BindRepeating(&OnWifiCredentialsGetterRequest,
+                                             &service_keepalive_));
 }
 
 void WifiUtilWinService::OnBindInterface(

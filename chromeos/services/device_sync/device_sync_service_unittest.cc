@@ -502,12 +502,11 @@ class DeviceSyncServiceTest : public testing::Test {
             }));
 
     fake_device_sync_observer_ = std::make_unique<FakeDeviceSyncObserver>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<DeviceSyncService>(
-                identity_test_environment_->identity_manager(),
-                fake_gcm_driver_.get(), fake_gcm_device_info_provider_.get(),
-                shared_url_loader_factory));
+    service_ = std::make_unique<DeviceSyncService>(
+        identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
+        fake_gcm_device_info_provider_.get(), shared_url_loader_factory,
+        connector_factory_.RegisterInstance(
+            chromeos::device_sync::mojom::kServiceName));
   }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
@@ -521,12 +520,8 @@ class DeviceSyncServiceTest : public testing::Test {
         ->set_device_already_enrolled_in_cryptauth(
             device_already_enrolled_in_cryptauth);
 
-    // Must not have already connected.
-    EXPECT_FALSE(connector_);
-
-    // Create the Connector and bind it to |device_sync_|.
-    connector_ = connector_factory_->CreateConnector();
-    connector_->BindInterface(mojom::kServiceName, &device_sync_);
+    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                                            &device_sync_);
 
     // Set |fake_device_sync_observer_|.
     CallAddObserver();
@@ -949,8 +944,8 @@ class DeviceSyncServiceTest : public testing::Test {
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<DeviceSyncService> service_;
 
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;
