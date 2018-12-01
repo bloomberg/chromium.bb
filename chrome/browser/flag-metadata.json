@@ -970,12 +970,12 @@
   },
   {
     "name": "enable-cloud-print-xps",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-cloud-printer-handler",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1465,7 +1465,7 @@
   },
   {
     "name": "enable-new-print-preview",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -2266,7 +2266,7 @@
   },
   {
     "name": "gdi-text-printing",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -2821,7 +2821,7 @@
   },
   {
     "name": "postscript-printing",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -3253,7 +3253,7 @@
   },
   {
     "name": "use-pdf-compositor-service-for-print",
-    // "owners": [ "your-team" ],
+    "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
   },
   {
