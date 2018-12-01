@@ -819,6 +819,40 @@ be describing additional metrics about the same event.
       the sample window. An int in the range [0,100].
     </summary>
   </metric>
+  <metric name="ScrollingCoordinator.Average">
+    <summary>
+      The average time taken by the style and layout phases in microseconds in
+      the event period.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ScrollingCoordinator.AverageRatio">
+    <summary>
+      The average over frames within the event period of the ratio of time taken
+      to update the scrolling coordinator after painting to the total time for
+      the main frame, expressed as a percentage. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="ScrollingCoordinator.WorstCase">
+    <summary>
+      The longest single time within the event period that was used to update
+      the ScrollingCoordinator after painting (in microseconds).
+    </summary>
+  </metric>
+  <metric name="ScrollingCoordinator.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame within the event period that was used to
+      update the ScrollingCoordinator after painting, expressed as a percentage.
+      An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="StyleAndLayout.Average">
     <summary>
       The average time taken by the style and layout phases in microseconds in

@@ -18,8 +18,8 @@ class CustomCountHistogram;
 
 // This class aggregaties and records time based UKM and UMA metrics
 // for LocalFrameView. The simplest way to use it is via the
-// SCOPED_UMA_AND_UKM_HIERARCHICAL_TIMER macro in LocalFrameView combined
-// with LocalFrameView::RecordEndOfFrameMetrics.
+// SCOPED_UMA_AND_UKM_TIMER macro combined with
+// LocalFrameView::RecordEndOfFrameMetrics.
 //
 // It takes the following constructor parameters:
 // - source_id: UKM Source ID associated with the events.
@@ -42,7 +42,7 @@ class CustomCountHistogram;
 //
 // When the primary timed execution completes, this aggregator stores the
 // primary time and computes metrics that depend on it. The results are
-// aggregated.  UMA metrics are updated at this time. A UKM event is
+// aggregated. UMA metrics are updated at this time. A UKM event is
 // generated in one of two situations:
 //  - If a sample is added that lies in the next event frequency interval (this
 //    will generate an event for the previous interval)
@@ -52,7 +52,7 @@ class CustomCountHistogram;
 // Note that no event is generated if there were no primary samples in an
 // interval.
 //
-// Sample usage (see also SCOPED_UMA_AND_UKM_HIERARCHICAL_TIMER):
+// Sample usage (see also SCOPED_UMA_AND_UKM_TIMER):
 //   std::unique_ptr<UkmHierarchicalTimeAggregator> aggregator(
 //      new UkmHierarchicalTimeAggregator(
 //              GetSourceId(),
@@ -101,6 +101,23 @@ class CustomCountHistogram;
 //
 // If the source_id/recorder changes then a new
 // UkmHierarchicalTimeAggregator has to be created.
+// Defines a UKM that is part of a hierarchical ukm, recorded in
+// microseconds equal to the duration of the current lexical scope after
+// declaration of the macro. Example usage:
+//
+// void LocalFrameView::DoExpensiveThing() {
+//   SCOPED_UMA_AND_UKM_TIMER(kUkmEnumName);
+//   // Do computation of expensive thing
+//
+// }
+//
+// |ukm_enum| should be an entry in LocalFrameUkmAggregator's enum of
+// metric names (which in turn corresponds to names in from ukm.xml).
+
+#define SCOPED_UMA_AND_UKM_TIMER(aggregator, ukm_enum) \
+  auto scoped_ukm_hierarchical_timer =                 \
+      aggregator.GetScopedTimer(static_cast<size_t>(ukm_enum));
+
 class CORE_EXPORT LocalFrameUkmAggregator {
  public:
   // Changing these values requires changing the names of metrics specified
@@ -114,6 +131,7 @@ class CORE_EXPORT LocalFrameUkmAggregator {
     kPrePaint,
     kStyleAndLayout,
     kForcedStyleAndLayout,
+    kScrollingCoordinator,
     kCount
   };
 
@@ -123,9 +141,15 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   // Add an entry in this arrray every time a new metric is added.
   static const Vector<String>& metric_strings() {
     // Leaky construction to avoid exit-time destruction.
-    static const Vector<String>* strings = new Vector<String>{
-        "Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
-        "PrePaint",    "StyleAndLayout",    "ForcedStyleAndLayout"};
+    static const Vector<String>* strings =
+        new Vector<String>{"Compositing",
+                           "CompositingCommit",
+                           "IntersectionObservation",
+                           "Paint",
+                           "PrePaint",
+                           "StyleAndLayout",
+                           "ForcedStyleAndLayout",
+                           "ScrollingCoordinator"};
     return *strings;
   }
 
