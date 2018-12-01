@@ -1126,12 +1126,14 @@ void Texture::IncAllFramebufferStateChangeCount() {
     (*it)->manager()->IncFramebufferStateChangeCount();
 }
 
-void Texture::UpdateBaseLevel(GLint base_level) {
+void Texture::UpdateBaseLevel(GLint base_level,
+                              const FeatureInfo* feature_info) {
   if (unclamped_base_level_ == base_level)
     return;
   unclamped_base_level_ = base_level;
 
   UpdateNumMipLevels();
+  ApplyFormatWorkarounds(feature_info);
 }
 
 void Texture::UpdateMaxLevel(GLint max_level) {
@@ -1440,7 +1442,7 @@ GLenum Texture::SetParameteri(
       if (param < 0) {
         return GL_INVALID_VALUE;
       }
-      UpdateBaseLevel(param);
+      UpdateBaseLevel(param, feature_info);
       break;
     case GL_TEXTURE_MAX_LEVEL:
       if (param < 0) {
@@ -1937,7 +1939,7 @@ void Texture::SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle) {
                   GetSwizzleForChannel(swizzle_a_, swizzle));
 }
 
-void Texture::ApplyFormatWorkarounds(FeatureInfo* feature_info) {
+void Texture::ApplyFormatWorkarounds(const FeatureInfo* feature_info) {
   if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
       return;
