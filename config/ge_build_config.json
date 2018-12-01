@@ -386,18 +386,6 @@
       ]
     },
     {
-      "name": "daisy_spring",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "daisy",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "dragonegg",
       "configs": [
         {

@@ -834,7 +834,6 @@ daisy_spring-paladin (gce_beefy)
 daisy_spring-paladin-tryjob (gce_beefy)
 daisy_spring-payloads-tryjob (gce_beefy)
 daisy_spring-pre-cq (gce_beefy)
-daisy_spring-release (gce_beefy)
 daisy_spring-release-afdo-generate-tryjob (gce_beefy)
 [daisy_spring-release-afdo-tryjob] (gce_beefy)
   daisy_spring-release-afdo-generate
