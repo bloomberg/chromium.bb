@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class XRCoordinateSystem;
 class XRDevicePose;
 class XRInputPose;
@@ -30,16 +31,21 @@ class XRFrame final : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   const HeapVector<Member<XRView>>& views() const;
-  XRDevicePose* getDevicePose(XRCoordinateSystem*) const;
-  XRInputPose* getInputPose(XRInputSource*, XRCoordinateSystem*) const;
+  XRDevicePose* getDevicePose(XRCoordinateSystem*, ExceptionState&) const;
+  XRInputPose* getInputPose(XRInputSource*,
+                            XRCoordinateSystem*,
+                            ExceptionState&) const;
 
   void SetBasePoseMatrix(const TransformationMatrix&);
 
   void Trace(blink::Visitor*) override;
 
+  void Deactivate();
+
  private:
   const Member<XRSession> session_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
+  bool active_ = true;
 };
 
 }  // namespace blink
