@@ -76,17 +76,12 @@ static void temporal_filter_predictors_mb_c(
   }
 }
 
-static INLINE int64_t mod_index(int64_t sum_dist, int index, int rounding,
-                                int strength, int filter_weight) {
-  int64_t mod = (sum_dist * 3) / index;
-  mod += rounding;
-  mod >>= strength;
-
+static INLINE int mod_index(int64_t sum_dist, int index, int rounding,
+                            int strength, int filter_weight) {
+  int mod = (int)(((sum_dist * 3) / index + rounding) >> strength);
   mod = AOMMIN(16, mod);
-
   mod = 16 - mod;
   mod *= filter_weight;
-
   return mod;
 }
 
@@ -321,11 +316,11 @@ static void highbd_apply_temporal_filter(
 
       y_index += 2;
 
-      modifier =
+      const int final_y_mod =
           mod_index(modifier, y_index, rounding, strength, filter_weight);
 
-      y_count[k] += modifier;
-      y_accumulator[k] += modifier * pixel_value;
+      y_count[k] += final_y_mod;
+      y_accumulator[k] += final_y_mod * pixel_value;
 
       ++k;
 
@@ -367,13 +362,15 @@ static void highbd_apply_temporal_filter(
         u_mod += y_diff;
         v_mod += y_diff;
 
-        u_mod = mod_index(u_mod, cr_index, rounding, strength, filter_weight);
-        v_mod = mod_index(v_mod, cr_index, rounding, strength, filter_weight);
+        const int final_u_mod =
+            mod_index(u_mod, cr_index, rounding, strength, filter_weight);
+        const int final_v_mod =
+            mod_index(v_mod, cr_index, rounding, strength, filter_weight);
 
-        u_count[m] += u_mod;
-        u_accumulator[m] += u_mod * u_pixel_value;
-        v_count[m] += v_mod;
-        v_accumulator[m] += v_mod * v_pixel_value;
+        u_count[m] += final_u_mod;
+        u_accumulator[m] += final_u_mod * u_pixel_value;
+        v_count[m] += final_v_mod;
+        v_accumulator[m] += final_v_mod * v_pixel_value;
 
         ++m;
       }  // Complete YUV pixel
