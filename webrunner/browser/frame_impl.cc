@@ -442,19 +442,19 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
   switch (level) {
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::DEBUG):
-      LOG(INFO) << "debug:" << message;
+      LOG(INFO) << "debug:" << message_formatted;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::INFO):
-      LOG(INFO) << "info:" << message;
+      LOG(INFO) << "info:" << message_formatted;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::WARN):
-      LOG(WARNING) << "warn:" << message;
+      LOG(WARNING) << "warn:" << message_formatted;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::ERROR):
-      LOG(ERROR) << "error:" << message;
+      LOG(ERROR) << "error:" << message_formatted;
       break;
     default:
       DLOG(WARNING) << "Unknown log level: " << level;
