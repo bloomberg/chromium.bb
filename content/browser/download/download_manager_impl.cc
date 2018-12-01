@@ -237,7 +237,8 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
         received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-        opened, last_access_time, transient, received_slices);
+        false /* paused */, opened, last_access_time, transient,
+        received_slices);
   }
 
   download::DownloadItemImpl* CreateActiveItem(

@@ -297,6 +297,7 @@ DownloadItemImpl::DownloadItemImpl(
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
+    bool paused,
     bool opened,
     base::Time last_access_time,
     bool transient,
@@ -322,6 +323,7 @@ DownloadItemImpl::DownloadItemImpl(
       state_(ExternalToInternalState(state)),
       danger_type_(danger_type),
       delegate_(delegate),
+      paused_(paused),
       opened_(opened),
       last_access_time_(last_access_time),
       transient_(transient),
@@ -517,20 +519,18 @@ void DownloadItemImpl::Pause() {
     case CANCELLED_INTERNAL:
     case COMPLETE_INTERNAL:
     case COMPLETING_INTERNAL:
+      return;
     case INITIAL_INTERNAL:
     case INTERRUPTED_INTERNAL:
     case INTERRUPTED_TARGET_PENDING_INTERNAL:
     case RESUMING_INTERNAL:
       // No active request.
-      // TODO(asanka): In the case of RESUMING_INTERNAL, consider setting
-      // |DownloadJob::is_paused_| even if there's no request currently
-      // associated with this DII. When a request is assigned (due to a
-      // resumption, for example) we can honor the |DownloadJob::is_paused_|
-      // setting.
+      paused_ = true;
       return;
 
     case IN_PROGRESS_INTERNAL:
     case TARGET_PENDING_INTERNAL:
+      paused_ = true;
       job_->Pause();
       UpdateObservers();
       return;
@@ -557,12 +557,14 @@ void DownloadItemImpl::Resume() {
     case IN_PROGRESS_INTERNAL:
       if (!IsPaused())
         return;
+      paused_ = false;
       if (job_)
         job_->Resume(true);
       UpdateObservers();
       return;
 
     case INTERRUPTED_INTERNAL:
+      paused_ = false;
       auto_resume_count_ = 0;  // User input resets the counter.
       ResumeInterruptedDownload(ResumptionRequestSource::USER);
       UpdateObservers();
@@ -646,7 +648,7 @@ DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
 }
 
 bool DownloadItemImpl::IsPaused() const {
-  return job_ ? job_->is_paused() : false;
+  return paused_;
 }
 
 bool DownloadItemImpl::IsTemporary() const {
