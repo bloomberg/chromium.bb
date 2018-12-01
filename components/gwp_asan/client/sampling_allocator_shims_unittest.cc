@@ -26,6 +26,15 @@
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
+#if defined(OS_WIN)
+#include <malloc.h>
+static size_t GetAllocatedSize(void *mem) {
+  return _msize(mem);
+}
+#else  // defined(OS_WIN)
+#error "Needs to be implemented for platform."
+#endif  // defined(OS_WIN)
+
 namespace gwp_asan {
 namespace internal {
 
@@ -200,6 +209,28 @@ MULTIPROCESS_TEST_MAIN(CrashKey) {
 
 TEST_F(SamplingAllocatorShimsTest, CrashKey) {
   runTest("CrashKey");
+}
+
+MULTIPROCESS_TEST_MAIN(GetSizeEstimate) {
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+
+  constexpr size_t kAllocationSize = 123;
+  for (size_t i = 0; i < kLoopIterations; i++) {
+    std::unique_ptr<void, decltype(&free)> alloc(malloc(kAllocationSize), free);
+    CHECK_NE(alloc.get(), nullptr);
+
+    size_t alloc_sz = GetAllocatedSize(alloc.get());
+    if (GetGpaForTesting().PointerIsMine(alloc.get()))
+      CHECK_EQ(alloc_sz, kAllocationSize);
+    else
+      CHECK_GE(alloc_sz, kAllocationSize);
+  }
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, GetSizeEstimate) {
+  runTest("GetSizeEstimate");
 }
 
 }  // namespace
