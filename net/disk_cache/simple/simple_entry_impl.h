@@ -107,6 +107,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void Doom() override;
   void Close() override;
   std::string GetKey() const override;
+  // GetLastUsed() should not be called in net::APP_CACHE mode since the times
+  // are not updated.
   base::Time GetLastUsed() const override;
   base::Time GetLastModified() const override;
   int32_t GetDataSize(int index) const override;

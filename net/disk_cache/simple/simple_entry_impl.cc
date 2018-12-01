@@ -352,6 +352,7 @@ std::string SimpleEntryImpl::GetKey() const {
 
 Time SimpleEntryImpl::GetLastUsed() const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(cache_type_ != net::APP_CACHE);
   return last_used_;
 }
 
