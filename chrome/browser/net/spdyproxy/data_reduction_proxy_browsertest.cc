@@ -249,6 +249,21 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
   EXPECT_THAT(body, HasSubstr("pid="));
 }
 
+// Gets the response body for an XHR to |url| (as seen by the renderer).
+std::string ReadSubresourceFromRenderer(Browser* browser, const GURL& url) {
+  std::string script = R"((url => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = () => domAutomationController.send(xhr.responseText);
+    xhr.send();
+  }))";
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      script + "('" + url.spec() + "')", &result));
+  return result;
+}
+
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(
@@ -261,19 +276,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
   EXPECT_EQ(GetBody(incognito), kDummyBody);
 
   // Make sure subresource doesn't use DRP either.
-  std::string script = R"((url => {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = () => domAutomationController.send(xhr.responseText);
-    xhr.send();
-  }))";
-  std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      incognito->tab_strip_model()->GetActiveWebContents(),
-      script + "('" +
-          GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy").spec() +
-          "')",
-      &result));
+  std::string result = ReadSubresourceFromRenderer(
+      incognito, GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_EQ(result, kDummyBody);
 }
@@ -288,19 +292,8 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   ui_test_utils::NavigateToURL(browser(),
                                GetURLWithMockHost(test_server, "/echo"));
 
-  std::string script = R"((url => {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = () => domAutomationController.send(xhr.responseText);
-    xhr.send();
-  }))";
-  std::string result;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      script + "('" +
-          GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy").spec() +
-          "')",
-      &result));
+  std::string result = ReadSubresourceFromRenderer(
+      browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
 
   EXPECT_THAT(result, HasSubstr(kSessionKey));
   EXPECT_THAT(result, Not(HasSubstr("pid=")));
@@ -732,6 +725,132 @@ INSTANTIATE_TEST_CASE_P(
                                        ProxyServer_ProxyScheme_HTTPS),
                        ::testing::Bool()));
 
-// TODO(eroman): Test that config changes are observed by the DRP throttles.
+// Threadsafe log for recording a sequence of events as newline separated text.
+class EventLog {
+ public:
+  void Add(const std::string& event) {
+    base::AutoLock lock(lock_);
+    log_ += event + "\n";
+  }
+
+  std::string GetAndReset() {
+    base::AutoLock lock(lock_);
+    return std::move(log_);
+  }
+
+ private:
+  base::Lock lock_;
+  std::string log_;
+};
+
+// Responds to requests for |path| with a 502 and "Chrome-Proxy: block-once",
+// and logs the request into |event_log|.
+std::unique_ptr<net::test_server::HttpResponse> DrpBlockOnceHandler(
+    const std::string& server_name,
+    EventLog* event_log,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == "/favicon.ico")
+    return nullptr;
+
+  event_log->Add(server_name + " responded 502 for " + request.relative_url);
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/plain");
+  response->set_code(net::HTTP_BAD_GATEWAY);
+  response->AddCustomHeader(chrome_proxy_header(), "block-once");
+  return response;
+}
+
+// Responds to requests with the path as response body, and logs the request
+// into |event_log|.
+std::unique_ptr<net::test_server::HttpResponse> RespondWithRequestPathHandler(
+    const std::string& server_name,
+    EventLog* event_log,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == "/favicon.ico")
+    return nullptr;
+
+  event_log->Add(server_name + " responded 200 for " + request.relative_url);
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/plain");
+  response->set_code(net::HTTP_OK);
+  response->set_content(request.relative_url);
+  return response;
+}
+
+// Tests that Chrome-Proxy response headers are respected after the
+// configuration is updated.
+//
+// When run under NetworkService, the DataReductionProxyURLLoaderThrottle
+// decides whether to block-once based on the configured DRP servers. This
+// config is in turn synchronized through the DataReductionProxyThrottleManager.
+//
+// The goal of this test is to ensure that this throttle sees the correct
+// configuration when processing response headers (the UpdateConfig() test
+// already checks that the network service sees the updated config).
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       BlockOnceWorksAfterUpdateConfig) {
+  EventLog event_log;
+
+  // Setup a DRP server that will reply with "Chrome-Proxy: block-once".
+  net::EmbeddedTestServer drp_server1;
+  drp_server1.RegisterRequestHandler(base::BindRepeating(
+      &DrpBlockOnceHandler, "drp_server1", base::Unretained(&event_log)));
+  ASSERT_TRUE(drp_server1.Start());
+
+  // Setup a DRP server that will reply with "Chrome-Proxy: block-once".
+  net::EmbeddedTestServer drp_server2;
+  drp_server2.RegisterRequestHandler(base::BindRepeating(
+      &DrpBlockOnceHandler, "drp_server2", base::Unretained(&event_log)));
+  ASSERT_TRUE(drp_server2.Start());
+
+  // Regular server that will respond with the request path as body.
+  net::EmbeddedTestServer direct_server;
+  direct_server.RegisterRequestHandler(base::BindRepeating(
+      &RespondWithRequestPathHandler, "direct_server", &event_log));
+  ASSERT_TRUE(direct_server.Start());
+
+  // Change the DRP configuration so that |drp_server1| is the current DRP.
+  SetConfig(CreateConfigForServer(drp_server1));
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  // When issuing request /x1, it should first go to |drp_server1|, and then get
+  // restarted on |direct_server|.
+  const char kExpectedLog1[] =
+      "drp_server1 responded 502 for /x1\n"
+      "direct_server responded 200 for /x1\n";
+
+  GURL x1_url = GetURLWithMockHost(direct_server, "/x1");
+
+  // Test a browser-initiated request.
+  ui_test_utils::NavigateToURL(browser(), x1_url);
+  EXPECT_EQ("/x1", GetBody());
+  EXPECT_EQ(kExpectedLog1, event_log.GetAndReset());
+
+  // Test a renderer initiated request.
+  EXPECT_EQ("/x1", ReadSubresourceFromRenderer(browser(), x1_url));
+  EXPECT_EQ(kExpectedLog1, event_log.GetAndReset());
+
+  // Change the DRP configuration so that |drp_server2| is the current DRP.
+  SetConfig(CreateConfigForServer(drp_server2));
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  // When issuing request /x2, it should first go to |drp_server2|, and then get
+  // restarted on |direct_server|.
+  const char kExpectedLog2[] =
+      "drp_server2 responded 502 for /x2\n"
+      "direct_server responded 200 for /x2\n";
+
+  // Test a browser-initiated request.
+  GURL x2_url = GetURLWithMockHost(direct_server, "/x2");
+  ui_test_utils::NavigateToURL(browser(), x2_url);
+  EXPECT_EQ("/x2", GetBody());
+  EXPECT_EQ(kExpectedLog2, event_log.GetAndReset());
+
+  // Test a renderer initiated request.
+  EXPECT_EQ("/x2", ReadSubresourceFromRenderer(browser(), x2_url));
+  EXPECT_EQ(kExpectedLog2, event_log.GetAndReset());
+}
 
 }  // namespace data_reduction_proxy
