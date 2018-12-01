@@ -84,6 +84,8 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
+    case MediaLogEvent::SUSPENDED:
+      return "SUSPENDED";
   }
   NOTREACHED();
   return NULL;

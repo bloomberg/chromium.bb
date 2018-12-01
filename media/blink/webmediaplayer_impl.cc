@@ -1509,6 +1509,9 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 }
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
+  // Add a log event so the player shows up as "SUSPENDED" in media-internals.
+  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::SUSPENDED));
+
 #if defined(OS_ANDROID)
   if (IsRemote() && !IsNewRemotePlaybackPipelineEnabled()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
