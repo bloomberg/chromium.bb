@@ -174,8 +174,8 @@ void PlatformChannel::PrepareToPassRemoteEndpoint(HandlePassingInfo* info,
   *value = base::NumberToString(
       HandleToLong(remote_endpoint_.platform_handle().GetHandle().Get()));
 #elif defined(OS_FUCHSIA)
-  const uint32_t id = PA_HND(PA_USER0, info->size());
-  info->push_back({id, remote_endpoint_.platform_handle().GetHandle().get()});
+  const uint32_t id = base::LaunchOptions::AddHandleToTransfer(
+      info, remote_endpoint_.platform_handle().GetHandle().get());
   *value = base::NumberToString(id);
 #elif defined(OS_ANDROID)
   int fd = remote_endpoint_.platform_handle().GetFD().get();
