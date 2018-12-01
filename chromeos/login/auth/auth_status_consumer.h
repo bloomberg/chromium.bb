@@ -20,7 +20,7 @@ class UserContext;
 class CHROMEOS_EXPORT AuthFailure {
  public:
   // Enum used for UMA. Do NOT reorder or remove entry. Don't forget to
-  // update histograms.xml when adding new entries.
+  // update LoginFailureReason enum in enums.xml when adding new entries.
   enum FailureReason {
     NONE = 0,
     COULD_NOT_MOUNT_CRYPTOHOME = 1,
@@ -39,6 +39,7 @@ class CHROMEOS_EXPORT AuthFailure {
     USERNAME_HASH_FAILED = 11,        // Could not get username hash.
     FAILED_TO_INITIALIZE_TOKEN = 12,  // Could not get OAuth2 Token,
     MISSING_CRYPTOHOME = 13,          // cryptohome missing from disk.
+    AUTH_DISABLED = 14,               // Authentication disabled for user.
     NUM_FAILURE_REASONS,              // This has to be the last item.
   };
 
@@ -91,6 +92,8 @@ class CHROMEOS_EXPORT AuthFailure {
         return "OAuth2 token fetch failed.";
       case MISSING_CRYPTOHOME:
         return "Cryptohome missing from disk.";
+      case AUTH_DISABLED:
+        return "Auth disabled for user.";
       default:
         NOTREACHED();
         return std::string();
