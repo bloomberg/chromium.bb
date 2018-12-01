@@ -193,8 +193,7 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
       AddContextMenuOption(menu_model, ash::MENU_NEW_INCOGNITO_WINDOW,
                            IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (!BrowserShortcutLauncherItemController(controller()->shelf_model())
-             .IsListOfActiveBrowserEmpty()) {
+    if (!BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty()) {
       AddContextMenuOption(menu_model, ash::MENU_CLOSE,
                            IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
     }
