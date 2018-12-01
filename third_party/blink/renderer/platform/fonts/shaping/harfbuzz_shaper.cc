@@ -553,7 +553,7 @@ void SplitUntilNextCaseChange(
   }
 }
 
-hb_feature_t CreateFeature(hb_tag_t tag, uint32_t value = 0) {
+constexpr hb_feature_t CreateFeature(hb_tag_t tag, uint32_t value = 0) {
   return {tag, value, 0 /* start */, static_cast<unsigned>(-1) /* end */};
 }
 
@@ -562,11 +562,11 @@ hb_feature_t CreateFeature(hb_tag_t tag, uint32_t value = 0) {
 void SetFontFeatures(const Font* font, FeaturesVector* features) {
   const FontDescription& description = font->GetFontDescription();
 
-  static hb_feature_t no_kern = CreateFeature(HB_TAG('k', 'e', 'r', 'n'));
-  static hb_feature_t no_vkrn = CreateFeature(HB_TAG('v', 'k', 'r', 'n'));
+  constexpr hb_feature_t no_kern = CreateFeature(HB_TAG('k', 'e', 'r', 'n'));
+  constexpr hb_feature_t no_vkrn = CreateFeature(HB_TAG('v', 'k', 'r', 'n'));
   switch (description.GetKerning()) {
     case FontDescription::kNormalKerning:
-      // kern/vkrn are enabled by default
+      // kern/vkrn are enabled by default in HarfBuzz
       break;
     case FontDescription::kNoneKerning:
       features->push_back(description.IsVerticalAnyUpright() ? no_vkrn
@@ -576,51 +576,41 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
       break;
   }
 
-  static hb_feature_t no_clig = CreateFeature(HB_TAG('c', 'l', 'i', 'g'));
-  static hb_feature_t no_liga = CreateFeature(HB_TAG('l', 'i', 'g', 'a'));
-  switch (description.CommonLigaturesState()) {
-    case FontDescription::kDisabledLigaturesState:
+  {
+    bool default_is_off = description.TextRendering() == blink::kOptimizeSpeed;
+    bool letter_spacing = description.LetterSpacing() != 0;
+    constexpr auto normal = FontDescription::kNormalLigaturesState;
+    constexpr auto enabled = FontDescription::kEnabledLigaturesState;
+    constexpr auto disabled = FontDescription::kDisabledLigaturesState;
+
+    // clig and liga are on by default in HarfBuzz
+    constexpr hb_feature_t no_clig = CreateFeature(HB_TAG('c', 'l', 'i', 'g'));
+    constexpr hb_feature_t no_liga = CreateFeature(HB_TAG('l', 'i', 'g', 'a'));
+    auto common = description.CommonLigaturesState();
+    if (letter_spacing ||
+        (common == disabled || (common == normal && default_is_off))) {
       features->push_back(no_liga);
       features->push_back(no_clig);
-      break;
-    case FontDescription::kEnabledLigaturesState:
-      // liga and clig are on by default
-      break;
-    case FontDescription::kNormalLigaturesState:
-      break;
-  }
-  static hb_feature_t dlig = CreateFeature(HB_TAG('d', 'l', 'i', 'g'), 1);
-  switch (description.DiscretionaryLigaturesState()) {
-    case FontDescription::kDisabledLigaturesState:
-      // dlig is off by default
-      break;
-    case FontDescription::kEnabledLigaturesState:
+    }
+    // dlig is off by default in HarfBuzz
+    constexpr hb_feature_t dlig = CreateFeature(HB_TAG('d', 'l', 'i', 'g'), 1);
+    auto discretionary = description.DiscretionaryLigaturesState();
+    if (!letter_spacing && discretionary == enabled) {
       features->push_back(dlig);
-      break;
-    case FontDescription::kNormalLigaturesState:
-      break;
-  }
-  static hb_feature_t hlig = CreateFeature(HB_TAG('h', 'l', 'i', 'g'), 1);
-  switch (description.HistoricalLigaturesState()) {
-    case FontDescription::kDisabledLigaturesState:
-      // hlig is off by default
-      break;
-    case FontDescription::kEnabledLigaturesState:
+    }
+    // hlig is off by default in HarfBuzz
+    constexpr hb_feature_t hlig = CreateFeature(HB_TAG('h', 'l', 'i', 'g'), 1);
+    auto historical = description.HistoricalLigaturesState();
+    if (!letter_spacing && historical == enabled) {
       features->push_back(hlig);
-      break;
-    case FontDescription::kNormalLigaturesState:
-      break;
-  }
-  static hb_feature_t no_calt = CreateFeature(HB_TAG('c', 'a', 'l', 't'));
-  switch (description.ContextualLigaturesState()) {
-    case FontDescription::kDisabledLigaturesState:
+    }
+    // calt is on by default in HarfBuzz
+    constexpr hb_feature_t no_calt = CreateFeature(HB_TAG('c', 'a', 'l', 't'));
+    auto contextual = description.ContextualLigaturesState();
+    if (letter_spacing ||
+        (contextual == disabled || (contextual == normal && default_is_off))) {
       features->push_back(no_calt);
-      break;
-    case FontDescription::kEnabledLigaturesState:
-      // calt is on by default
-      break;
-    case FontDescription::kNormalLigaturesState:
-      break;
+    }
   }
 
   static hb_feature_t hwid = CreateFeature(HB_TAG('h', 'w', 'i', 'd'), 1);
