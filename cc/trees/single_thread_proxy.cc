@@ -700,6 +700,7 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
       << "BeginMainFrame should only be sent inside a BeginImplFrame";
 #endif
 
+  host_impl_->WillSendBeginMainFrame();
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SingleThreadProxy::BeginMainFrame,
                                 weak_factory_.GetWeakPtr(), begin_frame_args));

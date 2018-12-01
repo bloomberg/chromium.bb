@@ -505,4 +505,41 @@ class LayerTreeHostProxyTestNeedsCommitFromImpl
 
 SINGLE_THREAD_TEST_F(LayerTreeHostProxyTestNeedsCommitFromImpl);
 
+// Test that a commit is correctly delayed but is not lost when turning
+// invisible, and after turning visible, the commit is executed.
+// This is a regression test for https://crbug.com/890008
+class LayerTreeHostProxyTestDelayedCommitDueToVisibility
+    : public LayerTreeHostProxyTest {
+ protected:
+  LayerTreeHostProxyTestDelayedCommitDueToVisibility() = default;
+  ~LayerTreeHostProxyTestDelayedCommitDueToVisibility() override = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillSendBeginMainFrameOnThread(LayerTreeHostImpl*) override {
+    if (!set_invisible_once_) {
+      set_invisible_once_ = true;
+      PostSetVisibleToMainThread(false);
+    }
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl*,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(CommitEarlyOutReason::ABORTED_NOT_VISIBLE, reason);
+    PostSetVisibleToMainThread(true);
+  }
+
+  void DidCommit() override { EndTest(); }
+
+  void AfterTest() override {}
+
+ private:
+  bool set_invisible_once_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostProxyTestDelayedCommitDueToVisibility);
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostProxyTestDelayedCommitDueToVisibility);
+
 }  // namespace cc
