@@ -62,6 +62,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
@@ -1691,17 +1692,30 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   const ash::ShelfID browser_id = item_controller->shelf_id();
   EXPECT_EQ(extension_misc::kChromeAppId, browser_id.app_id);
 
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile());
+
   // Get the number of browsers.
   size_t running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(0u, running_browser);
   EXPECT_FALSE(controller_->IsOpen(browser_id));
+  // No launch time recorded for Chrome yet.
+  EXPECT_EQ(base::Time(),
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
 
   // Activate. This creates new browser
+  base::Time time_before_launch = base::Time::Now();
   SelectItem(browser_id, ui::ET_UNKNOWN);
+  base::Time time_after_launch = base::Time::Now();
   // New Window is created.
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
   EXPECT_TRUE(controller_->IsOpen(browser_id));
+  // Valid launch time should be recorded for Chrome.
+  const base::Time time_launch =
+      prefs->GetLastLaunchTime(extension_misc::kChromeAppId);
+  EXPECT_LE(time_before_launch, time_launch);
+  EXPECT_GE(time_after_launch, time_launch);
 
   // Minimize Window.
   Browser* browser = chrome::FindLastActive();
@@ -1715,6 +1729,29 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(1u, running_browser);
   EXPECT_TRUE(controller_->IsOpen(browser_id));
   EXPECT_FALSE(browser->window()->IsMinimized());
+  // Re-activation should not upate the recorded launch time.
+  EXPECT_GE(time_launch,
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
+}
+
+// Check that browser launch time is recorded when the browser is started
+// by means other than BrowserShortcutLauncherItemController.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
+                       BrowserLaunchTimeRecorded) {
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile());
+
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(base::Time(),
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
+
+  base::Time time_before_launch = base::Time::Now();
+  chrome::NewEmptyWindow(profile());
+  base::Time time_after_launch = base::Time::Now();
+  const base::Time time_launch =
+      prefs->GetLastLaunchTime(extension_misc::kChromeAppId);
+  EXPECT_LE(time_before_launch, time_launch);
+  EXPECT_GE(time_after_launch, time_launch);
 }
 
 // Check that the window's ShelfID property matches that of the active tab.

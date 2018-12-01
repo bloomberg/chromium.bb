@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,6 +33,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_prefs.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -98,6 +100,58 @@ base::string16 GetBrowserListTitle(content::WebContents* web_contents) {
   return title.empty() ? l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE) : title;
 }
 
+// Returns true when the given |browser| is listed in the browser application
+// list.
+bool IsBrowserRepresentedInBrowserList(Browser* browser) {
+  // Only Ash desktop browser windows for the active user are represented.
+  if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
+    return false;
+
+  if (browser->is_app() && browser->is_type_popup()) {
+    // Crostini Terminals always have their own item.
+    // TODO(rjwright): We shouldn't need to special-case Crostini here.
+    // https://crbug.com/846546
+    if (crostini::CrostiniAppIdFromAppName(browser->app_name()))
+      return false;
+
+    // V1 App popup windows may have their own item.
+    ash::ShelfID id(web_app::GetAppIdFromApplicationName(browser->app_name()));
+    if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
+      return false;
+  }
+
+  // Settings and Discover browsers have their own item; all others should be
+  // represented.
+  return !IsSettingsBrowser(browser) &&
+         !chromeos::DiscoverWindowManager::GetInstance()->IsDiscoverBrowser(
+             browser);
+}
+
+// Gets a list of active browsers.
+BrowserList::BrowserVector GetListOfActiveBrowsers() {
+  BrowserList::BrowserVector active_browsers;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    // Make sure that the browser is from the current user, has a proper window,
+    // and the window was already shown.
+    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
+      continue;
+    if (!browser->window()->GetNativeWindow()->IsVisible() &&
+        !browser->window()->IsMinimized()) {
+      continue;
+    }
+    if (!IsBrowserRepresentedInBrowserList(browser) &&
+        !browser->is_type_tabbed())
+      continue;
+    active_browsers.push_back(browser);
+  }
+  return active_browsers;
+}
+
+bool ShouldRecordLaunchTime(Browser* browser) {
+  return !browser->profile()->IsOffTheRecord() &&
+         IsBrowserRepresentedInBrowserList(browser);
+}
+
 }  // namespace
 
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
@@ -105,6 +159,7 @@ BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     : ash::ShelfItemDelegate(ash::ShelfID(extension_misc::kChromeAppId)),
       shelf_model_(shelf_model),
       browser_list_observer_(this) {
+  browser_list_observer_.Add(BrowserList::GetInstance());
   // Tag all open browser windows with the appropriate shelf id property. This
   // associates each window with the shelf item for the active web contents.
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -199,7 +254,6 @@ void BrowserShortcutLauncherItemController::ItemSelected(
 ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
     int event_flags) {
   browser_menu_items_.clear();
-  browser_list_observer_.RemoveAll();
 
   ash::MenuItemList items;
   bool found_tabbed_browser = false;
@@ -231,15 +285,12 @@ ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
       }
     }
     browser_menu_items_.push_back(browser);
-    if (!browser_list_observer_.IsObservingSources())
-      browser_list_observer_.Add(BrowserList::GetInstance());
   }
   // If only windowed applications are open, we return an empty list to
   // enforce the creation of a new browser.
   if (!found_tabbed_browser) {
     items.clear();
     browser_menu_items_.clear();
-    browser_list_observer_.RemoveAll();
   }
   return items;
 }
@@ -286,7 +337,6 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
   }
 
   browser_menu_items_.clear();
-  browser_list_observer_.RemoveAll();
 }
 
 void BrowserShortcutLauncherItemController::Close() {
@@ -294,6 +344,7 @@ void BrowserShortcutLauncherItemController::Close() {
     browser->window()->Close();
 }
 
+// static
 bool BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() {
   return GetListOfActiveBrowsers().empty();
 }
@@ -346,47 +397,21 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
   return ash::SHELF_ACTION_WINDOW_ACTIVATED;
 }
 
-bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
-    Browser* browser) {
-  // Only Ash desktop browser windows for the active user are represented.
-  if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
-    return false;
+void BrowserShortcutLauncherItemController::OnBrowserAdded(Browser* browser) {
+  if (!ShouldRecordLaunchTime(browser))
+    return;
 
-  if (browser->is_app() && browser->is_type_popup()) {
-    // Crostini Terminals always have their own item.
-    // TODO(rjwright): We shouldn't need to special-case Crostini here.
-    // https://crbug.com/846546
-    if (crostini::CrostiniAppIdFromAppName(browser->app_name()))
-      return false;
-
-    // V1 App popup windows may have their own item.
-    ash::ShelfID id(web_app::GetAppIdFromApplicationName(browser->app_name()));
-    if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
-      return false;
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
+    if (*it == browser)
+      continue;
+    if (ShouldRecordLaunchTime(*it))
+      return;
   }
 
-  // Settings browsers have their own item; all others should be represented.
-  return !IsSettingsBrowser(browser);
-}
-
-BrowserList::BrowserVector
-BrowserShortcutLauncherItemController::GetListOfActiveBrowsers() {
-  BrowserList::BrowserVector active_browsers;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    // Make sure that the browser is from the current user, has a proper window,
-    // and the window was already shown.
-    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
-      continue;
-    if (!browser->window()->GetNativeWindow()->IsVisible() &&
-        !browser->window()->IsMinimized()) {
-      continue;
-    }
-    if (!IsBrowserRepresentedInBrowserList(browser) &&
-        !browser->is_type_tabbed())
-      continue;
-    active_browsers.push_back(browser);
-  }
-  return active_browsers;
+  extensions::ExtensionPrefs::Get(browser->profile())
+      ->SetLastLaunchTime(shelf_id().app_id, base::Time::Now());
 }
 
 void BrowserShortcutLauncherItemController::OnBrowserClosing(Browser* browser) {
