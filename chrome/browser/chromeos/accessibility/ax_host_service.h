@@ -11,6 +11,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 
 class AXRemoteHostDelegate;
@@ -21,7 +23,7 @@ class AXRemoteHostDelegate;
 class AXHostService : public service_manager::Service,
                       public ax::mojom::AXHost {
  public:
-  AXHostService();
+  explicit AXHostService(service_manager::mojom::ServiceRequest request);
   ~AXHostService() override;
 
   // Requests AX node trees from remote clients and starts listening for remote
@@ -56,6 +58,7 @@ class AXHostService : public service_manager::Service,
   static AXHostService* instance_;
   static bool automation_enabled_;
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<ax::mojom::AXHost> bindings_;
 

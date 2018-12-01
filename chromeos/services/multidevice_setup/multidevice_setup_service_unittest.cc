@@ -143,18 +143,15 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
         fake_multidevice_setup_factory_.get());
 
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<MultiDeviceSetupService>(
-                test_pref_service_.get(), fake_device_sync_client_.get(),
-                fake_auth_token_validator_.get(),
-                fake_oobe_completion_tracker_.get(),
-                std::move(fake_android_sms_app_helper_delegate),
-                std::move(fake_android_sms_pairing_state_tracker),
-                fake_gcm_device_info_provider_.get()));
+    service_ = std::make_unique<MultiDeviceSetupService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName),
+        test_pref_service_.get(), fake_device_sync_client_.get(),
+        fake_auth_token_validator_.get(), fake_oobe_completion_tracker_.get(),
+        std::move(fake_android_sms_app_helper_delegate),
+        std::move(fake_android_sms_pairing_state_tracker),
+        fake_gcm_device_info_provider_.get());
 
-    auto connector = connector_factory_->CreateConnector();
-
+    auto* connector = connector_factory_.GetDefaultConnector();
     connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
     multidevice_setup_ptr_.FlushForTesting();
 
@@ -223,7 +220,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MultiDeviceSetupService> service_;
   base::Optional<bool> last_debug_event_success_;
 
   mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;

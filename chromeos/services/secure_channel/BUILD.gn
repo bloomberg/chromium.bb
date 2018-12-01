@@ -125,6 +125,7 @@ static_library("secure_channel") {
     "//components/cryptauth/ble",
     "//device/bluetooth",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
   ]
 }
 

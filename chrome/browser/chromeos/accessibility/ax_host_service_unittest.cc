@@ -73,7 +73,7 @@ class AXHostServiceTest : public testing::Test {
 };
 
 TEST_F(AXHostServiceTest, AddClientThenEnable) {
-  AXHostService service;
+  AXHostService service(nullptr);
   TestAXRemoteHost remote;
   RegisterRemoteHost(&service, &remote);
 
@@ -94,7 +94,7 @@ TEST_F(AXHostServiceTest, AddClientThenEnable) {
 }
 
 TEST_F(AXHostServiceTest, EnableThenAddClient) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   TestAXRemoteHost remote;
@@ -109,7 +109,7 @@ TEST_F(AXHostServiceTest, EnableThenAddClient) {
 }
 
 TEST_F(AXHostServiceTest, PerformAction) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   TestAXRemoteHost remote;
@@ -133,7 +133,7 @@ TEST_F(AXHostServiceTest, PerformAction) {
 }
 
 TEST_F(AXHostServiceTest, MultipleRemoteHosts) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   // Connect 2 remote hosts.
@@ -164,7 +164,7 @@ TEST_F(AXHostServiceTest, MultipleRemoteHosts) {
 }
 
 TEST_F(AXHostServiceTest, RemoteHostDisconnect) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   // Connect 2 remote hosts.

@@ -10,32 +10,31 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace device {
 
 class XrDeviceService : public service_manager::Service {
  public:
-  static std::unique_ptr<service_manager::Service> CreateXrDeviceService();
-
-  XrDeviceService();
+  explicit XrDeviceService(service_manager::mojom::ServiceRequest request);
   ~XrDeviceService() override;
+
   void OnDeviceProviderRequest(
       device::mojom::IsolatedXRRuntimeProviderRequest request);
   void OnTestHookRequest(
       device_test::mojom::XRTestHookRegistrationRequest request);
 
  private:
-  // service_manager::Service
-  void OnStart() override;
+  // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive service_keepalive_;
   service_manager::BinderRegistry registry_;
-
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(XrDeviceService);
 };

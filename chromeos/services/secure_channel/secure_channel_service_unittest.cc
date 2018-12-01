@@ -379,12 +379,11 @@ class SecureChannelServiceTest : public testing::Test {
     ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
         fake_client_connection_parameters_factory_.get());
 
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<SecureChannelService>());
+    service_ = std::make_unique<SecureChannelService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
 
-    auto connector = connector_factory_->CreateConnector();
-    connector->BindInterface(mojom::kServiceName, &secure_channel_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &secure_channel_ptr_);
     secure_channel_ptr_.FlushForTesting();
   }
 
@@ -866,8 +865,8 @@ class SecureChannelServiceTest : public testing::Test {
 
   size_t num_queued_requests_before_initialization_ = 0u;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<SecureChannelService> service_;
 
   bool is_adapter_powered_;
   bool is_adapter_present_;

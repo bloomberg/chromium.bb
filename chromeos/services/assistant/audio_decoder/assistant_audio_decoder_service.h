@@ -9,19 +9,19 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace chromeos {
 namespace assistant {
 
 class AssistantAudioDecoderService : public service_manager::Service {
  public:
-  AssistantAudioDecoderService();
+  explicit AssistantAudioDecoderService(
+      service_manager::mojom::ServiceRequest request);
   ~AssistantAudioDecoderService() override;
-
-  // Factory method for creating the service.
-  static std::unique_ptr<service_manager::Service> CreateService();
 
  private:
   // service_manager::Service overrides:
@@ -30,7 +30,8 @@ class AssistantAudioDecoderService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive service_keepalive_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAudioDecoderService);

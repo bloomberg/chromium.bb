@@ -11,9 +11,10 @@
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
-AshPrefConnector::AshPrefConnector() : weak_factory_(this) {
+AshPrefConnector::AshPrefConnector(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<ash::mojom::PrefConnector>(base::Bind(
       &AshPrefConnector::BindConnectorRequest, base::Unretained(this)));
 }
