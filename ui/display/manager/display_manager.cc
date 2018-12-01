@@ -477,13 +477,19 @@ void DisplayManager::SetLayoutForCurrentDisplays(
 }
 
 const Display& DisplayManager::GetDisplayForId(int64_t display_id) const {
-  Display* display =
+  auto* display =
       const_cast<DisplayManager*>(this)->FindDisplayForId(display_id);
+  // TODO(oshima): This happens when windows in unified desktop have
+  // been moved to a normal window. Fix this.
+  if (!display && display_id != kUnifiedDisplayId)
+    DLOG(ERROR) << "Could not find display:" << display_id;
   return display ? *display : GetInvalidDisplay();
 }
 
 bool DisplayManager::IsDisplayIdValid(int64_t display_id) const {
-  return GetDisplayForId(display_id).is_valid();
+  Display* display =
+      const_cast<DisplayManager*>(this)->FindDisplayForId(display_id);
+  return !!display;
 }
 
 const Display& DisplayManager::FindDisplayContainingPoint(
@@ -1994,10 +2000,6 @@ Display* DisplayManager::FindDisplayForId(int64_t id) {
                    [id](const Display& display) { return display.id() == id; });
   if (iter != active_display_list_.end())
     return &(*iter);
-  // TODO(oshima): This happens when windows in unified desktop have
-  // been moved to a normal window. Fix this.
-  if (id != kUnifiedDisplayId)
-    DLOG(ERROR) << "Could not find display:" << id;
   return nullptr;
 }
 

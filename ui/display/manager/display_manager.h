@@ -514,7 +514,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Same as above but for Unified Desktop.
   void CreateUnifiedDesktopDisplayInfo(DisplayInfoList* display_info_list);
 
-  Display* FindDisplayForId(int64_t id);
+  // Finds an display for given |display_id|. Returns nullptr if not found.
+  Display* FindDisplayForId(int64_t display_id);
 
   // Add the mirror display's display info if the software based mirroring is in
   // use. This should only be called before UpdateDisplaysWith().
