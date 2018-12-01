@@ -1100,8 +1100,6 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
   return origin() == profile.origin() &&
          language_code() == profile.language_code() &&
-         is_client_validity_states_updated() ==
-             profile.is_client_validity_states_updated() &&
          Compare(profile) == 0;
 }
 
