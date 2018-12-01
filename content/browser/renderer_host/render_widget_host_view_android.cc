@@ -2409,7 +2409,22 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewAndroid::WasEvicted() {
-  local_surface_id_allocator_.Invalidate();
+  // Eviction can occur when the CompositorFrameSink has changed. This can
+  // occur either from a lost connection, as well as from the initial conneciton
+  // upon creating RenderWidgetHostViewAndroid. When this occurs while visible
+  // a new LocalSurfaceId should be generated. If eviction occurs while not
+  // visible, then the new LocalSurfaceId can be allocated upon the next Show.
+  if (is_showing_) {
+    local_surface_id_allocator_.GenerateId();
+    // Guarantee that the new LocalSurfaceId is propagated. Rather than relying
+    // upon calls to Show() and OnDidUpdateVisualPropertiesComplete(). As there
+    // is no guarantee that they will occur after the eviction.
+    SynchronizeVisualProperties(
+        cc::DeadlinePolicy::UseExistingDeadline(),
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
+  } else {
+    local_surface_id_allocator_.Invalidate();
+  }
 }
 
 }  // namespace content

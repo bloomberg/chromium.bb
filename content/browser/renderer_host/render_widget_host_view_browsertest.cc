@@ -52,9 +52,9 @@ namespace {
     return;  \
   }
 
-// Common base class for browser tests.  This is subclassed twice: Once to test
-// the browser in forced-compositing mode, and once to test with compositing
-// mode disabled.
+// Common base class for browser tests.  This is subclassed three times: Once to
+// test the browser in forced-compositing mode; once to test with compositing
+// mode disabled; once with no surface creation for non-visual tests.
 class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
  public:
   RenderWidgetHostViewBrowserTest()
@@ -177,6 +177,52 @@ class RenderWidgetHostViewBrowserTestBase : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 };
+
+// Base class for testing a RenderWidgetHostViewBase where visual output is not
+// relevant. This class does not setup surfaces for compositing.
+class NoCompositingRenderWidgetHostViewBrowserTest
+    : public RenderWidgetHostViewBrowserTest {
+ public:
+  NoCompositingRenderWidgetHostViewBrowserTest() {}
+  ~NoCompositingRenderWidgetHostViewBrowserTest() override {}
+
+  bool SetUpSourceSurface(const char* wait_message) override {
+    NOTIMPLEMENTED();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoCompositingRenderWidgetHostViewBrowserTest);
+};
+
+// When creating the first RenderWidgetHostViewBase, the CompositorFrameSink can
+// change. When this occurs we need to evict the current frame, and recreate
+// surfaces. This tests that when frame eviction occurs while the
+// RenderWidgetHostViewBase is visible, that we generate a new LocalSurfaceId.
+// Simply invalidating can lead to displaying blank screens.
+// (https://crbug.com/909903)
+IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
+                       ValidLocalSurfaceIdAllocationAfterInitialNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Creates the initial RenderWidgetHostViewBase, and connects to a
+  // CompositorFrameSink. This will trigger frame eviction.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/page_with_animation.html"));
+  RenderWidgetHostViewBase* rwhvb = GetRenderWidgetHostView();
+  // Eviction normally invalidates the LocalSurfaceId, however if the
+  // RenderWidgetHostViewBase is visible, a new id must be allocated. Otherwise
+  // blank content is shown.
+  EXPECT_TRUE(rwhvb);
+  // Mac does not initialize RenderWidgetHostViewBase as visible.
+#if !defined(OS_MACOSX)
+  EXPECT_TRUE(rwhvb->IsShowing());
+#endif
+  EXPECT_TRUE(rwhvb->GetLocalSurfaceIdAllocation().IsValid());
+  // TODO(jonross): Unify FrameEvictor into RenderWidgetHostViewBase so that we
+  // can generically test all eviction paths. However this should only be for
+  // top level renderers. Currently the FrameEvict implementations are platform
+  // dependent so we can't have a single generic test.
+}
 
 // Flaky on Android (especially on Marshmallow). crbug.com/896466
 #if defined(OS_ANDROID)
