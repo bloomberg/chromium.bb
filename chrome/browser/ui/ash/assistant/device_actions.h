@@ -20,6 +20,11 @@ class DeviceActions : public chromeos::assistant::mojom::DeviceActions {
       GetScreenBrightnessLevelCallback callback) override;
   void SetScreenBrightnessLevel(double level, bool gradual) override;
   void SetNightLightEnabled(bool enabled) override;
+  void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                      OpenAndroidAppCallback callback) override;
+  void VerifyAndroidApp(
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+      VerifyAndroidAppCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);
