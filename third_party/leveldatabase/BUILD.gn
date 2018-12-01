@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]
@@ -451,4 +452,15 @@ if (!is_ios && !is_android) {
       ":leveldb_write_batch_test",
     ]
   }
+}
+
+fuzzer_test("leveldb_put_get_delete_fuzzer") {
+  sources = [
+    "leveldb_put_get_delete_fuzzer.cc",
+  ]
+  deps = [
+    ":leveldatabase",
+    ":leveldb_testutil",
+    "//base/test:test_support",
+  ]
 }
