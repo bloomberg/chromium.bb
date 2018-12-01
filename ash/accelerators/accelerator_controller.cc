@@ -64,6 +64,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
@@ -237,6 +238,20 @@ void HandleFocusShelf() {
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
   Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+}
+
+views::Widget* FindPipWidget() {
+  return Shell::Get()->focus_cycler()->FindWidget(
+      base::BindRepeating([](views::Widget* widget) {
+        return wm::GetWindowState(widget->GetNativeWindow())->IsPip();
+      }));
+}
+
+void HandleFocusPip() {
+  base::RecordAction(UserMetricsAction("Accel_Focus_Pip"));
+  auto* widget = FindPipWidget();
+  if (widget)
+    Shell::Get()->focus_cycler()->FocusWidget(widget);
 }
 
 void HandleLaunchAppN(int n) {
@@ -1333,6 +1348,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleWindowSnap();
     case WINDOW_POSITION_CENTER:
       return CanHandlePositionCenter();
+    case FOCUS_PIP:
+      return !!FindPipWidget();
 
     // The following are always enabled.
     case BRIGHTNESS_DOWN:
@@ -1465,6 +1482,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case FOCUS_SHELF:
       HandleFocusShelf();
+      break;
+    case FOCUS_PIP:
+      HandleFocusPip();
       break;
     case KEYBOARD_BRIGHTNESS_DOWN: {
       KeyboardBrightnessControlDelegate* delegate =

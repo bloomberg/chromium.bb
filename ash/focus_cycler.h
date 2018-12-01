@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 
 namespace views {
@@ -41,6 +42,11 @@ class ASH_EXPORT FocusCycler {
 
   // Moves focus the specified widget. Returns true if the widget was activated.
   bool FocusWidget(views::Widget* widget);
+
+  // Find a widget that matches the criteria given by |callback|
+  // in the cycle list.
+  views::Widget* FindWidget(
+      base::RepeatingCallback<bool(views::Widget*)> callback);
 
  private:
   std::vector<views::Widget*> widgets_;

@@ -26,7 +26,8 @@ namespace {
 using CanActivateWindowPredicate = base::Callback<bool(aura::Window*)>;
 
 bool CallCanActivate(aura::Window* window) {
-  return ::wm::CanActivateWindow(window);
+  return ::wm::CanActivateWindow(window) &&
+         !wm::GetWindowState(window)->IsPip();
 }
 
 // Adds the windows that can be cycled through for the specified window id to

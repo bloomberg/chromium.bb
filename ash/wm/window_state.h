@@ -336,6 +336,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void OnCompleteDrag(const gfx::Point& location);
   void OnRevertDrag(const gfx::Point& location);
 
+  // Notifies that the window lost the activation.
+  void OnActivationLost();
+
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }

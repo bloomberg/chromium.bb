@@ -342,6 +342,9 @@ void WorkspaceLayoutManager::OnWindowActivating(ActivationReason reason,
 void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
                                                aura::Window* gained_active,
                                                aura::Window* lost_active) {
+  if (lost_active)
+    wm::GetWindowState(lost_active)->OnActivationLost();
+
   UpdateFullscreenState();
   UpdateShelfVisibility();
 }
