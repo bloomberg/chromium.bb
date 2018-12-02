@@ -111,7 +111,8 @@ static const struct backend *drv_get_backend(int fd)
 #ifdef DRV_VC4
 		&backend_vc4,
 #endif
-		&backend_vgem,     &backend_virtio_gpu,
+		&backend_vgem,
+		&backend_virtio_gpu,
 	};
 
 	for (i = 0; i < ARRAY_SIZE(backend_list); i++)
