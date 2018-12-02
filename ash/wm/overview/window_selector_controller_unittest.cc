@@ -55,6 +55,8 @@ class TestShellObserver : public ShellObserver {
 
     EXPECT_EQ(UNKNOWN, starting_animation_state_);
     starting_animation_state_ = canceled ? CANCELED : COMPLETED;
+    if (run_loop_)
+      run_loop_->Quit();
   }
   void OnOverviewModeEndingAnimationComplete(bool canceled) override {
     if (!should_monitor_animation_state_)
@@ -62,6 +64,8 @@ class TestShellObserver : public ShellObserver {
 
     EXPECT_EQ(UNKNOWN, ending_animation_state_);
     ending_animation_state_ = canceled ? CANCELED : COMPLETED;
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
   void Reset() {
@@ -70,13 +74,17 @@ class TestShellObserver : public ShellObserver {
   }
 
   void WaitForStartingAnimationComplete() {
-    while (starting_animation_state_ != COMPLETED)
-      base::RunLoop().RunUntilIdle();
+    while (starting_animation_state_ != COMPLETED) {
+      run_loop_ = std::make_unique<base::RunLoop>();
+      run_loop_->RunUntilIdle();
+    }
   }
 
   void WaitForEndingAnimationComplete() {
-    while (ending_animation_state_ != COMPLETED)
-      base::RunLoop().RunUntilIdle();
+    while (ending_animation_state_ != COMPLETED) {
+      run_loop_ = std::make_unique<base::RunLoop>();
+      run_loop_->RunUntilIdle();
+    }
   }
 
   bool is_ended() const { return ending_animation_state_ != UNKNOWN; }
@@ -105,6 +113,8 @@ class TestShellObserver : public ShellObserver {
   // If false, skips the checks in OnOverviewMode Starting/Ending
   // AnimationComplete.
   bool should_monitor_animation_state_;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
 };
