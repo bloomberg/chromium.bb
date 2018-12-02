@@ -1,0 +1,16 @@
+table:
+  locale: de-CH
+  grade: 1
+  __assert-match: de-ch-g1.ctb
+tests:
+  # Converted from lastworditalafter.c.
+  # Checks the "endemphphrase ital after" rule.
+  # The first emphasised word (funktioniere) is preceded by an
+  # emphasis sign and the second emphasised word (nicht) is followed
+  # by an emphasis sign.
+  - - "Er sagte es funktioniere nicht immer wie erwartet."
+    - "_ER SAGTE ES __FUNKTION0RE NI4T', IMMER W0 ERWARTET."
+    - typeform:
+        italic: '++          ++++++++++++++++++                    '
+      xfail: true
+    # Actual output: "ER'. SAGTE ES FUNKTION0RE NI4T'. IMMER W0 ERWARTET."

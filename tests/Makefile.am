@@ -14,70 +14,31 @@ LDADD =							\
 	$(top_builddir)/tools/gnulib/libgnutools.la	\
 	$(LTLIBINTL)
 
-backtranslate_SOURCES = backtranslate.c
-backtranslate_noUndefinedDots_SOURCES = backtranslate_noUndefinedDots.c
-backtranslate_partialTrans_SOURCES = backtranslate_noUndefinedDots.c
-backtranslate_with_letsign_SOURCES = backtranslate_with_letsign.c
-capitalization_SOURCES = capitalization.c
-capitalized_word_SOURCES = default_table.h capitalized_word.c
 checkTable_SOURCES = checkTable.c
-compbrlAtCursor_SOURCES = compbrlAtCursor.c
 emphclass_SOURCES = emphclass.c
-en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
-inpos_SOURCES = inpos.c
-inpos_compbrl_SOURCES = default_table.h inpos_compbrl.c
-inpos_match_replace_SOURCES = inpos_match_replace.c
-lastworditalafter_SOURCES = default_table.h lastworditalafter.c
-letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
-pass0_typebuf_SOURCES = pass0_typebuf.c
-pass2_SOURCES = pass2.c
-pass2_inpos_SOURCES = pass2_inpos.c
-present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
-squash_space_SOURCES = squash_space.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
-uplow_with_unicode_SOURCES = uplow_with_unicode.c
 check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
 
 program_TESTS =					\
-	backtranslate				\
-	backtranslate_noUndefinedDots		\
-	backtranslate_partialTrans		\
-	backtranslate_with_letsign		\
-	capitalization				\
-	capitalized_with_sentance		\
-	capitalized_word			\
 	checkTable				\
 	check_metadata				\
-	compbrlAtCursor				\
 	emphclass				\
-	en_gb_g1_italics			\
 	findTable				\
 	getTable				\
 	hash_collision				\
 	hyphenate_xxx				\
-	inpos					\
-	inpos_compbrl				\
-	inpos_match_replace			\
-	lastworditalafter			\
-	letterDefTest				\
 	logging					\
-	pass0_typebuf				\
-	pass2					\
-	pass2_inpos				\
-	present_progressive			\
 	resolve_table				\
-	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	uplow_with_unicode			\
 	suggestChunks
 
 check_PROGRAMS = $(program_TESTS)
@@ -93,20 +54,11 @@ dist_check_SCRIPTS +=	 			\
 	ueb_test_data.pl
 endif
 
-# The present_progressive should not really fail but for the moment
-# the issue doesn't seem to be critical enough that anybody has enough
-# interest to fix it.
-XFAIL_TESTS =					\
-	present_progressive			\
-	lastworditalafter			\
-	en_gb_g1_italics			\
-	squash_space
-
 dist_braille_specs_TESTS =				  \
 	braille-specs/ar-ar-g1_harness.yaml		  \
 	braille-specs/ar-fa_harness.yaml		  \
 	braille-specs/chr-us-g1_harness.yaml		  \
-	braille-specs/cs_harness.yaml		  \
+	braille-specs/cs_harness.yaml			  \
 	braille-specs/cs-comp8_harness.yaml		  \
 	braille-specs/da-dk-g08.yaml			  \
 	braille-specs/da-dk-g16.yaml			  \
@@ -122,6 +74,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/da-dk-g28-dictionary_harness.yaml	  \
 	braille-specs/da-dk-g28.yaml			  \
 	braille-specs/da-dk-g28l.yaml			  \
+	braille-specs/de-ch-g1.yaml			  \
 	braille-specs/el-backward.yaml			  \
 	braille-specs/el-forward.yaml			  \
 	braille-specs/en-GB-g2_backward.yaml		  \
@@ -145,6 +98,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/en-ueb-michael-robin.yaml		  \
 	braille-specs/en-us-comp8-ext-back_harness.yaml	  \
 	braille-specs/en-us-comp8-ext-for_harness.yaml	  \
+	braille-specs/en-us-g2.yaml			  \
 	braille-specs/en-us-g2-dictionary_harness.yaml	  \
 	braille-specs/en-us-g2-end-emphasis_harness.yaml  \
 	braille-specs/eo-g1_harness.yaml		  \
@@ -203,10 +157,11 @@ dist_yaml_TESTS =			  \
 	yaml/begcaps_endcaps.yaml	  \
 	yaml/before_begmidword.yaml	  \
 	yaml/broken_equals_operand.yaml	  \
+	yaml/capitalization.yaml	  \
 	yaml/capsnocont.yaml		  \
 	yaml/capsword_for_back.yaml	  \
 	yaml/compbrlAtCursor_with_equals.yaml	\
-	yaml/emphasis-full.yaml	  \
+	yaml/emphasis-full.yaml		  \
 	yaml/emphasis-no-context.yaml	  \
 	yaml/example_test.yaml		  \
 	yaml/foo.yaml			  \
@@ -233,6 +188,11 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/noletsignafter.yaml	  \
+	yaml/noUndefinedDots.yaml	  \
+	yaml/partialTrans.yaml		  \
+	yaml/pass0_typebuf.yaml		  \
+	yaml/present_progressive.yaml	  \
+	yaml/squash_space.yaml		  \
 	yaml/syllable.yaml
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
@@ -242,7 +202,7 @@ LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS) $(YAML_LOG_COMPILER_SCRIPT)
 
-XFAIL_TESTS +=					\
+XFAIL_TESTS =					\
 	ueb_test_data.pl
 
 
