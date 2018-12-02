@@ -247,14 +247,16 @@ TestSyncedWindowDelegate::~TestSyncedWindowDelegate() = default;
 
 void TestSyncedWindowDelegate::OverrideTabAt(int index,
                                              SyncedTabDelegate* delegate) {
+  if (index >= static_cast<int>(tab_delegates_.size()))
+    tab_delegates_.resize(index + 1, nullptr);
+
   tab_delegates_[index] = delegate;
 }
 
 void TestSyncedWindowDelegate::CloseTab(SessionID tab_id) {
-  base::EraseIf(tab_delegates_,
-                [tab_id](const std::pair<int, SyncedTabDelegate*>& entry) {
-                  return entry.second->GetSessionId() == tab_id;
-                });
+  base::EraseIf(tab_delegates_, [tab_id](SyncedTabDelegate* tab) {
+    return tab->GetSessionId() == tab_id;
+  });
 }
 
 void TestSyncedWindowDelegate::SetIsSessionRestoreInProgress(bool value) {
@@ -294,10 +296,10 @@ bool TestSyncedWindowDelegate::IsTabPinned(const SyncedTabDelegate* tab) const {
 }
 
 SyncedTabDelegate* TestSyncedWindowDelegate::GetTabAt(int index) const {
-  if (tab_delegates_.find(index) != tab_delegates_.end())
-    return tab_delegates_.find(index)->second;
+  if (index >= static_cast<int>(tab_delegates_.size()))
+    return nullptr;
 
-  return nullptr;
+  return tab_delegates_[index];
 }
 
 SessionID TestSyncedWindowDelegate::GetTabIdAt(int index) const {
