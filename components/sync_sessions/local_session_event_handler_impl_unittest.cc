@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sync/base/time.h"
@@ -72,7 +71,6 @@ class MockDelegate : public LocalSessionEventHandlerImpl::Delegate {
 
   MOCK_METHOD0(CreateLocalSessionWriteBatch,
                std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>());
-  MOCK_METHOD1(IsTabNodeUnsynced, bool(int tab_node_id));
   MOCK_METHOD2(TrackLocalNavigationId,
                void(base::Time timestamp, int unique_id));
   MOCK_METHOD1(OnPageFaviconUpdated, void(const GURL& page_url));
@@ -357,16 +355,6 @@ TEST_F(LocalSessionEventHandlerImplTest, DontUpdateWindowIdForPlaceholderTab) {
   UpdateTrackerWithSpecifics(placeholder_tab, base::Time::Now(),
                              &session_tracker_);
 
-  // Mimic the header being restored from peristence too.
-  session_tracker_.PutWindowInSession(
-      kSessionTag, SessionID::FromSerializedValue(kWindowId1));
-  session_tracker_.PutTabInWindow(kSessionTag,
-                                  SessionID::FromSerializedValue(kWindowId1),
-                                  SessionID::FromSerializedValue(kTabId1));
-  session_tracker_.PutTabInWindow(kSessionTag,
-                                  SessionID::FromSerializedValue(kWindowId1),
-                                  SessionID::FromSerializedValue(kTabId2));
-
   // Window ID has changed when the browser is started.
   TestSyncedWindowDelegate* window = AddWindow(kWindowId2);
   AddTab(kWindowId2, kFoo1, kTabId1);
@@ -588,78 +576,6 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
       .WillOnce(Return(ByMove(std::move(navigation_mock_batch))));
 
   AddTab(kWindowId1, kBar1, kTabId2);
-}
-
-TEST_F(LocalSessionEventHandlerImplTest, PropagateClosedTab) {
-  AddWindow(kWindowId1);
-  AddTab(kWindowId1, kFoo1, kTabId1);
-  TestSyncedTabDelegate* tab2 = AddTab(kWindowId1, kBar1, kTabId2);
-
-  InitHandler();
-
-  // Closing a tab (later below) is expected to verify if the sync entity is
-  // unsynced.
-  EXPECT_CALL(mock_delegate_, IsTabNodeUnsynced(/*tab_node_id=*/0));
-
-  // Closing a tab is expected to update the header and the remaining tab (this
-  // test issues a navigation for it, but it would have been updated anyway).
-  auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-  EXPECT_CALL(
-      *mock_batch,
-      Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId2}))));
-  EXPECT_CALL(*mock_batch,
-              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId2,
-                                     /*tab_node_id=*/1, /*urls=*/{kBar1}))));
-  EXPECT_CALL(*mock_batch, Commit());
-  EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
-      .WillOnce(Return(ByMove(std::move(mock_batch))));
-
-  // Close tab and force reassociation.
-  window_getter_.CloseTab(SessionID::FromSerializedValue(kTabId1));
-  handler_->OnLocalTabModified(tab2);
-}
-
-TEST_F(LocalSessionEventHandlerImplTest,
-       PropagateClosedTabWithDeferredRecyclingAndImmediateDeletion) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{kDeferRecyclingOfSyncTabNodesIfUnsynced,
-                            kTabNodePoolImmediateDeletion},
-      /*disabled_features=*/{});
-
-  // We start with three tabs.
-  AddWindow(kWindowId1);
-  AddTab(kWindowId1, kFoo1, kTabId1);
-  AddTab(kWindowId1, kBar1, kTabId2);
-  TestSyncedTabDelegate* tab3 = AddTab(kWindowId1, kBaz1, kTabId3);
-
-  InitHandler();
-
-  // |kTabId2| is unsynced, so it shouldn't be deleted even if it's closed.
-  EXPECT_CALL(mock_delegate_, IsTabNodeUnsynced(/*tab_node_id=*/0))
-      .WillOnce(Return(false));
-  EXPECT_CALL(mock_delegate_, IsTabNodeUnsynced(/*tab_node_id=*/1))
-      .WillOnce(Return(true));
-
-  // Closing two tabs (later below) is expected to update the header and the
-  // remaining tab. In addition, one of the two closed tabs (the one that is
-  // synced) should be deleted.
-  auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-  EXPECT_CALL(
-      *mock_batch,
-      Put(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId3}))));
-  EXPECT_CALL(*mock_batch,
-              Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId3,
-                                     /*tab_node_id=*/2, /*urls=*/{kBaz1}))));
-  EXPECT_CALL(*mock_batch, Delete(/*tab_node_id=*/0));
-  EXPECT_CALL(*mock_batch, Commit());
-  EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
-      .WillOnce(Return(ByMove(std::move(mock_batch))));
-
-  // Close two tabs and force reassociation.
-  window_getter_.CloseTab(SessionID::FromSerializedValue(kTabId1));
-  window_getter_.CloseTab(SessionID::FromSerializedValue(kTabId2));
-  handler_->OnLocalTabModified(tab3);
 }
 
 TEST_F(LocalSessionEventHandlerImplTest, PropagateNewCustomTab) {

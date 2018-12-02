@@ -72,7 +72,6 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
   // LocalSessionEventHandlerImpl::Delegate implementation.
   std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
   CreateLocalSessionWriteBatch() override;
-  bool IsTabNodeUnsynced(int tab_node_id) override;
   void TrackLocalNavigationId(base::Time timestamp, int unique_id) override;
   void OnPageFaviconUpdated(const GURL& page_url) override;
   void OnFaviconVisited(const GURL& page_url, const GURL& favicon_url) override;
