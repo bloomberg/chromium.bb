@@ -18,6 +18,13 @@
 
 namespace minidump_uploader {
 
+bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport& report,
+                   crashpad::HTTPMultipartBuilder* http_multipart_builder,
+                   pid_t* pid);
+
+bool WriteBodyToFile(crashpad::HTTPBodyStream* body,
+                     crashpad::FileWriterInterface* writer);
+
 namespace {
 
 #if defined(OS_ANDROID)
@@ -32,9 +39,32 @@ enum class ProcessedMinidumpCounts {
 };
 #endif  // OS_ANDROID
 
-bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
-                   const base::FilePath& dest_dir) {
-  crashpad::FileReader* reader = report->Reader();
+bool MimeifyReportAndWriteToDirectory(
+    const crashpad::CrashReportDatabase::UploadReport& report,
+    const base::FilePath& dest_dir) {
+  crashpad::HTTPMultipartBuilder builder;
+  pid_t pid;
+  if (!MimeifyReport(report, &builder, &pid)) {
+    return false;
+  }
+
+  crashpad::FileWriter writer;
+  if (!writer.Open(dest_dir.Append(base::StringPrintf(
+                       "%s.dmp%d", report.uuid.ToString().c_str(), pid)),
+                   crashpad::FileWriteMode::kCreateOrFail,
+                   crashpad::FilePermissions::kOwnerOnly)) {
+    return false;
+  }
+
+  return WriteBodyToFile(builder.GetBodyStream().get(), &writer);
+}
+
+}  // namespace
+
+bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport& report,
+                   crashpad::HTTPMultipartBuilder* http_multipart_builder,
+                   pid_t* pid) {
+  crashpad::FileReader* reader = report.Reader();
   crashpad::FileOffset start_offset = reader->SeekGet();
   if (start_offset < 0) {
     return false;
@@ -55,8 +85,6 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
     return false;
   }
 
-  crashpad::HTTPMultipartBuilder http_multipart_builder;
-
   static constexpr char kMinidumpKey[] = "upload_file_minidump";
   static constexpr char kPtypeKey[] = "ptype";
 
@@ -65,7 +93,7 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
       LOG(WARNING) << "reserved key " << kv.first << ", discarding value "
                    << kv.second;
     } else {
-      http_multipart_builder.SetFormData(kv.first, kv.second);
+      http_multipart_builder->SetFormData(kv.first, kv.second);
 #if defined(OS_ANDROID)
       if (kv.first == kPtypeKey) {
         ProcessedMinidumpCounts count_type;
@@ -85,30 +113,23 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
     }
   }
 
-  http_multipart_builder.SetFileAttachment(kMinidumpKey,
-                                           report->uuid.ToString() + ".dmp",
-                                           reader, "application/octet-stream");
+  http_multipart_builder->SetFileAttachment(kMinidumpKey,
+                                            report.uuid.ToString() + ".dmp",
+                                            reader, "application/octet-stream");
 
-  std::unique_ptr<crashpad::HTTPBodyStream> body =
-      http_multipart_builder.GetBodyStream();
-  crashpad::FileWriter writer;
-  if (!writer.Open(dest_dir.Append(base::StringPrintf(
-                       "%s.dmp%d", report->uuid.ToString().c_str(),
-                       minidump_process_snapshot.ProcessID())),
-                   crashpad::FileWriteMode::kCreateOrFail,
-                   crashpad::FilePermissions::kOwnerOnly)) {
-    return false;
-  }
+  *pid = minidump_process_snapshot.ProcessID();
+  return true;
+}
 
+bool WriteBodyToFile(crashpad::HTTPBodyStream* body,
+                     crashpad::FileWriterInterface* writer) {
   uint8_t buffer[4096];
   crashpad::FileOperationResult bytes_read;
   while ((bytes_read = body->GetBytesBuffer(buffer, sizeof(buffer))) > 0) {
-    writer.Write(buffer, bytes_read);
+    writer->Write(buffer, bytes_read);
   }
   return bytes_read == 0;
 }
-
-}  // namespace
 
 void RewriteMinidumpsAsMIMEs(const base::FilePath& src_dir,
                              const base::FilePath& dest_dir) {
@@ -135,7 +156,7 @@ void RewriteMinidumpsAsMIMEs(const base::FilePath& src_dir,
         continue;
 
       case crashpad::CrashReportDatabase::kNoError:
-        if (MimeifyReport(upload_report.get(), dest_dir)) {
+        if (MimeifyReportAndWriteToDirectory(*upload_report.get(), dest_dir)) {
           db->RecordUploadComplete(std::move(upload_report), std::string());
         } else {
           crashpad::Metrics::CrashUploadSkipped(
