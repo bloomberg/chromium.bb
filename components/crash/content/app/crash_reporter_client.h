@@ -153,6 +153,11 @@ class CrashReporterClient {
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 
 #if defined(OS_ANDROID)
+  // Used by WebView to sample crashes without generating the unwanted dumps. If
+  // the returned value is less than 100, crash dumping will be sampled to that
+  // percentage.
+  virtual unsigned int GetCrashDumpPercentageForWebView();
+
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor();
 

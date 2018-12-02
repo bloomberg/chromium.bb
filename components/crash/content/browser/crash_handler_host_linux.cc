@@ -28,6 +28,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -569,15 +570,18 @@ void CrashHandlerHost::Init() {
 bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
                                             base::ScopedFD* handler_fd) {
   int signo;
-  iovec iov;
-  iov.iov_base = &signo;
-  iov.iov_len = sizeof(signo);
+  unsigned char request_dump;
+  iovec iov[2];
+  iov[0].iov_base = &signo;
+  iov[0].iov_len = sizeof(signo);
+  iov[1].iov_base = &request_dump;
+  iov[1].iov_len = sizeof(request_dump);
 
   msghdr msg;
   msg.msg_name = nullptr;
   msg.msg_namelen = 0;
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
+  msg.msg_iov = iov;
+  msg.msg_iovlen = base::size(iov);
 
   char cmsg_buf[CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(ucred))];
   msg.msg_control = cmsg_buf;
@@ -616,6 +620,14 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
   }
 
   NotifyCrashSignalObservers(child_pid, signo);
+
+#if defined(OS_ANDROID)
+  if (!request_dump) {
+    return false;
+  }
+#else
+  DCHECK(request_dump);
+#endif
 
   handler_fd->reset(child_fd.release());
   return true;
