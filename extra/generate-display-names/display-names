@@ -1,5 +1,7 @@
 * ../../tables/afr-za-g1.ctb                    Afrikaans braille
-* ../../tables/ar.tbl                           Arabic braille
+* ../../tables/ar.tbl                           Arabic uncontracted braille
+* ../../tables/ar-ar-g2.ctb                     Arabic contracted braille
+* ../../tables/ar-ar-comp8.utb                  Arabic computer braille
 * ../../tables/as.tbl                           Assamese braille
 * ../../tables/awa.tbl                          Awadhi braille
 * ../../tables/bg.tbl                           Bulgarian computer braille
@@ -33,7 +35,6 @@
 * ../../tables/dra.tbl                          Dravidian computer braille
 * ../../tables/el.tbl                           Greek braille
 * ../../tables/gr-bb.ctb                        Ancient Greek braille
-* ../../tables/ar-fa.utb                        Persian braille
 * ../../tables/fa-ir-comp8.ctb                  Persian computer braille
 * ../../tables/fa-ir-g1.utb                     Persian braille
   ../../tables/en-ueb-g1.ctb                    English (UEB) uncontracted braille
