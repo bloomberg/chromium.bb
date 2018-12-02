@@ -66,53 +66,63 @@ following is written like a shell script to allow copy/paste to a shell, ignore
 comments and change the obvious lines.  These instructions should work on Linux
 or OSX.  They may assume a modern version of git (I'm using 2.2.1).
 
-# Everything based in sqlite subdir.
+# The steps below are easier if done in the SQLite directory.
 cd third_party/sqlite
 
-BASE=3080704
+# Must match the version in //third_party/sqlite/sqlite-src-xxxxxxx.
+# This is SQLite's version number, and uses upstream's convention.
+export BASE=3250300
+export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Create a reference branch.
-git checkout -b sqlite_${BASE} master
+git new-branch sqlite-base
 git rm -rf src
-rm -rf src  # In case there are things git doesn't know in there.
-cp -a sqlite-src-${BASE} src
-# -f includes ignored files, of which there are a couple.
-git add -f src/
-git commit -m "Reset to sqlite-src-${BASE}"
-# This branch is unlikely to build.
+cp -r sqlite-src-${BASE}/ src
+# Clean up trailing whitespace and CRLF so any patches look clean.
+find src/ -type f -not -iname "*.db" -not -iname "*.eps" -not -iname "*.ico" \
+    -not -iname "*.jpg" -not -iname "*.pfx" -not -iname "*.png" \
+    -not -iname "*.tiff" -not -iname "*.vsix" \
+    -exec $GNU_SED --in-place 's/[[:space:]]\+$//' {} \+
+git add src/
+git clean -i -d -x src  # Make sure no file is git-ignored.
+git commit -m "Squash: Reset SQLite src/ to sqlite-src-${BASE}."
+# This branch will not build. It will be used for rebasing, then deleted.
 
 #### Create a reference branch with patches applied.
-git checkout -b sqlite_${BASE}_patched master
-git rebase sqlite_${BASE}
-git am --keep-non-patch patches/*.patch
-git diff master
-# This branch should be identical to master, unless someone forgot to export
-# their changes into a patch.  If so, do that as a separate CL and start over.
+git new-branch --upstream-current sqlite-dev
+git am --keep-non-patch --ignore-space-change patches/*.patch
+git diff --ignore-space-change origin/master src/
+# This branch should be identical to master.
 
-#### Cherry-pick your change.
-git cherry-pick <your change>
-# This branch should be identical to your development branch, except
-# amalgamation.
 
+#### Develop and validate the change, or cherry-pick it from a dev branch.
+# The goal is to have a set of reasonably-independent CLs which can be
+# understood separately, so that future importers can sensibly determine how to
+# handle conflicts.  So use git-rebase and slipstream fixups back into existing
+# patches, or add a new patch.
+./scripts/generate_amalgamation.sh
+git cl format amalgamation/rename_exports.h
+cd ../..
+ninja -C out/Default
+# Check that extract_sqlite_api.py added chrome_ to all exported symbols.
+# Only "_fini" and "_init" should be unprefixed.
+nm -B out/Default/libchromium_sqlite3.so | cut -c 18- | sort | grep '^T'
+out/Default/sql_unittests
+third_party/blink/tools/run_web_tests.py -t Default storage/websql/*
+cd third_party/sqlite
+
+#### Create the review.
 # Rebuild the patch set.
 git rm patches/*
-git format-patch --output-directory=patches sqlite_${BASE}..HEAD
+git format-patch --output-directory=patches --ignore-space-change \
+    --zero-commit sqlite-base..sqlite-dev
+git add amalgamation/
 git add patches/*.patch
-git commit -m "Rebuild patches for sqlite_${BASE}"
+git commit -m "Squash: regenerate amalgamation and patches."
+git branch --set-upstream-to=origin/master
+git cl upload --squash
 
-# Re-generate the amalgamation.
-./scripts/generate_amalgamation.sh
-git commit -m './scripts/generate_amalgamation.sh' amalgamation/
-# At this point everything should build and work.
-
-# Do a squash upload.  This should add your single patch to patches/, and apply
-# the changes your patch represents to src/ and amalgamation/.  Other patches
-# will have hash changes.  A sensible check-in comment would be something like
-# the patch's checkin comment, plus "regenerate amalgamation and generate patch
-# file."
 # TODO(pwnall): Should hash changes be checked in, or backed out?
-
-# Find unsuspecting victim and send review.
 
 ---
 
