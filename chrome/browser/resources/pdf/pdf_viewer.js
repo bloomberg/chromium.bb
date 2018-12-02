@@ -17,14 +17,14 @@ let SaveDataMessageData;
  * @return {number} Width of a scrollbar in pixels
  */
 function getScrollbarWidth() {
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.style.visibility = 'hidden';
   div.style.overflow = 'scroll';
   div.style.width = '50px';
   div.style.height = '50px';
   div.style.position = 'absolute';
   document.body.appendChild(div);
-  var result = div.offsetWidth - div.clientWidth;
+  const result = div.offsetWidth - div.clientWidth;
   div.parentNode.removeChild(div);
   return result;
 }
@@ -37,9 +37,9 @@ function getScrollbarWidth() {
  */
 function getFilenameFromURL(url) {
   // Ignore the query and fragment.
-  var mainUrl = url.split(/#|\?/)[0];
-  var components = mainUrl.split(/\/|\\/);
-  var filename = components[components.length - 1];
+  const mainUrl = url.split(/#|\?/)[0];
+  const components = mainUrl.split(/\/|\\/);
+  const filename = components[components.length - 1];
   try {
     return decodeURIComponent(filename);
   } catch (e) {
@@ -142,7 +142,7 @@ function PDFViewer(browserApi) {
 
   // Parse open pdf parameters.
   this.paramsParser_ = new OpenPDFParamsParser(this.postMessage_.bind(this));
-  var toolbarEnabled =
+  const toolbarEnabled =
       this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
       !this.isPrintPreview_;
 
@@ -164,10 +164,10 @@ function PDFViewer(browserApi) {
   }
 
   // Create the viewport.
-  var shortWindow = window.innerHeight < PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT;
-  var topToolbarHeight =
+  const shortWindow = window.innerHeight < PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT;
+  const topToolbarHeight =
       (toolbarEnabled) ? PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
-  var defaultZoom =
+  const defaultZoom =
       this.browserApi_.getZoomBehavior() == BrowserApi.ZoomBehavior.MANAGE ?
       this.browserApi_.getDefaultZoom() :
       1.0;
@@ -199,14 +199,14 @@ function PDFViewer(browserApi) {
   this.plugin_.setAttribute('src', this.originalUrl_);
   this.plugin_.setAttribute(
       'stream-url', this.browserApi_.getStreamInfo().streamUrl);
-  var headers = '';
-  for (var header in this.browserApi_.getStreamInfo().responseHeaders) {
+  let headers = '';
+  for (const header in this.browserApi_.getStreamInfo().responseHeaders) {
     headers += header + ': ' +
         this.browserApi_.getStreamInfo().responseHeaders[header] + '\n';
   }
   this.plugin_.setAttribute('headers', headers);
 
-  var backgroundColor = PDFViewer.DARK_BACKGROUND_COLOR;
+  const backgroundColor = PDFViewer.DARK_BACKGROUND_COLOR;
   this.plugin_.setAttribute('background-color', backgroundColor);
   this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
   this.plugin_.setAttribute('javascript', this.javascript_);
@@ -266,7 +266,7 @@ function PDFViewer(browserApi) {
   });
 
   document.body.addEventListener('navigate', e => {
-    var disposition = e.detail.newtab ?
+    const disposition = e.detail.newtab ?
         Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
         Navigator.WindowOpenDisposition.CURRENT_TAB;
     this.navigator_.navigate(e.detail.uri, disposition);
@@ -296,7 +296,7 @@ function PDFViewer(browserApi) {
   document.addEventListener(
       'contextmenu', this.handleContextMenuEvent_.bind(this));
 
-  var tabId = this.browserApi_.getStreamInfo().tabId;
+  const tabId = this.browserApi_.getStreamInfo().tabId;
   this.navigator_ = new Navigator(
       this.originalUrl_, this.viewport_, this.paramsParser_,
       new NavigatorDelegate(tabId));
@@ -316,16 +316,16 @@ PDFViewer.prototype = {
    * @private
    */
   handleKeyEvent_: function(e) {
-    var position = this.viewport_.position;
+    const position = this.viewport_.position;
     // Certain scroll events may be sent from outside of the extension.
-    var fromScriptingAPI = e.fromScriptingAPI;
+    const fromScriptingAPI = e.fromScriptingAPI;
 
     if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented)
       return;
 
     this.toolbarManager_.hideToolbarsAfterTimeout(e);
 
-    var pageUpHandler = () => {
+    const pageUpHandler = () => {
       // Go to the previous page if we are fit-to-page or fit-to-height.
       if (this.viewport_.isPagedMode()) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
@@ -336,7 +336,7 @@ PDFViewer.prototype = {
         this.viewport.position = position;
       }
     };
-    var pageDownHandler = () => {
+    const pageDownHandler = () => {
       // Go to the next page if we are fit-to-page or fit-to-height.
       if (this.viewport_.isPagedMode()) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
@@ -569,8 +569,8 @@ PDFViewer.prototype = {
       this.isUserInitiatedEvent_ = false;
       this.zoomToolbar_.forceFit(params.view);
       if (params.viewPosition) {
-        var zoomedPositionShift = params.viewPosition * this.viewport_.zoom;
-        var currentViewportPosition = this.viewport_.position;
+        const zoomedPositionShift = params.viewPosition * this.viewport_.zoom;
+        const currentViewportPosition = this.viewport_.position;
         if (params.view == FittingType.FIT_TO_WIDTH)
           currentViewportPosition.y += zoomedPositionShift;
         else if (params.view == FittingType.FIT_TO_HEIGHT)
@@ -708,7 +708,7 @@ PDFViewer.prototype = {
         }
         break;
       case 'email':
-        var href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
+        const href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
             '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
             '&body=' + message.data.body;
         window.location.href = href;
@@ -837,9 +837,9 @@ PDFViewer.prototype = {
     this.postMessage_({type: 'stopScrolling'});
 
     if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
-      var position = this.viewport_.position;
-      var zoom = this.viewport_.zoom;
-      var pinchPhase = this.viewport_.pinchPhase;
+      const position = this.viewport_.position;
+      const zoom = this.viewport_.zoom;
+      const pinchPhase = this.viewport_.pinchPhase;
       this.postMessage_({
         type: 'viewport',
         userInitiated: true,
@@ -858,11 +858,11 @@ PDFViewer.prototype = {
    * @private
    */
   afterZoom_: function() {
-    var position = this.viewport_.position;
-    var zoom = this.viewport_.zoom;
-    var pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
-    var pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
-    var pinchPhase = this.viewport_.pinchPhase;
+    const position = this.viewport_.position;
+    const zoom = this.viewport_.zoom;
+    const pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
+    const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
+    const pinchPhase = this.viewport_.pinchPhase;
 
     this.postMessage_({
       type: 'viewport',
@@ -947,10 +947,10 @@ PDFViewer.prototype = {
       return;
 
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
-    var hasScrollbars = this.viewport_.documentHasScrollbars();
-    var scrollbarWidth = this.viewport_.scrollbarWidth;
-    var verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
-    var horizontalScrollbarWidth =
+    const hasScrollbars = this.viewport_.documentHasScrollbars();
+    const scrollbarWidth = this.viewport_.scrollbarWidth;
+    const verticalScrollbarWidth = hasScrollbars.vertical ? scrollbarWidth : 0;
+    const horizontalScrollbarWidth =
         hasScrollbars.horizontal ? scrollbarWidth : 0;
 
     // Shift the zoom toolbar to the left by half a scrollbar width. This
@@ -970,7 +970,7 @@ PDFViewer.prototype = {
     this.zoomToolbar_.style.bottom = -horizontalScrollbarWidth + 'px';
 
     // Update the page indicator.
-    var visiblePage = this.viewport_.getMostVisiblePage();
+    const visiblePage = this.viewport_.getMostVisiblePage();
 
     if (this.toolbar_)
       this.toolbar_.pageNo = visiblePage + 1;
@@ -986,8 +986,8 @@ PDFViewer.prototype = {
       }
     }
 
-    var visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
-    var size = this.viewport_.size;
+    const visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
+    const size = this.viewport_.size;
     this.sendScriptingMessage_({
       type: 'viewport',
       pageX: visiblePageDimensions.x,
@@ -1062,10 +1062,10 @@ PDFViewer.prototype = {
         this.lastViewportPosition_ = this.viewport_.position;
 
         // TODO(raymes): Disable these properly in the plugin.
-        var printButton = $('print-button');
+        const printButton = $('print-button');
         if (printButton)
           printButton.parentNode.removeChild(printButton);
-        var saveButton = $('save-button');
+        const saveButton = $('save-button');
         if (saveButton)
           saveButton.parentNode.removeChild(saveButton);
 
@@ -1085,7 +1085,7 @@ PDFViewer.prototype = {
         this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
         return true;
       case 'scrollPosition':
-        var position = this.viewport_.position;
+        const position = this.viewport_.position;
         position.y += message.data.y;
         position.x += message.data.x;
         this.viewport.position = position;
@@ -1104,7 +1104,7 @@ PDFViewer.prototype = {
    */
   sendScriptingMessage_: function(message) {
     if (this.parentWindow_ && this.parentOrigin_) {
-      var targetOrigin;
+      let targetOrigin;
       // Only send data back to the embedder if it is from the same origin,
       // unless we're sending it to ourselves (which could happen in the case
       // of tests). We also allow documentLoaded messages through as this won't

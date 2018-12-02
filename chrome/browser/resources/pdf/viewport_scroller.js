@@ -74,9 +74,9 @@ ViewportScroller.prototype = {
    * @private
    */
   dragScrollPage_: function() {
-    var position = this.viewport_.position;
-    var currentFrameTime = Date.now();
-    var timeAdjustment = (currentFrameTime - this.lastFrameTime_) /
+    const position = this.viewport_.position;
+    const currentFrameTime = Date.now();
+    const timeAdjustment = (currentFrameTime - this.lastFrameTime_) /
         ViewportScroller.DRAG_TIMER_INTERVAL_MS_;
     position.y += (this.scrollVelocity_.y * timeAdjustment);
     position.x += (this.scrollVelocity_.x * timeAdjustment);
@@ -93,13 +93,13 @@ ViewportScroller.prototype = {
    * @private
    */
   calculateVelocity_: function(event) {
-    var x =
+    const x =
         Math.min(
             Math.max(
                 -event.offsetX, event.offsetX - this.plugin_.offsetWidth, 0),
             ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
         Math.sign(event.offsetX);
-    var y =
+    const y =
         Math.min(
             Math.max(
                 -event.offsetY, event.offsetY - this.plugin_.offsetHeight, 0),

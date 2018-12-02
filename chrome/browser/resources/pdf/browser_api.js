@@ -142,7 +142,7 @@ class BrowserApi {
       return;
 
     chrome.tabs.onZoomChange.addListener(info => {
-      var zoomChangeInfo =
+      const zoomChangeInfo =
           /** @type {{tabId: number, newZoomFactor: number}} */ (info);
       if (zoomChangeInfo.tabId != this.streamInfo_.tabId)
         return;
@@ -172,7 +172,7 @@ function createBrowserApiForMimeHandlerView() {
            chrome.mimeHandlerPrivate.getStreamInfo(resolve);
          })
       .then(function(streamInfo) {
-        let promises = [];
+        const promises = [];
         let zoomBehavior = BrowserApi.ZoomBehavior.NONE;
         if (streamInfo.tabId != -1) {
           zoomBehavior = streamInfo.embedded ?
@@ -204,8 +204,8 @@ function createBrowserApiForMimeHandlerView() {
  *     from the URL.
  */
 function createBrowserApiForPrintPreview() {
-  let url = window.location.search.substring(1);
-  let streamInfo = {
+  const url = window.location.search.substring(1);
+  const streamInfo = {
     streamUrl: url,
     originalUrl: url,
     responseHeaders: {},

@@ -4,8 +4,8 @@
 
 (function() {
 
-var FIT_TO_PAGE_BUTTON_STATE = 0;
-var FIT_TO_WIDTH_BUTTON_STATE = 1;
+const FIT_TO_PAGE_BUTTON_STATE = 0;
+const FIT_TO_WIDTH_BUTTON_STATE = 1;
 
 Polymer({
   is: 'viewer-zoom-toolbar',
@@ -49,7 +49,7 @@ Polymer({
     this.fitToggle();
 
     // Toggle the button state since there was no mouse click.
-    var button = this.$['fit-button'];
+    const button = this.$['fit-button'];
     button.activeIndex =
         (button.activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
              FIT_TO_PAGE_BUTTON_STATE :
@@ -64,7 +64,7 @@ Polymer({
     this.fireFitToChangedEvent_(fittingType, false);
 
     // Set the button state since there was no mouse click.
-    var nextButtonState =
+    const nextButtonState =
         (fittingType == FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
                                                    FIT_TO_WIDTH_BUTTON_STATE);
     this.$['fit-button'].activeIndex = nextButtonState;
@@ -115,5 +115,4 @@ Polymer({
     }
   },
 });
-
 })();

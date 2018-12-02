@@ -30,7 +30,7 @@ Polymer({
   },
 
   pageNoCommitted: function() {
-    var page = parseInt(this.pageSelector.value, 10);
+    const page = parseInt(this.pageSelector.value, 10);
 
     if (!isNaN(page) && page <= this.docLength && page > 0)
       this.fire('change-page', {page: page - 1, origin: 'pageselector'});
@@ -41,7 +41,7 @@ Polymer({
 
   /** @private */
   docLengthChanged_: function() {
-    var numDigits = this.docLength.toString().length;
+    const numDigits = this.docLength.toString().length;
     this.pageSelector.style.width = numDigits + 'ch';
     // Set both sides of the slash to the same width, so that the layout is
     // exactly centered.

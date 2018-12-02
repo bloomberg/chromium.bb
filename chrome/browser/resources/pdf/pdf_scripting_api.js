@@ -9,7 +9,7 @@
  * @return {Event} A key event.
  */
 function DeserializeKeyEvent(dict) {
-  var e = document.createEvent('Event');
+  const e = document.createEvent('Event');
   e.initEvent('keydown', true, true);
   e.keyCode = dict.keyCode;
   e.code = dict.code;
@@ -43,7 +43,11 @@ function SerializeKeyEvent(event) {
  * has finished loading or failed to load.
  * @enum {string}
  */
-var LoadState = {LOADING: 'loading', SUCCESS: 'success', FAILED: 'failed'};
+const LoadState = {
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  FAILED: 'failed'
+};
 
 /**
  * Create a new PDFScriptingAPI. This provides a scripting interface to
@@ -76,25 +80,27 @@ function PDFScriptingAPI(window, plugin) {
          *   viewportHeight: number
          * }}
          */
-        var viewportData = event.data;
+        const viewportData = event.data;
         if (this.viewportChangedCallback_)
           this.viewportChangedCallback_(
               viewportData.pageX, viewportData.pageY, viewportData.pageWidth,
               viewportData.viewportWidth, viewportData.viewportHeight);
         break;
-      case 'documentLoaded':
-        var data = /** @type {{load_state: LoadState}} */ (event.data);
+      case 'documentLoaded': {
+        const data = /** @type {{load_state: LoadState}} */ (event.data);
         this.loadState_ = data.load_state;
         if (this.loadCallback_)
           this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
         break;
-      case 'getSelectedTextReply':
-        var data = /** @type {{selectedText: string}} */ (event.data);
+      }
+      case 'getSelectedTextReply': {
+        const data = /** @type {{selectedText: string}} */ (event.data);
         if (this.selectedTextCallback_) {
           this.selectedTextCallback_(data.selectedText);
           this.selectedTextCallback_ = null;
         }
         break;
+      }
       case 'sendKeyEvent':
         if (this.keyEventCallback_)
           this.keyEventCallback_(DeserializeKeyEvent(event.data.keyEvent));
@@ -257,8 +263,8 @@ PDFScriptingAPI.prototype = {
  * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
 function PDFCreateOutOfProcessPlugin(src, baseUrl) {
-  var client = new PDFScriptingAPI(window, null);
-  var iframe = assertInstanceof(
+  const client = new PDFScriptingAPI(window, null);
+  const iframe = assertInstanceof(
       window.document.createElement('iframe'), HTMLIFrameElement);
   iframe.setAttribute('src', baseUrl + '/index.html?' + src);
   // Prevent the frame from being tab-focusable.

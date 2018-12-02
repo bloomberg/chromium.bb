@@ -25,7 +25,7 @@ Polymer({
   },
 
   deny: function() {
-    var password = /** @type {!CrInputElement} */ (this.$.password);
+    const password = /** @type {!CrInputElement} */ (this.$.password);
     password.disabled = false;
     this.$.submit.disabled = false;
     this.invalid = true;
@@ -33,7 +33,7 @@ Polymer({
   },
 
   submit: function() {
-    var password = /** @type {!CrInputElement} */ (this.$.password);
+    const password = /** @type {!CrInputElement} */ (this.$.password);
     if (password.value.length == 0)
       return;
     password.disabled = true;

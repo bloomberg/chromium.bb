@@ -114,7 +114,7 @@ window.OpenPDFParamsParser = class {
       return params;
     }
 
-    for (let paramToken of paramTokens) {
+    for (const paramToken of paramTokens) {
       const keyValueSplit = paramToken.split('=');
       if (keyValueSplit.length != 2)
         continue;

@@ -21,11 +21,11 @@
  *   children: !Array<!Bookmark>
  * }}
  */
-var Bookmark;
+let Bookmark;
 
 (function() {
 /** Amount that each level of bookmarks is indented by (px). */
-var BOOKMARK_INDENT = 20;
+const BOOKMARK_INDENT = 20;
 
 Polymer({
   is: 'viewer-bookmark',

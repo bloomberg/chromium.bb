@@ -18,7 +18,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    var callback = this.fadeIn.bind(this, 2000);
+    const callback = this.fadeIn.bind(this, 2000);
     window.addEventListener('scroll', function() {
       requestAnimationFrame(callback);
     });
@@ -30,7 +30,7 @@ Polymer({
 
   /** @param {number} displayTime */
   fadeIn: function(displayTime) {
-    var percent = window.scrollY /
+    const percent = window.scrollY /
         (document.scrollingElement.scrollHeight -
          document.documentElement.clientHeight);
     this.style.top =
