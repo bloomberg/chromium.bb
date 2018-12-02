@@ -5,20 +5,20 @@
 'use strict';
 
 /** Idle time in ms before the UI is hidden. */
-var HIDE_TIMEOUT = 2000;
+const HIDE_TIMEOUT = 2000;
 /** Time in ms after force hide before toolbar is shown again. */
-var FORCE_HIDE_TIMEOUT = 1000;
+const FORCE_HIDE_TIMEOUT = 1000;
 /**
  * Velocity required in a mousemove to reveal the UI (pixels/ms). This is
  * intended to be high enough that a fast flick of the mouse is required to
  * reach it.
  */
-var SHOW_VELOCITY = 10;
+const SHOW_VELOCITY = 10;
 /** Distance from the top of the screen required to reveal the toolbars. */
-var TOP_TOOLBAR_REVEAL_DISTANCE = 100;
+const TOP_TOOLBAR_REVEAL_DISTANCE = 100;
 /** Distance from the bottom-right of the screen required to reveal toolbars. */
-var SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT = 150;
-var SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM = 250;
+const SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT = 150;
+const SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM = 250;
 
 
 
@@ -37,10 +37,11 @@ function isMouseNearTopToolbar(e) {
  * screen.
  */
 function isMouseNearSideToolbar(e, window) {
-  var atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
+  let atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
   if (isRTL())
     atSide = e.x < SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
-  var atBottom = e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
+  const atBottom =
+      e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
   return atSide && atBottom;
 }
 
@@ -80,7 +81,7 @@ ToolbarManager.prototype = {
     this.isMouseNearSideToolbar_ = isMouseNearSideToolbar(e, this.window_);
 
     this.keyboardNavigationActive = false;
-    var touchInteractionActive =
+    const touchInteractionActive =
         (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents);
 
     // Allow the top toolbar to be shown if the mouse moves away from the side
@@ -123,10 +124,10 @@ ToolbarManager.prototype = {
       if (this.lastMovementTimestamp == null) {
         this.lastMovementTimestamp = this.getCurrentTimestamp_();
       } else {
-        var movement =
+        const movement =
             Math.sqrt(e.movementX * e.movementX + e.movementY * e.movementY);
-        var newTime = this.getCurrentTimestamp_();
-        var interval = newTime - this.lastMovementTimestamp;
+        const newTime = this.getCurrentTimestamp_();
+        const interval = newTime - this.lastMovementTimestamp;
         this.lastMovementTimestamp = newTime;
 
         if (interval != 0)
@@ -250,7 +251,8 @@ ToolbarManager.prototype = {
   resizeDropdowns_: function() {
     if (!this.toolbar_)
       return;
-    var lowerBound = this.window_.innerHeight - this.zoomToolbar_.clientHeight;
+    const lowerBound =
+        this.window_.innerHeight - this.zoomToolbar_.clientHeight;
     this.toolbar_.setDropdownLowerBound(lowerBound);
   }
 };

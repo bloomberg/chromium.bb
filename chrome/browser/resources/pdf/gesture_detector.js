@@ -21,7 +21,7 @@ class GestureDetector {
         /** @type {function(!Event)} */ (this.onTouchStart_.bind(this)),
         {passive: true});
 
-    let boundOnTouch =
+    const boundOnTouch =
         /** @type {function(!Event)} */ (this.onTouch_.bind(this));
     this.element_.addEventListener('touchmove', boundOnTouch, {passive: true});
     this.element_.addEventListener('touchend', boundOnTouch, {passive: true});
@@ -85,9 +85,9 @@ class GestureDetector {
    * @private
    */
   notify_(pinchEvent) {
-    let listeners = this.listeners_.get(pinchEvent.type);
+    const listeners = this.listeners_.get(pinchEvent.type);
 
-    for (let l of listeners)
+    for (const l of listeners)
       l(pinchEvent);
   }
 
@@ -117,15 +117,15 @@ class GestureDetector {
     if (!this.pinchStartEvent_)
       return;
 
-    let lastEvent = /** @type {!TouchEvent} */ (this.lastEvent_);
+    const lastEvent = /** @type {!TouchEvent} */ (this.lastEvent_);
 
     // Check if the pinch ends with the current event.
     if (event.touches.length < 2 ||
         lastEvent.touches.length !== event.touches.length) {
-      let startScaleRatio =
+      const startScaleRatio =
           GestureDetector.pinchScaleRatio_(lastEvent, this.pinchStartEvent_);
-      let center = GestureDetector.center_(lastEvent);
-      let endEvent = {
+      const center = GestureDetector.center_(lastEvent);
+      const endEvent = {
         type: 'pinchend',
         startScaleRatio: startScaleRatio,
         center: center
@@ -136,10 +136,10 @@ class GestureDetector {
       return;
     }
 
-    let scaleRatio = GestureDetector.pinchScaleRatio_(event, lastEvent);
-    let startScaleRatio =
+    const scaleRatio = GestureDetector.pinchScaleRatio_(event, lastEvent);
+    const startScaleRatio =
         GestureDetector.pinchScaleRatio_(event, this.pinchStartEvent_);
-    let center = GestureDetector.center_(event);
+    const center = GestureDetector.center_(event);
     this.notify_({
       type: 'pinchupdate',
       scaleRatio: scaleRatio,
@@ -169,11 +169,11 @@ class GestureDetector {
 
     event.preventDefault();
 
-    let wheelScale = Math.exp(-event.deltaY / 100);
+    const wheelScale = Math.exp(-event.deltaY / 100);
     // Clamp scale changes from the wheel event as they can be
     // quite dramatic for non-synthetic ctrl-wheels.
-    let scale = Math.min(1.25, Math.max(0.75, wheelScale));
-    let position = {x: event.clientX, y: event.clientY};
+    const scale = Math.min(1.25, Math.max(0.75, wheelScale));
+    const position = {x: event.clientX, y: event.clientY};
 
     if (this.accumulatedWheelScale_ == null) {
       this.accumulatedWheelScale_ = 1.0;
@@ -196,8 +196,8 @@ class GestureDetector {
       window.clearTimeout(this.wheelEndTimeout_);
       this.wheelEndTimeout_ = null;
     }
-    let gestureEndDelayMs = 100;
-    let endEvent = {
+    const gestureEndDelayMs = 100;
+    const endEvent = {
       type: 'pinchend',
       startScaleRatio: this.accumulatedWheelScale_,
       center: position
@@ -220,8 +220,8 @@ class GestureDetector {
    * @private
    */
   static pinchScaleRatio_(event, prevEvent) {
-    let distance1 = GestureDetector.distance_(prevEvent);
-    let distance2 = GestureDetector.distance_(event);
+    const distance1 = GestureDetector.distance_(prevEvent);
+    const distance2 = GestureDetector.distance_(event);
     return distance1 === 0 ? null : distance2 / distance1;
   }
 
@@ -233,10 +233,10 @@ class GestureDetector {
    * @private
    */
   static distance_(event) {
-    let touch1 = event.touches[0];
-    let touch2 = event.touches[1];
-    let dx = touch1.clientX - touch2.clientX;
-    let dy = touch1.clientY - touch2.clientY;
+    const touch1 = event.touches[0];
+    const touch2 = event.touches[1];
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
 
@@ -248,8 +248,8 @@ class GestureDetector {
    * @private
    */
   static center_(event) {
-    let touch1 = event.touches[0];
-    let touch2 = event.touches[1];
+    const touch1 = event.touches[0];
+    const touch2 = event.touches[1];
     return {
       x: (touch1.clientX + touch2.clientX) / 2,
       y: (touch1.clientY + touch2.clientY) / 2

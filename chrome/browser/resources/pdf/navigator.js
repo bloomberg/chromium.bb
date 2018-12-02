@@ -111,7 +111,7 @@ Navigator.prototype = {
     if (url.charAt(0) == '#') {
       // if '#' is already present in |originalUrl| then remove old fragment
       // and add new url fragment.
-      var hashIndex = this.originalUrl_.search('#');
+      const hashIndex = this.originalUrl_.search('#');
       if (hashIndex != -1)
         url = this.originalUrl_.substring(0, hashIndex) + url;
       else
@@ -158,17 +158,17 @@ Navigator.prototype = {
    * @private
    */
   onViewportReceived_: function(viewportPosition) {
-    var originalUrl = this.originalUrl_;
-    var hashIndex = originalUrl.search('#');
+    let originalUrl = this.originalUrl_;
+    let hashIndex = originalUrl.search('#');
     if (hashIndex != -1)
       originalUrl = originalUrl.substring(0, hashIndex);
 
-    var newUrl = viewportPosition.url;
+    let newUrl = viewportPosition.url;
     hashIndex = newUrl.search('#');
     if (hashIndex != -1)
       newUrl = newUrl.substring(0, hashIndex);
 
-    var pageNumber = viewportPosition.page;
+    const pageNumber = viewportPosition.page;
     if (pageNumber != undefined && originalUrl == newUrl)
       this.viewport_.goToPage(pageNumber);
     else
@@ -224,16 +224,17 @@ Navigator.prototype = {
 
     // Check for absolute paths.
     if (url.startsWith('/')) {
-      var schemeEndIndex = this.originalUrl_.indexOf('://');
-      var firstSlash = this.originalUrl_.indexOf('/', schemeEndIndex + 3);
+      const schemeEndIndex = this.originalUrl_.indexOf('://');
+      const firstSlash = this.originalUrl_.indexOf('/', schemeEndIndex + 3);
       // e.g. http://www.foo.com/bar -> http://www.foo.com
-      var domain = firstSlash != -1 ? this.originalUrl_.substr(0, firstSlash) :
-                                      this.originalUrl_;
+      const domain = firstSlash != -1 ?
+          this.originalUrl_.substr(0, firstSlash) :
+          this.originalUrl_;
       return domain + url;
     }
 
     // Check for obvious relative paths.
-    var isRelative = false;
+    let isRelative = false;
     if (url.startsWith('.') || url.startsWith('\\'))
       isRelative = true;
 
@@ -244,19 +245,19 @@ Navigator.prototype = {
     // www.foo.com/bar -> http
     // foo.com/bar -> relative link
     if (!isRelative) {
-      var domainSeparatorIndex = url.indexOf('/');
-      var domainName = domainSeparatorIndex == -1 ?
+      const domainSeparatorIndex = url.indexOf('/');
+      const domainName = domainSeparatorIndex == -1 ?
           url :
           url.substr(0, domainSeparatorIndex);
-      var domainDotCount = (domainName.match(/\./g) || []).length;
+      const domainDotCount = (domainName.match(/\./g) || []).length;
       if (domainDotCount < 2)
         isRelative = true;
     }
 
     if (isRelative) {
-      var slashIndex = this.originalUrl_.lastIndexOf('/');
-      var path = slashIndex != -1 ? this.originalUrl_.substr(0, slashIndex) :
-                                    this.originalUrl_;
+      const slashIndex = this.originalUrl_.lastIndexOf('/');
+      const path = slashIndex != -1 ? this.originalUrl_.substr(0, slashIndex) :
+                                      this.originalUrl_;
       return path + '/' + url;
     }
 

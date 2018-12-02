@@ -9,7 +9,7 @@
  *
  * @type Object
  */
-var viewer;
+window.viewer = null;
 
 
 (function() {
@@ -19,7 +19,7 @@ var viewer;
  *
  * @type Array
  */
-var pendingMessages = [];
+const pendingMessages = [];
 
 /**
  * Handles events that are received prior to the PDFViewer being created.
@@ -72,7 +72,7 @@ function main() {
   // Set up an event listener to catch scripting messages which are sent prior
   // to the PDFViewer being created.
   window.addEventListener('message', handleScriptingMessage, false);
-  var chain = createBrowserApi();
+  let chain = createBrowserApi();
 
   // Content settings may not be present in test environments.
   if (chrome.contentSettings)

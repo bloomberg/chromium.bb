@@ -6,13 +6,13 @@
 /**
  * Size of additional padding in the inner scrollable section of the dropdown.
  */
-var DROPDOWN_INNER_PADDING = 12;
+const DROPDOWN_INNER_PADDING = 12;
 
 /** Size of vertical padding on the outer #dropdown element. */
-var DROPDOWN_OUTER_PADDING = 2;
+const DROPDOWN_OUTER_PADDING = 2;
 
 /** Minimum height of toolbar dropdowns (px). */
-var MIN_DROPDOWN_HEIGHT = 200;
+const MIN_DROPDOWN_HEIGHT = 200;
 
 Polymer({
   is: 'viewer-toolbar-dropdown',
@@ -76,8 +76,8 @@ Polymer({
   },
 
   updateMaxHeight: function() {
-    var scrollContainer = this.$['scroll-container'];
-    var height = this.lowerBound - scrollContainer.getBoundingClientRect().top -
+    const scrollContainer = this.$['scroll-container'];
+    let height = this.lowerBound - scrollContainer.getBoundingClientRect().top -
         DROPDOWN_INNER_PADDING;
     height = Math.max(height, MIN_DROPDOWN_HEIGHT);
     scrollContainer.style.maxHeight = height + 'px';
@@ -100,7 +100,7 @@ Polymer({
   },
 
   animateEntry_: function() {
-    var maxHeight =
+    let maxHeight =
         this.$.dropdown.getBoundingClientRect().height - DROPDOWN_OUTER_PADDING;
 
     if (maxHeight < 0)

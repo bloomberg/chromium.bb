@@ -84,7 +84,7 @@ class ZoomManager {
    * @param {number} b The second number.
    */
   floatingPointEquals(a, b) {
-    let MIN_ZOOM_DELTA = 0.01;
+    const MIN_ZOOM_DELTA = 0.01;
     // If the zoom level is close enough to the current zoom level, don't
     // change it. This avoids us getting into an infinite loop of zoom changes
     // due to floating point error.
@@ -147,7 +147,7 @@ class ActiveZoomManager extends ZoomManager {
     if (this.changingBrowserZoom_)
       return;
 
-    let zoom = this.viewport_.zoom;
+    const zoom = this.viewport_.zoom;
     if (this.floatingPointEquals(this.browserZoom_, zoom))
       return;
 
@@ -200,7 +200,7 @@ class EmbeddedZoomManager extends ZoomManager {
    * @param {number} newZoom the new browser zoom level.
    */
   onBrowserZoomChange(newZoom) {
-    let oldZoom = this.browserZoom_;
+    const oldZoom = this.browserZoom_;
     this.browserZoom_ = newZoom;
     this.viewport_.updateZoomFromBrowserChange(oldZoom);
   }
