@@ -74,6 +74,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/da-dk-g28-dictionary_harness.yaml	  \
 	braille-specs/da-dk-g28.yaml			  \
 	braille-specs/da-dk-g28l.yaml			  \
+	braille-specs/de-ch-g1.yaml			  \
 	braille-specs/el-backward.yaml			  \
 	braille-specs/el-forward.yaml			  \
 	braille-specs/en-GB-g2_backward.yaml		  \
@@ -180,7 +181,6 @@ dist_yaml_TESTS =			  \
 	yaml/issue-584.yaml		  \
 	yaml/issue-615.yaml		  \
 	yaml/issue-77.yaml 		  \
-	yaml/lastworditalafter.yaml	  \
 	yaml/letterDefTest_harness.yaml	  \
 	yaml/multipass-backward.yaml	  \
 	yaml/multipass-forward.yaml	  \

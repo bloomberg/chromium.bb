@@ -18,6 +18,7 @@ EXTRA_DIST =					\
 	da-dk-g28-dictionary_harness.yaml	\
 	da-dk-g28.yaml				\
 	da-dk-g28l.yaml				\
+	de-ch-g1.yaml				\
 	el-backward.yaml			\
 	el-forward.yaml				\
 	en-GB-g2_backward.yaml			\
