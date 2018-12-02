@@ -148,6 +148,10 @@ bool CrashReporterClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 }
 
 #if defined(OS_ANDROID)
+unsigned int CrashReporterClient::GetCrashDumpPercentageForWebView() {
+  return 100;
+}
+
 int CrashReporterClient::GetAndroidMinidumpDescriptor() {
   return 0;
 }

@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -86,7 +87,9 @@ class SandboxedHandler {
     return instance;
   }
 
-  bool Initialize() {
+  bool Initialize(bool dump_at_crash) {
+    request_dump_ = dump_at_crash ? 1 : 0;
+
     SetSanitizationInfo(crash_reporter::GetCrashReporterClient(),
                         &sanitization_);
     server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
@@ -113,15 +116,17 @@ class SandboxedHandler {
     socklen_t optlen = sizeof(optval);
     setsockopt(handlers_socket.get(), SOL_SOCKET, SO_PASSCRED, &optval, optlen);
 
-    iovec iov;
-    iov.iov_base = &signo;
-    iov.iov_len = sizeof(signo);
+    iovec iov[2];
+    iov[0].iov_base = &signo;
+    iov[0].iov_len = sizeof(signo);
+    iov[1].iov_base = &request_dump_;
+    iov[1].iov_len = sizeof(request_dump_);
 
     msghdr msg;
     msg.msg_name = nullptr;
     msg.msg_namelen = 0;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov = iov;
+    msg.msg_iovlen = base::size(iov);
 
     char cmsg_buf[CMSG_SPACE(sizeof(int))];
     msg.msg_control = cmsg_buf;
@@ -164,6 +169,7 @@ class SandboxedHandler {
 
   SanitizationInformation sanitization_;
   int server_fd_;
+  unsigned char request_dump_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedHandler);
 };
@@ -365,7 +371,7 @@ class HandlerStarter {
     return instance;
   }
 
-  base::FilePath Initialize() {
+  base::FilePath Initialize(bool dump_at_crash) {
     base::FilePath database_path;
     base::FilePath metrics_path;
     std::string url;
@@ -389,6 +395,13 @@ class HandlerStarter {
 #if defined(OS_ANDROID)
     if (!base::PathExists(handler_path)) {
       use_java_handler_ = true;
+    }
+
+    if (!dump_at_crash) {
+      return database_path;
+    }
+
+    if (use_java_handler_) {
       std::vector<std::string> env;
       if (!BuildEnvironmentWithApk(&env)) {
         return database_path;
@@ -531,17 +544,24 @@ base::FilePath PlatformCrashpadInitialization(
   DCHECK(!embedded_handler);
   DCHECK(exe_path.empty());
 
+  bool dump_at_crash = true;
 #if defined(OS_ANDROID)
   base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
+
+  unsigned int dump_percentage =
+      GetCrashReporterClient()->GetCrashDumpPercentageForWebView();
+  if (dump_percentage < 100 && rand() % 100 >= dump_percentage) {
+    dump_at_crash = false;
+  }
 #endif  // OS_ANDROID
 
   if (browser_process) {
     HandlerStarter* starter = HandlerStarter::Get();
-    return starter->Initialize();
+    return starter->Initialize(dump_at_crash);
   }
 
   crashpad::SandboxedHandler* handler = crashpad::SandboxedHandler::Get();
-  bool result = handler->Initialize();
+  bool result = handler->Initialize(dump_at_crash);
   DCHECK(result);
 
   return base::FilePath();

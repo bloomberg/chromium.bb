@@ -107,6 +107,8 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
     *sanitize_stacks = true;
   }
 
+  unsigned int GetCrashDumpPercentageForWebView() override { return 100; }
+
  private:
   int dump_fd_;
   int crash_signal_fd_;
