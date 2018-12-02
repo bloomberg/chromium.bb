@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "android_webview/common/aw_channel.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/path_utils.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/version_info/version_info.h"
+#include "components/version_info/version_info_values.h"
 #include "jni/AwDebug_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -19,6 +24,45 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
+
+namespace {
+
+class AwDebugCrashReporterClient
+    : public ::crash_reporter::CrashReporterClient {
+ public:
+  AwDebugCrashReporterClient() = default;
+  ~AwDebugCrashReporterClient() override = default;
+
+  void GetProductNameAndVersion(std::string* product_name,
+                                std::string* version,
+                                std::string* channel) override {
+    *product_name = "AndroidWebView";
+    *version = PRODUCT_VERSION;
+    *channel =
+        version_info::GetChannelString(android_webview::GetChannelOrStable());
+  }
+
+  bool GetCrashDumpLocation(base::FilePath* debug_dir) override {
+    base::FilePath cache_dir;
+    if (!base::android::GetCacheDirectory(&cache_dir)) {
+      return false;
+    }
+    *debug_dir = cache_dir.Append(FILE_PATH_LITERAL("WebView")).Append("Debug");
+    return true;
+  }
+
+  void GetSanitizationInformation(const char* const** annotations_whitelist,
+                                  void** target_module,
+                                  bool* sanitize_stacks) override {
+    *annotations_whitelist = crash_keys::kWebViewCrashKeyWhiteList;
+    *target_module = nullptr;
+    *sanitize_stacks = true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AwDebugCrashReporterClient);
+};
+
+}  // namespace
 
 static jboolean JNI_AwDebug_DumpWithoutCrashing(
     JNIEnv* env,

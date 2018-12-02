@@ -43,16 +43,38 @@
 namespace crashpad {
 namespace {
 
-bool SetSanitizationInfo(SanitizationInformation* info) {
+bool SetSanitizationInfo(crash_reporter::CrashReporterClient* client,
+                         SanitizationInformation* info) {
   const char* const* whitelist = nullptr;
   void* target_module = nullptr;
   bool sanitize_stacks = false;
-  crash_reporter::GetCrashReporterClient()->GetSanitizationInformation(
-      &whitelist, &target_module, &sanitize_stacks);
+  client->GetSanitizationInformation(&whitelist, &target_module,
+                                     &sanitize_stacks);
   info->annotations_whitelist_address = FromPointerCast<VMAddress>(whitelist);
   info->target_module_address = FromPointerCast<VMAddress>(target_module);
   info->sanitize_stacks = sanitize_stacks;
   return whitelist != nullptr || target_module != nullptr || sanitize_stacks;
+}
+
+void SetExceptionInformation(siginfo_t* siginfo,
+                             ucontext_t* context,
+                             ExceptionInformation* info) {
+  info->siginfo_address =
+      FromPointerCast<decltype(info->siginfo_address)>(siginfo);
+  info->context_address =
+      FromPointerCast<decltype(info->context_address)>(context);
+  info->thread_id = sandbox::sys_gettid();
+}
+
+void SetClientInformation(ExceptionInformation* exception,
+                          SanitizationInformation* sanitization,
+                          ClientInformation* info) {
+  info->exception_information_address =
+      FromPointerCast<decltype(info->exception_information_address)>(exception);
+
+  info->sanitization_information_address =
+      FromPointerCast<decltype(info->sanitization_information_address)>(
+          sanitization);
 }
 
 // A signal handler for non-browser processes in the sandbox.
@@ -65,7 +87,8 @@ class SandboxedHandler {
   }
 
   bool Initialize() {
-    SetSanitizationInfo(&sanitization_);
+    SetSanitizationInfo(crash_reporter::GetCrashReporterClient(),
+                        &sanitization_);
     server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
         service_manager::kCrashDumpSignal);
 
@@ -124,22 +147,12 @@ class SandboxedHandler {
     base::ScopedFD connection;
     if (state->ConnectToHandler(signo, &connection) == 0) {
       ExceptionInformation exception_information;
-      exception_information.siginfo_address =
-          FromPointerCast<decltype(exception_information.siginfo_address)>(
-              siginfo);
-      exception_information.context_address =
-          FromPointerCast<decltype(exception_information.context_address)>(
-              context);
-      exception_information.thread_id = sandbox::sys_gettid();
+      SetExceptionInformation(siginfo, static_cast<ucontext_t*>(context),
+                              &exception_information);
 
-      ClientInformation info = {};
-      info.exception_information_address =
-          FromPointerCast<decltype(info.exception_information_address)>(
-              &exception_information);
-
-      info.sanitization_information_address =
-          FromPointerCast<decltype(info.sanitization_information_address)>(
-              &state->sanitization_);
+      ClientInformation info;
+      SetClientInformation(&exception_information, &state->sanitization_,
+                           &info);
 
       ExceptionHandlerClient handler_client(connection.get());
       handler_client.SetCanSetPtracer(false);
@@ -251,12 +264,12 @@ const char kCrashpadJavaMain[] =
 
 #endif  // OS_ANDROID
 
-void BuildHandlerArgs(base::FilePath* database_path,
+void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
+                      base::FilePath* database_path,
                       base::FilePath* metrics_path,
                       std::string* url,
                       std::map<std::string, std::string>* process_annotations,
                       std::vector<std::string>* arguments) {
-  CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   crash_reporter_client->GetCrashDumpLocation(database_path);
   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
 
@@ -358,8 +371,8 @@ class HandlerStarter {
     std::string url;
     std::map<std::string, std::string> process_annotations;
     std::vector<std::string> arguments;
-    BuildHandlerArgs(&database_path, &metrics_path, &url, &process_annotations,
-                     &arguments);
+    BuildHandlerArgs(GetCrashReporterClient(), &database_path, &metrics_path,
+                     &url, &process_annotations, &arguments);
 
     base::FilePath exe_dir;
     base::FilePath handler_path;
@@ -367,7 +380,8 @@ class HandlerStarter {
       return database_path;
     }
 
-    if (crashpad::SetSanitizationInfo(&browser_sanitization_info_)) {
+    if (crashpad::SetSanitizationInfo(GetCrashReporterClient(),
+                                      &browser_sanitization_info_)) {
       arguments.push_back(base::StringPrintf("--sanitization-information=%p",
                                              &browser_sanitization_info_));
     }
@@ -399,14 +413,14 @@ class HandlerStarter {
     return database_path;
   }
 
-  bool StartHandlerForClient(int fd) {
+  bool StartHandlerForClient(CrashReporterClient* client, int fd) {
     base::FilePath database_path;
     base::FilePath metrics_path;
     std::string url;
     std::map<std::string, std::string> process_annotations;
     std::vector<std::string> arguments;
-    BuildHandlerArgs(&database_path, &metrics_path, &url, &process_annotations,
-                     &arguments);
+    BuildHandlerArgs(client, &database_path, &metrics_path, &url,
+                     &process_annotations, &arguments);
 
     base::FilePath exe_dir;
     base::FilePath handler_path;
@@ -449,12 +463,58 @@ class HandlerStarter {
   DISALLOW_COPY_AND_ASSIGN(HandlerStarter);
 };
 
+bool ConnectToHandler(CrashReporterClient* client, base::ScopedFD* connection) {
+  int fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) != 0) {
+    PLOG(ERROR) << "socketpair";
+    return false;
+  }
+  base::ScopedFD local_connection(fds[0]);
+  base::ScopedFD handlers_socket(fds[1]);
+
+  if (!HandlerStarter::Get()->StartHandlerForClient(client,
+                                                    handlers_socket.get())) {
+    return false;
+  }
+
+  *connection = std::move(local_connection);
+  return true;
+}
+
 }  // namespace
+
+bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
+  base::ScopedFD connection;
+  if (!ConnectToHandler(client, &connection)) {
+    return false;
+  }
+
+  siginfo_t siginfo;
+  siginfo.si_signo = crashpad::Signals::kSimulatedSigno;
+  siginfo.si_errno = 0;
+  siginfo.si_code = 0;
+
+  ucontext_t context;
+  crashpad::CaptureContext(&context);
+
+  crashpad::SanitizationInformation sanitization;
+  crashpad::SetSanitizationInfo(client, &sanitization);
+
+  crashpad::ExceptionInformation exception;
+  crashpad::SetExceptionInformation(&siginfo, &context, &exception);
+
+  crashpad::ClientInformation info;
+  crashpad::SetClientInformation(&exception, &sanitization, &info);
+
+  crashpad::ExceptionHandlerClient handler_client(connection.get());
+  return handler_client.RequestCrashDump(info) == 0;
+}
 
 namespace internal {
 
 bool StartHandlerForClient(int fd) {
-  return HandlerStarter::Get()->StartHandlerForClient(fd);
+  return HandlerStarter::Get()->StartHandlerForClient(GetCrashReporterClient(),
+                                                      fd);
 }
 
 base::FilePath PlatformCrashpadInitialization(
