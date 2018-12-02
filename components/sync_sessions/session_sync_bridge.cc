@@ -313,12 +313,6 @@ SessionSyncBridge::CreateLocalSessionWriteBatch() {
       change_processor());
 }
 
-bool SessionSyncBridge::IsTabNodeUnsynced(int tab_node_id) {
-  const std::string storage_key = SessionStore::GetTabStorageKey(
-      syncing_->store->local_session_info().session_tag, tab_node_id);
-  return change_processor()->IsEntityUnsynced(storage_key);
-}
-
 void SessionSyncBridge::TrackLocalNavigationId(base::Time timestamp,
                                                int unique_id) {
   global_id_mapper_.TrackNavigationId(timestamp, unique_id);

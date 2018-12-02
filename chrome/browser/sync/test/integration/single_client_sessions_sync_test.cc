@@ -5,7 +5,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -25,7 +24,6 @@
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "components/sync_sessions/synced_session_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -231,35 +229,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
   NavigateTab(0, GURL(kURL3));
   CloseTab(/*index=*/0, /*tab_index=*/1);
   NavigateTab(0, GURL(kURL4));
-
-  ASSERT_TRUE(
-      IsUrlSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0)).Wait());
-
-  // All URLs should be synced, for synced history to be complete. In
-  // particular, |kURL3| should be synced despite the tab being closed.
-  EXPECT_TRUE(
-      IsUrlSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0)).Wait());
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       NavigateThenCloseTabThenOpenTab) {
-  base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      sync_sessions::kDeferRecyclingOfSyncTabNodesIfUnsynced);
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  // Two tabs are opened initially.
-  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
-  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
-  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
-
-  // Close one of the two tabs immediately after issuing an navigation. In
-  // addition, a new tab is opened.
-  NavigateTab(0, GURL(kURL3));
-  CloseTab(/*index=*/0, /*tab_index=*/1);
-  ASSERT_TRUE(OpenTab(0, GURL(kURL4)));
 
   ASSERT_TRUE(
       IsUrlSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0)).Wait());
