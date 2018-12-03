@@ -22,17 +22,15 @@ namespace quic {
 
 QuicFlowController::QuicFlowController(
     QuicSession* session,
-    QuicConnection* connection,
     QuicStreamId id,
-    Perspective perspective,
     QuicStreamOffset send_window_offset,
     QuicStreamOffset receive_window_offset,
     bool should_auto_tune_receive_window,
     QuicFlowControllerInterface* session_flow_controller)
     : session_(session),
-      connection_(connection),
+      connection_(session->connection()),
       id_(id),
-      perspective_(perspective),
+      perspective_(session->perspective()),
       bytes_sent_(0),
       send_window_offset_(send_window_offset),
       bytes_consumed_(0),

@@ -72,10 +72,6 @@ struct QUIC_EXPORT_PRIVATE QpackInstruction {
 // The set of instruction opcodes must cover all possible input.
 using QpackLanguage = std::vector<const QpackInstruction*>;
 
-// Maximum length of header name and header value.  This limits the amount of
-// memory the peer can make the decoder allocate when sending string literals.
-const size_t kStringLiteralLengthLimit = 1024 * 1024;
-
 // TODO(bnc): Move this into HpackVarintEncoder.
 // The integer encoder can encode up to 2^64-1, which can take up to 10 bytes
 // (each carrying 7 bits) after the prefix.
@@ -84,88 +80,41 @@ const uint8_t kMaxExtensionBytesForVarintEncoding = 10;
 // Wire format defined in
 // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#rfc.section.5
 
-// Value encoding for instructions with literal value.
-const uint8_t kLiteralValueHuffmanMask = 0b10000000;
-const uint8_t kLiteralValueWithoutHuffmanEncoding = 0b00000000;
-const uint8_t kLiteralValuePrefixLength = 7;
-
-// Encoder stream
+// 5.2 Encoder stream instructions
 
 // 5.2.1 Insert With Name Reference
-const uint8_t kInsertWithNameReferenceOpcode = 0b10000000;
-const uint8_t kInsertWithNameReferenceOpcodeMask = 0b10000000;
-const uint8_t kInsertWithNameReferenceStaticBit = 0b01000000;
-const uint8_t kInsertWithNameReferenceNameIndexPrefixLength = 6;
-
 const QpackInstruction* InsertWithNameReferenceInstruction();
 
 // 5.2.2 Insert Without Name Reference
-const uint8_t kInsertWithoutNameReferenceOpcode = 0b01000000;
-const uint8_t kInsertWithoutNameReferenceOpcodeMask = 0b11000000;
-const uint8_t kInsertWithoutNameReferenceNameHuffmanBit = 0b00100000;
-const uint8_t kInsertWithoutNameReferenceNameLengthPrefixLength = 5;
-
 const QpackInstruction* InsertWithoutNameReferenceInstruction();
 
 // 5.2.3 Duplicate
-const uint8_t kDuplicateOpcode = 0b00000000;
-const uint8_t kDuplicateOpcodeMask = 0b11100000;
-const uint8_t kDuplicateIndexPrefixLength = 5;
-
 const QpackInstruction* DuplicateInstruction();
 
 // 5.2.4 Dynamic Table Size Update
-const uint8_t kDynamicTableSizeUpdateOpcode = 0b00100000;
-const uint8_t kDynamicTableSizeUpdateOpcodeMask = 0b11100000;
-const uint8_t kDynamicTableSizeUpdateMaxSizePrefixLength = 5;
-
 const QpackInstruction* DynamicTableSizeUpdateInstruction();
 
-// Description of language (set of instructions) used on the encoder stream.
+// Encoder stream language.
 const QpackLanguage* QpackEncoderStreamLanguage();
 
-// Request and push streams
+// 5.4.2. Request and push stream instructions
 
 // 5.4.2.1. Indexed Header Field
-const uint8_t kIndexedHeaderFieldOpcodeValue = 0b10000000;
-const uint8_t kIndexedHeaderFieldOpcodeMask = 0b10000000;
-const uint8_t kIndexedHeaderFieldStaticBit = 0b01000000;
-const uint8_t kIndexedHeaderFieldPrefixLength = 6;
-
 const QpackInstruction* QpackIndexedHeaderFieldInstruction();
 
 // 5.4.2.2. Indexed Header Field With Post-Base Index
-const uint8_t kIndexedHeaderFieldPostBaseOpcodeValue = 0b00010000;
-const uint8_t kIndexedHeaderFieldPostBaseOpcodeMask = 0b11110000;
-const uint8_t kIndexedHeaderFieldPostBasePrefixLength = 4;
-
 const QpackInstruction* QpackIndexedHeaderFieldPostBaseInstruction();
 
 // 5.4.2.3. Literal Header Field With Name Reference
-const uint8_t kLiteralHeaderFieldNameReferenceOpcodeValue = 0b01000000;
-const uint8_t kLiteralHeaderFieldNameReferenceOpcodeMask = 0b11000000;
-const uint8_t kLiteralHeaderFieldNameReferenceStaticBit = 0b00010000;
-const uint8_t kLiteralHeaderFieldNameReferencePrefixLength = 4;
-
 const QpackInstruction* QpackLiteralHeaderFieldNameReferenceInstruction();
 
 // 5.4.2.4. Literal Header Field With Post-Base Name Reference
-const uint8_t kLiteralHeaderFieldPostBaseOpcodeValue = 0b00000000;
-const uint8_t kLiteralHeaderFieldPostBaseOpcodeMask = 0b11110000;
-const uint8_t kLiteralHeaderFieldPostBasePrefixLength = 3;
-
 const QpackInstruction* QpackLiteralHeaderFieldPostBaseInstruction();
 
 // 5.4.2.5. Literal Header Field Without Name Reference
-const uint8_t kLiteralHeaderFieldOpcodeValue = 0b00100000;
-const uint8_t kLiteralHeaderFieldOpcodeMask = 0b11100000;
-const uint8_t kLiteralNameHuffmanMask = 0b00001000;
-const uint8_t kLiteralHeaderFieldPrefixLength = 3;
-
 const QpackInstruction* QpackLiteralHeaderFieldInstruction();
 
-// Description of language (set of instructions) used on request and push
-// streams.
+// Request and push stream language.
 const QpackLanguage* QpackRequestStreamLanguage();
 
 }  // namespace quic

@@ -5,9 +5,16 @@
 #include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
 
 #include "base/logging.h"
-#include "net/third_party/quic/core/qpack/qpack_constants.h"
 
 namespace quic {
+
+namespace {
+
+// Maximum length of header name and header value.  This limits the amount of
+// memory the peer can make the decoder allocate when sending string literals.
+const size_t kStringLiteralLengthLimit = 1024 * 1024;
+
+}  // namespace
 
 QpackInstructionDecoder::QpackInstructionDecoder(const QpackLanguage* language,
                                                  Delegate* delegate)

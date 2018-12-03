@@ -121,6 +121,7 @@ class TestStream : public QuicStream {
                bool(QuicStreamOffset, QuicByteCount, bool));
 
   MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
+  MOCK_METHOD1(OnStopSending, void(uint16_t code));
 };
 
 class TestSession : public QuicSession {
@@ -391,6 +392,19 @@ TEST_P(QuicSessionTestServer, AvailableStreams) {
               nullptr);
   ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthClientInitiatedId(1)) !=
               nullptr);
+}
+
+TEST_P(QuicSessionTestServer, MaxAvailableStreams) {
+  if (transport_version() == QUIC_VERSION_99) {
+    EXPECT_EQ(session_.max_open_incoming_streams(),
+              session_.MaxAvailableStreams());
+  } else {
+    // The protocol specification requires that there can be at least 10 times
+    // as many available streams as the connection's maximum open streams.
+    EXPECT_EQ(
+        session_.max_open_incoming_streams() * kMaxAvailableStreamsMultiplier,
+        session_.MaxAvailableStreams());
+  }
 }
 
 TEST_P(QuicSessionTestServer, IsClosedStreamLocallyCreated) {
@@ -1299,22 +1313,6 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   }
 }
 
-TEST_P(QuicSessionTestServer, TestMaxIncomingAndOutgoingStreamsAllowed) {
-  // Tests that on server side, the value of max_open_incoming/outgoing
-  // streams are setup correctly during negotiation. The value for outgoing
-  // stream is limited to negotiated value and for incoming stream it is set to
-  // be larger than that.
-  session_.OnConfigNegotiated();
-  // The max number of open outgoing streams is less than that of incoming
-  // streams, and it should be same as negotiated value.
-  EXPECT_LT(session_.max_open_outgoing_streams(),
-            session_.max_open_incoming_streams());
-  EXPECT_EQ(session_.max_open_outgoing_streams(),
-            kDefaultMaxStreamsPerConnection);
-  EXPECT_GT(session_.max_open_incoming_streams(),
-            kDefaultMaxStreamsPerConnection);
-}
-
 class QuicSessionTestClient : public QuicSessionTestBase {
  protected:
   QuicSessionTestClient() : QuicSessionTestBase(Perspective::IS_CLIENT) {}
@@ -1373,18 +1371,6 @@ TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
       QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(&session_).size());
 }
 
-TEST_P(QuicSessionTestClient, TestMaxIncomingAndOutgoingStreamsAllowed) {
-  // Tests that on client side, the value of max_open_incoming/outgoing
-  // streams are setup correctly during negotiation. When flag is true, the
-  // value for outgoing stream is limited to negotiated value and for incoming
-  // stream it is set to be larger than that.
-  session_.OnConfigNegotiated();
-  EXPECT_LT(session_.max_open_outgoing_streams(),
-            session_.max_open_incoming_streams());
-  EXPECT_EQ(session_.max_open_outgoing_streams(),
-            kDefaultMaxStreamsPerConnection);
-}
-
 TEST_P(QuicSessionTestServer, ZombieStreams) {
   TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
   QuicStreamPeer::SetStreamBytesWritten(3, stream2);
@@ -1414,7 +1400,9 @@ TEST_P(QuicSessionTestServer, RstStreamReceivedAfterRstStreamSent) {
 
   QuicRstStreamFrame rst1(kInvalidControlFrameId, stream2->id(),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
-  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
+  if (transport_version() != QUIC_VERSION_99) {
+    EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
+  }
   session_.OnRstStream(rst1);
 }
 
@@ -1833,6 +1821,93 @@ TEST_P(QuicSessionTestServer, NewStreamIdAboveLimit) {
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID, "202 above 200", _));
   session_.OnStreamFrame(stream_frame);
+}
+
+// Check that the OnStopSendingFrame upcall handles bad input properly
+// First test checks that invalid stream ids are handled.
+TEST_P(QuicSessionTestServer, OnStopSendingInputInvalidStreamId) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+  // Check that "invalid" stream ids are rejected.
+  // Note that the notion of an invalid stream id is Google-specific.
+  QuicStopSendingFrame frame(1, -1, 123);
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_STREAM_ID,
+                      "Received STOP_SENDING for an invalid stream", _));
+  EXPECT_FALSE(session_.OnStopSendingFrame(frame));
+}
+
+// Second test, streams in the static stream map are not subject to
+// STOP_SENDING; it's ignored.
+TEST_P(QuicSessionTestServer, OnStopSendingInputStaticStreams) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+  // Check that a stream id in the static stream map is ignored.
+  // Note that the notion of a static stream is Google-specific.
+  QuicStopSendingFrame frame(1, 0, 123);
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID,
+                              "Received STOP_SENDING for a static stream", _));
+  EXPECT_FALSE(session_.OnStopSendingFrame(frame));
+}
+
+// Third test, if stream id specifies a closed stream, close the connection
+TEST_P(QuicSessionTestServer, OnStopSendingInputClosedStream) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+
+  TestStream* stream = session_.CreateOutgoingBidirectionalStream();
+  QuicStreamId stream_id = stream->id();
+  // Expect these as side effect of the close operations.
+  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(*connection_, OnStreamReset(_, _));
+  stream->CloseWriteSide();
+  stream->CloseReadSide();
+  QuicStopSendingFrame frame(1, stream_id, 123);
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(
+          IETF_QUIC_PROTOCOL_VIOLATION,
+          "Received STOP_SENDING for a closed or non-existent stream", _));
+  EXPECT_FALSE(session_.OnStopSendingFrame(frame));
+}
+
+// Fourth test, if stream id specifies a nonexistent stream, close the
+// connection
+TEST_P(QuicSessionTestServer, OnStopSendingInputNonExistentStream) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+
+  QuicStopSendingFrame frame(1, GetNthServerInitiatedId(123456), 123);
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(
+          IETF_QUIC_PROTOCOL_VIOLATION,
+          "Received STOP_SENDING for a closed or non-existent stream", _));
+  EXPECT_FALSE(session_.OnStopSendingFrame(frame));
+}
+
+// For a valid stream, ensure that all works
+TEST_P(QuicSessionTestServer, OnStopSendingInputValidStream) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // Applicable only to V99
+    return;
+  }
+
+  TestStream* stream = session_.CreateOutgoingBidirectionalStream();
+  QuicStreamId stream_id = stream->id();
+  QuicStopSendingFrame frame(1, stream_id, 123);
+  EXPECT_CALL(*stream, OnStopSending(123));
+  EXPECT_TRUE(session_.OnStopSendingFrame(frame));
 }
 
 }  // namespace

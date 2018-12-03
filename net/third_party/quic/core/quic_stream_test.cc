@@ -49,6 +49,9 @@ class TestStream : public QuicStream {
   TestStream(QuicStreamId id, QuicSession* session, StreamType type)
       : QuicStream(id, session, /*is_static=*/false, type) {}
 
+  TestStream(PendingStream pending, StreamType type)
+      : QuicStream(std::move(pending), type) {}
+
   void OnDataAvailable() override {}
 
   MOCK_METHOD0(OnCanWriteNewData, void());
@@ -154,6 +157,44 @@ class QuicParameterizedStreamTest : public QuicStreamTestBase {};
 INSTANTIATE_TEST_CASE_P(QuicParameterizedStreamTests,
                         QuicParameterizedStreamTest,
                         ::testing::ValuesIn(AllSupportedVersions()));
+
+TEST_P(QuicStreamTest, PendingStreamTooMuchData) {
+  Initialize();
+
+  PendingStream pending(kTestStreamId + 2, session_.get());
+  // Receive a stream frame that violates flow control: the byte offset is
+  // higher than the receive window offset.
+  QuicStreamFrame frame(kTestStreamId + 2, false,
+                        kInitialSessionFlowControlWindowForTest + 1,
+                        QuicStringPiece("."));
+
+  // Stream should not accept the frame, and the connection should be closed.
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
+  pending.OnStreamFrame(frame);
+}
+
+TEST_P(QuicStreamTest, FromPendingStream) {
+  Initialize();
+
+  PendingStream pending(kTestStreamId + 2, session_.get());
+
+  QuicStreamFrame frame(kTestStreamId + 2, false, 2, QuicStringPiece("."));
+  pending.OnStreamFrame(frame);
+  pending.OnStreamFrame(frame);
+  QuicStreamFrame frame2(kTestStreamId + 2, true, 3, QuicStringPiece("."));
+  pending.OnStreamFrame(frame2);
+
+  TestStream stream(std::move(pending), StreamType::READ_UNIDIRECTIONAL);
+  EXPECT_EQ(3, stream.num_frames_received());
+  EXPECT_EQ(3u, stream.stream_bytes_read());
+  EXPECT_EQ(1, stream.num_duplicate_frames_received());
+  EXPECT_EQ(true, stream.fin_received());
+  EXPECT_EQ(frame2.offset + 1,
+            stream.flow_controller()->highest_received_byte_offset());
+  EXPECT_EQ(frame2.offset + 1,
+            session_->flow_controller()->highest_received_byte_offset());
+}
 
 TEST_P(QuicStreamTest, WriteAllData) {
   Initialize();

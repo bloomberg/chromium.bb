@@ -57,6 +57,7 @@
 #include "net/third_party/quic/tools/quic_client.h"
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_server.h"
+#include "net/third_party/quic/tools/quic_simple_client_stream.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 #include "net/tools/epoll_server/epoll_server.h"
 
@@ -125,9 +126,7 @@ struct TestParams {
 // Constructs various test permutations.
 std::vector<TestParams> GetTestParams(bool use_tls_handshake,
                                       bool test_stateless_rejects) {
-  // Version 99 is default disabled, but should be exercised in EndToEnd tests
   QuicFlagSaver flags;
-  SetQuicReloadableFlag(quic_enable_version_99, true);
   // Divide the versions into buckets in which the intra-frame format
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
@@ -137,7 +136,9 @@ std::vector<TestParams> GetTestParams(bool use_tls_handshake,
   // attempting to do 0-RTT across incompatible versions. Chromium only
   // supports a single version at a time anyway. :)
   FLAGS_quic_supports_tls_handshake = use_tls_handshake;
-  ParsedQuicVersionVector all_supported_versions = AllSupportedVersions();
+  ParsedQuicVersionVector all_supported_versions =
+      FilterSupportedVersions(AllSupportedVersions());
+
   // Buckets are separated by the handshake protocol (QUIC crypto or TLS) in
   // use, since if the handshake protocol changes, the ClientHello/CHLO must be
   // reconstructed for the correct protocol.
@@ -278,8 +279,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         chlo_multiplier_(0),
         stream_factory_(nullptr),
         support_server_push_(false) {
-    // Version 99 is default disabled, but should be exercised in EndToEnd tests
-    SetQuicReloadableFlag(quic_enable_version_99, true);
     FLAGS_quic_supports_tls_handshake = true;
     SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, true);
     SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, true);
@@ -655,6 +654,14 @@ TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   server_thread_->WaitForCryptoHandshakeConfirmed();
+  // There have been occasions where it seemed that negotiated_version_ and the
+  // version in the connection are not in sync. If it is happening, it has not
+  // been recreatable; this assert is here just to check and raise a flag if it
+  // happens.
+  ASSERT_EQ(
+      client_->client()->client_session()->connection()->transport_version(),
+      negotiated_version_.transport_version);
+
   QuicCryptoStream* crypto_stream = QuicSessionPeer::GetMutableCryptoStream(
       client_->client()->client_session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
@@ -1459,11 +1466,23 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // The client has received the server's limit and vice versa.
-  EXPECT_EQ(kServerMaxIncomingDynamicStreams,
-            client_->client()->client_session()->max_open_outgoing_streams());
+  QuicSpdyClientSession* client_session = client_->client()->client_session();
+  size_t client_max_open_outgoing_streams =
+      client_session->connection()->transport_version() == QUIC_VERSION_99
+          ? QuicSessionPeer::v99_streamid_manager(client_session)
+                ->max_allowed_outgoing_streams()
+          : QuicSessionPeer::GetStreamIdManager(client_session)
+                ->max_open_outgoing_streams();
+  EXPECT_EQ(kServerMaxIncomingDynamicStreams, client_max_open_outgoing_streams);
   server_thread_->Pause();
-  EXPECT_EQ(kClientMaxIncomingDynamicStreams,
-            GetServerSession()->max_open_outgoing_streams());
+  QuicSession* server_session = GetServerSession();
+  size_t server_max_open_outgoing_streams =
+      server_session->connection()->transport_version() == QUIC_VERSION_99
+          ? QuicSessionPeer::v99_streamid_manager(server_session)
+                ->max_allowed_outgoing_streams()
+          : QuicSessionPeer::GetStreamIdManager(server_session)
+                ->max_open_outgoing_streams();
+  EXPECT_EQ(kClientMaxIncomingDynamicStreams, server_max_open_outgoing_streams);
   server_thread_->Resume();
 }
 
@@ -2505,7 +2524,7 @@ class ServerStreamThatDropsBody : public QuicSimpleServerStream {
   ~ServerStreamThatDropsBody() override = default;
 
  protected:
-  void OnDataAvailable() override {
+  void OnBodyAvailable() override {
     while (HasBytesToRead()) {
       struct iovec iov;
       if (GetReadableRegions(&iov, 1) == 0) {
@@ -3470,6 +3489,61 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   } else {
     EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
   }
+}
+
+// Test that STOP_SENDING makes it to the other side. Set up a client & server,
+// create a stream (do not close it), and then send a STOP_SENDING from one
+// side. The other side should get a call to QuicStream::OnStopSending.
+// (aside, test cribbed from RequestAndStreamRstInOnePacket)
+TEST_P(EndToEndTest, SimpleStopSendingTest) {
+  const uint16_t kStopSendingTestCode = 123;
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicSession* client_session = client_->client()->client_session();
+  ASSERT_NE(nullptr, client_session);
+  QuicConnection* client_connection = client_session->connection();
+  ASSERT_NE(nullptr, client_connection);
+
+  // STOP_SENDING will cause the server to not to send the trailer
+  // (and the FIN) after the response body. Instead, it sends a STOP_SENDING
+  // frame for the stream.
+  QuicString response_body(1305, 'a');
+  SpdyHeaderBlock response_headers;
+  response_headers[":status"] = QuicTextUtils::Uint64ToString(200);
+  response_headers["content-length"] =
+      QuicTextUtils::Uint64ToString(response_body.length());
+  memory_cache_backend_.AddStopSendingResponse(
+      server_hostname_, "/test_url", std::move(response_headers), response_body,
+      kStopSendingTestCode);
+
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  client_->WaitForDelayedAcks();
+
+  QuicSession* session = client_->client()->client_session();
+  const QuicPacketCount packets_sent_before =
+      session->connection()->GetStats().packets_sent;
+
+  QuicStreamId stream_id = session->next_outgoing_stream_id();
+  client_->SendRequest("/test_url");
+
+  // Expect exactly one packet is sent from the block above.
+  ASSERT_EQ(packets_sent_before + 1,
+            session->connection()->GetStats().packets_sent);
+
+  // Wait for the connection to become idle.
+  client_->WaitForDelayedAcks();
+
+  // The real expectation is the test does not crash or timeout.
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+  // And that the stop-sending code is received.
+  QuicSimpleClientStream* client_stream =
+      static_cast<QuicSimpleClientStream*>(client_->latest_created_stream());
+  ASSERT_NE(nullptr, client_stream);
+  // Make sure we have the correct stream
+  EXPECT_EQ(stream_id, client_stream->id());
+  EXPECT_EQ(kStopSendingTestCode, client_stream->last_stop_sending_code());
 }
 
 }  // namespace

@@ -180,6 +180,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when an ACK is received with a larger |largest_acked| than
   // previously observed.
   virtual void OnForwardProgressConfirmed() = 0;
+
+  // Called when a STOP_SENDING frame has been received.
+  virtual bool OnStopSendingFrame(const QuicStopSendingFrame& frame) = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting

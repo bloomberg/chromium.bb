@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "net/third_party/http2/hpack/varint/hpack_varint_encoder.h"
+#include "net/third_party/quic/core/qpack/qpack_instruction_encoder.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
@@ -48,7 +48,7 @@ class QUIC_EXPORT_PRIVATE QpackEncoderStreamSender {
 
  private:
   Delegate* const delegate_;
-  http2::HpackVarintEncoder varint_encoder_;
+  QpackInstructionEncoder instruction_encoder_;
 };
 
 }  // namespace quic

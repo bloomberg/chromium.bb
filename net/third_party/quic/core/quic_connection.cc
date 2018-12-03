@@ -1162,7 +1162,7 @@ bool QuicConnection::OnApplicationCloseFrame(
 }
 
 bool QuicConnection::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
-  return true;
+  return visitor_->OnStopSendingFrame(frame);
 }
 
 bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {

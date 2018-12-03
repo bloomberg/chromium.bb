@@ -1350,10 +1350,12 @@ TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteHandleBlock) {
       .WillOnce(Invoke(this, &QuicDispatcherWriteBlockedListTest::SetBlocked));
   EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
   dispatcher_->OnCanWrite();
+  EXPECT_TRUE(dispatcher_->HasPendingWrites());
 
   // And we'll resume where we left off when we get another call.
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_->OnCanWrite();
+  EXPECT_FALSE(dispatcher_->HasPendingWrites());
 }
 
 TEST_F(QuicDispatcherWriteBlockedListTest, LimitedWrites) {
@@ -1371,24 +1373,6 @@ TEST_F(QuicDispatcherWriteBlockedListTest, LimitedWrites) {
   EXPECT_TRUE(dispatcher_->HasPendingWrites());
 
   // Now call OnCanWrite again, and connection1 should get its second chance
-  EXPECT_CALL(*connection2(), OnCanWrite());
-  dispatcher_->OnCanWrite();
-  EXPECT_FALSE(dispatcher_->HasPendingWrites());
-}
-
-TEST_F(QuicDispatcherWriteBlockedListTest, TestWriteLimits) {
-  // Finally make sure if we write block on a write call, we stop calling.
-  InSequence s;
-  SetBlocked();
-  dispatcher_->OnWriteBlocked(connection1());
-  dispatcher_->OnWriteBlocked(connection2());
-  EXPECT_CALL(*connection1(), OnCanWrite())
-      .WillOnce(Invoke(this, &QuicDispatcherWriteBlockedListTest::SetBlocked));
-  EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
-  dispatcher_->OnCanWrite();
-  EXPECT_TRUE(dispatcher_->HasPendingWrites());
-
-  // And we'll resume where we left off when we get another call.
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_->OnCanWrite();
   EXPECT_FALSE(dispatcher_->HasPendingWrites());

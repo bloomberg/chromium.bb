@@ -316,6 +316,10 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // sent by peer.
   void WaitForDelayedAcks();
 
+  QuicSpdyClientStream* latest_created_stream() {
+    return latest_created_stream_;
+  }
+
  protected:
   QuicTestClient();
   QuicTestClient(const QuicTestClient&) = delete;

@@ -223,7 +223,8 @@ bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
 
   if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
       connection()->transport_version() != QUIC_VERSION_99) {
-    if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
+    if (GetNumOpenOutgoingStreams() >=
+        stream_id_manager().max_open_outgoing_streams()) {
       VLOG(1) << "No more streams should be created. "
               << "Already " << GetNumOpenOutgoingStreams() << " open.";
       return false;

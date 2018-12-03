@@ -13,47 +13,38 @@ bool operator==(const QpackInstructionOpcode& a,
 
 const QpackInstruction* InsertWithNameReferenceInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kInsertWithNameReferenceOpcode,
-                                 kInsertWithNameReferenceOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kStaticBit,
-        kInsertWithNameReferenceStaticBit},
-       {QpackInstructionFieldType::kVarint,
-        kInsertWithNameReferenceNameIndexPrefixLength},
-       {QpackInstructionFieldType::kValue, kLiteralValuePrefixLength}}};
+      new QpackInstructionOpcode{0b10000000, 0b10000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kStaticBit, 0b01000000},
+                            {QpackInstructionFieldType::kVarint, 6},
+                            {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
 }
 
 const QpackInstruction* InsertWithoutNameReferenceInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kInsertWithoutNameReferenceOpcode,
-                                 kInsertWithoutNameReferenceOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kName,
-        kInsertWithoutNameReferenceNameLengthPrefixLength},
-       {QpackInstructionFieldType::kValue, kLiteralValuePrefixLength}}};
+      new QpackInstructionOpcode{0b01000000, 0b11000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kName, 5},
+                            {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
 }
 
 const QpackInstruction* DuplicateInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kDuplicateOpcode, kDuplicateOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kVarint, kDuplicateIndexPrefixLength}}};
+      new QpackInstructionOpcode{0b00000000, 0b11100000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 5}}};
   return instruction;
 }
 
 const QpackInstruction* DynamicTableSizeUpdateInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kDynamicTableSizeUpdateOpcode,
-                                 kDynamicTableSizeUpdateOpcodeMask};
+      new QpackInstructionOpcode{0b00100000, 0b11100000};
   static const QpackInstruction* const instruction =
-      new QpackInstruction{*opcode,
-                           {{QpackInstructionFieldType::kVarint,
-                             kDynamicTableSizeUpdateMaxSizePrefixLength}}};
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 5}}};
   return instruction;
 }
 
@@ -67,60 +58,50 @@ const QpackLanguage* QpackEncoderStreamLanguage() {
 
 const QpackInstruction* QpackIndexedHeaderFieldInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kIndexedHeaderFieldOpcodeValue,
-                                 kIndexedHeaderFieldOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kStaticBit, kIndexedHeaderFieldStaticBit},
-       {QpackInstructionFieldType::kVarint, kIndexedHeaderFieldPrefixLength}}};
+      new QpackInstructionOpcode{0b10000000, 0b10000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kStaticBit, 0b01000000},
+                            {QpackInstructionFieldType::kVarint, 6}}};
   return instruction;
 }
 
 const QpackInstruction* QpackIndexedHeaderFieldPostBaseInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kIndexedHeaderFieldPostBaseOpcodeValue,
-                                 kIndexedHeaderFieldPostBaseOpcodeMask};
+      new QpackInstructionOpcode{0b00010000, 0b11110000};
   static const QpackInstruction* const instruction =
-      new QpackInstruction{*opcode,
-                           {{QpackInstructionFieldType::kVarint,
-                             kIndexedHeaderFieldPostBasePrefixLength}}};
+      new QpackInstruction{*opcode, {{QpackInstructionFieldType::kVarint, 4}}};
   return instruction;
 }
 
 const QpackInstruction* QpackLiteralHeaderFieldNameReferenceInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kLiteralHeaderFieldNameReferenceOpcodeValue,
-                                 kLiteralHeaderFieldNameReferenceOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kStaticBit,
-        kLiteralHeaderFieldNameReferenceStaticBit},
-       {QpackInstructionFieldType::kVarint,
-        kLiteralHeaderFieldNameReferencePrefixLength},
-       {QpackInstructionFieldType::kValue, kLiteralValuePrefixLength}}};
+      new QpackInstructionOpcode{0b01000000, 0b11000000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kStaticBit, 0b00010000},
+                            {QpackInstructionFieldType::kVarint, 4},
+                            {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
 }
 
 const QpackInstruction* QpackLiteralHeaderFieldPostBaseInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kLiteralHeaderFieldPostBaseOpcodeValue,
-                                 kLiteralHeaderFieldPostBaseOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kVarint,
-        kLiteralHeaderFieldPostBasePrefixLength},
-       {QpackInstructionFieldType::kValue, kLiteralValuePrefixLength}}};
+      new QpackInstructionOpcode{0b00000000, 0b11110000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kVarint, 3},
+                            {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
 }
 
 const QpackInstruction* QpackLiteralHeaderFieldInstruction() {
   static const QpackInstructionOpcode* const opcode =
-      new QpackInstructionOpcode{kLiteralHeaderFieldOpcodeValue,
-                                 kLiteralHeaderFieldOpcodeMask};
-  static const QpackInstruction* const instruction = new QpackInstruction{
-      *opcode,
-      {{QpackInstructionFieldType::kName, kLiteralHeaderFieldPrefixLength},
-       {QpackInstructionFieldType::kValue, kLiteralValuePrefixLength}}};
+      new QpackInstructionOpcode{0b00100000, 0b11100000};
+  static const QpackInstruction* const instruction =
+      new QpackInstruction{*opcode,
+                           {{QpackInstructionFieldType::kName, 3},
+                            {QpackInstructionFieldType::kValue, 7}}};
   return instruction;
 }
 

@@ -113,6 +113,15 @@ class QuicStreamIdManagerTestBase
 
   void CloseStream(QuicStreamId id) { session_->CloseStream(id); }
 
+  QuicStreamId GetNthClientInitiatedId(int n) {
+    return QuicUtils::GetHeadersStreamId(connection_->transport_version()) +
+           kV99StreamIdIncrement * n;
+  }
+
+  QuicStreamId GetNthServerInitiatedId(int n) {
+    return 1 + kV99StreamIdIncrement * n;
+  }
+
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   StrictMock<MockQuicConnection>* connection_;
@@ -739,6 +748,15 @@ TEST_F(QuicStreamIdManagerTestServer, StreamIdManagerServerInitialization) {
             stream_id_manager_->actual_max_allowed_incoming_stream_id());
   EXPECT_EQ(kExpectedMaxIncomingStreamId,
             stream_id_manager_->advertised_max_allowed_incoming_stream_id());
+}
+
+TEST_F(QuicStreamIdManagerTestServer, AvailableStreams) {
+  stream_id_manager_->MaybeIncreaseLargestPeerStreamId(
+      GetNthClientInitiatedId(3));
+  EXPECT_TRUE(
+      stream_id_manager_->IsAvailableStream(GetNthClientInitiatedId(1)));
+  EXPECT_TRUE(
+      stream_id_manager_->IsAvailableStream(GetNthClientInitiatedId(2)));
 }
 
 }  // namespace

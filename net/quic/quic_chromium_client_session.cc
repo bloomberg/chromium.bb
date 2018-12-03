@@ -43,6 +43,7 @@
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -1011,7 +1012,15 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
     return ERR_CONNECTION_CLOSED;
   }
 
-  if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams()) {
+  bool can_open_next;
+  if (!quic::GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != quic::QUIC_VERSION_99) {
+    can_open_next = (GetNumOpenOutgoingStreams() <
+                     stream_id_manager().max_open_outgoing_streams());
+  } else {
+    can_open_next = CanOpenNextOutgoingStream();
+  }
+  if (can_open_next) {
     request->stream_ =
         CreateOutgoingReliableStreamImpl(request->traffic_annotation())
             ->CreateHandle();
@@ -1040,10 +1049,20 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingStream() {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
-    DVLOG(1) << "Failed to create a new outgoing stream. "
-             << "Already " << GetNumOpenOutgoingStreams() << " open.";
-    return false;
+  if (!quic::GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != quic::QUIC_VERSION_99) {
+    if (GetNumOpenOutgoingStreams() >=
+        stream_id_manager().max_open_outgoing_streams()) {
+      DVLOG(1) << "Failed to create a new outgoing stream. "
+               << "Already " << GetNumOpenOutgoingStreams() << " open.";
+      return false;
+    }
+  } else {
+    if (!CanOpenNextOutgoingStream()) {
+      DVLOG(1) << "Failed to create a new outgoing stream. "
+               << "Already " << GetNumOpenOutgoingStreams() << " open.";
+      return false;
+    }
   }
   if (goaway_received()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "

@@ -18,6 +18,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
@@ -101,8 +102,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                                 crypto_config,
                                 compressed_certs_cache,
                                 quic_simple_server_backend) {
-    set_max_open_incoming_streams(kMaxStreamsForTest);
-    set_max_open_outgoing_streams(kMaxStreamsForTest);
+    QuicSessionPeer::SetMaxOpenIncomingStreams(this, kMaxStreamsForTest);
+    QuicSessionPeer::SetMaxOpenOutgoingStreams(this, kMaxStreamsForTest);
     ON_CALL(*this, WritevData(_, _, _, _, _))
         .WillByDefault(testing::Return(QuicConsumedData(0, false)));
   }

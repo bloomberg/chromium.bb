@@ -379,6 +379,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnMaxStreamIdFrame, bool(const QuicMaxStreamIdFrame& frame));
   MOCK_METHOD1(OnStreamIdBlockedFrame,
                bool(const QuicStreamIdBlockedFrame& frame));
+  MOCK_METHOD1(OnStopSendingFrame, bool(const QuicStopSendingFrame& frame));
 };
 
 class MockQuicConnectionHelper : public QuicConnectionHelperInterface {

@@ -1666,17 +1666,24 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   quic::QuicStreamId stream_id = GetNthClientInitiatedStreamId(0);
   MockQuicData socket_data;
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  socket_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(2, true, stream_id,
-                                               quic::QUIC_STREAM_CANCELLED));
-  socket_data.AddRead(ASYNC,
-                      server_maker_.MakeRstPacket(1, false, stream_id,
-                                                  quic::QUIC_STREAM_CANCELLED));
   if (version_ == quic::QUIC_VERSION_99) {
     socket_data.AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+                         client_maker_.MakeStreamIdBlockedPacket(2, true, 102));
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(3, true, stream_id,
+                                                 quic::QUIC_STREAM_CANCELLED));
+    socket_data.AddRead(
+        ASYNC, server_maker_.MakeRstPacket(1, false, stream_id,
+                                           quic::QUIC_STREAM_CANCELLED));
     socket_data.AddRead(ASYNC,
                         server_maker_.MakeMaxStreamIdPacket(4, true, 102 + 2));
+  } else {
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(2, true, stream_id,
+                                                 quic::QUIC_STREAM_CANCELLED));
+    socket_data.AddRead(
+        ASYNC, server_maker_.MakeRstPacket(1, false, stream_id,
+                                           quic::QUIC_STREAM_CANCELLED));
   }
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
