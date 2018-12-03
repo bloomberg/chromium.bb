@@ -121,7 +121,7 @@ builder.
 
   Path regular expressions:
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
 
 * [linux-blink-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-rel))
 
@@ -131,7 +131,7 @@ builder.
     * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2)
     * [`//third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/)
 
@@ -156,7 +156,7 @@ builder.
     * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-features=BlinkGenPropertyTrees)
+    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-slimming-paint-v2)
     * [`//third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-slimming-paint-v2/)
 

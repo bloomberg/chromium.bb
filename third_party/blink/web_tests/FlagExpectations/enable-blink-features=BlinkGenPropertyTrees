@@ -1,4 +1,4 @@
-# Expectations for --enable-blink-gen-property-trees
+# Expectations for --enable-blink-features=BlinkGenPropertyTrees
 # We are focused on scrolling, compositing, animations, threading, and paint
 # related tests with all other directories skipped to improve bot cycle time.
 
