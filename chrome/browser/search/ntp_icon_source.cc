@@ -46,6 +46,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
 namespace {
@@ -280,7 +281,19 @@ void NtpIconSource::StartDataRequest(
           gfx::Image& image =
               ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                   prepopulated_page.favicon_id);
-          ReturnRenderedIconForRequest(request, image.AsBitmap());
+
+          // Resize as necessary.
+          gfx::Size target_size(icon_size_in_pixels, icon_size_in_pixels);
+          if (!image.IsEmpty() && image.Size() != target_size) {
+            gfx::ImageSkia resized_image =
+                gfx::ImageSkiaOperations::CreateResizedImage(
+                    image.AsImageSkia(), skia::ImageOperations::RESIZE_BEST,
+                    target_size);
+            ReturnRenderedIconForRequest(request,
+                                         gfx::Image(resized_image).AsBitmap());
+          } else {
+            ReturnRenderedIconForRequest(request, image.AsBitmap());
+          }
           return;
         }
       }
