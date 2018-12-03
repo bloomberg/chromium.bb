@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 
 namespace crash_reporter {
 namespace {
@@ -108,17 +108,35 @@ void CrashMetricsReporter::RemoveObserver(
   async_observers_->RemoveObserver(observer);
 }
 
-void CrashMetricsReporter::ChildProcessExited(
-    const ChildExitObserver::TerminationInfo& info) {
+void CrashMetricsReporter::CrashDumpProcessed(
+    const ChildExitObserver::TerminationInfo& info,
+    breakpad::CrashDumpManager::CrashDumpStatus status) {
   ReportedCrashTypeSet reported_counts;
-  const bool crashed = info.is_crashed();
+
+  // Avoid duplicating processing for the same process.
+  if (status == breakpad::CrashDumpManager::CrashDumpStatus::kMissingDump)
+    return;
+
+  bool has_valid_dump = false;
+  switch (status) {
+    case breakpad::CrashDumpManager::CrashDumpStatus::kMissingDump:
+      NOTREACHED();
+      break;
+    case breakpad::CrashDumpManager::CrashDumpStatus::kEmptyDump:
+      has_valid_dump = false;
+      break;
+    case breakpad::CrashDumpManager::CrashDumpStatus::kValidDump:
+    case breakpad::CrashDumpManager::CrashDumpStatus::kDumpProcessingFailed:
+      has_valid_dump = true;
+      break;
+  }
   const bool app_foreground =
       info.app_state ==
           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
       info.app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
   const bool intentional_kill = info.was_killed_intentionally_by_browser;
   const bool android_oom_kill = !info.was_killed_intentionally_by_browser &&
-                                !crashed && !info.normal_termination;
+                                !has_valid_dump && !info.normal_termination;
   const bool renderer_visible = info.renderer_has_visible_clients;
   const bool renderer_subframe = info.renderer_was_subframe;
   const bool renderer_allocation_failed =
@@ -152,7 +170,7 @@ void CrashMetricsReporter::ChildProcessExited(
 
   if (info.process_type == content::PROCESS_TYPE_RENDERER && app_foreground) {
     if (renderer_visible) {
-      if (crashed) {
+      if (has_valid_dump) {
         ReportCrashCount(
             renderer_subframe
                 ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeCrash
@@ -201,7 +219,7 @@ void CrashMetricsReporter::ChildProcessExited(
               vm_size_kb / 1024);
         }
       }
-    } else if (!crashed) {
+    } else if (!has_valid_dump) {
       // Record stats when renderer is not visible, but the process has oom
       // protected bindings. This case occurs when a tab is switched or closed,
       // the bindings are updated later than visibility on web contents.
@@ -249,7 +267,7 @@ void CrashMetricsReporter::ChildProcessExited(
                      &reported_counts);
   }
 
-  if (crashed) {
+  if (has_valid_dump) {
     if (info.process_type == content::PROCESS_TYPE_RENDERER) {
       ReportCrashCount(ProcessedCrashCounts::kRendererCrashAll,
                        &reported_counts);
@@ -287,7 +305,7 @@ void CrashMetricsReporter::ChildProcessExited(
         info.remaining_process_with_strong_binding, 20);
   }
 
-  ReportLegacyCrashUma(info, crashed);
+  ReportLegacyCrashUma(info, has_valid_dump);
   NotifyObservers(info.process_host_id, reported_counts);
 }
 

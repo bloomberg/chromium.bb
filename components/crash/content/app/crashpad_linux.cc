@@ -435,13 +435,6 @@ class HandlerStarter {
     BuildHandlerArgs(client, &database_path, &metrics_path, &url,
                      &process_annotations, &arguments);
 
-#if defined(OS_ANDROID)
-    std::string browser_ptype;
-    if (GetCrashReporterClient()->GetBrowserProcessType(&browser_ptype)) {
-      process_annotations["ptype"] = browser_ptype;
-    }
-#endif  // defined(OS_ANDROID)
-
     base::FilePath exe_dir;
     base::FilePath handler_path;
     if (!GetHandlerPath(&exe_dir, &handler_path)) {
