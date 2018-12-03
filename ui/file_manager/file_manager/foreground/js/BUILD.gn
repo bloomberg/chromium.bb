@@ -533,6 +533,13 @@ js_library("progress_center_item_group") {
   ]
 }
 
+js_unittest("progress_center_item_group_unittest") {
+  deps = [
+    ":progress_center_item_group",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("providers_model") {
   deps = [
     "//ui/webui/resources/js:assert",
@@ -692,6 +699,7 @@ js_library("webui_command_extender") {
 js_unit_tests("unit_tests") {
   deps = [
     ":file_list_model_unittest",
+    ":progress_center_item_group_unittest",
     ":providers_model_unittest",
     ":spinner_controller_unittest",
     ":thumbnail_loader_unittest",
