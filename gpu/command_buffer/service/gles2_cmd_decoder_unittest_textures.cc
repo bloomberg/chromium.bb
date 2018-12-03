@@ -3269,7 +3269,7 @@ TEST_P(GLES2DecoderTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -3299,7 +3299,7 @@ TEST_P(GLES2DecoderTest,
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // CreateAndTexStorage2DSharedImage should fail if the mailbox is invalid.
@@ -3330,7 +3330,7 @@ TEST_P(GLES2DecoderTest,
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(client_texture_id_, GL_RGBA, mailbox.name);
+  cmd.Init(client_texture_id_, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // CreateAndTexStorage2DSharedImage should fail.
@@ -3353,7 +3353,7 @@ TEST_P(GLES2DecoderTest, BeginEndSharedImageAccessCRHOMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -3413,7 +3413,7 @@ TEST_P(GLES2DecoderTest, BeginSharedImageAccessDirectCHROMIUMCantBeginAccess) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 

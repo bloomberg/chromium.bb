@@ -1151,7 +1151,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
   void DoCreateAndTexStorage2DSharedImageINTERNAL(GLuint client_id,
-                                                  GLenum internal_format,
                                                   const volatile GLbyte* data);
   void DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id, GLenum mode);
   void DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
@@ -17760,7 +17759,6 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
 
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint client_id,
-    GLenum internal_format,
     const volatile GLbyte* data) {
   TRACE_EVENT2("gpu",
                "GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageCHROMIUM",

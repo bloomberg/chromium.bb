@@ -1246,7 +1246,6 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
     GLsizei /* numViews */) {}
 void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
 GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum /* internalFormat */,
     const GLbyte* /* mailbox */) {
   return 0;
 }

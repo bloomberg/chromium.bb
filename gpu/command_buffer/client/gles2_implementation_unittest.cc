@@ -3551,9 +3551,8 @@ TEST_F(GLES2ImplementationTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
 
   Mailbox mailbox = Mailbox::Generate();
   Cmds expected;
-  expected.cmd.Init(kTexturesStartId, GL_RGBA, mailbox.name);
-  GLuint id =
-      gl_->CreateAndTexStorage2DSharedImageCHROMIUM(GL_RGBA, mailbox.name);
+  expected.cmd.Init(kTexturesStartId, mailbox.name);
+  GLuint id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(kTexturesStartId, id);
 }

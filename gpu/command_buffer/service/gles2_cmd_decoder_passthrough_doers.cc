@@ -5054,7 +5054,6 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
-    GLenum internal_format,
     const volatile GLbyte* mailbox) {
   if (!texture_client_id ||
       resources_->texture_id_map.HasClientID(texture_client_id)) {

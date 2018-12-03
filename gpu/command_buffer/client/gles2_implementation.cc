@@ -6044,20 +6044,17 @@ GLuint GLES2Implementation::CreateAndConsumeTextureCHROMIUM(
 }
 
 GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum internal_format,
     const GLbyte* data) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] CreateAndTexStorage2DSharedImageCHROMIUM("
-                     << GLES2Util::GetStringImageInternalFormat(internal_format)
-                     << ", " << static_cast<const void*>(data) << ")");
+                     << static_cast<const void*>(data) << ")");
   const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
   DCHECK(mailbox.Verify()) << "CreateAndTexStorage2DSharedImageCHROMIUM was "
                               "passed an invalid mailbox.";
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(
-      client_id, internal_format, data);
+  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::OrderingBarrier();
   CheckGLError();

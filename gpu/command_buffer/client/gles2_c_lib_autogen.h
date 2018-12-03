@@ -1836,10 +1836,9 @@ void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
   gles2::GetGLContext()->MaxShaderCompilerThreadsKHR(count);
 }
 GLuint GL_APIENTRY
-GLES2CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
-                                              const GLbyte* mailbox) {
+GLES2CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) {
   return gles2::GetGLContext()->CreateAndTexStorage2DSharedImageCHROMIUM(
-      internalFormat, mailbox);
+      mailbox);
 }
 void GL_APIENTRY GLES2BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
                                                            GLenum mode) {
