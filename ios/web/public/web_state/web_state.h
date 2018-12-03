@@ -153,6 +153,11 @@ class WebState : public base::SupportsUserData {
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;
 
+  // DISCOURAGED. Prefer using |WebFrame CallJavaScriptFunction| instead because
+  // it restricts JavaScript execution to functions within __gCrWeb and can also
+  // call those functions on any frame in the page. ExecuteJavaScript here can
+  // execute arbitrary JavaScript code, which is not as safe and is retricted to
+  // executing only on the main frame.
   // Runs JavaScript in the main frame's context. If a callback is provided, it
   // will be used to return the result, when the result is available or script
   // execution has failed due to an error.
