@@ -1018,11 +1018,6 @@
     "args": ["--disable-site-isolation-trials"]
   },
   {
-    "prefix": "transferable-streams",
-    "base": "http/tests/streams/transferable",
-    "args": ["--enable-blink-features=TransferableStreams"]
-  },
-  {
     "prefix": "streaming-preload",
     "base": "http/tests/fetch",
     "args": ["--enable-features=ScriptStreamingOnPreload"]
