@@ -128,6 +128,9 @@ extern const char kExtensionInvalidRequestURL[];
 // URL of the 'Activity controls' section of the privacy settings page.
 extern const char kGoogleAccountActivityControlsURL[];
 
+// URL of the Google Account.
+extern const char kGoogleAccountURL[];
+
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 

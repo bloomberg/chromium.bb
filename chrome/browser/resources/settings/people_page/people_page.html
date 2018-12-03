@@ -16,6 +16,7 @@
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="sync_page.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="../open_window_proxy.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
@@ -258,6 +259,11 @@
 
 <if expr="not chromeos">
         <template is="dom-if" if="[[diceEnabled_]]">
+          <cr-link-row id="manage-google-account"
+              label="$i18n{manageGoogleAccount}" icon-class="icon-external"
+              hidden="[[!shouldShowGoogleAccount_]]"
+              on-click="openGoogleAccount_"></cr-link-row>
+
           <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
               actionable>
             <div class="start">$i18n{profileNameAndPicture}</div>

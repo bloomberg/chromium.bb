@@ -141,6 +141,8 @@ const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
 const char kGoogleAccountActivityControlsURL[] =
     "https://myaccount.google.com/activitycontrols/search";
 
+const char kGoogleAccountURL[] = "https://myaccount.google.com";
+
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
 
 const char kLearnMoreReportingURL[] =

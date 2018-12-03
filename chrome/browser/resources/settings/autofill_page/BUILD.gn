@@ -7,7 +7,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":address_edit_dialog",
-    ":autofill_browser_proxy",
     ":autofill_page",
     ":autofill_section",
     ":credit_card_edit_dialog",
@@ -20,18 +19,12 @@ js_type_check("closure_compile") {
   ]
 }
 
-js_library("autofill_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
 js_library("autofill_page") {
   deps = [
-    ":autofill_browser_proxy",
     ":autofill_section",
     ":passwords_section",
     ":payments_section",
+    "..:open_window_proxy",
     "..:route",
     "../prefs:prefs_behavior",
     "../settings_page:settings_animated_pages",

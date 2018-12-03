@@ -1740,6 +1740,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
     {"syncEverythingCheckboxLabel",
      IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL},
+    {"manageGoogleAccount", IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT},
     {"appCheckboxLabel", IDS_SETTINGS_APPS_CHECKBOX_LABEL},
     {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},
     {"settingsCheckboxLabel", IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL},
@@ -1869,6 +1870,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);
+
+  html_source->AddString("googleAccountUrl", chrome::kGoogleAccountURL);
 
   html_source->AddBoolean("profileShortcutsEnabled",
                           ProfileShortcutManager::IsFeatureEnabled());
