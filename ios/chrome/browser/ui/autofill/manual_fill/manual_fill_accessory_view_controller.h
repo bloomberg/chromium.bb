@@ -69,7 +69,7 @@ extern NSString* const AccessoryCreditCardAccessibilityIdentifier;
 
 // Resets to the original state, with the keyboard icon hidden and no icon
 // selected.
-- (void)reset;
+- (void)resetAnimated:(BOOL)animated;
 
 @end
 

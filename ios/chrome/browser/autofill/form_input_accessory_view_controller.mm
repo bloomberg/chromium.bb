@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
@@ -23,6 +24,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }  // namespace autofill
 
 @interface FormInputAccessoryViewController () <
+    FormSuggestionViewDelegate,
     ManualFillAccessoryViewControllerDelegate>
 
 // Grey view used as the background of the keyboard to fix
@@ -133,7 +135,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)unlockManualFallbackView {
-  [self.formSuggestionView unlockTrailingView];
+  [self.formSuggestionView resetContentInsetAndDelegate];
 }
 
 - (void)lockManualFallbackView {
@@ -141,7 +143,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)resetManualFallbackIcons {
-  [self.manualFillAccessoryViewController reset];
+  [self.manualFillAccessoryViewController resetAnimated:YES];
 }
 
 #pragma mark - FormInputAccessoryConsumer
@@ -178,6 +180,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   // Create the views if they don't exist already.
   if (!self.formSuggestionView) {
     self.formSuggestionView = [[FormSuggestionView alloc] init];
+    self.formSuggestionView.formSuggestionViewDelegate = self;
   }
 
   [self.formSuggestionView updateClient:suggestionClient
@@ -209,7 +212,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)restoreOriginalKeyboardView {
-  [self.manualFillAccessoryViewController reset];
+  [self.manualFillAccessoryViewController resetAnimated:NO];
   [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
   self.keyboardReplacementView = nil;
@@ -428,6 +431,17 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenPasswords",
                            self.formSuggestionView.suggestions.count);
   [self.manualFillAccessoryViewControllerDelegate passwordButtonPressed:sender];
+}
+
+#pragma mark - FormSuggestionViewDelegate
+
+- (void)formSuggestionViewShouldResetFromPull:
+    (FormSuggestionView*)formSuggestionView {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePull"));
+  // The pull gesture has the same effect as when the keyboard button is
+  // pressed.
+  [self.manualFillAccessoryViewControllerDelegate keyboardButtonPressed];
+  [self.manualFillAccessoryViewController resetAnimated:YES];
 }
 
 @end

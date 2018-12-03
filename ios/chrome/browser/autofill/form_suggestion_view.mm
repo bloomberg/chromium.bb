@@ -29,7 +29,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 }  // namespace
 
-@interface FormSuggestionView ()
+@interface FormSuggestionView () <UIScrollViewDelegate>
 
 // The FormSuggestions that are displayed by this view.
 @property(nonatomic) NSArray<FormSuggestion*>* suggestions;
@@ -65,10 +65,8 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   }
 }
 
-- (void)unlockTrailingView {
-  if (!self.superview) {
-    return;
-  }
+- (void)resetContentInsetAndDelegate {
+  self.delegate = nil;
   [UIView animateWithDuration:0.2
                    animations:^{
                      self.contentInset = UIEdgeInsetsZero;
@@ -79,16 +77,18 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   if (!self.superview || !self.trailingView) {
     return;
   }
-
   LayoutOffset layoutOffset = CGRectGetLeadingLayoutOffsetInBoundingRect(
       self.trailingView.frame, {CGPointZero, self.contentSize});
   // Because the way the scroll view is transformed for RTL, the insets don't
   // need to be directed.
   UIEdgeInsets lockedContentInsets = UIEdgeInsetsMake(0, -layoutOffset, 0, 0);
   [UIView animateWithDuration:0.2
-                   animations:^{
-                     self.contentInset = lockedContentInsets;
-                   }];
+      animations:^{
+        self.contentInset = lockedContentInsets;
+      }
+      completion:^(BOOL finished) {
+        self.delegate = self;
+      }];
 }
 
 #pragma mark - UIView
@@ -180,6 +180,16 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   _trailingView = subview;
   if (_stackView) {
     [_stackView addArrangedSubview:_trailingView];
+  }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  CGFloat offset = self.contentOffset.x;
+  CGFloat inset = self.contentInset.left;  // Inset is negative when locked.
+  CGFloat diff = offset + inset;
+  if (diff < -55) {
+    [self.formSuggestionViewDelegate
+        formSuggestionViewShouldResetFromPull:self];
   }
 }
 

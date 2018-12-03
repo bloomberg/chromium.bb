@@ -75,10 +75,16 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   return self;
 }
 
-- (void)reset {
-  [self resetTintColors];
-  self.keyboardButton.hidden = YES;
-  self.keyboardButton.alpha = 0.0;
+- (void)resetAnimated:(BOOL)animated {
+  [UIView animateWithDuration:animated ? MFAnimationDuration : 0
+                   animations:^{
+                     [self resetTintColors];
+                     // Workaround the |hidden| property in stacked views.
+                     if (!self.keyboardButton.hidden) {
+                       self.keyboardButton.hidden = YES;
+                       self.keyboardButton.alpha = 0.0;
+                     }
+                   }];
 }
 
 #pragma mark - Setters
@@ -221,11 +227,15 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 - (void)animateKeyboardButtonHidden:(BOOL)hidden {
   [UIView animateWithDuration:MFAnimationDuration
                    animations:^{
+                     // Workaround setting more than once the |hidden| property
+                     // in stacked views.
+                     if (self.keyboardButton.hidden != hidden) {
+                       self.keyboardButton.hidden = hidden;
+                     }
+
                      if (hidden) {
-                       self.keyboardButton.hidden = YES;
                        self.keyboardButton.alpha = 0.0;
                      } else {
-                       self.keyboardButton.hidden = NO;
                        self.keyboardButton.alpha = 1.0;
                      }
                    }];

@@ -10143,6 +10143,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManualFallback_ClosePull">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user closed the Manual Fallback view by pulling. This happens when the
+    user pulls enough to the right, similar to &quot;pull to refresh&quot;.
+  </description>
+</action>
+
 <action name="ManualFallback_CreditCard_OpenManageCreditCard">
   <owner>javierrobles@chromium.org</owner>
   <description>

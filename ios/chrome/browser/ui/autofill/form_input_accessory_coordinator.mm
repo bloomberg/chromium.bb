@@ -183,14 +183,16 @@
   [self.formInputAccessoryMediator disableSuggestions];
 }
 
+#pragma mark - FallbackCoordinatorDelegate
+
+- (void)resetAccessoryView {
+  [self.formInputAccessoryViewController resetManualFallbackIcons];
+}
+
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
   [self.delegate openPasswordSettings];
-}
-
-- (void)resetAccessoryView {
-  [self.formInputAccessoryViewController resetManualFallbackIcons];
 }
 
 #pragma mark - CardCoordinatorDelegate
