@@ -100,6 +100,12 @@ enum FetchImportanceMode {
   kImportanceHigh
 };
 
+// Request headers for FetchAPIRequest. This is typemapped to a container with a
+// case insensitive compare or hash function.
+struct FetchAPIRequestHeaders {
+  map<string, string> headers;
+};
+
 struct FetchAPIRequest {
   network.mojom.FetchRequestMode mode = network.mojom.FetchRequestMode.kNoCors;
   bool is_main_resource_load = false;
@@ -108,7 +114,7 @@ struct FetchAPIRequest {
     network.mojom.RequestContextFrameType.kNone;
   url.mojom.Url url;
   string method;
-  map<string, string> headers;
+  FetchAPIRequestHeaders headers;
   SerializedBlob? blob;
   Referrer? referrer;
   network.mojom.FetchCredentialsMode credentials_mode =

@@ -285,11 +285,12 @@ ServiceWorkerUtils::DeserializeFetchRequestFromString(
 }
 
 // static
+//
+// TODO(https://crbug.com/789854): Remove this function and replace
+// ServiceWorkerHeadersMap with FetchAPIRequestHeadersMap.
 ServiceWorkerHeaderMap ServiceWorkerUtils::ToServiceWorkerHeaderMap(
-    const RequestHeaderMap& header_) {
-  content::ServiceWorkerHeaderMap header;
-  header.insert(header_.begin(), header_.end());
-  return header;
+    const blink::FetchAPIRequestHeadersMap& headers) {
+  return {headers.begin(), headers.end()};
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
