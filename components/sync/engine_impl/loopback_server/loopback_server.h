@@ -39,6 +39,11 @@ class LoopbackServer {
     // updated as part of the commit are passed in |committed_model_types|.
     virtual void OnCommit(const std::string& committer_id,
                           syncer::ModelTypeSet committed_model_types) = 0;
+
+    // Called when a page URL is committed via SESSIONS and the user has
+    // enabled "history sync" in the settings UI (which is detected by verifying
+    // if TYPED_URLS is an enabled type, as part of the commit request).
+    virtual void OnHistoryCommit(const std::string& url) = 0;
   };
 
   explicit LoopbackServer(const base::FilePath& persistent_file);

@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -172,6 +173,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;
+  void OnHistoryCommit(const std::string& url) override;
+
+  const std::set<std::string>& GetCommittedHistoryURLs() const;
 
   // Returns the current FakeServer as a WeakPtr.
   base::WeakPtr<FakeServer> AsWeakPtr();
@@ -201,6 +205,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
+
+  // All URLs received via history sync (powered by SESSIONS).
+  std::set<std::string> committed_history_urls_;
 
   // Used as the error_code field of ClientToServerResponse on all responses
   // except when |triggered_actionable_error_| is set.
