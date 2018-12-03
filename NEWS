@@ -56,6 +56,7 @@ issues]].
   ~lou_translateString()~ function, thanks to Bue Vester-Andersen
 
 ** Deprecation notice
+- None
 
 ** Backwards incompatible changes
 - The ~pass1Only~ flag has been deprecated for a while and is now
