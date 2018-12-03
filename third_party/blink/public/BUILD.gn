@@ -647,7 +647,6 @@ mojom("mojo_bindings") {
   sources = [
     "platform/autoplay.mojom",
     "platform/content_security_policy.mojom",
-    "platform/dedicated_worker_factory.mojom",
     "platform/media_download_in_product_help.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
