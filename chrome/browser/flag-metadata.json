@@ -3097,6 +3097,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "tab-hover-cards",
+    "owners": [ "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "tab-strip-keyboard-focus",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

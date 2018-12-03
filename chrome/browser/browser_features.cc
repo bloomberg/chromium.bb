@@ -20,4 +20,8 @@ const base::Feature kWebUIDarkMode{"WebUIDarkMode",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables popup cards containing tab information when hovering over a tab.
+const base::Feature kTabHoverCards{"TabHoverCards",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

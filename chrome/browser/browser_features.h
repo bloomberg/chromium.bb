@@ -24,6 +24,8 @@ extern const base::Feature kDoubleTapToZoomInTabletMode;
 extern const base::Feature kWebUIDarkMode;
 #endif
 
+extern const base::Feature kTabHoverCards;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_
