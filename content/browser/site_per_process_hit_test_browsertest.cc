@@ -3835,7 +3835,6 @@ void SendGestureTapSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* root_view,
     const gfx::Point& gesture_point,
     RenderWidgetHostViewBase*& router_gesture_target,
-    const RenderWidgetHostViewBase* old_expected_target,
     const RenderWidgetHostViewBase* expected_target,
     const uint32_t unique_touch_event_id) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
@@ -3848,12 +3847,6 @@ void SendGestureTapSequenceWithExpectedTarget(
       gesture_begin_details, unique_touch_event_id);
   UpdateEventRootLocation(&gesture_begin_event, root_view_aura);
   root_view_aura->OnGestureEvent(&gesture_begin_event);
-  // We expect to still have the old gesture target in place for the
-  // GestureFlingCancel that will be inserted before GestureTapDown.
-  // Note: the GestureFlingCancel is inserted by RenderWidgetHostViewAura::
-  // OnGestureEvent() when it sees ui::ET_GESTURE_TAP_DOWN, so we don't
-  // explicitly add it here.
-  EXPECT_EQ(old_expected_target, router_gesture_target);
 
   ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
   gesture_tap_down_details.set_device_type(
@@ -3884,7 +3877,7 @@ void SendGestureTapSequenceWithExpectedTarget(
                                      unique_touch_event_id);
   UpdateEventRootLocation(&gesture_tap_event, root_view_aura);
   root_view_aura->OnGestureEvent(&gesture_tap_event);
-  EXPECT_EQ(expected_target, router_gesture_target);
+  EXPECT_EQ(nullptr, router_gesture_target);
 
   ui::GestureEventDetails gesture_end_details(ui::ET_GESTURE_END);
   gesture_end_details.set_device_type(
@@ -3894,7 +3887,7 @@ void SendGestureTapSequenceWithExpectedTarget(
                                      unique_touch_event_id);
   UpdateEventRootLocation(&gesture_end_event, root_view_aura);
   root_view_aura->OnGestureEvent(&gesture_end_event);
-  EXPECT_EQ(expected_target, router_gesture_target);
+  EXPECT_EQ(nullptr, router_gesture_target);
 }
 
 void SendTouchpadPinchSequenceWithExpectedTarget(
@@ -4070,28 +4063,22 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   // main frame.
   SendGestureTapSequenceWithExpectedTarget(
       rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      nullptr, rwhv_parent, firstId);
+      rwhv_parent, firstId);
   EXPECT_EQ(2u, router->touchscreen_gesture_target_map_.size());
-  // Note: rwhv_parent is the target used for GestureFlingCancel sent by
-  // RenderWidgetHostViewAura::OnGestureEvent() at the start of the next gesture
-  // sequence; the sequence itself goes to rwhv_child.
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
 
   // The second touch sequence should generate a GestureTapDown, sent to the
   // child frame.
   SendGestureTapSequenceWithExpectedTarget(
       rwhv_parent, child_center, router->touchscreen_gesture_target_.target,
-      rwhv_parent, rwhv_child, secondId);
+      rwhv_child, secondId);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(rwhv_child, router->touchscreen_gesture_target_.target);
 
   // The third touch sequence should generate a GestureTapDown, sent to the
   // main frame.
   SendGestureTapSequenceWithExpectedTarget(
       rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_child, rwhv_parent, thirdId);
+      rwhv_parent, thirdId);
   EXPECT_EQ(0u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
 }
 
 // TODO: Flaking test crbug.com/802827
@@ -4166,20 +4153,15 @@ IN_PROC_BROWSER_TEST_P(
   // main frame.
   SendGestureTapSequenceWithExpectedTarget(
       rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      nullptr, rwhv_parent, firstId);
+      rwhv_parent, firstId);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
-  // Note: rwhv_parent is the target used for GestureFlingCancel sent by
-  // RenderWidgetHostViewAura::OnGestureEvent() at the start of the next gesture
-  // sequence; the sequence itself goes to rwhv_child.
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
 
   // The third touch sequence should generate a GestureTapDown, sent to the
   // main frame.
   SendGestureTapSequenceWithExpectedTarget(
       rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_parent, rwhv_parent, thirdId);
+      rwhv_parent, thirdId);
   EXPECT_EQ(0u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(rwhv_parent, router->touchscreen_gesture_target_.target);
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 

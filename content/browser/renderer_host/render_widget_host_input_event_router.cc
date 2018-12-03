@@ -1333,11 +1333,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
       gesture_target_it == touchscreen_gesture_target_map_.end();
 
   // We use GestureTapDown to detect the start of a gesture sequence since
-  // there is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that
-  // this means the GestureFlingCancel that always comes between
-  // ET_GESTURE_BEGIN and GestureTapDown is sent to the previous target, in
-  // case it is still in a fling.
-  bool is_gesture_start =
+  // there is no WebGestureEvent equivalent for ET_GESTURE_BEGIN.
+  const bool is_gesture_start =
       gesture_event.GetType() == blink::WebInputEvent::kGestureTapDown;
 
   if (gesture_event.unique_touch_event_id == 0) {
@@ -1431,6 +1428,19 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
 
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart)
     last_fling_start_target_ = touchscreen_gesture_target_.target;
+
+  // If we have one of the following events, then the user has lifted their
+  // last finger.
+  const bool is_gesture_end =
+      gesture_event.GetType() == blink::WebInputEvent::kGestureTap ||
+      gesture_event.GetType() == blink::WebInputEvent::kGestureLongTap ||
+      gesture_event.GetType() == blink::WebInputEvent::kGestureDoubleTap ||
+      gesture_event.GetType() == blink::WebInputEvent::kGestureTwoFingerTap ||
+      gesture_event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+      gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart;
+
+  if (is_gesture_end)
+    touchscreen_gesture_target_.target = nullptr;
 }
 
 void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
