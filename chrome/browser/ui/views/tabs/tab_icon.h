@@ -114,9 +114,14 @@ class TabIcon : public views::View {
   bool MaybePaintFavicon(gfx::Canvas* canvas,
                          const gfx::ImageSkia& icon,
                          const gfx::Rect& bounds);
+  bool HasNonDefaultFavicon() const;
 
   // Sets the icon. Depending on the URL the icon may be automatically themed.
-  void SetIcon(const GURL& url, const gfx::ImageSkia& favicon);
+  // The |tab_is_waiting| flag is used to check if we're allowed to start fading
+  // in the new icon.
+  void SetIcon(const GURL& url,
+               const gfx::ImageSkia& favicon,
+               bool tab_is_waiting);
 
   // For certain types of tabs the loading animation is not desired so the
   // caller can set inhibit_loading_animation to true. When false, the loading
