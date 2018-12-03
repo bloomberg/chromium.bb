@@ -23,12 +23,18 @@ issues]].
   Chinese Braille thanks to Sunian Loomee.
 - Update Bopomofo-based Chinese Braille to version 2018-11 thanks to
   Bo-Cheng Jhan
-    - Correct the default braille pattern of many Chinese characters
-    - Add various Chinese phrases involving exceptions of braille
-      patterns
-    - Modify dot patterns of dashes for readability reasons
+  - Correct the default braille pattern of many Chinese characters
+  - Add various Chinese phrases involving exceptions of braille
+    patterns
+  - Modify dot patterns of dashes for readability reasons
 - Added a table for Turkish grade 2 thanks to ugurgurbuz39 and Simon
   Aittamaa
+- Major upgrade to the German tables. They have been upgraded to "Das
+  System der deutschen Brailleschrift" (2018). They are much smaller
+  now as they are based on lou_maketable. As they now work for any
+  locale (be it Switzerland or Germany) they have been merged into one
+  set of tables for the different grades. Thanks to Christian
+  Waldvogel.
 - New table for Arabic contracted braille thanks to Ikrami Ahmad.
 - New table for Arabic computer braille thanks to Ikrami Ahmad.
 
@@ -50,7 +56,16 @@ issues]].
 - ar-ar-comp8.utb
 
 *** Renamed
+- de-de-accents.cti -> de-accents.cti
+- de-de-g0.utb -> de-g0.utb
+- de-de-g1.ctb -> de-g1.ctb
+- de-de-g2.ctb -> de-g2.ctb
 *** Removed
+- de-ch-g0.utb -> de-g0.utb
+- de-ch-g1.ctb -> de-g1.ctb
+- de-ch-g2.ctb -> de-g2.ctb
+- de.tbl -> de-g2.ctb
+- de_CH.tbl -> de-g2.ctb
 - ar-fa.utb
 
 * Noteworthy changes in release 3.7.0 (2018-09-03)
