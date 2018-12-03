@@ -233,13 +233,15 @@ check_base(const char *tableList, const char *input, const char *expected,
 			int error_printed = 0;
 			for (i = 0; i < outlen; i++) {
 				if (expected_inputPos[i] != inputPos[i]) {
-					if (!error_printed) {  // Print only once
-						fprintf(stderr, "Input position failure:\n");
-						error_printed = 1;
-					}
-					fprintf(stderr, "Expected %d, received %d in index %d\n",
-							expected_inputPos[i], inputPos[i], i);
 					retval = 1;
+					if (in.diagnostics) {
+						if (!error_printed) {  // Print only once
+							fprintf(stderr, "Input position failure:\n");
+							error_printed = 1;
+						}
+						fprintf(stderr, "Expected %d, received %d in index %d\n",
+								expected_inputPos[i], inputPos[i], i);
+					}
 				}
 			}
 		}
@@ -247,43 +249,55 @@ check_base(const char *tableList, const char *input, const char *expected,
 			int error_printed = 0;
 			for (i = 0; i < inlen; i++) {
 				if (expected_outputPos[i] != outputPos[i]) {
-					if (!error_printed) {  // Print only once
-						fprintf(stderr, "Output position failure:\n");
-						error_printed = 1;
-					}
-					fprintf(stderr, "Expected %d, received %d in index %d\n",
-							expected_outputPos[i], outputPos[i], i);
 					retval = 1;
+					if (in.diagnostics) {
+						if (!error_printed) {  // Print only once
+							fprintf(stderr, "Output position failure:\n");
+							error_printed = 1;
+						}
+						fprintf(stderr, "Expected %d, received %d in index %d\n",
+								expected_outputPos[i], outputPos[i], i);
+					}
 				}
 			}
 		}
 		if ((in.expected_cursorPos >= 0) && (cursorPos != in.expected_cursorPos)) {
-			fprintf(stderr, "Cursor position failure:\n");
-			fprintf(stderr, "Initial:%d Expected:%d Actual:%d \n", in.cursorPos,
-					in.expected_cursorPos, cursorPos);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr, "Cursor position failure:\n");
+				fprintf(stderr, "Initial:%d Expected:%d Actual:%d \n", in.cursorPos,
+						in.expected_cursorPos, cursorPos);
+			}
 		}
 		if (in.max_outlen < 0 && inlen != actualInlen) {
-			fprintf(stderr,
-					"Unexpected error happened: input length is not the same before as "
-					"after the translation:\n");
-			fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr,
+						"Unexpected error happened: input length is not the same before "
+						"as "
+						"after the translation:\n");
+				fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
+			}
 		} else if (actualInlen > inlen) {
-			fprintf(stderr,
-					"Unexpected error happened: returned input length (%d) exceeds "
-					"total input length (%d)\n",
-					actualInlen, inlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr,
+						"Unexpected error happened: returned input length (%d) exceeds "
+						"total input length (%d)\n",
+						actualInlen, inlen);
+			}
 		} else if (in.real_inlen >= 0 && in.real_inlen != actualInlen) {
-			fprintf(stderr, "Real input length failure:\n");
-			fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen, actualInlen);
 			retval = 1;
+			if (in.diagnostics) {
+				fprintf(stderr, "Real input length failure:\n");
+				fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen,
+						actualInlen);
+			}
 		}
 		// on error print the table name, as it isn't always
 		// clear which table we are testing. In checkyaml for
 		// example you can define a test for multiple tables.
-		if (retval != 0) {
+		if (retval != 0 && in.diagnostics) {
 			fprintf(stderr, "Table: %s\n", tableList);
 			// add an empty line after each error
 			fprintf(stderr, "\n");
