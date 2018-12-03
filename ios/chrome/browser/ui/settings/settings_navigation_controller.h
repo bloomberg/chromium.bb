@@ -104,7 +104,7 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
                 toEmail:(NSString*)toEmail
              isSignedIn:(BOOL)isSignedIn;
 
-// Creates a new AutofillProfileCollectionViewController and the chrome around
+// Creates a new AutofillProfileTableViewController and the chrome around
 // it. |browserState| is used to personalize some settings aspects and should
 // not be nil. |delegate| may be nil.
 + (SettingsNavigationController*)

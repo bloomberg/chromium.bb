@@ -45,7 +45,7 @@
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
@@ -867,7 +867,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAutofillProfile:
-      controller = [[AutofillProfileCollectionViewController alloc]
+      controller = [[AutofillProfileTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeVoiceSearch:
