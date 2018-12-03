@@ -45,10 +45,11 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -184,34 +185,29 @@ public class ManualFillingControllerTest {
     @Test
     public void testPasswordItemsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
-        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
+        Provider<AccessorySheetData> firstTabProvider = new PropertyProvider<>();
+        Provider<AccessorySheetData> secondTabProvider = new PropertyProvider<>();
 
         // Simulate opening a new tab which automatically triggers the registration:
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(firstTabProvider);
-        firstTabProvider.notifyObservers(new Item[] {
-                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {}, null)});
-        assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
-                is("FirstPassword"));
+        firstTabProvider.notifyObservers(createPasswordData("FirstPassword"));
+
+        assertThat(getFirstPassword(mediator), is("FirstPassword"));
 
         // Simulate creating a second tab:
         Tab secondTab = addTab(mediator, 2222, firstTab);
         mController.registerPasswordProvider(secondTabProvider);
-        secondTabProvider.notifyObservers(new Item[] {Item.createSuggestion(
-                "SecondPassword", "SecondPassword", true, result -> {}, null)});
-        assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
-                is("SecondPassword"));
+        secondTabProvider.notifyObservers(createPasswordData("SecondPassword"));
+        assertThat(getFirstPassword(mediator), is("SecondPassword"));
 
         // Simulate switching back to the first tab:
         switchTab(mediator, /*from=*/secondTab, /*to=*/firstTab);
-        assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
-                is("FirstPassword"));
+        assertThat(getFirstPassword(mediator), is("FirstPassword"));
 
         // And back to the second:
         switchTab(mediator, /*from=*/firstTab, /*to=*/secondTab);
-        assertThat(mediator.getPasswordAccessorySheet().getModelForTesting().get(0).getCaption(),
-                is("SecondPassword"));
+        assertThat(getFirstPassword(mediator), is("SecondPassword"));
     }
 
     @Test
@@ -406,10 +402,10 @@ public class ManualFillingControllerTest {
                                                     .getMediatorForTesting()
                                                     .getModelForTesting();
 
-        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
+        Provider<AccessorySheetData> firstTabProvider = new PropertyProvider<>();
         PropertyProvider<Action[]> firstActionProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
+        Provider<AccessorySheetData> secondTabProvider = new PropertyProvider<>();
         PropertyProvider<Action[]> secondActionProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
 
@@ -417,8 +413,7 @@ public class ManualFillingControllerTest {
         Tab firstTab = addTab(mediator, 1111, null);
         mController.registerPasswordProvider(firstTabProvider);
         mController.registerActionProvider(firstActionProvider);
-        firstTabProvider.notifyObservers(new Item[] {
-                Item.createSuggestion("FirstPassword", "FirstPassword", true, result -> {}, null)});
+        firstTabProvider.notifyObservers(createPasswordData("FirstPassword"));
         firstActionProvider.notifyObservers(new Action[] {
                 new Action("2BDestroyed", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
 
@@ -426,8 +421,7 @@ public class ManualFillingControllerTest {
         addTab(mediator, 2222, firstTab);
         mController.registerPasswordProvider(secondTabProvider);
         mController.registerActionProvider(secondActionProvider);
-        secondTabProvider.notifyObservers(new Item[] {Item.createSuggestion(
-                "SecondPassword", "SecondPassword", true, result -> {}, null)});
+        secondTabProvider.notifyObservers(createPasswordData("SecondPassword"));
         secondActionProvider.notifyObservers(
                 new Action[] {new Action("2BKept", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
 
@@ -635,5 +629,22 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
         mediator.onLayoutChange(
                 mMockContentView, 0, 0, newWidth, newHeight, 0, 0, oldWidth, oldHeight);
+    }
+
+    private AccessorySheetData createPasswordData(String text) {
+        AccessorySheetData sheetData = new AccessorySheetData("Passwords");
+        UserInfo userInfo = new UserInfo(null);
+        userInfo.addField(new UserInfo.Field("(No username)", "No username", false, null));
+        userInfo.addField(new UserInfo.Field(text, "Password", true, null));
+        sheetData.getUserInfoList().add(userInfo);
+        return sheetData;
+    }
+
+    private String getFirstPassword(ManualFillingMediator mediator) {
+        assert mediator.getPasswordAccessorySheet() != null;
+        assert mediator.getPasswordAccessorySheet().getModelForTesting() != null;
+        assert mediator.getPasswordAccessorySheet().getModelForTesting().size() > 1;
+        // The 0th item is a divider, the 1st a title, the 2nd a username and 3rd a password.
+        return mediator.getPasswordAccessorySheet().getModelForTesting().get(3).getCaption();
     }
 }

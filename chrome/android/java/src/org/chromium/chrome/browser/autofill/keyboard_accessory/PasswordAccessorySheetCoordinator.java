@@ -106,10 +106,11 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
 
     /**
      * Registered item providers can replace the currently shown data in the password sheet.
-     * @param itemProvider The provider this component will listen to.
+     * @param dataProvider The provider this component will listen to.
      */
-    public void registerItemProvider(KeyboardAccessoryData.Provider<Item[]> itemProvider) {
-        itemProvider.addObserver(mMediator);
+    public void registerDataProvider(
+            KeyboardAccessoryData.Provider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
+        dataProvider.addObserver(mMediator);
     }
 
     /**

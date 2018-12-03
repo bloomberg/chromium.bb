@@ -75,32 +75,34 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        final KeyboardAccessoryData.PropertyProvider<Item[]> testProvider =
+        final KeyboardAccessoryData
+                .PropertyProvider<KeyboardAccessoryData.AccessorySheetData> testProvider =
                 new KeyboardAccessoryData.PropertyProvider<>();
-        final Item testItem = Item.createLabel("Test Item", null);
+        final KeyboardAccessoryData.AccessorySheetData testData =
+                new KeyboardAccessoryData.AccessorySheetData("Passwords");
 
         mModel.addObserver(mMockItemListObserver);
-        mCoordinator.registerItemProvider(testProvider);
+        mCoordinator.registerDataProvider(testProvider);
 
         // If the coordinator receives an initial items, the model should report an insertion.
-        testProvider.notifyObservers(new Item[] {testItem});
-        verify(mMockItemListObserver).onItemRangeInserted(mModel, 0, 1);
-        assertThat(mModel.size(), is(1));
-        assertThat(mModel.get(0), is(equalTo(testItem)));
+        testProvider.notifyObservers(testData);
+        verify(mMockItemListObserver).onItemRangeInserted(mModel, 0, 2);
+        assertThat(mModel.size(), is(2));
+        assertThat(mModel.get(1).getCaption(), is(equalTo("Passwords")));
 
         // If the coordinator receives a new set of items, the model should report a change.
-        testProvider.notifyObservers(new Item[] {testItem});
-        verify(mMockItemListObserver).onItemRangeChanged(mModel, 0, 1, null);
-        assertThat(mModel.size(), is(1));
-        assertThat(mModel.get(0), is(equalTo(testItem)));
+        testProvider.notifyObservers(testData);
+        verify(mMockItemListObserver).onItemRangeChanged(mModel, 0, 2, null);
+        assertThat(mModel.size(), is(2));
+        assertThat(mModel.get(1).getCaption(), is(equalTo("Passwords")));
 
         // If the coordinator receives an empty set of items, the model should report a deletion.
-        testProvider.notifyObservers(new Item[] {});
-        verify(mMockItemListObserver).onItemRangeRemoved(mModel, 0, 1);
+        testProvider.notifyObservers(null);
+        verify(mMockItemListObserver).onItemRangeRemoved(mModel, 0, 2);
         assertThat(mModel.size(), is(0));
 
         // There should be no notification if no item are reported repeatedly.
-        testProvider.notifyObservers(new Item[] {});
+        testProvider.notifyObservers(null);
         verifyNoMoreInteractions(mMockItemListObserver);
     }
 

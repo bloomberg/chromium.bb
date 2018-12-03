@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.TEST_CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createTestCredentials;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
@@ -107,7 +107,7 @@ public class ManualFillingIntegrationTest {
         // Focus the field to bring up the accessory.
         onView(withId(R.id.keyboard_accessory)).check(doesNotExist());
         mHelper.clickPasswordField();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
         mHelper.waitForKeyboard();
 
         // Check that ONLY the accessory is there but the sheet is still hidden.
@@ -123,7 +123,7 @@ public class ManualFillingIntegrationTest {
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
         mHelper.waitForKeyboard();
         whenDisplayed(withId(R.id.keyboard_accessory));
 
@@ -352,7 +352,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
         whenDisplayed(withText(kInfoBarText));
 
         // Focus the field to bring up the accessory.
@@ -393,7 +393,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
         whenDisplayed(withText(kInfoBarText));
 
         // Focus the field to bring up the accessory.
@@ -472,7 +472,7 @@ public class ManualFillingIntegrationTest {
         });
         listener.addInfoBarAnimationFinished("InfoBar not added.");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
         assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(View.VISIBLE));
 
         // Focus the field to bring up the accessory.

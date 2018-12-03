@@ -339,6 +339,7 @@ public class KeyboardAccessoryData {
      */
     public final static class UserInfo {
         private final List<Field> mFields = new ArrayList<>();
+        private final @Nullable Item.FaviconProvider mFaviconProvider;
 
         /**
          * Represents an item (either selectable or not) presented on the UI, such as the username
@@ -403,7 +404,9 @@ public class KeyboardAccessoryData {
             }
         }
 
-        public UserInfo() {}
+        public UserInfo(@Nullable Item.FaviconProvider faviconProvider) {
+            mFaviconProvider = faviconProvider;
+        }
 
         /**
          * Adds a new field to the group.
@@ -418,6 +421,14 @@ public class KeyboardAccessoryData {
          */
         public List<Field> getFields() {
             return mFields;
+        }
+
+        /**
+         * Possibly holds a favicon provider.
+         * @return A {@link Item.FaviconProvider}. Optional.
+         */
+        public @Nullable Item.FaviconProvider getFaviconProvider() {
+            return mFaviconProvider;
         }
     }
 

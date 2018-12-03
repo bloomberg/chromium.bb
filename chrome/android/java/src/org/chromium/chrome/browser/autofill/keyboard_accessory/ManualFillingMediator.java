@@ -220,10 +220,10 @@ class ManualFillingMediator extends EmptyTabObserver
         }
     }
 
-    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item[]> itemProvider) {
+    void registerPasswordProvider(Provider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
         PasswordAccessorySheetCoordinator accessorySheet = getPasswordAccessorySheet();
         if (accessorySheet == null) return; // Not available or initialized yet.
-        accessorySheet.registerItemProvider(itemProvider);
+        accessorySheet.registerDataProvider(dataProvider);
     }
 
     void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action[]> actionProvider) {
