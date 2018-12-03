@@ -206,10 +206,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Current input buffer at decoder.
   std::unique_ptr<InputBuffer> curr_input_buffer_;
 
-  // List of PictureBuffer ids available to be sent to |client_| via
-  // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
-  std::list<int32_t> available_picture_buffers_;
-
   std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
 
   // Constructed in Initialize() when the codec information is received.
@@ -221,6 +217,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // TryFinishSurfaceSetChange(). Comes after |vaapi_wrapper_| to ensure all
   // pictures are destroyed before this is destroyed.
   base::small_map<std::map<int32_t, std::unique_ptr<VaapiPicture>>> pictures_;
+  // List of PictureBuffer ids available to be sent to |client_| via
+  // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
+  std::list<int32_t> available_picture_buffers_;
 
   // VASurfaceIDs no longer in use that can be passed back to |decoder_| for
   // reuse, once it requests them.
@@ -266,8 +265,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // |decoder_thread_.task_runner()| because the latter will be NULL once
   // |decoder_thread_.Stop()| returns.
   scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
-
-  int num_frames_at_client_;
 
   // Whether we are waiting for any pending_output_cbs_ to be run before
   // NotifyingFlushDone.
