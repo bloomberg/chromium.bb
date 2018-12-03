@@ -240,3 +240,5 @@ void ContextMenuHelper::RetrieveImageInternal(
       base::Bind(retrieve_callback, base::Passed(&chrome_render_frame),
                  base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContextMenuHelper)

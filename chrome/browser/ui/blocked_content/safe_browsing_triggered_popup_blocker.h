@@ -79,6 +79,7 @@ class SafeBrowsingTriggeredPopupBlocker
   bool ShouldApplyAbusivePopupBlocker();
 
  private:
+  friend class content::WebContentsUserData<SafeBrowsingTriggeredPopupBlocker>;
   // The |web_contents| and |observer_manager| are expected to be
   // non-nullptr.
   SafeBrowsingTriggeredPopupBlocker(
@@ -134,6 +135,8 @@ class SafeBrowsingTriggeredPopupBlocker
 
   // Should never be nullptr.
   std::unique_ptr<PageData> current_page_data_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlocker);
 };

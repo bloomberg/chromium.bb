@@ -209,6 +209,8 @@ class TabHelper : public content::WebContentsObserver,
   // Generic weak ptr factory for posting callbacks.
   base::WeakPtrFactory<TabHelper> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };
 

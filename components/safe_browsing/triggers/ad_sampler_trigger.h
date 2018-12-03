@@ -121,6 +121,8 @@ class AdSamplerTrigger : public content::WebContentsObserver,
 
   base::WeakPtrFactory<AdSamplerTrigger> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AdSamplerTrigger);
 };
 

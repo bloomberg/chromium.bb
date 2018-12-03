@@ -156,6 +156,8 @@ class ChromeAutofillClient
   std::unique_ptr<CardNameFixFlowViewAndroid> card_name_fix_flow_view_android_;
 #endif  // defined(OS_ANDROID)
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };
 

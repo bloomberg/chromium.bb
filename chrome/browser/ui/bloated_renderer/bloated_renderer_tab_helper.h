@@ -82,6 +82,8 @@ class BloatedRendererTabHelper
   // in OnRendererIsBloated event.
   int64_t saved_navigation_id_ = 0;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(BloatedRendererTabHelper);
 };
 

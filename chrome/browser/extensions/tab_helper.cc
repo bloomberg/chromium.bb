@@ -424,4 +424,6 @@ void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
       SessionTabHelper::IdForTab(web_contents()).id()));
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabHelper)
+
 }  // namespace extensions

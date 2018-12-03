@@ -131,3 +131,5 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       pwd_controller_(std::move(pwd_controller)),
       view_(std::move(view)),
       weak_factory_(this) {}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ManualFillingControllerImpl)

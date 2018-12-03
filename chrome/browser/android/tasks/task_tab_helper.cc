@@ -93,4 +93,6 @@ void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {
   base::UmaHistogramExactLinear(histogram_name, spokes, 100);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TaskTabHelper)
+
 }  // namespace tasks

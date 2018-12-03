@@ -311,4 +311,6 @@ void MediaRouterDialogControllerWebUIImpl::PopulateDialog(
   InitializeMediaRouterUI(media_router_ui);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerWebUIImpl)
+
 }  // namespace media_router

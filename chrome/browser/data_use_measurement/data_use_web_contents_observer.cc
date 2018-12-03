@@ -89,4 +89,6 @@ void DataUseWebContentsObserver::DidFinishLoad(
   service_->DidFinishLoad(render_frame_host, validated_url);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DataUseWebContentsObserver)
+
 }  // namespace data_use_measurement

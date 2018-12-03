@@ -399,3 +399,5 @@ PasswordAccessoryControllerImpl::GetManualFillingController() {
   DCHECK(mf_controller_);
   return mf_controller_;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordAccessoryControllerImpl)

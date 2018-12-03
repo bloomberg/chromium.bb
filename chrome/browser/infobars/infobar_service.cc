@@ -109,3 +109,5 @@ void InfoBarService::OpenURL(const GURL& url,
                                  : disposition,
                              ui::PAGE_TRANSITION_LINK, false));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(InfoBarService)

@@ -560,4 +560,6 @@ base::string16 ChromeAutofillClient::GetAccountHolderName() {
   return base::UTF8ToUTF16(account_info.full_name);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAutofillClient)
+
 }  // namespace autofill

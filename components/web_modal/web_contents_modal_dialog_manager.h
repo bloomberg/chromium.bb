@@ -107,6 +107,8 @@ class WebContentsModalDialogManager
   // True while closing the dialogs on WebContents close.
   bool closing_all_dialogs_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManager);
 };
 

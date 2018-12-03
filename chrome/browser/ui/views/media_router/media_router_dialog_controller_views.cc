@@ -104,4 +104,6 @@ MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(
     content::WebContents* web_contents)
     : MediaRouterDialogControllerImplBase(web_contents) {}
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerViews)
+
 }  // namespace media_router

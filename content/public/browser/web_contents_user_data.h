@@ -10,6 +10,10 @@
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
 
+#define WEB_CONTENTS_USER_DATA_KEY_DECL() static constexpr int kUserDataKey = 0;
+
+#define WEB_CONTENTS_USER_DATA_KEY_IMPL(Type) const int Type::kUserDataKey;
+
 namespace content {
 
 // A base class for classes attached to, and scoped to, the lifetime of a
@@ -23,8 +27,12 @@ namespace content {
 //  private:
 //   explicit FooTabHelper(content::WebContents* contents);
 //   friend class content::WebContentsUserData<FooTabHelper>;
+//   WEB_CONTENTS_USER_DATA_KEY_DECL();
 //   // ... more private stuff here ...
-// }
+// };
+//
+// --- in foo_tab_helper.cc ---
+// WEB_CONTENTS_USER_DATA_KEY_IMPL(FooTabHelper)
 template <typename T>
 class WebContentsUserData : public base::SupportsUserData::Data {
  public:
@@ -48,11 +56,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
     return static_cast<const T*>(contents->GetUserData(UserDataKey()));
   }
 
- protected:
-  static inline const void* UserDataKey() {
-    static const int kId = 0;
-    return &kId;
-  }
+  static const void* UserDataKey() { return &T::kUserDataKey; }
 };
 
 }  // namespace content

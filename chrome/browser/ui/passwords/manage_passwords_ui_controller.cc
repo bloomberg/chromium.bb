@@ -651,3 +651,5 @@ bool ManagePasswordsUIController::ShowAuthenticationDialog() {
   return true;
 #endif
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController)

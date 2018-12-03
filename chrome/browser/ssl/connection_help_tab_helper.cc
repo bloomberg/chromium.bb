@@ -88,3 +88,5 @@ GURL ConnectionHelpTabHelper::GetHelpCenterURL() {
     return testing_url_;
   return GURL(kHelpCenterConnectionHelpUrl);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ConnectionHelpTabHelper)

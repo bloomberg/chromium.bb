@@ -412,3 +412,5 @@ void PreviewsUITabHelper::RemovePreviewsUserData(int64_t navigation_id) {
 const void* PreviewsUITabHelper::OptOutEventKey() {
   return &kOptOutEventKey;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PreviewsUITabHelper)

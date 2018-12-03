@@ -144,6 +144,8 @@ class ChromeTranslateClient
   bool manual_translate_on_ready_ = false;
 #endif
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ChromeTranslateClient);
 };
 

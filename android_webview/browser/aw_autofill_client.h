@@ -161,6 +161,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   // this client.
   bool autocomplete_uma_recorded_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);
 };
 

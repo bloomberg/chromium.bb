@@ -132,6 +132,8 @@ class FindTabHelper : public content::WebContentsObserver,
   // information to build its presentation.
   FindNotificationDetails last_search_result_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(FindTabHelper);
 };
 

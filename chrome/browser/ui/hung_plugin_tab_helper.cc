@@ -224,3 +224,5 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
     state->infobar = NULL;
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HungPluginTabHelper)

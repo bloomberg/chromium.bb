@@ -85,6 +85,8 @@ class LocalCardMigrationBubbleControllerImpl
   base::ObserverList<LocalCardMigrationControllerObserver>::Unchecked
       observer_list_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationBubbleControllerImpl);
 };
 

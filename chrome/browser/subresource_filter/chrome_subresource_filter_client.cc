@@ -167,3 +167,5 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
   did_show_ui_for_navigation_ = true;
   settings_manager_->OnDidShowUI(url);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeSubresourceFilterClient)

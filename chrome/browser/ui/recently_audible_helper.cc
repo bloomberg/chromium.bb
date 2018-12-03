@@ -107,3 +107,5 @@ void RecentlyAudibleHelper::SetNotRecentlyAudibleForTesting() {
   last_audible_time_ = tick_clock_->NowTicks() - kRecentlyAudibleTimeout;
   recently_audible_timer_.Stop();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(RecentlyAudibleHelper)

@@ -83,4 +83,6 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
 #endif
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SafeBrowsingTabObserver)
+
 }  // namespace safe_browsing

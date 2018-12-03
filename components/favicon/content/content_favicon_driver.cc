@@ -264,4 +264,6 @@ void ContentFaviconDriver::DocumentOnLoadCompletedInMainFrame() {
   document_on_load_completed_ = true;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver)
+
 }  // namespace favicon

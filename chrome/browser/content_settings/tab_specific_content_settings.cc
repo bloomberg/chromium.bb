@@ -918,3 +918,5 @@ bool TabSpecificContentSettings::HasContentSettingChangedViaPageInfo(
   return content_settings_changed_via_page_info_.find(type) !=
          content_settings_changed_via_page_info_.end();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabSpecificContentSettings)

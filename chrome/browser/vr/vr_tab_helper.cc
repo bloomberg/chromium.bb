@@ -91,4 +91,6 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
   return suppress;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(VrTabHelper)
+
 }  // namespace vr

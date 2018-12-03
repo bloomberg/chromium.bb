@@ -225,6 +225,8 @@ class JavaScriptDialogTabHelper
   TabStripModel* tab_strip_model_being_observed_ = nullptr;
 #endif
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogTabHelper);
 };
 

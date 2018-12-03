@@ -109,8 +109,12 @@ class SourceUrlRecorderWebContentsObserver
 
   const int64_t tab_id_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SourceUrlRecorderWebContentsObserver);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SourceUrlRecorderWebContentsObserver)
 
 SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     content::WebContents* web_contents)

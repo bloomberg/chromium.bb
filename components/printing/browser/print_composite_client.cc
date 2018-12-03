@@ -265,4 +265,6 @@ mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
   return compositor;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintCompositeClient)
+
 }  // namespace printing

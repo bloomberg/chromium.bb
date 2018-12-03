@@ -858,4 +858,6 @@ bool BookmarkManagerPrivateGetRedoInfoFunction::RunOnReady() {
   return true;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BookmarkManagerPrivateDragEventRouter)
+
 }  // namespace extensions

@@ -93,6 +93,8 @@ class PrintViewManager : public PrintViewManagerBase,
   // flag is true between PrintForSystemDialogNow() and PrintPreviewDone().
   bool is_switching_to_system_dialog_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };
 

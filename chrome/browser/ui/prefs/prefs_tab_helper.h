@@ -71,6 +71,8 @@ class PrefsTabHelper : public content::NotificationObserver,
 #endif  // !defined(OS_ANDROID)
   base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PrefsTabHelper);
 };
 

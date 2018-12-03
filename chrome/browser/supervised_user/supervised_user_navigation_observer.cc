@@ -229,3 +229,5 @@ void SupervisedUserNavigationObserver::Feedback() {
   if (interstitial_ && is_showing_interstitial_)
     interstitial_->CommandReceived("\"feedback\"");
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SupervisedUserNavigationObserver)

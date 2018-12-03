@@ -166,8 +166,12 @@ class ObservingAutofillClient
   base::RunLoop* run_loop_;
   bool popup_shown_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ObservingAutofillClient)
 
 void TestPromptNotShown(const char* failure_message,
                         content::WebContents* web_contents) {

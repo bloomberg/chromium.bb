@@ -236,8 +236,12 @@ class AutomationWebContentsObserver
 
   content::BrowserContext* browser_context_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AutomationWebContentsObserver);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutomationWebContentsObserver)
 
 ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
   return RespondNow(Error("enableTab is unsupported by this platform"));

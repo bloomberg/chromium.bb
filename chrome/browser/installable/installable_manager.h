@@ -72,6 +72,7 @@ class InstallableManager
   virtual void OnResetData() {}
 
  private:
+  friend class content::WebContentsUserData<InstallableManager>;
   friend class AddToHomescreenDataFetcherTest;
   friend class InstallableManagerBrowserTest;
   friend class InstallableManagerUnitTest;
@@ -229,6 +230,8 @@ class InstallableManager
   bool has_pwa_check_;
 
   base::WeakPtrFactory<InstallableManager> weak_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InstallableManager);
 };

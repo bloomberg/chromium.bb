@@ -164,3 +164,5 @@ void BookmarkTabHelper::DidAttachInterstitialPage() {
 void BookmarkTabHelper::DidDetachInterstitialPage() {
   UpdateStarredStateForCurrentURL();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BookmarkTabHelper)

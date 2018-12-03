@@ -176,3 +176,5 @@ PopupBlockerTabHelper::PopupIdMap
 void PopupBlockerTabHelper::LogAction(Action action) {
   UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.BlockerActions", action);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PopupBlockerTabHelper)

@@ -50,4 +50,6 @@ void WebContentsMainFrameObserver::CleanUp() {
   content::WebContentsObserver::Observe(nullptr);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsMainFrameObserver)
+
 }  // namespace dom_distiller

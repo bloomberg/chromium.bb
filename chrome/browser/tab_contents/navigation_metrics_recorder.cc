@@ -41,3 +41,5 @@ void NavigationMetricsRecorder::DidFinishNavigation(
       last_committed_entry->GetVirtualURL(),
       navigation_handle->IsSameDocument(), context->IsOffTheRecord());
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationMetricsRecorder)

@@ -757,4 +757,6 @@ void MetricsWebContentsObserver::BroadcastEventToObservers(
     committed_load_->BroadcastEventToObservers(event_key);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MetricsWebContentsObserver)
+
 }  // namespace page_load_metrics

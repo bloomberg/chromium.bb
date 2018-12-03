@@ -82,6 +82,8 @@ class TabUIHelper : public content::WebContentsObserver,
   base::CancelableTaskTracker favicon_tracker_;
   base::WeakPtrFactory<TabUIHelper> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TabUIHelper);
 };
 

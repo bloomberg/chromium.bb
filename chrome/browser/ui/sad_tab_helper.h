@@ -40,6 +40,8 @@ class SadTabHelper : public content::WebContentsObserver,
 
   std::unique_ptr<SadTab> sad_tab_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SadTabHelper);
 };
 

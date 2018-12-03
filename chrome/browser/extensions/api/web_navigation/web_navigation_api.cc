@@ -616,4 +616,6 @@ void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebNavigationTabObserver)
+
 }  // namespace extensions

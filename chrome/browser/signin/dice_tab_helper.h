@@ -71,6 +71,8 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
   bool is_chrome_signin_page_ = false;
   bool signin_page_load_recorded_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(DiceTabHelper);
 };
 

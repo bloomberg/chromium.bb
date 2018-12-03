@@ -347,3 +347,5 @@ void OomInterventionTabHelper::ResetInterfaces() {
   if (binding_.is_bound())
     binding_.Close();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OomInterventionTabHelper)

@@ -162,3 +162,5 @@ void InsecureSensitiveInputDriverFactory::RenderFrameDeleted(
 InsecureSensitiveInputDriverFactory::InsecureSensitiveInputDriverFactory(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(InsecureSensitiveInputDriverFactory)

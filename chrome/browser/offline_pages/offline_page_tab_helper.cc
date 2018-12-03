@@ -421,4 +421,6 @@ void OfflinePageTabHelper::DoDownloadPageLater(
   }
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OfflinePageTabHelper)
+
 }  // namespace offline_pages

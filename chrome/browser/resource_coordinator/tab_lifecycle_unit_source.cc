@@ -48,7 +48,10 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
   std::unique_ptr<TabLifecycleUnit> lifecycle_unit_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitHolder);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLifecycleUnitSource::TabLifecycleUnitHolder)
 
 TabLifecycleUnitSource::TabLifecycleUnitSource(
     InterventionPolicyDatabase* intervention_policy_database,

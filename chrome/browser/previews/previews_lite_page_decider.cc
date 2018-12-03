@@ -124,7 +124,10 @@ class UserNotificationWebContentsObserver
   }
 
   base::OnceClosure ui_shown_callback_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(UserNotificationWebContentsObserver)
 
 PreviewsLitePageDecider::PreviewsLitePageDecider(
     content::BrowserContext* browser_context)

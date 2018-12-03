@@ -38,4 +38,6 @@ void SecondaryTestWindowObserver::RenderFrameCreated(
   blink_test_controller->HandleNewRenderFrameHost(render_frame_host);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SecondaryTestWindowObserver)
+
 }  // namespace content

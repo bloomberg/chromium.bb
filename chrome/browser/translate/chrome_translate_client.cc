@@ -437,3 +437,5 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   return ShowTranslateBubbleResult::SUCCESS;
 #endif
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeTranslateClient)

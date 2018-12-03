@@ -237,4 +237,6 @@ void PictureInPictureWindowControllerImpl::EnsureWindow() {
       GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PictureInPictureWindowControllerImpl)
+
 }  // namespace content

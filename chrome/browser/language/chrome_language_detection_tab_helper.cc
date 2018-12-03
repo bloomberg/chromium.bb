@@ -64,3 +64,5 @@ void ChromeLanguageDetectionTabHelper::RegisterPage(
   translate_client->translate_driver().OnPageReady(std::move(page), details,
                                                    page_needs_translation);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeLanguageDetectionTabHelper)

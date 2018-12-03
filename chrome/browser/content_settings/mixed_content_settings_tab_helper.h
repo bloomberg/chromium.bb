@@ -44,6 +44,8 @@ class MixedContentSettingsTabHelper
   content::SiteInstance* insecure_content_site_instance_ = nullptr;
   bool is_running_insecure_content_allowed_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(MixedContentSettingsTabHelper);
 };
 

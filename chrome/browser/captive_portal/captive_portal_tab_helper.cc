@@ -208,3 +208,5 @@ void CaptivePortalTabHelper::SetTabReloaderForTest(
 CaptivePortalTabReloader* CaptivePortalTabHelper::GetTabReloaderForTest() {
   return tab_reloader_.get();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CaptivePortalTabHelper)

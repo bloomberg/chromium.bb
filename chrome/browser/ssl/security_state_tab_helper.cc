@@ -373,3 +373,5 @@ std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
   }
   return secure_origin_whitelist::ParseWhitelist(origins_str);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityStateTabHelper)

@@ -181,4 +181,6 @@ void LocalCardMigrationBubbleControllerImpl::UpdateIcon() {
   location_bar->UpdateLocalCardMigrationIcon();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(LocalCardMigrationBubbleControllerImpl)
+
 }  // namespace autofill

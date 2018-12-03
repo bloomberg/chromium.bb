@@ -252,3 +252,5 @@ void PluginObserver::CouldNotLoadPlugin(const base::FilePath& plugin_path) {
   CreatePluginObserverInfoBar(InfoBarService::FromWebContents(web_contents()),
                               plugin_name);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PluginObserver)

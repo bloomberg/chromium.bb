@@ -485,8 +485,12 @@ class TabActivityWatcher::WebContentsData
   // An int64 random label to pair TabFeatures with ForegroundedOrClosed event.
   int64_t label_id_ = 0;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),

@@ -76,6 +76,8 @@ class SyncSessionsRouterTabHelper
   // * Click on a link with target='_blank'.
   SessionID source_tab_id_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsRouterTabHelper);
 };
 

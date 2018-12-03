@@ -40,6 +40,7 @@ class NavigationConsoleLogger
   ~NavigationConsoleLogger() override;
 
  private:
+  friend class content::WebContentsUserData<NavigationConsoleLogger>;
   explicit NavigationConsoleLogger(content::NavigationHandle* handle);
 
   // Creates a new NavigationConsoleLogger scoped to |handle|'s WebContents if
@@ -59,6 +60,8 @@ class NavigationConsoleLogger
   // |handle_| must outlive this class. This is guaranteed because the object
   // tears itself down with |handle_|'s navigation finishes.
   const content::NavigationHandle* handle_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NavigationConsoleLogger);
 };

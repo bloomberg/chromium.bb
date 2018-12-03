@@ -342,3 +342,5 @@ void CoreTabHelper::DoSearchByImageInNewTab(
   }
   web_contents()->OpenURL(open_url_params);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CoreTabHelper)

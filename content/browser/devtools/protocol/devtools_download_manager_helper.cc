@@ -40,5 +40,7 @@ void DevToolsDownloadManagerHelper::SetDownloadPath(const std::string& path) {
   download_path_ = path;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DevToolsDownloadManagerHelper)
+
 }  // namespace protocol
 }  // namespace content

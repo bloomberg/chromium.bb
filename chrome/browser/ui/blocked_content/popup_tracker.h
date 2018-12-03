@@ -63,6 +63,8 @@ class PopupTracker : public content::WebContentsObserver,
 
   bool is_trusted_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PopupTracker);
 };
 

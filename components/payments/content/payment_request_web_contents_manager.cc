@@ -65,4 +65,6 @@ PaymentRequestWebContentsManager::PaymentRequestWebContentsManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PaymentRequestWebContentsManager)
+
 }  // namespace payments

@@ -50,6 +50,8 @@ class WebContentsMainFrameObserver
   // at least one call to DidNavigateMainFrame has happened.
   bool is_initialized_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsMainFrameObserver);
 };
 

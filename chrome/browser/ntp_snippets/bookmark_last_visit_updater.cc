@@ -88,3 +88,5 @@ void BookmarkLastVisitUpdater::BookmarkNodeAdded(
         bookmark_model_, new_bookmark_url, IsMobilePlatform());
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BookmarkLastVisitUpdater)

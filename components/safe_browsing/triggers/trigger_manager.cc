@@ -244,4 +244,6 @@ void TriggerManagerWebContentsHelper::WebContentsDestroyed() {
   trigger_manager_->WebContentsDestroyed(web_contents());
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TriggerManagerWebContentsHelper)
+
 }  // namespace safe_browsing

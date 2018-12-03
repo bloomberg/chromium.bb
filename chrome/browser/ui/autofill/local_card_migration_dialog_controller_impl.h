@@ -103,6 +103,8 @@ class LocalCardMigrationDialogControllerImpl
   // feedback dialogs after migration process is finished.
   base::string16 tip_message_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogControllerImpl);
 };
 

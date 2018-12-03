@@ -1119,3 +1119,5 @@ gfx::RectF ChromePasswordManagerClient::TransformToRootCoordinates(
                         bounds_in_frame_coordinates.origin()),
                     bounds_in_frame_coordinates.size());
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromePasswordManagerClient)

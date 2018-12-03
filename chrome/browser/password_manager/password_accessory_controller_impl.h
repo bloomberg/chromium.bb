@@ -168,6 +168,8 @@ class PasswordAccessoryControllerImpl
   // The favicon service used to make retrieve icons for a given origin.
   favicon::FaviconService* favicon_service_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryControllerImpl);
 };
 

@@ -22,6 +22,8 @@ class PrintViewManagerBasic
   explicit PrintViewManagerBasic(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrintViewManagerBasic>;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBasic);
 };
 

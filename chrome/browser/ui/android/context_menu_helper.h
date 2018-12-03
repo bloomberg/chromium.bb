@@ -85,6 +85,8 @@ class ContextMenuHelper
   int render_frame_id_;
   int render_process_id_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ContextMenuHelper);
 };
 

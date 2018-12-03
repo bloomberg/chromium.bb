@@ -93,6 +93,8 @@ class ManageMigrationUiController
   // after users click the credit card icon.
   bool show_error_dialog_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ManageMigrationUiController);
 };
 
