@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CONNECT_LISTENER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CONNECT_LISTENER_H_
 
-#include "third_party/blink/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom-shared.h"
 #include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 
 namespace blink {

@@ -20,7 +20,7 @@
 #include "content/public/browser/shared_worker_service.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace blink {
 class MessagePortChannel;

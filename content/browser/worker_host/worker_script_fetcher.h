@@ -12,7 +12,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace network {
 struct ResourceResponseHead;
