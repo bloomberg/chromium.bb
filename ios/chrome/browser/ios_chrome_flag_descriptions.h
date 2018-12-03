@@ -197,10 +197,6 @@ extern const char kInProductHelpDemoModeDescription[];
 extern const char kITunesUrlsStoreKitHandlingName[];
 extern const char kITunesUrlsStoreKitHandlingDescription[];
 
-// Title, description, and options for Google UI menu for handling mailto links.
-extern const char kMailtoHandlingWithGoogleUIName[];
-extern const char kMailtoHandlingWithGoogleUIDescription[];
-
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];

@@ -16,14 +16,11 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "ios/chrome/browser/mailto/features.h"
 #import "ios/chrome/browser/ui/settings/block_popups_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
-#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
@@ -57,10 +54,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // The observable boolean that binds to the "Disable Popups" setting state.
   ContentSettingBackedBoolean* _disablePopupsSetting;
-
-  // This object contains the list of available Mail client apps that can
-  // handle mailto: URLs.
-  MailtoHandlerManager* _mailtoHandlerManager;
 
   // Updatable Items
   SettingsDetailItem* _blockPopupsDetailItem;
@@ -105,12 +98,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              settingID:CONTENT_SETTINGS_TYPE_POPUPS
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
-
-    if (!base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-      _mailtoHandlerManager =
-          [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
-      [_mailtoHandlerManager setObserver:self];
-    }
   }
   return self;
 }
@@ -135,16 +122,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self translateItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  // If Google mailto handling UI is available, display the relevant settings.
-  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-    MailtoHandlerProvider* provider =
-        ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
-    NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
-    if (settingsTitle) {
-      [model addItem:[self composeEmailItem]
-          toSectionWithIdentifier:SectionIdentifierSettings];
-    }
-  } else {
+  MailtoHandlerProvider* provider =
+      ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+  NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+  if (settingsTitle) {
     [model addItem:[self composeEmailItem]
         toSectionWithIdentifier:SectionIdentifierSettings];
   }
@@ -184,25 +165,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (TableViewItem*)composeEmailItem {
   _composeEmailDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypeSettingsComposeEmail];
-  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-    // Use the handler's preferred title string for the compose email item.
-    MailtoHandlerProvider* provider =
-        ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
-    NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
-    DCHECK([settingsTitle length]);
-    _composeEmailDetailItem.text = settingsTitle;
-  } else {
-    // Use the default Chrome string when mailto handling with Google UI is not
-    // available.
-    _composeEmailDetailItem.text =
-        l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
-    // Displaying the selected app name is only supported in the Chrome
-    // implementation of mailto content settings.
-    // The Google UI version of mailto handling does not expose the name of the
-    // user's preferred app.
-    _composeEmailDetailItem.detailText =
-        [_mailtoHandlerManager defaultHandlerName];
-  }
+  // Use the handler's preferred title string for the compose email item.
+  MailtoHandlerProvider* provider =
+      ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+  NSString* settingsTitle = provider->MailtoHandlerSettingsTitle();
+  DCHECK([settingsTitle length]);
+  // .detailText can display the selected mailto handling app, but the current
+  // MailtoHandlerProvider does not expose this through its API.
+  _composeEmailDetailItem.text = settingsTitle;
   _composeEmailDetailItem.accessoryType =
       UITableViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -237,21 +207,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSettingsComposeEmail: {
-      if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-        MailtoHandlerProvider* provider =
-            ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
-        UIViewController* controller =
-            provider->MailtoHandlerSettingsController();
-        if (controller) {
-          [self.navigationController pushViewController:controller
-                                               animated:YES];
-        }
-      } else {
-        UIViewController* controller =
-            [[ComposeEmailHandlerCollectionViewController alloc]
-                initWithManager:_mailtoHandlerManager];
+      MailtoHandlerProvider* provider =
+          ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+      UIViewController* controller =
+          provider->MailtoHandlerSettingsController();
+      if (controller)
         [self.navigationController pushViewController:controller animated:YES];
-      }
       break;
     }
   }
@@ -283,15 +244,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]];
-}
-
-#pragma mark - MailtoHandlerManagerObserver
-
-- (void)handlerDidChangeForMailtoHandlerManager:(MailtoHandlerManager*)manager {
-  if (manager != _mailtoHandlerManager)
-    return;
-  _composeEmailDetailItem.detailText = [manager defaultHandlerName];
-  [self reconfigureCellsForItems:@[ _composeEmailDetailItem ]];
 }
 
 @end
