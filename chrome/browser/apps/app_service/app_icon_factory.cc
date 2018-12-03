@@ -98,6 +98,21 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                                ExtensionIconSet::MATCH_BIGGER);
 
+    // TODO(crbug.com/826982): at some point near here, we should call into
+    // chrome/browser/extensions/chrome_app_icon.h code to get e.g. graying out
+    // disabled icons, or rounding off corners. It's not entirely trivial. The
+    // ChromeAppIcon object expects to be long-lived, calling back into the
+    // ChromeAppIconDelegate e.g. when the extension's underlying icon changes,
+    // or when an enabled/disabled state change means graying or un-graying an
+    // extension's icon.
+    //
+    // For example, in chrome/browser/ui/app_list, ExtensionAppItem implements
+    // ChromeAppIconDelegate, as the ExtensionAppItem is a long-lived object.
+    // It is a model, in the model-view-controller sense.
+    //
+    // In contrast, this API here (a Mojo IPC API) is a request-response IPC,
+    // with nothing long-lived enough to be the ChromeAppIconDelegate.
+
     switch (icon_compression) {
       case apps::mojom::IconCompression::kUnknown:
         break;

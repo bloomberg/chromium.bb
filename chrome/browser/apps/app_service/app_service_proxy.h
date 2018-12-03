@@ -14,6 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
+#include "chrome/browser/apps/app_service/extension_apps.h"
 #endif  // OS_CHROMEOS
 
 class Profile;
@@ -54,6 +55,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 
 #if defined(OS_CHROMEOS)
   BuiltInChromeOsApps built_in_chrome_os_apps_;
+  ExtensionApps extension_apps_;
 #endif  // OS_CHROMEOS
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);

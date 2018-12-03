@@ -25,13 +25,16 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
     return apps::mojom::AppPtr();
   }
   apps::mojom::AppPtr app = apps::mojom::App::New();
+
   app->app_type = apps::mojom::AppType::kBuiltIn;
   app->app_id = internal_app.app_id;
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = l10n_util::GetStringUTF8(internal_app.name_string_resource_id);
+
   app->icon_key = apps::mojom::IconKey::New();
   app->icon_key->icon_type = apps::mojom::IconType::kResource;
   app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
+
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
