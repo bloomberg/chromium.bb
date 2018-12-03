@@ -179,8 +179,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   source->AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
   source->AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
-  source->AddLocalizedString("launchNativeDialog",
-                             IDS_PRINT_PREVIEW_NATIVE_DIALOG);
   source->AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
   source->AddLocalizedString("invalidPrinterSettings",
                              IDS_PRINT_INVALID_PRINTER_SETTINGS);
@@ -217,8 +215,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF);
   source->AddLocalizedString("printPreviewSummaryFormatShort",
                              IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT);
-  source->AddLocalizedString("printPreviewSummaryFormatLong",
-                             IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG);
   source->AddLocalizedString("printPreviewSheetsLabelSingular",
                              IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR);
   source->AddLocalizedString("printPreviewSheetsLabelPlural",
@@ -245,8 +241,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage).spec());
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
-  source->AddLocalizedString("pageRangeLimitInstruction",
-                             IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION);
   source->AddLocalizedString(
       "pageRangeLimitInstructionWithValue",
       IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION_WITH_VALUE);
@@ -299,8 +293,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER);
   source->AddLocalizedString("noDestinationsMessage",
                              IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE);
-  source->AddLocalizedString("showAllButtonText",
-                             IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT);
   source->AddLocalizedString("destinationCount",
                              IDS_PRINT_PREVIEW_DESTINATION_COUNT);
   source->AddLocalizedString("recentDestinationsTitle",
@@ -323,8 +315,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED);
   source->AddLocalizedString("couldNotPrint",
                              IDS_PRINT_PREVIEW_COULD_NOT_PRINT);
-  source->AddLocalizedString("registerPromoButtonText",
-                             IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT);
   source->AddLocalizedString(
       "extensionDestinationIconTooltip",
       IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP);
@@ -340,10 +330,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
       "advancedSettingsDialogConfirm",
       IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM);
   source->AddLocalizedString("cancel", IDS_CANCEL);
-  source->AddLocalizedString("advancedOptionsLabel",
-                             IDS_PRINT_PREVIEW_ADVANCED_OPTIONS_LABEL);
-  source->AddLocalizedString("showAdvancedOptions",
-                             IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS);
   source->AddLocalizedString("newShowAdvancedOptions",
                              IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS);
 
@@ -358,7 +344,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("registerPrinterInformationMessage",
                              IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION);
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
-  source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
   source->AddLocalizedString("managedOption",
                              IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT);
 #if defined(OS_CHROMEOS)
