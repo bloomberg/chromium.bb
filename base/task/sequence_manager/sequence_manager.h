@@ -172,9 +172,13 @@ class SequenceManager {
 BASE_EXPORT std::unique_ptr<SequenceManager>
 CreateSequenceManagerOnCurrentThread();
 
-// Create a SequenceManager for a MessagePump on the current thread.
+// Create a SequenceManager using the given MessagePump on the current thread.
+// MessagePump instances can be created with
+// MessageLoop::CreateMessagePumpForType().
 BASE_EXPORT std::unique_ptr<SequenceManager>
-CreateSequenceManagerOnCurrentThreadWithPump(MessageLoop::Type type);
+CreateSequenceManagerOnCurrentThreadWithPump(
+    MessageLoop::Type type,
+    std::unique_ptr<MessagePump> message_pump);
 
 // Create a SequenceManager for a future thread using the provided MessageLoop.
 // The SequenceManager can be initialized on the current thread and then needs
