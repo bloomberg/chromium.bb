@@ -379,7 +379,6 @@ executable("demo") {
 test("aura_unittests") {
   sources = [
     "../compositor_extra/shadow_unittest.cc",
-    "//ui/aura_extra/window_occlusion_impl_unittest_win.cc",
     "gestures/gesture_recognizer_unittest.cc",
     "mouse_location_manager_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
@@ -417,6 +416,7 @@ test("aura_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/aura_extra",
+    "//ui/aura_extra:tests",
     "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/compositor_extra",

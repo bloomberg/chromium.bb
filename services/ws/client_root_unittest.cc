@@ -85,5 +85,40 @@ TEST(ClientRoot, CascadingPropertyChange) {
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
+// Verifies embedded clients are notified of changes in screen bounds.
+TEST(ClientRoot, EmbedBoundsInScreen) {
+  WindowServiceTestSetup setup;
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
+  embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
+  embedding_helper->window_tree_client.set_track_root_bounds_changes(true);
+  ASSERT_TRUE(embedding_helper);
+  embedding_helper->changes()->clear();
+  window->AddChild(embed_window);
+  EXPECT_TRUE(embedding_helper->changes()->empty());
+  top_level->AddChild(window);
+  std::vector<Change>* embedding_changes = embedding_helper->changes();
+  auto iter =
+      FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, embedding_changes->end());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), iter->bounds2);
+  embedding_changes->clear();
+
+  window->SetBounds(gfx::Rect(11, 12, 100, 100));
+  iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, embedding_changes->end());
+  EXPECT_EQ(gfx::Rect(12, 14, 3, 4), iter->bounds2);
+  embedding_changes->clear();
+
+  top_level->SetBounds(gfx::Rect(100, 50, 100, 100));
+  iter = FirstChangeOfType(*embedding_changes, CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, embedding_changes->end());
+  EXPECT_EQ(gfx::Rect(112, 64, 3, 4), iter->bounds2);
+}
+
 }  // namespace
 }  // namespace ws

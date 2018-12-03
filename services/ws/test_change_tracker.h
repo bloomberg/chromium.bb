@@ -151,6 +151,10 @@ void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
 bool ContainsChange(const std::vector<Change>& changes,
                     const std::string& change_description);
 
+std::vector<Change>::const_iterator FirstChangeOfType(
+    const std::vector<Change>& changes,
+    ChangeType type);
+
 // TestChangeTracker is used to record WindowTreeClient functions. It notifies
 // a delegate any time a change is added.
 class TestChangeTracker {

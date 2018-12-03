@@ -4,6 +4,8 @@
 
 #include "services/ws/client_root.h"
 
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
@@ -17,6 +19,7 @@
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/aura_extra/window_position_in_root_monitor.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/property_change_reason.h"
@@ -35,6 +38,12 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
       window_, is_top_level, gfx::Insets());
   // Ensure there is a valid LocalSurfaceId (if necessary).
   UpdateLocalSurfaceIdIfNecessary();
+  if (!is_top_level) {
+    root_position_monitor_ =
+        std::make_unique<aura_extra::WindowPositionInRootMonitor>(
+            window, base::BindRepeating(&ClientRoot::OnPositionInRootChanged,
+                                        base::Unretained(this)));
+  }
 }
 
 ClientRoot::~ClientRoot() {
@@ -187,10 +196,21 @@ void ClientRoot::HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds) {
   client_surface_embedder_->UpdateSizeAndGutters();
   // See comments in WindowTree::SetWindowBoundsImpl() for details on
   // why this always notifies the client.
+  NotifyClientOfNewBounds(old_bounds);
+}
+
+void ClientRoot::NotifyClientOfNewBounds(const gfx::Rect& old_bounds) {
+  last_bounds_ = window_->GetBoundsInScreen();
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
-      window_tree_->TransportIdForWindow(window_), old_bounds,
-      is_top_level_ ? window_->GetBoundsInScreen() : window_->bounds(),
+      window_tree_->TransportIdForWindow(window_), old_bounds, last_bounds_,
       ServerWindow::GetMayBeNull(window_)->local_surface_id());
+}
+
+void ClientRoot::OnPositionInRootChanged() {
+  DCHECK(!is_top_level_);
+  gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
+  if (bounds_in_screen.origin() != last_bounds_.origin())
+    NotifyClientOfNewBounds(last_bounds_);
 }
 
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
