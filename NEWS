@@ -35,6 +35,8 @@ issues]].
   locale (be it Switzerland or Germany) they have been merged into one
   set of tables for the different grades. Thanks to Christian
   Waldvogel.
+- New table for Arabic contracted braille thanks to Ikrami Ahmad.
+- New table for Arabic computer braille thanks to Ikrami Ahmad.
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
@@ -50,6 +52,9 @@ issues]].
 ** New, renamed or removed tables
 *** New
 - tr-g2.ctb
+- ar-ar-g2.ctb
+- ar-ar-comp8.utb
+
 *** Renamed
 - de-de-accents.cti -> de-accents.cti
 - de-de-g0.utb -> de-g0.utb
@@ -60,7 +65,8 @@ issues]].
 - de-ch-g1.ctb -> de-g1.ctb
 - de-ch-g2.ctb -> de-g2.ctb
 - de.tbl -> de-g2.ctb
-- de_CH.tbll -> de-g2.ctb
+- de_CH.tbl -> de-g2.ctb
+- ar-fa.utb
 
 * Noteworthy changes in release 3.7.0 (2018-09-03)
 This release implements major improvements for back-translation thanks
