@@ -220,4 +220,24 @@ TEST_F(ScrollTimelineTest,
   EXPECT_EQ(&GetDocument(), scroll_timeline->ResolvedScrollSource());
 }
 
+TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
+  // Directly call the constructor to make it easier to pass a null
+  // scrollSource. The alternative approach would require us to remove the
+  // documentElement from the document.
+  Element* scroll_source = nullptr;
+  CSSPrimitiveValue* start_scroll_offset = nullptr;
+  CSSPrimitiveValue* end_scroll_offset = nullptr;
+  ScrollTimeline* scroll_timeline =
+      new ScrollTimeline(scroll_source, ScrollTimeline::Block,
+                         start_scroll_offset, end_scroll_offset, 100);
+
+  // Sanity checks.
+  ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);
+  ASSERT_EQ(scroll_timeline->ResolvedScrollSource(), nullptr);
+
+  // These calls should be no-ops in this mode, and shouldn't crash.
+  scroll_timeline->AttachAnimation();
+  scroll_timeline->DetachAnimation();
+}
+
 }  //  namespace blink

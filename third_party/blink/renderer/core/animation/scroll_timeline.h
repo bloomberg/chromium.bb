@@ -58,8 +58,10 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
 
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
-  // Document's scrollingElement.
+  // Document's scrollingElement, and it may be null if the document was removed
+  // before the ScrollTimeline was created.
   Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
+
   ScrollDirection GetOrientation() const { return orientation_; }
 
   void GetCurrentAndMaxOffset(const LayoutBox*,

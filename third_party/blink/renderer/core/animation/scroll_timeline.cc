@@ -65,8 +65,10 @@ bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
 Node* ResolveScrollSource(Element* scroll_source) {
   // When in quirks mode we need the style to be clean, so we don't use
   // |ScrollingElementNoLayout|.
-  if (scroll_source == scroll_source->GetDocument().scrollingElement())
+  if (scroll_source &&
+      scroll_source == scroll_source->GetDocument().scrollingElement()) {
     return &scroll_source->GetDocument();
+  }
   return scroll_source;
 }
 }  // namespace
@@ -122,14 +124,16 @@ ScrollTimeline::ScrollTimeline(Element* scroll_source,
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
       time_range_(time_range) {
-  DCHECK(scroll_source_);
 }
 
 double ScrollTimeline::currentTime(bool& is_null) {
   is_null = true;
-  // 1. If scrollSource does not currently have a CSS layout box, or if its
-  // layout box is not a scroll container, return an unresolved time value.
-  LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
+
+  // 1. If scrollSource is null, does not currently have a CSS layout box, or if
+  // its layout box is not a scroll container, return an unresolved time value.
+  LayoutBox* layout_box = resolved_scroll_source_
+                              ? resolved_scroll_source_->GetLayoutBox()
+                              : nullptr;
   if (!layout_box || !layout_box->HasOverflowClip()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -291,6 +295,9 @@ void ScrollTimeline::ResolveScrollStartAndEnd(
 }
 
 void ScrollTimeline::AttachAnimation() {
+  if (!resolved_scroll_source_)
+    return;
+
   GetActiveScrollTimelineSet().insert(resolved_scroll_source_);
   if (resolved_scroll_source_->IsElementNode())
     ToElement(resolved_scroll_source_)->SetNeedsCompositingUpdate();
@@ -306,6 +313,9 @@ void ScrollTimeline::AttachAnimation() {
 }
 
 void ScrollTimeline::DetachAnimation() {
+  if (!resolved_scroll_source_)
+    return;
+
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
   if (resolved_scroll_source_->IsElementNode())
     ToElement(resolved_scroll_source_)->SetNeedsCompositingUpdate();
