@@ -36,7 +36,12 @@ uint32_t ToWinAuthenticatorAttachment(
     AuthenticatorAttachment authenticator_attachment);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-std::vector<_WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
+std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
+    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
+        credentials);
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
     const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
         credentials);
 
