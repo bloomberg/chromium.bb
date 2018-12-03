@@ -1041,6 +1041,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/vertex_arrays/' +
         'vertex-array-object-and-disabled-attributes.html',
         ['linux', 'amd'], bug=899754)
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['linux', 'no_passthrough', 'amd'], bug=911216)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_cube_00.html',
