@@ -111,12 +111,11 @@ table_files = \
 	eo.tbl \
 	es-chardefs.cti \
 	Es-Es-G0.utb \
-	Es-Es-g1.utb \
 	es-g1.ctb \
+	es-g2.ctb \
 	es-new.dis \
 	es-old.dis \
 	es.tbl \
-	es-translation.cti \
 	et.ctb \
 	et-g0.utb \
 	ethio-g1.ctb \

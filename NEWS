@@ -8,6 +8,9 @@ issues]].
 ** New features
 
 ** Bug fixes
+- Fix support more than 4 classes thanks to Bert Frees.
+- Fix capitalization of words that match nocont rules thanks to Bert
+  Frees.
 
 ** Braille table improvements
 - Defined the undefined character for the Czech tables thanks to Jan
@@ -38,6 +41,7 @@ issues]].
 - New table for Arabic contracted braille thanks to Ikrami Ahmad.
 - New table for Arabic computer braille thanks to Ikrami Ahmad.
 - Improvements to Ethiopic thanks to Tamru E. Belay.
+- New table for Spanish contracted braille thanks to Juan Pablo Bello.
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
@@ -55,6 +59,7 @@ issues]].
 - tr-g2.ctb
 - ar-ar-g2.ctb
 - ar-ar-comp8.utb
+- es-g2.ctb
 
 *** Renamed
 - de-de-accents.cti -> de-accents.cti
@@ -67,6 +72,7 @@ issues]].
 
 *** Removed
 - ar-fa.utb
+- Es-Es-g1.utb
 
 * Noteworthy changes in release 3.7.0 (2018-09-03)
 This release implements major improvements for back-translation thanks
