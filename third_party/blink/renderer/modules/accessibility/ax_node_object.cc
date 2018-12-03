@@ -1422,7 +1422,7 @@ ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
   if (GetNode() && GetNode()->IsElementNode() &&
       ToElement(GetNode())->IsFormControlElement()) {
     HTMLFormControlElement* element = ToHTMLFormControlElement(GetNode());
-    HeapVector<Member<HTMLFormControlElement>> invalid_controls;
+    ListedElement::List invalid_controls;
     bool is_invalid = !element->checkValidity(&invalid_controls,
                                               kCheckValidityDispatchNoEvent);
     return is_invalid ? ax::mojom::InvalidState::kTrue

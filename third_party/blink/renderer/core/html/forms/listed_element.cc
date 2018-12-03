@@ -25,9 +25,11 @@
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -35,6 +37,11 @@
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
+#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -54,7 +61,13 @@ class FormAttributeTargetObserver : public IdTargetObserver {
   Member<ListedElement> element_;
 };
 
-ListedElement::ListedElement() : form_was_set_by_parser_(false) {}
+ListedElement::ListedElement()
+    : has_validation_message_(false),
+      form_was_set_by_parser_(false),
+      will_validate_initialized_(false),
+      will_validate_(true),
+      is_valid_(true),
+      validity_is_dirty_(false) {}
 
 ListedElement::~ListedElement() {
   // We can't call setForm here because it contains virtual calls.
@@ -83,22 +96,34 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
   // Force traversal to find ancestor
   may_have_field_set_ancestor_ = true;
+  data_list_ancestor_state_ = DataListAncestorState::kUnknown;
+  UpdateWillValidateCache();
 
   if (!form_was_set_by_parser_ || !form_ ||
       NodeTraversal::HighestAncestorOrSelf(insertion_point) !=
           NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
     ResetFormOwner();
 
-  if (!insertion_point.isConnected())
-    return;
-
   HTMLElement* element = ToHTMLElement(this);
-  if (element->FastHasAttribute(kFormAttr))
-    ResetFormAttributeTargetObserver();
+  if (insertion_point.isConnected()) {
+    if (element->FastHasAttribute(kFormAttr))
+      ResetFormAttributeTargetObserver();
+  }
+
+  FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
+
+  // Trigger for elements outside of forms.
+  if (!form_ && insertion_point.isConnected())
+    element->GetDocument().DidAssociateFormControl(element);
 }
 
 void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
+  FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
+  HideVisibleValidationMessage();
+  has_validation_message_ = false;
   ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+  data_list_ancestor_state_ = DataListAncestorState::kUnknown;
+  UpdateWillValidateCache();
 
   HTMLElement* element = ToHTMLElement(this);
   if (insertion_point.isConnected() && element->FastHasAttribute(kFormAttr)) {
@@ -166,12 +191,36 @@ void ListedElement::SetForm(HTMLFormElement* new_form) {
   DidChangeForm();
 }
 
-void ListedElement::WillChangeForm() {}
+void ListedElement::WillChangeForm() {
+  FormOwnerSetNeedsValidityCheck();
+}
 
 void ListedElement::DidChangeForm() {
   if (!form_was_set_by_parser_ && form_ && form_->isConnected()) {
     HTMLElement* element = ToHTMLElement(this);
     element->GetDocument().DidAssociateFormControl(element);
+  }
+  FormOwnerSetNeedsValidityCheck();
+}
+
+void ListedElement::FormOwnerSetNeedsValidityCheck() {
+  if (HTMLFormElement* form = Form()) {
+    form->PseudoStateChanged(CSSSelector::kPseudoValid);
+    form->PseudoStateChanged(CSSSelector::kPseudoInvalid);
+  }
+}
+
+void ListedElement::FieldSetAncestorsSetNeedsValidityCheck(Node* node) {
+  if (!node)
+    return;
+  if (!may_have_field_set_ancestor_)
+    return;
+  for (auto* field_set =
+           Traversal<HTMLFieldSetElement>::FirstAncestorOrSelf(*node);
+       field_set;
+       field_set = Traversal<HTMLFieldSetElement>::FirstAncestor(*field_set)) {
+    field_set->PseudoStateChanged(CSSSelector::kPseudoValid);
+    field_set->PseudoStateChanged(CSSSelector::kPseudoInvalid);
   }
 }
 
@@ -193,6 +242,57 @@ void ListedElement::ResetFormOwner() {
 void ListedElement::FormAttributeChanged() {
   ResetFormOwner();
   ResetFormAttributeTargetObserver();
+}
+
+bool ListedElement::RecalcWillValidate() const {
+  const HTMLElement& element = ToHTMLElement(*this);
+  if (data_list_ancestor_state_ == DataListAncestorState::kUnknown) {
+    if (Traversal<HTMLDataListElement>::FirstAncestor(element))
+      data_list_ancestor_state_ = DataListAncestorState::kInsideDataList;
+    else
+      data_list_ancestor_state_ = DataListAncestorState::kNotInsideDataList;
+  }
+  return data_list_ancestor_state_ ==
+             DataListAncestorState::kNotInsideDataList &&
+         !element.IsDisabledFormControl() &&
+         !element.FastHasAttribute(html_names::kReadonlyAttr);
+}
+
+bool ListedElement::WillValidate() const {
+  if (!will_validate_initialized_ ||
+      data_list_ancestor_state_ == DataListAncestorState::kUnknown) {
+    const_cast<ListedElement*>(this)->UpdateWillValidateCache();
+  } else {
+    // If the following assertion fails, UpdateWillValidateCache() is not
+    // called correctly when something which changes RecalcWillValidate() result
+    // is updated.
+    DCHECK_EQ(will_validate_, RecalcWillValidate());
+  }
+  return will_validate_;
+}
+
+void ListedElement::UpdateWillValidateCache() {
+  // We need to recalculate willValidate immediately because willValidate change
+  // can causes style change.
+  bool new_will_validate = RecalcWillValidate();
+  if (will_validate_initialized_ && will_validate_ == new_will_validate)
+    return;
+  will_validate_initialized_ = true;
+  will_validate_ = new_will_validate;
+  // Needs to force SetNeedsValidityCheck() to invalidate validity state of
+  // FORM/FIELDSET. If this element updates willValidate twice and
+  // IsValidElement() is not called between them, the second call of this
+  // function still has validity_is_dirty_==true, which means
+  // SetNeedsValidityCheck() doesn't invalidate validity state of
+  // FORM/FIELDSET.
+  validity_is_dirty_ = false;
+  SetNeedsValidityCheck();
+  // No need to trigger style recalculation here because
+  // SetNeedsValidityCheck() does it in the right away. This relies on
+  // the assumption that Valid() is always true if willValidate() is false.
+
+  if (!will_validate_)
+    HideVisibleValidationMessage();
 }
 
 bool ListedElement::CustomError() const {
@@ -258,9 +358,158 @@ String ListedElement::ValidationSubMessage() const {
 
 void ListedElement::setCustomValidity(const String& error) {
   custom_validation_message_ = error;
+  SetNeedsValidityCheck();
+}
+
+void ListedElement::FindCustomValidationMessageTextDirection(
+    const String& message,
+    TextDirection& message_dir,
+    String& sub_message,
+    TextDirection& sub_message_dir) {
+  message_dir = DetermineDirectionality(message);
+  if (!sub_message.IsEmpty()) {
+    sub_message_dir =
+        ToHTMLElement(*this).GetLayoutObject()->Style()->Direction();
+  }
+}
+
+void ListedElement::UpdateVisibleValidationMessage() {
+  HTMLElement& element = ToHTMLElement(*this);
+  Page* page = element.GetDocument().GetPage();
+  if (!page || !page->IsPageVisible() || element.GetDocument().UnloadStarted())
+    return;
+  if (page->Paused())
+    return;
+  String message;
+  if (element.GetLayoutObject() && WillValidate())
+    message = validationMessage().StripWhiteSpace();
+
+  has_validation_message_ = true;
+  ValidationMessageClient* client = &page->GetValidationMessageClient();
+  TextDirection message_dir = TextDirection::kLtr;
+  TextDirection sub_message_dir = TextDirection::kLtr;
+  String sub_message = ValidationSubMessage().StripWhiteSpace();
+  if (message.IsEmpty()) {
+    client->HideValidationMessage(element);
+  } else {
+    FindCustomValidationMessageTextDirection(message, message_dir, sub_message,
+                                             sub_message_dir);
+  }
+  client->ShowValidationMessage(element, message, message_dir, sub_message,
+                                sub_message_dir);
+}
+
+void ListedElement::HideVisibleValidationMessage() {
+  if (!has_validation_message_)
+    return;
+
+  if (auto* client = GetValidationMessageClient())
+    client->HideValidationMessage(ToHTMLElement(*this));
+}
+
+bool ListedElement::IsValidationMessageVisible() const {
+  if (!has_validation_message_)
+    return false;
+
+  if (auto* client = GetValidationMessageClient())
+    return client->IsValidationMessageVisible(ToHTMLElement(*this));
+  return false;
+}
+
+ValidationMessageClient* ListedElement::GetValidationMessageClient() const {
+  if (Page* page = ToHTMLElement(*this).GetDocument().GetPage())
+    return &page->GetValidationMessageClient();
+  return nullptr;
+}
+
+bool ListedElement::checkValidity(List* unhandled_invalid_controls,
+                                  CheckValidityEventBehavior event_behavior) {
+  if (!WillValidate())
+    return true;
+  if (IsValidElement())
+    return true;
+  if (event_behavior != kCheckValidityDispatchInvalidEvent)
+    return false;
+  HTMLElement& element = ToHTMLElement(*this);
+  Document* original_document = &element.GetDocument();
+  DispatchEventResult dispatch_result = element.DispatchEvent(
+      *Event::CreateCancelable(event_type_names::kInvalid));
+  if (dispatch_result == DispatchEventResult::kNotCanceled &&
+      unhandled_invalid_controls && element.isConnected() &&
+      original_document == element.GetDocument())
+    unhandled_invalid_controls->push_back(this);
+  return false;
+}
+
+void ListedElement::ShowValidationMessage() {
+  HTMLElement& element = ToHTMLElement(*this);
+  element.scrollIntoViewIfNeeded(false);
+  element.focus();
+  UpdateVisibleValidationMessage();
+}
+
+bool ListedElement::reportValidity() {
+  List unhandled_invalid_controls;
+  bool is_valid = checkValidity(&unhandled_invalid_controls,
+                                kCheckValidityDispatchInvalidEvent);
+  if (is_valid || unhandled_invalid_controls.IsEmpty())
+    return is_valid;
+  DCHECK_EQ(unhandled_invalid_controls.size(), 1u);
+  DCHECK_EQ(unhandled_invalid_controls[0].Get(), this);
+  // Update layout now before calling IsFocusable(), which has
+  // !LayoutObject()->NeedsLayout() assertion.
+  HTMLElement& element = ToHTMLElement(*this);
+  element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (element.IsFocusable()) {
+    ShowValidationMessage();
+    return false;
+  }
+  if (element.GetDocument().GetFrame()) {
+    String message(
+        "An invalid form control with name='%name' is not focusable.");
+    message.Replace("%name", GetName());
+    element.GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kRenderingMessageSource, kErrorMessageLevel, message));
+  }
+  return false;
+}
+
+bool ListedElement::IsValidElement() {
+  if (validity_is_dirty_) {
+    is_valid_ = !WillValidate() || Valid();
+    validity_is_dirty_ = false;
+  } else {
+    // If the following assertion fails, SetNeedsValidityCheck() is not
+    // called correctly when something which changes validity is updated.
+    DCHECK_EQ(is_valid_, (!WillValidate() || Valid()));
+  }
+  return is_valid_;
+}
+
+void ListedElement::SetNeedsValidityCheck() {
+  HTMLElement& element = ToHTMLElement(*this);
+  if (!validity_is_dirty_) {
+    validity_is_dirty_ = true;
+    FormOwnerSetNeedsValidityCheck();
+    FieldSetAncestorsSetNeedsValidityCheck(element.parentNode());
+    element.PseudoStateChanged(CSSSelector::kPseudoValid);
+    element.PseudoStateChanged(CSSSelector::kPseudoInvalid);
+  }
+
+  // Updates only if this control already has a validation message.
+  if (IsValidationMessageVisible()) {
+    // Calls UpdateVisibleValidationMessage() even if is_valid_ is not
+    // changed because a validation message can be changed.
+    element.GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&ListedElement::UpdateVisibleValidationMessage,
+                             WrapPersistent(this)));
+  }
 }
 
 void ListedElement::DisabledAttributeChanged() {
+  UpdateWillValidateCache();
   HTMLElement& element = ToHTMLElement(*this);
   element.PseudoStateChanged(CSSSelector::kPseudoDisabled);
   element.PseudoStateChanged(CSSSelector::kPseudoEnabled);
