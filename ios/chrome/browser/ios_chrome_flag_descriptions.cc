@@ -250,13 +250,6 @@ const char kITunesUrlsStoreKitHandlingDescription[] =
     "When enabled, opening itunes product URLs will be handled using the store "
     "kit.";
 
-const char kMailtoHandlingWithGoogleUIName[] = "Mailto Handling with Google UI";
-const char kMailtoHandlingWithGoogleUIDescription[] =
-    "When enabled, tapping mailto: links will open a contextual menu to allow "
-    "users to select how they would like to handle the current and future "
-    "mailto link interactions. This UI matches the same user experience as in "
-    "other Google iOS apps.";
-
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

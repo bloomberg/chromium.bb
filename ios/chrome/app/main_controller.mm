@@ -189,9 +189,6 @@ NSString* const kMailtoHandlingInitialization = @"MailtoHandlingInitialization";
 // Chrome distribution related services.
 NSString* const kSendInstallPingIfNecessary = @"SendInstallPingIfNecessary";
 
-// Constants for deferring check of native iOS apps installed.
-NSString* const kCheckForFirstPartyApps = @"CheckForFirstPartyApps";
-
 // Constants for deferred deletion of leftover user downloaded files.
 NSString* const kDeleteDownloads = @"DeleteDownloads";
 
@@ -498,10 +495,6 @@ enum class ShowTabSwitcherSnapshotResult {
 - (void)registerForOrientationChangeNotifications;
 // Asynchronously creates the pref observers.
 - (void)schedulePrefObserverInitialization;
-// Asynchronously schedules a check for what other native iOS apps are currently
-// installed. Note that there may be App Store restrictions around checking for
-// native iOS apps not owned by the browser vendor.
-- (void)scheduleCheckForFirstPartyApps;
 // Asynchronously schedules pings to distribution services.
 - (void)scheduleAppDistributionPings;
 // Asynchronously schedule the init of the memoryDebuggerManager.
@@ -1043,14 +1036,6 @@ enum class ShowTabSwitcherSnapshotResult {
                   }];
 }
 
-- (void)scheduleCheckForFirstPartyApps {
-  [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kCheckForFirstPartyApps
-                  block:^{
-                    ios::GetChromeBrowserProvider()->CheckForFirstPartyApps();
-                  }];
-}
-
 - (void)scheduleAppDistributionPings {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSendInstallPingIfNecessary
@@ -1182,10 +1167,7 @@ enum class ShowTabSwitcherSnapshotResult {
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
-  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI))
-    [self initializeMailtoHandling];
-  else
-    [self scheduleCheckForFirstPartyApps];
+  [self initializeMailtoHandling];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
@@ -2425,11 +2407,9 @@ enum class ShowTabSwitcherSnapshotResult {
 
   // MailtoHandlerProvider is responsible for the dialogs displayed by the
   // services it wraps.
-  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-    ios::GetChromeBrowserProvider()
-        ->GetMailtoHandlerProvider()
-        ->DismissAllMailtoHandlerInterfaces();
-  }
+  ios::GetChromeBrowserProvider()
+      ->GetMailtoHandlerProvider()
+      ->DismissAllMailtoHandlerInterfaces();
 
   // Cancel interaction with SSO.
   // First, cancel the signin interaction.
