@@ -32,13 +32,13 @@ Shift+Tab:
 DIV#console-messages.monospace
 
 Tab:
-DIV.console-group.console-group-messages
+DIV:console-key-navigation.js:20 Message #99
 
 Setting focus in prompt:
 TEXTAREA:Code editor
 
 Shift+Tab:
-DIV.console-group.console-group-messages
+DIV:console-key-navigation.js:20 Message #99
 
 Scrolling to top of viewport
 DIV.console-group.console-group-messages

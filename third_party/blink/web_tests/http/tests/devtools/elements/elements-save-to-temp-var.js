@@ -11,9 +11,10 @@
 
   const node = await ElementsTestRunner.nodeWithIdPromise('node');
   ElementsTestRunner.firstElementsTreeOutline()._saveNodeToTempVariable(node);
+  const promise = TestRunner.addSnifferPromise(Console.ConsoleViewMessage.prototype, '_formattedParameterAsNodeForTest');
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
   const secondMessage = Console.ConsoleView.instance()._visibleViewMessages[1];
-  await TestRunner.addSnifferPromise(secondMessage, '_formattedParameterAsNodeForTest');
+  await promise;
   ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
