@@ -731,6 +731,8 @@ class CommandSequence(object):
         self._id_map, self._binary, self._base_url)
 
     response = self._parser.GetNext()
+    if not response:
+      return command
     if not response.IsResponse():
       raise ReplayException("Command and Response unexpectedly out of order.")
     self._IngestLoggedResponse(response)
