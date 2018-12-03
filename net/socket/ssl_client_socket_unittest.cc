@@ -1386,6 +1386,22 @@ TEST_F(SSLClientSocketTest, ConnectBadValidity) {
   EXPECT_THAT(rv, IsError(ERR_CERT_DATE_INVALID));
 }
 
+// Ignoring the certificate error from an invalid certificate should
+// allow a complete connection.
+TEST_F(SSLClientSocketTest, ConnectBadValidityIgnoreCertErrors) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_BAD_VALIDITY);
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+
+  SSLConfig ssl_config;
+  ssl_config.ignore_certificate_errors = true;
+  int rv;
+  CreateAndConnectSSLClientSocket(ssl_config, &rv);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+}
+
 // Attempt to connect to a page which requests a client certificate. It should
 // return an error code on connect.
 TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
@@ -2365,7 +2381,7 @@ TEST_F(SSLClientSocketTest, VerifyServerChainProperlyOrdered) {
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_CERT_INVALID));
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 
   // When given option CERT_CHAIN_WRONG_ROOT, SpawnedTestServer will present
   // certs from redundant-server-chain.pem.
@@ -3421,7 +3437,7 @@ TEST_F(SSLClientSocketTest, PKPEnforced) {
 
   EXPECT_THAT(rv, IsError(ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN));
   EXPECT_TRUE(ssl_info.cert_status & CERT_STATUS_PINNED_KEY_MISSING);
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 
   EXPECT_FALSE(ssl_info.pkp_bypassed);
 }
@@ -3466,7 +3482,7 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
   EXPECT_THAT(rv, IsError(ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 }
 
 // Test that the CT compliance status is recorded in a histogram.
@@ -3832,7 +3848,7 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   EXPECT_THAT(rv, IsError(ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ(GURL("https://example-report.test"), reporter.report_uri());
@@ -3851,7 +3867,7 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   EXPECT_THAT(rv, IsError(ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 
   EXPECT_EQ(2u, reporter.num_failures());
   EXPECT_EQ(GURL("https://example-report.test"), reporter.report_uri());
@@ -3935,7 +3951,7 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
   EXPECT_TRUE(ssl_info.cert_status & CERT_STATUS_PINNED_KEY_MISSING);
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
-  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_FALSE(sock_->IsConnected());
 }
 
 // Test that handshake_failure alerts at the ServerHello are mapped to

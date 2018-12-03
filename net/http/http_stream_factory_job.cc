@@ -1137,10 +1137,6 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
     DCHECK(ssl_started);
     if (IsCertificateError(result)) {
       result = HandleCertificateError(result);
-      if (result == OK && !connection_->socket()->IsConnectedAndIdle()) {
-        ReturnToStateInitConnection(true /* close connection */);
-        return result;
-      }
     }
     if (result < 0)
       return result;
@@ -1416,10 +1412,6 @@ int HttpStreamFactory::Job::HandleCertificateError(int error) {
   server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
                                                     ssl_info.cert_status);
 
-  if (session_->params().ignore_certificate_errors &&
-      IsCertificateError(error)) {
-    return OK;
-  }
   return error;
 }
 

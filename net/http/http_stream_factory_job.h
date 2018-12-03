@@ -381,8 +381,7 @@ class HttpStreamFactory::Job {
   int ReconsiderProxyAfterError(int error);
 
   // Called to handle a certificate error.  Stores the certificate in the
-  // allowed_bad_certs list, and checks if the error can be ignored.  Returns
-  // OK if it can be ignored, or the error code otherwise.
+  // allowed_bad_certs list. Returns the error code.
   int HandleCertificateError(int error);
 
   // Called to handle a client certificate request.

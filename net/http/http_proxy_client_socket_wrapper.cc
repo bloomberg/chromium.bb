@@ -535,14 +535,10 @@ int HttpProxyClientSocketWrapper::DoSSLConnectComplete(int result) {
   if (IsCertificateError(result)) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    if (ssl_params_->ignore_certificate_errors()) {
-      result = OK;
-    } else {
-      // TODO(rch): allow the user to deal with proxy cert errors in the
-      // same way as server cert errors.
-      transport_socket_handle_->socket()->Disconnect();
-      return ERR_PROXY_CERTIFICATE_INVALID;
-    }
+    // TODO(rch): allow the user to deal with proxy cert errors in the
+    // same way as server cert errors.
+    transport_socket_handle_->socket()->Disconnect();
+    return ERR_PROXY_CERTIFICATE_INVALID;
   }
   // A SPDY session to the proxy completed prior to resolving the proxy
   // hostname. Surface this error, and allow the delegate to retry.

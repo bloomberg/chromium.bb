@@ -32,6 +32,7 @@ SSLConfig::SSLConfig()
       channel_id_enabled(false),
       false_start_enabled(true),
       require_ecdhe(false),
+      ignore_certificate_errors(false),
       disable_cert_verification_network_fetches(false),
       send_client_cert(false),
       renego_allowed_default(false) {}
