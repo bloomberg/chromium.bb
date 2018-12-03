@@ -62,6 +62,7 @@
   if (_emptyView == emptyView)
     return;
   _emptyView = emptyView;
+  _emptyView.scrollViewContentInsets = self.view.safeAreaInsets;
   self.tableView.backgroundView = _emptyView;
   // Since this would replace any loadingView, set it to nil.
   self.loadingView = nil;
@@ -71,6 +72,13 @@
 
 - (void)loadModel {
   _tableViewModel = [[TableViewModel alloc] init];
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  // The safe area insets aren't propagated to the inner scroll view. Manually
+  // set the content insets.
+  self.emptyView.scrollViewContentInsets = self.view.safeAreaInsets;
 }
 
 - (void)viewDidLoad {
