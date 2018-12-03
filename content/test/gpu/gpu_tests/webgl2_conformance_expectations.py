@@ -56,12 +56,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['win', 'nvidia', 'opengl'], bug=874620)
 
-    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
-    self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
-              ['linux'], bug=859400)
-    self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
-              ['win', 'opengl', 'passthrough'], bug=859400)
-
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
