@@ -162,7 +162,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       decode_using_client_picture_buffers_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
-      num_frames_at_client_(0),
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
@@ -273,19 +272,21 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
                                  "Failed putting surface into pixmap",
                                  PLATFORM_FAILURE, );
   }
-  // Notify the client a picture is ready to be displayed.
-  ++num_frames_at_client_;
+
   TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    num_frames_at_client_, "available",
-                    pictures_.size() - num_frames_at_client_);
+                    pictures_.size() - available_picture_buffers_.size(),
+                    "available", available_picture_buffers_.size());
+
   DVLOGF(4) << "Notifying output picture id " << output_id << " for input "
             << input_id
             << " is ready. visible rect: " << visible_rect.ToString();
-  if (client_) {
-    client_->PictureReady(Picture(output_id, input_id, visible_rect,
-                                  picture_color_space.ToGfxColorSpace(),
-                                  picture->AllowOverlay()));
-  }
+  if (!client_)
+    return;
+
+  // Notify the |client_| a picture is ready to be consumed.
+  client_->PictureReady(Picture(output_id, input_id, visible_rect,
+                                picture_color_space.ToGfxColorSpace(),
+                                picture->AllowOverlay()));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputPicture() {
@@ -540,7 +541,6 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
       client_->DismissPictureBuffer(iter->first);
   }
   pictures_.clear();
-  num_frames_at_client_ = 0;
 
   // And ask for a new set as requested.
   VLOGF(2) << "Requesting " << requested_num_pics_
@@ -653,8 +653,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   }
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
-  for (const auto id : va_surface_ids)
-    available_va_surfaces_.push_back(id);
+  available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());
 
   // Resume DecodeTask if it is still in decoding state.
   if (state_ == kDecoding) {
@@ -723,14 +722,15 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
     return;
   }
 
-  --num_frames_at_client_;
-  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    num_frames_at_client_, "available",
-                    pictures_.size() - num_frames_at_client_);
   {
     base::AutoLock auto_lock(lock_);
     available_picture_buffers_.push_back(picture_buffer_id);
   }
+
+  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                    pictures_.size() - available_picture_buffers_.size(),
+                    "available", available_picture_buffers_.size());
+
   TryOutputPicture();
 }
 
