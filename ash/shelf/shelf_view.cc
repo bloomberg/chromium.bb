@@ -1994,8 +1994,9 @@ void ShelfView::AfterItemSelected(
       ShowMenu(std::make_unique<ShelfApplicationMenuModel>(
                    item.title, std::move(*menu_items),
                    model_->GetShelfItemDelegate(item.id)),
-               sender, gfx::Point(), false,
+               sender, gfx::Point(), /*context_menu=*/false,
                ui::GetMenuSourceTypeForEvent(*event));
+      shelf_->UpdateVisibilityState();
     } else {
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
@@ -2015,7 +2016,7 @@ void ShelfView::AfterGetContextMenuItems(
       std::make_unique<ShelfContextMenuModel>(
           std::move(menu_items), model_->GetShelfItemDelegate(shelf_id),
           display_id);
-  ShowMenu(std::move(menu_model), source, point, true /* context_menu */,
+  ShowMenu(std::move(menu_model), source, point, /*context_menu=*/true,
            source_type);
 }
 

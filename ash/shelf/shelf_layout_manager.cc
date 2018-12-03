@@ -1003,7 +1003,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (shelf_widget_->IsShowingContextMenu())
+  if (shelf_widget_->IsShowingMenu())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->IsShowingOverflowBubble())

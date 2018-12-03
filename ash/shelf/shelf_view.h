@@ -131,7 +131,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // will be returned.
   gfx::Rect GetIdealBoundsOfItemIcon(const ShelfID& id);
 
-  // Returns true if we're showing a menu.
+  // Returns true if we're showing a menu. Note the menu could be either the
+  // context menu or the application select menu.
   bool IsShowingMenu() const;
 
   // Returns true if we're showing a menu for |view|. |view| could be a
