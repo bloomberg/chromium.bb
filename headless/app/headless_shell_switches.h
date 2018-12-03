@@ -16,6 +16,7 @@ HEADLESS_EXPORT extern const char kDefaultBackgroundColor[];
 HEADLESS_EXPORT extern const char kDeterministicMode[];
 HEADLESS_EXPORT extern const char kDisableCookieEncryption[];
 HEADLESS_EXPORT extern const char kDisableCrashReporter[];
+HEADLESS_EXPORT extern const char kDiskCacheDir[];
 HEADLESS_EXPORT extern const char kDumpDom[];
 HEADLESS_EXPORT extern const char kEnableBeginFrameControl[];
 HEADLESS_EXPORT extern const char kEnableCrashReporter[];
