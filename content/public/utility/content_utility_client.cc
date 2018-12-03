@@ -10,11 +10,10 @@ bool ContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-std::unique_ptr<service_manager::Service>
-ContentUtilityClient::HandleServiceRequest(
+bool ContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  return nullptr;
+  return false;
 }
 
 }  // namespace content

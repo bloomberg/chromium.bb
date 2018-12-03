@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/utility/content_utility_client.h"
+#include "content/public/utility/utility_thread.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/ime/test_ime_driver/test_ime_application.h"
@@ -25,6 +26,10 @@
 namespace ash {
 namespace shell {
 namespace {
+
+void TerminateThisProcess() {
+  content::UtilityThread::Get()->ReleaseProcess();
+}
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch(
     service_manager::mojom::ServiceRequest request) {
@@ -56,20 +61,25 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
   ShellContentUtilityClient() = default;
   ~ShellContentUtilityClient() override = default;
 
-  // ContentUtilityClient:
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+  // content::ContentUtilityClient:
+  bool HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override {
+    std::unique_ptr<service_manager::Service> service;
     if (service_name == quick_launch::mojom::kServiceName)
-      return CreateQuickLaunch(std::move(request));
-    if (service_name == test_ime_driver::mojom::kServiceName)
-      return CreateTestImeDriver(std::move(request));
-    if (service_name == shortcut_viewer::mojom::kServiceName)
-      return CreateShortcutViewer(std::move(request));
-    if (service_name == tap_visualizer::mojom::kServiceName)
-      return CreateTapVisualizer(std::move(request));
+      service = CreateQuickLaunch(std::move(request));
+    else if (service_name == test_ime_driver::mojom::kServiceName)
+      service = CreateTestImeDriver(std::move(request));
+    else if (service_name == shortcut_viewer::mojom::kServiceName)
+      service = CreateShortcutViewer(std::move(request));
+    else if (service_name == tap_visualizer::mojom::kServiceName)
+      service = CreateTapVisualizer(std::move(request));
 
-    return nullptr;
+    if (service) {
+      service_manager::Service::RunAsyncUntilTermination(
+          std::move(service), base::BindOnce(&TerminateThisProcess));
+    }
+    return false;
   }
 
  private:

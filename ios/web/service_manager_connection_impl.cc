@@ -18,7 +18,6 @@
 #include "ios/web/public/web_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/embedded_service_runner.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
@@ -40,9 +39,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
       public service_manager::Service,
       public service_manager::mojom::ServiceFactory {
  public:
-  using EmbeddedServiceRequestHandler =
-      base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>;
-
   IOThreadContext(
       service_manager::mojom::ServiceRequest service_request,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
@@ -78,15 +74,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
     bool posted = io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&IOThreadContext::ShutDownOnIOThread, this));
     DCHECK(posted);
-  }
-
-  void AddEmbeddedService(const std::string& name,
-                          const service_manager::EmbeddedServiceInfo& info) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
-                           AddEmbeddedServiceRequestHandlerOnIoThread,
-                       this, name, info));
   }
 
  private:
@@ -165,32 +152,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
     factory_bindings_.CloseAllBindings();
     service_binding_.reset();
-
-    request_handlers_.clear();
-    embedded_services_.clear();
-  }
-
-  void AddEmbeddedServiceRequestHandlerOnIoThread(
-      const std::string& name,
-      const service_manager::EmbeddedServiceInfo& info) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    auto service =
-        std::make_unique<service_manager::EmbeddedServiceRunner>(name, info);
-    AddServiceRequestHandlerOnIoThread(
-        name, base::BindRepeating(
-                  &service_manager::EmbeddedServiceRunner::BindServiceRequest,
-                  base::Unretained(service.get())));
-    auto insertion_result =
-        embedded_services_.insert(std::make_pair(name, std::move(service)));
-    DCHECK(insertion_result.second);
-  }
-
-  void AddServiceRequestHandlerOnIoThread(
-      const std::string& name,
-      const EmbeddedServiceRequestHandler& handler) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    auto result = request_handlers_.insert(std::make_pair(name, handler));
-    DCHECK(result.second);
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -220,14 +181,9 @@ class ServiceManagerConnectionImpl::IOThreadContext
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    auto it = request_handlers_.find(name);
-    if (it == request_handlers_.end()) {
-      callback_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(default_request_handler_, name, std::move(request)));
-      return;
-    }
-    it->second.Run(std::move(request));
+    callback_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(default_request_handler_, name, std::move(request)));
   }
 
   base::ThreadChecker io_thread_checker_;
@@ -253,10 +209,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   // Not owned.
   MessageLoopObserver* message_loop_observer_ = nullptr;
-
-  std::map<std::string, std::unique_ptr<service_manager::EmbeddedServiceRunner>>
-      embedded_services_;
-  std::map<std::string, EmbeddedServiceRequestHandler> request_handlers_;
 
   base::WeakPtrFactory<IOThreadContext> weak_factory_;
 
@@ -333,12 +285,6 @@ void ServiceManagerConnectionImpl::Start() {
 
 service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
-}
-
-void ServiceManagerConnectionImpl::AddEmbeddedService(
-    const std::string& name,
-    const service_manager::EmbeddedServiceInfo& info) {
-  context_->AddEmbeddedService(name, info);
 }
 
 void ServiceManagerConnectionImpl::SetDefaultServiceRequestHandler(

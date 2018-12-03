@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/net/cookies/cookie_store_ios_test_util.h"

@@ -26,7 +26,7 @@ class HEADLESS_EXPORT HeadlessContentUtilityClient
   ~HeadlessContentUtilityClient() override;
 
   // content::ContentUtilityClient:
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+  bool HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
   void RegisterNetworkBinders(

@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/child/service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
@@ -25,15 +26,9 @@ class UtilityServiceFactory : public ServiceFactory {
   ~UtilityServiceFactory() override;
 
   // ServiceFactory overrides:
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override;
-  void RegisterServices(ServiceMap* services) override;
   bool HandleServiceRequest(
       const std::string& name,
       service_manager::mojom::ServiceRequest request) override;
-  void OnServiceQuit() override;
 
  private:
   void OnLoadFailed() override;
@@ -48,8 +43,6 @@ class UtilityServiceFactory : public ServiceFactory {
   // network or audio services are created. Used for testing.
   std::unique_ptr<service_manager::BinderRegistry> network_registry_;
   std::unique_ptr<service_manager::BinderRegistry> audio_registry_;
-
-  std::unique_ptr<service_manager::Service> running_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityServiceFactory);
 };

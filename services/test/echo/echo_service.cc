@@ -4,22 +4,15 @@
 
 #include "services/test/echo/echo_service.h"
 
-#include "services/service_manager/public/cpp/service_context.h"
-
 namespace echo {
 
-std::unique_ptr<service_manager::Service> CreateEchoService() {
-  return std::make_unique<EchoService>();
+EchoService::EchoService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
+  registry_.AddInterface<mojom::Echo>(base::BindRepeating(
+      &EchoService::BindEchoRequest, base::Unretained(this)));
 }
 
-EchoService::EchoService() {
-  registry_.AddInterface<mojom::Echo>(
-      base::Bind(&EchoService::BindEchoRequest, base::Unretained(this)));
-}
-
-EchoService::~EchoService() {}
-
-void EchoService::OnStart() {}
+EchoService::~EchoService() = default;
 
 void EchoService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
@@ -38,7 +31,7 @@ void EchoService::EchoString(const std::string& input,
 }
 
 void EchoService::Quit() {
-  context()->CreateQuitClosure().Run();
+  service_binding_.RequestClose();
 }
 
 }  // namespace echo

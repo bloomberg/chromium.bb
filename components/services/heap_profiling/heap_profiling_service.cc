@@ -9,19 +9,14 @@
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace heap_profiling {
 
-HeapProfilingService::HeapProfilingService()
-    : binding_(this), heap_profiler_binding_(this), weak_factory_(this) {}
+HeapProfilingService::HeapProfilingService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 HeapProfilingService::~HeapProfilingService() {}
-
-std::unique_ptr<service_manager::Service>
-HeapProfilingService::CreateService() {
-  return std::make_unique<HeapProfilingService>();
-}
 
 void HeapProfilingService::OnStart() {
   registry_.AddInterface(
@@ -74,7 +69,7 @@ void HeapProfilingService::DumpProcessesForTracing(
     bool strip_path_from_mapped_files,
     DumpProcessesForTracingCallback callback) {
   if (!helper_) {
-    context()->connector()->BindInterface(
+    service_binding_.GetConnector()->BindInterface(
         resource_coordinator::mojom::kServiceName, &helper_);
   }
 

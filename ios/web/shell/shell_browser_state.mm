@@ -45,11 +45,14 @@ net::URLRequestContextGetter* ShellBrowserState::GetRequestContext() {
   return request_context_getter_.get();
 }
 
-void ShellBrowserState::RegisterServices(StaticServiceMap* services) {
-  service_manager::EmbeddedServiceInfo user_id_info;
-  user_id_info.factory = base::Bind(&user_id::CreateUserIdService);
-  user_id_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  services->insert(std::make_pair("user_id", user_id_info));
+std::unique_ptr<service_manager::Service>
+ShellBrowserState::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == "user_id")
+    return std::make_unique<user_id::UserIdService>(std::move(request));
+
+  return nullptr;
 }
 
 }  // namespace web

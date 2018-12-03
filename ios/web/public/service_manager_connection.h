@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/sequenced_task_runner.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -58,13 +57,6 @@ class ServiceManagerConnection {
   // Service implementation. Use this to initiate connections as this object's
   // Identity.
   virtual service_manager::Connector* GetConnector() = 0;
-
-  // Adds an embedded service to this connection's ServiceFactory.
-  // |info| provides details on how to construct new instances of the
-  // service when an incoming connection is made to |name|.
-  virtual void AddEmbeddedService(
-      const std::string& name,
-      const service_manager::EmbeddedServiceInfo& info) = 0;
 
   // Sets a callback to be invoked on the ServiceManagerConnection's owning
   // sequence with any unhandled service requests.
