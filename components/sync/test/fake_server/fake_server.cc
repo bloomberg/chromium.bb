@@ -426,6 +426,10 @@ void FakeServer::OnCommit(const std::string& committer_id,
     observer.OnCommit(committer_id, committed_model_types);
 }
 
+void FakeServer::OnHistoryCommit(const std::string& url) {
+  committed_history_urls_.insert(url);
+}
+
 void FakeServer::EnableStrongConsistencyWithConflictDetectionModel() {
   DCHECK(thread_checker_.CalledOnValidThread());
   loopback_server_->EnableStrongConsistencyWithConflictDetectionModel();
@@ -434,6 +438,10 @@ void FakeServer::EnableStrongConsistencyWithConflictDetectionModel() {
 void FakeServer::SetMaxGetUpdatesBatchSize(int batch_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   loopback_server_->SetMaxGetUpdatesBatchSize(batch_size);
+}
+
+const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
+  return committed_history_urls_;
 }
 
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {

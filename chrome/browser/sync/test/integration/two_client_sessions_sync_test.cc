@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,6 +31,7 @@ using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
 using sessions_helper::WindowsMatch;
+using testing::IsEmpty;
 
 class TwoClientSessionsSyncTest : public SyncTest {
  public:
@@ -239,6 +241,25 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MultipleWindowsMultipleTabs) {
   EXPECT_TRUE(OpenTabAtIndex(2, 1, GURL(kURL4)));
 
   WaitForForeignSessionsToSync(0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
+                       NoHistoryIfEncryptionEnabled) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(CheckInitialState(0));
+  ASSERT_TRUE(CheckInitialState(1));
+
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
+
+  EXPECT_TRUE(OpenTab(0, GURL(kURL1)));
+  WaitForForeignSessionsToSync(0, 1);
+
+  EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(), IsEmpty());
 }
 
 }  // namespace

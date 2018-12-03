@@ -28,6 +28,7 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -54,6 +55,8 @@ using sessions_helper::SyncedSessionVector;
 using sessions_helper::WaitForTabsToLoad;
 using sessions_helper::WindowsMatch;
 using sync_sessions::SessionSyncTestHelper;
+using testing::IsEmpty;
+using testing::UnorderedElementsAre;
 using typed_urls_helper::GetUrlFromClient;
 
 static const char* kURL1 = "data:text/html,<html><title>Test</title></html>";
@@ -76,28 +79,18 @@ void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
   EXPECT_EQ(sample_count, samples->TotalCount());
 }
 
-class IsUrlSyncedChecker : public SingleClientStatusChangeChecker {
+class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
  public:
-  IsUrlSyncedChecker(const std::string& url,
-                     fake_server::FakeServer* fake_server,
-                     browser_sync::ProfileSyncService* service)
+  IsHistoryURLSyncedChecker(const std::string& url,
+                            fake_server::FakeServer* fake_server,
+                            browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service),
         url_(url),
         fake_server_(fake_server) {}
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
-    std::vector<sync_pb::SyncEntity> entities =
-        fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
-    for (const sync_pb::SyncEntity& entity : entities) {
-      for (const auto& navigation :
-           entity.specifics().session().tab().navigation()) {
-        if (navigation.virtual_url() == url_) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return fake_server_->GetCommittedHistoryURLs().count(url_) != 0;
   }
 
   std::string GetDebugMessage() const override {
@@ -204,6 +197,41 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
   ASSERT_TRUE(WindowsMatch(old_windows, new_windows));
 
   WaitForURLOnServer(url);
+
+  EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(),
+              UnorderedElementsAre(kURL1));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateInTab) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1}}));
+
+  NavigateTab(0, GURL(kURL2));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
+
+  EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(),
+              UnorderedElementsAre(kURL1, kURL2));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       SessionsWithoutHistorySync) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  // If the user disables history sync on settings, but still enables tab sync,
+  // then sessions should be synced but the server should be able to tell the
+  // difference based on active datatypes.
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1}}));
+
+  NavigateTab(0, GURL(kURL2));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
+
+  EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(), IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NoSessions) {
@@ -212,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NoSessions) {
   WaitForHierarchyOnServer(SessionsHierarchy());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistory) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ChromeHistoryPage) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -238,12 +266,46 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
   NavigateTab(0, GURL(kURL4));
 
   ASSERT_TRUE(
-      IsUrlSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0)).Wait());
+      IsHistoryURLSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0))
+          .Wait());
 
   // All URLs should be synced, for synced history to be complete. In
   // particular, |kURL3| should be synced despite the tab being closed.
   EXPECT_TRUE(
-      IsUrlSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0)).Wait());
+      IsHistoryURLSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0))
+          .Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       NavigateThenCloseTabThenOpenTab) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      sync_sessions::kDeferRecyclingOfSyncTabNodesIfUnsynced);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  // Two tabs are opened initially.
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
+
+  // Close one of the two tabs immediately after issuing an navigation. In
+  // addition, a new tab is opened.
+  NavigateTab(0, GURL(kURL3));
+  ASSERT_TRUE(WaitForTabsToLoad(0, {GURL(kURL1), GURL(kURL3)}));
+  CloseTab(/*index=*/0, /*tab_index=*/1);
+  ASSERT_TRUE(OpenTab(0, GURL(kURL4)));
+
+  ASSERT_TRUE(
+      IsHistoryURLSyncedChecker(kURL4, GetFakeServer(), GetSyncService(0))
+          .Wait());
+
+  // All URLs should be synced, for synced history to be complete. In
+  // particular, |kURL3| should be synced despite the tab being closed.
+  EXPECT_TRUE(
+      IsHistoryURLSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0))
+          .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {

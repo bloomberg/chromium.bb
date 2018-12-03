@@ -474,6 +474,11 @@ bool LoopbackServer::HandleCommitRequest(
   string guid = commit.cache_guid();
   ModelTypeSet committed_model_types;
 
+  ModelTypeSet enabled_types;
+  for (int field_number : commit.config_params().enabled_type_ids()) {
+    enabled_types.Put(GetModelTypeFromSpecificsFieldNumber(field_number));
+  }
+
   // TODO(pvalenzuela): Add validation of CommitMessage.entries.
   for (const sync_pb::SyncEntity& client_entity : commit.entries()) {
     sync_pb::CommitResponse_EntryResponse* entry_response =
@@ -498,6 +503,20 @@ bool LoopbackServer::HandleCommitRequest(
     EntityMap::const_iterator iter = entities_.find(entity_id);
     DCHECK(iter != entities_.end());
     committed_model_types.Put(iter->second->GetModelType());
+
+    // Notify observers about history having been synced. "History" sync is
+    // guarded by the user's selection in the settings page. This also excludes
+    // custom passphrase users who, in addition to HISTORY_DELETE_DIRECTIVES not
+    // being enabled, will commit encrypted specifics and hence cannot be
+    // iterated over.
+    if (observer_for_tests_ && iter->second->GetModelType() == SESSIONS &&
+        enabled_types.Has(HISTORY_DELETE_DIRECTIVES) &&
+        enabled_types.Has(TYPED_URLS)) {
+      for (const sync_pb::TabNavigation& navigation :
+           client_entity.specifics().session().tab().navigation()) {
+        observer_for_tests_->OnHistoryCommit(navigation.virtual_url());
+      }
+    }
   }
 
   if (observer_for_tests_)
