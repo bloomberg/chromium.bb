@@ -65,12 +65,12 @@ constexpr float PopoverMaxHeight = 360;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
+
+  [self startLoadingIndicatorWithLoadingMessage:@""];
 }
 
 - (void)presentDataItems:(NSArray<TableViewItem*>*)items {
-  if (!self.tableViewModel) {
-    [self loadModel];
-  }
+  [self createModelIfNeeded];
   BOOL sectionExist = [self.tableViewModel
       hasSectionForSectionIdentifier:ItemsSectionIdentifier];
   // If there are no passed items, remove section if exist.
@@ -84,9 +84,7 @@ constexpr float PopoverMaxHeight = 360;
 }
 
 - (void)presentActionItems:(NSArray<TableViewItem*>*)actions {
-  if (!self.tableViewModel) {
-    [self loadModel];
-  }
+  [self createModelIfNeeded];
   BOOL sectionExist = [self.tableViewModel
       hasSectionForSectionIdentifier:ActionsSectionIdentifier];
   // If there are no passed items, remove section if exist.
@@ -99,6 +97,13 @@ constexpr float PopoverMaxHeight = 360;
 }
 
 #pragma mark - Private
+
+- (void)createModelIfNeeded {
+  if (!self.tableViewModel) {
+    [self loadModel];
+    [self stopLoadingIndicatorWithCompletion:nil];
+  }
+}
 
 - (void)handleKeyboardDidHide:(NSNotification*)notification {
   if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {

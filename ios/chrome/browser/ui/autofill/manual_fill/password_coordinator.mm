@@ -187,6 +187,9 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   [self.allPasswordsViewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
+                           weakSelf.passwordMediator.disableFilter = NO;
+                           weakSelf.passwordMediator.consumer =
+                               weakSelf.passwordViewController;
                            if (weakSelf.presentingButton) {
                              [weakSelf
                                  presentFromButton:weakSelf.presentingButton];
