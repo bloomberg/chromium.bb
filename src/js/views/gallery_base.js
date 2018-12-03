@@ -23,7 +23,7 @@ cca.views = cca.views || {};
  * @constructor
  */
 cca.views.GalleryBase = function(selector, model) {
-  cca.views.View.call(this, selector);
+  cca.views.View.call(this, selector, true);
 
   /**
    * @type {cca.models.Gallery}
@@ -253,26 +253,20 @@ cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
 /**
  * @override
  */
-cca.views.GalleryBase.prototype.onKeyPressed = function(event) {
-  switch (cca.util.getShortcutIdentifier(event)) {
+cca.views.GalleryBase.prototype.handlingKey = function(key) {
+  switch (key) {
     case 'Delete':
     case 'Meta-Backspace':
       this.deleteSelection();
-      event.preventDefault();
-      break;
-    case 'Escape':
-      this.leave();
-      event.preventDefault();
-      break;
+      return true;
     case 'Ctrl-S': // Ctrl+S for saving.
       this.exportSelection();
-      event.preventDefault();
-      break;
+      return true;
     case 'Ctrl-P': // Ctrl+P for printing.
       window.print();
-      event.preventDefault();
-      break;
+      return true;
   }
+  return false;
 };
 
 /**

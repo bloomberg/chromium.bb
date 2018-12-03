@@ -22,6 +22,7 @@
     <script src="../js/views/camera/recordtime.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
+    <script src="../js/views/settings.js"></script>
     <script src="../js/views/warning.js"></script>
     <script src="../js/nav.js"></script>
     <script src="../js/main.js"></script>
@@ -37,8 +38,7 @@
         <div id="preview-focus">
           <object id="preview-focus-aim" type="image/svg+xml"
                   data="../images/camera_focus_aim.svg"
-                  tabindex="-1" hidden>
-          </object>
+                  tabindex="-1" hidden></object>
         </div>
       </div>
       <div class="actions-group buttons circle">
@@ -78,8 +78,22 @@
       </div>
       <div class="centered-overlay" id="camera-mode"></div>
     </div>
+    <div id="settings">
+      <div class="menu">
+        <div class="menu-header buttons circle">
+          <button class="icon" id="settings-back" tabindex="0"
+                  i18n-aria-label="backButton"></button>
+          <div i18n-content="settingsButton"></div>
+        </div>
+        <div class="menu-item buttons circle" id="settings-help">
+          <div class="icon"></div>
+          <div i18n-content="helpButton"></div>
+          <button tabindex="0" i18n-aria-label="helpButton"></button>
+        </div>
+      </div>
+    </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="browser" role="listbox" i18n-label="galleryImages">
+    <div id="browser" role="listbox" i18n-aria-label="galleryImages">
       <div class="padder">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>
@@ -102,8 +116,10 @@
       <div id="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
         <div id="dialog-msg"></div>
         <div id="dialog-buttons">
-          <button id="dialog-negative-button" tabindex="0"></button>
-          <button id="dialog-positive-button" tabindex="0"></button>
+          <button id="dialog-negative-button" tabindex="0"
+                  i18n-content="dialogCancelButton"></button>
+          <button id="dialog-positive-button" tabindex="0"
+                  i18n-content="dialogOKButton"></button>
         </div>
       </div>
     </div>

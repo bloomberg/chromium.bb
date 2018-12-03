@@ -336,8 +336,8 @@ cca.views.Browser.prototype.setSelectedIndex = function(index) {
 /**
  * @override
  */
-cca.views.Browser.prototype.onKeyPressed = function(event) {
-  switch (cca.util.getShortcutIdentifier(event)) {
+cca.views.Browser.prototype.handlingKey = function(key) {
+  switch (key) {
     case 'Right':
       if (this.pictures.length) {
         var leadIndex = this.lastSelectedIndex();
@@ -347,8 +347,7 @@ cca.views.Browser.prototype.onKeyPressed = function(event) {
           this.setSelectedIndex(Math.max(0, leadIndex - 1));
         }
       }
-      event.preventDefault();
-      return;
+      return true;
     case 'Left':
       if (this.pictures.length) {
         var leadIndex = this.lastSelectedIndex();
@@ -359,22 +358,18 @@ cca.views.Browser.prototype.onKeyPressed = function(event) {
               Math.min(this.pictures.length - 1, leadIndex + 1));
         }
       }
-      event.preventDefault();
-      return;
+      return true;
     case 'End':
       if (this.pictures.length)
         this.setSelectedIndex(0);
-      event.preventDefault();
-      return;
+      return true;
     case 'Home':
       if (this.pictures.length)
         this.setSelectedIndex(this.pictures.length - 1);
-      event.preventDefault();
-      return;
+      return true;
   }
-
-  // Call the base view for unhandled keys.
-  cca.views.GalleryBase.prototype.onKeyPressed.apply(this, arguments);
+  // Call the gallery-base view for unhandled keys.
+  return cca.views.GalleryBase.prototype.handlingKey.apply(this, arguments);
 };
 
 /**

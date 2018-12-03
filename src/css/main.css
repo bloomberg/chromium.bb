@@ -415,6 +415,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 }
 
 #camera,
+#settings,
 #browser,
 #dialog,
 #warning {
@@ -428,18 +429,24 @@ body.mode-switching:not(.capturing) #camera-mode {
   visibility: hidden;
 }
 
+#settings {
+  /* Delay visibility hidden for menu sliding-out. */
+  transition: opacity 100ms, visibility 100ms;
+}
+
 body.camera #camera,
+body.settings #settings,
 body.browser #browser,
 body.dialog #dialog,
 body.warning #warning {
   opacity: 1;
   visibility: visible;
+  transition: opacity 100ms;
 }
 
-body.camera #camera,
-body.browser #browser,
-body.dialog #dialog {
-  transition: opacity 100ms;
+body.settings .options-group,
+body.settings #switch-device {
+  opacity: 0;
 }
 
 #camera,
@@ -747,6 +754,65 @@ body.capturing.grid #preview-grid-vertical {
   100% {
     opacity: 0;
   }
+}
+
+#settings .menu {
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  min-width: 360px;
+  opacity: 0.9;
+  -webkit-transform: translateX(-100%);
+  transition: -webkit-transform 150ms ease-in;
+}
+
+body.settings #settings .menu {
+  -webkit-transform: translateX(0);
+}
+
+.menu-header,
+.menu-item {
+  flex-shrink: 0;
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 16px;
+  height: 64px;
+  color: #f1f3f4;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.menu-header {
+  height: 72px;
+  color: white;
+  font-size: 20px;
+}
+
+.menu-header .icon,
+.menu-item .icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin-right: 4px;
+}
+
+.menu-item.buttons {
+  pointer-events: auto;
+}
+
+.menu-item.buttons button {
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+}
+
+#settings-back {
+  background-image: url(../images/settings_button_back.svg);
 }
 
 #warning,

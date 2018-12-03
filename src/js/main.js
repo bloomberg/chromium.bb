@@ -29,6 +29,12 @@ cca.App = function(aspectRatio) {
       this.model_, this.onWindowResize_.bind(this));
 
   /**
+   * @type {cca.views.Settings}
+   * @private
+   */
+  this.settingsView_ = new cca.views.Settings();
+
+  /**
    * @type {cca.views.Browser}
    * @private
    */
@@ -65,16 +71,35 @@ cca.App = function(aspectRatio) {
   window.addEventListener('resize', this.onWindowResize_.bind(this, null));
 
   document.title = chrome.i18n.getMessage('name');
+  this.setupI18nElements_();
+};
+
+/**
+ * Sets up i18n messages on elements by i18n attributes.
+ * @private
+ */
+cca.App.prototype.setupI18nElements_ = function() {
+  var getElements = (attr) => document.querySelectorAll('[' + attr + ']');
+  var getMessage = (element, attr) => chrome.i18n.getMessage(
+      element.getAttribute(attr));
+  var setAriaLabel = (element, attr) => element.setAttribute(
+      'aria-label', getMessage(element, attr));
+
+  getElements('i18n-content').forEach(
+      (element) => element.textContent = getMessage(element, 'i18n-content'));
+  getElements('i18n-aria-label').forEach(
+      (element) => setAriaLabel(element, 'i18n-aria-label'));
+  cca.tooltip.setup(getElements('i18n-label')).forEach(
+      (element) => setAriaLabel(element, 'i18n-label'));
 };
 
 /**
  * Starts the app by preparing views/model and opening the camera-view.
  */
 cca.App.prototype.start = function() {
-  cca.util.setupElementsAria();
-  cca.tooltip.setup();
   cca.nav.setup([
     this.cameraView_,
+    this.settingsView_,
     this.browserView_,
     this.warningView_,
     this.dialogView_,
@@ -160,15 +185,11 @@ cca.App.prototype.onWindowResize_ = function(aspectRatio) {
  */
 cca.App.prototype.onKeyPressed_ = function(event) {
   cca.tooltip.hide(); // Hide shown tooltip on any keypress.
-  if (cca.util.getShortcutIdentifier(event) == 'BrowserBack') {
-    chrome.app.window.current().minimize();
-    return;
-  }
   cca.nav.onKeyPressed(event);
 };
 
 /**
- * @type {cca.App} Singleton of the Camera object.
+ * @type {cca.App} Singleton of the App object.
  * @private
  */
 cca.App.instance_ = null;

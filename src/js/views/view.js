@@ -17,9 +17,11 @@ cca.views = cca.views || {};
 /**
  * Base controller of a view for views' navigation sessions (cca.nav).
  * @param {string} selector Selector text of the view's root element.
+ * @param {boolean=} dismissByEsc Enable dismissible by Esc-key.
+ * @param {boolean=} dismissByBkgndClick Enable dismissible by background-click.
  * @constructor
  */
-cca.views.View = function(selector) {
+cca.views.View = function(selector, dismissByEsc, dismissByBkgndClick) {
   /**
    * @type {HTMLElement}
    * @private
@@ -31,6 +33,17 @@ cca.views.View = function(selector) {
    * @private
    */
   this.session_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.dismissByEsc_ = dismissByEsc;
+
+  if (dismissByBkgndClick) {
+    this.rootElement_.addEventListener('click',
+        (event) => event.target == this.rootElement_ && this.leave());
+  }
 };
 
 cca.views.View.prototype = {
@@ -40,10 +53,30 @@ cca.views.View.prototype = {
 };
 
 /**
- * Handles key pressed events.
- * @param {Event} event Key event.
+ * Hook of the subclass for handling the key.
+ * @param {string} key Key to be handled.
+ * @return {boolean} Whether the key has been handled or not.
  */
-cca.views.View.prototype.onKeyPressed = function(event) {
+cca.views.View.prototype.handlingKey = function(key) {
+  return false;
+};
+
+/**
+ * Handles the pressed key.
+ * @param {string} key Key to be handled.
+ * @return {boolean} Whether the key has been handled or not.
+ */
+cca.views.View.prototype.onKeyPressed = function(key) {
+  if (this.handlingKey(key)) {
+    return true;
+  } else if (key == 'Ctrl-V') {
+    cca.toast.show(chrome.runtime.getManifest().version);
+    return true;
+  } else if (this.dismissByEsc_ && key == 'Escape') {
+    this.leave();
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -59,7 +92,7 @@ cca.views.View.prototype.layout = function() {
 };
 
 /**
- * Hook called when entering the view.
+ * Hook of the subclass for entering the view.
  * @param {...*} args Optional rest parameters for entering the view.
  */
 cca.views.View.prototype.entering = function(...args) {
@@ -86,7 +119,7 @@ cca.views.View.prototype.enter = function(...args) {
 };
 
 /**
- * Hook called when leaving the view.
+ * Hook of the subclass for leaving the view.
  * @param {*=} condition Optional condition for leaving the view.
  * @return {boolean} Whether able to leaving the view or not.
  */
