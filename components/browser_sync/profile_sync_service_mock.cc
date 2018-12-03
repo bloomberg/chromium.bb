@@ -11,9 +11,6 @@ namespace browser_sync {
 ProfileSyncServiceMock::ProfileSyncServiceMock(InitParams init_params)
     : ProfileSyncService(std::move(init_params)) {}
 
-ProfileSyncServiceMock::ProfileSyncServiceMock(InitParams* init_params)
-    : ProfileSyncServiceMock(std::move(*init_params)) {}
-
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {}
 
 bool ProfileSyncServiceMock::IsAuthenticatedAccountPrimary() const {
