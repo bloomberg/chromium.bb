@@ -4,7 +4,7 @@
 
 chrome.runtime.onMessageExternal.addListener(function(
     message, sender, callback) {
-  var kPrimaryAppId = 'faiboenfkkoaedoehhkjmenkhidadgje';
+  var kPrimaryAppId = 'adinpkdaebaiabdlinlbjmenialdhibc';
   var kNotAllowedError = 'Not allowed in kiosk.';
   var kChangingPrimaryAppError = 'Cannot change the primary kiosk app state.';
 

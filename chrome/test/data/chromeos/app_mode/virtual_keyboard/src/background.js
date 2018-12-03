@@ -4,7 +4,7 @@
 
 /**
  * The packed extension resides in
- * ../webstore/downloads/fmmbbdiapbcicajbpkpkdbcgidgppada.crx .
+ * ../webstore/downloads/bbkdjgcbpfjanhcdljmpddplpeehopdo.crx .
  * Update it too whenever this file is updated.
  * See https://developer.chrome.com/extensions/packaging#packaging for how to
  * package.
