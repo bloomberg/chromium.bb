@@ -1101,6 +1101,8 @@ jumbo_split_static_library("browser") {
     "policy/device_management_service_configuration.h",
     "policy/file_selection_dialogs_policy_handler.cc",
     "policy/file_selection_dialogs_policy_handler.h",
+    "policy/homepage_location_policy_handler.cc",
+    "policy/homepage_location_policy_handler.h",
     "policy/javascript_policy_handler.cc",
     "policy/javascript_policy_handler.h",
     "policy/managed_bookmarks_policy_handler.cc",
