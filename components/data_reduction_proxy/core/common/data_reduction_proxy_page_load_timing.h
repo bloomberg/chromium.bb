@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 
 namespace data_reduction_proxy {
 
@@ -28,6 +29,9 @@ struct DataReductionProxyPageLoadTiming {
           parse_blocked_on_script_load_duration,
       const base::Optional<base::TimeDelta>& parse_stop,
       const base::Optional<base::TimeDelta>& page_end_time,
+      const base::Optional<base::TimeDelta>& lite_page_redirect_penalty,
+      const base::Optional<previews::ServerLitePageStatus>&
+          lite_page_redirect_status,
       const base::TimeDelta& navigation_start_to_main_frame_fetch_start,
       int64_t network_bytes,
       int64_t original_network_bytes,
@@ -68,6 +72,12 @@ struct DataReductionProxyPageLoadTiming {
   const base::Optional<base::TimeDelta> parse_stop;
   // Time when the page was ended (navigated away, Chrome backgrounded, etc).
   const base::Optional<base::TimeDelta> page_end_time;
+  // Time spent restarting navigations while attempting a lite page redirect
+  // preview.
+  const base::Optional<base::TimeDelta> lite_page_redirect_penalty;
+  // The status of an attempted lite page redirect preview.
+  const base::Optional<previews::ServerLitePageStatus>
+      lite_page_redirect_status;
   // The duration between the navigation start as reported by the navigation
   // handle, and when the fetchStart of the main page HTML.
   const base::TimeDelta navigation_start_to_main_frame_fetch_start;

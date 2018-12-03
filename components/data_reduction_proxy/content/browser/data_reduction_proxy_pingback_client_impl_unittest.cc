@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -165,6 +166,11 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(5000)) /* page_end_time */,
+        base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+            6000)) /* lite_page_redirect_penalty */,
+        base::Optional<previews::ServerLitePageStatus>(
+            previews::ServerLitePageStatus::
+                kSuccess) /* lite_page_redirect_status */,
         base::TimeDelta::FromMilliseconds(
             100) /* navigation_start_to_main_frame_fetch_start */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
@@ -302,6 +308,13 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(
       timing().page_end_time.value(),
       protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+  EXPECT_EQ(HTTPSLitePagePreviewInfo_Status_SUCCESS,
+            pageload_metrics.https_litepage_info().status());
+  EXPECT_EQ(
+      // base::TimeDelta::FromMilliseconds(6000),
+      timing().lite_page_redirect_penalty.value(),
+      protobuf_parser::DurationToTimeDelta(
+          pageload_metrics.https_litepage_info().navigation_restart_penalty()));
   EXPECT_EQ(timing().navigation_start_to_main_frame_fetch_start,
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.navigation_start_to_main_frame_fetch_start()));
@@ -447,6 +460,12 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(
         timing().page_end_time.value(),
         protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+    EXPECT_EQ(HTTPSLitePagePreviewInfo_Status_SUCCESS,
+              pageload_metrics.https_litepage_info().status());
+    EXPECT_EQ(timing().lite_page_redirect_penalty.value(),
+              protobuf_parser::DurationToTimeDelta(
+                  pageload_metrics.https_litepage_info()
+                      .navigation_restart_penalty()));
     EXPECT_EQ(
         timing().navigation_start_to_main_frame_fetch_start,
         protobuf_parser::DurationToTimeDelta(

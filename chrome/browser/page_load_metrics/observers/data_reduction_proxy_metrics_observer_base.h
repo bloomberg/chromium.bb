@@ -10,10 +10,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 namespace content {
@@ -69,6 +71,12 @@ class DataReductionProxyMetricsObserverBase
 
   void set_data(std::unique_ptr<DataReductionProxyData> data) {
     data_ = std::move(data);
+  }
+  void set_lite_page_redirect_penalty(base::TimeDelta penalty) {
+    lite_page_redirect_penalty_ = penalty;
+  }
+  void set_lite_page_redirect_status(previews::ServerLitePageStatus status) {
+    lite_page_redirect_status_ = status;
   }
   DataReductionProxyData* data() const { return data_.get(); }
   int num_network_resources() const { return num_network_resources_; }
@@ -179,6 +187,12 @@ class DataReductionProxyMetricsObserverBase
   // The duration between the navigation start as reported by the navigation
   // handle, and when the fetchStart of the main page HTML.
   base::TimeDelta navigation_start_to_main_frame_fetch_start_;
+
+  // The penalty of navigating to a lite page redirect preview.
+  base::Optional<base::TimeDelta> lite_page_redirect_penalty_;
+
+  // The status of an attempted lite page redirect preview.
+  base::Optional<previews::ServerLitePageStatus> lite_page_redirect_status_;
 
   base::WeakPtrFactory<DataReductionProxyMetricsObserverBase> weak_ptr_factory_;
 
