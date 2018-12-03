@@ -368,12 +368,24 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
 
 }  // namespace
 
-OverlayAgentAura::OverlayAgentAura(DOMAgentAura* dom_agent)
+OverlayAgentAura* OverlayAgentAura::overlay_agent_aura_ = nullptr;
+
+OverlayAgentAura::OverlayAgentAura(DOMAgentAura* dom_agent, aura::Env* env)
     : OverlayAgent(dom_agent),
       show_size_on_canvas_(false),
-      highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {}
+      highlight_rect_config_(HighlightRectsConfiguration::NO_DRAW) {
+  DCHECK(!overlay_agent_aura_);
+  overlay_agent_aura_ = this;
+  RegisterEnv(env);
+}
 
-OverlayAgentAura::~OverlayAgentAura() {}
+OverlayAgentAura::~OverlayAgentAura() {
+  overlay_agent_aura_ = nullptr;
+}
+
+void OverlayAgentAura::RegisterEnv(aura::Env* env) {
+  envs_.push_back(env);
+}
 
 void OverlayAgentAura::SetPinnedNodeId(int node_id) {
   pinned_id_ = node_id;
@@ -385,11 +397,13 @@ protocol::Response OverlayAgentAura::setInspectMode(
     const String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
-  if (in_mode.compare("searchForNode") == 0)
-    aura::Env::GetInstance()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kSystem);
-  else if (in_mode.compare("none") == 0)
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  if (in_mode.compare("searchForNode") == 0) {
+    for (auto* env : envs_)
+      env->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+  } else if (in_mode.compare("none") == 0) {
+    for (auto* env : envs_)
+      env->RemovePreTargetHandler(this);
+  }
   return protocol::Response::OK();
 }
 
@@ -595,7 +609,8 @@ void OverlayAgentAura::OnKeyEvent(ui::KeyEvent* event) {
 
   // Exit inspect mode by pressing ESC key.
   if (event->key_code() == ui::KeyboardCode::VKEY_ESCAPE) {
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+    for (auto* env : envs_)
+      env->RemovePreTargetHandler(this);
     if (pinned_id_) {
       frontend()->inspectNodeRequested(pinned_id_);
       HighlightNode(pinned_id_, true /* show_size */);

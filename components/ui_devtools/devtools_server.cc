@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "components/ui_devtools/switches.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "services/network/public/cpp/server/http_server_request_info.h"
@@ -26,12 +27,6 @@ namespace ui_devtools {
 namespace {
 const char kChromeDeveloperToolsPrefix[] =
     "chrome-devtools://devtools/bundled/devtools_app.html?ws=";
-
-bool IsDevToolsEnabled(const char* enable_devtools_flag) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      enable_devtools_flag);
-}
-
 }  // namespace
 
 UiDevToolsServer* UiDevToolsServer::devtools_server_ = nullptr;
@@ -92,21 +87,17 @@ UiDevToolsServer::~UiDevToolsServer() {
 // static
 std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViews(
     network::mojom::NetworkContext* network_context,
-    const char* enable_devtools_flag,
-    int default_port) {
-  std::unique_ptr<UiDevToolsServer> server;
-  if (IsDevToolsEnabled(enable_devtools_flag) && !devtools_server_) {
-    // TODO(mhashmi): Change port if more than one inspectable clients
-    int port = GetUiDevToolsPort(enable_devtools_flag, default_port);
-    server = base::WrapUnique(new UiDevToolsServer(port, kUIDevtoolsServerTag));
-    network::mojom::TCPServerSocketPtr server_socket;
-    auto request = mojo::MakeRequest(&server_socket);
-    CreateTCPServerSocket(std::move(request), network_context, port,
-                          kUIDevtoolsServerTag,
-                          base::BindOnce(&UiDevToolsServer::MakeServer,
-                                         server->weak_ptr_factory_.GetWeakPtr(),
-                                         std::move(server_socket)));
-  }
+    int port) {
+  // TODO(mhashmi): Change port if more than one inspectable clients
+  auto server =
+      base::WrapUnique(new UiDevToolsServer(port, kUIDevtoolsServerTag));
+  network::mojom::TCPServerSocketPtr server_socket;
+  auto request = mojo::MakeRequest(&server_socket);
+  CreateTCPServerSocket(std::move(request), network_context, port,
+                        kUIDevtoolsServerTag,
+                        base::BindOnce(&UiDevToolsServer::MakeServer,
+                                       server->weak_ptr_factory_.GetWeakPtr(),
+                                       std::move(server_socket)));
   return server;
 }
 
@@ -155,16 +146,20 @@ UiDevToolsServer::GetClientNamesAndUrls() {
 }
 
 // static
+bool UiDevToolsServer::IsUiDevToolsEnabled(const char* enable_devtools_flag) {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      enable_devtools_flag);
+}
+
+// static
 int UiDevToolsServer::GetUiDevToolsPort(const char* enable_devtools_flag,
                                         int default_port) {
-  DCHECK(IsDevToolsEnabled(enable_devtools_flag));
+  DCHECK(IsUiDevToolsEnabled(enable_devtools_flag));
   std::string switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           enable_devtools_flag);
-  int port;
-  if (!base::StringToInt(switch_value, &port))
-    return default_port;
-  return port;
+  int port = 0;
+  return base::StringToInt(switch_value, &port) ? port : default_port;
 }
 
 void UiDevToolsServer::AttachClient(std::unique_ptr<UiDevToolsClient> client) {

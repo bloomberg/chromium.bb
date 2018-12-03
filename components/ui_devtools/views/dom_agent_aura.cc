@@ -34,31 +34,43 @@ views::Widget* GetWidgetFromWindow(gfx::NativeWindow window) {
 
 }  // namespace
 
-DOMAgentAura::DOMAgentAura() {
-  aura::Env::GetInstance()->AddObserver(this);
+DOMAgentAura* DOMAgentAura::dom_agent_aura_ = nullptr;
+
+DOMAgentAura::DOMAgentAura(aura::Env* env) {
+  DCHECK(!dom_agent_aura_);
+  dom_agent_aura_ = this;
+  RegisterEnv(env);
 }
 
 DOMAgentAura::~DOMAgentAura() {
-  for (aura::Window* window : root_windows_)
+  for (aura::Window* window : roots_)
     window->RemoveObserver(this);
-  aura::Env::GetInstance()->RemoveObserver(this);
+  for (auto* env : envs_)
+    env->RemoveObserver(this);
+  dom_agent_aura_ = nullptr;
+}
+
+void DOMAgentAura::RegisterEnv(aura::Env* env) {
+  envs_.push_back(env);
+  env->AddObserver(this);
+}
+
+void DOMAgentAura::RegisterRootWindow(aura::Window* root) {
+  roots_.push_back(root);
+  root->AddObserver(this);
 }
 
 void DOMAgentAura::OnHostInitialized(aura::WindowTreeHost* host) {
-  aura::Window* window = host->window();
-  root_windows_.push_back(window);
-  window->AddObserver(this);
+  RegisterRootWindow(host->window());
 }
 
 void DOMAgentAura::OnWindowDestroying(aura::Window* window) {
-  root_windows_.erase(
-      std::remove(root_windows_.begin(), root_windows_.end(), window),
-      root_windows_.end());
+  roots_.erase(std::remove(roots_.begin(), roots_.end(), window), roots_.end());
 }
 
 std::vector<UIElement*> DOMAgentAura::CreateChildrenForRoot() {
   std::vector<UIElement*> children;
-  for (aura::Window* window : root_windows_) {
+  for (aura::Window* window : roots_) {
     UIElement* window_element = new WindowElement(window, this, element_root());
     children.push_back(window_element);
   }
