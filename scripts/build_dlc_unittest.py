@@ -11,10 +11,11 @@ import os
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
+
 from chromite.scripts import build_dlc
 
 
-_SRC_DIR = '/tmp/src/'
 _FS_TYPE_SQUASHFS = 'squashfs'
 _FS_TYPE_EXT4 = 'ext4'
 _PRE_ALLOCATED_BLOCKS = 100
@@ -25,7 +26,9 @@ _NAME = 'name'
 
 def GetDLCGenerator(temp_dir, fs_type):
   """Factory method for a DLCGenerator object"""
-  return build_dlc.DLCGenerator(temp_dir, temp_dir, _SRC_DIR, fs_type,
+  src_dir = os.path.join(temp_dir, 'src')
+  osutils.SafeMakedirs(src_dir)
+  return build_dlc.DLCGenerator(temp_dir, temp_dir, src_dir, fs_type,
                                 _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
 
 
@@ -48,26 +51,33 @@ class SquashOwnershipsTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['chown', '-R', '0:0'])
     self.assertCommandContains(['find'])
 
+
 class CreateExt4ImageTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test build_dlc.CreateExt4Image"""
   def testCreateExt4Image(self):
     """Test that command is run with correct parameters."""
+    copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')
+
     GetDLCGenerator(self.tempdir, _FS_TYPE_EXT4).CreateExt4Image()
     self.assertCommandContains(['/sbin/mkfs.ext4', '-b', '4096', '-O',
                                 '^has_journal'])
     self.assertCommandContains(['mount', '-o', 'loop,rw'])
-    self.assertCommandContains(['cp', '-a', _SRC_DIR])
     self.assertCommandContains(['umount'])
     self.assertCommandContains(['/sbin/e2fsck', '-y', '-f'])
     self.assertCommandContains(['/sbin/resize2fs', '-M'])
-
+    copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
+                                          partial_mock.HasString('root'))
 
 class CreateSquashfsImageTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test build_dlc.CreateImageSquashfs"""
   def testCreateSquashfsImage(self):
     """Test that commands are run with correct parameters."""
+    copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')
+
     GetDLCGenerator(self.tempdir, _FS_TYPE_SQUASHFS).CreateSquashfsImage()
     self.assertCommandContains(['mksquashfs', '-4k-align', '-noappend'])
+    copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
+                                          partial_mock.HasString('root'))
 
 
 class GetImageloaderJsonContentTest(cros_test_lib.TestCase):

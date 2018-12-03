@@ -107,7 +107,8 @@ class DLCGenerator(object):
       osutils.SafeMakedirs(dlc_root_dir)
       try:
         # Copy DLC files over to the image.
-        cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, dlc_root_dir])
+        osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+
         self.SquashOwnerships(mount_point)
       finally:
         # Unmount the ext4 image.
@@ -124,8 +125,8 @@ class DLCGenerator(object):
       squashfs_root = os.path.join(temp_dir, 'squashfs-root')
       dlc_root_dir = os.path.join(squashfs_root, self._DLC_ROOT_DIR)
       osutils.SafeMakedirs(dlc_root_dir)
+      osutils.CopyDirContents(self.src_dir, dlc_root_dir)
 
-      cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, dlc_root_dir])
       self.SquashOwnerships(squashfs_root)
 
       cros_build_lib.RunCommand(['mksquashfs', squashfs_root, self.dest_image,
