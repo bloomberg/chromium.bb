@@ -10,6 +10,9 @@ perf bots and browser tests in the waterfall.
 > Note: This configuration applies specifically to Chromium developer builds.
 > Chrome branded / official builds do not use these definitions.
 
+> Note: This configuration is NOT used for content_browsertests or other test
+> targets based on content_shell.
+
 ## Config File Format
 
 ```json
