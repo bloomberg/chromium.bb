@@ -17410,6 +17410,8 @@ Called by update_net_error_codes.py.-->
   <int value="1295" label="INPUTMETHODPRIVATE_GETSETTING"/>
   <int value="1296" label="INPUTMETHODPRIVATE_SETSETTING"/>
   <int value="1297" label="FILEMANAGERPRIVATEINTERNAL_UNSHAREPATHWITHCROSTINI"/>
+  <int value="1298"
+      label="PASSWORDSPRIVATE_RECORDPASSWORDSPAGEACCESSINSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32262,6 +32264,15 @@ from previous Chrome versions.
   <int value="9" label="FAILED_STORE_DATA">
     Could not store new password data for supervised user.
   </int>
+</enum>
+
+<enum name="ManagePasswordsReferrer">
+  <int value="0" label="Chrome Settings"/>
+  <int value="1" label="Manage Passwords Bubble"/>
+  <int value="2" label="Password Context Manu"/>
+  <int value="3" label="Password Dropdown"/>
+  <int value="4" label="Password Generation Confirmation"/>
+  <int value="5" label="Profile Chooser"/>
 </enum>
 
 <enum name="ManifestFetchResultType">

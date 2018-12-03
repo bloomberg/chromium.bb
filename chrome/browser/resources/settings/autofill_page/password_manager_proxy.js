@@ -34,6 +34,11 @@ class PasswordManagerProxy {
   getSavedPasswordList(callback) {}
 
   /**
+   * Log that the Passwords page was accessed from the Chrome Settings WebUI.
+   */
+  recordPasswordsPageAccessInSettings() {}
+
+  /**
    * Should remove the saved password and notify that the list has changed.
    * @param {number} id The id for the password entry being removed.
    *     No-op if |id| is not in the list.
@@ -160,6 +165,11 @@ class PasswordManagerImpl {
   /** @override */
   getSavedPasswordList(callback) {
     chrome.passwordsPrivate.getSavedPasswordList(callback);
+  }
+
+  /** @override */
+  recordPasswordsPageAccessInSettings() {
+    chrome.passwordsPrivate.recordPasswordsPageAccessInSettings();
   }
 
   /** @override */

@@ -79,6 +79,12 @@ chrome.passwordsPrivate.ExceptionEntry;
 chrome.passwordsPrivate.PasswordExportProgress;
 
 /**
+ * Function that logs that the Passwords page was accessed from the Chrome
+ * Settings WebUI.
+ */
+chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
+
+/**
  * Removes the saved password corresponding to |loginPair|. If no saved password
  * for this pair exists, this function is a no-op.
  * @param {number} id The id for the password entry being removed.
