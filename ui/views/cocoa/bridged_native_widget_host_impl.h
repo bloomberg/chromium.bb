@@ -268,6 +268,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool GetWindowFrameTitlebarHeight(bool* override_titlebar_height,
                                     float* titlebar_height) override;
   void OnFocusWindowToolbar() override;
+  bool ValidateUserInterfaceItem(
+      int32_t command,
+      views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result)
+      override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -299,6 +303,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void GetAccessibilityTokens(const std::vector<uint8_t>& window_token,
                               const std::vector<uint8_t>& view_token,
                               GetAccessibilityTokensCallback callback) override;
+  void ValidateUserInterfaceItem(
+      int32_t command,
+      ValidateUserInterfaceItemCallback callback) override;
 
   // DialogObserver:
   void OnDialogChanged() override;

@@ -19,6 +19,7 @@ namespace views_bridge_mac {
 namespace mojom {
 class BridgedNativeWidget;
 class CreateWindowParams;
+class ValidateUserInterfaceItemResult;
 }  // namespace mojom
 }  // namespace views_bridge_mac
 
@@ -62,6 +63,12 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
   // Handle "Move focus to the window toolbar" shortcut.
   virtual void OnFocusWindowToolbar() {}
+
+  // Allows subclasses to override the behavior for
+  // -[NSUserInterfaceValidations validateUserInterfaceItem].
+  virtual void ValidateUserInterfaceItem(
+      int32_t command,
+      views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {}
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;

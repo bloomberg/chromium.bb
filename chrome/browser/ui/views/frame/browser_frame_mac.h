@@ -53,6 +53,10 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   ~BrowserFrameMac() override;
 
   // Overridden from views::NativeWidgetMac:
+  void ValidateUserInterfaceItem(
+      int32_t command,
+      views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result)
+      override;
   void PopulateCreateWindowParams(
       const views::Widget::InitParams& widget_params,
       views_bridge_mac::mojom::CreateWindowParams* params) override;

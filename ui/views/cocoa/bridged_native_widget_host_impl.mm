@@ -892,6 +892,14 @@ void BridgedNativeWidgetHostImpl::OnFocusWindowToolbar() {
   native_widget_mac_->OnFocusWindowToolbar();
 }
 
+bool BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
+    int32_t command,
+    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result) {
+  *out_result = views_bridge_mac::mojom::ValidateUserInterfaceItemResult::New();
+  native_widget_mac_->ValidateUserInterfaceItem(command, out_result->get());
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
@@ -1018,6 +1026,14 @@ void BridgedNativeWidgetHostImpl::GetAccessibilityTokens(
   id element_id = GetNativeViewAccessible();
   std::move(callback).Run(
       getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
+}
+
+void BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
+    int32_t command,
+    ValidateUserInterfaceItemCallback callback) {
+  views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+  ValidateUserInterfaceItem(command, &result);
+  std::move(callback).Run(std::move(result));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
