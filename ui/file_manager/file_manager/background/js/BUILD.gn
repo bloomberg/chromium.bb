@@ -334,6 +334,22 @@ js_library("media_import_handler") {
     "../../common/js:importer_common",
     "../../common/js:metrics",
   ]
+  externs_list = [ "//ui/file_manager/externs/background/import_runner.js" ]
+}
+
+js_unittest("media_import_handler_unittest") {
+  deps = [
+    ":media_import_handler",
+    ":mock_drive_sync_handler",
+    ":mock_media_scanner",
+    ":mock_progress_center",
+    ":mock_volume_manager",
+    ":test_import_history",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:test_importer_common",
+  ]
 }
 
 js_library("mock_media_scanner") {
@@ -499,6 +515,7 @@ js_unit_tests("unit_tests") {
     ":file_operation_handler_unittest",
     ":file_operation_manager_unittest",
     ":import_history_unittest",
+    ":media_import_handler_unittest",
     ":media_scanner_unittest",
     ":task_queue_unittest",
     ":volume_manager_unittest",

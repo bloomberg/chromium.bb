@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {!MockFileOperationManager} */
-var progressCenter;
+'use strict';
 
-/** @type {!TestMediaScanner} */
-var mediaScanner;
+/** @type {!MockProgressCenter} */
+var progressCenter;
 
 /** @type {!importer.MediaImportHandler} */
 var mediaImporter;
@@ -14,11 +13,8 @@ var mediaImporter;
 /** @type {!importer.TestImportHistory} */
 var importHistory;
 
-/** @param {!importer.DispositionChecker.CheckerFunction} */
+/** @type {!importer.DispositionChecker.CheckerFunction} */
 var dispositionChecker;
-
-/** @type {!VolumeInfo} */
-var drive;
 
 /** @type {!MockCopyTo} */
 var mockCopier;
@@ -32,8 +28,10 @@ var destinationFactory;
 /** @type {!MockDriveSyncHandler} */
 var driveSyncHandler;
 
-var chrome;
-
+/**
+ * Mock metrics.
+ * @type {!Object}
+ */
 window.metrics = {
   recordSmallCount: function() {},
   recordUserAction: function() {},
@@ -41,63 +39,75 @@ window.metrics = {
   recordBoolean: function() {},
 };
 
+/**
+ * Mock Chrome APIs
+ * @type {!Object}
+ */
+var mockChrome;
+
+// Set up the test components.
 function setUp() {
+  // Mock loadTimeData strings.
   window.loadTimeData.getString = id => id;
-  // Set up mock chrome APIs.
-  chrome = {
+
+  // Setup mock chrome APIs.
+  mockChrome = {
     power: {
       requestKeepAwakeWasCalled: false,
       requestKeepAwakeStatus: false,
       requestKeepAwake: function() {
-        chrome.power.requestKeepAwakeWasCalled = true;
-        chrome.power.requestKeepAwakeStatus = true;
+        mockChrome.power.requestKeepAwakeWasCalled = true;
+        mockChrome.power.requestKeepAwakeStatus = true;
       },
       releaseKeepAwake: function() {
-        chrome.power.requestKeepAwakeStatus = false;
+        mockChrome.power.requestKeepAwakeStatus = false;
       }
     },
     fileManagerPrivate: {
-      setEntryTag: function() {}
-    }
+      setEntryTag: function() {},
+    },
   };
+
+  installMockChrome(mockChrome);
   new MockCommandLinePrivate();
-  importer.setupTestLogger();
 
-  progressCenter = new MockProgressCenter();
-
-  // Replaces fileOperationUtil.copyTo with test function.
+  // Replace fileOperationUtil.copyTo with mock test function.
   mockCopier = new MockCopyTo();
 
+  // Create and install MockVolumeManager.
   var volumeManager = new MockVolumeManager();
-  drive = volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE);
-  // Create fake parented and non-parented roots.
-  drive.fileSystem.populate([
-    '/root/',
-    '/other/'
-  ]);
-
   MockVolumeManager.installMockSingleton(volumeManager);
 
-  importHistory = new importer.TestImportHistory();
+  // Add fake parented and non-parented roots: /root/ and /other/.
+  var driveVolumeType = VolumeManagerCommon.VolumeType.DRIVE;
+  var driveVolumeInfo = /** @type {!VolumeInfo} */
+      (volumeManager.getCurrentProfileVolumeInfo(driveVolumeType));
+  var driveFileSystem =
+      /** @type {!MockFileSystem} */ (driveVolumeInfo.fileSystem);
+  driveFileSystem.populate(['/root/', '/other/']);
 
-  // This is the default disposition checker used by mediaImporter.
-  // Tests can replace this at runtime if they want specialized behaviors.
+  // Setup a default disposition checker. Tests can replace it at runtime
+  // if they need specialized disposition check behavior.
   dispositionChecker = function() {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
 
-  mediaScanner = new TestMediaScanner();
+  // Setup MediaImporter.
+  progressCenter = new MockProgressCenter();
+  importHistory = new importer.TestImportHistory();
+  driveSyncHandler = new MockDriveSyncHandler();
+  importer.setupTestLogger();
+  mediaImporter = new importer.MediaImportHandler(
+      progressCenter, importHistory, dispositionChecker, driveSyncHandler);
+
+  // Setup the copy destination.
   destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
-  driveSyncHandler = new MockDriveSyncHandler();
-
-  mediaImporter = new importer.MediaImportHandler(
-      progressCenter, importHistory, function(entry, destination) {
-        return dispositionChecker(entry, destination);
-      }, driveSyncHandler);
 }
 
+/**
+ * Tests media imports.
+ */
 function testImportMedia(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -113,36 +123,40 @@ function testImportMedia(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
   reportPromise(
-      whenImportDone.then(
-        function() {
-          var copiedEntries = destinationFileSystem.root.getAllChildren();
-          assertEquals(media.length, copiedEntries.length);
-        }),
+      whenImportDone.then(function() {
+        var mockDirectoryEntry =
+            /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+        var copiedEntries = mockDirectoryEntry.getAllChildren();
+        assertEquals(media.length, copiedEntries.length);
+      }),
       callback);
 
   scanResult.finalize();
 }
 
+/**
+ * Tests media import duplicate detection.
+ */
 function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
   var DUPLICATED_FILE_PATH_1 = '/DCIM/photos0/duplicated_1.jpg';
   var DUPLICATED_FILE_PATH_2 = '/DCIM/photos0/duplicated_2.jpg';
@@ -171,46 +185,51 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
   reportPromise(
       whenImportDone.then(
           function() {
             // Only the new file should be copied.
-            var copiedEntries = destinationFileSystem.root.getAllChildren();
+            var mockDirectoryEntry =
+                /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+            var copiedEntries = mockDirectoryEntry.getAllChildren();
             assertEquals(1, copiedEntries.length);
             assertEquals(ORIGINAL_FILE_DEST_PATH, copiedEntries[0].fullPath);
-            importHistory.assertCopied(media[1],
-                                       importer.Destination.GOOGLE_DRIVE);
+            var mockFileEntry = /** @type {!MockFileEntry} */ (media[1]);
+            importHistory.assertCopied(
+                mockFileEntry, importer.Destination.GOOGLE_DRIVE);
             // The 2 duplicated files should be marked as imported.
-            [media[0], media[2]].forEach(
-                /** @param {!FileEntry} entry */
-                function(entry) {
-                  importHistory.assertImported(
-                      entry, importer.Destination.GOOGLE_DRIVE);
-                });
+            [media[0], media[2]].forEach(function(entry) {
+              entry = /** @type {!MockFileEntry} */ (entry);
+              importHistory.assertImported(
+                  entry, importer.Destination.GOOGLE_DRIVE);
+            });
           }), callback);
 
   scanResult.finalize();
 }
 
+/**
+ * Tests media import uses encoded URLs.
+ */
 function testImportMedia_EmploysEncodedUrls(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/Mom and Dad.jpg',
@@ -222,40 +241,41 @@ function testImportMedia_EmploysEncodedUrls(callback) {
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
 
-  var promise = new Promise(
-      function(resolve, reject) {
+  var promise =
+      new Promise(function(resolve, reject) {
         importTask.addObserver(
             /**
              * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
+             * @param {Object=} opt_task
              */
-            function(updateType, task) {
+            function(updateType, opt_task) {
               switch (updateType) {
                 case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve(destinationFileSystem.root.getAllChildren());
+                  resolve(/** @type {!MockDirectoryEntry} */
+                          (destinationFileSystem.root).getAllChildren());
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
                   reject('Task failed :(');
                   break;
               }
             });
-      })
-      .then(
-        function(copiedEntries) {
-          var expected = 'Mom%20and%20Dad.jpg';
-          var url = copiedEntries[0].toURL();
-          assertTrue(url.length > expected.length);
-          var actual = url.substring(url.length - expected.length);
-          assertEquals(expected, actual);
-        });
+      }).then(function(copiedEntries) {
+        var expected = 'Mom%20and%20Dad.jpg';
+        var url = copiedEntries[0].toURL();
+        assertTrue(url.length > expected.length);
+        var actual = url.substring(url.length - expected.length);
+        assertEquals(expected, actual);
+      });
 
   reportPromise(promise, callback);
 
   scanResult.finalize();
 }
 
-// Verifies that when files with duplicate names are imported, that they don't
-// overwrite one another.
+/**
+ * Tests that when files with duplicate names are imported, that they don't
+ * overwrite one another.
+ */
 function testImportMediaWithDuplicateFilenames(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -271,37 +291,41 @@ function testImportMediaWithDuplicateFilenames(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
   // Verify that we end up with 6, and not 3, destination entries.
   reportPromise(
-      whenImportDone.then(
-        function() {
-          var copiedEntries = destinationFileSystem.root.getAllChildren();
-          assertEquals(media.length, copiedEntries.length);
-        }),
+      whenImportDone.then(function() {
+        var mockDirectoryEntry =
+            /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+        var copiedEntries = mockDirectoryEntry.getAllChildren();
+        assertEquals(media.length, copiedEntries.length);
+      }),
       callback);
 
   scanResult.finalize();
 }
 
+/**
+ * Tests that active media imports keep chrome.power awake.
+ */
 function testKeepAwakeDuringImport(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -317,40 +341,44 @@ function testKeepAwakeDuringImport(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              // Assert that keepAwake is set while the task is active.
-              assertTrue(chrome.power.requestKeepAwakeStatus);
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          // Assert that keepAwake is set while the task is active.
+          assertTrue(mockChrome.power.requestKeepAwakeStatus);
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
   reportPromise(
-      whenImportDone.then(
-        function() {
-          assertTrue(chrome.power.requestKeepAwakeWasCalled);
-          assertFalse(chrome.power.requestKeepAwakeStatus);
-          var copiedEntries = destinationFileSystem.root.getAllChildren();
-          assertEquals(media.length, copiedEntries.length);
-        }),
+      whenImportDone.then(function() {
+        assertTrue(mockChrome.power.requestKeepAwakeWasCalled);
+        assertFalse(mockChrome.power.requestKeepAwakeStatus);
+        var mockDirectoryEntry =
+            /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+        var copiedEntries = mockDirectoryEntry.getAllChildren();
+        assertEquals(media.length, copiedEntries.length);
+      }),
       callback);
 
   scanResult.finalize();
 }
 
+/**
+ * Tests that media imports update import history.
+ */
 function testUpdatesHistoryAfterImport(callback) {
   var entries = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -369,45 +397,46 @@ function testUpdatesHistoryAfterImport(callback) {
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
 
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
-  var promise = whenImportDone.then(
-      function() {
-        mockCopier.copiedFiles.forEach(
-            /** @param {!MockCopyTo.CopyInfo} copy */
-            function(copy) {
-              importHistory.assertCopied(
-                  copy.source, importer.Destination.GOOGLE_DRIVE);
-            });
-        dupeFiles.forEach(
-            /** @param {!FileEntry} entry */
-            function(entry) {
-              importHistory.assertImported(
-                  entry, importer.Destination.GOOGLE_DRIVE);
-            });
-      });
+  var promise = whenImportDone.then(function() {
+    mockCopier.copiedFiles.forEach(
+        /** @param {!MockCopyTo.CopyInfo} copy */
+        function(copy) {
+          var mockFileEntry = /** @type {!MockFileEntry} */ (copy.source);
+          importHistory.assertCopied(
+              mockFileEntry, importer.Destination.GOOGLE_DRIVE);
+        });
+    dupeFiles.forEach(function(entry) {
+      var mockFileEntry = /** @type {!MockFileEntry} */ (entry);
+      importHistory.assertImported(
+          mockFileEntry, importer.Destination.GOOGLE_DRIVE);
+    });
+  });
 
   scanResult.finalize();
   reportPromise(promise, callback);
 }
 
+/**
+ * Tests that media imports tag entries after import.
+ */
 function testTagsEntriesAfterImport(callback) {
   var entries = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -419,28 +448,28 @@ function testTagsEntriesAfterImport(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              switch (updateType) {
-                case importer.TaskQueue.UpdateType.COMPLETE:
-                  resolve();
-                  break;
-                case importer.TaskQueue.UpdateType.ERROR:
-                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-                  break;
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          switch (updateType) {
+            case importer.TaskQueue.UpdateType.COMPLETE:
+              resolve();
+              break;
+            case importer.TaskQueue.UpdateType.ERROR:
+              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+              break;
+          }
+        });
+  });
 
   var taggedEntries = [];
   // Replace chrome.fileManagerPrivate.setEntryTag with a listener.
-  chrome.fileManagerPrivate.setEntryTag = function(entry) {
+  mockChrome.fileManagerPrivate.setEntryTag = function(entry) {
     taggedEntries.push(entry);
   };
 
@@ -454,7 +483,9 @@ function testTagsEntriesAfterImport(callback) {
   scanResult.finalize();
 }
 
-// Tests that cancelling an import works properly.
+/**
+ * Tests cancelling a media import.
+ */
 function testImportCancellation(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
@@ -473,19 +504,19 @@ function testImportCancellation(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportCancelled = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              if (updateType === importer.TaskQueue.UpdateType.CANCELED) {
-                resolve();
-              }
-            });
-      });
+
+  var whenImportCancelled = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          if (updateType === importer.TaskQueue.UpdateType.CANCELED) {
+            resolve();
+          }
+        });
+  });
 
   // Simulate cancellation after the expected number of copies is done.
   var copyCount = 0;
@@ -500,19 +531,22 @@ function testImportCancellation(callback) {
   });
 
   reportPromise(
-      whenImportCancelled.then(
-        function() {
-          var copiedEntries = destinationFileSystem.root.getAllChildren();
-          assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
-        }),
+      whenImportCancelled.then(function() {
+        var mockDirectoryEntry =
+            /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+        var copiedEntries = mockDirectoryEntry.getAllChildren();
+        assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
+      }),
       callback);
 
   scanResult.finalize();
 }
 
+/**
+ * Tests media imports with errors.
+ */
 function testImportWithErrors(callback) {
-
-  // Quiet the logger just in this test where we expect errors.
+  // Quieten the logger just in this test, since we expect errors.
   // Elsewhere, it's better for errors to be seen by test authors.
   importer.setupTestLogger().quiet();
 
@@ -533,19 +567,19 @@ function testImportWithErrors(callback) {
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
-  var whenImportDone = new Promise(
-      function(resolve, reject) {
-        importTask.addObserver(
-            /**
-             * @param {!importer.TaskQueue.UpdateType} updateType
-             * @param {!importer.TaskQueue.Task} task
-             */
-            function(updateType, task) {
-              if (updateType === importer.TaskQueue.UpdateType.COMPLETE) {
-                resolve();
-              }
-            });
-      });
+
+  var whenImportDone = new Promise(function(resolve, reject) {
+    importTask.addObserver(
+        /**
+         * @param {!importer.TaskQueue.UpdateType} updateType
+         * @param {Object=} opt_task
+         */
+        function(updateType, opt_task) {
+          if (updateType === importer.TaskQueue.UpdateType.COMPLETE) {
+            resolve();
+          }
+        });
+  });
 
   // Simulate an error after 3 imports.
   var copyCount = 0;
@@ -561,42 +595,43 @@ function testImportWithErrors(callback) {
 
   // Verify that the error didn't result in some files not being copied.
   reportPromise(
-      whenImportDone.then(
-        function() {
-          var copiedEntries = destinationFileSystem.root.getAllChildren();
-          assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
-        }),
+      whenImportDone.then(function() {
+        var mockDirectoryEntry =
+            /** @type {!MockDirectoryEntry} */ (destinationFileSystem.root);
+        var copiedEntries = mockDirectoryEntry.getAllChildren();
+        assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
+      }),
       callback);
 
   scanResult.finalize();
 }
 
 /**
+ * Setup a file system containing the given |fileNames| and return the file
+ * system's entries in an array.
+ *
  * @param {!Array<string>} fileNames
  * @return {!Array<!Entry>}
  */
 function setupFileSystem(fileNames) {
-  // Set up a filesystem with some files.
-  var fileSystem = new MockFileSystem('fake-media-volume');
+  let fileSystem = new MockFileSystem('fake-media-volume');
   fileSystem.populate(fileNames);
-
-  return fileNames.map(
-      function(filename) {
-        return fileSystem.entries[filename];
-      });
+  return fileNames.map((name) => fileSystem.entries[name]);
 }
 
 /**
- * Replaces fileOperationUtil.copyTo with some mock functionality for testing.
+ * Replaces fileOperationUtil.copyTo with a mock for testing.
  * @constructor
  */
 function MockCopyTo() {
   /** @type {!Array<!MockCopyTo.CopyInfo>} */
   this.copiedFiles = [];
 
-  // Replace with test function.
-  fileOperationUtil.copyTo = this.copyTo_.bind(this);
+  // Replace fileOperationUtil.copyTo with our mock test function.
+  fileOperationUtil.copyTo =
+      /** @type {function(*)} */ (this.copyTo_.bind(this));
 
+  /** @private {boolean} */
   this.simulateError_ = false;
 
   this.entryChangedCallback_ = null;
@@ -607,9 +642,9 @@ function MockCopyTo() {
 
 /**
  * @typedef {{
- *   source: source,
- *   destination: parent,
- *   newName: newName
+ *   source: !Entry,
+ *   destination: !DirectoryEntry,
+ *   newName: string,
  * }}
  */
 MockCopyTo.CopyInfo;
@@ -623,14 +658,13 @@ MockCopyTo.prototype.simulateOneError = function() {
 
 /**
  * A mock to replace fileOperationUtil.copyTo.  See the original for details.
- * @param {Entry} source
- * @param {DirectoryEntry} parent
+ * @param {!Entry} source
+ * @param {!DirectoryEntry} parent
  * @param {string} newName
  * @param {function(string, Entry)} entryChangedCallback
  * @param {function(string, number)} progressCallback
  * @param {function(Entry)} successCallback
- * @param {function(DOMError)} errorCallback
- * @return {function()}
+ * @param {function(Error)} errorCallback
  */
 MockCopyTo.prototype.copyTo_ = function(source, parent, newName,
     entryChangedCallback, progressCallback, successCallback, errorCallback) {
@@ -641,22 +675,23 @@ MockCopyTo.prototype.copyTo_ = function(source, parent, newName,
 
   if (this.simulateError_) {
     this.simulateError_ = false;
-    this.errorCallback_(new Error('test error'));
+    var error = new Error('test error');
+    this.errorCallback_(error);
     return;
   }
 
-  // Log the copy, then copy the file.
-  this.copiedFiles.push({
+  // Log the copy details.
+  this.copiedFiles.push(/** @type {!MockCopyTo.CopyInfo} */ ({
     source: source,
     destination: parent,
-    newName: newName
-  });
-  source.copyTo(
-      parent,
-      newName,
-      function(newEntry) {
-        this.entryChangedCallback_(source.toURL(), parent);
-        this.successCallback_(newEntry);
-      }.bind(this),
-      this.errorCallback_.bind(this));
+    newName: newName,
+  }));
+
+  // Copy the file.
+  var copyErrorCallback = /** @type {!function(FileError):*} */
+      (this.errorCallback_.bind(this));
+  source.copyTo(parent, newName, function(newEntry) {
+    this.entryChangedCallback_(source.toURL(), parent);
+    this.successCallback_(newEntry);
+  }.bind(this), copyErrorCallback);
 };
