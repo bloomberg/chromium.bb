@@ -39,6 +39,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   const char* GetClassName() const override;
   void AddedToWidget() override;
   ax::mojom::Role GetAccessibleWindowRole() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   int GetDialogButtons() const override;
   views::FocusTraversable* GetFocusTraversable() override;
   void ChildPreferredSizeChanged(views::View* child) override;
