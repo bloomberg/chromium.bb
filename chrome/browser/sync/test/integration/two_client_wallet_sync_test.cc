@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
@@ -43,6 +44,10 @@ static_assert(sizeof(kLocalBillingAddressId) == sizeof(kLocalBillingAddressId2),
               "|kLocalBillingAddressId2| has to have the right length to be "
               "considered a local guid");
 
+const base::Time kArbitraryDefaultTime = base::Time::FromDoubleT(25);
+const base::Time kLaterTime = base::Time::FromDoubleT(5000);
+const base::Time kEvenLaterTime = base::Time::FromDoubleT(6000);
+
 class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
  public:
   TwoClientWalletSyncTest() : SyncTest(TWO_CLIENT) {}
@@ -54,6 +59,7 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
     if (!SyncTest::SetupSync()) {
       return false;
     }
+    test_clock_.SetNow(kArbitraryDefaultTime);
 
     // Plug in SyncService into PDM so that it can check we use full sync.
     GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
@@ -65,6 +71,8 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
   }
 
  private:
+  autofill::TestAutofillClock test_clock_;
+
   DISALLOW_COPY_AND_ASSIGN(TwoClientWalletSyncTest);
 };
 
@@ -86,9 +94,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
   // Simulate using it -- increase both its use count and use date.
   ASSERT_EQ(1u, card.use_count());
   card.set_use_count(2);
-  base::Time new_use_date = base::Time::Now();
-  ASSERT_NE(new_use_date, card.use_date());
-  card.set_use_date(new_use_date);
+  card.set_use_date(kLaterTime);
   UpdateServerCardMetadata(0, card);
 
   // Wait for the change to propagate.
@@ -97,12 +103,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
   credit_cards = GetServerCreditCards(1);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(2u, credit_cards[0]->use_count());
-  EXPECT_EQ(new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 
   credit_cards = GetServerCreditCards(0);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(2u, credit_cards[0]->use_count());
-  EXPECT_EQ(new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -126,9 +132,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   // Simulate using it -- increase both its use count and use date.
   ASSERT_EQ(1u, card.use_count());
   card.set_use_count(2);
-  base::Time new_use_date = base::Time::Now();
-  ASSERT_NE(new_use_date, card.use_date());
-  card.set_use_date(new_use_date);
+  card.set_use_date(kLaterTime);
   UpdateServerCardMetadata(0, card);
 
   // Simulate going online again.
@@ -142,12 +146,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   credit_cards = GetServerCreditCards(0);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(2u, credit_cards[0]->use_count());
-  EXPECT_EQ(new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 
   credit_cards = GetServerCreditCards(1);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(2u, credit_cards[0]->use_count());
-  EXPECT_EQ(new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -170,9 +174,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   CreditCard card = *credit_cards[0];
   ASSERT_EQ(1u, card.use_count());
   card.set_use_count(3);
-  base::Time lower_new_use_date = base::Time::Now();
-  ASSERT_NE(lower_new_use_date, card.use_date());
-  card.set_use_date(lower_new_use_date);
+  card.set_use_date(kLaterTime);
   UpdateServerCardMetadata(0, card);
 
   credit_cards = GetServerCreditCards(1);
@@ -180,10 +182,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   card = *credit_cards[0];
   ASSERT_EQ(1u, card.use_count());
   card.set_use_count(2);
-  base::Time higher_new_use_date = base::Time::Now();
-  ASSERT_NE(higher_new_use_date, card.use_date());
-  ASSERT_LT(lower_new_use_date, higher_new_use_date);
-  card.set_use_date(higher_new_use_date);
+  card.set_use_date(kEvenLaterTime);
   UpdateServerCardMetadata(1, card);
 
   // Simulate going online again.
@@ -198,11 +197,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   credit_cards = GetServerCreditCards(0);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(3u, credit_cards[0]->use_count());
-  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
   credit_cards = GetServerCreditCards(1);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(3u, credit_cards[0]->use_count());
-  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
@@ -223,9 +222,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
   // Simulate using it -- increase both its use count and use date.
   ASSERT_EQ(1u, address.use_count());
   address.set_use_count(2);
-  base::Time new_use_date = base::Time::Now();
-  ASSERT_NE(new_use_date, address.use_date());
-  address.set_use_date(new_use_date);
+  address.set_use_date(kLaterTime);
   UpdateServerAddressMetadata(0, address);
 
   // Wait for the change to propagate.
@@ -234,12 +231,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
   server_addresses = GetServerProfiles(1);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(2u, server_addresses[0]->use_count());
-  EXPECT_EQ(new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 
   server_addresses = GetServerProfiles(0);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(2u, server_addresses[0]->use_count());
-  EXPECT_EQ(new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -262,9 +259,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   // Simulate using it -- increase both its use count and use date.
   ASSERT_EQ(1u, address.use_count());
   address.set_use_count(2);
-  base::Time new_use_date = base::Time::Now();
-  ASSERT_NE(new_use_date, address.use_date());
-  address.set_use_date(new_use_date);
+  address.set_use_date(kLaterTime);
   UpdateServerAddressMetadata(0, address);
 
   // Simulate going online again.
@@ -278,12 +273,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   server_addresses = GetServerProfiles(1);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(2u, server_addresses[0]->use_count());
-  EXPECT_EQ(new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 
   server_addresses = GetServerProfiles(0);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(2u, server_addresses[0]->use_count());
-  EXPECT_EQ(new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -305,9 +300,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   AutofillProfile address = *server_addresses[0];
   ASSERT_EQ(1u, address.use_count());
   address.set_use_count(3);
-  base::Time lower_new_use_date = base::Time::Now();
-  ASSERT_NE(lower_new_use_date, address.use_date());
-  address.set_use_date(lower_new_use_date);
+  address.set_use_date(kLaterTime);
   UpdateServerAddressMetadata(0, address);
 
   server_addresses = GetServerProfiles(1);
@@ -315,10 +308,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   address = *server_addresses[0];
   ASSERT_EQ(1u, address.use_count());
   address.set_use_count(2);
-  base::Time higher_new_use_date = base::Time::Now();
-  ASSERT_NE(higher_new_use_date, address.use_date());
-  ASSERT_LT(lower_new_use_date, higher_new_use_date);
-  address.set_use_date(higher_new_use_date);
+  address.set_use_date(kEvenLaterTime);
   UpdateServerAddressMetadata(1, address);
 
   // Simulate going online again.
@@ -333,11 +323,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   server_addresses = GetServerProfiles(0);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(3u, server_addresses[0]->use_count());
-  EXPECT_EQ(higher_new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, server_addresses[0]->use_date());
   server_addresses = GetServerProfiles(1);
   EXPECT_EQ(1U, server_addresses.size());
   EXPECT_EQ(3u, server_addresses[0]->use_count());
-  EXPECT_EQ(higher_new_use_date, server_addresses[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, server_addresses[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -455,9 +445,7 @@ IN_PROC_BROWSER_TEST_P(
   CreditCard card = *credit_cards[0];
   ASSERT_EQ(kDefaultBillingAddressID, card.billing_address_id());
   card.set_billing_address_id(kLocalBillingAddressId);
-  base::Time lower_new_use_date = base::Time::Now();
-  ASSERT_NE(lower_new_use_date, card.use_date());
-  card.set_use_date(lower_new_use_date);
+  card.set_use_date(kLaterTime);
   // We treat the corner-case of merging data after initial sync (with
   // use_count==1) differently, set use-count to a higher value.
   card.set_use_count(2);
@@ -468,10 +456,7 @@ IN_PROC_BROWSER_TEST_P(
   card = *credit_cards[0];
   ASSERT_EQ(kDefaultBillingAddressID, card.billing_address_id());
   card.set_billing_address_id(kLocalBillingAddressId2);
-  base::Time higher_new_use_date = base::Time::Now();
-  ASSERT_NE(higher_new_use_date, card.use_date());
-  ASSERT_LT(lower_new_use_date, higher_new_use_date);
-  card.set_use_date(higher_new_use_date);
+  card.set_use_date(kEvenLaterTime);
   // We treat the corner-case of merging data after initial sync (with
   // use_count==1) differently, set use-count to a higher value.
   card.set_use_count(2);
@@ -489,11 +474,11 @@ IN_PROC_BROWSER_TEST_P(
   credit_cards = GetServerCreditCards(0);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(kLocalBillingAddressId2, credit_cards[0]->billing_address_id());
-  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
   credit_cards = GetServerCreditCards(1);
   EXPECT_EQ(1U, credit_cards.size());
   EXPECT_EQ(kLocalBillingAddressId2, credit_cards[0]->billing_address_id());
-  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+  EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
 }
 
 IN_PROC_BROWSER_TEST_P(
