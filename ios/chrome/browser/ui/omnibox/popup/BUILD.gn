@@ -59,6 +59,7 @@ source_set("popup_internal") {
     "//ios/chrome/app/theme:theme",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:util",
     "//net",
