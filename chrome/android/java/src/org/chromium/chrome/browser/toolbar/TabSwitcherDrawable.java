@@ -17,7 +17,6 @@ import android.text.TextPaint;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.Locale;
@@ -110,10 +109,6 @@ public class TabSwitcherDrawable extends TintedDrawable {
     }
 
     private String getTabCountString() {
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
-            return "M";
-        }
         if (mTabCount <= 0) {
             return "";
         } else if (mTabCount > 99) {
