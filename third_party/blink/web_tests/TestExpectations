@@ -5755,4 +5755,4 @@ crbug.com/910263 [ Mac ] fonts/cursive.html [ Pass Crash Failure ]
 crbug.com/910263 [ Mac ] svg/text/ligature-queries.html [ Pass Crash Failure ]
 
 #Sheriff 2018-12-03
-crbug.com/910846 [ Win ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/078.html [ Failure Pass ]
+crbug.com/910846 [ Win ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/078.html [ Failure Pass Timeout ]
