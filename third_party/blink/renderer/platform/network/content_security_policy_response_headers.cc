@@ -37,7 +37,7 @@ ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
     : ContentSecurityPolicyResponseHeaders(
           response.HttpHeaderFields(),
           SchemeRegistry::SchemeSupportsWasmEvalCSP(
-              response.Url().Protocol())) {}
+              response.CurrentRequestUrl().Protocol())) {}
 
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
     const HTTPHeaderMap& headers,

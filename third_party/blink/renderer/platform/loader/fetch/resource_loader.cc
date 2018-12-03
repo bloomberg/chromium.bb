@@ -627,7 +627,8 @@ bool ResourceLoader::WillFollowRedirect(
                               fetch_credentials_mode, *origin);
       }
       if (cors_error) {
-        HandleError(ResourceError(redirect_response.Url(), *cors_error));
+        HandleError(
+            ResourceError(redirect_response.CurrentRequestUrl(), *cors_error));
         return false;
       }
       // If |actualResponse|’s location URL’s origin is not same origin with
@@ -635,9 +636,9 @@ bool ResourceLoader::WillFollowRedirect(
       // origin with |request|’s current url’s origin, then set |request|’s
       // tainted origin flag.
       if (origin &&
-          !SecurityOrigin::AreSameSchemeHostPort(new_url,
-                                                 redirect_response.Url()) &&
-          !origin->CanRequest(redirect_response.Url())) {
+          !SecurityOrigin::AreSameSchemeHostPort(
+              new_url, redirect_response.CurrentRequestUrl()) &&
+          !origin->CanRequest(redirect_response.CurrentRequestUrl())) {
         origin = SecurityOrigin::CreateUniqueOpaque();
         new_request->SetRequestorOrigin(origin);
       }
@@ -650,8 +651,8 @@ bool ResourceLoader::WillFollowRedirect(
     }
   }
 
-  bool cross_origin =
-      !SecurityOrigin::AreSameSchemeHostPort(redirect_response.Url(), new_url);
+  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
+      redirect_response.CurrentRequestUrl(), new_url);
   fetcher_->RecordResourceTimingOnRedirect(resource_.Get(), redirect_response,
                                            cross_origin);
 
@@ -825,7 +826,7 @@ void ResourceLoader::DidReceiveResponse(
       CheckResponseNosniff(request_context, nosniffed_response);
   if (blocked_reason) {
     HandleError(ResourceError::CancelledDueToAccessCheckError(
-        response.Url(), blocked_reason.value()));
+        response.CurrentRequestUrl(), blocked_reason.value()));
     return;
   }
 
@@ -840,7 +841,8 @@ void ResourceLoader::DidReceiveResponse(
       // handle a cross origin request.
       if (!Context().ShouldLoadNewResource(resource_type)) {
         // Cancel the request if we should not trigger a reload now.
-        HandleError(ResourceError::CancelledError(response.Url()));
+        HandleError(
+            ResourceError::CancelledError(response.CurrentRequestUrl()));
         return;
       }
       last_request.SetSkipServiceWorker(true);
@@ -848,27 +850,27 @@ void ResourceLoader::DidReceiveResponse(
       return;
     }
 
-    // If the response is fetched via ServiceWorker, the original URL of the
-    // response could be different from the URL of the request. We check the URL
-    // not to load the resources which are forbidden by the page CSP.
+    // If the response is fetched via ServiceWorker, the URL of the response
+    // could be different from the URL of the request. We check the URL not to
+    // load the resources which are forbidden by the page CSP.
     // https://w3c.github.io/webappsec-csp/#should-block-response
-    const KURL& original_url = response.OriginalURLViaServiceWorker();
-    if (!original_url.IsEmpty()) {
+    const KURL& response_url = response.ResponseUrl();
+    if (!response_url.IsEmpty()) {
       // CanRequest() below only checks enforced policies: check report-only
       // here to ensure violations are sent.
       Context().CheckCSPForRequest(
-          request_context, original_url, options,
+          request_context, response_url, options,
           SecurityViolationReportingPolicy::kReport,
           ResourceRequest::RedirectStatus::kFollowedRedirect);
 
       base::Optional<ResourceRequestBlockedReason> blocked_reason =
           Context().CanRequest(
-              resource_type, initial_request, original_url, options,
+              resource_type, initial_request, response_url, options,
               SecurityViolationReportingPolicy::kReport,
               ResourceRequest::RedirectStatus::kFollowedRedirect);
       if (blocked_reason) {
         HandleError(ResourceError::CancelledDueToAccessCheckError(
-            original_url, blocked_reason.value()));
+            response_url, blocked_reason.value()));
         return;
       }
     }
@@ -880,11 +882,11 @@ void ResourceLoader::DidReceiveResponse(
       !(resource_->IsCacheValidator() && response.HttpStatusCode() == 304)) {
     if (GetCorsFlag()) {
       base::Optional<network::CorsErrorStatus> cors_error = cors::CheckAccess(
-          response.Url(), response.HttpStatusCode(),
+          response.CurrentRequestUrl(), response.HttpStatusCode(),
           response.HttpHeaderFields(),
           initial_request.GetFetchCredentialsMode(), *resource_->GetOrigin());
       if (cors_error) {
-        HandleError(ResourceError(response.Url(), *cors_error));
+        HandleError(ResourceError(response.CurrentRequestUrl(), *cors_error));
         return;
       }
     }
@@ -917,8 +919,10 @@ void ResourceLoader::DidReceiveResponse(
     return;
 
   if (response_to_pass.HttpStatusCode() >= 400 &&
-      !resource_->ShouldIgnoreHTTPStatusCodeErrors())
-    HandleError(ResourceError::CancelledError(response_to_pass.Url()));
+      !resource_->ShouldIgnoreHTTPStatusCodeErrors()) {
+    HandleError(
+        ResourceError::CancelledError(response_to_pass.CurrentRequestUrl()));
+  }
 }
 
 void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
@@ -1209,7 +1213,8 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   if (request_context == mojom::RequestContextType::STYLE &&
       !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
     Context().AddErrorConsoleMessage(
-        "Refused to apply style from '" + response.Url().ElidedString() +
+        "Refused to apply style from '" +
+            response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type + "') " +
             "is not a supported stylesheet MIME type, and strict MIME checking "
             "is enabled.",

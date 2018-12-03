@@ -100,11 +100,11 @@ bool WebURLResponse::IsNull() const {
 }
 
 WebURL WebURLResponse::Url() const {
-  return resource_response_->Url();
+  return resource_response_->CurrentRequestUrl();
 }
 
 void WebURLResponse::SetURL(const WebURL& url) {
-  resource_response_->SetURL(url);
+  resource_response_->SetCurrentRequestUrl(url);
 }
 
 void WebURLResponse::SetConnectionID(unsigned connection_id) {
@@ -356,7 +356,9 @@ void WebURLResponse::SetURLListViaServiceWorker(
 }
 
 WebURL WebURLResponse::OriginalURLViaServiceWorker() const {
-  return resource_response_->OriginalURLViaServiceWorker();
+  if (!resource_response_->WasFetchedViaServiceWorker())
+    return WebURL();
+  return resource_response_->ResponseUrl();
 }
 
 void WebURLResponse::SetMultipartBoundary(const char* bytes, size_t size) {

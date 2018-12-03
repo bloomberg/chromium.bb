@@ -134,11 +134,12 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
                                         MimeTypeCheck mime_type_check_mode) {
   // The content type is really only meaningful for the http:-family & data
   // schemes.
-  bool is_http_family_or_data = response.Url().ProtocolIsInHTTPFamily() ||
-                                response.Url().ProtocolIsData();
+  bool is_http_family_or_data =
+      response.CurrentRequestUrl().ProtocolIsInHTTPFamily() ||
+      response.CurrentRequestUrl().ProtocolIsData();
   if (!is_http_family_or_data &&
-      (response.Url().LastPathComponent().EndsWith(".js") ||
-       response.Url().LastPathComponent().EndsWith(".mjs"))) {
+      (response.CurrentRequestUrl().LastPathComponent().EndsWith(".js") ||
+       response.CurrentRequestUrl().LastPathComponent().EndsWith(".mjs"))) {
     return true;
   }
 
@@ -148,13 +149,14 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
             http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        "Refused to execute script from '" + response.Url().ElidedString() +
-            "' because its MIME type ('" + mime_type +
-            "') is not executable, and "
-            "strict MIME type checking is "
-            "enabled."));
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
+                               "Refused to execute script from '" +
+                                   response.CurrentRequestUrl().ElidedString() +
+                                   "' because its MIME type ('" + mime_type +
+                                   "') is not executable, and "
+                                   "strict MIME type checking is "
+                                   "enabled."));
     return false;
   }
 
@@ -162,8 +164,8 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
   // See:
   // https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-mime-type
 
-  bool same_origin =
-      execution_context->GetSecurityOrigin()->CanRequest(response.Url());
+  bool same_origin = execution_context->GetSecurityOrigin()->CanRequest(
+      response.CurrentRequestUrl());
 
   // For any MIME type, we can do three things: accept/reject it, print a
   // warning into the console, and count it using a use counter.
@@ -190,11 +192,12 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
   if (!allow || warn) {
     const char* msg =
         allow ? "Deprecated: Future versions will refuse" : "Refused";
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        String() + msg + " to execute script from '" +
-            response.Url().ElidedString() + "' because its MIME type ('" +
-            mime_type + "') is not executable."));
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
+                               String() + msg + " to execute script from '" +
+                                   response.CurrentRequestUrl().ElidedString() +
+                                   "' because its MIME type ('" + mime_type +
+                                   "') is not executable."));
   }
   return allow;
 }

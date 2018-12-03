@@ -164,7 +164,7 @@ bool CSSStyleSheetResource::CanUseSheet(const CSSParserContext* parser_context,
   // Though we'll likely change this in the future, for the moment we're going
   // to enforce a file-extension requirement on stylesheets loaded from `file:`
   // URLs and see how far it gets us.
-  KURL sheet_url = GetResponse().Url();
+  KURL sheet_url = GetResponse().CurrentRequestUrl();
   if (sheet_url.IsLocalFile()) {
     if (parser_context) {
       parser_context->Count(WebFeature::kLocalCSSFile);

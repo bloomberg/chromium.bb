@@ -631,14 +631,14 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
   if ((resource->GetType() == ResourceType::kMainResource) &&
-      (IsMainFrame() || IsFirstPartyOrigin(response.Url()))) {
+      (IsMainFrame() || IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
     ParseAndPersistClientHints(response);
   }
 
   LinkLoader::LoadLinksFromHeader(
-      response.HttpHeaderField(http_names::kLink), response.Url(), *GetFrame(),
-      document_, NetworkHintsInterfaceImpl(), resource_loading_policy,
-      LinkLoader::kLoadAll, nullptr);
+      response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
+      *GetFrame(), document_, NetworkHintsInterfaceImpl(),
+      resource_loading_policy, LinkLoader::kLoadAll, nullptr);
 
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(GetFrame(), response,
@@ -647,8 +647,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 
   if (response.IsLegacySymantecCert()) {
     RecordLegacySymantecCertUseCounter(GetFrame(), resource->GetType());
-    GetLocalFrameClient()->ReportLegacySymantecCert(response.Url(),
-                                                    false /* did_fail */);
+    GetLocalFrameClient()->ReportLegacySymantecCert(
+        response.CurrentRequestUrl(), false /* did_fail */);
   }
 
   if (response.IsLegacyTLSVersion()) {
@@ -656,7 +656,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
       // Main resources are counted in DocumentLoader.
       UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
     }
-    GetLocalFrameClient()->ReportLegacyTLSVersion(response.Url());
+    GetLocalFrameClient()->ReportLegacyTLSVersion(response.CurrentRequestUrl());
   }
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
@@ -1366,12 +1366,12 @@ void FrameFetchContext::ParseAndPersistClientHints(
   document_loader_->GetClientHintsPreferences()
       .UpdateFromAcceptClientHintsLifetimeHeader(
           response.HttpHeaderField(http_names::kAcceptCHLifetime),
-          response.Url(), &hints_context);
+          response.CurrentRequestUrl(), &hints_context);
 
   document_loader_->GetClientHintsPreferences()
       .UpdateFromAcceptClientHintsHeader(
-          response.HttpHeaderField(http_names::kAcceptCH), response.Url(),
-          &hints_context);
+          response.HttpHeaderField(http_names::kAcceptCH),
+          response.CurrentRequestUrl(), &hints_context);
 
   // Notify content settings client of persistent client hints.
   TimeDelta persist_duration =
@@ -1381,14 +1381,14 @@ void FrameFetchContext::ParseAndPersistClientHints(
 
   WebEnabledClientHints enabled_client_hints =
       document_loader_->GetClientHintsPreferences().GetWebEnabledClientHints();
-  if (!AllowScriptFromSourceWithoutNotifying(response.Url())) {
+  if (!AllowScriptFromSourceWithoutNotifying(response.CurrentRequestUrl())) {
     // Do not persist client hint preferences if the JavaScript is disabled.
     return;
   }
 
   if (auto* settings_client = GetContentSettingsClient()) {
     settings_client->PersistClientHints(enabled_client_hints, persist_duration,
-                                        response.Url());
+                                        response.CurrentRequestUrl());
   }
 }
 

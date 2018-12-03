@@ -43,7 +43,8 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().Url(), script_resource->SourceText(),
+      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, error_messages);
 }

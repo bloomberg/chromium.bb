@@ -610,7 +610,7 @@ static void* OpenFunc(const char* uri) {
         RawResource::FetchSynchronously(params, document->Fetcher());
     if (!resource->ErrorOccurred()) {
       data = resource->ResourceBuffer();
-      final_url = resource->GetResponse().Url();
+      final_url = resource->GetResponse().CurrentRequestUrl();
     }
   }
 

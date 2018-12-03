@@ -543,7 +543,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   scoped_refptr<SharedBuffer> data;
   if (substitute_data.IsValid()) {
     data = substitute_data.Content();
-    response.SetURL(url);
+    response.SetCurrentRequestUrl(url);
     response.SetMimeType(substitute_data.MimeType());
     response.SetExpectedContentLength(data->size());
     response.SetTextEncodingName(substitute_data.TextEncoding());
@@ -560,7 +560,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     if (!archive_resource)
       return nullptr;
     data = archive_resource->Data();
-    response.SetURL(url);
+    response.SetCurrentRequestUrl(url);
     response.SetMimeType(archive_resource->MimeType());
     response.SetExpectedContentLength(data->size());
     response.SetTextEncodingName(archive_resource->TextEncoding());

@@ -79,25 +79,34 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
 
 ResourceResponse::ResourceResponse() : is_null_(true) {}
 
-ResourceResponse::ResourceResponse(const KURL& url)
-    : url_(url), is_null_(false) {}
+ResourceResponse::ResourceResponse(const KURL& current_request_url)
+    : current_request_url_(current_request_url), is_null_(false) {}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
     default;
 
 bool ResourceResponse::IsHTTP() const {
-  return url_.ProtocolIsInHTTPFamily();
+  return current_request_url_.ProtocolIsInHTTPFamily();
 }
 
-const KURL& ResourceResponse::Url() const {
-  return url_;
+const KURL& ResourceResponse::CurrentRequestUrl() const {
+  return current_request_url_;
 }
 
-void ResourceResponse::SetURL(const KURL& url) {
+void ResourceResponse::SetCurrentRequestUrl(const KURL& url) {
   is_null_ = false;
 
-  url_ = url;
+  current_request_url_ = url;
+}
+
+KURL ResourceResponse::ResponseUrl() const {
+  if (WasFetchedViaServiceWorker()) {
+    if (url_list_via_service_worker_.IsEmpty())
+      return KURL();
+    return url_list_via_service_worker_.back();
+  }
+  return CurrentRequestUrl();
 }
 
 const AtomicString& ResourceResponse::MimeType() const {
@@ -405,12 +414,6 @@ bool ResourceResponse::IsOpaqueResponseFromServiceWorker() const {
   return IsCorsCrossOrigin() && WasFetchedViaServiceWorker();
 }
 
-KURL ResourceResponse::OriginalURLViaServiceWorker() const {
-  if (url_list_via_service_worker_.IsEmpty())
-    return KURL();
-  return url_list_via_service_worker_.back();
-}
-
 AtomicString ResourceResponse::ConnectionInfoString() const {
   std::string connection_info_string =
       net::HttpResponseInfo::ConnectionInfoToString(connection_info_);
@@ -435,7 +438,7 @@ bool ResourceResponse::Compare(const ResourceResponse& a,
                                const ResourceResponse& b) {
   if (a.IsNull() != b.IsNull())
     return false;
-  if (a.Url() != b.Url())
+  if (a.CurrentRequestUrl() != b.CurrentRequestUrl())
     return false;
   if (a.MimeType() != b.MimeType())
     return false;

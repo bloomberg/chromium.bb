@@ -100,7 +100,7 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
   DCHECK(!imports_.IsEmpty());
   document_ = HTMLDocument::Create(
       DocumentInit::CreateWithImportsController(controller_)
-          .WithURL(response.Url()));
+          .WithURL(response.CurrentRequestUrl()));
   document_->OpenForNavigation(kAllowAsynchronousParsing, response.MimeType(),
                                "UTF-8");
 

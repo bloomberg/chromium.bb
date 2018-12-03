@@ -228,8 +228,9 @@ void EventSource::DidReceiveResponse(
   DCHECK(loader_);
 
   resource_identifier_ = identifier;
-  current_url_ = response.Url();
-  event_stream_origin_ = SecurityOrigin::Create(response.Url())->ToString();
+  current_url_ = response.CurrentRequestUrl();
+  event_stream_origin_ =
+      SecurityOrigin::Create(response.CurrentRequestUrl())->ToString();
   int status_code = response.HttpStatusCode();
   bool mime_type_is_valid = response.MimeType() == "text/event-stream";
   bool response_is_valid = status_code == 200 && mime_type_is_valid;

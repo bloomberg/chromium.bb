@@ -129,7 +129,7 @@ class CachedMetadataSenderImpl : public CachedMetadataSender {
 };
 
 CachedMetadataSenderImpl::CachedMetadataSenderImpl(const Resource* resource)
-    : response_url_(resource->GetResponse().Url()),
+    : response_url_(resource->GetResponse().CurrentRequestUrl()),
       response_time_(resource->GetResponse().ResponseTime()),
       resource_type_(resource->GetType()) {
   DCHECK(resource->GetResponse().CacheStorageCacheName().IsNull());
@@ -171,7 +171,7 @@ class ServiceWorkerCachedMetadataSender : public CachedMetadataSender {
 ServiceWorkerCachedMetadataSender::ServiceWorkerCachedMetadataSender(
     const Resource* resource,
     const SecurityOrigin* security_origin)
-    : response_url_(resource->GetResponse().Url()),
+    : response_url_(resource->GetResponse().CurrentRequestUrl()),
       response_time_(resource->GetResponse().ResponseTime()),
       cache_storage_cache_name_(
           resource->GetResponse().CacheStorageCacheName()),
@@ -452,13 +452,13 @@ static double FreshnessLifetime(const ResourceResponse& response,
                                 double response_timestamp) {
 #if !defined(OS_ANDROID)
   // On desktop, local files should be reloaded in case they change.
-  if (response.Url().IsLocalFile())
+  if (response.CurrentRequestUrl().IsLocalFile())
     return 0;
 #endif
 
   // Cache other non-http / non-filesystem resources liberally.
-  if (!response.Url().ProtocolIsInHTTPFamily() &&
-      !response.Url().ProtocolIs("filesystem"))
+  if (!response.CurrentRequestUrl().ProtocolIsInHTTPFamily() &&
+      !response.CurrentRequestUrl().ProtocolIs("filesystem"))
     return std::numeric_limits<double>::max();
 
   // RFC2616 13.2.4
@@ -539,7 +539,7 @@ void Resource::SetResponse(const ResourceResponse& response) {
 
   // Currently we support the metadata caching only for HTTP family.
   if (!GetResourceRequest().Url().ProtocolIsInHTTPFamily() ||
-      !GetResponse().Url().ProtocolIsInHTTPFamily()) {
+      !GetResponse().CurrentRequestUrl().ProtocolIsInHTTPFamily()) {
     cache_handler_.Clear();
     return;
   }
@@ -1021,8 +1021,9 @@ void Resource::ClearRangeRequestHeader() {
 void Resource::RevalidationSucceeded(
     const ResourceResponse& validating_response) {
   SECURITY_CHECK(redirect_chain_.IsEmpty());
-  SECURITY_CHECK(EqualIgnoringFragmentIdentifier(validating_response.Url(),
-                                                 GetResponse().Url()));
+  SECURITY_CHECK(
+      EqualIgnoringFragmentIdentifier(validating_response.CurrentRequestUrl(),
+                                      GetResponse().CurrentRequestUrl()));
   response_.SetResourceLoadTiming(validating_response.GetResourceLoadTiming());
 
   // RFC2616 10.3.5

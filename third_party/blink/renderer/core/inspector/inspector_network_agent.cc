@@ -539,7 +539,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   std::unique_ptr<protocol::Network::Response> response_object =
       protocol::Network::Response::create()
-          .setUrl(UrlWithoutFragment(response.Url()).GetString())
+          .setUrl(UrlWithoutFragment(response.CurrentRequestUrl()).GetString())
           .setStatus(status)
           .setStatusText(status_text)
           .setHeaders(BuildObjectForHeaders(headers_map))
@@ -593,7 +593,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
                ResourceResponse::HTTPVersion::kHTTPVersion_1_1)
         protocol = "http/1.1";
     } else {
-      protocol = response.Url().Protocol();
+      protocol = response.CurrentRequestUrl().Protocol();
     }
   }
   response_object->setProtocol(protocol);
