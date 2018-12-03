@@ -32,6 +32,9 @@ class AX_EXPORT AXNode final {
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
     // See AXTree.
     virtual AXNode* GetFromId(int32_t id) const = 0;
+
+    virtual int32_t GetPosInSet(const AXNode& item) = 0;
+    virtual int32_t GetSetSize(const AXNode& node) = 0;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -186,6 +189,12 @@ class AX_EXPORT AXNode final {
   // PosInSet and SetSize public methods
   int32_t GetPosInSet();
   int32_t GetSetSize();
+  // Finds and returns a pointer to ordered set containing node.
+  AXNode* GetOrderedSet() const;
+  // Helpers for GetPosInSet and GetSetSize.
+  // Returns true if the role of ordered set matches the role of item.
+  // Returns false otherwise.
+  bool SetRoleMatchesItemRole(const AXNode* ordered_set) const;
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
@@ -262,21 +271,6 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
-  // Helpers for GetPosInSet and GetSetSize.
-  // Returns true if the role of parent container matches the role of node.
-  // Returns false otherwise.
-  bool ContainerRoleMatches(AXNode* parent) const;
-  // Returns true if the node's role uses PosInSet and SetSize
-  // Returns false otherwise.
-  bool IsSetSizePosInSetUsedInRole() const;
-  // Finds and returns a pointer to node's container.
-  AXNode* GetContainer() const;
-  // Populates items vector with all nodes within container whose roles match.
-  void PopulateContainerItems(AXNode* container,
-                              AXNode* local_parent,
-                              std::vector<AXNode*>& items) const;
-  // Computes pos_in_set and set_size values for this node.
-  void ComputeSetSizePosInSet(int32_t* out_pos_in_set, int32_t* out_set_size);
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;

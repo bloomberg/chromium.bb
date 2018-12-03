@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/transform.h"
 
@@ -468,6 +469,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
         this, root_->id() != old_root_id, changes);
   }
 
+  // Clear list_info_map_
+  ordered_set_info_map_.clear();
+
   return true;
 }
 
@@ -876,6 +880,135 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
   if (next_negative_internal_node_id_ > 0)
     next_negative_internal_node_id_ = -1;
   return return_value;
+}
+
+// Populates items vector with all items within ordered set whose roles match.
+void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
+                                     const AXNode* local_parent,
+                                     std::vector<const AXNode*>& items) const {
+  // Stop searching current path if roles of local_parent and ordered set match.
+  // Don't compare the container to itself.
+  if (!(ordered_set == local_parent)) {
+    if (local_parent->data().role == ordered_set->data().role)
+      return;
+  }
+
+  for (int i = 0; i < local_parent->child_count(); ++i) {
+    const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
+    // Add child to items if role matches with ordered set's role.
+    if (child->SetRoleMatchesItemRole(ordered_set))
+      items.push_back(child);
+    // Recurse if there is a generic container or is ignored.
+    if (child->data().role == ax::mojom::Role::kGenericContainer ||
+        child->data().role == ax::mojom::Role::kIgnored) {
+      PopulateOrderedSetItems(ordered_set, child, items);
+    }
+  }
+}
+
+// Given an ordered_set, compute pos_in_set and set_size for all of its items
+// and store values in cache.
+void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
+  // Default ordered_set's pos_in_set and set_size to 0.
+  ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
+
+  // Find all items within ordered_set and add to vector.
+  std::vector<const AXNode*> items;
+  PopulateOrderedSetItems(ordered_set, ordered_set, items);
+
+  // Keep track of the number of elements ordered_set has
+  int32_t num_elements = 0;
+
+  // Necessary for calculating set_size.
+  int32_t largest_assigned_set_size = 0;
+
+  // Compute pos_in_set_values.
+  for (size_t i = 0; i < items.size(); ++i) {
+    const AXNode* item = items[i];
+    ordered_set_info_map_[item->id()] = OrderedSetInfo();
+    int32_t pos_in_set_value = 0;
+
+    pos_in_set_value = num_elements + 1;
+
+    // Check if item has a valid kPosInSet assignment, which takes precedence
+    // over previous assignment. Invalid assignments are decreasing or
+    // duplicates, and should be ignored.
+    pos_in_set_value =
+        std::max(pos_in_set_value,
+                 item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+
+    // Assign pos_in_set and update role counts.
+    ordered_set_info_map_[item->id()].pos_in_set = pos_in_set_value;
+    num_elements = pos_in_set_value;
+
+    // Check if kSetSize is assigned and update if it's the largest assigned
+    // kSetSize.
+    if (item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+      largest_assigned_set_size =
+          std::max(largest_assigned_set_size,
+                   item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  }
+
+  // Compute set_size value.
+  // The SetSize of an ordered set (and all of its items) is the maximum of the
+  // following candidate values:
+  // 1. The PosInSet of the last item in the ordered set
+  // 2. The Largest assigned SetSize in the ordered set.
+  // 3. The SetSize assigned within the ordered set.
+  int32_t pos_candidate = num_elements;
+  int32_t largest_set_size_candidate = largest_assigned_set_size;
+  int32_t ordered_set_candidate = 0;
+  if (ordered_set->HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
+    ordered_set_candidate =
+        ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+  }
+  int32_t set_size_value =
+      std::max(std::max(pos_candidate, largest_set_size_candidate),
+               ordered_set_candidate);
+
+  // Assign set_size to ordered set
+  ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+
+  // Assign set_size to items
+  for (size_t j = 0; j < items.size(); ++j) {
+    const AXNode* item = items[j];
+    ordered_set_info_map_[item->id()].set_size = set_size_value;
+  }
+}
+
+// Returns the pos_in_set of item. Looks in ordered_set_info_map_ for cached
+// value. Calculates pos_in_set and set_size for item (and all other items in
+// the same ordered set) if no value is present in the cache.
+// This function is guaranteed to be only called on nodes that can hold
+// pos_in_set values, minimizing the size of the cache.
+int32_t AXTree::GetPosInSet(const AXNode& item) {
+  // If item's id is not in the cache, compute it.
+  if (ordered_set_info_map_.find(item.id()) == ordered_set_info_map_.end())
+    ComputeSetSizePosInSetAndCache(item.GetOrderedSet());
+
+  return ordered_set_info_map_[item.id()].pos_in_set;
+}
+
+// Returns the set_size of node. node could be an ordered set or an item.
+// Looks in ordered_set_info_map_ for cached value. Calculates pos_inset_set
+// and set_size for all nodes in same ordered set if no value is present in the
+// cache.
+// This function is guaranteed to be only called on nodes that can hold
+// set_size values, minimizing the size of the cache.
+int32_t AXTree::GetSetSize(const AXNode& node) {
+  const AXNode* ordered_set;
+
+  // If node's id is not in the cache, compute it.
+  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end()) {
+    // If node is item-like, find its outerlying ordered set
+    if (IsItemLike(node.data().role))
+      ordered_set = node.GetOrderedSet();
+    // If its set-like, then it is the ordered set
+    else
+      ordered_set = &node;
+    ComputeSetSizePosInSetAndCache(ordered_set);
+  }
+  return ordered_set_info_map_[node.id()].set_size;
 }
 
 }  // namespace ui

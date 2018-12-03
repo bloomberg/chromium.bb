@@ -257,6 +257,19 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // conflict with positive-numbered node IDs from tree sources.
   int32_t GetNextNegativeInternalNodeId();
 
+  // Returns the pos_in_set of item. Looks in ordered_set_info_map_ for cached
+  // value. Calculates pos_in_set and set_size for item (and all other items in
+  // the same ordered set) if no value is present in the cache.
+  // This function is guaranteed to be only called on nodes that can hold
+  // pos_in_set values, minimizing the size of the cache.
+  int32_t GetPosInSet(const AXNode& item) override;
+  // Returns the set_size of node. Looks in ordered_set_info_map_ for cached
+  // value. Calculates pos_inset_set and set_size for node (and all other nodes
+  // in the same ordered set) if no value is present in the cache.
+  // This function is guaranteed to be only called on nodes that can hold
+  // set_size values, minimizing the size of the cache.
+  int32_t GetSetSize(const AXNode& node) override;
+
  private:
   friend class AXTableInfoTest;
 
@@ -340,6 +353,27 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // this code to be unit-tested on other platforms (for example, more
   // code sanitizers run on Linux).
   bool enable_extra_mac_nodes_ = false;
+
+  // Contains pos_in_set and set_size data for an AXNode.
+  struct OrderedSetInfo {
+    int32_t pos_in_set;
+    int32_t set_size;
+    OrderedSetInfo() : pos_in_set(0), set_size(0) {}
+    ~OrderedSetInfo() {}
+  };
+
+  // Populates items vector with all items within ordered_set whose roles match.
+  void PopulateOrderedSetItems(const AXNode* ordered_set,
+                               const AXNode* local_parent,
+                               std::vector<const AXNode*>& items) const;
+  // Helper for GetPosInSet and GetSetSize. Computes the pos_in_set and set_size
+  // values of all items in ordered_set and caches those values.
+  void ComputeSetSizePosInSetAndCache(const AXNode* ordered_set);
+
+  // Map from node ID to OrderedSetInfo, if the given node
+  // is an element within an ordered set.
+  // Invalidated every time the tree is updated.
+  mutable std::unordered_map<int32_t, OrderedSetInfo> ordered_set_info_map_;
 };
 
 }  // namespace ui

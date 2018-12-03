@@ -41,6 +41,10 @@ AX_EXPORT bool IsHeadingOrTableHeader(const ax::mojom::Role role);
 // Returns true if the provided role belongs to an image, graphic, canvas, etc.
 AX_EXPORT bool IsImage(const ax::mojom::Role role);
 
+// Returns true if the provided role is item-like, specifically if it can hold
+// pos_in_set and set_size values.
+AX_EXPORT bool IsItemLike(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a link.
 AX_EXPORT bool IsLink(const ax::mojom::Role role);
 
@@ -60,6 +64,10 @@ AX_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a widget that can contain a
 // table or grid row.
 AX_EXPORT bool IsRowContainer(const ax::mojom::Role role);
+
+// Returns true if the provided role is ordered-set like, specifically if it
+// can hold set_size values.
+AX_EXPORT bool IsSetLike(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a table header.
 AX_EXPORT bool IsTableHeader(ax::mojom::Role role);
