@@ -48,7 +48,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private String mStatusMessage;
 
     /** Native pointer to the UIController. */
-    private final long mUiControllerAndroid;
+    private long mUiControllerAndroid;
 
     private UiDelegateHolder mUiDelegateHolder;
 
@@ -89,10 +89,15 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 parameters.get(PARAMETER_USER_EMAIL), activity.getInitialIntent().getExtras());
     }
 
+    @CalledByNative
+    private void onNativeDestroy() {
+        mUiControllerAndroid = 0;
+    }
+
     public void init(UiDelegateHolder delegateHolder, Details details) {
         mUiDelegateHolder = delegateHolder;
         maybeUpdateDetails(details);
-        nativeStart(mUiControllerAndroid, mInitialUrl);
+        if (mUiControllerAndroid != 0) nativeStart(mUiControllerAndroid, mInitialUrl);
     }
 
     @Override
@@ -117,42 +122,45 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
 
     @Override
     public void scrollBy(float distanceXRatio, float distanceYRatio) {
-        nativeScrollBy(mUiControllerAndroid, distanceXRatio, distanceYRatio);
+        if (mUiControllerAndroid != 0) {
+            nativeScrollBy(mUiControllerAndroid, distanceXRatio, distanceYRatio);
+        }
     }
 
     @Override
     public void updateTouchableArea() {
-        nativeUpdateTouchableArea(mUiControllerAndroid);
+        if (mUiControllerAndroid != 0) nativeUpdateTouchableArea(mUiControllerAndroid);
     }
 
     @Override
     public void onScriptSelected(String scriptPath) {
-        nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
+        if (mUiControllerAndroid != 0) nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
 
     @Override
     public void onChoice(byte[] serverPayload) {
-        nativeOnChoice(mUiControllerAndroid, serverPayload);
+        if (mUiControllerAndroid != 0) nativeOnChoice(mUiControllerAndroid, serverPayload);
     }
 
     @Override
     public void onAddressSelected(String guid) {
-        nativeOnAddressSelected(mUiControllerAndroid, guid);
+        if (mUiControllerAndroid != 0) nativeOnAddressSelected(mUiControllerAndroid, guid);
     }
 
     @Override
     public void onCardSelected(String guid) {
-        nativeOnCardSelected(mUiControllerAndroid, guid);
+        if (mUiControllerAndroid != 0) nativeOnCardSelected(mUiControllerAndroid, guid);
     }
 
     @Override
     public void onDetailsAcknowledged(Details displayedDetails, boolean canContinue) {
         mCurrentDetails = displayedDetails;
-        nativeOnShowDetails(mUiControllerAndroid, canContinue);
+        if (mUiControllerAndroid != 0) nativeOnShowDetails(mUiControllerAndroid, canContinue);
     }
 
     @Override
     public String getDebugContext() {
+        if (mUiControllerAndroid == 0) return "";
         return nativeOnRequestDebugContext(mUiControllerAndroid);
     }
 
@@ -167,7 +175,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      * cause crashes.
      */
     void unsafeDestroy() {
-        nativeDestroy(mUiControllerAndroid);
+        if (mUiControllerAndroid != 0) nativeDestroy(mUiControllerAndroid);
     }
 
     @CalledByNative
@@ -286,14 +294,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                     supportedBasicCardNetworks, defaultEmail, (selectedPaymentInformation -> {
                         uiDelegate.closePaymentRequest();
                         if (selectedPaymentInformation.succeed) {
-                            nativeOnGetPaymentInformation(mUiControllerAndroid,
-                                    selectedPaymentInformation.succeed,
-                                    selectedPaymentInformation.card,
-                                    selectedPaymentInformation.address,
-                                    selectedPaymentInformation.payerName,
-                                    selectedPaymentInformation.payerPhone,
-                                    selectedPaymentInformation.payerEmail,
-                                    selectedPaymentInformation.isTermsAndConditionsAccepted);
+                            if (mUiControllerAndroid != 0) {
+                                nativeOnGetPaymentInformation(mUiControllerAndroid,
+                                        selectedPaymentInformation.succeed,
+                                        selectedPaymentInformation.card,
+                                        selectedPaymentInformation.address,
+                                        selectedPaymentInformation.payerName,
+                                        selectedPaymentInformation.payerPhone,
+                                        selectedPaymentInformation.payerEmail,
+                                        selectedPaymentInformation.isTermsAndConditionsAccepted);
+                            }
                         } else {
                             // A failed payment request flow indicates that the UI was either
                             // dismissed or the back button was clicked. In that case we gracefully
@@ -312,7 +322,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     void maybeUpdateDetails(Details newDetails) {
         if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
             // No update on UI needed.
-            nativeOnShowDetails(mUiControllerAndroid, /* canContinue= */ true);
+            if (mUiControllerAndroid != 0) {
+                nativeOnShowDetails(mUiControllerAndroid, /* canContinue= */ true);
+            }
             return;
         }
 
@@ -374,7 +386,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             return;
         }
         if (mAccount == null) {
-            nativeOnAccessToken(mUiControllerAndroid, true, "");
+            if (mUiControllerAndroid != 0) nativeOnAccessToken(mUiControllerAndroid, true, "");
             return;
         }
 
@@ -382,12 +394,14 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 mAccount, AUTH_TOKEN_TYPE, new AccountManagerFacade.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
-                        nativeOnAccessToken(mUiControllerAndroid, true, token);
+                        if (mUiControllerAndroid != 0) {
+                            nativeOnAccessToken(mUiControllerAndroid, true, token);
+                        }
                     }
 
                     @Override
                     public void tokenUnavailable(boolean isTransientError) {
-                        if (!isTransientError) {
+                        if (!isTransientError && mUiControllerAndroid != 0) {
                             nativeOnAccessToken(mUiControllerAndroid, false, "");
                         }
                     }
@@ -406,6 +420,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Choose an account to authenticate as for making RPCs to the backend. */
     private void chooseAccountAsync(@Nullable String accountFromParameter, Bundle extras) {
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+            if (mUiControllerAndroid == 0) return;
             if (accounts.size() == 1) {
                 // If there's only one account, there aren't any doubts.
                 onAccountChosen(accounts.get(0));
