@@ -24,6 +24,9 @@ SurfaceElement::SurfaceElement(const viz::SurfaceId& surface_id,
       frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id_);
   DCHECK(surface);
   surface_bounds_ = gfx::Rect(surface->size_in_pixels());
+  // DOMAgentViz handles all of the Surface events, so it owns all of the
+  // SurfaceElements.
+  set_owns_children(false);
 }
 
 SurfaceElement::~SurfaceElement() = default;

@@ -40,8 +40,8 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
 
  private:
   std::unique_ptr<protocol::DOM::Node> BuildTreeForFrameSink(
-      FrameSinkElement* frame_sink_element,
-      const viz::FrameSinkId& frame_sink_id);
+      UIElement* parent_element,
+      const viz::FrameSinkId& parent_id);
 
   // DOM::Backend:
   protocol::Response enable() override;
@@ -77,11 +77,20 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
   // is preserved.
   void DestroySubtree(UIElement* element);
 
+  // Constructs a new FrameSinkElement with some default arguments, adds it to
+  // |frame_sink_elements_|, and returns its pointer.
+  FrameSinkElement* CreateFrameSinkElement(
+      const viz::FrameSinkId& frame_sink_id,
+      UIElement* parent,
+      bool is_root,
+      bool is_client_connected);
+
   // This is used to track created FrameSinkElements in a FrameSink tree. Every
   // time we register/invalidate a FrameSinkId, create/destroy a FrameSink,
   // register/unregister hierarchy we change this set, because these actions
   // involve deleting and adding elements.
-  base::flat_map<viz::FrameSinkId, FrameSinkElement*> frame_sink_elements_;
+  base::flat_map<viz::FrameSinkId, std::unique_ptr<FrameSinkElement>>
+      frame_sink_elements_;
 
   viz::FrameSinkManagerImpl* frame_sink_manager_;
 
