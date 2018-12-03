@@ -12,8 +12,6 @@ class AccountId;
 
 namespace chromeos {
 
-class UserContext;
-
 // ScreenLockerTester provides a high-level API to test the lock screen. This
 // API is meant to be representation independent.
 class ScreenLockerTester {
@@ -24,15 +22,19 @@ class ScreenLockerTester {
   ScreenLockerTester();
   virtual ~ScreenLockerTester();
 
+  // Synchronously lock the device.
+  void Lock();
+
+  // Injects authenticators that only authenticate with the given password.
+  void SetUnlockPassword(const AccountId& account_id,
+                         const std::string& password);
+
   // Returns true if the screen is locked.
   virtual bool IsLocked() = 0;
 
-  // Injects StubAuthenticator that uses the credentials in |user_context|.
-  virtual void InjectStubUserContext(const UserContext& user_context);
-
-  // Enters and submits the given password.
-  virtual void EnterPassword(const AccountId& account_id,
-                             const std::string& password) = 0;
+  // Enters and submits the given password for the given account.
+  virtual void UnlockWithPassword(const AccountId& account_id,
+                                  const std::string& password) = 0;
 };
 
 }  // namespace chromeos

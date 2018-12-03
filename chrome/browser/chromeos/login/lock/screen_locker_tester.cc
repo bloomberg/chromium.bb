@@ -14,11 +14,17 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
+#include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/stub_authenticator.h"
+#include "chromeos/login/auth/user_context.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/session_manager_types.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -83,8 +89,8 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 
   // ScreenLockerTester:
   bool IsLocked() override { return IsScreenLockerLocked(); }
-  void EnterPassword(const AccountId& account_id,
-                     const std::string& password) override {
+  void UnlockWithPassword(const AccountId& account_id,
+                          const std::string& password) override {
     bool result;
 
     SetPassword(password);
@@ -165,10 +171,11 @@ class MojoScreenLockerTester : public ScreenLockerTester {
     login_screen.IsLockShown(&is_ui_shown);
     return IsScreenLockerLocked() && is_ui_shown;
   }
-  void EnterPassword(const AccountId& account_id,
-                     const std::string& password) override {
+  void UnlockWithPassword(const AccountId& account_id,
+                          const std::string& password) override {
     ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
     login_screen.SubmitPassword(account_id, password);
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -192,8 +199,25 @@ ScreenLockerTester::ScreenLockerTester() = default;
 
 ScreenLockerTester::~ScreenLockerTester() = default;
 
-void ScreenLockerTester::InjectStubUserContext(
-    const UserContext& user_context) {
+void ScreenLockerTester::Lock() {
+  content::WindowedNotificationObserver lock_state_observer(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      content::NotificationService::AllSources());
+  ScreenLocker::Show();
+  if (!IsLocked())
+    lock_state_observer.Wait();
+  ASSERT_TRUE(IsLocked());
+  ASSERT_EQ(session_manager::SessionState::LOCKED,
+            session_manager::SessionManager::Get()->session_state());
+  base::RunLoop().RunUntilIdle();
+}
+
+void ScreenLockerTester::SetUnlockPassword(const AccountId& account_id,
+                                           const std::string& password) {
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           account_id);
+  user_context.SetKey(Key(password));
+
   auto* locker = ScreenLocker::default_screen_locker();
   locker->SetAuthenticatorsForTesting(
       base::MakeRefCounted<StubAuthenticator>(locker, user_context),

@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate_factory.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -25,9 +24,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/session_manager_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
@@ -239,16 +235,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 
 // Screenlock - logged in, screen locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
-  chromeos::ScreenLocker::Show();
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
-  content::WindowedNotificationObserver lock_state_observer(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-  if (!tester->IsLocked())
-    lock_state_observer.Wait();
-  EXPECT_EQ(session_manager::SessionState::LOCKED,
-            session_manager::SessionManager::Get()->session_state());
+  chromeos::ScreenLockerTester::Create()->Lock();
   EXPECT_TRUE(RunExtensionSubtest("users_private", "main.html?getLoginStatus",
                                   kFlagLoadAsComponent))
       << message_;
