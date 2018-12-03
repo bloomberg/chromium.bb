@@ -67,6 +67,7 @@ table_files = \
 	de-de-comp8.ctb \
 	de-de.dis \
 	de-eurobrl6.dis \
+	de-eurobrl6u.dis \
 	de-g0-core.uti \
 	de-g0.utb \
 	de-g1-core.cti \
