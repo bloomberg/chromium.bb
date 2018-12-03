@@ -2380,6 +2380,8 @@ void Document::ViewportDefiningElementDidChange() {
   HTMLBodyElement* body = FirstBodyElement();
   if (!body)
     return;
+  if (body->NeedsReattachLayoutTree())
+    return;
   LayoutObject* layout_object = body->GetLayoutObject();
   if (layout_object && layout_object->IsLayoutBlock()) {
     // When the overflow style for documentElement changes to or from visible,
