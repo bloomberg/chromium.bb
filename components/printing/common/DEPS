@@ -3,3 +3,9 @@ include_rules = [
   "+components/strings/grit",
   "+ui/base/l10n",
 ]
+
+specific_include_rules = {
+  "printer_capabilities_unittest.cc": [
+    "+content/public/test",
+  ],
+}
