@@ -28,10 +28,7 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
   data_.id = id;
 }
 
-AXNode::~AXNode() {
-  if (language_info_)
-    delete language_info_;
-}
+AXNode::~AXNode() = default;
 
 int AXNode::GetUnignoredChildCount() const {
   int count = 0;
@@ -184,15 +181,15 @@ base::string16 AXNode::GetInheritedString16Attribute(
 
 const AXLanguageInfo* AXNode::GetLanguageInfo() {
   if (language_info_)
-    return language_info_;
+    return language_info_.get();
 
   const auto& lang_attr =
       GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
 
   // Promote language attribute to LanguageInfo.
   if (!lang_attr.empty()) {
-    language_info_ = new AXLanguageInfo(this, lang_attr);
-    return language_info_;
+    language_info_.reset(new AXLanguageInfo(this, lang_attr));
+    return language_info_.get();
   }
 
   // Try search for language through parent instead.
@@ -204,8 +201,8 @@ const AXLanguageInfo* AXNode::GetLanguageInfo() {
     return nullptr;
 
   // Cache the results on this node.
-  language_info_ = new AXLanguageInfo(parent_lang_info, this);
-  return language_info_;
+  language_info_.reset(new AXLanguageInfo(parent_lang_info, this));
+  return language_info_.get();
 }
 
 std::string AXNode::GetLanguage() {

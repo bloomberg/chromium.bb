@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <ostream>
 #include <vector>
 
@@ -283,7 +284,7 @@ class AX_EXPORT AXNode final {
   std::vector<AXNode*> children_;
   AXNodeData data_;
 
-  AXLanguageInfo* language_info_;
+  std::unique_ptr<AXLanguageInfo> language_info_;
 
   // Return an object containing information about the languages used.
   // Will walk up tree if needed to determine language.
