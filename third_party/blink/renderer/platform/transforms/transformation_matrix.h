@@ -393,10 +393,20 @@ class PLATFORM_EXPORT TransformationMatrix {
     double perspective_x, perspective_y, perspective_z, perspective_w;
   } DecomposedType;
 
-  WARN_UNUSED_RESULT bool Decompose(DecomposedType&) const;
-  void Recompose(const DecomposedType&);
+  // Decompose 2-D transform matrix into its component parts.
+  typedef struct {
+    double scale_x, scale_y;
+    double skew_xy;
+    double translate_x, translate_y;
+    double angle;
+  } Decomposed2dType;
 
+  WARN_UNUSED_RESULT bool Decompose(DecomposedType&) const;
+  WARN_UNUSED_RESULT bool Decompose2D(Decomposed2dType&) const;
+  void Recompose(const DecomposedType&);
+  void Recompose2D(const Decomposed2dType&);
   void Blend(const TransformationMatrix& from, double progress);
+  void Blend2D(const TransformationMatrix& from, double progress);
 
   bool IsAffine() const {
     return M13() == 0 && M14() == 0 && M23() == 0 && M24() == 0 && M31() == 0 &&
@@ -474,6 +484,8 @@ class PLATFORM_EXPORT TransformationMatrix {
            matrix_[2][0] == 0 && matrix_[2][1] == 0 && matrix_[2][2] == 1 &&
            matrix_[2][3] == 0 && matrix_[3][2] == 0 && matrix_[3][3] == 1;
   }
+
+  bool Is2dTransform() const;
 
   bool IsIntegerTranslation() const;
 
