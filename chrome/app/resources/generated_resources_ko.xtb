@@ -143,6 +143,7 @@
 <translation id="1189418886587279221">기기를 보다 간편하게 사용할 수 있도록 접근성 기능을 사용합니다.</translation>
 <translation id="1190144681599273207">이 파일을 가져오는 데 약 <ph name="FILE_SIZE" />의 모바일 데이터가 사용됩니다.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{컴퓨터에 저장된 파일 1개에 액세스}other{컴퓨터에 저장된 파일 #개에 액세스}}</translation>
+<translation id="1190660338026981543"><ph name="DEVICE_TYPE" />이(가) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 의해 기업 관리에 등록되었습니다.</translation>
 <translation id="119092896208640858">이 기기에서만 인터넷 사용 기록을 삭제하고 Google 계정에서는 유지하려면 <ph name="BEGIN_LINK" />로그아웃<ph name="END_LINK" />하세요.</translation>
 <translation id="1193273168751563528">관리 세션 시작</translation>
 <translation id="1195076408729068893">Smart Lock을 시작하려면 비밀번호를 입력하세요. 다음번에는 휴대전화를 사용하여 <ph name="DEVICE_TYPE" />을(를) 잠금 해제할 수 있습니다.</translation>
@@ -361,7 +362,6 @@
     네트워크 관리자에게 문의하여 프록시 서버가 작동하는지
     확인하세요. 프록시 서버를 사용하지 않으려면
     <ph name="LINK_START" />프록시 설정<ph name="LINK_END" />을 조정하세요.</translation>
-<translation id="1511388193702657997">웹 비밀번호를 저장하도록 제안</translation>
 <translation id="1512210426710821809">이 작업을 실행취소하려면 <ph name="IDS_SHORT_PRODUCT_OS_NAME" />을(를) 다시 설치해야 합니다</translation>
 <translation id="151501797353681931">Safari에서 가져온 북마크</translation>
 <translation id="1521442365706402292">인증서 관리</translation>
@@ -370,7 +370,6 @@
 <translation id="1524563461097350801">아니요</translation>
 <translation id="1525740877599838384">위치 파악에 Wi-Fi만 사용</translation>
 <translation id="1526560967942511387">제목 없는 문서</translation>
-<translation id="1529116897397289129">저장한 카드가 여기에 표시됩니다.</translation>
 <translation id="1529891865407786369">전원</translation>
 <translation id="1529899284660134226">공유 파일 및 폴더 관리</translation>
 <translation id="1530838837447122178">마우스 및 터치패드 기기 설정 열기</translation>
@@ -391,7 +390,7 @@
 <translation id="1556537182262721003">확장 프로그램 디렉토리를 프로필로 이동하지 못했습니다.</translation>
 <translation id="155865706765934889">터치패드</translation>
 <translation id="1564414980088536597">이 이미지는 사용할 수 없습니다. 다른 이미지를 선택하세요.</translation>
-<translation id="1566007797958927729">Chromebook 설정이 완료되면 언제든지 어시스턴트 버튼을 누르거나 "Ok Google"이라고 말하여(사용 설정한 경우) 어시스턴트로부터 도움을 받으세요.</translation>
+<translation id="1566007797958927729">Chromebook 설정이 완료되면 언제든지 어시스턴트 버튼을 누르거나 "Ok Google"이라고 말하여(사용 설정한 경우) 어시스턴트로부터 도움을 받을 수 있습니다.</translation>
 <translation id="1566049601598938765">웹사이트</translation>
 <translation id="1567387640189251553">마지막으로 비밀번호를 입력한 후 다른 키보드가 연결되었습니다. 키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
 <translation id="1567750922576943685">신원을 인증하면 개인정보를 보호하는 데 도움이 됩니다.</translation>
@@ -781,7 +780,6 @@
 <translation id="2148219725039824548">공유를 마운트하는 중에 오류가 발생했습니다. 네트워크에서 지정된 공유를 찾을 수 없습니다.</translation>
 <translation id="2148756636027685713">포맷을 마쳤습니다.</translation>
 <translation id="2148892889047469596">전송 탭</translation>
-<translation id="2149850907588596975">비밀번호 및 양식</translation>
 <translation id="2150139952286079145">대상 검색</translation>
 <translation id="2150661552845026580">'<ph name="EXTENSION_NAME" />'을(를) 추가하시겠습니까?</translation>
 <translation id="2151576029659734873">잘못된 탭 색인을 입력했습니다.</translation>
@@ -1671,6 +1669,7 @@
 <translation id="3532844647053365774"><ph name="HOST" />에서 마이크를 사용하려고 합니다</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 오디오 음소거</translation>
 <translation id="3534879087479077042">관리 대상 사용자란?</translation>
+<translation id="353547388688256996"><ph name="NUMBER_FILES" /> 여는 중</translation>
 <translation id="3538066758857505094">Linux를 제거하는 동안 문제가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="354060433403403521">AC 어댑터</translation>
 <translation id="354068948465830244">사이트 데이터를 읽고 변경할 수 있음</translation>
@@ -2275,7 +2274,6 @@
 <translation id="4482194545587547824">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google에서 인터넷 사용 기록을 사용할 수 있습니다.</translation>
 <translation id="4495419450179050807">이 페이지에 표시하지 않음</translation>
 <translation id="449938344715680828">종료하려면 |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| 키를 누른 후 |<ph name="ACCELERATOR3" />| 키를 누르세요.</translation>
-<translation id="4499718683476608392">신용카드 자동 완성을 사용하여 클릭 한 번으로 양식을 작성합니다.</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" />이(가) 다운되었습니다</translation>
 <translation id="450099669180426158">느낌표 아이콘</translation>
 <translation id="4501530680793980440">삭제 확인</translation>
@@ -2585,7 +2583,6 @@
 <translation id="4971412780836297815">완료되면 열기</translation>
 <translation id="4972129977812092092">프린터 수정</translation>
 <translation id="4972164225939028131">잘못된 비밀번호</translation>
-<translation id="497287958838527945">Google Pay에 사용되는 신용카드 및 주소</translation>
 <translation id="4973307593867026061">프린터 추가</translation>
 <translation id="4973523518332075481">이름은 <ph name="MAX_LENGTH" />자 이하여야 합니다</translation>
 <translation id="4974733135013075877">종료 및 자녀 보호 잠금</translation>
@@ -2719,6 +2716,7 @@
 <translation id="5185386675596372454">'<ph name="EXTENSION_NAME" />'의 최신 버전에 더 많은 권한이 필요하여 사용이 중지되었습니다.</translation>
 <translation id="5187295959347858724">이제 <ph name="SHORT_PRODUCT_NAME" />에 로그인되었으며 북마크와 방문기록, 기타 설정이 내 Google 계정과 동기화됩니다.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" />(<ph name="DEVICE" />)</translation>
+<translation id="51918995459521422"><ph name="ORIGIN" />에서 여러 파일을 다운로드하려고 합니다.</translation>
 <translation id="5204673965307125349">기기를 파워워시한 후 다시 시도해 주세요.</translation>
 <translation id="5204967432542742771">비밀번호 입력</translation>
 <translation id="5206215183583316675">'<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
@@ -3036,6 +3034,7 @@
 <translation id="5627086634964711283">또한 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="5627676517703583263">Chrome으로 편리하게 탐색</translation>
 <translation id="562935524653278697">관리자가 북마크, 방문 기록, 비밀번호 및 기타 설정의 동기화를 사용 중지했습니다.</translation>
+<translation id="5632566673632479864"><ph name="EMAIL" /> 계정이 더 이상 기본 계정으로 허용되지 않습니다. 이 계정은 <ph name="DOMAIN" />에 의해 관리되므로 북마크, 방문 기록, 비밀번호 및 기타 설정이 기기에서 삭제됩니다.</translation>
 <translation id="563535393368633106">액세스하기 전에 확인(권장)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" />을(를) 사용하려면 먼저 몇 초 뒤에 자동으로 열리는 <ph name="LINK_START" />네트워크 로그인 페이지로 이동<ph name="LINK_END" />해야 합니다. 네트워크 로그인 페이지가 자동으로 열리지 않으면 네트워크를 사용할 수 없습니다.</translation>
 <translation id="5637476008227280525">모바일 데이터 사용</translation>
@@ -3111,7 +3110,6 @@
 <translation id="5752453871435543420">Chrome OS 클라우드 백업</translation>
 <translation id="5756163054456765343">고객센터(H)</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />을(를) 통해 인쇄하려고 전송한 문서를 <ph name="APP_NAME" />에서 읽을 수 있습니다.</translation>
-<translation id="5762172915276660232">신용카드 설정</translation>
 <translation id="5763315388120433852">네트워크 파일 공유를 설정하거나 관리합니다.</translation>
 <translation id="5763751966069581670">USB 기기를 찾을 수 없습니다.</translation>
 <translation id="5764483294734785780">오디오를 다른 이름으로 저장...(&amp;V)</translation>
@@ -3324,6 +3322,7 @@
 <translation id="6057381398996433816">모션 센서 및 조도 센서 사용이 차단된 사이트입니다.</translation>
 <translation id="6059652578941944813">인증서 계층</translation>
 <translation id="6059925163896151826">USB 기기</translation>
+<translation id="60628369828239652"><ph name="FILE_NAME" /> 파일 여는 중</translation>
 <translation id="6064217302520318294">화면 잠금</translation>
 <translation id="6065289257230303064">인증서 대상 디렉토리 속성</translation>
 <translation id="6068338049763724728">원격 등록 사용</translation>
@@ -3431,6 +3430,7 @@
 <translation id="6220413761270491930">확장 프로그램 로드 중 오류</translation>
 <translation id="6223447490656896591">맞춤 이미지:</translation>
 <translation id="6224481128663248237">포맷을 마쳤습니다.</translation>
+<translation id="622537739776246443">프로필이 삭제됩니다</translation>
 <translation id="6225475702458870625">데이터 연결을 <ph name="PHONE_NAME" />에서 사용할 수 있습니다.</translation>
 <translation id="6226777517901268232">비공개 키 파일(선택사항)</translation>
 <translation id="6227235786875481728">이 파일은 재생할 수 없습니다.</translation>
@@ -3531,6 +3531,7 @@
 <translation id="6380143666419481200">동의 및 계속</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">사이트에서 쿠키 데이터를 저장하고 읽을 수 있음</translation>
+<translation id="6386099547750337629">이를 예상하지 못한 경우 지원팀에 문의하세요.</translation>
 <translation id="6388429472088318283">언어 검색</translation>
 <translation id="6390799748543157332">이 창에서 보는 페이지는 브라우저 기록에 나타나지 않으며 열려 있는 모든 게스트 창을 닫은 후에도 컴퓨터에 쿠키와 같은 다른 흔적을 남기지 않습니다. 하지만 다운로드한 파일은 모두 저장됩니다.</translation>
 <translation id="6390994422085833176">설정 후 동기화 및 맞춤설정 기능 검토</translation>
@@ -4994,7 +4995,6 @@
 <translation id="8637542770513281060">컴퓨터에 보안 모듈이 있습니다. 보안 모듈은 Chrome OS에서 여러 중요한 보안 기능을 구현하는 데 사용됩니다. 자세히 알아보려면 Chromebook 고객센터의 다음 페이지를 방문하세요. https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">시스템 업데이트 사용가능. 다운로드 준비 중…</translation>
 <translation id="8639047128869322042">유해한 소프트웨어 확인 중...</translation>
-<translation id="8639963783467694461">자동 완성 설정</translation>
 <translation id="8642171459927087831">액세스 토큰</translation>
 <translation id="8642947597466641025">텍스트 확대</translation>
 <translation id="8643418457919840804">계속하려면 옵션을 선택하세요.</translation>
@@ -5415,6 +5415,7 @@
 <translation id="981121421437150478">오프라인</translation>
 <translation id="983511809958454316">이 기능은 VR에서 지원되지 않습니다</translation>
 <translation id="984275831282074731">결제 수단</translation>
+<translation id="984401732412731005">폴더 $1개가 Linux와 공유되었습니다.</translation>
 <translation id="98515147261107953">가로 방향</translation>
 <translation id="987897973846887088">사용 가능한 이미지 없음</translation>
 <translation id="988978206646512040">암호를 빈칸으로 두어서는 안 됩니다.</translation>

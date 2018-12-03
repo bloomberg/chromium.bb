@@ -230,14 +230,6 @@
 <translation id="1523774894176285446">Navegador alternativo a iniciar para os Websites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
-<translation id="1532965933165453786">Permite ativar ou desativar a Transição rápida.
-      Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo.
-      Para poder utilizar a Transição rápida, esta definição e a propriedade ONC por rede têm de estar ativadas.
-      Depois de definida, a Transição rápida mantém-se até a política ser alterada de modo a desativá-la.
-
-      Se a política não estiver definida, a Transição rápida não é utilizada.
-      Se estiver definida como falsa, a Transição rápida não é utilizada.
-      Se estiver definida como verdadeira, a Transição rápida é utilizada quando o ponto de acesso sem fios for compatível.</translation>
 <translation id="1541170838458414064">Restringir tamanho da página de impressão</translation>
 <translation id="1553684822621013552">Quando esta política está definida como verdadeira, o ARC está ativado para o utilizador
       (sujeito a verificações adicionais das definições da política. O ARC continua

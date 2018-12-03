@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">ഇവന്റ് സ്‌ട്രീം ഫിൽട്ടറുകൾ അദൃശ്യമാക്കുക</translation>
 <translation id="1088219014394087294">ശീർഷകങ്ങളൊന്നുമില്ല.</translation>
 <translation id="1106741348836243114">ശബ്‌ദ ഫീഡ്‌ബാക്ക് (ഇയർകോൺസ്) ഓണാക്കുക അല്ലെങ്കിൽ ഓഫാക്കുക.</translation>
-<translation id="1108651818222110612">ഉപശീർഷകം</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="1124771028211010580">നിലവിലുള്ള ഡിസ്‌പ്ലേ ശൈലി വശങ്ങളിൽ കാണിക്കുന്ന തരത്തിലാണ്.</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">സൂപ്പർസ്ക്രിപ്‌റ്റ് അവസാനിച്ചു</translation>
 <translation id="2749275490991666823">ചെക്കുചെയ്‌തത്</translation>
 <translation id="27527859628328957">ഫോക്കസ് ചെയ്യാനാകുന്ന അടുത്ത ഇനത്തിലേക്ക് പോകുക</translation>
-<translation id="276402504937943375">ഉള്ളടക്ക പട്ടിക</translation>
 <translation id="2770781857296573485">ഗ്രൂപ്പ് പര്യവേക്ഷണം നൽകുക</translation>
 <translation id="2777845298774924149">പുറത്തുകടന്നു</translation>
 <translation id="2781264313200109999">ലിങ്ക് ആരംഭം</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">വീഡിയോ</translation>
 <translation id="4764692524839457597">ഡിഫോൾട്ട്</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="481165870889056555">നിലവിലെ പേജിന്റെ ശീർഷകം അറിയിക്കുക</translation>
 <translation id="4826415162591436065">മുന്നോട്ട് നാവിഗേറ്റ് ചെയ്യുക</translation>
 <translation id="4826604887384865800">അടുത്ത ജമ്പ്</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">ഒബ്‌ജക്‌റ്റ്</translation>
 <translation id="5302089807023311274">ഗ്രന്ഥസൂചി റെഫറൻസ്</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ടാബ്</translation>
+<translation id="5308380583665731573">കണക്‌റ്റുചെയ്യുക</translation>
 <translation id="5310788376443009632">നീക്കംചെയ്‌തു:</translation>
 <translation id="5320727453979144100">സ്‌റ്റിക്കി മോഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{കോമ}other{# കോമകൾ}}</translation>
@@ -772,6 +772,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="712735679809149106">പദ എക്കൊ</translation>
 <translation id="713824876195128146">അടുത്ത ബ്ലോക്ക് ഉദ്ധരണി</translation>
 <translation id="7143034430156387447">6, 8 ഡോട്ട് ബ്രെയ്‌ലികൾക്കിടയിൽ മാറുക</translation>
+<translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7157306005867877619">സംക്ഷേപം</translation>
 <translation id="7161425887892204659">വാചക പൊരുത്തം അവസാനിക്കുന്നു</translation>
 <translation id="7161771961008409533">പോപ്പ്-അപ്പ് ബട്ടൺ</translation>
@@ -835,7 +836,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7625690649919402823">അടുത്ത പട്ടിക</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), ഗ്രേഡ് <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">മുൻ നില 3 ശീർഷകം ഒന്നുമില്ല.</translation>
-<translation id="7647456547678091388">നുറുങ്ങ്</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, വാചക ബോക്സ്</translation>
 <translation id="7663318257180412551">ശീർഷകം 2</translation>
 <translation id="7674576868851035240">അടുത്ത ലിങ്ക്</translation>
@@ -961,6 +961,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8940925288729953902">മോഡിഫയർ കീകൾ</translation>
 <translation id="8943175951035496220">വലതുഭാഗത്ത് കോളമൊന്നുമില്ല.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">മറന്നു</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">പട്ടികകൾ ഒന്നുമില്ല.</translation>
 <translation id="9040132695316389094">ശീർഷകം 1</translation>

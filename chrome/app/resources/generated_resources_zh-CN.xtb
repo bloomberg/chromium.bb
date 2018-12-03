@@ -143,6 +143,7 @@
 <translation id="1189418886587279221">启用辅助功能，以便更轻松地使用您的设备。</translation>
 <translation id="1190144681599273207">抓取此文件将使用约 <ph name="FILE_SIZE" /> 移动数据。</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{可访问您计算机上存储的 1 个文件}other{可访问您计算机上存储的 # 个文件}}</translation>
+<translation id="1190660338026981543">您的<ph name="DEVICE_TYPE" />已成功注册企业管理服务，由以下网域管理：<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />。</translation>
 <translation id="119092896208640858">要想仅清除此设备中的浏览数据而保留您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />退出<ph name="END_LINK" />。</translation>
 <translation id="1193273168751563528">进入受管理自助服务终端</translation>
 <translation id="1195076408729068893">要启动 Smart Lock，请输入您的密码。下次，您就能使用配对手机来解锁您的 <ph name="DEVICE_TYPE" /> 了。</translation>
@@ -358,7 +359,6 @@
 <translation id="1510030919967934016">系统已阻止此网页跟踪您的位置。</translation>
 <translation id="1510238584712386396">启动器</translation>
 <translation id="1510785804673676069">如果您使用的是代理服务器，请检查您的代理设置，或与网络管理员核实代理服务器是否运转正常。如果您认为自己使用的不是代理服务器，请调整您的<ph name="LINK_START" />代理设置<ph name="LINK_END" />。</translation>
-<translation id="1511388193702657997">询问是否保存您在网页上输入的密码</translation>
 <translation id="1512210426710821809">要想撤消此操作，唯一的方法是重新安装 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">从 Safari 中导入</translation>
 <translation id="1521442365706402292">管理证书</translation>
@@ -367,7 +367,6 @@
 <translation id="1524563461097350801">不用了</translation>
 <translation id="1525740877599838384">仅根据 Wi-Fi 确定位置</translation>
 <translation id="1526560967942511387">无标题文档</translation>
-<translation id="1529116897397289129">已保存的信用卡将显示在这里</translation>
 <translation id="1529891865407786369">电源</translation>
 <translation id="1529899284660134226">管理共享文件和文件夹</translation>
 <translation id="1530838837447122178">打开鼠标和触控板设备设置</translation>
@@ -778,7 +777,6 @@
 <translation id="2148219725039824548">装载共享资源时出错。在网络上找不到所指定的共享资源。</translation>
 <translation id="2148756636027685713">格式化已完成</translation>
 <translation id="2148892889047469596">投射标签页</translation>
-<translation id="2149850907588596975">密码和表单</translation>
 <translation id="2150139952286079145">搜索目标打印机</translation>
 <translation id="2150661552845026580">要添加“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="2151576029659734873">输入的标签页索引无效。</translation>
@@ -1664,6 +1662,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> 想使用您的麦克风</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 音频已静音</translation>
 <translation id="3534879087479077042">什么是受监管用户？</translation>
+<translation id="353547388688256996">正在打开 <ph name="NUMBER_FILES" /> 个文件</translation>
 <translation id="3538066758857505094">卸载 Linux 时出错。请重试。</translation>
 <translation id="354060433403403521">交流电源适配器</translation>
 <translation id="354068948465830244">可读取和更改网站数据</translation>
@@ -2269,7 +2268,6 @@
 <translation id="4482194545587547824">Google 可能会使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置</translation>
 <translation id="4495419450179050807">不要在本页上显示</translation>
 <translation id="449938344715680828">按下 |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|，然后再按 |<ph name="ACCELERATOR3" />| 即可退出</translation>
-<translation id="4499718683476608392">启用信用卡自动填充功能后，只需点击一次即可填写表单</translation>
 <translation id="4500114933761911433">“<ph name="PLUGIN_NAME" />”崩溃了</translation>
 <translation id="450099669180426158">感叹号图标</translation>
 <translation id="4501530680793980440">确认删除</translation>
@@ -2579,7 +2577,6 @@
 <translation id="4971412780836297815">完成后打开</translation>
 <translation id="4972129977812092092">修改打印机</translation>
 <translation id="4972164225939028131">密码错误</translation>
-<translation id="497287958838527945">Google Pay 中存储的信用卡和地址信息。</translation>
 <translation id="4973307593867026061">添加打印机</translation>
 <translation id="4973523518332075481">所用名称的长度不得超过 <ph name="MAX_LENGTH" /> 个字符</translation>
 <translation id="4974733135013075877">退出并启用 childlock 功能</translation>
@@ -2713,6 +2710,7 @@
 <translation id="5185386675596372454">由于最新版的“<ph name="EXTENSION_NAME" />”需要更多权限，因此已将其停用。</translation>
 <translation id="5187295959347858724">您现在已登录 <ph name="SHORT_PRODUCT_NAME" />。系统正在将您的书签、浏览记录和其他设置与您的 Google 帐号同步。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
 <translation id="5204673965307125349">请对此设备执行 Powerwash，然后重试。</translation>
 <translation id="5204967432542742771">输入密码</translation>
 <translation id="5206215183583316675">要删除“<ph name="CERTIFICATE_NAME" />”吗？</translation>
@@ -3025,6 +3023,7 @@
 <translation id="5627086634964711283">它还能够控制您点击“主页”按钮后系统显示的页面。</translation>
 <translation id="5627676517703583263">使用 Chrome 进行智能浏览</translation>
 <translation id="562935524653278697">您的管理员已停止同步您的书签、历史记录、密码及其他设置。</translation>
+<translation id="5632566673632479864">您的帐号 <ph name="EMAIL" /> 已不再能够用作主帐号。由于该帐号是由 <ph name="DOMAIN" /> 管理，因此您的书签、历史记录、密码及其他设置将被从此设备中清除。</translation>
 <translation id="563535393368633106">使用前先询问（推荐）</translation>
 <translation id="5636996382092289526">要使用“<ph name="NETWORK_ID" />”，您可能需要先<ph name="LINK_START" />访问该网络的登录页面<ph name="LINK_END" />，该页面会在几秒钟后自动打开。如果未打开，就表示该网络无法使用。</translation>
 <translation id="5637476008227280525">移动数据开关</translation>
@@ -3100,7 +3099,6 @@
 <translation id="5752453871435543420">Chrome 操作系统云端备份</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
-<translation id="5762172915276660232">信用卡设置</translation>
 <translation id="5763315388120433852">设置或管理网络文件共享。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
@@ -3313,6 +3311,7 @@
 <translation id="6057381398996433816">此网站已被禁止使用动态传感器和光传感器。</translation>
 <translation id="6059652578941944813">证书层次结构</translation>
 <translation id="6059925163896151826">USB 设备</translation>
+<translation id="60628369828239652">正在打开文件“<ph name="FILE_NAME" />”</translation>
 <translation id="6064217302520318294">屏幕锁定</translation>
 <translation id="6065289257230303064">证书主题背景目录属性</translation>
 <translation id="6068338049763724728">启用远程注册</translation>
@@ -3420,6 +3419,7 @@
 <translation id="6220413761270491930">加载扩展程序时出错</translation>
 <translation id="6223447490656896591">自定义图片：</translation>
 <translation id="6224481128663248237">格式化成功完成！</translation>
+<translation id="622537739776246443">个人资料将被删除</translation>
 <translation id="6225475702458870625">可通过您的<ph name="PHONE_NAME" />使用数据网络连接</translation>
 <translation id="6226777517901268232">私钥文件（选填）</translation>
 <translation id="6227235786875481728">此文件无法播放。</translation>
@@ -3520,6 +3520,7 @@
 <translation id="6380143666419481200">接受并继续</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">网站可以保存和读取 Cookie 数据</translation>
+<translation id="6386099547750337629">如果您不希望如此，请与支持团队联系。</translation>
 <translation id="6388429472088318283">搜索语言</translation>
 <translation id="6390799748543157332">当您关闭以访客身份打开的所有窗口后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。不过，您下载的所有文件均会保留下来。</translation>
 <translation id="6390994422085833176">在完成设置后查看同步及个性化功能</translation>
@@ -4980,7 +4981,6 @@
 <translation id="8637542770513281060">您的计算机包含一个安全模块，该模块可用于在 Chrome 操作系统中实施许多关键的安全功能。要了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">有系统更新，开始下载...</translation>
 <translation id="8639047128869322042">正在查找有害软件…</translation>
-<translation id="8639963783467694461">自动填充设置</translation>
 <translation id="8642171459927087831">访问令牌</translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">要继续，请选择一个选项：</translation>
@@ -5197,7 +5197,7 @@
 <translation id="8962918469425892674">此网站正在使用动态传感器或光传感器。</translation>
 <translation id="8965037249707889821">输入旧密码</translation>
 <translation id="8965697826696209160">空间不足。</translation>
-<translation id="8966870118594285808">如果您无意中关闭了某个标签页，可使用此按钮将其重新打开</translation>
+<translation id="8966870118594285808">如果您无意中关闭了某个标签页，可将其重新打开</translation>
 <translation id="8967866634928501045">同时按 Alt+Shift+A 即可显示</translation>
 <translation id="8970203673128054105">查看投射模式列表</translation>
 <translation id="89720367119469899">转义</translation>
@@ -5401,6 +5401,7 @@
 <translation id="981121421437150478">离线</translation>
 <translation id="983511809958454316">此功能在虚拟实境中不受支持</translation>
 <translation id="984275831282074731">付款方式</translation>
+<translation id="984401732412731005">与 Linux 共享了 $1 个文件夹</translation>
 <translation id="98515147261107953">横向</translation>
 <translation id="987897973846887088">没有可用的图片</translation>
 <translation id="988978206646512040">密码字段不能留空</translation>

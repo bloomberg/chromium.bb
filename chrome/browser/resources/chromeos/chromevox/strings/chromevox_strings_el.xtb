@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Απόκρυψη φίλτρων ροής συμβάντων</translation>
 <translation id="1088219014394087294">Δεν υπάρχουν επικεφαλίδες.</translation>
 <translation id="1106741348836243114">Ενεργοποίηση ή απενεργοποίηση των ηχητικών σχολίων (ηχητικά μηνύματα).</translation>
-<translation id="1108651818222110612">υπότιτλος</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Σύρετε δύο δάκτυλα προς τα πάνω</translation>
 <translation id="1124771028211010580">Το τρέχον στυλ προβολής είναι η παράθεση.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">Λήξη εκθέτη</translation>
 <translation id="2749275490991666823">Επιλεγμένο</translation>
 <translation id="27527859628328957">Μετάβαση στο επόμενο αντικείμενο με δυνατότητα εστίασης</translation>
-<translation id="276402504937943375">πίνακας περιεχομένων</translation>
 <translation id="2770781857296573485">Εισαγωγή στην εξερεύνηση ομάδας</translation>
 <translation id="2777845298774924149">Έγινε έξοδος</translation>
 <translation id="2781264313200109999">Αρχή συνδέσμου</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">βίντεο</translation>
 <translation id="4764692524839457597">προεπιλογή</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Αποσύνδεση</translation>
 <translation id="481165870889056555">Ανακοίνωση του τίτλου της τρέχουσας σελίδας</translation>
 <translation id="4826415162591436065">Μετάβαση προς τα εμπρός</translation>
 <translation id="4826604887384865800">Επόμενη μετάβαση</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">Στοιχείο</translation>
 <translation id="5302089807023311274">Βιβλιογραφική αναφορά</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, καρτέλα</translation>
+<translation id="5308380583665731573">Σύνδεση</translation>
 <translation id="5310788376443009632">καταργήθηκε:</translation>
 <translation id="5320727453979144100">Έχει ενεργοποιηθεί η λειτουργία διατήρησης ενδιαφέροντος (Sticky)</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{κόμμα}other{# κόμματα}}</translation>
@@ -774,6 +774,7 @@
 <translation id="712735679809149106">εκφώνηση λέξεων</translation>
 <translation id="713824876195128146">Επόμενο block quote</translation>
 <translation id="7143034430156387447">Κάντε εναλλαγή μεταξύ εξάστιγμου και οκτάστιγμου braille</translation>
+<translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7157306005867877619">Περίληψη</translation>
 <translation id="7161425887892204659">Τέλος αντιστοίχισης κειμένου</translation>
 <translation id="7161771961008409533">Αναδυόμενο κουμπί</translation>
@@ -837,7 +838,6 @@
 <translation id="7625690649919402823">Επόμενος πίνακας</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), βαθμός <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Δεν υπάρχει προηγούμενη επικεφαλίδα επιπέδου 3.</translation>
-<translation id="7647456547678091388">συμβουλή</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, πλαίσιο κειμένου</translation>
 <translation id="7663318257180412551">Επικεφαλίδα 2</translation>
 <translation id="7674576868851035240">Επόμενος σύνδεσμος</translation>
@@ -963,6 +963,7 @@
 <translation id="8940925288729953902">Κουμπιά τροποποιητή</translation>
 <translation id="8943175951035496220">Δεν υπάρχει κελί δεξιά.</translation>
 <translation id="8978496506222343566">επεξήγηση εργαλείου</translation>
+<translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="900114243503212879">αρχείο</translation>
 <translation id="9027462562263121875">Δεν υπάρχουν πίνακες.</translation>
 <translation id="9040132695316389094">Επικεφαλίδα 1</translation>

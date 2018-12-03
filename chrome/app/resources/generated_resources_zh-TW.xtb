@@ -143,6 +143,7 @@
 <translation id="1189418886587279221">啟用協助功能，讓你使用裝置更輕鬆。</translation>
 <translation id="1190144681599273207">擷取這個檔案大約會使用 <ph name="FILE_SIZE" /> 行動數據流量。</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{存取 1 個儲存在您電腦上的檔案}other{存取 # 個儲存在您電腦上的檔案}}</translation>
+<translation id="1190660338026981543">你的 <ph name="DEVICE_TYPE" /> 已成功註冊企業管理服務，將由 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 管理。</translation>
 <translation id="119092896208640858">如果只要清除這個裝置中的瀏覽資料，並保留 Google 帳戶中的資料，請先<ph name="BEGIN_LINK" />登出<ph name="END_LINK" />。</translation>
 <translation id="1193273168751563528">進入受管理工作階段</translation>
 <translation id="1195076408729068893">如要啟動 Smart Lock，請輸入你的密碼。下次即可使用手機為你的 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
@@ -361,7 +362,6 @@
     與網路管理員聯絡，確認 Proxy 伺服器是否運作正
     常。如果你不是使用 Proxy 伺服器，請調整你的
     <ph name="LINK_START" />Proxy 設定<ph name="LINK_END" />。</translation>
-<translation id="1511388193702657997">詢問是否儲存您的網路密碼</translation>
 <translation id="1512210426710821809">如要復原這個動作，唯一的辦法是重新安裝 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">由 Safari 匯入</translation>
 <translation id="1521442365706402292">管理憑證</translation>
@@ -370,7 +370,6 @@
 <translation id="1524563461097350801">不用了，謝謝</translation>
 <translation id="1525740877599838384">僅使用 Wi-Fi 判斷所在位置</translation>
 <translation id="1526560967942511387">未命名文件</translation>
-<translation id="1529116897397289129">你所儲存的卡片會顯示在這裡</translation>
 <translation id="1529891865407786369">電源</translation>
 <translation id="1529899284660134226">管理共用的檔案和資料夾</translation>
 <translation id="1530838837447122178">開啟滑鼠和觸控板裝置設定</translation>
@@ -781,7 +780,6 @@
 <translation id="2148219725039824548">掛接共用裝置時發生錯誤。在網路上找不到指定的共用裝置。</translation>
 <translation id="2148756636027685713">格式化完成</translation>
 <translation id="2148892889047469596">投放分頁</translation>
-<translation id="2149850907588596975">密碼和表單</translation>
 <translation id="2150139952286079145">搜尋目的地</translation>
 <translation id="2150661552845026580">要新增「<ph name="EXTENSION_NAME" />」嗎？</translation>
 <translation id="2151576029659734873">輸入的分頁索引無效。</translation>
@@ -1670,6 +1668,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> 要求使用麥克風</translation>
 <translation id="353316712352074340"><ph name="WINDOW_TITLE" /> - 靜音</translation>
 <translation id="3534879087479077042">什麼是受監管的使用者？</translation>
+<translation id="353547388688256996">正在開啟 <ph name="NUMBER_FILES" /></translation>
 <translation id="3538066758857505094">解除安裝 Linux 時發生錯誤，請再試一次。</translation>
 <translation id="354060433403403521">AC 變壓器</translation>
 <translation id="354068948465830244">可讀取及變更網站資料</translation>
@@ -2275,7 +2274,6 @@
 <translation id="4482194545587547824">Google 可能會使用您的瀏覽記錄，為您提供個人化的搜尋服務和其他各項 Google 服務。</translation>
 <translation id="4495419450179050807">不要顯示這個網頁</translation>
 <translation id="449938344715680828">按下 |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| 鍵，再按下 |<ph name="ACCELERATOR3" />| 鍵即可結束</translation>
-<translation id="4499718683476608392">啟用信用卡自動填入功能，輕鬆一按即可填妥表單</translation>
 <translation id="4500114933761911433">「<ph name="PLUGIN_NAME" />」當機了</translation>
 <translation id="450099669180426158">驚嘆號圖示</translation>
 <translation id="4501530680793980440">確認移除</translation>
@@ -2585,7 +2583,6 @@
 <translation id="4971412780836297815">完成後開啟</translation>
 <translation id="4972129977812092092">編輯印表機資訊</translation>
 <translation id="4972164225939028131">密碼錯誤</translation>
-<translation id="497287958838527945">使用 Google Pay 儲存的信用卡和地址資訊。</translation>
 <translation id="4973307593867026061">新增印表機</translation>
 <translation id="4973523518332075481">請使用長度不超過 <ph name="MAX_LENGTH" /> 個字元的名稱</translation>
 <translation id="4974733135013075877">結束並執行 Childlock</translation>
@@ -2719,6 +2716,7 @@
 <translation id="5185386675596372454">由於最新版本的 <ph name="EXTENSION_NAME" /> 需要更多權限，因此已經停用。</translation>
 <translation id="5187295959347858724">你已登入 <ph name="SHORT_PRODUCT_NAME" />，系統正在將你的書籤、瀏覽記錄和其他設定與「Google 帳戶」進行同步處理。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="51918995459521422"><ph name="ORIGIN" /> 想要下載多個檔案</translation>
 <translation id="5204673965307125349">請在裝置上執行 Powerwash，然後再試一次。</translation>
 <translation id="5204967432542742771">輸入密碼</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
@@ -3036,6 +3034,7 @@
 <translation id="5627086634964711283">這個擴充功能也會控管你點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="5627676517703583263">使用 Chrome 享有智慧瀏覽體驗</translation>
 <translation id="562935524653278697">你的管理員停用了書籤、歷史記錄、密碼和其他設定的同步功能。</translation>
+<translation id="5632566673632479864">你的帳戶 <ph name="EMAIL" /> 已不是主要帳戶。這個帳戶是由 <ph name="DOMAIN" /> 所管理，因此系統會將您的書籤、歷史記錄、密碼和其他設定從這個裝置上清除。</translation>
 <translation id="563535393368633106">存取前詢問我 (建議)</translation>
 <translation id="5636996382092289526">如要使用 <ph name="NETWORK_ID" />，你必須先<ph name="LINK_START" />造訪網路的登入頁面<ph name="LINK_END" />，系統隨即會自動開啟登入頁面；如果沒有，你就無法使用這個網路。</translation>
 <translation id="5637476008227280525">啟用行動數據</translation>
@@ -3111,7 +3110,6 @@
 <translation id="5752453871435543420">Chrome 作業系統雲端備份</translation>
 <translation id="5756163054456765343">說明中心(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」可以讀取您透過「<ph name="APP_NAME" />」傳送的待列印文件。</translation>
-<translation id="5762172915276660232">信用卡設定</translation>
 <translation id="5763315388120433852">設定或管理網路檔案共用。</translation>
 <translation id="5763751966069581670">找不到 USB 裝置</translation>
 <translation id="5764483294734785780">將音訊另存為(&amp;V)...</translation>
@@ -3324,6 +3322,7 @@
 <translation id="6057381398996433816">這個網站已遭封鎖，無法使用動作感應器和光源感應器。</translation>
 <translation id="6059652578941944813">憑證階層</translation>
 <translation id="6059925163896151826">USB 裝置</translation>
+<translation id="60628369828239652">正在開啟 <ph name="FILE_NAME" /> 檔案</translation>
 <translation id="6064217302520318294">螢幕鎖定</translation>
 <translation id="6065289257230303064">憑證主體目錄屬性</translation>
 <translation id="6068338049763724728">啟用遠端註冊</translation>
@@ -3431,6 +3430,7 @@
 <translation id="6220413761270491930">載入擴充功能時發生錯誤</translation>
 <translation id="6223447490656896591">自訂圖片：</translation>
 <translation id="6224481128663248237">格式化成功完成！</translation>
+<translation id="622537739776246443">系統將會刪除設定檔</translation>
 <translation id="6225475702458870625">可透過 <ph name="PHONE_NAME" /> 使用數據連線</translation>
 <translation id="6226777517901268232">私密金鑰檔案 (選填)</translation>
 <translation id="6227235786875481728">無法播放這個檔案。</translation>
@@ -3531,6 +3531,7 @@
 <translation id="6380143666419481200">接受並繼續</translation>
 <translation id="6384275966486438344">將你的搜尋設定變更為：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">網站可以儲存及讀取 Cookie 資料</translation>
+<translation id="6386099547750337629">如果這是未預期的情況，請與支援小組聯絡。</translation>
 <translation id="6388429472088318283">搜尋語言</translation>
 <translation id="6390799748543157332">你在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，而且在你關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他記錄。不過，系統將會保留你下載的所有檔案。</translation>
 <translation id="6390994422085833176">在設定完成後檢閱同步處理和個人化功能</translation>
@@ -4992,7 +4993,6 @@
 <translation id="8637542770513281060">你的電腦含有安全模組，用於實作 Chrome 作業系統中許多重要的安全性功能。如需瞭解詳情，請造訪 Chromebook 說明中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">可安裝系統更新，正在準備下載…</translation>
 <translation id="8639047128869322042">正在檢查有害軟體...</translation>
-<translation id="8639963783467694461">自動填入設定</translation>
 <translation id="8642171459927087831">存取憑證</translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">如要繼續，請選擇一個選項：</translation>
@@ -5413,6 +5413,7 @@
 <translation id="981121421437150478">離線</translation>
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>
 <translation id="984275831282074731">付款方式</translation>
+<translation id="984401732412731005">已與 Linux 共用 $1 個資料夾</translation>
 <translation id="98515147261107953">橫向</translation>
 <translation id="987897973846887088">沒有可用的圖片</translation>
 <translation id="988978206646512040">通關密語欄位不得留空</translation>

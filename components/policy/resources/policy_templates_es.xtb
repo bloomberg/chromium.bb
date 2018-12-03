@@ -224,14 +224,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1523774894176285446">Navegador alternativo que se abre para los sitios web configurados.</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
-<translation id="1532965933165453786">Permite habilitar o inhabilitar la transición rápida.
-      Se aplica a todos los usuarios y todas las interfaces del dispositivo.
-      Para poder usar la transición rápida, es necesario haber habilitado este ajuste y la propiedad ONC en cada red.
-      Una vez configurada la transición rápida, esta se mantendrá hasta que se cambie la política para inhabilitarla.
-
-      Si no se define la política, la transición rápida no se usará.
-      Si se le asigna el valor "False", la transición rápida no se usará.
-      Si se le asigna el valor "True", la transición rápida se usará si el punto de acceso inalámbrico lo admite.</translation>
 <translation id="1541170838458414064">Restringir el tamaño de impresión de página</translation>
 <translation id="1553684822621013552">Si se asigna el valor true a esta política, se habilitará ARC para el usuario
       (la política está sujeta a comprobaciones adicionales de la configuración de la política: ARC no estará

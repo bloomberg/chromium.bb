@@ -229,14 +229,6 @@
 <translation id="1523774894176285446">Alternatieve browser die wordt gestart voor geconfigureerde websites.</translation>
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
-<translation id="1532965933165453786">Hiermee kan Fast Transition worden in- of uitgeschakeld.
-      Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat.
-      Als je Fast Transition wilt gebruiken, moeten deze instelling en de eigenschap voor ONC per netwerk zijn ingeschakeld.
-      Zodra Fast Transition is ingesteld, wordt deze instelling gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
-
-      Als er geen beleid is ingesteld, wordt Fast Transition niet gebruikt.
-      Als het beleid is ingesteld op 'false', wordt Fast Transition niet gebruikt.
-      Als het beleid is ingesteld op 'true', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1541170838458414064">Grootte van afdrukpagina beperken</translation>
 <translation id="1553684822621013552">Als dit beleid is ingesteld op 'True', wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
 

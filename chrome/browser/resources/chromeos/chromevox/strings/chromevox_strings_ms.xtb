@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Sembunyikan penapis strim acara</translation>
 <translation id="1088219014394087294">Tiada tajuk.</translation>
 <translation id="1106741348836243114">Hidupkan atau matikan maklum balas bunyi (earcon).</translation>
-<translation id="1108651818222110612">sari kata</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Leret dua jari ke atas</translation>
 <translation id="1124771028211010580">Gaya paparan semasa adalah bersebelahan.</translation>
@@ -196,7 +195,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="2737520612859577214">Superskrip tamat</translation>
 <translation id="2749275490991666823">Ditandai</translation>
 <translation id="27527859628328957">Langkau ke item boleh fokus seterusnya</translation>
-<translation id="276402504937943375">isi</translation>
 <translation id="2770781857296573485">Masukkan penerokaan kumpulan</translation>
 <translation id="2777845298774924149">Keluar</translation>
 <translation id="2781264313200109999">Pautan bermula</translation>
@@ -489,6 +487,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">lalai</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Putuskan sambungan</translation>
 <translation id="481165870889056555">Umumkan tajuk halaman semasa</translation>
 <translation id="4826415162591436065">Navigasi ke hadapan</translation>
 <translation id="4826604887384865800">Langkauan seterusnya</translation>
@@ -558,6 +557,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5291783959063340370">Objek</translation>
 <translation id="5302089807023311274">Rujukan bibliografi</translation>
 <translation id="5304943142864553931">Tab, <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Sambung</translation>
 <translation id="5310788376443009632">dialih keluar:</translation>
 <translation id="5320727453979144100">Mod lekit didayakan</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
@@ -773,6 +773,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="712735679809149106">gema perkataan</translation>
 <translation id="713824876195128146">Petikan blok seterusnya</translation>
 <translation id="7143034430156387447">Togol antara braille 6 dan 8 titik</translation>
+<translation id="7143207342074048698">Menyambung</translation>
 <translation id="7157306005867877619">Abstrak</translation>
 <translation id="7161425887892204659">Padanan teks tamat</translation>
 <translation id="7161771961008409533">Butang pop timbul</translation>
@@ -836,7 +837,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="7625690649919402823">Jadual seterusnya</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Gred <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Tiada tajuk tahap 3 terdahulu.</translation>
-<translation id="7647456547678091388">petua</translation>
 <translation id="7659376057562985921">Kotak teks, <ph name="VALUE" />, <ph name="NAME" /></translation>
 <translation id="7663318257180412551">Tajuk 2</translation>
 <translation id="7674576868851035240">Pautan seterusnya</translation>
@@ -962,6 +962,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8940925288729953902">Kunci Pengubah Suai</translation>
 <translation id="8943175951035496220">Tiada sel di kanan.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Lupa</translation>
 <translation id="900114243503212879">fail</translation>
 <translation id="9027462562263121875">Tiada jadual.</translation>
 <translation id="9040132695316389094">Tajuk 1</translation>

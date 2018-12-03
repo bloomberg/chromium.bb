@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Скрыть фильтры журнала событий</translation>
 <translation id="1088219014394087294">Заголовков нет.</translation>
 <translation id="1106741348836243114">Включить или отключить озвучивание (звуковые сигналы)</translation>
-<translation id="1108651818222110612">подзаголовок</translation>
 <translation id="1120743664840974483">{"а": "анна", "б": "борис", "в": "василий", "г": "григорий", "д": "дмитрий", "е": "елена", "ё": "ёлка", "ж": "женя", "з": "зинаида", "и": "иван", "й": "йот", "к": "константин", "л": "леонид", "м": "михаил", "н": "николай", "о": "ольга", "п": "павел", "р": "роман", "с": "семён", "т": "татьяна", "у": "ульяна", "ф": "фёдор", "х": "харитон", "ц": "цапля", "ч": "человек", "ш": "шура", "щ": "щука", "ъ": "твёрдый знак", "ы": "игрек", "ь": "мягкий знак", "э": "эхо", "ю": "юрий", "я": "яков"}</translation>
 <translation id="1120938014254001895">Проведите двумя пальцами вверх</translation>
 <translation id="1124771028211010580">Текущий стиль дисплея: параллельный.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">Конец надстрочного текста</translation>
 <translation id="2749275490991666823">Выбрано</translation>
 <translation id="27527859628328957">Перейти к следующему активируемому элементу</translation>
-<translation id="276402504937943375">оглавление</translation>
 <translation id="2770781857296573485">Ввести значение для перехода по группам</translation>
 <translation id="2777845298774924149">Окно закрыто.</translation>
 <translation id="2781264313200109999">Начало ссылки</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4764692524839457597">по умолчанию</translation>
 <translation id="479989351350248267">поиск</translation>
+<translation id="4804818685124855865">Отключиться</translation>
 <translation id="481165870889056555">Назвать заголовок текущей страницы</translation>
 <translation id="4826415162591436065">Перейти к следующему элементу</translation>
 <translation id="4826604887384865800">Следующий переход</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">Объект.</translation>
 <translation id="5302089807023311274">Ссылка на библиографию</translation>
 <translation id="5304943142864553931">Вкладка <ph name="TITLE" />.</translation>
+<translation id="5308380583665731573">Подключение</translation>
 <translation id="5310788376443009632">Удалено:</translation>
 <translation id="5320727453979144100">Режим залипания включен</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{запятая}one{# запятая}few{# запятые}many{# запятых}other{# commas}}</translation>
@@ -773,6 +773,7 @@
 <translation id="712735679809149106">Озвучивание слов.</translation>
 <translation id="713824876195128146">Перейти к следующей цитате</translation>
 <translation id="7143034430156387447">Переключение между 6- и 8-точечным шрифтами</translation>
+<translation id="7143207342074048698">Подключение</translation>
 <translation id="7157306005867877619">Аннотация</translation>
 <translation id="7161425887892204659">Конец совпадающего отрывка</translation>
 <translation id="7161771961008409533">Кнопка-переключатель</translation>
@@ -836,7 +837,6 @@
 <translation id="7625690649919402823">Перейти к следующей таблице</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), уровень <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Предыдущего заголовка третьего уровня нет.</translation>
-<translation id="7647456547678091388">совет</translation>
 <translation id="7659376057562985921">Текстовое поле <ph name="NAME" /> со значением <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">Заголовок второго уровня.</translation>
 <translation id="7674576868851035240">Перейти к следующей ссылке</translation>
@@ -962,6 +962,7 @@
 <translation id="8940925288729953902">Клавиши-модификаторы</translation>
 <translation id="8943175951035496220">Ячейки справа нет.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Удалить</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Таблиц нет.</translation>
 <translation id="9040132695316389094">Заголовок первого уровня</translation>

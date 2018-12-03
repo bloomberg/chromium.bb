@@ -773,7 +773,6 @@
 <translation id="6868088497967843822">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="688738109438487280"><ph name="TO_ACCOUNT" />에 기존 데이터 추가</translation>
 <translation id="6891726759199484455">비밀번호를 복사하려면 잠금 해제하세요</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d개의 열린 탭}other{%1$d개의 열린 탭}}</translation>
 <translation id="6896758677409633944">복사</translation>
 <translation id="6910211073230771657">삭제됨</translation>
 <translation id="6912998170423641340">사이트가 클립보드의 텍스트 및 이미지에 액세스하지 못하도록 차단</translation>

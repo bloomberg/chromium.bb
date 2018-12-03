@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Paslēpt notikumu plūsmas filtrus</translation>
 <translation id="1088219014394087294">Nav virsrakstu.</translation>
 <translation id="1106741348836243114">Ieslēgt vai izslēgt skaņas signālus.</translation>
-<translation id="1108651818222110612">apakšvirsraksts</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Velciet ar diviem pirkstiem uz augšu</translation>
 <translation id="1124771028211010580">Pašreizējais displeja stils ir attēlojums līdzās.</translation>
@@ -196,7 +195,6 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2737520612859577214">Augšraksta teksta beigas</translation>
 <translation id="2749275490991666823">Atzīmēts</translation>
 <translation id="27527859628328957">Pāriet uz nākamo fokusējamo vienumu</translation>
-<translation id="276402504937943375">satura rādītājs</translation>
 <translation id="2770781857296573485">Sākt grupu izpēti</translation>
 <translation id="2777845298774924149">Tika aizvērts</translation>
 <translation id="2781264313200109999">Saites sākuma teksts</translation>
@@ -489,6 +487,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">noklusējums</translation>
 <translation id="479989351350248267">meklēt</translation>
+<translation id="4804818685124855865">Atvienot</translation>
 <translation id="481165870889056555">Paziņot pašreizējas lapas nosaukumu</translation>
 <translation id="4826415162591436065">Pārvietoties uz priekšu</translation>
 <translation id="4826604887384865800">Nākamais pārejas punkts</translation>
@@ -558,6 +557,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="5291783959063340370">Objekts</translation>
 <translation id="5302089807023311274">Bibliogrāfiskā atsauce</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, cilne</translation>
+<translation id="5308380583665731573">Pievienošana</translation>
 <translation id="5310788376443009632">noņemts:</translation>
 <translation id="5320727453979144100">Saistošais režīms iespējots</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komats}zero{# komatu}one{# komats}other{# komati}}</translation>
@@ -773,6 +773,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="712735679809149106">vārdu atbalss</translation>
 <translation id="713824876195128146">Nākamais citāta bloks</translation>
 <translation id="7143034430156387447">Pārslēgt 6 vai 8 punktu Braila rakstu</translation>
+<translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7157306005867877619">Kopsavilkums</translation>
 <translation id="7161425887892204659">Beidzas atbilstošais teksts</translation>
 <translation id="7161771961008409533">Uznirstoša poga</translation>
@@ -836,7 +837,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="7625690649919402823">Nākamā tabula</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. līmenis</translation>
 <translation id="7641134354185483015">Iepriekš nav neviena 3. līmeņa virsraksta.</translation>
-<translation id="7647456547678091388">padoms</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstlodziņš</translation>
 <translation id="7663318257180412551">2. līmeņa virsraksts</translation>
 <translation id="7674576868851035240">Nākamā saite</translation>
@@ -962,6 +962,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="8940925288729953902">Modificētājtaustiņi</translation>
 <translation id="8943175951035496220">Nav šūnas pa labi.</translation>
 <translation id="8978496506222343566">rīka padoms</translation>
+<translation id="8986362086234534611">Aizmirst</translation>
 <translation id="900114243503212879">fails</translation>
 <translation id="9027462562263121875">Nav tabulu.</translation>
 <translation id="9040132695316389094">1. līmeņa virsraksts</translation>

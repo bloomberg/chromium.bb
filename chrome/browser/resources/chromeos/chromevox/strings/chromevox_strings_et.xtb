@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Sündmuste voo filtrite peitmine</translation>
 <translation id="1088219014394087294">Pealkirju ei ole.</translation>
 <translation id="1106741348836243114">Lülitage helitagasiside (helisignaalid) sisse või välja.</translation>
-<translation id="1108651818222110612">tiiter</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Pühkige kahe sõrmega üles</translation>
 <translation id="1124771028211010580">Praegu on valitud kuvastiil Kõrvuti.</translation>
@@ -196,7 +195,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="2737520612859577214">Ülaindeksi lõpp</translation>
 <translation id="2749275490991666823">Märgitud</translation>
 <translation id="27527859628328957">Liigu järgmise fookustatud üksuse juurde</translation>
-<translation id="276402504937943375">sisukord</translation>
 <translation id="2770781857296573485">Rühma uuringu sisestamine</translation>
 <translation id="2777845298774924149">Väljus</translation>
 <translation id="2781264313200109999">Lingi algus</translation>
@@ -489,6 +487,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">vaikimisi</translation>
 <translation id="479989351350248267">otsing</translation>
+<translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="481165870889056555">Esitab praeguse lehe pealkirja</translation>
 <translation id="4826415162591436065">Liigu edasi</translation>
 <translation id="4826604887384865800">Järgmine hüpe</translation>
@@ -558,6 +557,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Kasutatud kirjandus</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, vaheleht</translation>
+<translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5310788376443009632">eemaldatud:</translation>
 <translation id="5320727453979144100">Nakkerežiim on lubatud</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
@@ -773,6 +773,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="712735679809149106">sõnade kaja</translation>
 <translation id="713824876195128146">Järgmine tsitaat</translation>
 <translation id="7143034430156387447">Lülitamine 6- ja 8-punktise punktkirja vahel</translation>
+<translation id="7143207342074048698">Ühendamine</translation>
 <translation id="7157306005867877619">Abstraktne</translation>
 <translation id="7161425887892204659">Tekstivaste lõpp</translation>
 <translation id="7161771961008409533">Hüpikunupp</translation>
@@ -836,7 +837,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7625690649919402823">Järgmine tabel</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), klass <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Eelmist 3. taseme pealkirja ei ole.</translation>
-<translation id="7647456547678091388">nõuanne</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstikast</translation>
 <translation id="7663318257180412551">2. pealkiri</translation>
 <translation id="7674576868851035240">Järgmine link</translation>
@@ -962,6 +962,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="8940925288729953902">Muuteklahvid</translation>
 <translation id="8943175951035496220">Paremal ei ole ühtki lahtrit.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Unusta</translation>
 <translation id="900114243503212879">fail</translation>
 <translation id="9027462562263121875">Tabeleid ei ole.</translation>
 <translation id="9040132695316389094">1. pealkiri</translation>

@@ -359,7 +359,6 @@
 <translation id="1510030919967934016">Тази страница бе блокирана от проследяване на местоположението ви.</translation>
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1510785804673676069">В случай че използвате прокси сървър, проверете настройките му или се свържете със системния си администратор, за да се уверите, че сървърът работи. Ако смятате, че не трябва да ползвате прокси сървър, коригирайте <ph name="LINK_START" />съответните настройки<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Извеждане на предложение за запазване на паролите за мрежата</translation>
 <translation id="1512210426710821809">Единственият начин да отмените това е да инсталирате отново <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Импортирани от Safari</translation>
 <translation id="1521442365706402292">Управление на сертификати</translation>
@@ -368,7 +367,6 @@
 <translation id="1524563461097350801">Не, благодаря</translation>
 <translation id="1525740877599838384">Определяне на местоположението само посредством Wi-Fi</translation>
 <translation id="1526560967942511387">Неозаглавен документ</translation>
-<translation id="1529116897397289129">Тук ще се покажат запазените карти</translation>
 <translation id="1529891865407786369">Източник на захранване</translation>
 <translation id="1529899284660134226">Управление на споделените файлове и папки</translation>
 <translation id="1530838837447122178">Отваряне на настройките за мишката и сензорния панел</translation>
@@ -779,7 +777,6 @@
 <translation id="2148219725039824548">Възникна грешка при свързването на посочения дял. Той не бе намерен в мрежата.</translation>
 <translation id="2148756636027685713">Форматирането завърши</translation>
 <translation id="2148892889047469596">Предаване на раздела</translation>
-<translation id="2149850907588596975">Пароли и формуляри</translation>
 <translation id="2150139952286079145">Търсене на местоназначения</translation>
 <translation id="2150661552845026580">Да се добави ли „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="2151576029659734873">Въведен е невалиден индекс на раздел.</translation>
@@ -2278,7 +2275,6 @@
 <translation id="4482194545587547824">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
 <translation id="449938344715680828">Натиснете |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| и след това |<ph name="ACCELERATOR3" />|, за да излезете</translation>
-<translation id="4499718683476608392">Активирайте автоматичното попълване на кредитни карти, за да ги въвеждате във формуляри само с едно кликване</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> претърпя срив</translation>
 <translation id="450099669180426158">Икона на удивителен знак</translation>
 <translation id="4501530680793980440">Потвърждаване на премахването</translation>
@@ -2588,7 +2584,6 @@
 <translation id="4971412780836297815">Отваряне след приключване</translation>
 <translation id="4972129977812092092">Редактиране на принтера</translation>
 <translation id="4972164225939028131">Грешна парола</translation>
-<translation id="497287958838527945">Кредитни карти и адреси посредством Google Pay.</translation>
 <translation id="4973307593867026061">Добавяне на принтери</translation>
 <translation id="4973523518332075481">Използвайте име с дължина най-много <ph name="MAX_LENGTH" /> знака</translation>
 <translation id="4974733135013075877">Изход и заключване за деца</translation>
@@ -3117,7 +3112,6 @@
 <translation id="5752453871435543420">Резервни копия в облака на Chrome OS</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Настройки за кредитни карти</translation>
 <translation id="5763315388120433852">Настройване или управление на споделени хранилища в мрежата.</translation>
 <translation id="5763751966069581670">Няма намерени USB устройства</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
@@ -5003,7 +4997,6 @@
 <translation id="8637542770513281060">Компютърът ви съдържа модул за сигурност, който служи за реализиране на множество критични защитни функции в Chrome OS. За да научите повече, посетете Помощния център на Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Налице е системна актуализация. Подготвя се за изтегляне...</translation>
 <translation id="8639047128869322042">Извършва се проверка за опасен софтуер...</translation>
-<translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8642171459927087831">Означение за достъп</translation>
 <translation id="8642947597466641025">Шрифтът на текста се уголемява</translation>
 <translation id="8643418457919840804">За да продължите, изберете опция:</translation>

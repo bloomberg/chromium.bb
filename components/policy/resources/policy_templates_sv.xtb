@@ -229,14 +229,6 @@
 <translation id="1523774894176285446">Alternativa webbläsare som ska öppnas för konfigurerade webbplatser</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
-<translation id="1532965933165453786">Gör det möjligt att aktivera eller inaktivera Fast Transition.
-      Detta gäller alla användare och alla gränssnitt på enheten.
-      Både den här inställningen och ONC-egenskapen som ställs in per nätverk måste ha aktiverats för att Fast Transition ska kunna användas.
-      När principen har ställts in används Fast Transition tills det inaktiveras via principen.
-
-      Om principen saknar inställning används inte Fast Transition.
-      När principen är inställd på falskt används inte Fast Transition.
-      När principen är inställd på sant används Fast Transition om den trådlösa åtkomstpunkten har stöd för det.</translation>
 <translation id="1541170838458414064">Begränsa pappersformat för utskrift</translation>
 <translation id="1553684822621013552">När den här principen är inställd på sant aktiveras ARC för användaren
       (givet att övriga principinställningar tillåter det – ACR är fortfarande
@@ -299,6 +291,9 @@
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
 <translation id="1810261428246410396">Tillåt att direktinternetdelning används.</translation>
+<translation id="1817685358399181673">Med denna princip anges <ph name="PLUGIN_VM_NAME" />-avbildningen för en användare. Du ställer in principen genom att ange den webbadress som enheten kan ladda ned avbildningen från och en SHA-256-hash som används för att verifiera att nedladdningen inte har manipulerats.
+
+      Principen ska anges som en sträng med webbadressen och hash-värdet i JSON-format.</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
 <translation id="1844620919405873871">Konfigurerar principer som är relaterade till snabb upplåsning.</translation>
@@ -467,6 +462,10 @@
 <translation id="214901426630414675">Begränsa dubbelsidig utskrift</translation>
 <translation id="2149330464730004005">Aktivera färgutskrift</translation>
 <translation id="2156132677421487971">Konfigurera principer för <ph name="PRODUCT_NAME" />, en funktion med vars hjälp användare kan skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
+<translation id="2163878108829382394">
+        Om principen ställs in på Sant är registrering för molnhantering obligatoriskt och det går inte att starta Chrome om registreringen misslyckas.
+
+        Om principen inte anges eller ställs in på Falskt är registrering för molnhantering valfritt och det går att starta Chrome även om registreringen misslyckas.</translation>
 <translation id="2166472654199325139">Filtrera inte bort webbplatser med barnförbjudet innehåll</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
@@ -698,6 +697,7 @@
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="268577405881275241">Aktivera proxyfunktionen för datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurera webbadressen för ändring av lösenord.</translation>
+<translation id="2696531058295423290">Tillåt att <ph name="PLUGIN_VM_NAME" /> används av enheter på <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Inaktivera användning av <ph name="PRODUCT_OS_NAME" />-certifikat för ARC-appar</translation>
 <translation id="2742843273354638707">Dölj appen Chrome Web Store och länken i sidfoten från den nya fliksidan och startprogrammet för <ph name="PRODUCT_OS_NAME" />.
 
@@ -1408,6 +1408,7 @@
 <translation id="4483649828988077221">Inaktivera automatiska uppdateringar</translation>
 <translation id="4485425108474077672">Konfigurera webbadressen för sidan Ny flik</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
+<translation id="449423975179525290">Konfigurera principer som är kopplade till <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade mediafiler på skivan.
 
       När den här principen har getts ett värde använder <ph name="PRODUCT_NAME" /> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --media-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
@@ -2732,6 +2733,9 @@
       Observera att dessa begränsningar gäller för nedladdningar som aktiverats från innehåll på webbsidor, samt alternativet Ladda ned länk ... på snabbmenyn. Dessa begränsningar gäller inte alternativen att spara eller ladda ned den sida som visas, eller möjligheten att spara en PDF från utskriftsalternativen.
 
       Mer information om Säker webbläsning finns på https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Aktivera PluginVm för den här enheten.
+
+      Om principen ställs in på Falskt eller om den inte har någon inställning aktiveras inte <ph name="PLUGIN_VM_NAME" /> för den här enheten. Om principen ställs in på Sant aktiveras <ph name="PLUGIN_VM_NAME" /> för enheten om detta tillåts av andra inställningar. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> måste ställas in på sant och <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> och måste ställas in för att <ph name="PLUGIN_VM_NAME" /> ska kunna köras.</translation>
 <translation id="7643883929273267746">Begränsa vilka konton som är synliga i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgör om dataroaming ska vara tillåtet för enheten. Om värdet är sant är dataroaming tillåten. Om policyn inte är konfigurerad eller om värdet är falskt är dataroaming inte tillåten.</translation>
 <translation id="7673194325208122247">Tidsperiod (millisekunder)</translation>
@@ -3197,6 +3201,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om inställningen är aktiverad eller inte angiven kan webb- och hämtningshistoriken tas bort.
 
       Om inställningen är inaktiverad kan webb- och hämtningshistoriken inte tas bort.</translation>
+<translation id="8758831693895931466">Aktivera obligatorisk registrering för molnhantering</translation>
 <translation id="8759829385824155666">Tillåtna typer av Kerberos-kryptering</translation>
 <translation id="8764119899999036911">Anger om  Kerberos SPN som genererades baseras på det kanoniska DNS-namnet eller det namn som angavs från början.
 

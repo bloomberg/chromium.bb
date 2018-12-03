@@ -361,7 +361,6 @@
 <translation id="1510785804673676069">Если вы используете прокси-сервер, проверьте его настройки или
     попросите администратора задать верные параметры.
     В противном случае измените <ph name="LINK_START" />настройки прокси-сервера<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Предлагать сохранять пароли для сайтов</translation>
 <translation id="1512210426710821809">Чтобы отменить это действие, необходимо переустановить <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Импортированные из Safari</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
@@ -370,7 +369,6 @@
 <translation id="1524563461097350801">Нет, спасибо</translation>
 <translation id="1525740877599838384">Использовать для определения местоположения только Wi-Fi</translation>
 <translation id="1526560967942511387">Документ без имени</translation>
-<translation id="1529116897397289129">Здесь появятся сохраненные карты</translation>
 <translation id="1529891865407786369">Источник питания</translation>
 <translation id="1529899284660134226">Управлять доступом к файлам и папкам</translation>
 <translation id="1530838837447122178">Открыть настройки мыши и сенсорной панели</translation>
@@ -781,7 +779,6 @@
 <translation id="2148219725039824548">Ошибка. Не удалось найти указанный ресурс в сети.</translation>
 <translation id="2148756636027685713">Форматирование завершено</translation>
 <translation id="2148892889047469596">Трансляция содержимого вкладки</translation>
-<translation id="2149850907588596975">Пароли и формы</translation>
 <translation id="2150139952286079145">Поиск мест назначения</translation>
 <translation id="2150661552845026580">Установить "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Указан неверный индекс вкладки.</translation>
@@ -2279,7 +2276,6 @@
 <translation id="4482194545587547824">Google может использовать историю просмотров для персонализации Поиска и других сервисов.</translation>
 <translation id="4495419450179050807">Не показывать на этой странице</translation>
 <translation id="449938344715680828">Чтобы выйти, нажмите |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|, а затем |<ph name="ACCELERATOR3" />|</translation>
-<translation id="4499718683476608392">Включить автозаполнение данных банковской карты</translation>
 <translation id="4500114933761911433">Сбой в плагине <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Значок восклицательного знака.</translation>
 <translation id="4501530680793980440">Подтверждение удаления</translation>
@@ -2589,7 +2585,6 @@
 <translation id="4971412780836297815">Открыть по завершении</translation>
 <translation id="4972129977812092092">Настройка принтера</translation>
 <translation id="4972164225939028131">Неправильный пароль</translation>
-<translation id="497287958838527945">Кредитные карты и адреса из Google Pay</translation>
 <translation id="4973307593867026061">Добавить принтеры</translation>
 <translation id="4973523518332075481">Слишком длинное название. Максимальное количество символов: <ph name="MAX_LENGTH" />.</translation>
 <translation id="4974733135013075877">Выйти и заблокировать</translation>
@@ -3117,7 +3112,6 @@
 <translation id="5752453871435543420">Резервное копирование в облаке Chrome</translation>
 <translation id="5756163054456765343">Справочный &amp;центр</translation>
 <translation id="5759728514498647443">"<ph name="APP_NAME" />" может читать документы, отправленные на печать через приложение "<ph name="APP_NAME" />".</translation>
-<translation id="5762172915276660232">Настройки банковских карт</translation>
 <translation id="5763315388120433852">Как настроить общие папки сети</translation>
 <translation id="5763751966069581670">USB-устройства не найдены</translation>
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
@@ -5002,7 +4996,6 @@
 <translation id="8637542770513281060">Компьютер оснащен безопасным модулем, который используется для выполнения многих важных функций защиты в Chrome OS. Более подробную информацию можно получить в Справочном центре Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Доступно обновление системы. Подготовка к скачиванию…</translation>
 <translation id="8639047128869322042">Поиск вредоносного ПО…</translation>
-<translation id="8639963783467694461">Настройки автозаполнения</translation>
 <translation id="8642171459927087831">Токен доступа</translation>
 <translation id="8642947597466641025">Увеличить размер шрифта</translation>
 <translation id="8643418457919840804">Чтобы продолжить, выберите один из вариантов:</translation>

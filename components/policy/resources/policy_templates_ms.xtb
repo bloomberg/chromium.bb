@@ -230,14 +230,6 @@
 <translation id="1523774894176285446">Penyemak imbas alternatif yang hendak dilancarkan untuk tapak web yang dikonfigurasikan.</translation>
 <translation id="152657506688053119">Senarai URL alternatif untuk penyedia carian lalai</translation>
 <translation id="1530812829012954197">Sentiasa paparkan corak URL berikut dalam penyemak imbas hos</translation>
-<translation id="1532965933165453786">Membenarkan pendayaan atau pelumpuhan Peralihan Pantas.
-      Dasar ini terpakai kepada semua pengguna dan kepada semua antara muka pada peranti.
-      Untuk menggunakan Peralihan Pantas, tetapan ini dan juga sifat ONC setiap rangkaian perlu didayakan.
-      Setelah ditetapkan, Peralihan Pantas kekal aktif sehingga dasar ini diubah untuk melumpuhkan ciri ini.
-
-      Jika dasar ini tidak ditetapkan, Peralihan Pantas tidak akan digunakan.
-      Jika ditetapkan kepada palsu, Peralihan Pantas tidak akan digunakan.
-      Jika ditetapkan kepada benar, Peralihan Pantas akan digunakan apabila titik akses wayarles menyokong ciri ini.</translation>
 <translation id="1541170838458414064">Hadkan saiz halaman pencetakan</translation>
 <translation id="1553684822621013552">Apabila dasar ini ditetapkan kepada benar, ARC akan didayakan untuk
       pengguna (tertakluk kepada semakan tetapan dasar tambahan - ARC
@@ -973,7 +965,7 @@
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3388153794103186066">Membolehkan anda menetapkan senarai url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah dan akan diabaikan.
 
-        Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandung hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira statu pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
+        Model kebenaran USB menggunakan URL tapak yang meminta ("URL yang meminta") dan URL tapak bingkai tahap tinggi ("URL yang membenamkan") untuk memberikan kebenaran kepada URL yang meminta untuk mengakses peranti USB. URL yang meminta mungkin berbeza daripada URL yang membenamkan apabila tapak yang meminta dimuatkan dalam iframe. Oleh itu, medan "url" boleh mengandungi hingga dua rentetan URL yang dihadkan oleh koma untuk menyatakan URL yang meminta dan yang membenamkan. Jika hanya satu URL dinyatakan, maka akses kepada peranti USB yang sepadan akan diberikan apabila URL tapak yang meminta sepadan dengan URL ini tanpa mengira status pembenaman. URL dalam "url" mestilah URL yang sah, jika tidak dasar ini akan diabaikan.
 
         Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan, atau konfigurasi peribadi pengguna jika sebaliknya.
 
@@ -2078,7 +2070,7 @@
       Jika "external_use_native" adalah palsu atau tidak diberikan dan
       "external_height" atau "external_width" tidak diberikan, dasar tidak
       menjejaskan tetapan paparan luaran. Jika peleraian atau faktor skala yang
-      dinyatak tidak disokong oleh sesetengah paparan, dasar tidak akan
+      dinyatakan tidak disokong oleh sesetengah paparan, dasar tidak akan
       digunakan pada paparan itu.
 
       Jika bendera "disyorkan" ditetapkan kepada benar, pengguna boleh menukar

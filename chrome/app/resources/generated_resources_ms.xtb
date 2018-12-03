@@ -41,7 +41,7 @@
 <translation id="1049926623896334335">Dokumen Word</translation>
 <translation id="1054153489933238809">Buka &amp;Imej Asal dalam Tab Baharu</translation>
 <translation id="1055806300943943258">Mencari Bluetooth dan peranti USB...</translation>
-<translation id="1056466516655540509">Dikemas kini <ph name="MINUTES" /> min yang lalu</translation>
+<translation id="1056466516655540509">Dikemas kini <ph name="MINUTES" /> minit yang lalu</translation>
 <translation id="1056775291175587022">Tiada rangkaian</translation>
 <translation id="1056898198331236512">Amaran</translation>
 <translation id="1058262162121953039">PUK</translation>
@@ -362,7 +362,6 @@
         hubungi pentadbir rangkaian anda untuk memastikan pelayan proksi
         berfungsi. Jika anda percaya yang anda tidak harus menggunakan
         pelayan proksi, laraskan <ph name="LINK_START" />tetapan proksi<ph name="LINK_END" /> anda.</translation>
-<translation id="1511388193702657997">Tawaran untuk menyimpan kata laluan web anda</translation>
 <translation id="1512210426710821809">Satu-satunya cara hendak membuat asal tindakan ini ialah dengan memasang semula <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Dimport Daripada Safari</translation>
 <translation id="1521442365706402292">Uruskan sijil</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">Tidak Perlu</translation>
 <translation id="1525740877599838384">Gunakan Wi-Fi sahaja untuk menentukan lokasi</translation>
 <translation id="1526560967942511387">Dokumen Tidak Bertajuk</translation>
-<translation id="1529116897397289129">Kad yang disimpan akan kelihatan di sini</translation>
 <translation id="1529891865407786369">Sumber kuasa</translation>
 <translation id="1529899284660134226">Urus fail &amp; folder kongsi</translation>
 <translation id="1530838837447122178">Buka tetapan peranti tetikus dan pad sentuh</translation>
@@ -392,7 +390,7 @@
 <translation id="1556537182262721003">Tidak dapat menggerakkan direktori sambungan ke profil.</translation>
 <translation id="155865706765934889">Pad sentuh</translation>
 <translation id="1564414980088536597">Imej ini tidak boleh digunakan. Pilih imej yang lain.</translation>
-<translation id="1566007797958927729">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "OK Google", jika dihidupkan, untuk mendapatkan bantuan daripada Assistant anda pada bila-bila masa.</translation>
+<translation id="1566007797958927729">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "Ok Google", jika dihidupkan, untuk mendapatkan bantuan daripada Assistant anda pada bila-bila masa.</translation>
 <translation id="1566049601598938765">Tapak web</translation>
 <translation id="1567387640189251553">Papan kekunci lain telah disambungkan sejak kali terakhir anda memasukkan kata laluan. Papan kekunci ini mungkin sedang cuba mencuri ketukan kekunci anda.</translation>
 <translation id="1567750922576943685">Pengesahan identiti anda dapat melindungi maklumat peribadi anda</translation>
@@ -782,7 +780,6 @@
 <translation id="2148219725039824548">Ralat melekapkan perkongsian. Perkongsian yang dinyatakan tidak ditemui pada rangkaian.</translation>
 <translation id="2148756636027685713">Selesai memformat</translation>
 <translation id="2148892889047469596">Hantar tab</translation>
-<translation id="2149850907588596975">Kata laluan dan borang</translation>
 <translation id="2150139952286079145">Cari destinasi</translation>
 <translation id="2150661552845026580">Tambah "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Indeks tab tidak sah dimasukkan.</translation>
@@ -2280,7 +2277,6 @@
 <translation id="4482194545587547824">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian dan perkhidmatan Google yang lain.</translation>
 <translation id="4495419450179050807">Jangan paparkan pada halaman ini</translation>
 <translation id="449938344715680828">Tekan |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| diikuti oleh |<ph name="ACCELERATOR3" />| untuk keluar</translation>
-<translation id="4499718683476608392">Dayakan Autolengkap kad kredit untuk mengisi borang dengan satu klikan</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> telah ranap</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Sahkan Pengalihan Keluar</translation>
@@ -2590,7 +2586,6 @@
 <translation id="4971412780836297815">Buka apabila selesai</translation>
 <translation id="4972129977812092092">Edit pencetak</translation>
 <translation id="4972164225939028131">Kata laluan salah</translation>
-<translation id="497287958838527945">Kad kredit dan alamat yang menggunakan Google Pay.</translation>
 <translation id="4973307593867026061">Tambah pencetak</translation>
 <translation id="4973523518332075481">Gunakan nama yang mengandungi tidak lebih daripada <ph name="MAX_LENGTH" /> aksara</translation>
 <translation id="4974733135013075877">Keluar dan kunci kanak-kanak</translation>
@@ -3118,7 +3113,6 @@
 <translation id="5752453871435543420">Sandaran Awan OS Chrome</translation>
 <translation id="5756163054456765343">P&amp;usat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME" /> boleh dibaca oleh <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Tetapan kad kredit</translation>
 <translation id="5763315388120433852">Sediakan atau urus perkongsian fail rangkaian.</translation>
 <translation id="5763751966069581670">Tiada peranti USB ditemui</translation>
 <translation id="5764483294734785780">Si&amp;mpan audio sebagai...</translation>
@@ -5005,7 +4999,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8637542770513281060">Komputer anda mengandungi modul selamat, yang digunakan untuk melaksanakan banyak ciri keselamatan penting dalam OS Chrome. Lawati Pusat Bantuan Chromebook untuk mengetahui lebih lanjut: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Kemas kini sistem tersedia. Bersedia untuk  muat turun…</translation>
 <translation id="8639047128869322042">Menyemak untuk mengesan perisian berbahaya...</translation>
-<translation id="8639963783467694461">Tetapan auto isi</translation>
 <translation id="8642171459927087831">Token Akses</translation>
 <translation id="8642947597466641025">Jadikan Teks Lebih Besar</translation>
 <translation id="8643418457919840804">Buat pilihan untuk meneruskan:</translation>

@@ -191,7 +191,7 @@ PC</translation>
 <translation id="4973800994433240357">Ao fazer o download do instalador do host do Chromoting, você concorda com os <ph name="LINK_BEGIN" />Termos de Serviço<ph name="LINK_END" /> do Google.</translation>
 <translation id="4974476491460646149">Conexão fechada para <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Primeiro, é necessário configurar seu computador para acesso remoto.</translation>
-<translation id="5059773780693835145">Uma outra configuração é necessária para que você possa controlar essa máquina remotamente usando <ph name="PRODUCT_NAME" />.
+<translation id="5059773780693835145">Uma outra configuração é necessária para que você possa controlar esta máquina remotamente usando <ph name="PRODUCT_NAME" />.
 
 Para ativar essa funcionalidade, selecione "<ph name="BUTTON_NAME" />" para exibir o painel "Preferências de segurança e privacidade", depois marque a caixa ao lado de "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>

@@ -228,14 +228,6 @@
 <translation id="1523774894176285446">Alternatibong browser na ilulunsad para sa mga na-configure na website.</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="1530812829012954197">Palaging i-render ang mga sumusunod na pattern ng URL sa browser ng host</translation>
-<translation id="1532965933165453786">Nagbibigay-daan sa pag-enable o pag-disable ng Mabilis na Transition.
-      Nalalapat ito sa lahat ng user at sa lahat ng interface sa device.
-      Para magamit ang Mabilis na Transition, kailangang naka-enable ang setting na ito at ang per-network ONC property.
-      Kapag naitakda na, magpapatuloy ang Mabilis na Transition hanggang baguhin ang patakaran para ma-disable ito.
-
-      Kung hindi itatakda ang patakaran, hindi gagamitin ang Mabilis na Transition.
-      Kung itatakda sa false, hindi gagamitin ang Mabilis na Transition.
-      Kung itatakda sa true, gagamitin ang Mabilis na Transition kapag sinusuportahan ito ng wireless na access point.</translation>
 <translation id="1541170838458414064">Paghigpitan ang laki ng page ng pag-print</translation>
 <translation id="1553684822621013552">Kapag itinakda sa true ang patakarang ito, mae-enable ang ARC para sa user
       (napapailalim sa mga karagdagang pagsusuri sa mga setting ng patakaran - hindi pa rin
@@ -296,6 +288,9 @@
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
 <translation id="1810261428246410396">Payagang gamitin ang Instant na Pag-tether.</translation>
+<translation id="1817685358399181673">Isinasaad ng patakarang ito ang <ph name="PLUGIN_VM_NAME" /> image para sa isang user. Itinatakda ang patakarang ito sa pamamagitan sa pagsasaad sa URL kung saan maaaring i-download ng device ang larawan, at ng SHA-256 na hash na ginagamit para i-verify ang integridad ng download.
+
+      Dapat tukuyin ang patakarang ito bilang string na nagsasaad sa URL at hash sa JSON na format.</translation>
 <translation id="1827523283178827583">Gumamit ng mga nakapirming proxy server</translation>
 <translation id="1843117931376765605">I-refresh ang pag-rate para sa patakaran ng user</translation>
 <translation id="1844620919405873871">Kino-configure ang mga patakarang nauugnay sa mabilisang pag-unlock.</translation>
@@ -464,6 +459,10 @@
 <translation id="214901426630414675">Paghigpitan ang printing duplex mode</translation>
 <translation id="2149330464730004005">I-enable ang may kulay na pag-print</translation>
 <translation id="2156132677421487971">Nagko-configure ng mga patakaran para sa <ph name="PRODUCT_NAME" />, isang feature na nagbibigay-daan sa mga user na maipadala ang mga content ng mga tab, mga site, o ang desktop mula sa browser papunta sa mga malayuang display at sound system.</translation>
+<translation id="2163878108829382394">
+        Kung nakatakda ang patakarang ito sa True, mandatoryo ang pag-enroll sa pamamahala sa cloud at iba-block ang proseso ng paglunsad ng Chrome kung hindi ito magtatagumpay.
+
+        Kung hindi itinakda o kung nakatakda sa False ang patakarang ito, opsyonal ang pag-enroll sa pamamahala sa cloud at hindi iba-block ang proseso ng paglunsad ng Chrome kung hindi ito magtatagumpay.</translation>
 <translation id="2166472654199325139">Huwag i-filter ang mga site para sa pang-adult na content</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
@@ -693,6 +692,7 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
 <translation id="2693108589792503178">I-configure ang URL ng pagpapalit ng password.</translation>
+<translation id="2696531058295423290">Payagan ang mga device na gumamit ng <ph name="PLUGIN_VM_NAME" /> sa <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="2742843273354638707">Itago ang Chrome Web Store app at link ng footer mula sa Page ng Bagong Tab at sa app launcher ng <ph name="PRODUCT_OS_NAME" />.
 
@@ -1402,6 +1402,7 @@
 <translation id="4483649828988077221">I-disable ang Awtomatikong Pag-update</translation>
 <translation id="4485425108474077672">I-configure ang URL ng page ng Bagong Tab</translation>
 <translation id="4492287494009043413">Huwag paganahin ang pagkuha ng mga screenshot</translation>
+<translation id="449423975179525290">I-configure ang mga patakarang nauugnay sa <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na media file sa disk.
 
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na laki ng cache tinukoy man ng user ang '--media-cache-size' flag o hindi. Ang value na tinutukoy sa patakarang ito ay hindi isang ganap na hangganan ngunit sa halip ay isang suhestiyon sa sistema sa pagka-cache, masyadong maliit ang anumang value na mas mababa sa ilang megabyte at ira-round up sa isang maayos na minimum.
@@ -2723,6 +2724,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaang nalalapat ang mga paghihigpit na ito sa mga pag-download na na-trigger mula sa content ng web page, gayundin ang opsyon sa menu ng konteksto na 'link sa pag-download...'. Hindi nalalapat ang mga paghihigpit na ito sa pag-save / pag-download ng kasalukuyang ipinapakitang page, at hindi rin ito nalalapat sa pag-save bilang PDF mula sa mga opsyon sa pag-print.
 
       Tingnan sa https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
+<translation id="7642803091923523695">I-enable ang device na ito na patakbuhin ang PluginVm.
+
+      Kung nakatakda sa false o hindi itinakda ang patakaran, hindi naka-enable ang <ph name="PLUGIN_VM_NAME" /> para sa device. Kung nakatakda ito sa true, naka-enable ang <ph name="PLUGIN_VM_NAME" /> para sa device hangga't pinapayagan din ito ng iba pang setting. Kailangan ay true ang <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> at itakda ang <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> para sa <ph name="PLUGIN_VM_NAME" /> para payagan itong tumakbo.</translation>
 <translation id="7643883929273267746">Pinaghihigpitan ang mga account na nakikita sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Tinutukoy kung dapat paganahin ang roaming ng data para sa device. Kung nakatakda sa true, pinapayagan ang roaming ng data. Kung iniwang hindi naka-configure o nakatakda sa false, hindi magiging available ang roaming ng data.</translation>
 <translation id="7673194325208122247">Yugto ng panahon (millisecond)</translation>
@@ -3189,6 +3193,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung pinagana ang setting na ito o hindi nakatakda, maaaring matanggal ang kasaysayan sa pagba-browse at pag-download.
 
       Kung hindi pinagana ang setting na ito, hindi maaaring matanggal ang kasaysayan sa pagba-browse at pag-download.</translation>
+<translation id="8758831693895931466">I-enable ang mandatoryong pag-enroll sa pamamahala sa cloud</translation>
 <translation id="8759829385824155666">Mga pinapayagang uri ng pag-encrypt na Kerberos</translation>
 <translation id="8764119899999036911">Tinutukoy kung ang binuong Kerberos SPN ay nakabatay sa canonical na pangalan ng DNS o sa orihinal na pangalang inilagay.
 

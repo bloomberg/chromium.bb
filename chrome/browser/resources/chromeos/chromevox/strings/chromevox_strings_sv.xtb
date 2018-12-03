@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Göm filter för händelseflöden</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
-<translation id="1108651818222110612">underrubrik</translation>
 <translation id="1120743664840974483">{"a": "Adam", "b": "Bertil", "c": "Cesar", "d": "David", "e": "Erik", "f": "Filip", "g": "Gustav", "h": "Helge", "i": "Ivar", "j": "Johan","k": "Kalle", "l": "Ludvig", "m": "Martin", "n": "Niklas", "o": "Olof","p": "Petter", "q": "Quintus", "r": "Rudolf", "s": "Sigurd", "t": "Tore", "u": "Urban", "v": "Viktor", "w": "Wilhelm","x": "Xerxes", "y": "Yngve", "z": "Zäta", "å": "Åke", "ä": "Ärlig", "ö": "Östen"}</translation>
 <translation id="1120938014254001895">Svep uppåt med två fingrar</translation>
 <translation id="1124771028211010580">Aktuellt visningsformat är sida vid sida.</translation>
@@ -196,7 +195,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2737520612859577214">Upphöjd text slutar</translation>
 <translation id="2749275490991666823">Markerat</translation>
 <translation id="27527859628328957">Hoppa till nästa fokuserbara objekt</translation>
-<translation id="276402504937943375">innehåll</translation>
 <translation id="2770781857296573485">Börja utforska grupper</translation>
 <translation id="2777845298774924149">Stängdes</translation>
 <translation id="2781264313200109999">Länkstart</translation>
@@ -489,6 +487,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
 <translation id="479989351350248267">sök</translation>
+<translation id="4804818685124855865">Koppla från</translation>
 <translation id="481165870889056555">Läs upp den aktuella sidans titel</translation>
 <translation id="4826415162591436065">Navigera framåt</translation>
 <translation id="4826604887384865800">Nästa hopp</translation>
@@ -558,6 +557,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografisk referens</translation>
 <translation id="5304943142864553931">Fliken <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Ansluta</translation>
 <translation id="5310788376443009632">har tagits bort:</translation>
 <translation id="5320727453979144100">Låsta knappar har aktiverats</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komman}}</translation>
@@ -773,6 +773,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="712735679809149106">eko för ord</translation>
 <translation id="713824876195128146">Nästa citatblock</translation>
 <translation id="7143034430156387447">Växla mellan punktskrift med sex och åtta punkter</translation>
+<translation id="7143207342074048698">Ansluter</translation>
 <translation id="7157306005867877619">Abstract</translation>
 <translation id="7161425887892204659">Textmatchning slutar</translation>
 <translation id="7161771961008409533">Popup-knapp</translation>
@@ -836,7 +837,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7625690649919402823">Nästa tabell</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grad <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Det finns ingen föregående rubrik på nivå 3.</translation>
-<translation id="7647456547678091388">tips</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textruta</translation>
 <translation id="7663318257180412551">Rubrik 2</translation>
 <translation id="7674576868851035240">Nästa länk</translation>
@@ -962,6 +962,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8940925288729953902">Specialtangenter</translation>
 <translation id="8943175951035496220">Det finns ingen cell till höger.</translation>
 <translation id="8978496506222343566">beskrivning</translation>
+<translation id="8986362086234534611">Glöm</translation>
 <translation id="900114243503212879">fil</translation>
 <translation id="9027462562263121875">Det finns inga tabeller.</translation>
 <translation id="9040132695316389094">Rubrik 1</translation>

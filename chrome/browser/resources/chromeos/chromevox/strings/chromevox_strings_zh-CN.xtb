@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">隐藏事件流过滤条件</translation>
 <translation id="1088219014394087294">无标题。</translation>
 <translation id="1106741348836243114">开启或关闭声音反馈（耳标）。</translation>
-<translation id="1108651818222110612">副标题</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">向上滑动两根手指</translation>
 <translation id="1124771028211010580">当前显示样式为并排。</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">上标的结尾</translation>
 <translation id="2749275490991666823">已选中</translation>
 <translation id="27527859628328957">跳转到下一个可设置为焦点的项</translation>
-<translation id="276402504937943375">目录</translation>
 <translation id="2770781857296573485">进入群组浏览</translation>
 <translation id="2777845298774924149">已退出</translation>
 <translation id="2781264313200109999">链接开头</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">视频</translation>
 <translation id="4764692524839457597">默认</translation>
 <translation id="479989351350248267">搜索</translation>
+<translation id="4804818685124855865">断开连接</translation>
 <translation id="481165870889056555">读出当前页面的标题</translation>
 <translation id="4826415162591436065">向前导航</translation>
 <translation id="4826604887384865800">下一个跳转</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">对象</translation>
 <translation id="5302089807023311274">参考书目</translation>
 <translation id="5304943142864553931">切换到名为“<ph name="TITLE" />”的标签页</translation>
+<translation id="5308380583665731573">连接</translation>
 <translation id="5310788376443009632">已移除：</translation>
 <translation id="5320727453979144100">已启用粘滞模式</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{1个英文逗号}other{#个英文逗号}}</translation>
@@ -772,6 +772,7 @@
 <translation id="712735679809149106">字词回显</translation>
 <translation id="713824876195128146">下一个块引用</translation>
 <translation id="7143034430156387447">在 6 点式盲文和 8 点式盲文之间切换</translation>
+<translation id="7143207342074048698">正在连接</translation>
 <translation id="7157306005867877619">摘要</translation>
 <translation id="7161425887892204659">匹配文字的末尾</translation>
 <translation id="7161771961008409533">弹出式按钮</translation>
@@ -835,7 +836,6 @@
 <translation id="7625690649919402823">下一个表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，等级：<ph name="GRADE" /></translation>
 <translation id="7641134354185483015">不存在上一个3级标题。</translation>
-<translation id="7647456547678091388">提示</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文本框</translation>
 <translation id="7663318257180412551">2级标题标记</translation>
 <translation id="7674576868851035240">下一个链接</translation>
@@ -961,6 +961,7 @@
 <translation id="8940925288729953902">辅助键</translation>
 <translation id="8943175951035496220">不存在右侧单元格。</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">不保存</translation>
 <translation id="900114243503212879">文件</translation>
 <translation id="9027462562263121875">无表格。</translation>
 <translation id="9040132695316389094">1级标题标记</translation>

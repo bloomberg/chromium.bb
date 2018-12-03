@@ -210,14 +210,6 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1523774894176285446">Alternativní prohlížeč, který se má spustit pro nakonfigurované weby.</translation>
 <translation id="152657506688053119">Seznam alternativních adres URL výchozího poskytovatele vyhledávání</translation>
 <translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
-<translation id="1532965933165453786">Umožňuje aktivovat nebo deaktivovat Rychlé převádění.
-      Toto nastavení platí pro všechny uživatele a všechna rozhraní na zařízení.
-      Aby se Rychlé převádění použilo, musí být zapnuté toto nastavení i vlastnost ONC na úrovni sítě.
-      Jakmile je Rychlé převádění nastaveno, zůstane aktivní, dokud nebude deaktivováno změnou této zásady.
-
-      Pokud tato zásada není nastavená, Rychlé převádění se nepoužívá.
-      Pokud je nastavená na hodnotu false, Rychlé převádění se nepoužívá.
-      Pokud je nastavená na hodnotu true, Rychlé převádění se používá v případě, že ho bezdrátový přístupový bod podporuje.</translation>
 <translation id="1541170838458414064">Omezit velikost stránky tisku</translation>
 <translation id="1553684822621013552">Je-li zásada nastavena na hodnotu true, rozšíření ARC bude uživateli povoleno (pokud bude v aktuální uživatelské relaci povolen režim dočasných profilů nebo vícenásobné přihlašování, rozšíření ARC dostupné nebude).
 
@@ -2024,8 +2016,8 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 
       Pokud je parametr „external_use_native“ nastavený na hodnotu false nebo není nastavený a není nastavená jedna z hodnot „external_height“ a „external_width“, zásada na nastavení externích obrazovek nemá vliv. Pokud některá obrazovka zadané rozlišení nebo měřítko nepodporuje, zásada se na ni nepoužije.
 
-      Pokud je příznak „recommended“ nastavený na hodnotu true, uživatelé po přihlášení mohou rozlišení a měřítko libovolné obrazovky změnit pomocí stránky nastavení. Při příštím restartu však jejich nastavení budou přepsána hodnotami ze zásady.
-      Pokud je příznak „recommended“ nastavený na hodnotu false nebo není nastavený, uživatelé nastavení obrazovky nemohou změnit.</translation>
+      Pokud je příznak „recommended“ nastavený na hodnotu true, uživatelé mohou po přihlášení změnit rozlišení a měřítko libovolné obrazovky pomocí stránky nastavení. Při příštím restartu však budou jejich nastavení přepsána hodnotami ze zásady.
+      Pokud je příznak „recommended“ nastavený na hodnotu false nebo není nastavený, uživatelé nemohou nastavení obrazovky změnit.</translation>
 <translation id="6155936611791017817">Nastavení výchozího stavu velkého kurzoru na přihlašovací obrazovce</translation>
 <translation id="6157537876488211233">Seznam pravidel vynechání proxy serveru oddělených čárkami</translation>
 <translation id="6158324314836466367">Název podnikového úložiště aplikací (podpora ukončena)</translation>
