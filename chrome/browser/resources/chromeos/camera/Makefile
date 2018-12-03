@@ -100,6 +100,7 @@ RESOURCES = \
 	src/images/camera_shutter_recording_start_hover.svg \
 	src/images/camera_shutter_recording_stop.svg \
 	src/images/camera_shutter_recording_stop_hover.svg \
+	src/images/settings_button_back.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/main.js \
@@ -119,6 +120,7 @@ RESOURCES = \
 	src/js/views/camera/recordtime.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
+	src/js/views/settings.js \
 	src/js/views/view.js \
 	src/js/views/warning.js \
 	src/sounds/record_end.ogg \

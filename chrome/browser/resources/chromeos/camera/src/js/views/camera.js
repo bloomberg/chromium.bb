@@ -95,12 +95,6 @@ cca.views.Camera = function(model, onAspectRatio) {
   this.shutterButton_ = document.querySelector('#shutter');
 
   /**
-   * @type {string}
-   * @private
-   */
-  this.keyBuffer_ = '';
-
-  /**
    * @type {boolean}
    * @private
    */
@@ -181,9 +175,8 @@ cca.views.Camera.prototype.prepare = function() {
       this.stop_();
     }
   });
-  chrome.app.window.current().onMinimized.addListener(() => {
-    this.stop_();
-  });
+  chrome.app.window.current().onMinimized.addListener(() => this.stop_());
+
   // Start the camera after preparing the options (device ids).
   this.options_.prepare();
   this.start_();
@@ -247,7 +240,6 @@ cca.views.Camera.prototype.updateShutterLabel_ = function() {
     label = (this.taking && this.ticks_) ?
         'takePhotoCancelButton' : 'takePhotoButton';
   }
-  this.shutterButton_.setAttribute('i18n-label', label);
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
 };
 
@@ -261,18 +253,12 @@ cca.views.Camera.prototype.layout = function() {
 /**
  * @override
  */
-cca.views.Camera.prototype.onKeyPressed = function(event) {
-  this.keyBuffer_ += String.fromCharCode(event.which);
-  this.keyBuffer_ = this.keyBuffer_.substr(-10);
-
-  if (this.keyBuffer_.indexOf('VER') !== -1) {
-    cca.toast.show(chrome.runtime.getManifest().version);
-    this.keyBuffer_ = '';
-  }
-  if (this.keyBuffer_.indexOf('RES') !== -1) {
+cca.views.Camera.prototype.handlingKey = function(key) {
+  if (key == 'Ctrl-R') {
     cca.toast.show(this.preview_.toString());
-    this.keyBuffer_ = '';
+    return true;
   }
+  return false;
 };
 
 /**

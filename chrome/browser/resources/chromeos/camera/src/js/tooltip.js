@@ -27,12 +27,13 @@ cca.tooltip.wrapper_ = null;
 cca.tooltip.hovered_ = null;
 
 /**
- * Sets up tooltip for button/input with i18n-label attribute.
+ * Sets up tooltips for elements.
+ * @param {NodeList<Element>} elements Elements whose tooltips to be shown.
+ * @return {NodeList<Element>} Elements whose tooltips have been set up.
  */
-cca.tooltip.setup = function() {
+cca.tooltip.setup = function(elements) {
   cca.tooltip.wrapper_ = document.querySelector('#tooltip');
-  document.querySelectorAll(
-      'button[i18n-label], input[i18n-label]').forEach((element) => {
+  elements.forEach((element) => {
     var handler = () => {
       // Handler hides tooltip only when it's for the element.
       if (element == cca.tooltip.hovered_) {
@@ -44,6 +45,7 @@ cca.tooltip.setup = function() {
     element.addEventListener('mouseover',
         cca.tooltip.show_.bind(undefined, element));
   });
+  return elements;
 };
 
 /**
@@ -76,8 +78,7 @@ cca.tooltip.position_ = function() {
  */
 cca.tooltip.show_ = function(element) {
   cca.tooltip.hide();
-  cca.tooltip.wrapper_.textContent = chrome.i18n.getMessage(
-      element.getAttribute('i18n-label'));
+  cca.tooltip.wrapper_.textContent = element.getAttribute('aria-label');
   cca.tooltip.hovered_ = element;
   cca.tooltip.position_();
   cca.tooltip.wrapper_.classList.add('visible');

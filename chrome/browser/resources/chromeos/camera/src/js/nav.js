@@ -185,12 +185,19 @@ cca.nav.close = function(id, condition) {
 };
 
 /**
- * Handles pressed keys on the topmost visible view.
+ * Handles key pressed event.
  * @param {Event} event Key press event.
  */
 cca.nav.onKeyPressed = function(event) {
-  if (cca.nav.topmostIndex_ >= 0) {
-    cca.nav.views_[cca.nav.topmostIndex_].onKeyPressed(event);
+  var key = cca.util.getShortcutIdentifier(event);
+  if (key == 'BrowserBack') {
+    chrome.app.window.current().minimize();
+    return;
+  }
+  // Make the topmost visible view handle the pressed key.
+  if (cca.nav.topmostIndex_ >= 0 &&
+      cca.nav.views_[cca.nav.topmostIndex_].onKeyPressed(key)) {
+    event.preventDefault();
   }
 };
 

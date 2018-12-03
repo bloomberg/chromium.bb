@@ -194,16 +194,6 @@ cca.util.isChromeOS = function() {
 };
 
 /**
- * Sets up localized aria-label for TTS on elements with i18n-label.
- */
-cca.util.setupElementsAria = function() {
-  document.querySelectorAll('[i18n-label]').forEach((element) => {
-    element.setAttribute('aria-label', chrome.i18n.getMessage(
-        element.getAttribute('i18n-label')));
-  });
-};
-
-/**
  * Animates the element once by applying 'animate' class.
  * @param {HTMLElement} element Element to be animated.
  * @param {function()=} callback Callback called on completion.
@@ -829,13 +819,11 @@ cca.util.getShortcutIdentifier = function(event) {
         identifier += 'Up';
         break;
       case 'a':
-        identifier += 'A';
-        break;
       case 'p':
-        identifier += 'P';
-        break;
       case 's':
-        identifier += 'S';
+      case 'v':
+      case 'r':
+        identifier += event.key.toUpperCase();
         break;
       default:
         identifier += event.key;
