@@ -48,7 +48,7 @@ void VoiceSearchNavigationTabHelper::NavigationItemCommitted(
     const web::LoadCommittedDetails& load_details) {
   DCHECK_EQ(web_state_, web_state);
   if (will_navigate_to_voice_search_result_) {
-    load_details.item->SetUserData(
+    web_state->GetNavigationManager()->GetLastCommittedItem()->SetUserData(
         kNavigationMarkerKey, std::make_unique<VoiceSearchNavigationMarker>());
     will_navigate_to_voice_search_result_ = false;
   }
