@@ -126,6 +126,7 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
 
 // <specdef href="https://html.spec.whatwg.org/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
+  TRACE_EVENT0("blink", "PendingScript::ExecuteScriptBlock");
   Document* context_document = element_->GetDocument().ContextDocument();
   if (!context_document) {
     Dispose();

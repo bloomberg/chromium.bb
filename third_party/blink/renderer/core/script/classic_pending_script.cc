@@ -299,6 +299,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   if (ready_state_ == kErrorOccurred)
     return nullptr;
 
+  TRACE_EVENT0("blink", "ClassicPendingScript::GetSource");
   if (!is_external_) {
     SingleCachedMetadataHandler* cache_handler = nullptr;
     // We only create an inline cache handler for html-embedded scripts, not
