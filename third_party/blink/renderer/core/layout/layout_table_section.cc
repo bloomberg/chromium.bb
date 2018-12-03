@@ -1998,7 +1998,9 @@ int LayoutTableSection::LogicalHeightForRow(
   if (grid_[row_index].logical_height.IsSpecified()) {
     LayoutUnit specified_logical_height =
         MinimumValueForLength(grid_[row_index].logical_height, LayoutUnit());
-    logical_height = std::max(logical_height, specified_logical_height.ToInt());
+    // We round here to match computations for row_pos_ in
+    // CalcRowLogicalHeight().
+    logical_height = std::max(logical_height, specified_logical_height.Round());
   }
   return logical_height;
 }
