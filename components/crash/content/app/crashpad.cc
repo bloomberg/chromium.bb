@@ -268,12 +268,6 @@ void DumpWithoutCrashing() {
   CRASHPAD_SIMULATE_CRASH();
 }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-void CrashWithoutDumping(const std::string& message) {
-  crashpad::CrashpadClient::CrashWithoutDump(message);
-}
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
 void GetReports(std::vector<Report>* reports) {
 #if defined(OS_WIN)
   // On Windows, the crash client may be linked into another module, which

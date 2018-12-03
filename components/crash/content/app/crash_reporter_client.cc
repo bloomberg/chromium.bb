@@ -36,7 +36,7 @@ CrashReporterClient* GetCrashReporterClient() {
 CrashReporterClient::CrashReporterClient() {}
 CrashReporterClient::~CrashReporterClient() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 void CrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {}
 #endif
@@ -150,10 +150,6 @@ bool CrashReporterClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 #if defined(OS_ANDROID)
 unsigned int CrashReporterClient::GetCrashDumpPercentageForWebView() {
   return 100;
-}
-
-bool CrashReporterClient::GetBrowserProcessType(std::string* ptype) {
-  return false;
 }
 
 int CrashReporterClient::GetAndroidMinidumpDescriptor() {

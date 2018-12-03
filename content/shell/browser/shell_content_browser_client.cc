@@ -55,7 +55,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
@@ -67,8 +67,9 @@
 #include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX)
 #include "base/debug/leak_annotations.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif
@@ -89,11 +90,7 @@ namespace {
 
 ShellContentBrowserClient* g_browser_client;
 
-#if defined(OS_ANDROID)
-int GetCrashSignalFD(const base::CommandLine& command_line) {
-  return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
-}
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path =
@@ -139,7 +136,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 
   return -1;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_LINUX)
 
 }  // namespace
 
@@ -412,11 +409,15 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       kShellPakDescriptor,
       base::GlobalDescriptors::GetInstance()->Get(kShellPakDescriptor),
       base::GlobalDescriptors::GetInstance()->GetRegion(kShellPakDescriptor));
-#endif
+
+  crash_reporter::ChildExitObserver::GetInstance()->BrowserChildProcessStarted(
+      child_process_id, mappings);
+#else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
   }
+#endif  // !defined(OS_ANDROID)
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 

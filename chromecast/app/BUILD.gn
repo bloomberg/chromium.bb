@@ -64,6 +64,7 @@ cast_source_set("cast_crash_client") {
       "//chromecast/base:cast_sys_info",
       "//chromecast/base:cast_version",
       "//chromecast/browser:jni_headers",
+      "//third_party/breakpad:client",
     ]
   }
 }

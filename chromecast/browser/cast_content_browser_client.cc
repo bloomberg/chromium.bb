@@ -87,17 +87,14 @@
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-#if defined(OS_LINUX)
-#include "components/crash/content/app/breakpad_linux.h"
-#endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "media/mojo/services/android_mojo_media_client.h"
 #if !BUILDFLAG(USE_CHROMECAST_CDMS)
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -485,19 +482,12 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
       base::CommandLine::ForCurrentProcess();
 
 #if !defined(OS_FUCHSIA)
-#if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCrashReporter)) {
-    command_line->AppendSwitch(switches::kEnableCrashReporter);
-  }
-#else
   // IsCrashReporterEnabled() is set when InitCrashReporter() is called, and
   // controlled by GetBreakpadClient()->EnableBreakpadForProcess(), therefore
   // it's ok to add switch to every process here.
   if (breakpad::IsCrashReporterEnabled()) {
     command_line->AppendSwitch(switches::kEnableCrashReporter);
   }
-#endif  // defined(OS_ANDROID)
 #endif  // !defined(OS_FUCHSIA)
 
   // Command-line for different processes.
@@ -791,8 +781,9 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       kAndroidPakDescriptor,
       base::GlobalDescriptors::GetInstance()->Get(kAndroidPakDescriptor),
       base::GlobalDescriptors::GetInstance()->GetRegion(kAndroidPakDescriptor));
-#endif  // defined(OS_ANDROID)
-#if !defined(OS_FUCHSIA)
+  crash_reporter::ChildExitObserver::GetInstance()->BrowserChildProcessStarted(
+      child_process_id, mappings);
+#elif !defined(OS_FUCHSIA)
   // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
@@ -836,12 +827,7 @@ scoped_refptr<net::SSLPrivateKey> CastContentBrowserClient::DeviceKey() {
   return nullptr;
 }
 
-#if defined(OS_ANDROID)
-int CastContentBrowserClient::GetCrashSignalFD(
-    const base::CommandLine& command_line) {
-  return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
-}
-#elif !defined(OS_FUCHSIA)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 int CastContentBrowserClient::GetCrashSignalFD(
     const base::CommandLine& command_line) {
   std::string process_type =
@@ -879,7 +865,7 @@ CastContentBrowserClient::CreateCrashHandlerHost(
   crash_handler->StartUploaderThread();
   return crash_handler;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>
 CastContentBrowserClient::CreateThrottlesForNavigation(

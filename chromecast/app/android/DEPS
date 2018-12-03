@@ -3,4 +3,5 @@ include_rules = [
   "+chromecast/browser/android",
   "+jni",
   "+services/service_manager/embedder",
+  "+third_party/breakpad",
 ]

@@ -12,6 +12,7 @@
 #include "base/android/application_status_listener.h"
 #include "base/android/child_process_binding_types.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/posix_file_descriptor_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
@@ -44,6 +46,7 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     TerminationInfo(const TerminationInfo& other);
     TerminationInfo& operator=(const TerminationInfo& other);
 
+    // TODO(jperaza): Not valid until Crashpad is enabled.
     bool is_crashed() const { return crash_signo != kInvalidSigno; }
 
     int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
@@ -52,6 +55,7 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     base::android::ApplicationState app_state =
         base::android::APPLICATION_STATE_UNKNOWN;
 
+    // TODO(jperaza): Not valid until Crashpad is enabled.
     // The crash signal the child process received before it exited.
     int crash_signo = kInvalidSigno;
 
@@ -105,6 +109,9 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
   // process type.
   class Client {
    public:
+    // OnChildStart is called on the launcher thread.
+    virtual void OnChildStart(int process_host_id,
+                              content::PosixFileDescriptorInfo* mappings) = 0;
     // OnChildExit is called on the UI thread.
     // OnChildExit may be called twice for the same process.
     virtual void OnChildExit(const TerminationInfo& info) = 0;
@@ -126,6 +133,14 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
 
   // crashpad::CrashHandlerHost::Observer
   void ChildReceivedCrashSignal(base::ProcessId pid, int signo) override;
+
+  // BrowserChildProcessStarted must be called from
+  // ContentBrowserClient::GetAdditionalMappedFilesForChildProcess
+  // overrides, to notify the ChildExitObserver of child process
+  // creation, and to allow clients to register any fd mappings they
+  // need.
+  void BrowserChildProcessStarted(int process_host_id,
+                                  content::PosixFileDescriptorInfo* mappings);
 
  private:
   friend struct base::LazyInstanceTraitsBase<ChildExitObserver>;
