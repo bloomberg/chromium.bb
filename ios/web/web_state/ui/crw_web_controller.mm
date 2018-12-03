@@ -552,7 +552,7 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // to notify WebStateObservers.
 - (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item;
 // Notifies WebStateObservers the completion of this navigation.
-- (void)didLoadNativeContentForNavigationItem:(web::NavigationItem*)item;
+- (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item;
 // Loads a blank page directly into WKWebView as a placeholder for a Native View
 // or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
 // The completion handler is called in the |webView:didFinishNavigation|
@@ -564,11 +564,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (void)handleErrorRetryCommand:(web::ErrorRetryCommand)command
                  navigationItem:(web::NavigationItemImpl*)item
               navigationContext:(web::NavigationContextImpl*)context;
-// Loads the current nativeController in a native view. If a web view is
-// present, removes it and swaps in the native view in its place. |context| can
-// not be null.
-- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
-                navigationContext:(web::NavigationContextImpl*)context;
 // Loads the error page.
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context;
@@ -1722,38 +1717,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     holder->set_mime_type([_pendingNavigationInfo MIMEType]);
 }
 
-- (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
-                navigationContext:(web::NavigationContextImpl*)context {
-  if (loadSuccess) {
-    // No DidStartNavigation callback for displaying error page.
-    _webStateImpl->OnNavigationStarted(context);
-  }
-  [self didStartLoading];
-  self.navigationManagerImpl->CommitPendingItem();
-  if (loadSuccess) {
-    // No DidFinishNavigation callback for displaying error page.
-    context->SetHasCommitted(true);
-    _webStateImpl->OnNavigationFinished(context);
-    web::NavigationItemImpl* item =
-        context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
-                                           context->GetNavigationItemUniqueID())
-                : nullptr;
-    if (item && web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
-      // Reports the successful navigation to the ErrorRetryStateMachine.
-      item->error_retry_state_machine().SetNoNavigationError();
-    }
-  }
-
-  NSString* title = [self.nativeController title];
-  if (title) {
-    [self setNavigationItemTitle:title];
-  }
-
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
-    [self.nativeController setDelegate:self];
-  }
-}
-
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context {
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -1794,15 +1757,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
 
-  // If |context| has placeholder URL, this is the second part of a native error
-  // load for a provisional load failure. Rewrite the context URL to actual URL
-  // so the navigation event is broadcasted.
-  // TODO(crbug.com/803503) Clean up callbcks for native error.
+  // TODO(crbug.com/803503): only call these for placeholder navigation because
+  // they should have already been triggered during navigation commit for
+  // failures that happen after commit.
+  [self didStartLoading];
+  self.navigationManagerImpl->CommitPendingItem();
+
+  // If |context| is a placeholder navigation, this is the second part of the
+  // error page load for a provisional load failure. Rewrite the context URL to
+  // actual URL so the navigation event is broadcasted.
   if (context->IsPlaceholderNavigation()) {
     context->SetUrl(item->GetURL());
     context->SetPlaceholderNavigation(false);
   }
-  [self loadNativeViewWithSuccess:NO navigationContext:context];
+
   _webStateImpl->SetIsLoading(false);
   _webStateImpl->OnPageLoaded(currentURL, NO);
 }
@@ -1845,22 +1813,39 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (void)didLoadNativeContentForNavigationItem:(web::NavigationItem*)item {
+- (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item {
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
-  std::unique_ptr<web::NavigationContextImpl> navigationContext =
+  std::unique_ptr<web::NavigationContextImpl> context =
       [self registerLoadRequestForURL:targetURL
                              referrer:referrer
                            transition:self.currentTransition
                sameDocumentNavigation:NO
                        hasUserGesture:YES
                 placeholderNavigation:NO];
-  [self loadNativeViewWithSuccess:YES
-                navigationContext:navigationContext.get()];
+
+  _webStateImpl->OnNavigationStarted(context.get());
+  [self didStartLoading];
+  self.navigationManagerImpl->CommitPendingItem();
+  context->SetHasCommitted(true);
+  _webStateImpl->OnNavigationFinished(context.get());
+
+  if (item && web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
+    // Report the successful navigation to the ErrorRetryStateMachine.
+    item->error_retry_state_machine().SetNoNavigationError();
+  }
+
+  NSString* title = [self.nativeController title];
+  if (title) {
+    [self setNavigationItemTitle:title];
+  }
+
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
+    [self.nativeController setDelegate:self];
+  }
+
   _loadPhase = web::PAGE_LOADED;
-  [self didFinishWithURL:targetURL
-             loadSuccess:YES
-                 context:navigationContext.get()];
+  [self didFinishWithURL:targetURL loadSuccess:YES context:context.get()];
 }
 
 - (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
