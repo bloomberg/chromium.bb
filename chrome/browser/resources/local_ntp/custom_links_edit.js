@@ -100,6 +100,7 @@ function prepopulateFields(rid) {
     return;
   prepopulatedLink.rid = rid;
   $(IDS.TITLE_FIELD).value = prepopulatedLink.title = data.title;
+  $(IDS.TITLE_FIELD).style.direction = data.direction || 'ltr';
   $(IDS.URL_FIELD).value = prepopulatedLink.url = data.url;
 
   // Set accessibility names.
@@ -175,6 +176,7 @@ function closeDialog() {
   // Small delay to allow the dialog to close before cleaning up.
   window.setTimeout(() => {
     $(IDS.FORM).reset();
+    $(IDS.TITLE_FIELD).style.direction = null;
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
     $(IDS.DELETE).disabled = false;
     $(IDS.DONE).disabled = false;

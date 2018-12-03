@@ -151,10 +151,12 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
   // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
   // "ltr".
   const char* direction;
-  if (base::i18n::StringContainsStrongRTLChars(mv_item.title))
+  if (base::i18n::GetFirstStrongCharacterDirection(mv_item.title) ==
+      base::i18n::RIGHT_TO_LEFT) {
     direction = kRTLHtmlTextDirection;
-  else
+  } else {
     direction = kLTRHtmlTextDirection;
+  }
 
   std::string title = base::UTF16ToUTF8(mv_item.title);
   if (title.empty())
