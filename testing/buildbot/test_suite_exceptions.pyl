@@ -1318,7 +1318,7 @@
       'linux-blink-gen-property-trees': {
         'args': [
           '--debug',
-          '--additional-driver-flag=--enable-blink-gen-property-trees',
+          '--additional-driver-flag=--enable-blink-features=BlinkGenPropertyTrees',
         ],
       },
       'linux-blink-heap-incremental-marking': {
