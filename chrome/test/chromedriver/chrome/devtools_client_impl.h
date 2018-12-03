@@ -13,7 +13,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/net/timeout.h"
@@ -128,16 +129,19 @@ class DevToolsClientImpl : public DevToolsClient {
     // The response has been received.
     kReceived
   };
-  struct ResponseInfo {
+  struct ResponseInfo : public base::RefCounted<ResponseInfo> {
+   public:
     explicit ResponseInfo(const std::string& method);
-    ~ResponseInfo();
 
     ResponseState state;
     std::string method;
     internal::InspectorCommandResponse response;
     Timeout command_timeout;
+
+   private:
+    friend class base::RefCounted<ResponseInfo>;
+    ~ResponseInfo();
   };
-  typedef std::map<int, linked_ptr<ResponseInfo> > ResponseInfoMap;
 
   Status SendCommandInternal(
       const std::string& method,
@@ -172,8 +176,8 @@ class DevToolsClientImpl : public DevToolsClient {
   std::list<DevToolsEventListener*> unnotified_event_listeners_;
   const internal::InspectorEvent* unnotified_event_;
   std::list<DevToolsEventListener*> unnotified_cmd_response_listeners_;
-  linked_ptr<ResponseInfo> unnotified_cmd_response_info_;
-  ResponseInfoMap response_info_map_;
+  scoped_refptr<ResponseInfo> unnotified_cmd_response_info_;
+  std::map<int, scoped_refptr<ResponseInfo>> response_info_map_;
   int next_id_;
   int stack_count_;
 

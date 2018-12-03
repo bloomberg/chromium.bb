@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -60,8 +59,8 @@ void ExecuteCreateSession(
   std::string new_id = session_id;
   if (new_id.empty())
     new_id = GenerateId();
-  std::unique_ptr<Session> session(new Session(new_id));
-  std::unique_ptr<base::Thread> thread(new base::Thread(new_id));
+  std::unique_ptr<Session> session = std::make_unique<Session>(new_id);
+  std::unique_ptr<base::Thread> thread = std::make_unique<base::Thread>(new_id);
   if (!thread->Start()) {
     callback.Run(
         Status(kUnknownError, "failed to start a thread for the new session"),
@@ -72,8 +71,7 @@ void ExecuteCreateSession(
 
   thread->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&SetThreadLocalSession, std::move(session)));
-  session_thread_map
-      ->insert(std::make_pair(new_id, make_linked_ptr(thread.release())));
+  session_thread_map->insert(std::make_pair(new_id, std::move(thread)));
   init_session_cmd.Run(params, new_id, callback);
 }
 
@@ -120,9 +118,8 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
 
   base::RunLoop run_loop;
 
-  for (SessionThreadMap::const_iterator iter = session_thread_map->begin();
-       iter != session_thread_map->end();
-       ++iter) {
+  for (auto iter = session_thread_map->begin();
+       iter != session_thread_map->end(); ++iter) {
     session_capabilities_command.Run(params,
                                      iter->first,
                                      base::Bind(
@@ -172,9 +169,8 @@ void ExecuteQuitAll(
     return;
   }
   base::RunLoop run_loop;
-  for (SessionThreadMap::const_iterator iter = session_thread_map->begin();
-       iter != session_thread_map->end();
-       ++iter) {
+  for (auto iter = session_thread_map->begin();
+       iter != session_thread_map->end(); ++iter) {
     quit_command.Run(params,
                      iter->first,
                      base::Bind(&OnSessionQuit,
