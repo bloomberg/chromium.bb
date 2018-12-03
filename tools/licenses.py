@@ -188,6 +188,20 @@ SPECIAL_CASES = {
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
+                 'mini_chromium'): {
+        "Name": "mini_chromium",
+        "URL": "https://chromium.googlesource.com/chromium/mini_chromium/",
+        "License": "BSD",
+        "License File": "NOT_SHIPPED",
+    },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
+                 'zlib'): {
+        "Name": "zlib",
+        "URL": "https://zlib.net/",
+        "License": "zlib",
+        "License File": "NOT_SHIPPED",
+    },
     os.path.join('third_party', 'v8-i18n'): {
         "Name": "Internationalization Library for v8",
         "URL": "http://code.google.com/p/v8-i18n/",
