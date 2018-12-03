@@ -74,6 +74,11 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
           gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE, command_buffer_id_,
           gpu_service_->skia_output_surface_sequence_id());
 
+  gpu::GpuChannelManager* channel_manager = gpu_service_->gpu_channel_manager();
+  feature_info_ = base::MakeRefCounted<gpu::gles2::FeatureInfo>(
+      channel_manager->gpu_driver_bug_workarounds(),
+      channel_manager->gpu_feature_info());
+
   if (gpu_service_->is_using_vulkan())
     InitializeForVulkan();
   else
@@ -415,8 +420,7 @@ void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
 const gpu::gles2::FeatureInfo* SkiaOutputSurfaceImplOnGpu::GetFeatureInfo()
     const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
+  return feature_info_.get();
 }
 
 const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()

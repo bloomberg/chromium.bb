@@ -153,6 +153,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   OutputSurface::Capabilities capabilities_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;

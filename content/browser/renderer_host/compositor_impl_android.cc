@@ -1377,6 +1377,9 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(root_window_)
           .GetSizeInPixel();
+  renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+  renderer_settings.use_skia_deferred_display_list =
+      features::IsUsingSkiaDeferredDisplayList();
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
