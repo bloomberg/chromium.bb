@@ -135,7 +135,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   }
 
   void OnSuccess(WebIDBDatabase* backend,
-                 const WebIDBMetadata& metadata) override {
+                 const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
@@ -159,7 +159,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void OnUpgradeNeeded(long long old_version,
                        WebIDBDatabase* database,
-                       const WebIDBMetadata& metadata,
+                       const IDBDatabaseMetadata& metadata,
                        mojom::IDBDataLoss data_loss,
                        WebString data_loss_message) override {
     NOTREACHED();

@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -21,7 +20,6 @@ using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
-using blink::WebIDBMetadata;
 using blink::WebIDBNameAndVersion;
 using blink::WebIDBValue;
 using blink::WebString;
@@ -125,9 +123,9 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
     int64_t old_version,
     mojom::IDBDataLoss data_loss,
     const String& data_loss_message,
-    const WebIDBMetadata& web_metadata) {
+    const IDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = new WebIDBDatabaseImpl(std::move(database_info));
-  callbacks_->OnUpgradeNeeded(old_version, database, web_metadata, data_loss,
+  callbacks_->OnUpgradeNeeded(old_version, database, metadata, data_loss,
                               WebString(data_loss_message));
   // Not resetting |callbacks_|.  In this instance we will have to forward at
   // least one other call in the set OnSuccess() / OnError().
@@ -135,12 +133,12 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
 
 void IndexedDBCallbacksImpl::SuccessDatabase(
     IDBDatabaseAssociatedPtrInfo database_info,
-    const WebIDBMetadata& web_metadata) {
+    const IDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = nullptr;
   if (database_info.is_valid())
     database = new WebIDBDatabaseImpl(std::move(database_info));
 
-  callbacks_->OnSuccess(database, web_metadata);
+  callbacks_->OnSuccess(database, metadata);
   callbacks_.reset();
 }
 

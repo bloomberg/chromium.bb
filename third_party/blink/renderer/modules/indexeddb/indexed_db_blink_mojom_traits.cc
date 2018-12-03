@@ -10,7 +10,6 @@
 #include "third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -23,10 +22,10 @@ using blink::mojom::IDBOperationType;
 namespace mojo {
 
 // static
-bool StructTraits<
-    blink::mojom::IDBDatabaseMetadataDataView,
-    blink::WebIDBMetadata>::Read(blink::mojom::IDBDatabaseMetadataDataView data,
-                                 blink::WebIDBMetadata* out) {
+bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
+                  blink::IDBDatabaseMetadata>::
+    Read(blink::mojom::IDBDatabaseMetadataDataView data,
+         blink::IDBDatabaseMetadata* out) {
   out->id = data.id();
   String name;
   if (!data.ReadName(&name))
@@ -34,8 +33,19 @@ bool StructTraits<
   out->name = name;
   out->version = data.version();
   out->max_object_store_id = data.max_object_store_id();
-  if (!data.ReadObjectStores(&out->object_stores))
-    return false;
+  MapDataView<int64_t, blink::mojom::IDBObjectStoreMetadataDataView>
+      object_stores;
+  data.GetObjectStoresDataView(&object_stores);
+  out->object_stores.ReserveCapacityForSize(object_stores.size());
+  for (size_t i = 0; i < object_stores.size(); ++i) {
+    const int64_t key = object_stores.keys()[i];
+    scoped_refptr<blink::IDBObjectStoreMetadata> object_store;
+    if (!object_stores.values().Read(i, &object_store)) {
+      return false;
+    }
+    DCHECK(!out->object_stores.Contains(key));
+    out->object_stores.insert(key, object_store);
+  }
   return true;
 }
 
@@ -50,18 +60,21 @@ bool StructTraits<blink::mojom::IDBIndexKeysDataView, blink::WebIDBIndexKeys>::
 
 // static
 bool StructTraits<blink::mojom::IDBIndexMetadataDataView,
-                  blink::WebIDBMetadata::Index>::
+                  scoped_refptr<blink::IDBIndexMetadata>>::
     Read(blink::mojom::IDBIndexMetadataDataView data,
-         blink::WebIDBMetadata::Index* out) {
-  out->id = data.id();
+         scoped_refptr<blink::IDBIndexMetadata>* out) {
+  scoped_refptr<blink::IDBIndexMetadata> value =
+      blink::IDBIndexMetadata::Create();
+  value->id = data.id();
   String name;
   if (!data.ReadName(&name))
     return false;
-  out->name = name;
-  if (!data.ReadKeyPath(&out->key_path))
+  value->name = name;
+  if (!data.ReadKeyPath(&value->key_path))
     return false;
-  out->unique = data.unique();
-  out->multi_entry = data.multi_entry();
+  value->unique = data.unique();
+  value->multi_entry = data.multi_entry();
+  *out = std::move(value);
   return true;
 }
 
@@ -191,21 +204,21 @@ bool StructTraits<blink::mojom::IDBKeyDataView, blink::WebIDBKey>::Read(
 
 // static
 blink::mojom::blink::IDBKeyPathDataPtr
-StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::data(
-    const blink::WebIDBKeyPath& key_path) {
-  if (key_path.KeyPathType() == blink::kWebIDBKeyPathTypeNull)
+StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::data(
+    const blink::IDBKeyPath& key_path) {
+  if (key_path.GetType() == blink::IDBKeyPath::Type::kNullType)
     return nullptr;
 
   auto data = blink::mojom::blink::IDBKeyPathData::New();
-  switch (key_path.KeyPathType()) {
-    case blink::kWebIDBKeyPathTypeString: {
-      String key_path_string = key_path.String();
+  switch (key_path.GetType()) {
+    case blink::IDBKeyPath::Type::kStringType: {
+      String key_path_string = key_path.GetString();
       if (key_path_string.IsNull())
         key_path_string = g_empty_string;
       data->set_string(key_path_string);
       return data;
     }
-    case blink::kWebIDBKeyPathTypeArray: {
+    case blink::IDBKeyPath::Type::kArrayType: {
       const auto& array = key_path.Array();
       Vector<String> result;
       result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array.size()));
@@ -215,7 +228,7 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::data(
       return data;
     }
 
-    case blink::kWebIDBKeyPathTypeNull:
+    case blink::IDBKeyPath::Type::kNullType:
       break;  // Not used, NOTREACHED.
   }
   NOTREACHED();
@@ -223,14 +236,14 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::data(
 }
 
 // static
-bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::Read(
+bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::Read(
     blink::mojom::IDBKeyPathDataView data,
-    blink::WebIDBKeyPath* out) {
+    blink::IDBKeyPath* out) {
   blink::mojom::IDBKeyPathDataDataView data_view;
   data.GetDataDataView(&data_view);
 
   if (data_view.is_null()) {
-    *out = blink::WebIDBKeyPath();
+    *out = blink::IDBKeyPath();
     return true;
   }
 
@@ -239,14 +252,14 @@ bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath>::Read(
       String string;
       if (!data_view.ReadString(&string))
         return false;
-      *out = blink::WebIDBKeyPath(blink::WebString(string));
+      *out = blink::IDBKeyPath(string);
       return true;
     }
     case blink::mojom::IDBKeyPathDataDataView::Tag::STRING_ARRAY: {
       Vector<String> array;
       if (!data_view.ReadStringArray(&array))
         return false;
-      *out = blink::WebIDBKeyPath(array);
+      *out = blink::IDBKeyPath(array);
       return true;
     }
   }
@@ -271,20 +284,32 @@ bool StructTraits<blink::mojom::IDBKeyRangeDataView, blink::WebIDBKeyRange>::
 
 // static
 bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
-                  blink::WebIDBMetadata::ObjectStore>::
+                  scoped_refptr<blink::IDBObjectStoreMetadata>>::
     Read(blink::mojom::IDBObjectStoreMetadataDataView data,
-         blink::WebIDBMetadata::ObjectStore* out) {
-  out->id = data.id();
+         scoped_refptr<blink::IDBObjectStoreMetadata>* out) {
+  scoped_refptr<blink::IDBObjectStoreMetadata> value =
+      blink::IDBObjectStoreMetadata::Create();
+  value->id = data.id();
   String name;
   if (!data.ReadName(&name))
     return false;
-  out->name = name;
-  if (!data.ReadKeyPath(&out->key_path))
+  value->name = name;
+  if (!data.ReadKeyPath(&value->key_path))
     return false;
-  out->auto_increment = data.auto_increment();
-  out->max_index_id = data.max_index_id();
-  if (!data.ReadIndexes(&out->indexes))
-    return false;
+  value->auto_increment = data.auto_increment();
+  value->max_index_id = data.max_index_id();
+  MapDataView<int64_t, blink::mojom::IDBIndexMetadataDataView> indexes;
+  data.GetIndexesDataView(&indexes);
+  value->indexes.ReserveCapacityForSize(indexes.size());
+  for (size_t i = 0; i < indexes.size(); ++i) {
+    const int64_t key = indexes.keys()[i];
+    scoped_refptr<blink::IDBIndexMetadata> index;
+    if (!indexes.values().Read(i, &index))
+      return false;
+    DCHECK(!value->indexes.Contains(key));
+    value->indexes.insert(key, index);
+  }
+  *out = std::move(value);
   return true;
 }
 

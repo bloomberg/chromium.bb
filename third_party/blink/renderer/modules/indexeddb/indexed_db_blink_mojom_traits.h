@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
@@ -14,8 +15,8 @@
 #include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -23,27 +24,28 @@ namespace mojo {
 
 template <>
 struct MODULES_EXPORT StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
-                                   blink::WebIDBMetadata> {
-  static int64_t id(const blink::WebIDBMetadata& metadata) {
+                                   blink::IDBDatabaseMetadata> {
+  static int64_t id(const blink::IDBDatabaseMetadata& metadata) {
     return metadata.id;
   }
-  static WTF::String name(const blink::WebIDBMetadata& metadata) {
+  static WTF::String name(const blink::IDBDatabaseMetadata& metadata) {
     if (metadata.name.IsNull())
       return g_empty_string;
     return metadata.name;
   }
-  static int64_t version(const blink::WebIDBMetadata& metadata) {
+  static int64_t version(const blink::IDBDatabaseMetadata& metadata) {
     return metadata.version;
   }
-  static int64_t max_object_store_id(const blink::WebIDBMetadata& metadata) {
+  static int64_t max_object_store_id(
+      const blink::IDBDatabaseMetadata& metadata) {
     return metadata.max_object_store_id;
   }
-  static const blink::WebVector<blink::WebIDBMetadata::ObjectStore>&
-  object_stores(const blink::WebIDBMetadata& metadata) {
+  static const HashMap<int64_t, scoped_refptr<blink::IDBObjectStoreMetadata>>&
+  object_stores(const blink::IDBDatabaseMetadata& metadata) {
     return metadata.object_stores;
   }
   static bool Read(blink::mojom::IDBDatabaseMetadataDataView data,
-                   blink::WebIDBMetadata* out);
+                   blink::IDBDatabaseMetadata* out);
 };
 
 template <>
@@ -62,27 +64,29 @@ struct MODULES_EXPORT
 
 template <>
 struct MODULES_EXPORT StructTraits<blink::mojom::IDBIndexMetadataDataView,
-                                   blink::WebIDBMetadata::Index> {
-  static int64_t id(const blink::WebIDBMetadata::Index& metadata) {
-    return metadata.id;
+                                   scoped_refptr<blink::IDBIndexMetadata>> {
+  static int64_t id(const scoped_refptr<blink::IDBIndexMetadata>& metadata) {
+    return metadata->id;
   }
-  static WTF::String name(const blink::WebIDBMetadata::Index& metadata) {
-    if (metadata.name.IsNull())
+  static WTF::String name(
+      const scoped_refptr<blink::IDBIndexMetadata>& metadata) {
+    if (metadata->name.IsNull())
       return g_empty_string;
-    return metadata.name;
+    return metadata->name;
   }
-  static const blink::WebIDBKeyPath& key_path(
-      const blink::WebIDBMetadata::Index& metadata) {
-    return metadata.key_path;
+  static const blink::IDBKeyPath& key_path(
+      const scoped_refptr<blink::IDBIndexMetadata>& metadata) {
+    return metadata->key_path;
   }
-  static bool unique(const blink::WebIDBMetadata::Index& metadata) {
-    return metadata.unique;
+  static bool unique(const scoped_refptr<blink::IDBIndexMetadata>& metadata) {
+    return metadata->unique;
   }
-  static bool multi_entry(const blink::WebIDBMetadata::Index& metadata) {
-    return metadata.multi_entry;
+  static bool multi_entry(
+      const scoped_refptr<blink::IDBIndexMetadata>& metadata) {
+    return metadata->multi_entry;
   }
   static bool Read(blink::mojom::IDBIndexMetadataDataView data,
-                   blink::WebIDBMetadata::Index* out);
+                   scoped_refptr<blink::IDBIndexMetadata>* out);
 };
 
 template <>
@@ -127,11 +131,11 @@ struct MODULES_EXPORT
 
 template <>
 struct MODULES_EXPORT
-    StructTraits<blink::mojom::IDBKeyPathDataView, blink::WebIDBKeyPath> {
+    StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath> {
   static blink::mojom::blink::IDBKeyPathDataPtr data(
-      const blink::WebIDBKeyPath& key_path);
+      const blink::IDBKeyPath& key_path);
   static bool Read(blink::mojom::IDBKeyPathDataView data,
-                   blink::WebIDBKeyPath* out);
+                   blink::IDBKeyPath* out);
 };
 
 template <>
@@ -154,32 +158,37 @@ struct MODULES_EXPORT
 };
 
 template <>
-struct MODULES_EXPORT StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
-                                   blink::WebIDBMetadata::ObjectStore> {
-  static int64_t id(const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.id;
+struct MODULES_EXPORT
+    StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
+                 scoped_refptr<blink::IDBObjectStoreMetadata>> {
+  static int64_t id(
+      const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    return metadata->id;
   }
-  static WTF::String name(const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.name;
+  static WTF::String name(
+      const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    if (metadata->name.IsNull())
+      return g_empty_string;
+    return metadata->name;
   }
-  static const blink::WebIDBKeyPath& key_path(
-      const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.key_path;
+  static const blink::IDBKeyPath& key_path(
+      const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    return metadata->key_path;
   }
   static bool auto_increment(
-      const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.auto_increment;
+      const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    return metadata->auto_increment;
   }
   static int64_t max_index_id(
-      const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.max_index_id;
+      const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    return metadata->max_index_id;
   }
-  static const blink::WebVector<blink::WebIDBMetadata::Index>& indexes(
-      const blink::WebIDBMetadata::ObjectStore& metadata) {
-    return metadata.indexes;
+  static const HashMap<int64_t, scoped_refptr<blink::IDBIndexMetadata>>&
+  indexes(const scoped_refptr<blink::IDBObjectStoreMetadata>& metadata) {
+    return metadata->indexes;
   }
   static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
-                   blink::WebIDBMetadata::ObjectStore* out);
+                   scoped_refptr<blink::IDBObjectStoreMetadata>* out);
 };
 
 }  // namespace mojo

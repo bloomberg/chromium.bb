@@ -9,11 +9,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
                     const blink::WebIDBValue&));
 
   MOCK_METHOD2(OnSuccess,
-               void(blink::WebIDBDatabase*, const blink::WebIDBMetadata&));
+               void(blink::WebIDBDatabase*, const blink::IDBDatabaseMetadata&));
   void OnSuccess(blink::WebIDBKey) override;
   MOCK_METHOD1(DoOnSuccess, void(const blink::WebIDBKey&));
 
@@ -62,7 +62,7 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
   MOCK_METHOD5(OnUpgradeNeeded,
                void(long long oldVersion,
                     blink::WebIDBDatabase*,
-                    const blink::WebIDBMetadata&,
+                    const blink::IDBDatabaseMetadata&,
                     mojom::IDBDataLoss dataLoss,
                     blink::WebString dataLossMessage));
   MOCK_METHOD0(Detach, void());

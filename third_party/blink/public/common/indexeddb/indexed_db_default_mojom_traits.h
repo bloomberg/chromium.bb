@@ -30,9 +30,9 @@ struct BLINK_COMMON_EXPORT
       const blink::IndexedDBDatabaseMetadata& metadata) {
     return metadata.max_object_store_id;
   }
-  static MapValuesArrayView<int64_t, blink::IndexedDBObjectStoreMetadata>
-  object_stores(const blink::IndexedDBDatabaseMetadata& metadata) {
-    return MapValuesToArray(metadata.object_stores);
+  static std::map<int64_t, blink::IndexedDBObjectStoreMetadata> object_stores(
+      const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.object_stores;
   }
   static bool Read(blink::mojom::IDBDatabaseMetadataDataView data,
                    blink::IndexedDBDatabaseMetadata* out);
@@ -171,9 +171,9 @@ struct BLINK_COMMON_EXPORT
       const blink::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.max_index_id;
   }
-  static MapValuesArrayView<int64_t, blink::IndexedDBIndexMetadata> indexes(
+  static std::map<int64_t, blink::IndexedDBIndexMetadata> indexes(
       const blink::IndexedDBObjectStoreMetadata& metadata) {
-    return MapValuesToArray(metadata.indexes);
+    return metadata.indexes;
   }
   static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
                    blink::IndexedDBObjectStoreMetadata* out);

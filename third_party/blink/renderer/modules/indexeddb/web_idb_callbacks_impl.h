@@ -42,7 +42,7 @@ class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 class WebIDBKey;
-struct WebIDBMetadata;
+struct IDBDatabaseMetadata;
 struct WebIDBNameAndVersion;
 class WebIDBValue;
 
@@ -62,7 +62,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                  WebIDBKey,
                  WebIDBKey primary_key,
                  WebIDBValue) override;
-  void OnSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
+  void OnSuccess(WebIDBDatabase*, const IDBDatabaseMetadata&) override;
   void OnSuccess(WebIDBKey) override;
   void OnSuccess(WebIDBValue) override;
   void OnSuccess(WebVector<WebIDBValue>) override;
@@ -72,7 +72,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   void OnBlocked(long long old_version) override;
   void OnUpgradeNeeded(long long old_version,
                        WebIDBDatabase*,
-                       const WebIDBMetadata&,
+                       const IDBDatabaseMetadata&,
                        mojom::IDBDataLoss data_loss,
                        WebString data_loss_message) override;
   void Detach() override;
