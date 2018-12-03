@@ -89,15 +89,9 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
 
-  if (data.has_created_compositor_frame_sink && data.is_root) {
-    // This synchronous call ensures that the GL context/surface that draw to
-    // the platform window (eg. XWindow or HWND) get destroyed before the
-    // platform window is destroyed.
-    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id);
-  }
+  const bool destroy_synchronously =
+      data.has_created_compositor_frame_sink && data.is_root;
 
-  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
   data.has_created_compositor_frame_sink = false;
   data.client = nullptr;
 
@@ -106,6 +100,21 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
     frame_sink_data_map_.erase(frame_sink_id);
 
   display_hit_test_query_.erase(frame_sink_id);
+
+  if (destroy_synchronously) {
+    // This synchronous call ensures that the GL context/surface that draw to
+    // the platform window (eg. XWindow or HWND) get destroyed before the
+    // platform window is destroyed.
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id);
+
+    // Other synchronous IPCs continue to get processed while
+    // DestroyCompositorFrameSink() is happening, so it's possible
+    // HostFrameSinkManager has been mutated. |data| might not be a valid
+    // reference at this point.
+  }
+
+  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
 }
 
 void HostFrameSinkManager::EnableSynchronizationReporting(
