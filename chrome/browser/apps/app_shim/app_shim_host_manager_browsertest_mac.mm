@@ -116,12 +116,13 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
 
   // AppShimHandler overrides:
   void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(::AppShimHost* host) override {}
-  void OnShimFocus(::AppShimHost* host,
+  void OnShimClose(apps::AppShimHandler::Host* host) override {}
+  void OnShimFocus(apps::AppShimHandler::Host* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
-  void OnShimSetHidden(::AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(::AppShimHost* host) override {}
+  void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override {
+  }
+  void OnShimQuit(apps::AppShimHandler::Host* host) override {}
 
   std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;

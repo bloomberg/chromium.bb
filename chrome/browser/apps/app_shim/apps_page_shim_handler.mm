@@ -63,13 +63,14 @@ void AppsPageShimHandler::OnShimLaunch(
   bootstrap->OnLaunchAppFailed(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
 }
 
-void AppsPageShimHandler::OnShimClose(AppShimHost* host) {}
+void AppsPageShimHandler::OnShimClose(apps::AppShimHandler::Host* host) {}
 
 void AppsPageShimHandler::OnShimFocus(
-    AppShimHost* host,
+    apps::AppShimHandler::Host* host,
     apps::AppShimFocusType focus_type,
     const std::vector<base::FilePath>& files) {}
 
-void AppsPageShimHandler::OnShimSetHidden(AppShimHost* host, bool hidden) {}
+void AppsPageShimHandler::OnShimSetHidden(apps::AppShimHandler::Host* host,
+                                          bool hidden) {}
 
-void AppsPageShimHandler::OnShimQuit(AppShimHost* host) {}
+void AppsPageShimHandler::OnShimQuit(apps::AppShimHandler::Host* host) {}
