@@ -1,9 +1,10 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 'use strict';
 
-// Prepare the string assets.
+// Mock LoadTimeData strings.
 window.loadTimeData.data = {
   COPY_PROGRESS_SUMMARY: 'Copying...',
   ERROR_PROGRESS_SUMMARY: '1 Error.',
@@ -33,7 +34,7 @@ function testSimpleProgress() {
 
   // Start an animation of the item.
   item.progressValue = 0.5;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertEquals(0.5, group.getItem(item.id).progressValue);
@@ -43,7 +44,7 @@ function testSimpleProgress() {
   // Item is completed, but the animation is still on going.
   item.progressValue = 1.0;
   item.state = ProgressItemState.COMPLETED;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertEquals(100, group.getItem(item.id).progressRateInPercent);
@@ -72,7 +73,7 @@ function testCompleteAnimationDuringProgress() {
   item.progressMax = 1.0;
 
   // Add an item.
-  group.update(item, 0);
+  group.update(item);
   assertFalse(group.isAnimated(item.id));
   assertFalse(group.isSummarizedAnimated());
   assertEquals('TestItemMessage1', group.getItem(item.id).message);
@@ -81,7 +82,7 @@ function testCompleteAnimationDuringProgress() {
 
   // Start an animation of the item.
   item.progressValue = 0.5;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertEquals(0.5, group.getItem(item.id).progressValue);
@@ -105,7 +106,7 @@ function testCompleteAnimationDuringProgress() {
   // The item is completed. The animation to 100% progress starts.
   item.progressValue = 1.0;
   item.state = ProgressItemState.COMPLETED;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertEquals(100, group.getItem(item.id).progressRateInPercent);
@@ -135,7 +136,7 @@ function testAddMaxProgressItem() {
   item.progressValue = 1.0;
 
   // Add an item with 100% progress.
-  group.update(item, 0);
+  group.update(item);
   assertFalse(group.isAnimated(item.id));
   assertFalse(group.isSummarizedAnimated());
   assertEquals('TestItemMessage1', group.getItem(item.id).message);
@@ -143,9 +144,8 @@ function testAddMaxProgressItem() {
   assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
 
   // Complete the item without animation.
-  item.progressValue = null;
   item.state = ProgressItemState.COMPLETED;
-  group.update(item, 0);
+  group.update(item);
   assertFalse(group.isAnimated(item.id));
   assertFalse(group.isSummarizedAnimated());
   assertEquals(null, group.getItem(item.id));
@@ -163,7 +163,7 @@ function testCompleteDuringAnimation() {
   item.progressValue = 0.0;
 
   // Add an item.
-  group.update(item, 0);
+  group.update(item);
   assertFalse(group.isAnimated(item.id));
   assertFalse(group.isSummarizedAnimated());
   assertEquals('TestItemMessage1', group.getItem(item.id).message);
@@ -172,7 +172,7 @@ function testCompleteDuringAnimation() {
 
   // Update the progress of the item to 100%. The animation starts.
   item.progressValue = 1.0;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertEquals('TestItemMessage1', group.getItem(item.id).message);
@@ -180,9 +180,8 @@ function testCompleteDuringAnimation() {
   assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
 
   // Complete the item. The animation is still on going.
-  item.progressValue = null;
   item.state = ProgressItemState.COMPLETED;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertTrue(group.isSummarizedAnimated());
   assertTrue(!!group.getItem(item.id));
@@ -300,7 +299,7 @@ function testOneError() {
 
   assertTrue(!!group.getItem(item1.id));
   assertFalse(group.isAnimated(item1.id));
-  assertEquals(null, group.getSummarizedItem());
+  assertEquals(null, group.getSummarizedItem(0));
   assertFalse(group.isSummarizedAnimated());
   assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
 
@@ -579,7 +578,7 @@ function testQuietItem() {
 
   // Start an animation of the item.
   item.progressValue = 0.5;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   // Summarized item should not animated because the panel does not show
   // progress bar for quiet and summarized item.
@@ -591,7 +590,7 @@ function testQuietItem() {
   // Item is completed, but the animation is still on going.
   item.progressValue = 1.0;
   item.state = ProgressItemState.COMPLETED;
-  group.update(item, 0);
+  group.update(item);
   assertTrue(group.isAnimated(item.id));
   assertFalse(group.isSummarizedAnimated());
   assertEquals(100, group.getItem(item.id).progressRateInPercent);
