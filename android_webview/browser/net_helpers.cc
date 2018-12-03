@@ -32,4 +32,11 @@ int GetCacheModeForClient(AwContentsIoThreadClient* client) {
   }
 }
 
+int GetHttpCacheSize() {
+  // This currently returns a constant value, but we may consider deciding cache
+  // size dynamically, since Android provides better support on newer versions
+  // (http://crbug.com/893318).
+  return 20 * 1024 * 1024;  // 20M
+}
+
 }  // namespace android_webview
