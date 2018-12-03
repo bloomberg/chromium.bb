@@ -295,7 +295,7 @@ MessageType GetStatusInfo(Profile* profile,
                                        link_label, action_type);
       }
     } else if (signin.IsAuthenticated()) {
-      if (service->IsSyncConfirmationNeeded()) {
+      if (ShouldRequestSyncConfirmation(service)) {
         if (status_label && link_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED));
@@ -403,7 +403,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 
     // Check for a sync confirmation error.
     if (identity_manager.HasPrimaryAccount() &&
-        service->IsSyncConfirmationNeeded()) {
+        ShouldRequestSyncConfirmation(service)) {
       *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
       return SETTINGS_UNCONFIRMED_ERROR;
@@ -421,6 +421,14 @@ MessageType GetStatus(Profile* profile,
   ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, signin, WITH_HTML, nullptr, nullptr,
                        &action_type);
+}
+
+bool ShouldRequestSyncConfirmation(const ProfileSyncService* service) {
+  return !service->IsSetupInProgress() &&
+         !service->GetUserSettings()->IsFirstSetupComplete() &&
+         !service->HasDisableReason(
+             ProfileSyncService::DISABLE_REASON_USER_CHOICE) &&
+         service->IsAuthenticatedAccountPrimary();
 }
 
 bool ShouldShowPassphraseError(const ProfileSyncService* service) {

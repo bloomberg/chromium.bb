@@ -82,6 +82,12 @@ MessageType GetStatus(Profile* profile,
                       const browser_sync::ProfileSyncService* service,
                       const SigninManagerBase& signin);
 
+// Whether sync is currently blocked from starting because the sync
+// confirmation dialog hasn't been shown. Note that once the dialog is
+// showing (i.e. IsFirstSetupInProgress() is true), this will return false.
+bool ShouldRequestSyncConfirmation(
+    const browser_sync::ProfileSyncService* service);
+
 // Returns whether it makes sense to show a Sync passphrase error UI, i.e.
 // whether a missing passphrase is preventing Sync from fully starting up.
 bool ShouldShowPassphraseError(const browser_sync::ProfileSyncService* service);

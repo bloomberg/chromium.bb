@@ -409,7 +409,7 @@ TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
 
   NiceMock<ProfileSyncServiceMock> service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
-  ASSERT_TRUE(service.IsSyncConfirmationNeeded());
+  ASSERT_TRUE(sync_ui_util::ShouldRequestSyncConfirmation(&service));
 
   base::string16 actionable_error_status_label;
   base::string16 link_label;

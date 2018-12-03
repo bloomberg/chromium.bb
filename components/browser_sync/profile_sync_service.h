@@ -367,12 +367,6 @@ class ProfileSyncService : public syncer::SyncService,
   // assume it's running on the UI thread.
   static bool IsSyncAllowedByFlag();
 
-  // Whether sync is currently blocked from starting because the sync
-  // confirmation dialog hasn't been shown. Note that once the dialog is
-  // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
-  // TODO(crbug.com/839834): This method is somewhat misnamed.
-  bool IsSyncConfirmationNeeded() const;
-
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
