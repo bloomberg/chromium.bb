@@ -814,6 +814,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-034.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-036.xht [ Skip ]
 
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/balance-table-with-fractional-height-row.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/filter-with-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/inline-block-and-column-span-all.html [ Failure ]
