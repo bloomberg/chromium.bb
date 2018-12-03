@@ -206,6 +206,7 @@ void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,
 }
 
 bool ScriptRunner::ExecuteInOrderTask() {
+  TRACE_EVENT0("blink", "ScriptRunner::ExecuteInOrderTask");
   if (in_order_scripts_to_execute_soon_.IsEmpty())
     return false;
 
@@ -221,6 +222,7 @@ bool ScriptRunner::ExecuteInOrderTask() {
 }
 
 bool ScriptRunner::ExecuteAsyncTask() {
+  TRACE_EVENT0("blink", "ScriptRunner::ExecuteAsyncTask");
   // Find an async script loader which is not currently streaming.
   auto it = std::find_if(async_scripts_to_execute_soon_.begin(),
                          async_scripts_to_execute_soon_.end(),
