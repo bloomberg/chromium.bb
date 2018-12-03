@@ -132,8 +132,7 @@ class UiControllerAndroid : public UiController,
   base::android::ScopedJavaGlobalRef<jobject>
       java_autofill_assistant_ui_controller_;
 
-  // UI delegate. It can be nullptr during initialization and after the delegate
-  // has been deleted. Always check for nullptr before using it.
+  // UI delegate can be nullptr before SetUiDelegate.
   UiDelegate* ui_delegate_;
   content::BrowserContext* browser_context_;
 
