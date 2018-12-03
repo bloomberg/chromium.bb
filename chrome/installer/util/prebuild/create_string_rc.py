@@ -220,7 +220,7 @@ class GrdHandler(sax.handler.ContentHandler):
 
 
 class XtbHandler(sax.handler.ContentHandler):
-  """Extracts selected translations from an .xrd file.
+  """Extracts selected translations from an .xtd file.
 
   Populates the |lang| and |translations| attributes with the language and
   selected strings of an .xtb file. Instances may be re-used to read the same
@@ -295,7 +295,7 @@ class XtbHandler(sax.handler.ContentHandler):
 
 class StringRcMaker(object):
   """Makes .h and .rc files containing strings and translations."""
-  def __init__(self, name, inputs, outdir, brand):
+  def __init__(self, name, inputs, outdir, depfile, brand):
     """Constructs a maker.
 
     Args:
@@ -307,13 +307,16 @@ class StringRcMaker(object):
     self.name = name
     self.inputs = inputs
     self.outdir = outdir
+    self.depfile = depfile
     self.brand = brand
 
   def MakeFiles(self):
     string_id_set = self.__BuildStringIds()
-    translated_strings = self.__ReadSourceAndTranslatedStrings(string_id_set)
+    translated_strings, xtb_files = self.__ReadSourceAndTranslatedStrings(
+            string_id_set)
     self.__WriteRCFile(translated_strings)
     self.__WriteHeaderFile(string_id_set, translated_strings)
+    self.__WriteDepfile(xtb_files)
 
   class __TranslationData(object):
     """A container of information about a single translation."""
@@ -350,11 +353,12 @@ class StringRcMaker(object):
       # Compute a glob for the translation files.
       xtb_pattern = os.path.join(os.path.dirname(grd_file), xtb_dir,
                                  '%s*.xtb' % source_name)
+      xtb_files = glob.glob(xtb_pattern)
       translated_strings.extend(
         self.__ReadSourceAndTranslationsFrom(string_id_set, grd_file,
-                                             glob.glob(xtb_pattern)))
+                                             xtb_files))
     translated_strings.sort()
-    return translated_strings
+    return translated_strings, xtb_files
 
   def __ReadSourceAndTranslationsFrom(self, string_id_set, grd_file, xtb_files):
     """Reads source strings and translations for a .grd file.
@@ -438,6 +442,9 @@ class StringRcMaker(object):
                        escaped_text))
       outfile.write(FOOTER_TEXT)
 
+  def __HeaderFileName(self):
+      return os.path.join(self.outdir, self.name + '.h')
+
   def __WriteHeaderFile(self, string_id_set, translated_strings):
     """Writes a .h file with resource ids."""
     # TODO(grt): Stream the lines to the file rather than building this giant
@@ -489,7 +496,7 @@ class StringRcMaker(object):
       installer_string_mapping_lines.append('  HANDLE_STRING(%s_BASE, %s)'
                                             % (string_id, string_id))
 
-    with open(os.path.join(self.outdir, self.name + '.h'), 'wb') as outfile:
+    with open(self.__HeaderFileName(), 'wb') as outfile:
       outfile.write('\n'.join(lines))
       outfile.write('\n#ifndef RC_INVOKED')
       outfile.write(' \\\n'.join(do_languages_lines))
@@ -497,6 +504,11 @@ class StringRcMaker(object):
       outfile.write(' \\\n'.join(do_mode_strings_lines))
       # .rc files must end in a new line
       outfile.write('\n#endif  // ndef RC_INVOKED\n')
+
+  def __WriteDepfile(self, xtb_files):
+    with open(self.depfile, 'wb') as outfile:
+      outfile.write('%s: ' % self.__HeaderFileName())
+      outfile.write(' '.join(sorted(xtb_files)))
 
 
 def ParseCommandLine():
@@ -530,12 +542,16 @@ def ParseCommandLine():
                       required=True,
                       help='base name of generated .rc and .h files',
                       dest='name')
+  parser.add_argument('--depfile',
+                      required=True,
+                      help='path to depfile to write')
   return parser.parse_args()
 
 
 def main():
   args = ParseCommandLine()
-  StringRcMaker(args.name, args.inputs, args.outdir, args.brand).MakeFiles()
+  StringRcMaker(args.name, args.inputs, args.outdir, args.depfile,
+                args.brand).MakeFiles()
   return 0
 
 
