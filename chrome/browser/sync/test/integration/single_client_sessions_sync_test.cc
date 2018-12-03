@@ -24,7 +24,9 @@
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
+#include "components/sync_sessions/session_store.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
@@ -51,6 +53,7 @@ using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
 using sessions_helper::WaitForTabsToLoad;
 using sessions_helper::WindowsMatch;
+using sync_sessions::SessionSyncTestHelper;
 using typed_urls_helper::GetUrlFromClient;
 
 static const char* kURL1 = "data:text/html,<html><title>Test</title></html>";
@@ -399,6 +402,59 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, OpenNewWindow) {
 
   WaitForHierarchyOnServer(
       SessionsHierarchy({{base_url.spec()}, {new_window_url.spec()}}));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       GarbageCollectionOfForeignSessions) {
+  const std::string kForeignSessionTag = "ForeignSessionTag";
+  const SessionID kWindowId = SessionID::FromSerializedValue(5);
+  const SessionID kTabId1 = SessionID::FromSerializedValue(1);
+  const SessionID kTabId2 = SessionID::FromSerializedValue(2);
+  const base::Time kLastModifiedTime =
+      base::Time::Now() - base::TimeDelta::FromDays(100);
+
+  SessionSyncTestHelper helper;
+
+  sync_pb::EntitySpecifics tab1;
+  *tab1.mutable_session() =
+      helper.BuildTabSpecifics(kForeignSessionTag, kWindowId, kTabId1);
+
+  sync_pb::EntitySpecifics tab2;
+  *tab2.mutable_session() =
+      helper.BuildTabSpecifics(kForeignSessionTag, kWindowId, kTabId2);
+
+  // |tab2| is orphan, i.e. not referenced by the header. We do this to verify
+  // that such tabs are also subject to garbage collection.
+  sync_pb::EntitySpecifics header;
+  SessionSyncTestHelper::BuildSessionSpecifics(kForeignSessionTag,
+                                               header.mutable_session());
+  SessionSyncTestHelper::AddWindowSpecifics(kWindowId, {kTabId1},
+                                            header.mutable_session());
+
+  for (const sync_pb::EntitySpecifics& specifics : {tab1, tab2, header}) {
+    GetFakeServer()->InjectEntity(
+        syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+            sync_sessions::SessionStore::GetClientTag(specifics.session()),
+            specifics,
+            /*creation_time=*/syncer::TimeToProtoTime(kLastModifiedTime),
+            /*last_modified_time=*/syncer::TimeToProtoTime(kLastModifiedTime)));
+  }
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Verify that all entities have been deleted.
+  WaitForHierarchyOnServer(SessionsHierarchy());
+
+  std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
+  for (const sync_pb::SyncEntity& entity : entities) {
+    EXPECT_NE(kForeignSessionTag, entity.specifics().session().session_tag());
+  }
+
+  EXPECT_EQ(
+      3, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.SESSION",
+                                         /*LOCAL_DELETION=*/0));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
