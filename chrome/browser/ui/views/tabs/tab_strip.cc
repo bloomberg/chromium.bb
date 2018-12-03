@@ -953,10 +953,6 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
   return !!touch_layout_;
 }
 
-bool TabStrip::ShouldShowCloseButtonOnHover() {
-  return !touch_layout_;
-}
-
 bool TabStrip::MaySetClip() {
   // Only touch layout needs to restrict the clip.
   return touch_layout_ || IsStackingDraggedTabs();
