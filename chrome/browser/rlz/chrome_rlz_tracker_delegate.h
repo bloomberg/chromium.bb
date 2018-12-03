@@ -46,6 +46,7 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
   bool ClearReferral() override;
   void SetOmniboxSearchCallback(const base::Closure& callback) override;
   void SetHomepageSearchCallback(const base::Closure& callback) override;
+  bool ShouldUpdateExistingAccessPointRlz() override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,
