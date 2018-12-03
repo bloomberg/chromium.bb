@@ -211,14 +211,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1523774894176285446">Browser alternativo da aprire per i siti web configurati.</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
-<translation id="1532965933165453786">Consente di attivare o disattivare Fast Transition.
-      La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo.
-      Per poter usare Fast Transition, è necessario attivare sia questa impostazione che la proprietà ONC per ogni rete.
-      Una volta impostato, Fast Transition rimane valido fino alla modifica della norma per disattivarlo.
-
-      Se la norma non è impostata, Fast Transition non viene utilizzato.
-      Se è impostata su false, Fast Transition non viene utilizzato.
-      Se è impostata su true, Fast Transition viene utilizzato quando il punto di accesso wireless lo supporta.</translation>
 <translation id="1541170838458414064">Limita le dimensioni delle pagine di stampa</translation>
 <translation id="1553684822621013552">Quando questo criterio è impostato su true, ARC è attivato (soggetto ad altri controlli delle impostazioni dei criteri - ARC continuerà a essere disattivato se nella sessione utente corrente è attivata la modalità temporanea o l'accesso simultaneo).
 
@@ -909,7 +901,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Questa norma può essere impostata solo come consigliata. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore, ma gli utenti possono sempre scegliere una qualsiasi impostazione internazionale supportata da <ph name="PRODUCT_OS_NAME" /> per la sessione.
       </translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
-<translation id="3388153794103186066">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi che URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, la norma non sarà valida e verrà ignorata.
+<translation id="3388153794103186066">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, la norma non sarà valida e verrà ignorata.
 
         Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "urls" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "urls" devono essere validi, altrimenti la norma viene ignorata.
 

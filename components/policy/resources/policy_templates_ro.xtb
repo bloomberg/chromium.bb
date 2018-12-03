@@ -215,14 +215,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1523774894176285446">Browser secundar care se va lansa pentru website-urile configurate.</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="1530812829012954197">Redă întotdeauna următoarele șabloane de adrese URL în browserul gazdă</translation>
-<translation id="1532965933165453786">Permite activarea sau dezactivarea Tranziției rapide.
-      Se aplică tuturor utilizatorilor și tuturor interfețelor de pe dispozitiv.
-      Pentru ca Tranziția rapidă să fie folosită, trebuie activată atât această setare, cât și proprietatea ONC pentru rețea.
-      După ce este configurată, Tranziția rapidă se aplică până când politica este modificată pentru a o dezactiva.
-
-      Dacă politica nu este setată, Tranziția rapidă nu este folosită.
-      Dacă politica este dezactivată, Tranziția rapidă nu este folosită.
-      Dacă politica este activată, Tranziția rapidă este folosită când punctul de acces wireless o acceptă.</translation>
 <translation id="1541170838458414064">Restricționează dimensiunea paginii de printare</translation>
 <translation id="1553684822621013552">Dacă această politică este activată, funcția ARC va fi activată pentru utilizator
       (în funcție de verificările suplimentare ale setărilor politicii – funcția ARC va fi în continuare
@@ -932,7 +924,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică poate fi setată numai ca recomandare. O poți folosi pentru a muta un set de limbi recomandate în capul listei, însă utilizatorii vor avea întotdeauna posibilitatea să aleagă pentru sesiunea lor orice limbă compatibilă cu <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
-<translation id="3388153794103186066">Îți permite să setezi o listă de adrese URL ce specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină ambele dispozitive și adrese URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție, și acea excepție este că un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
+<translation id="3388153794103186066">Îți permite să setezi o listă de adrese URL ce specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-ul de furnizor și de produs oferit. Fiecare articol din listă trebuie să conțină atât dispozitivele, cât și adresele URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter, cu o excepție: un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă și va fi ignorată.
 
         Modelul permisiunii USB folosește adresa URL a site-ului care face solicitarea („adresa URL solicitantă”) și adresa URL a site-ului cadru de nivel superior („adresa URL încorporantă”) pentru a acorda permisiunea adresei URL solicitante de a accesa dispozitivul USB. Adresa URL solicitantă poate fi diferită de adresa URL încorporantă când site-ul solicitant este încărcat într-un iframe. De aceea, câmpul „urls” poate conține până la două șiruri separate cu o virgulă pentru a specifica adresa URL încorporantă și, respectiv, solicitantă. Dacă este specificată o singură adresă URL, accesul la dispozitivele USB corespunzătoare va fi acordat când adresa URL a site-ului solicitant este aceeași cu această adresă URL, indiferent de starea încorporării. Adresele URL din „urls” trebuie să fie adrese URL valide; în caz contrar, politica va fi ignorată.
 
@@ -2003,16 +1995,16 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       „external_height” și „external_width” și va seta rezoluția ecranelor
       externe la rezoluția lor nativă.
 
-      Dacă „external_use_native” nu este activată sau nu este oferită și nici
-      „external_height”, nici „external_width” nu este oferită, politica nu
-      afectează setările ecranului extern. Dacă factorul specificat de rezoluție sau
+      Dacă „external_use_native” nu este activată sau nu este specificată și nici
+      „external_height”, nici „external_width” nu este specificată, politica nu
+      modifică setările ecranului extern. Dacă factorul specificat de rezoluție sau
       de scalare nu este acceptat de un ecran, politica nu se aplică
       pentru acel ecran.
 
-      Dacă semnalul „recomandat” este activat, utilizatorii pot modifica factorul
+      Dacă semnalul „recommended” este activat, utilizatorii pot modifica factorul
       de rezoluție și de scalare al oricărui ecran pe pagina setărilor după conectare, dar
       setările lor vor fi modificate de valoarea politicii la următoarea repornire.
-      Dacă semnalul „recomandat” este dezactivat sau nu este setat, utilizatorii nu pot modifica
+      Dacă semnalul „recommended” este dezactivat sau nu este setat, utilizatorii nu pot modifica
       setările ecranului.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Etkinlik akış filtrelerini gizle</translation>
 <translation id="1088219014394087294">Başlık yok.</translation>
 <translation id="1106741348836243114">Sesli geri bildirimi (ses sinyalleri) aç veya kapat.</translation>
-<translation id="1108651818222110612">alt başlık</translation>
 <translation id="1120743664840974483">{"a": "adana", "b": "bolu", "c": "ceyhan", "ç": "çanakkale", "d": "denizli", "e": "edirne", "f": "fatsa", "g": "giresun", "ğ": "yumuşak ge", "h": "hatay", "ı": "ısparta", "i": "izmir", "j": "jandarma", "k": "kayseri", "l": "lüleburgaz", "m": "muş", "n": "niğde", "o": "ordu","p": "polatlı", "r": "rize", "s": "sinop", "ş": "şırnak", "t": "tokat", "u": "uşak", "ü": "ünye", "v": "van", "y": "yozgat", "z": "zonguldak"}</translation>
 <translation id="1120938014254001895">İki parmağınızı yukarı kaydırın</translation>
 <translation id="1124771028211010580">Mevcut görüntüleme stili yan yanadır.</translation>
@@ -195,7 +194,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2737520612859577214">Üst simge sonu</translation>
 <translation id="2749275490991666823">İşaretli</translation>
 <translation id="27527859628328957">Odaklanabilir sonraki öğeye atla</translation>
-<translation id="276402504937943375">içindekiler</translation>
 <translation id="2770781857296573485">Grup keşfine geç</translation>
 <translation id="2777845298774924149">Çıkıldı</translation>
 <translation id="2781264313200109999">Bağlantı başlangıcı</translation>
@@ -488,6 +486,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">varsayılan</translation>
 <translation id="479989351350248267">ara</translation>
+<translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="481165870889056555">Mevcut sayfanın başlığını söyle</translation>
 <translation id="4826415162591436065">İleri git</translation>
 <translation id="4826604887384865800">Sonraki atlama</translation>
@@ -557,6 +556,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5291783959063340370">Nesne</translation>
 <translation id="5302089807023311274">Kaynakça referansı</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, sekme</translation>
+<translation id="5308380583665731573">Bağlan</translation>
 <translation id="5310788376443009632">kaldırıldı:</translation>
 <translation id="5320727453979144100">Yapışkan mod etkinleştirildi</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgül}other{# virgül}}</translation>
@@ -772,6 +772,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="712735679809149106">kelime yansıtma</translation>
 <translation id="713824876195128146">Sonraki blok alıntı</translation>
 <translation id="7143034430156387447">6 ve 8 noktalı braille arasında geçiş yapar</translation>
+<translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7157306005867877619">Özet</translation>
 <translation id="7161425887892204659">Eşleşen metin sonu</translation>
 <translation id="7161771961008409533">Pop-up düğme</translation>
@@ -835,7 +836,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7625690649919402823">Sonraki tablo</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. Derece</translation>
 <translation id="7641134354185483015">Önceki 3. düzey başlık yok.</translation>
-<translation id="7647456547678091388">ipucu</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, metin kutusu</translation>
 <translation id="7663318257180412551">Başlık 2</translation>
 <translation id="7674576868851035240">Sonraki bağlantı</translation>
@@ -961,6 +961,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8940925288729953902">Değiştirici Tuşlar</translation>
 <translation id="8943175951035496220">Sağda hücre yok.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Unut</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Tablo yok.</translation>
 <translation id="9040132695316389094">Başlık 1</translation>

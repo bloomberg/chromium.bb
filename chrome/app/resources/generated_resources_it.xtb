@@ -362,7 +362,6 @@
     contatta l'amministratore di rete per verificare che il server
     proxy funzioni. Se non ritieni di dover utilizzare un
     server proxy, modifica le <ph name="LINK_START" />impostazioni del proxy<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Richiedi di salvare le tue password web</translation>
 <translation id="1512210426710821809">L'unico modo per annullare questa operazione è reinstallare <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importati da Safari</translation>
 <translation id="1521442365706402292">Gestisci certificati</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">No, grazie</translation>
 <translation id="1525740877599838384">Usa solo la rete Wi-Fi per stabilire la posizione</translation>
 <translation id="1526560967942511387">Documento senza titolo</translation>
-<translation id="1529116897397289129">Le carte di credito salvate verranno visualizzate qui</translation>
 <translation id="1529891865407786369">Fonte di alimentazione</translation>
 <translation id="1529899284660134226">Gestisci cartelle e file condivisi</translation>
 <translation id="1530838837447122178">Apri le impostazioni di mouse e touchpad</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Server dei nomi</translation>
 <translation id="1729533290416704613">Controlla anche la pagina visualizzata quando esegui ricerche dalla Omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Per rimuovere le app apri Impostazioni &gt; Google Play Store &gt; Gestisci le preferenze Android &gt; App o Gestione applicazioni, quindi tocca l'app che vuoi disinstallare (potresti dover scorrere verso sinistra o verso destra per trovarla) e infine tocca Disinstalla o Disattiva.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Totale: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Invio richiesta in corso...</translation>
 <translation id="1732215134274276513">Sblocca le schede</translation>
 <translation id="1733383495376208985">Cripta i dati sincronizzati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" />. Non sono inclusi i metodi di pagamento e gli indirizzi di Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Errore durante il montaggio della condivisione. Impossibile trovare la condivisione specificata sulla rete.</translation>
 <translation id="2148756636027685713">Formattazione terminata</translation>
 <translation id="2148892889047469596">Trasmetti scheda</translation>
-<translation id="2149850907588596975">Password e moduli</translation>
 <translation id="2150139952286079145">Cerca destinazioni</translation>
 <translation id="2150661552845026580">Aggiungere "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">È stato inserito un indice di tabulazione non valido.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Lettura e modifica del testo digitato</translation>
 <translation id="2208158072373999562">Archivio Zip</translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Stampa utilizzando la finestra di dialogo di sistema</translation>
 <translation id="2214884991347062907">Password errata, riprova</translation>
 <translation id="2217501013957346740">Crea un nome -</translation>
 <translation id="2218019600945559112">Mouse e touchpad</translation>
@@ -1267,7 +1262,6 @@
 <translation id="2888807692577297075">Nessun elemento corrispondente a &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Apri link con...</translation>
 <translation id="2889925978073739256">Continua a bloccare i plug-in senza sandbox</translation>
-<translation id="2890678560483811744">Riferimento pagina oltre i limiti</translation>
 <translation id="2893168226686371498">Browser predefinito</translation>
 <translation id="289644616180464099">La scheda SIM è bloccata</translation>
 <translation id="289695669188700754">ID chiave: <ph name="KEY_ID" /></translation>
@@ -1401,7 +1395,7 @@
 <translation id="3090819949319990166">Impossibile copiare il file crx esterno su <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" accoppiato</translation>
 <translation id="3101709781009526431">Data e ora</translation>
-<translation id="3104763887980088552">Registro attività</translation>
+<translation id="3104763887980088552">Log attività</translation>
 <translation id="310671807099593501">Il sito sta usando il Bluetooth</translation>
 <translation id="3115128645424181617">Impossibile trovare il telefono. Assicurati che sia a portata di mano e che il Bluetooth sia attivo.</translation>
 <translation id="3115147772012638511">In attesa di elaborazione cache...</translation>
@@ -2275,7 +2269,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4482194545587547824">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca e altri servizi Google</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
 <translation id="449938344715680828">Premi |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| seguito da |<ph name="ACCELERATOR3" />| per uscire</translation>
-<translation id="4499718683476608392">Attiva la Compilazione automatica per la carta di credito per compilare i moduli con un singolo clic</translation>
 <translation id="4500114933761911433">Arresto anomalo di <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Icona punto esclamativo</translation>
 <translation id="4501530680793980440">Conferma rimozione</translation>
@@ -2585,7 +2578,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4971412780836297815">Apri al termine</translation>
 <translation id="4972129977812092092">Modifica stampante</translation>
 <translation id="4972164225939028131">Password errata</translation>
-<translation id="497287958838527945">Carte di credito e indirizzi che utilizzano Google Pay.</translation>
 <translation id="4973307593867026061">Aggiungi stampanti</translation>
 <translation id="4973523518332075481">Il nome deve contenere un massimo di <ph name="MAX_LENGTH" /> caratteri</translation>
 <translation id="4974733135013075877">Esci e blocca</translation>
@@ -3112,7 +3104,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5752453871435543420">Backup nella cloud Chrome OS</translation>
 <translation id="5756163054456765343">Centro assistenza</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME" /> possono essere letti da <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Impostazioni per la carta di credito</translation>
 <translation id="5763315388120433852">Configura o gestisci condivisioni file di rete.</translation>
 <translation id="5763751966069581670">Nessun dispositivo USB trovato</translation>
 <translation id="5764483294734785780">Sal&amp;va audio come...</translation>
@@ -3624,7 +3615,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6508248480704296122">Correlata a <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Applicazione: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licenza multimediale</translation>
-<translation id="6510568984200103950">Meno impostazioni</translation>
 <translation id="6513247462497316522">Google Chrome utilizzerà i dati mobili se non sei connesso a un'altra rete.</translation>
 <translation id="6514010653036109809">Dispositivo disponibile:</translation>
 <translation id="6514565641373682518">Questa pagina ha disattivato il puntatore del mouse.</translation>
@@ -3805,7 +3795,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6805647936811177813">Accedi a <ph name="TOKEN_NAME" /> per importare il certificato client da <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Attiva monitoraggio RLZ su <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Gestisci condivisione con Linux</translation>
-<translation id="6807889908376551050">Mostra tutte...</translation>
 <translation id="6810613314571580006">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la conferma prima di ogni accesso ai siti web.</translation>
 <translation id="6810768462515084623">Spiacenti. Sembra che la password sia scaduta. Rinnovala su un altro dispositivo e riprova.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> non può essere eseguito come root.</translation>
@@ -4995,7 +4984,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8637542770513281060">Il computer contiene un modulo per la sicurezza che viene utilizzato per implementare in Chrome OS molte funzionalità di sicurezza fondamentali. Per ulteriori informazioni, visita il Centro assistenza Chromebook all'indirizzo: https://support.google.com/chromebook/?p=sm.</translation>
 <translation id="8637688295594795546">Aggiornamento del sistema disponibile. Preparazione per il download in corso…</translation>
 <translation id="8639047128869322042">Controllo della presenza di software dannoso...</translation>
-<translation id="8639963783467694461">Impostazioni di Compilazione automatica</translation>
 <translation id="8642171459927087831">Token di accesso</translation>
 <translation id="8642947597466641025">Ingrandisci le dimensioni del testo</translation>
 <translation id="8643418457919840804">Per continuare, scegli un'opzione:</translation>
@@ -5011,7 +4999,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8655972064210167941">Accesso non riuscito perché non è stato possibile verificare la password. Contatta l'amministratore o riprova.</translation>
 <translation id="8656619792520327915">Aggiungi un altro token di sicurezza Bluetooth</translation>
 <translation id="8656768832129462377">Non verificare</translation>
-<translation id="8658595122208653918">Cambia opzioni stampante...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> condivide l'audio e il tuo schermo con <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Attendi un secondo</translation>
 <translation id="8661290697478713397">Apri link in finestra di navigazione in inco&amp;gnito</translation>

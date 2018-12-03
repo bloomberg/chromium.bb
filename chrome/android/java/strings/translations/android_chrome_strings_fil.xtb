@@ -114,7 +114,6 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="1868024384445905608">Mas mabilis nang mag-download ng mga file ang Chrome</translation>
-<translation id="187628348035757895">Mga opsyon ng developer</translation>
 <translation id="1880072593381090678">Mga sikat na page mula sa Chrome</translation>
 <translation id="1883903952484604915">Aking Mga File</translation>
 <translation id="1887786770086287077">Naka-off ang access sa lokasyon para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="641643625718530986">I-print…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ang na-download</translation>
 <translation id="6433501201775827830">Pumili ng iyong search engine</translation>
-<translation id="6436016483175965362">Sneak peek</translation>
 <translation id="6437478888915024427">Impormasyon ng page</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Mga suhestyon sa paghahanap at URL</translation>
@@ -773,7 +771,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6868088497967843822">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device</translation>
 <translation id="688738109438487280">Idagdag ang kasalukuyang data sa <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">I-unlock upang kopyahin ang iyong password</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d bukas na tab}one{%1$d bukas na tab}other{%1$d na bukas na tab}}</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6910211073230771657">Na-delete</translation>
 <translation id="6912998170423641340">I-block ang mga site sa pag-read ng text at mga larawan mula sa clipboard</translation>
@@ -825,7 +822,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
 <translation id="7253272406652746122">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
 <translation id="7274013316676448362">Naka-block na site</translation>
-<translation id="728491846437309531">Matutulungan ka ng Google Assistant na mas mabilis at mas madaling magsagawa ng mga bagay-bagay sa web</translation>
 <translation id="729975465115245577">Walang app sa iyong device upang ma-store ang file ng mga password.</translation>
 <translation id="7302081693174882195">Mga detalye: Pinagbukud-bukod ayon sa laki ng natipid na data</translation>
 <translation id="7333031090786104871">Nagdaragdag pa rin ng nakaraang site</translation>

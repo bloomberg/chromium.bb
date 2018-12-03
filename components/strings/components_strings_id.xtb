@@ -576,7 +576,7 @@
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="4785689107224900852">Alihkan ke tab ini</translation>
 <translation id="4792143361752574037">Terjadi masalah saat mengakses file sesi. Fitur menyimpan ke disk saat ini dinonaktifkan. Harap muat ulang halaman untuk mencoba lagi.</translation>
-<translation id="4798078619018708837">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna mengupdate detail kartu. Setelah mengonfirmasi, detail kartu dari Akun Google Anda akan dibagikan dengan situs ini.</translation>
+<translation id="4798078619018708837">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu dari Akun Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Saat ini Anda tidak dapat mengunjungi <ph name="SITE" /> karena situs web tersebut mengirim kredensial acak yang tidak dapat diproses oleh Google Chrome. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi halaman ini mungkin akan bekerja nanti.</translation>

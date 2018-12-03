@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Skritje filtrov toka dogodkov</translation>
 <translation id="1088219014394087294">Ni naslovov.</translation>
 <translation id="1106741348836243114">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon).</translation>
-<translation id="1108651818222110612">podnaslov</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "celje", "d": "delta", "e": "eho", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "indija", "j": "julija","k": "kilo", "l": "lima", "m": "maribor", "n": "november", "o": "oskar","p": "postojna", "q": "quebec", "r": "romeo", "s": "sežana", "t": "tango", "u": "uniforma", "v": "viktor", "w": "wroclaw","x": "xenia", "y": "yukon", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Z dvema prstoma povlecite gor</translation>
 <translation id="1124771028211010580">Trenutno je izbran vzporedni slog prikaza.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">Konec nadpisanega besedila</translation>
 <translation id="2749275490991666823">Potrjeno</translation>
 <translation id="27527859628328957">Pomik na naslednji element, ki ga je mogoče izbrati</translation>
-<translation id="276402504937943375">kazalo</translation>
 <translation id="2770781857296573485">Vnos raziskovanja skupine</translation>
 <translation id="2777845298774924149">Izhod</translation>
 <translation id="2781264313200109999">Začetek povezave</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">privzeto</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="481165870889056555">Obvestilo o naslovu trenutne strani</translation>
 <translation id="4826415162591436065">Pomik naprej</translation>
 <translation id="4826604887384865800">Naslednji skok</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">Predmetna</translation>
 <translation id="5302089807023311274">Bibliografski viri</translation>
 <translation id="5304943142864553931">zavihek <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5310788376443009632">odstranjeno:</translation>
 <translation id="5320727453979144100">Način zaklepanja je omogočen</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vejica}one{# vejica}two{# vejici}few{# vejice}other{# vejic}}</translation>
@@ -773,6 +773,7 @@
 <translation id="712735679809149106">izgovarjanje besed ob vnosu</translation>
 <translation id="713824876195128146">Naslednji citat v bloku</translation>
 <translation id="7143034430156387447">Preklop med braillovo pisavo s 6 pikami in z 8 pikami</translation>
+<translation id="7143207342074048698">Vzpostavljanje povezave</translation>
 <translation id="7157306005867877619">Izvleček</translation>
 <translation id="7161425887892204659">Konec ujemajočega se besedila</translation>
 <translation id="7161771961008409533">Pojavni gumb</translation>
@@ -836,7 +837,6 @@
 <translation id="7625690649919402823">Naslednja tabela</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" />. raven</translation>
 <translation id="7641134354185483015">Ni prejšnjega naslova na ravni 3.</translation>
-<translation id="7647456547678091388">namig</translation>
 <translation id="7659376057562985921">Polje za besedilo z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="7663318257180412551">Naslov 2</translation>
 <translation id="7674576868851035240">Naslednja povezava</translation>
@@ -962,6 +962,7 @@
 <translation id="8940925288729953902">Modifikacijske tipke</translation>
 <translation id="8943175951035496220">Ni celice desno.</translation>
 <translation id="8978496506222343566">opord</translation>
+<translation id="8986362086234534611">Pozabi</translation>
 <translation id="900114243503212879">dat</translation>
 <translation id="9027462562263121875">Ni tabel.</translation>
 <translation id="9040132695316389094">Naslov 1</translation>

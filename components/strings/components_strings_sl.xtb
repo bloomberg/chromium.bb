@@ -87,6 +87,7 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1430915738399379752">Natisni</translation>
 <translation id="1484290072879560759">Izbira naslova za pošiljanje</translation>
+<translation id="1501859676467574491">Prikaz kartic iz Google Računa</translation>
 <translation id="1506687042165942984">Prikaži shranjeno (zastarelo) kopijo te strani.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ta napaka se prikaže, če uporabljate portal Wi-Fi, ki pred uporabo spleta zahteva prijavo.&lt;/p&gt;
     &lt;p&gt;Napravo odpravite tako, da na strani, ki jo poskušate odpreti, kliknete &lt;strong&gt;Poveži&lt;/strong&gt;.&lt;/p&gt;</translation>
@@ -575,7 +576,7 @@
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="4785689107224900852">Preklop na ta zavihek</translation>
 <translation id="4792143361752574037">Pri dostopanju do datotek seje je prišlo do težave. Shranjevanje na disk je trenutno onemogočeno. Znova naložite stran, če želite poskusiti znova.</translation>
-<translation id="4798078619018708837">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz Google Računa.</translation>
+<translation id="4798078619018708837">Vnesite datum poteka in CVC za kreditno kartico <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz Google Računa.</translation>
 <translation id="4800132727771399293">Preverite datum poteka in številko CVC ter poskusite znova</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, saj je poslalo šifrirane poverilnice, ki jih Google Chrome ne more obdelati. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
@@ -627,7 +628,7 @@
 <translation id="5141240743006678641">Šifrirajte sinhronizirana gesla s poverilnicami za Google</translation>
 <translation id="5145883236150621069">Koda napake v odzivu pravilnika</translation>
 <translation id="5159010409087891077">Odpiranje strani v novem oknu brez beleženja zgodovine (⇧⌘N)</translation>
-<translation id="516920405563544094">Vnesite CVC za <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz Google Računa.</translation>
+<translation id="516920405563544094">Vnesite CVC za kreditno kartico <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz Google Računa.</translation>
 <translation id="5169827969064885044">Izgubite lahko dostop do računa za organizacijo ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5172758083709347301">Računalnik</translation>
@@ -726,7 +727,7 @@
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="5838278095973806738">Na tem spletnem mestu ne vnašajte občutljivih informacij (npr. gesel ali številk kreditnih kartic), ker jih lahko ukradejo napadalci.</translation>
-<translation id="5844286946362376359">Poznam pravila in pogoje, pravilnik o zasebnosti in pravico do umika za <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (če želite prebrati, ne označite).</translation>
+<translation id="5844286946362376359">Poznam pravila in določila, pravilnik o zasebnosti in pravico do umika za <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (če želite prebrati, ne označite).</translation>
 <translation id="5863847714970149516">Stran, ki se bo odprla, vam bo morda poskusila kaj zaračunati</translation>
 <translation id="5866257070973731571">Dodajanje telefonske številke</translation>
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>

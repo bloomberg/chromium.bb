@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Filter für Ereignisstreams ausblenden</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
 <translation id="1106741348836243114">Akustisches Feedback (Earcons) aktivieren bzw. deaktivieren</translation>
-<translation id="1108651818222110612">Untertitel</translation>
 <translation id="1120743664840974483">{"a": "Anton", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius","k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto","p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "t": "Theodor", "u": "Ulrich", "v": "Viktor", "w": "Wilhelm","x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
 <translation id="1120938014254001895">Mit zwei Fingern nach oben wischen</translation>
 <translation id="1124771028211010580">Die aktuelle Displaydarstellung ist "Nebeneinander".</translation>
@@ -195,7 +194,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2737520612859577214">Ende der Hochstellung</translation>
 <translation id="2749275490991666823">Aktiviert</translation>
 <translation id="27527859628328957">Zum nächsten fokussierbaren Element springen</translation>
-<translation id="276402504937943375">Inhalt</translation>
 <translation id="2770781857296573485">Gruppenerkundung starten</translation>
 <translation id="2777845298774924149">Beendet</translation>
 <translation id="2781264313200109999">Anfang des Links</translation>
@@ -488,6 +486,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4763480195061959176">Video</translation>
 <translation id="4764692524839457597">Standard</translation>
 <translation id="479989351350248267">Suchen</translation>
+<translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="481165870889056555">Titel der aktuellen Seite ansagen</translation>
 <translation id="4826415162591436065">Vorwärts navigieren</translation>
 <translation id="4826604887384865800">Nächster Sprung</translation>
@@ -557,6 +556,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografiereferenz</translation>
 <translation id="5304943142864553931">Tab "<ph name="TITLE" />"</translation>
+<translation id="5308380583665731573">Verbinden</translation>
 <translation id="5310788376443009632">Entfernt:</translation>
 <translation id="5320727453979144100">Fixierter Modus aktiviert</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{Komma}other{# Kommas}}</translation>
@@ -772,6 +772,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="712735679809149106">Wortecho</translation>
 <translation id="713824876195128146">Nächstes Blockzitat</translation>
 <translation id="7143034430156387447">Zwischen 6- und 8-Punkt-Braille wechseln</translation>
+<translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7157306005867877619">Zusammenfassung</translation>
 <translation id="7161425887892204659">Ende Textübereinstimmung</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
@@ -835,7 +836,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7625690649919402823">Nächste Tabelle</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grad <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Keine vorherige Überschrift der Ebene 3</translation>
-<translation id="7647456547678091388">Tipp</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, Textfeld "<ph name="NAME" />"</translation>
 <translation id="7663318257180412551">Überschrift 2</translation>
 <translation id="7674576868851035240">Nächster Link</translation>
@@ -961,6 +961,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8940925288729953902">Modifikatortasten</translation>
 <translation id="8943175951035496220">Keine Zelle rechts</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Entfernen</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Keine Tabellen</translation>
 <translation id="9040132695316389094">Überschrift 1</translation>

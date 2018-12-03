@@ -114,7 +114,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="1868024384445905608">Ora Chrome scarica i file più velocemente</translation>
-<translation id="187628348035757895">Opzioni sviluppatore</translation>
 <translation id="1880072593381090678">Pagine più visitate di Chrome</translation>
 <translation id="1883903952484604915">I miei file</translation>
 <translation id="1887786770086287077">L'accesso alla posizione è disattivato per questo dispositivo. Attivalo nelle <ph name="BEGIN_LINK" /> Impostazioni Android <ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="641643625718530986">Stampa…</translation>
 <translation id="6416782512398055893">Sono stati scaricati <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Scegli il motore di ricerca</translation>
-<translation id="6436016483175965362">Dai un'occhiata</translation>
 <translation id="6437478888915024427">Informazioni sulla pagina</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Suggerimenti di ricerca e URL</translation>
@@ -773,7 +771,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="688738109438487280">Aggiungi dati esistenti a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Sblocca per copiare la password</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d scheda aperta}other{%1$d schede aperte}}</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6910211073230771657">Eliminato</translation>
 <translation id="6912998170423641340">Impedisci ai siti di leggere testo e immagini negli appunti</translation>
@@ -825,7 +822,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7253272406652746122">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
-<translation id="728491846437309531">L'Assistente Google può aiutarti a svolgere in modo più facile e veloce le attività sul Web</translation>
 <translation id="729975465115245577">Il tuo dispositivo non ha un'app per archiviare il file di password.</translation>
 <translation id="7302081693174882195">Dettagli: ordinati per quantità di dati salvati</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>

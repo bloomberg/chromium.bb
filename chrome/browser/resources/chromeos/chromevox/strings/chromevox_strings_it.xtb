@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Nascondi i filtri del flusso di eventi</translation>
 <translation id="1088219014394087294">Nessuna intestazione.</translation>
 <translation id="1106741348836243114">Attiva o disattiva feedback audio (icone audio).</translation>
-<translation id="1108651818222110612">sottotitolo</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Scorri verso l'alto con due dita</translation>
 <translation id="1124771028211010580">È attivo lo stile del display affiancato.</translation>
@@ -195,7 +194,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2737520612859577214">Fine apice</translation>
 <translation id="2749275490991666823">Selezionato</translation>
 <translation id="27527859628328957">Passa a elemento attivabile successivo</translation>
-<translation id="276402504937943375">sommario</translation>
 <translation id="2770781857296573485">Attiva l'esplorazione dei gruppi</translation>
 <translation id="2777845298774924149">Uscita</translation>
 <translation id="2781264313200109999">Inizio del link</translation>
@@ -488,6 +486,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">predefinito</translation>
 <translation id="479989351350248267">ricerca</translation>
+<translation id="4804818685124855865">Disconnetti</translation>
 <translation id="481165870889056555">Pronuncia il titolo della pagina corrente</translation>
 <translation id="4826415162591436065">Spostati avanti</translation>
 <translation id="4826604887384865800">Collegamento successivo</translation>
@@ -557,6 +556,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5291783959063340370">Oggetto</translation>
 <translation id="5302089807023311274">Riferimento bibliografico</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, scheda</translation>
+<translation id="5308380583665731573">Connessione</translation>
 <translation id="5310788376443009632">rimossa:</translation>
 <translation id="5320727453979144100">Modalità persistente attiva</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgola}other{# virgole}}</translation>
@@ -772,6 +772,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="712735679809149106">eco parole</translation>
 <translation id="713824876195128146">Citazione lunga successiva</translation>
 <translation id="7143034430156387447">Consente di passare tra braille a sei e otto punti</translation>
+<translation id="7143207342074048698">Connessione</translation>
 <translation id="7157306005867877619">Abstract</translation>
 <translation id="7161425887892204659">Fine della corrispondenza di testo</translation>
 <translation id="7161771961008409533">Pulsante popup</translation>
@@ -835,7 +836,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7625690649919402823">Tabella successiva</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grado <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Nessuna intestazione livello 3 precedente.</translation>
-<translation id="7647456547678091388">suggerimento</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, casella di testo</translation>
 <translation id="7663318257180412551">Intestazione 2</translation>
 <translation id="7674576868851035240">Link successivo</translation>
@@ -961,6 +961,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8940925288729953902">Tasti di modifica</translation>
 <translation id="8943175951035496220">Nessuna cella a destra.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Elimina</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Nessuna tabella.</translation>
 <translation id="9040132695316389094">Intestazione 1</translation>

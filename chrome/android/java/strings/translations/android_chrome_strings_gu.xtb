@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">આ પૃષ્ઠમાં શોધો</translation>
 <translation id="1853692000353488670">નવી છુપી ટેબ</translation>
 <translation id="1868024384445905608">Chrome હવે ફાઇલોને વધુ ઝડપથી ડાઉનલોડ કરે છે</translation>
-<translation id="187628348035757895">ડેવલપરના વિકલ્પો</translation>
 <translation id="1880072593381090678">Chromeમાંથી લોકપ્રિય પેજ</translation>
 <translation id="1883903952484604915">મારી ફાઇલો</translation>
 <translation id="1887786770086287077">આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">પ્રિન્ટ…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ડાઉનલોડ કર્યા</translation>
 <translation id="6433501201775827830">તમારું શોધ એંજિન પસંદ કરો</translation>
-<translation id="6436016483175965362">ઝલક જુઓ</translation>
 <translation id="6437478888915024427">પેજ વિશે માહિતી</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="6448273550210938826">શોધ અને URL સૂચનો</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">તમારા તમામ ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ મેળવવા માટે સાઇન ઇન કરો</translation>
 <translation id="688738109438487280">અસ્તિત્વમાંના ડેટાને <ph name="TO_ACCOUNT" /> માં ઉમેરો.</translation>
 <translation id="6891726759199484455">તમારો પાસવર્ડ કૉપિ કરવા માટે અનલૉક કરો</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ખુલ્લું ટૅબ}one{%1$d ખુલ્લા ટૅબ્સ}other{%1$d ખુલ્લા ટૅબ્સ}}</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="6910211073230771657">કાઢી નાખ્યું</translation>
 <translation id="6912998170423641340">બધી સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓ વાંચવાથી બ્લૉક કરો</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7253272406652746122">તમારા ડિવાઇસની સેટિંગ ઍપ્લિકેશનમાં એકાઉન્ટ પેજમાંથી Google એકાઉન્ટ ઉમેરો.</translation>
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
-<translation id="728491846437309531">Google આસિસ્ટંટ વેબ પર કાર્યોને ઝડપથી અને સહેલાઈથી પૂર્ણ કરવામાં તમારી સહાય કરી શકે છે</translation>
 <translation id="729975465115245577">તમારા ઉપકરણ પાસે પાસવર્ડ ફાઇલને સ્ટોર કરવા માટેની ઍપ નથી.</translation>
 <translation id="7302081693174882195">વિગતો: સાચવેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરેલ</translation>
 <translation id="7333031090786104871">હજીપણ પાછલી સાઇટ ઉમેરી રહ્યાં છે</translation>

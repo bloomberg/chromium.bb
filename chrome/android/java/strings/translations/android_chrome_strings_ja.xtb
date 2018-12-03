@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
-<translation id="187628348035757895">開発者向けオプション</translation>
 <translation id="1880072593381090678">Chrome でよくアクセスするページ</translation>
 <translation id="1883903952484604915">マイファイル</translation>
 <translation id="1887786770086287077">位置情報へのアクセスが端末でオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB をダウンロード済み</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>
-<translation id="6436016483175965362">プレビュー</translation>
 <translation id="6437478888915024427">ページ情報</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">検索と URL 候補</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="688738109438487280">既存のデータを <ph name="TO_ACCOUNT" /> に追加します。</translation>
 <translation id="6891726759199484455">パスワードをコピーするにはロックを解除してください</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6910211073230771657">削除済み</translation>
 <translation id="6912998170423641340">サイトによるクリップボードのテキストや画像の読み取りをブロックする</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7253272406652746122">端末の設定アプリのアカウント ページで Google アカウントを追加してください。</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
-<translation id="728491846437309531">Google アシスタントを使うと、ウェブ上でのあらゆることをすばやく簡単に行うことができます</translation>
 <translation id="729975465115245577">お使いの端末にはパスワード ファイルを保存するためのアプリがインストールされていません。</translation>
 <translation id="7302081693174882195">詳細: データ節約量の順</translation>
 <translation id="7333031090786104871">前のサイトを追加中です</translation>

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Slėpti įvykių srauto filtrus</translation>
 <translation id="1088219014394087294">Nėra antraščių.</translation>
 <translation id="1106741348836243114">Įjunkite arba išjunkite garsinius atsiliepimus (garsinius ženklelius).</translation>
-<translation id="1108651818222110612">paantraštė</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Perbraukite dviem pirštais aukštyn</translation>
 <translation id="1124771028211010580">Dabartinis vaizdo stilius yra gretutinis.</translation>
@@ -196,7 +195,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2737520612859577214">Viršutinio indekso pabaiga</translation>
 <translation id="2749275490991666823">Pažymėta</translation>
 <translation id="27527859628328957">Pereiti prie kito elemento, kurį galima fokusuoti</translation>
-<translation id="276402504937943375">turinys</translation>
 <translation id="2770781857296573485">Pradėti grupės tyrinėjimą</translation>
 <translation id="2777845298774924149">Išeita</translation>
 <translation id="2781264313200109999">Nuorodos pradžia</translation>
@@ -489,6 +487,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4763480195061959176">vaizdo įrašas</translation>
 <translation id="4764692524839457597">numatytasis</translation>
 <translation id="479989351350248267">ieškoti</translation>
+<translation id="4804818685124855865">Atsijungti</translation>
 <translation id="481165870889056555">Pranešti apie dabartinio puslapio pavadinimą</translation>
 <translation id="4826415162591436065">Eiti į priekį</translation>
 <translation id="4826604887384865800">Kitas perėjimas</translation>
@@ -558,6 +557,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5291783959063340370">Objektas</translation>
 <translation id="5302089807023311274">Bibliografijos nuoroda</translation>
 <translation id="5304943142864553931">„<ph name="TITLE" />“, skirtukas</translation>
+<translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5310788376443009632">pašalinta:</translation>
 <translation id="5320727453979144100">Fiksuojamasis režimas įgalintas</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{kablelis}one{# kablelis}few{# kableliai}many{# commas}other{# kablelių}}</translation>
@@ -773,6 +773,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="712735679809149106">žodžio aidas</translation>
 <translation id="713824876195128146">Kita įtrauka</translation>
 <translation id="7143034430156387447">Perjunkite iš 6 į 8 taškų Brailio rašmenis ir atvirkščiai</translation>
+<translation id="7143207342074048698">Jungiama</translation>
 <translation id="7157306005867877619">Santrauka</translation>
 <translation id="7161425887892204659">Teksto atitikties pabaiga</translation>
 <translation id="7161771961008409533">Iššokantysis mygtukas</translation>
@@ -836,7 +837,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="7625690649919402823">Kita lentelė</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" /> klasė</translation>
 <translation id="7641134354185483015">Nėra ankstesnės 3 lygio antraštės.</translation>
-<translation id="7647456547678091388">patarimas</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, teksto laukelis</translation>
 <translation id="7663318257180412551">2 antraštė</translation>
 <translation id="7674576868851035240">Kita nuoroda</translation>
@@ -962,6 +962,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8940925288729953902">Modifikavimo klavišai</translation>
 <translation id="8943175951035496220">Nėra langelio dešinėje.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Pamiršti</translation>
 <translation id="900114243503212879">failas</translation>
 <translation id="9027462562263121875">Nėra lentelių.</translation>
 <translation id="9040132695316389094">1 antraštė</translation>

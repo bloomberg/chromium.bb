@@ -114,7 +114,6 @@ Te ei ole siiski nähtamatu. Privaatse režiimi kasutamine ei varja teie sirvimi
 <translation id="1829244130665387512">Otsi leheküljelt</translation>
 <translation id="1853692000353488670">Uus inkognito vaheleht</translation>
 <translation id="1868024384445905608">Chrome laadib nüüd faile kiiremini alla</translation>
-<translation id="187628348035757895">Arendaja valikud</translation>
 <translation id="1880072593381090678">Populaarsed lehed Chrome'ist</translation>
 <translation id="1883903952484604915">Minu failid</translation>
 <translation id="1887786770086287077">Juurdepääs asukohale on selle seadme puhul välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="641643625718530986">Printimine ...</translation>
 <translation id="6416782512398055893">Alla on laaditud <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Valige oma otsingumootor</translation>
-<translation id="6436016483175965362">Pilguheit</translation>
 <translation id="6437478888915024427">Lehe teave</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="6448273550210938826">Otsingu ja URL-i soovitused</translation>
@@ -773,7 +771,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6868088497967843822">Logige sisse, et tuua kõikidesse seadmetesse järjehoidjad, ajalugu, paroolid ja muud seaded</translation>
 <translation id="688738109438487280">Lisab olemasolevad andmed kontole <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Avage oma parooli kopeerimiseks</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d avatud vaheleht}other{%1$d avatud vahelehte}}</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6910211073230771657">Kustutatud</translation>
 <translation id="6912998170423641340">Keela saitidel lugeda lõikelaual olevat teksti ja pilte</translation>
@@ -825,7 +822,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7253272406652746122">Lisage Google'i konto seadme rakenduse Seaded lehel Kontod.</translation>
 <translation id="7274013316676448362">Blokeeritud sait</translation>
-<translation id="728491846437309531">Google'i assistent aitab teil veebis kiiremini ja lihtsamini tegutseda</translation>
 <translation id="729975465115245577">Seadmes pole sünkroonimiseks piisavalt salvestusruumi.</translation>
 <translation id="7302081693174882195">Üksikasjad: sorditud säästetud andmemahu alusel</translation>
 <translation id="7333031090786104871">Eelmist saiti alles lisatakse</translation>

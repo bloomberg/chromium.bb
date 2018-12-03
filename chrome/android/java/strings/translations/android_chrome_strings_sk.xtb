@@ -114,7 +114,6 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="1829244130665387512">Nájsť na stránke</translation>
 <translation id="1853692000353488670">Nová karta inkognito</translation>
 <translation id="1868024384445905608">Chrome teraz sťahuje súbory rýchlejšie</translation>
-<translation id="187628348035757895">Pre vývojárov</translation>
 <translation id="1880072593381090678">Populárne stránky z Chromu</translation>
 <translation id="1883903952484604915">Moje súbory</translation>
 <translation id="1887786770086287077">Prístup k polohe je v tomto zariadení vypnutý. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="641643625718530986">Tlačiť...</translation>
 <translation id="6416782512398055893">Stiahnuté: <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Výber vyhľadávača</translation>
-<translation id="6436016483175965362">Rýchla ukážka</translation>
 <translation id="6437478888915024427">Informácie o stránke</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="6448273550210938826">Návrhy pre vyhľadávanie a webové adresy</translation>
@@ -773,7 +771,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6868088497967843822">Prihláste sa a získate tak svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
 <translation id="688738109438487280">Pridať existujúce dáta do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Heslo môžete kopírovať po odomknutí</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorená karta}few{%1$d otvorené karty}many{%1$d otvorenej karty}other{%1$d otvorených kariet}}</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
 <translation id="6910211073230771657">Odstránené</translation>
 <translation id="6912998170423641340">Blokovať webom čítanie textu a obrázkov v schránke</translation>
@@ -825,7 +822,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7250468141469952378">Vybrané: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pridajte účet Google zo stránky Účty v aplikácii Nastavenia na vašom zariadení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
-<translation id="728491846437309531">Asistent Google vám pomôže vykonávať úlohy na internete rýchlejšie a jednoduchšie.</translation>
 <translation id="729975465115245577">Vaše zariadenie nemá aplikáciu na uloženie súboru s heslami.</translation>
 <translation id="7302081693174882195">Podrobnosti: zoradené podľa množstva ušetrených dát</translation>
 <translation id="7333031090786104871">Pridávanie predchádzajúceho webu stále prebieha</translation>

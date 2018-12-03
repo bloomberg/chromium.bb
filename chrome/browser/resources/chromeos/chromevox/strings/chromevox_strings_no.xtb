@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Skjul filtre for aktivitetsstrømmer</translation>
 <translation id="1088219014394087294">Det fins ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå tilbakemelding via lydsignaler av eller på.</translation>
-<translation id="1108651818222110612">undertittel</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu", "æ": "ærlig", "ø": "østen", "å": "Åse"}</translation>
 <translation id="1120938014254001895">Sveip to fingre opp</translation>
 <translation id="1124771028211010580">Nåværende visningsstil er side om side.</translation>
@@ -196,7 +195,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2737520612859577214">Slutt på hevet skrift</translation>
 <translation id="2749275490991666823">Avmerket</translation>
 <translation id="27527859628328957">Gå til neste fokuserbare element</translation>
-<translation id="276402504937943375">innhold</translation>
 <translation id="2770781857296573485">Kjør gruppeutforsking</translation>
 <translation id="2777845298774924149">Lukket</translation>
 <translation id="2781264313200109999">Begynnelsen av linken</translation>
@@ -489,6 +487,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
 <translation id="479989351350248267">søk</translation>
+<translation id="4804818685124855865">Koble fra</translation>
 <translation id="481165870889056555">Kunngjør tittelen på den nåværende siden</translation>
 <translation id="4826415162591436065">Naviger fremover</translation>
 <translation id="4826604887384865800">Neste hopp</translation>
@@ -558,6 +557,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografireferanse</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />-fane</translation>
+<translation id="5308380583665731573">Koble til</translation>
 <translation id="5310788376443009632">fjernet:</translation>
 <translation id="5320727453979144100">Trege taster er slått på</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# kommaer}}</translation>
@@ -773,6 +773,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="713824876195128146">Neste blokksitat-element</translation>
 <translation id="7143034430156387447">Bytt mellom 6- og 8-punkts punktskrift</translation>
+<translation id="7143207342074048698">Kobler til</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
 <translation id="7161425887892204659">Slutt på samsvarende tekst</translation>
 <translation id="7161771961008409533">Knapp med forgrunnsvindu</translation>
@@ -836,7 +837,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7625690649919402823">Neste tabell</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grad <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Det finnes ikke tidligere overskrifter på nivå 3.</translation>
-<translation id="7647456547678091388">tips</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstfelt</translation>
 <translation id="7663318257180412551">Overskrift 2</translation>
 <translation id="7674576868851035240">Neste link</translation>
@@ -962,6 +962,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8940925288729953902">Modifikatortaster</translation>
 <translation id="8943175951035496220">Det finnes ingen celler til høyre.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Det finnes ingen tabeller.</translation>
 <translation id="9040132695316389094">Overskrift 1</translation>

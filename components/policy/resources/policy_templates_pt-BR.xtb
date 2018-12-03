@@ -222,14 +222,6 @@
 <translation id="1523774894176285446">Navegador alternativo que será iniciado com sites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
-<translation id="1532965933165453786">Permite ativar ou desativar a transição rápida.
-      Essa opção se aplica a todos os usuários e todas as interfaces no dispositivo.
-      Para usar a transição rápida, esta configuração e a propriedade do ONC por rede precisam estar ativadas.
-      Depois de definida, a transição rápida permanece até que a política seja alterada para desativá-la.
-
-      Se a política não for definida, a transição rápida não será usada.
-      Se for definida como false, a transição rápida não será usada.
-      Se for definida como true, a transição rápida será usada quando o ponto de acesso da rede sem fio for compatível.</translation>
 <translation id="1541170838458414064">Restringir o tamanho da página de impressão</translation>
 <translation id="1553684822621013552">Quando esta política está definida como "true", o recurso ARC fica ativado para o usuário
       (sujeito a verificações de configuração adicionais de política - O ARC ainda estará
@@ -1980,7 +1972,7 @@
       Esta política só é eficaz quando a máquina está inscrita em <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.
 
       Esta política instala <ph name="CHROME_REPORTING_EXTENSION_NAME" /> forçadamente para a geração de relatórios e modifica todas as políticas relacionadas a essa extensão.</translation>
-<translation id="6155247658847899816">Quando está política está definida, a resolução e o fator de escala de cada
+<translation id="6155247658847899816">Quando esta política está definida, a resolução e o fator de escala de cada
       tela são definidos para os valores especificados. As configurações de tela externa são
       aplicadas a todas as telas externas conectadas.
 
@@ -2000,7 +1992,7 @@
 
       Se a sinalização "recomendada" for definida como true, os usuários poderão alterar a resolução e
       o fator de escala de qualquer tela na página de configurações depois de fazer login, mas
-      configurações deles serão substituídas pelo valor da política na próxima reinicialização.
+      as configurações deles serão substituídas pelo valor da política na próxima reinicialização.
       Se a sinalização "recomendada" estiver definida como false ou não estiver definida, os usuários não poderão alterar as
       configurações da tela.</translation>
 <translation id="6155936611791017817">Definir estado padrão do cursor grande na tela de login</translation>

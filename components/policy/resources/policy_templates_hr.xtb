@@ -214,14 +214,6 @@
 <translation id="1523774894176285446">Zamjenski preglednik koji se pokreće za konfigurirane web-lokacije.</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
-<translation id="1532965933165453786">Dopušta omogućivanje ili onemogućivanje Brzog prijelaza.
-      Primjenjuje se na sve korisnike i sva sučelja na uređaju.
-      Da bi se koristio Brzi prijelaz, ova postavka i ONC svojstvo po mreži moraju biti omogućeni.
-      Kada se postavi, Brzi prijelaz traje dok se ne isključi tim pravilom.
-
-      Ako se pravilo ne postavi, neće se upotrebljavati Brzi prijelaz.
-      Ako se postavi na False, neće se upotrebljavati Brzi prijelaz.
-      Ako se postavi na True, Brzi prijelaz upotrebljava se kada ga podržava točka bežičnog pristupa.</translation>
 <translation id="1541170838458414064">Ograniči veličinu stranice ispisa</translation>
 <translation id="1553684822621013552">Kada je to pravilo postavljeno na "True", ARC će biti omogućen za korisnika
       (ovisno o dodatnim postavkama pravila – ARC i dalje neće biti

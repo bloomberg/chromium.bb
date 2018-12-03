@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Ocultar filtros de stream de eventos</translation>
 <translation id="1088219014394087294">Nenhum cabeçalho.</translation>
 <translation id="1106741348836243114">Ativa ou desativa o feedback sonoro (earcons).</translation>
-<translation id="1108651818222110612">subtítulo</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Deslize para cima usando dois dedos</translation>
 <translation id="1124771028211010580">O estilo de exibição atual está definido como lado a lado.</translation>
@@ -196,7 +195,6 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="2737520612859577214">Fim do sobrescrito</translation>
 <translation id="2749275490991666823">Marcado</translation>
 <translation id="27527859628328957">Ir para o próximo item focalizável</translation>
-<translation id="276402504937943375">sumário</translation>
 <translation id="2770781857296573485">Entrar na exploração de grupo</translation>
 <translation id="2777845298774924149">Saiu</translation>
 <translation id="2781264313200109999">Início do link</translation>
@@ -489,6 +487,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">padrão</translation>
 <translation id="479989351350248267">pesquisar</translation>
+<translation id="4804818685124855865">Desconectar</translation>
 <translation id="481165870889056555">Anunciar o título da página atual</translation>
 <translation id="4826415162591436065">Navegar para a frente</translation>
 <translation id="4826604887384865800">Próximo atalho</translation>
@@ -558,6 +557,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5291783959063340370">Objeto</translation>
 <translation id="5302089807023311274">Referência bibliográfica</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
+<translation id="5308380583665731573">Conectar-se</translation>
 <translation id="5310788376443009632">removido:</translation>
 <translation id="5320727453979144100">Modo aderente ativado</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vírgula}one{# vírgulas}other{# vírgulas}}</translation>
@@ -773,6 +773,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="712735679809149106">eco de palavra</translation>
 <translation id="713824876195128146">Próxima citação em bloco</translation>
 <translation id="7143034430156387447">Alternar entre Braille de 6 e 8 pontos</translation>
+<translation id="7143207342074048698">Conectando</translation>
 <translation id="7157306005867877619">Resumo</translation>
 <translation id="7161425887892204659">Fim da correspondência de texto</translation>
 <translation id="7161771961008409533">Botão pop-up</translation>
@@ -836,7 +837,6 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7625690649919402823">Próxima tabela</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grau <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Nenhum cabeçalho anterior de nível 3.</translation>
-<translation id="7647456547678091388">dica</translation>
 <translation id="7659376057562985921">Caixa de texto <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">Cabeçalho 2</translation>
 <translation id="7674576868851035240">Próximo link</translation>
@@ -962,6 +962,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943175951035496220">Nenhuma célula à direita.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Esquecer</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Nenhuma tabela.</translation>
 <translation id="9040132695316389094">Cabeçalho 1</translation>

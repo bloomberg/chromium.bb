@@ -216,14 +216,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1523774894176285446">Alternativ nettleser som skal åpnes for konfigurerte nettsteder.</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
-<translation id="1532965933165453786">Lar deg slå av eller på Fast Transition.
-      Dette gjelder for alle brukere og grensesnitt på enheten.
-      For at Fast Transition skal kunne brukes, må både denne innstillingen og ONC-området (for hvert nettverk) være slått på.
-      Når Fast Transition er på, forblir den på inntil regelen endres for å slå den av.
-
-      Hvis regelen ikke er angitt, brukes ikke Fast Transition.
-      Hvis regelen er angitt som «false» (usant), brukes ikke Fast Transition.
-      Hvis regelen er angitt som «true» (sant), brukes Fast Transition når det støttes av det trådløse tilgangspunktet.</translation>
 <translation id="1541170838458414064">Begrens sidestørrelse for utskrift</translation>
 <translation id="1553684822621013552">Når denne regelen er satt til true (sann), er ARC slått på for brukeren
       (avhengig av andre regelinnstillinger – ARC er likevel
@@ -286,6 +278,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
 <translation id="1808715480127969042">Blokkér informasjonskapsler på disse nettstedene</translation>
 <translation id="1810261428246410396">Tillat bruk av Umiddelbar internettdeling.</translation>
+<translation id="1817685358399181673">Denne regelen spesifiserer <ph name="PLUGIN_VM_NAME" />-avbildningen for en bruker. Du angir regelen ved å spesifisere nettadressen der enheten kan laste ned avbildningen, og en SHA-256-hashverdi som brukes for å bekrefte at ingen har tuklet med nedlastingen.
+
+      Regelen skal spesifiseres som en streng som uttrykker nettadressen og hashverdien i JSON-format.</translation>
 <translation id="1827523283178827583">Bruk faste proxytjenere</translation>
 <translation id="1843117931376765605">Oppdateringsfrekvens for brukerinnstilling</translation>
 <translation id="1844620919405873871">Konfigurerer retningslinjer for hurtigopplåsing.</translation>
@@ -452,6 +447,10 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="214901426630414675">Begrens utskrift på begge sider</translation>
 <translation id="2149330464730004005">Slå på fargeutskrift</translation>
 <translation id="2156132677421487971">Konfigurer retningslinjer for <ph name="PRODUCT_NAME" /> – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
+<translation id="2163878108829382394">
+        Hvis denne regelen er satt til True (sann), er registrering for skyadministrering obligatorisk, og oppstartsprosessen for Chrome blokkeres hvis dette ikke gjøres.
+
+        Hvis denne regelen ikke er angitt eller den er satt til False (usann), er registrering for skyadministrering valgfritt, og oppstartsprosessen for Chrome blokkeres ikke selv om dette ikke gjøres.</translation>
 <translation id="2166472654199325139">Ikke filtrer nettsteder for seksuelt innhold</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
@@ -675,6 +674,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurer nettadressen for endring av passord.</translation>
+<translation id="2696531058295423290">La enheter bruke en <ph name="PLUGIN_VM_NAME" /> på <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
@@ -1376,6 +1376,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4483649828988077221">Slå av automatisk oppdatering</translation>
 <translation id="4485425108474077672">Konfigurer nettadressen for Ny fane-siden</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
+<translation id="449423975179525290">Konfigurer regler som er relatert til <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede mediafiler på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--media-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
@@ -2682,6 +2683,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Vær oppmerksom på at disse begrensningene gjelder for nedlastinger som startes via nettsideinnhold, samt «Last ned linken»-alternativet i den kontekstuelle menyen. Disse begrensningene gjelder ikke for nedlasting/lagring av siden som i øyeblikket vises, og heller ikke for lagring av nettsteder som PDF-filer via utskriftsalternativene.
 
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
+<translation id="7642803091923523695">La denne enheten kjøre PluginVm.
+
+      Hvis regelen er satt til false (usann) eller ikke er angitt, er ikke <ph name="PLUGIN_VM_NAME" /> aktivert for enheten. Hvis regelen er satt til true (sann), er <ph name="PLUGIN_VM_NAME" /> aktivert for enheten så lenge andre innstillinger også tillater dette. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> må være sann og <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> må være angitt for at <ph name="PLUGIN_VM_NAME" /> skal få lov til å kjøre.</translation>
 <translation id="7643883929273267746">Begrens kontoer som er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
 <translation id="7673194325208122247">Tidsperiode (millisekunder)</translation>
@@ -3139,6 +3143,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettleser- og nedlastingsloggen slettes.
 
       Hvis innstillingen deaktiveres, kan ikke nettleser- og nedlastingsloggen slettes.</translation>
+<translation id="8758831693895931466">Slå på obligatorisk registrering for skyadministrering</translation>
 <translation id="8759829385824155666">Tillatte Kerberos-krypteringstyper</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
 <translation id="8782750230688364867">Angir prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus.

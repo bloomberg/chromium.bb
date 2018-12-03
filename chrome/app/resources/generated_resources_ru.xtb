@@ -361,7 +361,6 @@
 <translation id="1510785804673676069">Если вы используете прокси-сервер, проверьте его настройки или
     попросите администратора задать верные параметры.
     В противном случае измените <ph name="LINK_START" />настройки прокси-сервера<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Предлагать сохранять пароли для сайтов</translation>
 <translation id="1512210426710821809">Чтобы отменить это действие, необходимо переустановить <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Импортированные из Safari</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
@@ -370,7 +369,6 @@
 <translation id="1524563461097350801">Нет, спасибо</translation>
 <translation id="1525740877599838384">Использовать для определения местоположения только Wi-Fi</translation>
 <translation id="1526560967942511387">Документ без имени</translation>
-<translation id="1529116897397289129">Здесь появятся сохраненные карты</translation>
 <translation id="1529891865407786369">Источник питания</translation>
 <translation id="1529899284660134226">Управлять доступом к файлам и папкам</translation>
 <translation id="1530838837447122178">Открыть настройки мыши и сенсорной панели</translation>
@@ -510,7 +508,6 @@
 <translation id="1726100011689679555">Серверы имен</translation>
 <translation id="1729533290416704613">Кроме того, расширение изменило поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Чтобы удалить приложение, откройте "Настройки &gt; Google Play &gt; Управление настройками Android &gt; Приложения (или Диспетчер приложений)" и найдите его в списке (возможно, потребуется пролистать экран вправо или влево). Выберите приложение и нажмите "Удалить" или "Отключить".<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Всего: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="PAGE_OR_PAGES_LABEL" />: <ph name="NUMBER_OF_PAGES" />)</translation>
 <translation id="1731911755844941020">Отправка запроса...</translation>
 <translation id="1732215134274276513">Открепить вкладки</translation>
 <translation id="1733383495376208985">Выполнить шифрование синхронизированных данных, используя <ph name="BEGIN_LINK" />кодовую фразу<ph name="END_LINK" />. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
@@ -781,7 +778,6 @@
 <translation id="2148219725039824548">Ошибка. Не удалось найти указанный ресурс в сети.</translation>
 <translation id="2148756636027685713">Форматирование завершено</translation>
 <translation id="2148892889047469596">Трансляция содержимого вкладки</translation>
-<translation id="2149850907588596975">Пароли и формы</translation>
 <translation id="2150139952286079145">Поиск мест назначения</translation>
 <translation id="2150661552845026580">Установить "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Указан неверный индекс вкладки.</translation>
@@ -821,7 +817,6 @@
 <translation id="2204034823255629767">Просмотр и изменение вводимого текста</translation>
 <translation id="2208158072373999562">ZIP-архив</translation>
 <translation id="220858061631308971">Введите PIN-код для устройства "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Печатать с помощью системного диалогового окна</translation>
 <translation id="2214884991347062907">Неверный пароль. Повторите попытку.</translation>
 <translation id="2217501013957346740">Придумайте имя –</translation>
 <translation id="2218019600945559112">Мышь и сенсорная панель</translation>
@@ -1269,7 +1264,6 @@
 <translation id="2888807692577297075">Запросу &lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; не соответствует ни один файл.</translation>
 <translation id="2889064240420137087">Открыть ссылку с помощью...</translation>
 <translation id="2889925978073739256">Всегда блокировать плагины вне тестовой среды</translation>
-<translation id="2890678560483811744">Размер страницы больше максимально допустимого</translation>
 <translation id="2893168226686371498">Браузер по умолчанию</translation>
 <translation id="289644616180464099">SIM-карта заблокирована</translation>
 <translation id="289695669188700754">Идентификатор ключа: <ph name="KEY_ID" /></translation>
@@ -2279,7 +2273,6 @@
 <translation id="4482194545587547824">Google может использовать историю просмотров для персонализации Поиска и других сервисов.</translation>
 <translation id="4495419450179050807">Не показывать на этой странице</translation>
 <translation id="449938344715680828">Чтобы выйти, нажмите |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|, а затем |<ph name="ACCELERATOR3" />|</translation>
-<translation id="4499718683476608392">Включить автозаполнение данных банковской карты</translation>
 <translation id="4500114933761911433">Сбой в плагине <ph name="PLUGIN_NAME" /></translation>
 <translation id="450099669180426158">Значок восклицательного знака.</translation>
 <translation id="4501530680793980440">Подтверждение удаления</translation>
@@ -2589,7 +2582,6 @@
 <translation id="4971412780836297815">Открыть по завершении</translation>
 <translation id="4972129977812092092">Настройка принтера</translation>
 <translation id="4972164225939028131">Неправильный пароль</translation>
-<translation id="497287958838527945">Кредитные карты и адреса из Google Pay</translation>
 <translation id="4973307593867026061">Добавить принтеры</translation>
 <translation id="4973523518332075481">Слишком длинное название. Максимальное количество символов: <ph name="MAX_LENGTH" />.</translation>
 <translation id="4974733135013075877">Выйти и заблокировать</translation>
@@ -3117,7 +3109,6 @@
 <translation id="5752453871435543420">Резервное копирование в облаке Chrome</translation>
 <translation id="5756163054456765343">Справочный &amp;центр</translation>
 <translation id="5759728514498647443">"<ph name="APP_NAME" />" может читать документы, отправленные на печать через приложение "<ph name="APP_NAME" />".</translation>
-<translation id="5762172915276660232">Настройки банковских карт</translation>
 <translation id="5763315388120433852">Как настроить общие папки сети</translation>
 <translation id="5763751966069581670">USB-устройства не найдены</translation>
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
@@ -3629,7 +3620,6 @@
 <translation id="6508248480704296122">Похожее на <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Приложение: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Лицензии</translation>
-<translation id="6510568984200103950">Скрыть</translation>
 <translation id="6513247462497316522">При отсутствии подключения к другой сети Google Chrome будет использовать мобильную сеть передачи данных.</translation>
 <translation id="6514010653036109809">Доступное устройство:</translation>
 <translation id="6514565641373682518">Эта страница скрыла курсор.</translation>
@@ -3810,7 +3800,6 @@
 <translation id="6805647936811177813">Чтобы импортировать сертификат с <ph name="HOST_NAME" />, войдите в <ph name="TOKEN_NAME" />.</translation>
 <translation id="680572642341004180">Включить отслеживание RLZ-идентификатора для <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Настроить доступ Linux</translation>
-<translation id="6807889908376551050">Показать все…</translation>
 <translation id="6810613314571580006">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="6810768462515084623">Срок действия пароля истек. Обновите пароль на другом устройстве и повторите попытку.</translation>
 <translation id="6812349420832218321">Нельзя запускать <ph name="PRODUCT_NAME" /> от имени суперпользователя.</translation>
@@ -5002,7 +4991,6 @@
 <translation id="8637542770513281060">Компьютер оснащен безопасным модулем, который используется для выполнения многих важных функций защиты в Chrome OS. Более подробную информацию можно получить в Справочном центре Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Доступно обновление системы. Подготовка к скачиванию…</translation>
 <translation id="8639047128869322042">Поиск вредоносного ПО…</translation>
-<translation id="8639963783467694461">Настройки автозаполнения</translation>
 <translation id="8642171459927087831">Токен доступа</translation>
 <translation id="8642947597466641025">Увеличить размер шрифта</translation>
 <translation id="8643418457919840804">Чтобы продолжить, выберите один из вариантов:</translation>
@@ -5018,7 +5006,6 @@
 <translation id="8655972064210167941">Ошибка входа: не удалось подтвердить пароль. Обратитесь к администратору или повторите попытку.</translation>
 <translation id="8656619792520327915">Добавить другой электронный Bluetooth-ключ</translation>
 <translation id="8656768832129462377">Не проверять</translation>
-<translation id="8658595122208653918">Изменить настройки принтера</translation>
 <translation id="8658645149275195032">Приложение "<ph name="APP_NAME" />" предоставило сайту <ph name="TAB_NAME" /> доступ к экрану и аудио.</translation>
 <translation id="8659875081143553823">Подождите…</translation>
 <translation id="8661290697478713397">Открыть ссылку в режиме инкогнито</translation>

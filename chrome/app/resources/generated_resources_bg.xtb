@@ -359,7 +359,6 @@
 <translation id="1510030919967934016">Тази страница бе блокирана от проследяване на местоположението ви.</translation>
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1510785804673676069">В случай че използвате прокси сървър, проверете настройките му или се свържете със системния си администратор, за да се уверите, че сървърът работи. Ако смятате, че не трябва да ползвате прокси сървър, коригирайте <ph name="LINK_START" />съответните настройки<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Извеждане на предложение за запазване на паролите за мрежата</translation>
 <translation id="1512210426710821809">Единственият начин да отмените това е да инсталирате отново <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Импортирани от Safari</translation>
 <translation id="1521442365706402292">Управление на сертификати</translation>
@@ -368,7 +367,6 @@
 <translation id="1524563461097350801">Не, благодаря</translation>
 <translation id="1525740877599838384">Определяне на местоположението само посредством Wi-Fi</translation>
 <translation id="1526560967942511387">Неозаглавен документ</translation>
-<translation id="1529116897397289129">Тук ще се покажат запазените карти</translation>
 <translation id="1529891865407786369">Източник на захранване</translation>
 <translation id="1529899284660134226">Управление на споделените файлове и папки</translation>
 <translation id="1530838837447122178">Отваряне на настройките за мишката и сензорния панел</translation>
@@ -508,7 +506,6 @@
 <translation id="1726100011689679555">Сървъри за имена</translation>
 <translation id="1729533290416704613">То също контролира коя страница се показва при търсене от полето за всичко.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />За да премахнете приложения, отворете „Настройки“ &gt; „Google Play Магазин“ &gt; „Управление на предпочитанията за Android“ &gt; „Приложения“ или мениджъра на приложенията. Докоснете това, което искате да деинсталирате (може да се наложи да прекарате пръст надясно или наляво, за да го намерите). Докоснете „Деинсталиране“ или „Деактивиране“.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Общо: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Заявката се изпраща...</translation>
 <translation id="1732215134274276513">Освобождаване на разделите</translation>
 <translation id="1733383495376208985">Шифроване на синхронизираните данни със собствения ви <ph name="BEGIN_LINK" />пропуск за синхронизиране<ph name="END_LINK" />. Това не включва начините на плащане и адресите от Google Pay.</translation>
@@ -779,7 +776,6 @@
 <translation id="2148219725039824548">Възникна грешка при свързването на посочения дял. Той не бе намерен в мрежата.</translation>
 <translation id="2148756636027685713">Форматирането завърши</translation>
 <translation id="2148892889047469596">Предаване на раздела</translation>
-<translation id="2149850907588596975">Пароли и формуляри</translation>
 <translation id="2150139952286079145">Търсене на местоназначения</translation>
 <translation id="2150661552845026580">Да се добави ли „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="2151576029659734873">Въведен е невалиден индекс на раздел.</translation>
@@ -819,7 +815,6 @@
 <translation id="2204034823255629767">Четене и промяна на всичко, което въвеждате</translation>
 <translation id="2208158072373999562">Компресиран архивен файл</translation>
 <translation id="220858061631308971">Моля, въведете този ПИН код на „<ph name="DEVICE_NAME" />“:</translation>
-<translation id="2212126039311489237">Отпечатване чрез системния диалогов прозорец</translation>
 <translation id="2214884991347062907">Грешна парола. Опитайте отново.</translation>
 <translation id="2217501013957346740">Създаване на име –</translation>
 <translation id="2218019600945559112">Мишка и сензорен панел</translation>
@@ -1266,7 +1261,6 @@
 <translation id="2888807692577297075">Няма елементи, съответстващи на &lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Отваряне на връзката със...</translation>
 <translation id="2889925978073739256">Блокирането на приставки извън тестова среда да продължи</translation>
-<translation id="2890678560483811744">Посочената страница е извън обхват</translation>
 <translation id="2893168226686371498">Браузър по подразбиране</translation>
 <translation id="289644616180464099">SIM картата е заключена</translation>
 <translation id="289695669188700754">Идентификатор (ИД) на ключ: <ph name="KEY_ID" /></translation>
@@ -2278,7 +2272,6 @@
 <translation id="4482194545587547824">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
 <translation id="449938344715680828">Натиснете |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| и след това |<ph name="ACCELERATOR3" />|, за да излезете</translation>
-<translation id="4499718683476608392">Активирайте автоматичното попълване на кредитни карти, за да ги въвеждате във формуляри само с едно кликване</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> претърпя срив</translation>
 <translation id="450099669180426158">Икона на удивителен знак</translation>
 <translation id="4501530680793980440">Потвърждаване на премахването</translation>
@@ -2588,7 +2581,6 @@
 <translation id="4971412780836297815">Отваряне след приключване</translation>
 <translation id="4972129977812092092">Редактиране на принтера</translation>
 <translation id="4972164225939028131">Грешна парола</translation>
-<translation id="497287958838527945">Кредитни карти и адреси посредством Google Pay.</translation>
 <translation id="4973307593867026061">Добавяне на принтери</translation>
 <translation id="4973523518332075481">Използвайте име с дължина най-много <ph name="MAX_LENGTH" /> знака</translation>
 <translation id="4974733135013075877">Изход и заключване за деца</translation>
@@ -3117,7 +3109,6 @@
 <translation id="5752453871435543420">Резервни копия в облака на Chrome OS</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Настройки за кредитни карти</translation>
 <translation id="5763315388120433852">Настройване или управление на споделени хранилища в мрежата.</translation>
 <translation id="5763751966069581670">Няма намерени USB устройства</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
@@ -3629,7 +3620,6 @@
 <translation id="6508248480704296122">Свързано със <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Приложение: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Лиценз за мултимедия</translation>
-<translation id="6510568984200103950">По-малко настройки</translation>
 <translation id="6513247462497316522">Google Chrome ще използва мобилни данни, ако не сте свързани с друга мрежа.</translation>
 <translation id="6514010653036109809">Налично устройство:</translation>
 <translation id="6514565641373682518">Тази страница е деактивирала курсора на мишката ви.</translation>
@@ -3810,7 +3800,6 @@
 <translation id="6805647936811177813">Моля, влезте в/ъв <ph name="TOKEN_NAME" />, за да импортирате сертификат за клиентската програма от <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Активиране на проследяването на RLZ в <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Управление на споделянето с Linux</translation>
-<translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="6810613314571580006">Автоматично влизане в уебсайтове посредством съхраняваните идентификационни данни. Когато функцията е деактивирана, ще се изисква потвърждение преди всяко влизане в профил в уебсайт.</translation>
 <translation id="6810768462515084623">Ами сега! Изглежда, че паролата ви е изтекла. Моля, подновете я на друго устройство и опитайте отново.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> не може да се изпълнява като „root“.</translation>
@@ -5003,7 +4992,6 @@
 <translation id="8637542770513281060">Компютърът ви съдържа модул за сигурност, който служи за реализиране на множество критични защитни функции в Chrome OS. За да научите повече, посетете Помощния център на Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Налице е системна актуализация. Подготвя се за изтегляне...</translation>
 <translation id="8639047128869322042">Извършва се проверка за опасен софтуер...</translation>
-<translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8642171459927087831">Означение за достъп</translation>
 <translation id="8642947597466641025">Шрифтът на текста се уголемява</translation>
 <translation id="8643418457919840804">За да продължите, изберете опция:</translation>
@@ -5019,7 +5007,6 @@
 <translation id="8655972064210167941">Влизането не бе успешно, тъй като паролата ви не можа да се потвърди. Моля, свържете се с администратора си или опитайте отново.</translation>
 <translation id="8656619792520327915">Добавяне на друг ключ за сигурност с Bluetooth</translation>
 <translation id="8656768832129462377">Без проверка</translation>
-<translation id="8658595122208653918">Промяна на опциите за принтера...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> споделя екрана и звука ви с/ъс „<ph name="TAB_NAME" />“.</translation>
 <translation id="8659875081143553823">Една секунда</translation>
 <translation id="8661290697478713397">Отваряне на връзката в прозорец при използване на функ&amp;цията „инкогнито“</translation>

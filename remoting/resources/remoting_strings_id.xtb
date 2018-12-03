@@ -191,7 +191,7 @@ PC</translation>
 <translation id="4973800994433240357">Dengan mendownload Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan terputus untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
-<translation id="5059773780693835145">Diperlukan langkah konfigurasi tambahan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />. Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel Keamanan dan Privasi, lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
+<translation id="5059773780693835145">Diperlukan langkah konfigurasi tambahan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />. Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>

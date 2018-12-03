@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="430793432425771671">I-sync Lahat</translation>
 <translation id="4342284590510997375">Bago</translation>
-<translation id="434816576838749873">Pumili ng Email App</translation>
 <translation id="4359125752503270327">Magbubukas ang page na ito sa ibang application.</translation>
 <translation id="4370827530403103842">Hindi gumagana ang pag-sync. I-tap upang ayusin.</translation>
 <translation id="4375040482473363939">Paghahanap ng QR code</translation>
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="441868831736628555">Notification ng Privacy</translation>
-<translation id="4460091562821778167">Tanungin ako palagi kung aling app ang gagamitin</translation>
 <translation id="4476574785019001431">Mga Setting</translation>
 <translation id="4496373720959965247">Magdagdag ng mga tab at magpalipat-lipat sa mga page</translation>
 <translation id="4508750114462689118">Isara ang promo sa pag-sign in</translation>
@@ -278,7 +276,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5554368826343982379">Pag-sync at Pag-personalize</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5614553682702429503">I-save ang password?</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Hindi mada-download sa ngayon ang file.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6136914049981179737">Segundo</translation>
 <translation id="616831107264507309">Basahin Sa Ibang Pagkakataon</translation>
+<translation id="6177442314419606057">Search in Chrome</translation>
 <translation id="6184086493125982861">Ipakita ang Mga Tab</translation>
 <translation id="6187302354554850004">Huling na-sync: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Hindi pa nababasa</translation>
@@ -382,7 +380,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7136892417564438900">Hindi available ang camera</translation>
 <translation id="7159472599653637159">Hilingin ang Pang-mobile na Site</translation>
 <translation id="7167621057293532233">Mga Uri ng Data</translation>
-<translation id="7175593937868963913">Mag-email</translation>
 <translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
 <translation id="722055596168483966">I-personalize ang mga serbisyo ng Google</translation>
@@ -415,6 +412,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
 <translation id="7781829728241885113">Kahapon</translation>
+<translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7840771868269352570">Maaalis ang mga pinili mong item.</translation>
 <translation id="7856733331829174190">Hindi Ma-download</translation>

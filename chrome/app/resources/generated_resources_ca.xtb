@@ -362,7 +362,6 @@
     contacteu amb l'administrador de la xarxa per comprovar que el servidor
     intermediari funcioni. Si us sembla que no cal que utilitzeu un
     servidor intermediari, ajusteu la <ph name="LINK_START" />configuració del servidor intermediari<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Pregunta'm si vull desar les contrasenyes web</translation>
 <translation id="1512210426710821809">L'única manera de desfer aquesta acció és tornar a instal·lar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importat de Safari</translation>
 <translation id="1521442365706402292">Administra certificats</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">No, gràcies</translation>
 <translation id="1525740877599838384">Utilitza només una xarxa Wi-Fi per determinar la ubicació</translation>
 <translation id="1526560967942511387">Document sense títol</translation>
-<translation id="1529116897397289129">Les targetes desades es mostraran aquí</translation>
 <translation id="1529891865407786369">Font d'alimentació</translation>
 <translation id="1529899284660134226">Gestiona les carpetes i els fitxers compartits</translation>
 <translation id="1530838837447122178">Obre la configuració del ratolí i del ratolí tàctil</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Servidors de noms</translation>
 <translation id="1729533290416704613">També controla la pàgina que es mostra quan feu una cerca des de l'omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Per suprimir una aplicació, ves a Configuració &gt; Google Play Store &gt; Gestiona les preferències d'Android &gt; Aplicacions o Gestor d'aplicacions. A continuació, toca l'aplicació que vulguis desinstal·lar (és possible que hagis de lliscar cap a la dreta o cap a l'esquerra per trobar-la). Tot seguit, toca Desinstal·la o Desactiva.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Enviant sol·licitud....</translation>
 <translation id="1732215134274276513">No fixis les pestanyes</translation>
 <translation id="1733383495376208985">Encripta les dades sincronitzades amb la teva <ph name="BEGIN_LINK" />frase de contrasenya de sincronització<ph name="END_LINK" />. No inclou les formes de pagament ni les adreces de Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">S'ha produït un error en activar l'ús compartit especificat perquè no s'ha trobat a la xarxa.</translation>
 <translation id="2148756636027685713">Format finalitzat</translation>
 <translation id="2148892889047469596">Emet la pestanya</translation>
-<translation id="2149850907588596975">Contrasenyes i formularis</translation>
 <translation id="2150139952286079145">Cerca destinacions</translation>
 <translation id="2150661552845026580">Voleu afegir "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Heu introduït un índex de pestanya no vàlid.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Llegeix i modifica tot el que s'escrigui</translation>
 <translation id="2208158072373999562">Fitxer zip</translation>
 <translation id="220858061631308971">Introduïu aquest codi PIN a "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Imprimeix des del quadre de diàleg del sistema</translation>
 <translation id="2214884991347062907">La contrasenya no és correcta. Torna-ho a provar.</translation>
 <translation id="2217501013957346740">Creeu un nom:</translation>
 <translation id="2218019600945559112">Ratolí i ratolí tàctil</translation>
@@ -1267,7 +1262,6 @@
 <translation id="2888807692577297075">Cap fitxer coincideix amb &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Obre l'enllaç amb...</translation>
 <translation id="2889925978073739256">Continua bloquejant els connectors de fora de la zona de proves</translation>
-<translation id="2890678560483811744">La pàgina indicada no respecta el límit</translation>
 <translation id="2893168226686371498">Navegador predeterminat</translation>
 <translation id="289644616180464099">La targeta SIM està bloquejada</translation>
 <translation id="289695669188700754">Identificador de clau: <ph name="KEY_ID" /></translation>
@@ -2275,7 +2269,6 @@
 <translation id="4482194545587547824">És possible que Google utilitzi el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google</translation>
 <translation id="4495419450179050807">No la mostris en aquesta pàgina</translation>
 <translation id="449938344715680828">Prem |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| i després |<ph name="ACCELERATOR3" />| per sortir</translation>
-<translation id="4499718683476608392">Permet que la funció Emplenament automàtic de targetes de crèdit empleni els formularis amb un sol clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ha fallat</translation>
 <translation id="450099669180426158">Icona de signe d'exclamació</translation>
 <translation id="4501530680793980440">Confirmació de la supressió</translation>
@@ -2585,7 +2578,6 @@
 <translation id="4971412780836297815">Obre quan acabi</translation>
 <translation id="4972129977812092092">Edita la impressora</translation>
 <translation id="4972164225939028131">La contrasenya no és correcta</translation>
-<translation id="497287958838527945">Targetes de crèdit i adreces que fan servir Google Pay.</translation>
 <translation id="4973307593867026061">Afegeix impressores</translation>
 <translation id="4973523518332075481">Utilitza un nom que tingui <ph name="MAX_LENGTH" /> caràcters com a màxim</translation>
 <translation id="4974733135013075877">Surt i estableix el bloqueig infantil</translation>
@@ -3115,7 +3107,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5752453871435543420">Còpia de seguretat de Chrome OS Cloud</translation>
 <translation id="5756163054456765343">C&amp;entre d'ajuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> pot llegir els documents que envieu a la impressora mitjançant <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Configuració de la targeta de crèdit</translation>
 <translation id="5763315388120433852">Configura o gestiona els fitxers compartits de la xarxa.</translation>
 <translation id="5763751966069581670">No s'ha trobat cap dispositiu USB</translation>
 <translation id="5764483294734785780">De&amp;sa l'àudio com a...</translation>
@@ -3627,7 +3618,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6508248480704296122">Relacionada amb <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplicació: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Llicència per a recursos multimèdia</translation>
-<translation id="6510568984200103950">Menys opcions de configuració</translation>
 <translation id="6513247462497316522">Google Chrome utilitzarà dades mòbils si no esteu connectat a una altra xarxa.</translation>
 <translation id="6514010653036109809">Dispositiu disponible:</translation>
 <translation id="6514565641373682518">Aquesta pàgina ha desactivat el cursor del ratolí.</translation>
@@ -3802,13 +3792,12 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6798954102094737107">Connector: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibra la pantalla tàctil</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6803594270782834876">Dona permís a l'aplicació Linux per obrir els fitxers de la carpeta $1</translation>
+<translation id="6803594270782834876">Dona permís a les aplicacions de Linux per obrir els fitxers de la carpeta $1</translation>
 <translation id="6804671422566312077">Obre totes les adreces d'interès en una &amp;finestra nova</translation>
 <translation id="6805038906417219576">D'acord</translation>
 <translation id="6805647936811177813">Inicieu la sessió a <ph name="TOKEN_NAME" /> per importar el certificat de client de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Activa el seguiment RLZ a <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Gestiona les opcions per compartir amb Linux</translation>
-<translation id="6807889908376551050">Mostra-ho tot...</translation>
 <translation id="6810613314571580006">Inicieu la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se us demana sempre que confirmeu les credencials per iniciar la sessió en un lloc web.</translation>
 <translation id="6810768462515084623">Sembla que la contrasenya ha caducat. Renova-la en un altre dispositiu i torna-ho a provar.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> no pot executar-se com a arrel.</translation>
@@ -3950,7 +3939,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7019805045859631636">Ràpid</translation>
 <translation id="7022562585984256452">S'ha definit la pàgina d'inici.</translation>
 <translation id="7025190659207909717">Gestió de serveis de dades mòbils</translation>
-<translation id="7025883192863200478">Dona permís a l'aplicació Linux per obrir els fitxers de Google Drive. Els canvis se sincronitzaran amb la resta de dispositius.</translation>
+<translation id="7025883192863200478">Dona permís a les aplicacions de Linux per obrir els fitxers de Google Drive. Els canvis se sincronitzaran amb la resta de dispositius.</translation>
 <translation id="7027125358315426638">Nom de la base de dades:</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="7031962166228839643">El mòdul TPM s'està preparant (aquest procés pot trigar una estona). Espereu...</translation>
@@ -4998,7 +4987,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8637542770513281060">L'ordinador conté un mòdul de seguretat que s'utilitza per implementar un gran nombre de funcions de seguretat clau a Chrome OS. Visita el Centre d'ajuda de Chromebook per obtenir més informació: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Actualització del sistema disponible. S'està preparant la baixada…</translation>
 <translation id="8639047128869322042">S'està cercant programari nociu...</translation>
-<translation id="8639963783467694461">Configuració d'Emplenament automàtic</translation>
 <translation id="8642171459927087831">Testimoni d'accés</translation>
 <translation id="8642947597466641025">Fa el text més gran</translation>
 <translation id="8643418457919840804">Per continuar, tria una opció:</translation>
@@ -5014,7 +5002,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8655972064210167941">S'ha produït un problema en iniciar la sessió perquè no s'ha pogut verificar la contrasenya. Contacteu amb l'administrador o torneu a provar-ho.</translation>
 <translation id="8656619792520327915">Afegeix una altra clau de seguretat per Bluetooth</translation>
 <translation id="8656768832129462377">No els comprovis</translation>
-<translation id="8658595122208653918">Canvia les opcions de la impressora...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio amb <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Un moment</translation>
 <translation id="8661290697478713397">Obre l'enllaç en una finestra d'incò&amp;gnit</translation>

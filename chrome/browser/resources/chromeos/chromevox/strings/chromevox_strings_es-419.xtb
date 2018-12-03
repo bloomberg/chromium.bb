@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Ocultar filtros para la transmisión de eventos</translation>
 <translation id="1088219014394087294">No hay encabezados.</translation>
 <translation id="1106741348836243114">Permite activar o desactivar el sonido.</translation>
-<translation id="1108651818222110612">subtítulo</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "chocolate", "d": "delta", "e": "eco", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "julieta","k": "kilo", "l": "lima", "m": "maría", "n": "noviembre", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniforme", "v": "víctor", "w": "whisky","x": "xilófono", "y": "yanqui", "z": "zulú"}</translation>
 <translation id="1120938014254001895">Deslizar dos dedos hacia arriba</translation>
 <translation id="1124771028211010580">El estilo actual de la pantalla es lado a lado.</translation>
@@ -196,7 +195,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2737520612859577214">Final del superíndice</translation>
 <translation id="2749275490991666823">Seleccionado</translation>
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
-<translation id="276402504937943375">índice</translation>
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
 <translation id="2781264313200109999">Comienzo de un vínculo</translation>
@@ -489,6 +487,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">predeterminado</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Desconectar</translation>
 <translation id="481165870889056555">Indicar el título de la página actual</translation>
 <translation id="4826415162591436065">Avanzar</translation>
 <translation id="4826604887384865800">Siguiente salto</translation>
@@ -558,6 +557,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5291783959063340370">Objeto</translation>
 <translation id="5302089807023311274">Referencia bibliográfica</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestaña</translation>
+<translation id="5308380583665731573">Conectar</translation>
 <translation id="5310788376443009632">eliminado:</translation>
 <translation id="5320727453979144100">Modo permanente habilitado</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comas}}</translation>
@@ -773,6 +773,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="712735679809149106">reproducción oral de palabras</translation>
 <translation id="713824876195128146">Siguiente cita de bloque</translation>
 <translation id="7143034430156387447">Cambia entre braille de 8 o 6 puntos</translation>
+<translation id="7143207342074048698">Conectando</translation>
 <translation id="7157306005867877619">Resumen</translation>
 <translation id="7161425887892204659">Fin de la coincidencia de texto</translation>
 <translation id="7161771961008409533">Botón con ventana emergente</translation>
@@ -836,7 +837,6 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="7625690649919402823">Siguiente tabla</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grado <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">No hay ningún encabezado de nivel 3 anterior.</translation>
-<translation id="7647456547678091388">sugerencia</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, cuadro de texto</translation>
 <translation id="7663318257180412551">Encabezado 2</translation>
 <translation id="7674576868851035240">Siguiente vínculo</translation>
@@ -962,6 +962,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943175951035496220">No hay ninguna celda a la derecha.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Borrar</translation>
 <translation id="900114243503212879">archivo</translation>
 <translation id="9027462562263121875">No hay tablas.</translation>
 <translation id="9040132695316389094">Encabezado 1</translation>

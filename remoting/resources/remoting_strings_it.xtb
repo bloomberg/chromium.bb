@@ -193,7 +193,7 @@ PC</translation>
 <translation id="4985296110227979402">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto</translation>
 <translation id="5059773780693835145">Prima che tu possa controllare questo computer da remoto con <ph name="PRODUCT_NAME" />, è richiesto un passaggio di configurazione aggiuntivo.
 
-Per abilitare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per visualizzare il riquadro delle preferenze di sicurezza e privacy, poi seleziona la casella accanto a "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
+Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per visualizzare il riquadro delle preferenze di sicurezza e privacy, poi seleziona la casella accanto a "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="507204348399810022">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />?</translation>

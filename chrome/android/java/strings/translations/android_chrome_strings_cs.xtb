@@ -114,7 +114,6 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="1829244130665387512">Najít na stránce</translation>
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1868024384445905608">Chrome teď stahuje soubory rychleji</translation>
-<translation id="187628348035757895">Možnosti pro vývojáře</translation>
 <translation id="1880072593381090678">Oblíbené stránky z Chromu</translation>
 <translation id="1883903952484604915">Moje soubory</translation>
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="6416782512398055893">Staženo: <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
-<translation id="6436016483175965362">Kukátko</translation>
 <translation id="6437478888915024427">Informace o stránce</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="6448273550210938826">Vyhledávání a návrhy adres URL</translation>
@@ -773,7 +771,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6868088497967843822">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
 <translation id="688738109438487280">Přidat existující data do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Chcete-li zkopírovat heslo, odemkněte zařízení</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otevřená karta}few{%1$d otevřené karty}many{%1$d otevřené karty}other{%1$d otevřených karet}}</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
 <translation id="6910211073230771657">Smazáno</translation>
 <translation id="6912998170423641340">Blokovat webům přístup k textu a obrázkům zkopírovaným do schránky</translation>
@@ -825,7 +822,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
-<translation id="728491846437309531">Asistent Google vám může pomoci provádět na webu různé věci rychleji a snáze</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>

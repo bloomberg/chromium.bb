@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Ficha vichujio vya mtiririko wa tukio</translation>
 <translation id="1088219014394087294">Hakuna vichwa.</translation>
 <translation id="1106741348836243114">Washa au zima maoni ya sauti (earcons).</translation>
-<translation id="1108651818222110612">kichwa kidogo</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Telezesha vidole viwili kuelekea juu</translation>
 <translation id="1124771028211010580">Mtindo wa sasa wa onyesho ni wa upande kwa upande.</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">Mwisho wa nambari juu ya nyingine</translation>
 <translation id="2749275490991666823">Imeteuliwa</translation>
 <translation id="27527859628328957">Ruka hadi kipengee kinachoweza kulengwa kinachofuata</translation>
-<translation id="276402504937943375">jedwali la yaliyomo</translation>
 <translation id="2770781857296573485">Ingia ugunduaji wa kikundi</translation>
 <translation id="2777845298774924149">Imeondoka</translation>
 <translation id="2781264313200109999">Mwanzo wa kiungo</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">chaguomsingi</translation>
 <translation id="479989351350248267">tafuta</translation>
+<translation id="4804818685124855865">Tenganisha</translation>
 <translation id="481165870889056555">Tangaza kichwa cha ukurasa wa sasa</translation>
 <translation id="4826415162591436065">Nenda mbele</translation>
 <translation id="4826604887384865800">Kuruka kunakofuata</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">Kitu</translation>
 <translation id="5302089807023311274">Marejeleo ya bibliografia</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, kichupo</translation>
+<translation id="5308380583665731573">Unganisha</translation>
 <translation id="5310788376443009632">limeondolewa:</translation>
 <translation id="5320727453979144100">Hali ya kunata imewashwa</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{koma #}}</translation>
@@ -772,6 +772,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="712735679809149106">mwangwi wa neno</translation>
 <translation id="713824876195128146">Nukuu la msingi linalofuata</translation>
 <translation id="7143034430156387447">Geuza kati ya breli ya nukta nundu 6 na 8</translation>
+<translation id="7143207342074048698">Inaunganisha</translation>
 <translation id="7157306005867877619">Ikisiri</translation>
 <translation id="7161425887892204659">Mwisho wa maandishi yanayolingana</translation>
 <translation id="7161771961008409533">Kitufe cha dirisha ibukizi</translation>
@@ -835,7 +836,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7625690649919402823">Jedwali linalofuata</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Daraja la <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Hakuna kichwa cha ngazi ya 3 kilichotangulia.</translation>
-<translation id="7647456547678091388">kidokezo</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, kikasha maandishi</translation>
 <translation id="7663318257180412551">Kichwa 2</translation>
 <translation id="7674576868851035240">Kiungo kinachofuata</translation>
@@ -961,6 +961,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="8940925288729953902">Vitufe vya Kurekebisha</translation>
 <translation id="8943175951035496220">Hakuna kisanduku kulia.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Sahau</translation>
 <translation id="900114243503212879">faili</translation>
 <translation id="9027462562263121875">Hakuna majedwali.</translation>
 <translation id="9040132695316389094">Kichwa cha 1</translation>

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">إخفاء فلاتر بث الحدث</translation>
 <translation id="1088219014394087294">ليست هناك عناوين.</translation>
 <translation id="1106741348836243114">‏تشغيل التعليقات الصوتية (earcons) أو إيقافها.</translation>
-<translation id="1108651818222110612">ترجمة مصاحِبة</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">التمرير السريع بإصبعين إلى الأعلى</translation>
 <translation id="1124771028211010580">نمط العرض الحالي هو جنبًا إلى جنب.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">نهاية الرموز العلوية</translation>
 <translation id="2749275490991666823">محدد</translation>
 <translation id="27527859628328957">الانتقال إلى العنصر التالي القابل للتركيز</translation>
-<translation id="276402504937943375">جدول المحتويات</translation>
 <translation id="2770781857296573485">الدخول إلى استكشاف المجموعات</translation>
 <translation id="2777845298774924149">تم الإنهاء</translation>
 <translation id="2781264313200109999">بدء الرابط</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">فيديو</translation>
 <translation id="4764692524839457597">تلقائي</translation>
 <translation id="479989351350248267">بحث</translation>
+<translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
 <translation id="4826604887384865800">الانتقال التالي</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">الهدف</translation>
 <translation id="5302089807023311274">مرجع قائمة مراجع</translation>
 <translation id="5304943142864553931">علامة التبويب <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">تمت إزالة:</translation>
 <translation id="5320727453979144100">تم تفعيل الوضع الثابت</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{فاصلة واحدة}zero{# commas}two{فاصلتان (#)}few{# فواصل}many{# فاصلة}other{# من الفواصل}}</translation>
@@ -773,6 +773,7 @@
 <translation id="712735679809149106">صدى الكلمة</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
 <translation id="7143034430156387447">التبديل بين نمط برايل ذي 6 نقاط و8 نقاط</translation>
+<translation id="7143207342074048698">اتصال</translation>
 <translation id="7157306005867877619">نبذة مختصرة</translation>
 <translation id="7161425887892204659">نهاية مطابقة النص</translation>
 <translation id="7161771961008409533">زر بقائمة منبثقة</translation>
@@ -836,7 +837,6 @@
 <translation id="7625690649919402823">الجدول التالي</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، الدرجة <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">ليس هناك عنوان سابق من المستوى الثالث.</translation>
-<translation id="7647456547678091388">نصيحة</translation>
 <translation id="7659376057562985921">مربع نص <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">العنوان الثاني</translation>
 <translation id="7674576868851035240">الرابط التالي</translation>
@@ -962,6 +962,7 @@
 <translation id="8940925288729953902">مفاتيح التعديل</translation>
 <translation id="8943175951035496220">ليست هناك خلية في اليمين.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">حذف</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">ليست هناك أي جداول.</translation>
 <translation id="9040132695316389094">العنوان الأول</translation>

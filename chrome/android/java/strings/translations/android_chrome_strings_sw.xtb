@@ -114,7 +114,6 @@ Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvi
 <translation id="1829244130665387512">Tafuta katika ukurasa</translation>
 <translation id="1853692000353488670">Kichupo fiche kipya</translation>
 <translation id="1868024384445905608">Sasa Chrome inapakua faili haraka zaidi</translation>
-<translation id="187628348035757895">Chaguo za wasanidi programu</translation>
 <translation id="1880072593381090678">Kurasa maarufu kutoka Chrome</translation>
 <translation id="1883903952484604915">Faili Zangu</translation>
 <translation id="1887786770086287077">Kipengele cha mahali kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="641643625718530986">Chapisha...</translation>
 <translation id="6416782512398055893">Umepakua MB <ph name="MBS" /></translation>
 <translation id="6433501201775827830">Chagua mtambo wako wa kutafuta</translation>
-<translation id="6436016483175965362">Chungulia</translation>
 <translation id="6437478888915024427">Maelezo ya ukurasa</translation>
 <translation id="6447842834002726250">Vidakuzi</translation>
 <translation id="6448273550210938826">Mapendekezo ya utafutaji na URL</translation>
@@ -773,7 +771,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6868088497967843822">Ingia katika akaunti ili upate alamisho, historia, manenosiri, na mipangilio yako mingine kwenye vifaa vyako vyote</translation>
 <translation id="688738109438487280">Ongeza data iliyopo kwenye <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Fungua ili unakili nenosiri lako</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{Kichupo %1$d kilicho wazi}other{Vichupo %1$d vilivyo wazi}}</translation>
 <translation id="6896758677409633944">Nakili</translation>
 <translation id="6910211073230771657">Imeondolewa</translation>
 <translation id="6912998170423641340">Zuia tovuti zisisome maandishi na picha kutoka ubao wa kunakili</translation>
@@ -825,7 +822,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7250468141469952378">Imechagua <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Ongeza Akaunti ya Google kutoka kwenye ukurasa wa Akaunti katika programu ya Mipangilio ya kifaa chako.</translation>
 <translation id="7274013316676448362">Tovuti imezuiwa</translation>
-<translation id="728491846437309531">Programu ya Mratibu wa Google inaweza kukusaidia ufanye mambo haraka na kwa urahisi kwenye wavuti</translation>
 <translation id="729975465115245577">Kifaa chako hakina programu ya kuhifadhi faili ya manenosiri.</translation>
 <translation id="7302081693174882195">Maelezo: Imepangwa kulingana na kiasi cha data kilichookolewa</translation>
 <translation id="7333031090786104871">Bado inaongeza tovuti ya awali</translation>

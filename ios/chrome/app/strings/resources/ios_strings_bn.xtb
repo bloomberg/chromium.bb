@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">পরিষেবার শর্তাদি</translation>
 <translation id="430793432425771671">সবকিছু সিঙ্ক করুন</translation>
 <translation id="4342284590510997375">নতুন</translation>
-<translation id="434816576838749873">ইমেল অ্যাপ বেছে নিন</translation>
 <translation id="4359125752503270327">এই পৃষ্ঠাটি আরেকটি অ্যাপ্লিকেশানে খুলবে।</translation>
 <translation id="4370827530403103842">সিঙ্ক কাজ করছে না। ঠিক করতে আলতো চাপুন।</translation>
 <translation id="4375040482473363939">QR কোড খুঁজুন</translation>
 <translation id="4378154925671717803">ফোন</translation>
 <translation id="441868831736628555">গোপনীয়তা বিজ্ঞপ্তি</translation>
-<translation id="4460091562821778167">কোন অ্যাপ ব্যবহার করব তা প্রত্যেকবার বেছে নিতে চাই</translation>
 <translation id="4476574785019001431">সেটিংস</translation>
 <translation id="4496373720959965247">পৃষ্ঠার মধ্যে ট্যাব এবং পাল্টানো যোগ করুন</translation>
 <translation id="4508750114462689118">সাইন-ইন প্রচার বন্ধ করুন</translation>
@@ -279,7 +277,6 @@
 <translation id="5554368826343982379">সিঙ্ক এবং ব্যক্তিগতকরণ</translation>
 <translation id="5556459405103347317">আবার লোড করুন</translation>
 <translation id="5614553682702429503">পাসওয়ার্ড সেভ করবেন?</translation>
-<translation id="5619279135193775234">মেল</translation>
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5669528293118408608">www</translation>
@@ -318,6 +315,7 @@
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
 <translation id="616831107264507309">পরে পড়ুন</translation>
+<translation id="6177442314419606057">Chrome-এ সার্চ করুন</translation>
 <translation id="6184086493125982861">ট্যাব দেখান</translation>
 <translation id="6187302354554850004">শেষে সিঙ্ক হয়েছে: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">অপঠিত</translation>
@@ -383,7 +381,6 @@
 <translation id="7136892417564438900">ক্যামেরা অনুপলব্ধ</translation>
 <translation id="7159472599653637159">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="7167621057293532233">ডেটা প্রকার</translation>
-<translation id="7175593937868963913">ইমেল লিখুন</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
 <translation id="722055596168483966">Google পরিষেবাগুলিকে ব্যক্তিগত করুন</translation>
@@ -416,6 +413,7 @@
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="7781829728241885113">গতকাল</translation>
+<translation id="778855399387580014">নতুন Chrome ট্যাবে সার্চ করা শুরু করুন।</translation>
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7840771868269352570">আপনার বেছে নেওয়া আইটেমগুলি সরানো হবে।</translation>
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>

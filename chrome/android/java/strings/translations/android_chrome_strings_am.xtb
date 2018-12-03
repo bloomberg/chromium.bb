@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">በዚህ ገጽ ውስጥ የተገኘ</translation>
 <translation id="1853692000353488670">አዲስ ማንነት የማያሳውቅ ትር</translation>
 <translation id="1868024384445905608">Chrome አሁን ፋይሎችን በበለጠ ፍጥነት ያወርዳል</translation>
-<translation id="187628348035757895">የገንቢ አማራጮች</translation>
 <translation id="1880072593381090678">ታዋቂ ገጾች ከChrome</translation>
 <translation id="1883903952484604915">የእኔ ፋይሎች</translation>
 <translation id="1887786770086287077">የአካባቢ መዳረሻ ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">አትም…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> ሜባ ወርዷል</translation>
 <translation id="6433501201775827830">የእርስዎን የፍለጋ ፕሮግራም ይምረጡ</translation>
-<translation id="6436016483175965362">ፈጣን እይታ</translation>
 <translation id="6437478888915024427">የገጽ መረጃ</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6448273550210938826">የፍለጋ እና ዩአርኤል ጥቆማዎች</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
 <translation id="688738109438487280">ነባሩን ውሂብ ወደ <ph name="TO_ACCOUNT" /> ያክሉ።</translation>
 <translation id="6891726759199484455">የይለፍ ቃልዎን ለመቅዳት ይክፈቱ</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ክፍት ትር}one{%1$d ክፍት ትሮች}other{%1$d ክፍት ትሮች}}</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6910211073230771657">ተሰርዟል</translation>
 <translation id="6912998170423641340">ጣቢያዎች ከቅንጥብ ሰሌዳ ጽሑፍን እና ምስሎችን እንዳያነብቡ አግድ</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ተመርጠዋል</translation>
 <translation id="7253272406652746122">በመሣሪያዎ ቅንብሮች መተግበሪያ ውስጥ ካለው የመለያዎች ገጽ ሆነው የGoogle መለያ ያክሉ።</translation>
 <translation id="7274013316676448362">የታገደ ጣቢያ</translation>
-<translation id="728491846437309531">Google ረዳት በድር ላይ ነገሮችን በበለጠ ፍጥነት እና በቀላሉ እንዲያከናውኑ ሊያግዘዎት ይችላል</translation>
 <translation id="729975465115245577">የእርስዎ መሣሪያ የይለፍ ቃላት ፋይሉን የሚያከማችበት መተግበሪያ የለውም።</translation>
 <translation id="7302081693174882195">ዝርዝሮች፦ በተቀመጠው የውሂብ መጠን ተደርድረዋል</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>

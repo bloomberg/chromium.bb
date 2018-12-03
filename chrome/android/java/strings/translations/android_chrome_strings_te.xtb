@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">పేజీలో కనుగొను</translation>
 <translation id="1853692000353488670">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1868024384445905608">Chrome ఇప్పుడు ఫైల్‌లను మరింత వేగంగా డౌన్‌లోడ్ చేస్తుంది</translation>
-<translation id="187628348035757895">డెవలపర్ ఎంపికలు</translation>
 <translation id="1880072593381090678">Chrome నుండి జనాదరణ పొందిన పేజీలు</translation>
 <translation id="1883903952484604915">నా ఫైల్‌లు</translation>
 <translation id="1887786770086287077">ఈ పరికరానికి స్థానం యాక్సెస్ ఆఫ్ చేయబడింది. దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో తిరిగి ఆన్ చేయండి.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">ముద్రించు…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="6433501201775827830">మీ శోధన ఇంజిన్‌ని ఎంచుకోండి</translation>
-<translation id="6436016483175965362">సంక్షిప్త వీక్షణ</translation>
 <translation id="6437478888915024427">పేజీ సమాచారం</translation>
 <translation id="6447842834002726250">కుక్కీలు</translation>
 <translation id="6448273550210938826">శోధన మరియు URL సూచనలు</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="688738109438487280">ఇప్పటికే ఉన్న డేటాను <ph name="TO_ACCOUNT" />కి జోడించండి.</translation>
 <translation id="6891726759199484455">మీ పాస్‌వర్డ్‌ను కాపీ చేయడానికి అన్‌లాక్ చేయండి</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d తెరిచిన ట్యాబ్}other{%1$d తెరిచిన ట్యాబ్‌లు}}</translation>
 <translation id="6896758677409633944">కాపీ చెయ్యి</translation>
 <translation id="6910211073230771657">తొలగించబడింది</translation>
 <translation id="6912998170423641340">క్లిప్‌బోర్డ్ నుండి వచనం మరియు చిత్రాలను చదవకుండా సైట్‌లు బ్లాక్ చేయబడతాయి</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
 <translation id="7253272406652746122">మీ పరికర సెట్టింగ్‌ల యాప్‌లో ఖాతాల పేజీ నుండి Google ఖాతాను జోడించండి.</translation>
 <translation id="7274013316676448362">బ్లాక్ చేసిన సైట్</translation>
-<translation id="728491846437309531">Google అసిస్టెంట్ మీరు వెబ్‌లో చేసే పనులను వేగంగా, సులభంగా చేసేందుకు సాయం చేస్తుంది</translation>
 <translation id="729975465115245577">పాస్‌వర్డ్‌ల ఫైల్‌ను నిల్వ చేయడానికి మీ పరికరంలో యాప్ లేదు.</translation>
 <translation id="7302081693174882195">వివరాలు: సేవ్ చేసిన డేటా మొత్తం ద్వారా క్రమీకరించబడ్డాయి</translation>
 <translation id="7333031090786104871">ఇప్పటికీ మునుపటి సైట్‌ను జోడిస్తోంది</translation>

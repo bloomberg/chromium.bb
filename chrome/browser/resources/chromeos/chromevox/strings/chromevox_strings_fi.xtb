@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Piilota tapahtumastreamin suodattimet</translation>
 <translation id="1088219014394087294">Ei otsikoita.</translation>
 <translation id="1106741348836243114">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä.</translation>
-<translation id="1108651818222110612">alaots</translation>
 <translation id="1120743664840974483">{"a": "aarne", "b": "bertta", "c": "celcius", "d": "daavid", "e": "eemeli", "f": "faarao", "g": "gideon", "h": "heikki", "i": "iivari", "j": "jussi","k": "kalle", "l": "lauri", "m": "matti", "n": "niilo", "o": "otto","p": "paavo", "q": "kuu", "r": "risto", "s": "sakari", "t": "tyyne", "u": "urho", "v": "vihtori", "w": "wiski","x": "äksä", "y": "yrjö", "z": "tseta", "å": "åke", "ä": "äiti", "ö": "öljy"}</translation>
 <translation id="1120938014254001895">Pyyhkäise ylös kahdella sormella</translation>
 <translation id="1124771028211010580">Nykyinen näyttötyyli on rinnakkainen.</translation>
@@ -196,7 +195,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2737520612859577214">Yläindeksin loppu</translation>
 <translation id="2749275490991666823">Valittu</translation>
 <translation id="27527859628328957">Siirry seuraavaan aktivoitavaan kohteeseen</translation>
-<translation id="276402504937943375">sisällysluettelo</translation>
 <translation id="2770781857296573485">Käytä ryhmätutkintaa</translation>
 <translation id="2777845298774924149">Suljettiin</translation>
 <translation id="2781264313200109999">Linkin alku</translation>
@@ -489,6 +487,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">oletus</translation>
 <translation id="479989351350248267">haku</translation>
+<translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="481165870889056555">Ilmoita nykyisen sivun otsikko</translation>
 <translation id="4826415162591436065">Siirry eteenpäin</translation>
 <translation id="4826604887384865800">Seuraava siirtyminen</translation>
@@ -558,6 +557,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5291783959063340370">Kohde</translation>
 <translation id="5302089807023311274">Lähdeluetteloviittaus</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, välilehti</translation>
+<translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5310788376443009632">poistettu:</translation>
 <translation id="5320727453979144100">Kiinnitetty tila käytössä</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{pilkku}other{# pilkkua}}</translation>
@@ -773,6 +773,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="712735679809149106">sanojen puhuminen</translation>
 <translation id="713824876195128146">Seuraava estoviittaus</translation>
 <translation id="7143034430156387447">Vaihda 6 ja 8 pisteen pistekirjoituksen välillä</translation>
+<translation id="7143207342074048698">Yhdistetään</translation>
 <translation id="7157306005867877619">Tiivistelmä</translation>
 <translation id="7161425887892204659">Tekstivastaavuuden loppu</translation>
 <translation id="7161771961008409533">Ponnahduspainike</translation>
@@ -836,7 +837,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7625690649919402823">Seuraava taulukko</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), tyyppi <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Ei edellisiä tason 3 otsikoita.</translation>
-<translation id="7647456547678091388">vinkki</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstikenttä</translation>
 <translation id="7663318257180412551">Otsikko 2</translation>
 <translation id="7674576868851035240">Seuraava linkki</translation>
@@ -962,6 +962,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8940925288729953902">Muokkausavaimet</translation>
 <translation id="8943175951035496220">Ei oikealla olevia soluja.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Unohda</translation>
 <translation id="900114243503212879">tiedosto</translation>
 <translation id="9027462562263121875">Ei taulukoita.</translation>
 <translation id="9040132695316389094">Otsikko 1</translation>

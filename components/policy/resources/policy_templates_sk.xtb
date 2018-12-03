@@ -215,14 +215,6 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 <translation id="1523774894176285446">Spúšťanie alternatívneho prehliadača na nakonfigurovaných weboch</translation>
 <translation id="152657506688053119">Zoznam alternatívnych webových adries pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1530812829012954197">Vždy vykresliť nasledujúce vzory webových adries v hostiteľskom prehliadači</translation>
-<translation id="1532965933165453786">Umožňuje povoliť alebo zakázať rýchly prechod.
-      Platí pre všetkých používateľov a rozhrania v zariadení.
-      Ak chcete používať rýchly prechod, musíte povoliť toto nastavenie aj vlastnosť ONC konkrétnej siete.
-      Rýchly prechod je po nastavení povolený dovtedy, kým pravidlo nezmeníte a nezakážete ho.
-
-      Ak pravidlo nenastavíte, rýchly prechod sa nebude používať.
-      Ak ho nastavíte na hodnotu false, rýchly prechod sa nebude používať.
-      Ak ho nastavíte na hodnotu true, rýchly prechod sa použije, keď ho bezdrôtový prístupový bod podporuje.</translation>
 <translation id="1541170838458414064">Obmedziť veľkosť tlačenej strany</translation>
 <translation id="1553684822621013552">Keď je toto pravidlo nastavené na hodnotu True, bude pre používateľa povolená funkcia ARC (táto možnosť podlieha ďalším kontrolám nastavení pravidiel – ak je v aktuálnej relácii používateľa povolený buď režim dočasných profilov, alebo viacnásobné prihlásenie, funkcia ARC nebude dostupná).
 
@@ -277,6 +269,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="1803646570632580723">Zoznam pripnutých aplikácií, ktoré sa zobrazujú v spúšťači</translation>
 <translation id="1808715480127969042">Blokovať súbory cookie na týchto webových stránkach</translation>
 <translation id="1810261428246410396">Povoliť používanie dynamického tetheringu</translation>
+<translation id="1817685358399181673">Toto pravidlo špecifikuje obrázok <ph name="PLUGIN_VM_NAME" /> používateľa. Toto pravidlo nastavíte špecifikovaním webovej adresy, na ktorej môže zariadenie stiahnuť daný obrázok a hash SHA-256, pomocou ktorého sa overí integrita stiahnutého súboru.
+
+      Toto pravidlo by ste mali špecifikovať ako reťazec vyjadrujúci webovú adresu a hash vo formáte JSON.</translation>
 <translation id="1827523283178827583">Použiť fixné servery proxy</translation>
 <translation id="1843117931376765605">Frekvencia obnovenia pravidiel pre používateľov</translation>
 <translation id="1844620919405873871">Nakonfiguruje pravidlá súvisiace s rýchlym odomknutím.</translation>
@@ -445,6 +440,10 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="214901426630414675">Obmedziť režim obojstrannej tlače</translation>
 <translation id="2149330464730004005">Povoliť farebnú tlač</translation>
 <translation id="2156132677421487971">Umožňuje nakonfigurovať pravidlá pre funkciu <ph name="PRODUCT_NAME" />, ktorá používateľom umožňuje odosielať obsah kariet, webov alebo plochy z prehliadača na vzdialené obrazovky a do vzdialených zvukových systémov.</translation>
+<translation id="2163878108829382394">
+        Ak toto pravidlo nastavíte na hodnotu true, registrácia na správu cloudu je povinná a v prípade zlyhania zablokuje proces spustenia Chromu.
+
+        Ak ho nenastavíte alebo ho nastavíte na hodnotu false, registrácia na správu cloudu je voliteľná a v prípade zlyhania nezablokuje proces spustenia Chromu.</translation>
 <translation id="2166472654199325139">Nefiltrovať weby podľa obsahu pre dospelých</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
@@ -677,6 +676,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
+<translation id="2696531058295423290">Povoľte zariadeniam používať <ph name="PLUGIN_VM_NAME" /> v systéme<ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 
@@ -1389,6 +1389,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4483649828988077221">Zakázať automatické aktualizácie</translation>
 <translation id="4485425108474077672">Konfigurovať webovú adresu stránky na novej karte</translation>
 <translation id="4492287494009043413">Zákaz zaznamenávania snímok obrazovky</translation>
+<translation id="449423975179525290">Nakonfigurujte pravidlá súvisiace s doplnkom <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie mediálnych súborov vo vyrovnávacej pamäti na disk.
 
       Ak nastavíte toto pravidlo, služba <ph name="PRODUCT_NAME" /> použije uvedenú veľkosť vyrovnávacej pamäte bez ohľadu na to, či používateľ určil príznak --media-cache-size. Hodnota určená v tomto pravidle nie je pevnou hraničnou hodnotou, ale skôr návrhom pre systém ukladania do vyrovnávacej pamäte. Každá hodnota menšia ako niekoľko megabajtov je príliš malá a zaokrúhli sa smerom nahor na rozumné minimum.
@@ -2041,15 +2042,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
 
       Toto pravidlo presadzuje inštaláciu rozšírenia <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na nahlasovanie údajov a prepíše všetky pravidlá pre rozšírenia súvisiace s týmto rozšírením.</translation>
-<translation id="6155247658847899816">Keď nastavíte toto pravidlo, rozšírenie a škálovateľný faktor jednotlivých obrazoviek budú nastavené na špecifikované hodnoty. Nastavenia externej obrazovky sa použijú na všetky pripojené externé obrazovky.
+<translation id="6155247658847899816">Keď nastavíte toto pravidlo, rozšírenie a škálovací faktor jednotlivých obrazoviek budú nastavené na špecifikované hodnoty. Nastavenia externej obrazovky sa použijú na všetky pripojené externé obrazovky.
 
 Hodnoty external_width a external_height by mali byť určené v pixeloch. Hodnoty external_scale_percentage a internal_scale_percentage by mali byť určené v percentách.
 
 Ak hodnotu external_use_native nastavíte na možnosť true, pravidlo bude hodnoty external_height a external_width ignorovať a nastaví rozlíšenie externých obrazoviek na ich natívne rozlíšenie.
 
-Ak je hodnota external_use_native nastavená na možnosť false alebo ju neposkytnete a neuvediete ani hodnotu external_height alebo external_width, pravidlo nebude mať vplyv na nastavenia externých obrazoviek. Ak niektorá obrazovka špecifikované rozlíšenie alebo škálovateľný faktor nepodporuje, pravidlo sa na danú obrazovku nepoužije.
+Ak je hodnota external_use_native nastavená na možnosť false alebo ju neposkytnete a neuvediete ani hodnotu external_height alebo external_width, pravidlo nebude mať vplyv na nastavenia externých obrazoviek. Ak niektorá obrazovka špecifikované rozlíšenie alebo škálovací faktor nepodporuje, pravidlo sa na danú obrazovku nepoužije.
 
-Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť rozlíšenie a škálovateľný faktor ľubovoľnej obrazovky po prihlásení na stránke s nastaveniami, ale ich nastavenia budú prepísané hodnotou pravidla pri ďalšom reštartovaní. Ak značku recommended nastavíte na hodnotu false alebo ju nenastavíte, používatelia nemôžu meniť nastavenia obrazovky.</translation>
+Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť rozlíšenie a škálovací faktor ľubovoľnej obrazovky po prihlásení na stránke s nastaveniami, ale ich nastavenia budú prepísané hodnotou pravidla pri ďalšom reštartovaní. Ak značku recommended nastavíte na hodnotu false alebo ju nenastavíte, používatelia nemôžu meniť nastavenia obrazovky.</translation>
 <translation id="6155936611791017817">Nastaviť predvolený stav veľkého kurzora na prihlasovacej obrazovke</translation>
 <translation id="6157537876488211233">Zoznam pravidiel vynechania servera proxy oddelených čiarkami</translation>
 <translation id="6158324314836466367">Názov Internetového obchodu pre podniky (podpora je ukončená)</translation>
@@ -2700,6 +2701,9 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
       Upozorňujeme, že tieto obmedzenia platia pre súbory na stiahnutie spustené z obsahu webových stránok, ako aj prostredníctvom možnosti Stiahnuť odkaz… v kontextovej ponuke. Tieto obmedzenia neplatia pre možnosť Uložiť/stiahnuť aktuálne zobrazenej stránky ani pre ukladanie položiek ako súborov PDF prostredníctvom možností tlače.
 
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Povoľte tomuto zariadeniu spúšťať doplnok PluginVm.
+
+      Ak toto pravidlo nastavíte na hodnotu false alebo ho nenastavíte, doplnok <ph name="PLUGIN_VM_NAME" /> nie je v zariadení povolený. Ak ho nastavíte na hodnotu true, doplnok <ph name="PLUGIN_VM_NAME" /> je v zariadení povolený vtedy, keď to povoľujú ostatné nastavenia. Ak chcete spustiť doplnok <ph name="PLUGIN_VM_NAME" />, <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> musíte nastaviť na hodnotu true a <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> musíte nastaviť.</translation>
 <translation id="7643883929273267746">Obmedziť účty, ktoré sú viditeľné v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Určuje, či bude v zariadení povolený roaming pre dátové prenosy. Ak je pravidlo nastavené na hodnotu true, roaming pre dátové prenosy bude povolený. Ak ho ponecháte nenakonfigurované alebo ho nastavíte na hodnotu false, roaming pre dátové prenosy nebude k dispozícii.</translation>
 <translation id="7673194325208122247">Časové obdobie (milisekundy)</translation>
@@ -3154,6 +3158,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
       Ak je nastavenie povolené alebo nie je nastavené, história prehliadania a sťahovania sa dá odstrániť.
 
       Ak je nastavenie zakázané, história prehliadania a sťahovania sa odstrániť nedá.</translation>
+<translation id="8758831693895931466">Povolenie povinnej registrácie na správu cloudu</translation>
 <translation id="8759829385824155666">Povolené typy šifrovania Kerberos</translation>
 <translation id="8764119899999036911">Určuje, či bude vygenerovaný hlavný názov služby protokolu Kerberos založený na kanonickom názve DNS alebo na pôvodnom zadanom názve.
 

@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="430793432425771671">Sincronizar tudo</translation>
 <translation id="4342284590510997375">Novo</translation>
-<translation id="434816576838749873">Escolher app de e-mails</translation>
 <translation id="4359125752503270327">Esta página será aberta em outro aplicativo.</translation>
 <translation id="4370827530403103842">A sincronização não está funcionando. Toque para corrigir.</translation>
 <translation id="4375040482473363939">Pesquisa por código QR</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="441868831736628555">Aviso de privacidade</translation>
-<translation id="4460091562821778167">Pergunte-me sempre qual app usar</translation>
 <translation id="4476574785019001431">Configurações</translation>
 <translation id="4496373720959965247">Adicionar guias e alternar entre páginas</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
@@ -278,7 +276,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5554368826343982379">Sincronização e personalização</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
-<translation id="5619279135193775234">E-mail</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
@@ -383,7 +380,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7159472599653637159">Solicitar um site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
-<translation id="7175593937868963913">Escrever e-mail</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços do Google</translation>

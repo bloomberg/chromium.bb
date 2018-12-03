@@ -229,14 +229,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1523774894176285446">Navigateur secondaire à lancer pour les sites Web configurés.</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
-<translation id="1532965933165453786">Permet d'activer ou de désactiver la transition rapide.
-      Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil.
-      Pour pouvoir utiliser la transition rapide, ce paramètre et la propriété ONC par réseau doivent être activés.
-      La transition rapide reste active jusqu'à ce que vous la désactiviez en modifiant la règle.
-
-      Si la règle n'est pas configurée, la transition rapide n'est pas utilisée.
-      Si la règle est définie sur "False", la transition rapide n'est pas utilisée.
-      Si la règle est définie sur "True", la transition rapide est utilisée, si toutefois le point d'accès sans fil est compatible avec cette fonctionnalité.</translation>
 <translation id="1541170838458414064">Limiter le format de la page d'impression</translation>
 <translation id="1553684822621013552">Lorsque cette règle est définie sur "True", ARC est activé pour l'utilisateur
       (sous réserve de contrôles supplémentaires des paramètres de la règle. ARC
@@ -2078,7 +2070,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Cette règle active l'installation d'office de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> pour la création de rapports et ignore toutes les autres règles relatives à cette extension.</translation>
 <translation id="6155247658847899816">Si cette règle est définie, la résolution et le facteur d'adaptation de chaque écran
-      sont réglés sur les valeurs spécifiées. Les paramètres d'écran externe sont
+      sont définis sur les valeurs spécifiées. Les paramètres d'écran externe sont
       appliqués à tous les écrans externes connectés.
 
       Les valeurs des paramètres "external_width" et "external_height" doivent être

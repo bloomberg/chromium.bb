@@ -114,7 +114,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
 <translation id="1868024384445905608">Ara Chrome baixa els fitxers més ràpid</translation>
-<translation id="187628348035757895">Opcions per a desenvolupadors</translation>
 <translation id="1880072593381090678">Pàgines populars de Chrome</translation>
 <translation id="1883903952484604915">Els meus fitxers</translation>
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="641643625718530986">Imprimeix…</translation>
 <translation id="6416782512398055893">S'han baixat <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Tria el motor de cerca</translation>
-<translation id="6436016483175965362">Previsualitza</translation>
 <translation id="6437478888915024427">Informació de la pàgina</translation>
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="6448273550210938826">Suggeriments de cerca i d'URL</translation>
@@ -773,7 +771,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6868088497967843822">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius</translation>
 <translation id="688738109438487280">Afegeix les dades existents a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloqueja la pantalla per copiar la contrasenya</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestanya oberta}other{%1$d pestanyes obertes}}</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6910211073230771657">Suprimit</translation>
 <translation id="6912998170423641340">Impedeix que els llocs web llegeixin el text i les imatges del porta-retalls</translation>
@@ -825,7 +822,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
 <translation id="7253272406652746122">Afegeix un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
-<translation id="728491846437309531">L'Assistent de Google et pot ajudar a completar les tasques de manera més ràpida i senzilla al web</translation>
 <translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Esemény streamszűrőinek elrejtése</translation>
 <translation id="1088219014394087294">Nincsenek címsorok.</translation>
 <translation id="1106741348836243114">Hangjelzések be- és kikapcsolása.</translation>
-<translation id="1108651818222110612">alcím</translation>
 <translation id="1120743664840974483">{"a": "aladár", "á": "ákos" "b": "béla", "c": "cecil", "cs": "csaba", "d": "dénes", "dz": "edzés", "dzs": "dzsungel", "e": "elemér", "é": "éva", "f": "ferenc", "g": "géza", "gy": "györgy", "h": "hugó", "i": "ilona", "í": "írás", "j": "józsef","k": "katalin", "l": "lászló", "ly": "lyuk", "m": "márton", "n": "nándor", "ny": "nyár", "o": "ottó", "ó": "óriás", "ö": "ödön", "ő": "őrség", "p": "péter", "q": "quebec", "r": "róbert", "s": "sándor", "sz": "szilárd", "t": "tibor", "ty": "tyúk", "u": "ubul", "ú": "újság", "ü": "ünnep", "ű": "űrhajó", "v": "viktor", "w": "waterloo","x": "xilofon", "y": "youtube", "z": "zoltán", "zs": "zsuzsanna",}</translation>
 <translation id="1120938014254001895">Csúsztassa két ujját felfelé</translation>
 <translation id="1124771028211010580">Az aktuális megjelenítési mód egymás melletti.</translation>
@@ -196,7 +195,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2737520612859577214">Felső index vége</translation>
 <translation id="2749275490991666823">Bejelölve</translation>
 <translation id="27527859628328957">Ugrás a következő fókuszálható elemre</translation>
-<translation id="276402504937943375">tartalomjegyzék</translation>
 <translation id="2770781857296573485">Csoportfelfedezés megadása</translation>
 <translation id="2777845298774924149">Kilépett</translation>
 <translation id="2781264313200109999">Link eleje</translation>
@@ -489,6 +487,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">alapbeállítás</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Kapcsolat bontása</translation>
 <translation id="481165870889056555">Aktuális oldal címének felolvasása</translation>
 <translation id="4826415162591436065">Navigálás előre</translation>
 <translation id="4826604887384865800">Következő ugrás</translation>
@@ -558,6 +557,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5291783959063340370">Objektum</translation>
 <translation id="5302089807023311274">Bibliográfiai hivatkozás</translation>
 <translation id="5304943142864553931"><ph name="TITLE" /> lap</translation>
+<translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5310788376443009632">eltávolítva:</translation>
 <translation id="5320727453979144100">Beragadó mód bekapcsolva</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vessző}other{# vessző}}</translation>
@@ -773,6 +773,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="712735679809149106">szavak visszaolvasása</translation>
 <translation id="713824876195128146">Következő idézetblokk</translation>
 <translation id="7143034430156387447">Váltás 6 és 8 pontos Braille-táblázat között</translation>
+<translation id="7143207342074048698">Csatlakozás</translation>
 <translation id="7157306005867877619">Absztrakt</translation>
 <translation id="7161425887892204659">Szöveges egyezés vége</translation>
 <translation id="7161771961008409533">Előugró gomb</translation>
@@ -836,7 +837,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7625690649919402823">Következő táblázat</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grade <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Nincs előző 3-as szintű címsor.</translation>
-<translation id="7647456547678091388">tipp</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, szövegmező</translation>
 <translation id="7663318257180412551">2-es címsor</translation>
 <translation id="7674576868851035240">Következő link</translation>
@@ -962,6 +962,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8940925288729953902">Módosítóbillentyűk</translation>
 <translation id="8943175951035496220">Nincs több cella jobbra.</translation>
 <translation id="8978496506222343566">helyi súgó</translation>
+<translation id="8986362086234534611">Elfelejt</translation>
 <translation id="900114243503212879">fájl</translation>
 <translation id="9027462562263121875">Nincsenek táblázatok.</translation>
 <translation id="9040132695316389094">1-es címsor</translation>

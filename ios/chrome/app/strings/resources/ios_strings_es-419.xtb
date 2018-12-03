@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="4342284590510997375">Nuevo</translation>
-<translation id="434816576838749873">Elegir app de correo electrónico</translation>
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
 <translation id="4370827530403103842">La sincronización no funciona. Presiona para corregirla.</translation>
 <translation id="4375040482473363939">Búsqueda mediante código QR</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
-<translation id="4460091562821778167">Preguntarme qué apps usar cada vez</translation>
 <translation id="4476574785019001431">Configuración</translation>
 <translation id="4496373720959965247">Agrega pestañas y alterna entre páginas</translation>
 <translation id="4508750114462689118">Cerrar promoción de acceso</translation>
@@ -278,7 +276,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5554368826343982379">Sincronización y personalización</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
-<translation id="5619279135193775234">Correo</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5669528293118408608">www</translation>
@@ -383,7 +380,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7159472599653637159">Solicitar sitio móvil</translation>
 <translation id="7167621057293532233">Tipos de datos</translation>
-<translation id="7175593937868963913">Redactar un correo</translation>
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">ইভেন্ট স্ট্রিম ফিল্টার লুকান</translation>
 <translation id="1088219014394087294">কোনো শিরোলেখ নেই৷</translation>
 <translation id="1106741348836243114">শব্দ প্রতিক্রিয়া  (earcons) চালু বা বন্ধ করুন৷</translation>
-<translation id="1108651818222110612">সাবটাইটেল</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">দুই আঙ্গুল দিয়ে উপরের দিকে সোয়াইপ করুন</translation>
 <translation id="1124771028211010580">বর্তমান প্রদর্শন শৈলীটি পাশাপাশি।</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">সুপারস্ক্রিপ্ট শেষ</translation>
 <translation id="2749275490991666823">চেক করা</translation>
 <translation id="27527859628328957">পরবর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
-<translation id="276402504937943375">বিষয় সূচি</translation>
 <translation id="2770781857296573485">গ্রুপ অন্বেষণ প্রবেশ করে</translation>
 <translation id="2777845298774924149">বের করা হয়েছে</translation>
 <translation id="2781264313200109999">লিঙ্ক শুরু করুন</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="4764692524839457597">ডিফল্ট</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="481165870889056555">বর্তমান পৃষ্ঠার শিরোনাম ঘোষণা করুন</translation>
 <translation id="4826415162591436065">অগ্রবর্তী নেভিগেট করুন</translation>
 <translation id="4826604887384865800">পরবর্তী জাম্প</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">অবজেক্ট</translation>
 <translation id="5302089807023311274">বিবলিওগ্রাফি রেফারেন্স</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ট্যাব</translation>
+<translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5310788376443009632">সরানো হয়েছে:</translation>
 <translation id="5320727453979144100">স্টিকি মোড সক্ষম</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{কমা}one{# টি কমা}other{# টি কমা}}</translation>
@@ -773,6 +773,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="712735679809149106">শব্দ ইকো</translation>
 <translation id="713824876195128146">পরবর্তী অবরুদ্ধ উদ্ধৃতি</translation>
 <translation id="7143034430156387447">৬ এবং ৮ ডট ব্রেলির মধ্যে টগল করুন</translation>
+<translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7157306005867877619">বিমূর্ত</translation>
 <translation id="7161425887892204659">টেক্সট ম্যাচিং শেষ</translation>
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
@@ -836,7 +837,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7625690649919402823">পরবর্তী সারণী</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), গ্রেড <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">কোনো পূর্ববর্তী স্তর ৩ শিরোনাম নেই৷</translation>
-<translation id="7647456547678091388">পরামর্শ</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, পাঠ্য বাক্স</translation>
 <translation id="7663318257180412551">শিরোনাম ২</translation>
 <translation id="7674576868851035240">পরবর্তী লিঙ্ক</translation>
@@ -962,6 +962,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8940925288729953902">সংশোধক কী</translation>
 <translation id="8943175951035496220">ডানদিকে কোনো কক্ষ নেই৷</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="900114243503212879">ফাইল...</translation>
 <translation id="9027462562263121875">কোনো সারণী নেই৷</translation>
 <translation id="9040132695316389094">শিরোনাম ১</translation>

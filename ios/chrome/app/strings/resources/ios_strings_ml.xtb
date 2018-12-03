@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">സേവന നിബന്ധനകൾ</translation>
 <translation id="430793432425771671">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="4342284590510997375">പുതിയത്</translation>
-<translation id="434816576838749873">ഇമെയിൽ ആപ്പ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു അപ്ലിക്കേഷനിൽ തുറക്കും.</translation>
 <translation id="4370827530403103842">സമന്വയിപ്പിക്കൽ പ്രവർത്തിക്കുന്നില്ല. പരിഹരിക്കാൻ ടാപ്പുചെയ്യുക.</translation>
 <translation id="4375040482473363939">QR കോഡ് തിരയൽ</translation>
 <translation id="4378154925671717803">ഫോൺ</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
-<translation id="4460091562821778167">ഏത് ആപ്പാണ് ഉപയോഗിക്കേണ്ടതെന്ന് എപ്പോഴും എന്നോട് ചോദിക്കുക</translation>
 <translation id="4476574785019001431">ക്രമീകരണം</translation>
 <translation id="4496373720959965247">ടാബുകൾ ചേർക്കുക, പേജുകൾക്കിടയിൽ മാറുക</translation>
 <translation id="4508750114462689118">സൈൻ ഇൻ പ്രമോ അടയ്‌ക്കുക</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">സമന്വയിപ്പിക്കലും വ്യക്തിപരമാക്കലും</translation>
 <translation id="5556459405103347317">വീണ്ടും ലോഡുചെയ്യുക</translation>
 <translation id="5614553682702429503">പാസ്‌വേഡ് സംരക്ഷിക്കണോ?</translation>
-<translation id="5619279135193775234">മെയിൽ</translation>
 <translation id="5626245204502895507">ഫയൽ ഇപ്പോൾ ഡൗൺലോഡുചെയ്യാൻ കഴിയില്ല.</translation>
 <translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
 <translation id="6136914049981179737">സെക്കൻഡ് മുമ്പ്</translation>
 <translation id="616831107264507309">പിന്നീട് വായിക്കുക</translation>
+<translation id="6177442314419606057">Chrome-ൽ തിരയുക</translation>
 <translation id="6184086493125982861">ടാബുകൾ കാണിക്കുക</translation>
 <translation id="6187302354554850004">അവസാനം സമന്വയിപ്പിച്ചത്: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">വായിക്കാത്തവ</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">ക്യാമറ ലഭ്യമല്ല</translation>
 <translation id="7159472599653637159">മൊബൈൽ സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
 <translation id="7167621057293532233">ഡാറ്റ തരങ്ങള്‍</translation>
-<translation id="7175593937868963913">ഇമെയിൽ രചിക്കുക</translation>
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7203585745079012652">മറുപടിയായി ഉത്തരങ്ങൾ പറയുക</translation>
 <translation id="722055596168483966">Google സേവനങ്ങൾ വ്യക്തിപരമാക്കുക</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
+<translation id="778855399387580014">പുതിയ Chrome ടാബിൽ തിരയൽ ആരംഭിക്കുക.</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7840771868269352570">നിങ്ങൾ തിരഞ്ഞെടുത്ത ഇനങ്ങൾ നീക്കം ചെയ്യപ്പെടും.</translation>
 <translation id="7856733331829174190">ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>

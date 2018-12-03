@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="430793432425771671">Her Şeyi Senkronize Et</translation>
 <translation id="4342284590510997375">Yeni</translation>
-<translation id="434816576838749873">E-posta Uygulaması Seç</translation>
 <translation id="4359125752503270327">Bu sayfa, başka bir uygulamada açılacak.</translation>
 <translation id="4370827530403103842">Senkronizasyon çalışmıyor. Düzeltmek için dokunun.</translation>
 <translation id="4375040482473363939">QR kodu Arama</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Gizlilik Bildirimi</translation>
-<translation id="4460091562821778167">Kullanılacak uygulamayı her zaman sor</translation>
 <translation id="4476574785019001431">Ayarlar</translation>
 <translation id="4496373720959965247">Sekmeler ekleyin ve sayfalar arasında geçiş yapın</translation>
 <translation id="4508750114462689118">Oturum açma tanıtımını kapat</translation>
@@ -278,7 +276,6 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5554368826343982379">Senkronizasyon ve Kişiselleştirme</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5614553682702429503">Şifre kaydedilsin mi?</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Dosya şu anda indirilemedi.</translation>
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
 <translation id="6136914049981179737">Sn. önce</translation>
 <translation id="616831107264507309">Daha Sonra Oku</translation>
+<translation id="6177442314419606057">Chrome'da ara</translation>
 <translation id="6184086493125982861">Sekmeleri Göster</translation>
 <translation id="6187302354554850004">Son senkronizasyon tarihi: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Okunmamış girişler</translation>
@@ -382,7 +380,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
 <translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7167621057293532233">Veri Tipleri</translation>
-<translation id="7175593937868963913">E-posta Oluştur</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="722055596168483966">Google hizmetlerini kişiselleştirme</translation>
@@ -415,6 +412,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7769602470925380267">Kabul et ve oturumu kapat</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="7781829728241885113">Dün</translation>
+<translation id="778855399387580014">Yeni bir Chrome sekmesinde arama başlatır.</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7840771868269352570">Seçtiğiniz öğeler kaldırılacak.</translation>
 <translation id="7856733331829174190">İndirilemedi</translation>

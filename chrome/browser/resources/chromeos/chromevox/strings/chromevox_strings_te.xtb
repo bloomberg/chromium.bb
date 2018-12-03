@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">ఈవెంట్ ప్రసార ఫిల్టర్‌లను దాచు</translation>
 <translation id="1088219014394087294">శీర్షికలు లేవు.</translation>
 <translation id="1106741348836243114">ధ్వని అభిప్రాయాన్ని (శబ్ద హెచ్చరికలు) ప్రారంభించండి లేదా ఆపివేయండి.</translation>
-<translation id="1108651818222110612">ఉపశీర్షిక</translation>
 <translation id="1120743664840974483">{"a": "ఆల్ఫా", "b": "బ్రావో", "c": "చార్లీ", "d": "డెల్టా", "e": "ఎకో", "f": "ఫాక్స్‌ట్రాట్", "g": "గోల్ఫ్", "h": "హోటల్", "i": "ఇండియా", "j": "జూలియట్","k": "కిలో", "l": "లీమా", "m": "మైక్", "n": "నవంబర్", "o": "ఆస్కార్","p": "పాపా", "q": "క్యూబెక్", "r": "రోమియో", "s": "సియెర్రా", "t": "ట్యాంగో", "u": "యూనిఫారమ్", "v": "విక్టర్", "w": "విస్కీ","x": "ఎక్స్‌రే", "y": "యాంకీ", "z": "జూలూ"}</translation>
 <translation id="1120938014254001895">రెండు వేళ్లతో పైకి స్వైప్ చేయండి</translation>
 <translation id="1124771028211010580">ప్రస్తుత ప్రదర్శన శైలి ప్రక్కప్రక్కనకు ఉంది.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">సూపర్‌స్క్రిప్ట్ ముగింపు</translation>
 <translation id="2749275490991666823">తనిఖీ చేయబడింది</translation>
 <translation id="27527859628328957">తదుపరి ఫోకస్ చేయగల అంశానికి వెళ్లండి</translation>
-<translation id="276402504937943375">విషయ పట్టిక</translation>
 <translation id="2770781857296573485">సమూహ విశ్లేషణలోకి ప్రవేశించండి</translation>
 <translation id="2777845298774924149">నిష్క్రమించింది</translation>
 <translation id="2781264313200109999">లింక్ ప్రారంభం</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">వీడియో</translation>
 <translation id="4764692524839457597">డిఫాల్ట్</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="481165870889056555">ప్రస్తుత పేజీ యొక్క శీర్షికను తెలియజేయండి</translation>
 <translation id="4826415162591436065">ముందుకు నావిగేట్ చేయండి</translation>
 <translation id="4826604887384865800">తదుపరి జంప్</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">ఆబ్జెక్ట్</translation>
 <translation id="5302089807023311274">వివరణపట్టి సూచన</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ట్యాబ్</translation>
+<translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5310788376443009632">తీసివేయబడినది:</translation>
 <translation id="5320727453979144100">స్టిక్కీ మోడ్ ప్రారంభించబడింది</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{కామా గుర్తు}other{# కామా గుర్తులు}}</translation>
@@ -773,6 +773,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="712735679809149106">పదం అనుకరణ</translation>
 <translation id="713824876195128146">తదుపరి బ్లాక్ కోట్</translation>
 <translation id="7143034430156387447">6 మరియు 8 చుక్కల బ్రెయిలీ మధ్య మారండి</translation>
+<translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
 <translation id="7157306005867877619">సంక్షేపం</translation>
 <translation id="7161425887892204659">వచన సరిపోలిక ముగింపు</translation>
 <translation id="7161771961008409533">పాప్-అప్ బటన్</translation>
@@ -836,7 +837,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7625690649919402823">తర్వాత పట్టిక</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), గ్రేడ్ <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">మునుపటి స్థాయి 3 శీర్షిక లేదు.</translation>
-<translation id="7647456547678091388">చిట్కా</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, వచన పెట్టె</translation>
 <translation id="7663318257180412551">శీర్షిక 2</translation>
 <translation id="7674576868851035240">తదుపరి లింక్</translation>
@@ -962,6 +962,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8940925288729953902">మాడిఫైయర్ కీలు</translation>
 <translation id="8943175951035496220">కుడివైపు సెల్ లేదు.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="900114243503212879">ఫైల్</translation>
 <translation id="9027462562263121875">పట్టికలు లేవు.</translation>
 <translation id="9040132695316389094">శీర్షిక 1</translation>
