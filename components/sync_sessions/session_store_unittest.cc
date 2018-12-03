@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/device_info/device_info.h"
@@ -180,7 +180,7 @@ class SessionStoreFactoryTest : public ::testing::Test {
 
   ~SessionStoreFactoryTest() override {}
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   const syncer::DeviceInfo local_device_info_;
   TestingPrefServiceSimple pref_service_;
   SessionSyncPrefs session_sync_prefs_;
