@@ -25,8 +25,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationHandlerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/file_operation_handler_unittest.html")));
+  RunGeneratedTest("/background/js/file_operation_handler_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProgressCenterItemGroupTest) {

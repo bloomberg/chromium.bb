@@ -234,7 +234,15 @@ js_library("file_operation_handler") {
   deps = [
     ":file_operation_manager",
     ":progress_center",
-    "../../common/js:progress_center_common",
+  ]
+}
+
+js_unittest("file_operation_handler_unittest") {
+  deps = [
+    ":file_operation_handler",
+    ":mock_file_operation_manager",
+    ":mock_progress_center",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -488,6 +496,7 @@ js_unit_tests("unit_tests") {
     ":device_handler_unittest",
     ":drive_sync_handler_unittest",
     ":duplicate_finder_unittest",
+    ":file_operation_handler_unittest",
     ":file_operation_manager_unittest",
     ":import_history_unittest",
     ":media_scanner_unittest",
