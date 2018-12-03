@@ -156,12 +156,24 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       if (!params.GetString("sessionId", &session_id))
         return Status(kUnknownError,
                       "missing session ID in Target.attachedToTarget event");
-      std::unique_ptr<WebViewImpl> child(
-          static_cast<WebViewImpl*>(web_view_)->CreateChild(session_id,
-                                                            target_id));
-      WebViewImplHolder child_holder(child.get());
-      frame_to_target_map_[target_id] = std::move(child);
-      frame_to_target_map_[target_id]->ConnectIfNecessary();
+      if (frame_to_target_map_.count(target_id) > 0) {
+        // Since chrome 70 we are seeing multiple Target.attachedToTarget events
+        // for the same target_id.  This is causing crashes because:
+        // - replacing the value in frame_to_target_map_ is causing the
+        //   pre-existing one to be disposed
+        // - if there are in-flight requests for the disposed DevToolsClient
+        //   then chromedriver is crashing in the ProcessNextMessage processing
+        // - the in-flight messages observed were DOM.getDocument requests from
+        //   DomTracker.
+        // The fix is to not replace an pre-existing frame_to_target_map_ entry.
+      } else {
+        std::unique_ptr<WebViewImpl> child(
+            static_cast<WebViewImpl*>(web_view_)->CreateChild(session_id,
+                                                              target_id));
+        WebViewImplHolder child_holder(child.get());
+        frame_to_target_map_[target_id] = std::move(child);
+        frame_to_target_map_[target_id]->ConnectIfNecessary();
+      }
     }
   } else if (method == "Target.detachedFromTarget") {
     std::string target_id;
