@@ -21,6 +21,7 @@ namespace bubble_anchor_util {
 enum Anchor {
   kLocationBar,
   kAppMenuButton,
+  kCustomTabBar,
 };
 
 // Offset from the window edge to show bubbles when there is no location bar.

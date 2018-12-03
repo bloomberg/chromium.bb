@@ -316,7 +316,7 @@ class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
 // kDesktopPWAWindowing flag.
 class HostedAppTest
     : public extensions::ExtensionBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<AppType, bool>> {
+      public ::testing::WithParamInterface<std::tuple<AppType, bool, bool>> {
  public:
   HostedAppTest()
       : app_browser_(nullptr),
@@ -328,8 +328,9 @@ class HostedAppTest
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
     bool desktop_pwa_flag;
+    bool use_custom_tab_flag;
 
-    std::tie(app_type_, desktop_pwa_flag) = GetParam();
+    std::tie(app_type_, desktop_pwa_flag, use_custom_tab_flag) = GetParam();
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features = {
         predictors::kSpeculativePreconnectFeature};
@@ -341,6 +342,9 @@ class HostedAppTest
       enabled_features.push_back(features::kBookmarkApps);
 #endif
     }
+
+    auto& features = use_custom_tab_flag ? enabled_features : disabled_features;
+    features.push_back(features::kDesktopPWAsCustomTabUI);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     extensions::ExtensionBrowserTest::SetUp();
@@ -918,9 +922,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, EmptyTitlesDoNotDisplayUrl) {
             app_browser->GetWindowTitleForCurrentTab(false));
 }
 
+using HostedAppCustomTabBarOnlyTest = HostedAppTest;
+
 // Ensure that hosted app windows display the app title instead of the page
 // title when off scope.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, OffScopeUrlsDisplayAppTitle) {
+IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
+                       OffScopeUrlsDisplayAppTitle) {
   ASSERT_TRUE(https_server()->Start());
   GURL url = GetSecureAppURL();
 
@@ -949,7 +956,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, OffScopeUrlsDisplayAppTitle) {
 
 // Ensure that hosted app windows display the app title instead of the page
 // title when using http.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
+IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
+                       InScopeHttpUrlsDisplayAppTitle) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("app.site.com", "/simple.html");
   WebApplicationInfo web_app_info;
@@ -2712,30 +2720,44 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ShouldShowToolbarForExtensionPage) {
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppTest,
-                        ::testing::Combine(kAppTypeValues, ::testing::Bool()));
+                        ::testing::Combine(kAppTypeValues,
+                                           ::testing::Bool(),
+                                           ::testing::Bool()));
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HostedAppPWAOnlyTest,
-                        ::testing::Values(std::tuple<AppType, bool>{
-                            AppType::BOOKMARK_APP, true}));
+                        HostedAppCustomTabBarOnlyTest,
+                        ::testing::Combine(kAppTypeValues,
+                                           ::testing::Bool(),
+                                           ::testing::Values(true)));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    HostedAppPWAOnlyTest,
+    ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
+                       ::testing::Values(true),
+                       ::testing::Bool()));
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     BookmarkAppOnlyTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
+                       ::testing::Bool(),
                        ::testing::Bool()));
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     HostedAppProcessModelTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
+                       ::testing::Bool(),
                        ::testing::Bool()));
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     HostedAppIsolatedOriginTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
+                       ::testing::Bool(),
                        ::testing::Bool()));
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
+                       ::testing::Bool(),
                        ::testing::Bool()));

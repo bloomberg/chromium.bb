@@ -1186,20 +1186,7 @@ void LocationBarView::OnLocationIconDragged(const ui::MouseEvent& event) {
 
 SkColor LocationBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  // Only used in ChromeOS.
-  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT)
-    return GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-
-  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
-  if (security_level == security_state::EV_SECURE ||
-      security_level == security_state::SECURE) {
-    state = OmniboxPartState::CHIP_SECURE;
-  } else if (security_level == security_state::DANGEROUS) {
-    state = OmniboxPartState::CHIP_DANGEROUS;
-  }
-
-  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint(),
-                         state);
+  return GetOmniboxSecurityChipColor(tint(), security_level);
 }
 
 bool LocationBarView::ShowPageInfoDialog() {
