@@ -800,6 +800,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
+  bool must_schedule_adjust_max_tasks = false;
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
 
@@ -809,16 +810,19 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
     ++outer_->num_pending_may_block_workers_;
     if (is_running_best_effort_task_)
       ++outer_->num_pending_best_effort_may_block_workers_;
+
+    must_schedule_adjust_max_tasks =
+        outer_->MustScheduleAdjustMaxTasksLockRequired();
   }
-  outer_->ScheduleAdjustMaxTasksIfNeeded();
+  if (must_schedule_adjust_max_tasks)
+    outer_->ScheduleAdjustMaxTasks();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
-  bool wake_up_allowed = false;
+  bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerStarter starter(outer_);
-
   {
     std::unique_ptr<PriorityQueue::Transaction> transaction(
         outer_->shared_priority_queue_.BeginTransaction());
@@ -843,11 +847,14 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
       // ScopedBlockingCalls in parallel and we had work on the PQ.
       starter.ScheduleStart(outer_->WakeUpOneWorkerLockRequired());
     }
+
+    must_schedule_adjust_max_tasks =
+        outer_->MustScheduleAdjustMaxTasksLockRequired();
   }
   // TODO(crbug.com/813857): This can be better handled in the PostTask()
   // codepath. We really only should do this if there are tasks pending.
-  if (wake_up_allowed)
-    outer_->ScheduleAdjustMaxTasksIfNeeded();
+  if (must_schedule_adjust_max_tasks)
+    outer_->ScheduleAdjustMaxTasks();
 }
 
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -908,12 +915,15 @@ SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
 }
 
 void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
+  bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerStarter starter(tracked_ref_factory_.GetTrackedRef());
   {
     AutoSchedulerLock auto_lock(lock_);
     starter.ScheduleStart(WakeUpOneWorkerLockRequired());
+    must_schedule_adjust_max_tasks = MustScheduleAdjustMaxTasksLockRequired();
   }
-  ScheduleAdjustMaxTasksIfNeeded();
+  if (must_schedule_adjust_max_tasks)
+    ScheduleAdjustMaxTasks();
 }
 
 scoped_refptr<SchedulerWorker>
@@ -1015,7 +1025,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
       std::min(max_tasks_ - previous_max_tasks, num_pending_sequences);
 
   for (size_t i = 0; i < num_wake_ups_needed; ++i) {
-    // No need to call ScheduleAdjustMaxTasksIfNeeded() as the caller will
+    // No need to call ScheduleAdjustMaxTasks() as the caller will
     // take care of that for us.
     starter.ScheduleStart(WakeUpOneWorkerLockRequired());
   }
@@ -1030,19 +1040,20 @@ TimeDelta SchedulerWorkerPoolImpl::MayBlockThreshold() const {
   return may_block_threshold_;
 }
 
-void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasksIfNeeded() {
-  {
-    AutoSchedulerLock auto_lock(lock_);
-    if (polling_max_tasks_ || !ShouldPeriodicallyAdjustMaxTasksLockRequired()) {
-      return;
-    }
-    polling_max_tasks_ = true;
-  }
+void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasks() {
+  DCHECK(polling_max_tasks_);
   service_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
                Unretained(this)),
       blocked_workers_poll_period_);
+}
+
+bool SchedulerWorkerPoolImpl::MustScheduleAdjustMaxTasksLockRequired() {
+  if (polling_max_tasks_ || !ShouldPeriodicallyAdjustMaxTasksLockRequired())
+    return false;
+  polling_max_tasks_ = true;
+  return true;
 }
 
 void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
@@ -1058,11 +1069,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
       return;
     }
   }
-  service_thread_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
-               Unretained(this)),
-      blocked_workers_poll_period_);
+  ScheduleAdjustMaxTasks();
 }
 
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
