@@ -94,15 +94,15 @@ TEST_F(DictationButtonTrayTest, ButtonActivatesDictation) {
   TestAccessibilityControllerClient client;
   controller->SetClient(client.CreateInterfacePtrAndBind());
 
-  EXPECT_FALSE(controller->IsDictationActive());
+  EXPECT_FALSE(controller->dictation_active());
 
   GetTray()->PerformAction(CreateTapEvent());
   controller->FlushMojoForTest();
-  EXPECT_TRUE(controller->IsDictationActive());
+  EXPECT_TRUE(controller->dictation_active());
 
   GetTray()->PerformAction(CreateTapEvent());
   controller->FlushMojoForTest();
-  EXPECT_FALSE(controller->IsDictationActive());
+  EXPECT_FALSE(controller->dictation_active());
 }
 
 // Test that activating dictation causes the button to activate.
@@ -129,19 +129,19 @@ TEST_F(DictationButtonTrayTest, ActiveStateOnlyDuringDictation) {
   controller->SetClient(client.CreateInterfacePtrAndBind());
 
   controller->FlushMojoForTest();
-  ASSERT_FALSE(controller->IsDictationActive());
+  ASSERT_FALSE(controller->dictation_active());
   ASSERT_FALSE(GetTray()->is_active());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       AcceleratorAction::TOGGLE_DICTATION);
   controller->FlushMojoForTest();
-  EXPECT_TRUE(Shell::Get()->accessibility_controller()->IsDictationActive());
+  EXPECT_TRUE(Shell::Get()->accessibility_controller()->dictation_active());
   EXPECT_TRUE(GetTray()->is_active());
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       AcceleratorAction::TOGGLE_DICTATION);
   controller->FlushMojoForTest();
-  EXPECT_FALSE(Shell::Get()->accessibility_controller()->IsDictationActive());
+  EXPECT_FALSE(Shell::Get()->accessibility_controller()->dictation_active());
   EXPECT_FALSE(GetTray()->is_active());
 }
 

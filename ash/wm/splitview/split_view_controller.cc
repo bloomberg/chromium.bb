@@ -237,7 +237,7 @@ bool SplitViewController::ShouldAllowSplitView() {
 
   // TODO(crubg.com/853588): Disallow window dragging and split screen while
   // ChromeVox is on until they are in a usable state.
-  if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     return false;
 
   return true;
@@ -872,7 +872,7 @@ void SplitViewController::OnTabletModeEnding() {
 void SplitViewController::OnAccessibilityStatusChanged() {
   // TODO(crubg.com/853588): Exit split screen if ChromeVox is turned on until
   // they are compatible.
-  if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     EndSplitView();
 }
 

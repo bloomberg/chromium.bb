@@ -437,10 +437,6 @@ void AccessibilityController::SetAutoclickEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsAutoclickEnabled() const {
-  return autoclick_enabled_;
-}
-
 void AccessibilityController::SetCaretHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -449,20 +445,12 @@ void AccessibilityController::SetCaretHighlightEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsCaretHighlightEnabled() const {
-  return caret_highlight_enabled_;
-}
-
 void AccessibilityController::SetCursorHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
-}
-
-bool AccessibilityController::IsCursorHighlightEnabled() const {
-  return cursor_highlight_enabled_;
 }
 
 void AccessibilityController::SetDictationEnabled(bool enabled) {
@@ -490,20 +478,12 @@ void AccessibilityController::SetDictationEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsDictationEnabled() const {
-  return dictation_enabled_;
-}
-
 void AccessibilityController::SetFocusHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
-}
-
-bool AccessibilityController::IsFocusHighlightEnabled() const {
-  return focus_highlight_enabled_;
 }
 
 void AccessibilityController::SetFullscreenMagnifierEnabled(bool enabled) {
@@ -522,10 +502,6 @@ void AccessibilityController::SetHighContrastEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsHighContrastEnabled() const {
-  return high_contrast_enabled_;
-}
-
 void AccessibilityController::SetLargeCursorEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -534,20 +510,12 @@ void AccessibilityController::SetLargeCursorEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsLargeCursorEnabled() const {
-  return large_cursor_enabled_;
-}
-
 void AccessibilityController::SetMonoAudioEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityMonoAudioEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
-}
-
-bool AccessibilityController::IsMonoAudioEnabled() const {
-  return mono_audio_enabled_;
 }
 
 void AccessibilityController::SetSpokenFeedbackEnabled(
@@ -565,20 +533,12 @@ void AccessibilityController::SetSpokenFeedbackEnabled(
   ShowAccessibilityNotification(type);
 }
 
-bool AccessibilityController::IsSpokenFeedbackEnabled() const {
-  return spoken_feedback_enabled_;
-}
-
 void AccessibilityController::SetSelectToSpeakEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
-}
-
-bool AccessibilityController::IsSelectToSpeakEnabled() const {
-  return select_to_speak_enabled_;
 }
 
 void AccessibilityController::RequestSelectToSpeakStateChange() {
@@ -618,24 +578,12 @@ void AccessibilityController::SetStickyKeysEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
-bool AccessibilityController::IsStickyKeysEnabled() const {
-  return sticky_keys_enabled_;
-}
-
 void AccessibilityController::SetVirtualKeyboardEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
-}
-
-bool AccessibilityController::IsVirtualKeyboardEnabled() const {
-  return virtual_keyboard_enabled_;
-}
-
-bool AccessibilityController::IsDictationActive() const {
-  return dictation_active_;
 }
 
 void AccessibilityController::SetDictationActive(bool is_active) {
@@ -667,7 +615,7 @@ void AccessibilityController::HandleAccessibilityGesture(
 
 void AccessibilityController::ToggleDictation() {
   // Do nothing if dictation is not enabled.
-  if (!IsDictationEnabled())
+  if (!dictation_enabled())
     return;
 
   if (client_) {
@@ -806,12 +754,12 @@ void AccessibilityController::FlushMojoForTest() {
 }
 
 void AccessibilityController::OnTabletModeStarted() {
-  if (IsSpokenFeedbackEnabled())
+  if (spoken_feedback_enabled())
     ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);
 }
 
 void AccessibilityController::OnTabletModeEnded() {
-  if (IsSpokenFeedbackEnabled())
+  if (spoken_feedback_enabled())
     ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);
 }
 

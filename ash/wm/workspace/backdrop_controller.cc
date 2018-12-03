@@ -235,7 +235,7 @@ void BackdropController::UpdateAccessibilityMode() {
     return;
 
   bool enabled =
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
   if (enabled) {
     if (!backdrop_event_handler_) {
       backdrop_event_handler_ = std::make_unique<BackdropEventHandler>();
@@ -276,7 +276,7 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
   if (window->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::ARC_APP) &&
       wm::IsActiveWindow(window) &&
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled()) {
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
     return true;
   }
 

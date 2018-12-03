@@ -33,7 +33,7 @@ SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
 }
 
 bool SelectToSpeakEventHandler::IsSelectToSpeakEnabled() {
-  return Shell::Get()->accessibility_controller()->IsSelectToSpeakEnabled();
+  return Shell::Get()->accessibility_controller()->select_to_speak_enabled();
 }
 
 void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(

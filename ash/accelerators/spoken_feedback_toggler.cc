@@ -54,7 +54,7 @@ void SpokenFeedbackToggler::OnKeyHold(const ui::KeyEvent* event) {
     toggled_ = true;
     AccessibilityController* controller =
         Shell::Get()->accessibility_controller();
-    controller->SetSpokenFeedbackEnabled(!controller->IsSpokenFeedbackEnabled(),
+    controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
                                          A11Y_NOTIFICATION_SHOW);
   }
 }

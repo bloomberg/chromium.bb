@@ -90,12 +90,12 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 
 void DictationButtonTray::UpdateVisibility() {
   bool is_visible =
-      Shell::Get()->accessibility_controller()->IsDictationEnabled();
+      Shell::Get()->accessibility_controller()->dictation_enabled();
   SetVisible(is_visible);
 }
 
 void DictationButtonTray::CheckDictationStatusAndUpdateIcon() {
-  UpdateIcon(Shell::Get()->accessibility_controller()->IsDictationActive());
+  UpdateIcon(Shell::Get()->accessibility_controller()->dictation_active());
 }
 
 }  // namespace ash

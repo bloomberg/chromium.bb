@@ -100,18 +100,18 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
 TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsAutoclickEnabled());
+  EXPECT_FALSE(controller->autoclick_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetAutoclickEnabled(true);
-  EXPECT_TRUE(controller->IsAutoclickEnabled());
+  EXPECT_TRUE(controller->autoclick_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetAutoclickEnabled(false);
-  EXPECT_FALSE(controller->IsAutoclickEnabled());
+  EXPECT_FALSE(controller->autoclick_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -120,18 +120,18 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
 TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsCaretHighlightEnabled());
+  EXPECT_FALSE(controller->caret_highlight_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetCaretHighlightEnabled(true);
-  EXPECT_TRUE(controller->IsCaretHighlightEnabled());
+  EXPECT_TRUE(controller->caret_highlight_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetCaretHighlightEnabled(false);
-  EXPECT_FALSE(controller->IsCaretHighlightEnabled());
+  EXPECT_FALSE(controller->caret_highlight_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -140,18 +140,18 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
 TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsCursorHighlightEnabled());
+  EXPECT_FALSE(controller->cursor_highlight_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetCursorHighlightEnabled(true);
-  EXPECT_TRUE(controller->IsCursorHighlightEnabled());
+  EXPECT_TRUE(controller->cursor_highlight_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetCursorHighlightEnabled(false);
-  EXPECT_FALSE(controller->IsCursorHighlightEnabled());
+  EXPECT_FALSE(controller->cursor_highlight_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -160,18 +160,18 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
 TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsFocusHighlightEnabled());
+  EXPECT_FALSE(controller->focus_highlight_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetFocusHighlightEnabled(true);
-  EXPECT_TRUE(controller->IsFocusHighlightEnabled());
+  EXPECT_TRUE(controller->focus_highlight_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetFocusHighlightEnabled(false);
-  EXPECT_FALSE(controller->IsFocusHighlightEnabled());
+  EXPECT_FALSE(controller->focus_highlight_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -180,18 +180,18 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
 TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  EXPECT_FALSE(controller->high_contrast_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetHighContrastEnabled(true);
-  EXPECT_TRUE(controller->IsHighContrastEnabled());
+  EXPECT_TRUE(controller->high_contrast_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetHighContrastEnabled(false);
-  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  EXPECT_FALSE(controller->high_contrast_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -200,18 +200,18 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
 TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsLargeCursorEnabled());
+  EXPECT_FALSE(controller->large_cursor_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetLargeCursorEnabled(true);
-  EXPECT_TRUE(controller->IsLargeCursorEnabled());
+  EXPECT_TRUE(controller->large_cursor_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetLargeCursorEnabled(false);
-  EXPECT_FALSE(controller->IsLargeCursorEnabled());
+  EXPECT_FALSE(controller->large_cursor_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -237,18 +237,18 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
 TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsMonoAudioEnabled());
+  EXPECT_FALSE(controller->mono_audio_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetMonoAudioEnabled(true);
-  EXPECT_TRUE(controller->IsMonoAudioEnabled());
+  EXPECT_TRUE(controller->mono_audio_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetMonoAudioEnabled(false);
-  EXPECT_FALSE(controller->IsMonoAudioEnabled());
+  EXPECT_FALSE(controller->mono_audio_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -257,18 +257,18 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
 TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
   EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -277,7 +277,7 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
 TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsStickyKeysEnabled());
+  EXPECT_FALSE(controller->sticky_keys_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
@@ -287,12 +287,12 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
       Shell::Get()->sticky_keys_controller();
   controller->SetStickyKeysEnabled(true);
   EXPECT_TRUE(sticky_keys_controller->enabled_for_test());
-  EXPECT_TRUE(controller->IsStickyKeysEnabled());
+  EXPECT_TRUE(controller->sticky_keys_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetStickyKeysEnabled(false);
   EXPECT_FALSE(sticky_keys_controller->enabled_for_test());
-  EXPECT_FALSE(controller->IsStickyKeysEnabled());
+  EXPECT_FALSE(controller->sticky_keys_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -301,7 +301,7 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
 TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(controller->virtual_keyboard_enabled());
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
@@ -309,12 +309,12 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
 
   controller->SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(keyboard::GetAccessibilityKeyboardEnabled());
-  EXPECT_TRUE(controller->IsVirtualKeyboardEnabled());
+  EXPECT_TRUE(controller->virtual_keyboard_enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetVirtualKeyboardEnabled(false);
   EXPECT_FALSE(keyboard::GetAccessibilityKeyboardEnabled());
-  EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(controller->virtual_keyboard_enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
@@ -408,7 +408,7 @@ TEST_F(AccessibilityControllerTest,
       Shell::Get()->accessibility_controller();
 
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
   // Connecting a braille display when spoken feedback is already enabled
   // should only show the message about the braille display.
   controller->BrailleDisplayStateChanged(true);
@@ -421,18 +421,18 @@ TEST_F(AccessibilityControllerTest,
   // Neither disconnecting a braille display, nor disabling spoken feedback
   // should show any notification.
   controller->BrailleDisplayStateChanged(false);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_SHOW);
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(0u, notifications.size());
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
 
   // Connecting a braille display should enable spoken feedback and show
   // both messages.
   controller->BrailleDisplayStateChanged(true);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
   notifications = MessageCenter::Get()->GetVisibleNotifications();
   EXPECT_EQ(kBrailleConnectedAndChromeVoxEnabledTitle,
             (*notifications.begin())->title());
@@ -521,11 +521,11 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   SessionController* session = Shell::Get()->session_controller();
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session->GetSessionState());
-  EXPECT_FALSE(accessibility->IsLargeCursorEnabled());
-  EXPECT_FALSE(accessibility->IsSpokenFeedbackEnabled());
-  EXPECT_FALSE(accessibility->IsHighContrastEnabled());
-  EXPECT_FALSE(accessibility->IsAutoclickEnabled());
-  EXPECT_FALSE(accessibility->IsMonoAudioEnabled());
+  EXPECT_FALSE(accessibility->large_cursor_enabled());
+  EXPECT_FALSE(accessibility->spoken_feedback_enabled());
+  EXPECT_FALSE(accessibility->high_contrast_enabled());
+  EXPECT_FALSE(accessibility->autoclick_enabled());
+  EXPECT_FALSE(accessibility->mono_audio_enabled());
   EXPECT_FALSE(docked_magnifier->GetEnabled());
   using prefs::kAccessibilityLargeCursorEnabled;
   using prefs::kAccessibilitySpokenFeedbackEnabled;
@@ -552,11 +552,11 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   // TODO(afakhry): Test the Fullscreen magnifier prefs once the
   // ash::MagnificationController handles all the prefs work itself inside ash
   // without needing magnification manager in Chrome.
-  EXPECT_TRUE(accessibility->IsLargeCursorEnabled());
-  EXPECT_TRUE(accessibility->IsSpokenFeedbackEnabled());
-  EXPECT_TRUE(accessibility->IsHighContrastEnabled());
-  EXPECT_TRUE(accessibility->IsAutoclickEnabled());
-  EXPECT_TRUE(accessibility->IsMonoAudioEnabled());
+  EXPECT_TRUE(accessibility->large_cursor_enabled());
+  EXPECT_TRUE(accessibility->spoken_feedback_enabled());
+  EXPECT_TRUE(accessibility->high_contrast_enabled());
+  EXPECT_TRUE(accessibility->autoclick_enabled());
+  EXPECT_TRUE(accessibility->mono_audio_enabled());
   EXPECT_TRUE(docked_magnifier->GetEnabled());
   EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -575,11 +575,11 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
       GetParam() == TestUserLoginType::kNewUser ||
       GetParam() == TestUserLoginType::kGuest;
   if (should_signin_prefs_be_copied) {
-    EXPECT_TRUE(accessibility->IsLargeCursorEnabled());
-    EXPECT_TRUE(accessibility->IsSpokenFeedbackEnabled());
-    EXPECT_TRUE(accessibility->IsHighContrastEnabled());
-    EXPECT_TRUE(accessibility->IsAutoclickEnabled());
-    EXPECT_TRUE(accessibility->IsMonoAudioEnabled());
+    EXPECT_TRUE(accessibility->large_cursor_enabled());
+    EXPECT_TRUE(accessibility->spoken_feedback_enabled());
+    EXPECT_TRUE(accessibility->high_contrast_enabled());
+    EXPECT_TRUE(accessibility->autoclick_enabled());
+    EXPECT_TRUE(accessibility->mono_audio_enabled());
     EXPECT_TRUE(docked_magnifier->GetEnabled());
     EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -589,11 +589,11 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kDockedMagnifierEnabled));
   } else {
-    EXPECT_FALSE(accessibility->IsLargeCursorEnabled());
-    EXPECT_FALSE(accessibility->IsSpokenFeedbackEnabled());
-    EXPECT_FALSE(accessibility->IsHighContrastEnabled());
-    EXPECT_FALSE(accessibility->IsAutoclickEnabled());
-    EXPECT_FALSE(accessibility->IsMonoAudioEnabled());
+    EXPECT_FALSE(accessibility->large_cursor_enabled());
+    EXPECT_FALSE(accessibility->spoken_feedback_enabled());
+    EXPECT_FALSE(accessibility->high_contrast_enabled());
+    EXPECT_FALSE(accessibility->autoclick_enabled());
+    EXPECT_FALSE(accessibility->mono_audio_enabled());
     EXPECT_FALSE(docked_magnifier->GetEnabled());
     EXPECT_NE(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));

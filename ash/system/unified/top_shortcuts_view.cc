@@ -214,7 +214,7 @@ void TopShortcutsView::ButtonPressed(views::Button* sender,
 
 void TopShortcutsView::OnAccessibilityStatusChanged() {
   collapse_button_->SetEnabled(
-      !Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
+      !Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
 }  // namespace ash

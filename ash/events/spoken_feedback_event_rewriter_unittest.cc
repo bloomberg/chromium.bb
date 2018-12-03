@@ -155,7 +155,7 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
 TEST_F(SpokenFeedbackEventRewriterTest, EventsNotConsumedWhenDisabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
@@ -178,7 +178,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsConsumedWhenEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
@@ -215,7 +215,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, UnhandledEventsSentToOtherRewriters) {
 TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
 
   // Send Search+Shift+Right.
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
@@ -247,7 +247,7 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsCaptured) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
 
   // Initialize expected counts as variables for easier maintaiblity.
   size_t recorded_count = 0;

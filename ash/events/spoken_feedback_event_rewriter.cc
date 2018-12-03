@@ -41,7 +41,7 @@ ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* new_event) {
   if (!delegate_.is_bound() ||
-      !Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+      !Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
     return ui::EVENT_REWRITE_CONTINUE;
 
   if (event.IsKeyEvent()) {

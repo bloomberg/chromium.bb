@@ -41,7 +41,7 @@ void SpokenFeedbackEnabler::OnTimer() {
       tick_count < kTimerTicksToToggleSpokenFeedback) {
     delegate->PlaySpokenFeedbackToggleCountdown(tick_count);
   } else if (tick_count == kTimerTicksToToggleSpokenFeedback) {
-    delegate->SetSpokenFeedbackEnabled(!delegate->IsSpokenFeedbackEnabled(),
+    delegate->SetSpokenFeedbackEnabled(!delegate->spoken_feedback_enabled(),
                                        A11Y_NOTIFICATION_SHOW);
     timer_.Stop();
   }

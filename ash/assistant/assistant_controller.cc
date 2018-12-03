@@ -200,7 +200,7 @@ void AssistantController::OnAccessibilityStatusChanged() {
   // The Assistant service needs to be informed of changes to accessibility
   // state so that it can turn on/off A11Y features appropriately.
   assistant_->OnAccessibilityStatusChanged(
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
 void AssistantController::OpenUrl(const GURL& url, bool from_server) {
