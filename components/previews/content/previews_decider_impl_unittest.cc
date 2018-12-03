@@ -620,7 +620,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiDisallowedWhenFeatureDisabled) {
   InitializeUIService();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -656,7 +656,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiDisallowedWhenNetworkFast) {
   InitializeUIService();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_3G);
 
   base::HistogramTester histogram_tester;
@@ -682,7 +682,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowed) {
   // Verify ECT check cases below.
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 
   const struct {
     net::EffectiveConnectionType effective_connection_type;
@@ -724,7 +724,7 @@ TEST_F(PreviewsDeciderImplTest, MissingHostDisallowed) {
   InitializeUIService();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -739,7 +739,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowedOnReload) {
   InitializeUIService();
 
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   PreviewsUserData user_data(kDefaultPageId);

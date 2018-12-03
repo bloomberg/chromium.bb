@@ -153,10 +153,6 @@ size_t GetMaxPageHintsInMemoryThreshhold();
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
-// The threshold of EffectiveConnectionType above which Client Lo-Fi previews
-// should not be served.
-net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();
-
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
 int NoScriptPreviewsInflationPercent();
