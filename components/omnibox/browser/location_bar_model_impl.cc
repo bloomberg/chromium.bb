@@ -118,7 +118,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
   if (IsOfflinePage())
     return omnibox::kOfflinePinIcon;
 
-  switch (GetSecurityLevel(false)) {
+  switch (GetSecurityLevel(true /* ignore_editing */)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
       return omnibox::kHttpIcon;

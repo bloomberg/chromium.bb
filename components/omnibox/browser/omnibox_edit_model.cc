@@ -426,6 +426,28 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   }
 }
 
+bool OmniboxEditModel::ShouldShowCurrentPageIcon() const {
+  // If the popup is open, don't show the current page's icon. The caller is
+  // instead expected to show the current match's icon.
+  if (PopupIsOpen())
+    return false;
+
+  // On the New Tab Page, the omnibox textfield is empty. We want to display
+  // the default search provider favicon instead of the NTP security icon.
+  if (view_->GetText().empty())
+    return false;
+
+  // If user input is not in progress, always show the current page's icon.
+  if (!user_input_in_progress())
+    return true;
+
+  // If user input is in progress, keep showing the current page's icon so long
+  // as the text matches the current page's URL, elided or unelided. This logic
+  // also works for Query in Omnibox, since the query is in |display_text_|.
+  return view_->GetText() == display_text_ ||
+         view_->GetText() == url_for_editing_;
+}
+
 void OmniboxEditModel::UpdateInput(bool has_selected_text,
                                    bool prevent_inline_autocomplete) {
   bool changed = SetInputInProgressNoNotify(true);

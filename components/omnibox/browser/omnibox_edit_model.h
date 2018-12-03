@@ -140,6 +140,11 @@ class OmniboxEditModel {
 
   bool user_input_in_progress() const { return user_input_in_progress_; }
 
+  // Encapsulates all the varied conditions for whether to override the
+  // permanent page icon (associated with the currently displayed page),
+  // with a temporary icon (associated with the current match or user text).
+  bool ShouldShowCurrentPageIcon() const;
+
   // Sets the state of user_input_in_progress_, and notifies the observer if
   // that state has changed.
   void SetInputInProgress(bool in_progress);

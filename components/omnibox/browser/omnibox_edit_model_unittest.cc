@@ -313,6 +313,11 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
   EXPECT_TRUE(model()->CurrentTextIsURL());
+
+  // We should still show the current page's icon until the URL is modified.
+  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
+  view()->SetUserText(base::ASCIIToUTF16("something else"));
+  EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
 }
 
 TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
@@ -323,14 +328,17 @@ TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   TestOmniboxClient* client =
       static_cast<TestOmniboxClient*>(model()->client());
   client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
-  model()->ResetDisplayTexts();
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
+  EXPECT_EQ(base::ASCIIToUTF16("foobar"), view()->GetText());
 
   base::string16 search_terms;
   EXPECT_TRUE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
   EXPECT_FALSE(search_terms.empty());
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), search_terms);
   EXPECT_FALSE(model()->CurrentTextIsURL());
+  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
 
   // Verify we can exit Query in Omnibox mode properly.
   model()->Unelide(true /* exit_query_in_omnibox */);
@@ -338,6 +346,11 @@ TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
   EXPECT_TRUE(model()->CurrentTextIsURL());
+
+  // We should still show the current page's icon until the URL is modified.
+  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
+  view()->SetUserText(base::ASCIIToUTF16("something else"));
+  EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {

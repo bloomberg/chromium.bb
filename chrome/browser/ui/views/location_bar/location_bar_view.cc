@@ -1087,6 +1087,9 @@ void LocationBarView::OnChanged() {
 void LocationBarView::OnPopupVisibilityChanged() {
   RefreshBackground();
 
+  // The location icon may change when the popup visibility changes.
+  location_icon_view_->Update(/*suppress_animations=*/false);
+
   // The focus ring may be hidden or shown when the popup visibility changes.
   if (focus_ring_)
     focus_ring_->SchedulePaint();
