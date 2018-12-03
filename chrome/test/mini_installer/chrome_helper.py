@@ -4,6 +4,7 @@
 
 """Common helper module for working with Chrome's processes and windows."""
 
+import logging
 import psutil
 import re
 import win32gui
@@ -68,6 +69,8 @@ def WaitForChromeExit():
     if not process:
       # Pick any process to wait on if no top-level parent was found.
       process = next(chrome_processes.itervalues())
+    logging.info(
+      'Waiting for %s chrome.exe processes to exit' % len(chrome_processes))
     process.wait()
     # Check for stragglers and keep waiting until all are gone.
     chrome_processes = GetChromeProcesses()
