@@ -33,11 +33,10 @@ const int kFlickTouchEventsPerSecond = 30;
 
 namespace {
 
-Status SendKeysToElement(
+Status FocusToElement(
     Session* session,
     WebView* web_view,
-    const std::string& element_id,
-    const base::ListValue* key_list) {
+    const std::string& element_id) {
   bool is_displayed = false;
   bool is_focused = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -75,7 +74,17 @@ Status SendKeysToElement(
     if (status.IsError())
       return status;
   }
+  return Status(kOk);
+}
 
+Status SendKeysToElement(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::ListValue* key_list) {
+  Status status = FocusToElement(session, web_view, element_id);
+  if (status.IsError())
+    return status;
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
@@ -342,6 +351,11 @@ Status ExecuteSendKeysToElement(Session* session,
   if (status.IsError())
     return status;
   if (is_input && is_file) {
+    if (session->strict_file_interactability) {
+      status = FocusToElement(session, web_view,element_id);
+      if (status.IsError())
+        return status;
+    }
     // Compress array into a single string.
     base::FilePath::StringType paths_string;
     for (size_t i = 0; i < key_list->GetSize(); ++i) {
