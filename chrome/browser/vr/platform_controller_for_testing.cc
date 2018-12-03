@@ -63,11 +63,11 @@ bool PlatformControllerForTesting::ButtonDownHappened(
 }
 
 bool PlatformControllerForTesting::IsTouchingTrackpad() const {
-  return cur_model_->touching_touchpad;
+  return false;
 }
 
 gfx::PointF PlatformControllerForTesting::GetPositionInTrackpad() const {
-  return cur_model_->touchpad_touch_position;
+  return gfx::PointF();
 }
 
 base::TimeTicks PlatformControllerForTesting::GetLastOrientationTimestamp()

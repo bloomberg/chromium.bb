@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.annotation.IntDef;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,8 +31,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 
@@ -42,33 +39,11 @@ import java.util.concurrent.TimeoutException;
  * omnibox or back button.
  */
 public class NativeUiUtils {
-    @IntDef({ScrollDirection.UP, ScrollDirection.DOWN, ScrollDirection.LEFT, ScrollDirection.RIGHT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ScrollDirection {
-        int UP = 0;
-        int DOWN = 1;
-        int LEFT = 2;
-        int RIGHT = 3;
-    }
-
     // How many frames to wait after entering text in the omnibox before we can assume that
     // suggestions are updated. This should only be used if the workaround of inputting text and
     // waiting for the suggestion box to appear doesn't work, e.g. if you need to input text, wait
     // for autocomplete, then input more text before committing. 20 is arbitrary, but stable.
     public static final int NUM_FRAMES_FOR_SUGGESTION_UPDATE = 20;
-    // Arbitrary number of interpolated steps to perform within a scroll to consistently trigger
-    // either fling or non-fling scrolling.
-    public static final int NUM_STEPS_NON_FLING_SCROLL = 60;
-    public static final int NUM_STEPS_FLING_SCROLL = 6;
-    // Number of frames to wait after queueing a non-fling scroll before we can be sure that all the
-    // scroll actions have been processed. The +2 comes from scrolls always having a touch down and
-    // up action with NUM_STEPS_*_SCROLL additional actions in between.
-    public static final int NUM_FRAMES_NON_FLING_SCROLL = NUM_STEPS_NON_FLING_SCROLL + 2;
-    // The number of frames after queueing a fling scroll before we can be sure that all the scroll
-    // actions have been processed AND we should still be scrolling due to the fling. The 10 is
-    // arbitrary, but 1/6 of a second is a reasonable amount of time to wait and still expect to be
-    // flinging, and is stable.
-    public static final int NUM_FRAMES_FLING_SCROLL = NUM_STEPS_FLING_SCROLL + 2 + 10;
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
@@ -184,51 +159,6 @@ public class NativeUiUtils {
                 clickElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
             }
         });
-    }
-
-    /**
-     * Helper function for performing a non-fling scroll.
-     *
-     * @param direction the ScrollDirection to scroll in.
-     */
-    public static void scrollNonFling(@ScrollDirection int direction) throws InterruptedException {
-        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
-                NUM_STEPS_NON_FLING_SCROLL);
-    }
-
-    /**
-     * Helper function for performing a fling scroll.
-     *
-     * @param direction the ScrollDirection to scroll in.
-     */
-    public static void scrollFling(@ScrollDirection int direction) throws InterruptedException {
-        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
-                NUM_STEPS_FLING_SCROLL);
-    }
-
-    /**
-     * Perform a touchpad drag to scroll.
-     *
-     * @param start the position on the touchpad to start the drag.
-     * @param end the position on the touchpad to end the drag.
-     * @param numSteps the number of steps to interpolate between the two points, one step per
-     *        frame.
-     */
-    public static void scroll(PointF start, PointF end, int numSteps) throws InterruptedException {
-        PointF stepIncrement =
-                new PointF((end.x - start.x) / numSteps, (end.y - start.y) / numSteps);
-        PointF currentPosition = new PointF(start.x, start.y);
-        TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
-                currentPosition);
-        for (int i = 0; i < numSteps; ++i) {
-            currentPosition.offset(stepIncrement.x, stepIncrement.y);
-            TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                    UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
-                    currentPosition);
-        }
-        TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_UP, end);
     }
 
     /**
@@ -547,32 +477,6 @@ public class NativeUiUtils {
                 return "Timeout (Element visibility did not match)";
             default:
                 return "Unknown result";
-        }
-    }
-
-    private static PointF directionToStartPoint(@ScrollDirection int direction) {
-        switch (direction) {
-            case ScrollDirection.UP:
-                return new PointF(0.5f, 0.05f);
-            case ScrollDirection.DOWN:
-                return new PointF(0.5f, 0.95f);
-            case ScrollDirection.LEFT:
-                return new PointF(0.05f, 0.5f);
-            default:
-                return new PointF(0.95f, 0.5f);
-        }
-    }
-
-    private static PointF directionToEndPoint(@ScrollDirection int direction) {
-        switch (direction) {
-            case ScrollDirection.UP:
-                return new PointF(0.5f, 0.95f);
-            case ScrollDirection.DOWN:
-                return new PointF(0.5f, 0.05f);
-            case ScrollDirection.LEFT:
-                return new PointF(0.95f, 0.5f);
-            default:
-                return new PointF(0.05f, 0.5f);
         }
     }
 }
