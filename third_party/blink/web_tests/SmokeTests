@@ -26,7 +26,6 @@ compositing/geometry/limit-layer-bounds-positioned-transition.html
 compositing/gestures/gesture-tapHighlight-no-graphics-layer-region-based-multicol.html
 compositing/iframes/visibility-hidden-transformed-content.html
 compositing/images/clip-on-directly-composited-image.html
-compositing/layer-creation/assumed-overlap-for-inline-transform.html
 compositing/layer-creation/fixed-position-out-of-view-dynamic.html
 compositing/layer-creation/fixed-position-out-of-view.html
 compositing/reflections/empty-reflection-with-mask.html

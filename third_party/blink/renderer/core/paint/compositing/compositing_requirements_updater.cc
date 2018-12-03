@@ -608,11 +608,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       will_be_composited_or_squashed = true;
     }
 
-    if (will_be_composited_or_squashed) {
-      reasons_to_composite |= layer->PotentialCompositingReasonsFromStyle() &
-                              CompositingReason::kInlineTransform;
-    }
-
     if (will_be_composited_or_squashed &&
         layer->GetLayoutObject().StyleRef().HasBlendMode()) {
       current_recursion_data.has_unisolated_composited_blending_descendant_ =
@@ -631,12 +626,9 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     bool is_composited_clipping_layer =
         can_be_composited && (reasons_to_composite &
                               CompositingReason::kClipsCompositingDescendants);
-    bool is_composited_with_inline_transform =
-        reasons_to_composite & CompositingReason::kInlineTransform;
     if ((!child_recursion_data.testing_overlap_ &&
          !is_composited_clipping_layer) ||
-        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation() ||
-        is_composited_with_inline_transform)
+        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation())
       current_recursion_data.testing_overlap_ = false;
 
     if (child_recursion_data.compositing_ancestor_ == layer)

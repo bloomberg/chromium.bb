@@ -29,20 +29,11 @@
       "transform": 2
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false,
-      "transform": 2
-    },
-    {
       "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#00008B",
       "transform": 3
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
-      "transform": 2
     }
   ],
   "transforms": [

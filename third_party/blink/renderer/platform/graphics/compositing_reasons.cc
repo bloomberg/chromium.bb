@@ -156,9 +156,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "with no scrolling contents"},
     {CompositingReason::kLayerForDecoration, "layerForDecoration",
      "Layer painted on top of other layers as decoration"},
-    {CompositingReason::kInlineTransform, "inlineTransform",
-     "Has an inline transform, which causes subsequent layers to assume "
-     "overlap"},
 
 };
 

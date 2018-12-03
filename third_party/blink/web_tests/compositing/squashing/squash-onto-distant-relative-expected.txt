@@ -18,20 +18,11 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
       "name": "LayoutBlockFlow (positioned) DIV id='squashing'",
       "bounds": [1, 1],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "transform": 1
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='squashed')",
-      "position": [600, 0],
-      "bounds": [200, 200]
     }
   ],
   "transforms": [
@@ -42,8 +33,7 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [-33554430, 0, 0, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     }
   ]
 }
