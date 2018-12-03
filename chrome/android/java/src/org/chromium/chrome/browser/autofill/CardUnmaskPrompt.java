@@ -42,9 +42,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,8 +55,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     private static CardUnmaskObserverForTest sObserverForTest;
 
     private final CardUnmaskPromptDelegate mDelegate;
-    private final PropertyModel mDialogModel;
-    private final ModalDialogView mDialog;
+    private PropertyModel mDialogModel;
     private boolean mShouldRequestExpirationDate;
 
     private final View mMainView;
@@ -208,9 +205,6 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
                                        R.string.cancel)
                                .build();
 
-        mDialog = new ModalDialogView(context);
-        PropertyModelChangeProcessor.create(mDialogModel, mDialog, new ModalDialogViewBinder());
-
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = -1;
         mThisMonth = -1;
@@ -224,7 +218,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(ModalDialogView.ButtonType.POSITIVE);
+                onClick(mDialogModel, ModalDialogView.ButtonType.POSITIVE);
                 return true;
             }
             return false;
@@ -283,7 +277,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
 
-        mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
 
         showExpirationDateInputsInputs();
 
@@ -295,7 +289,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     }
 
     public void update(String title, String instructions, boolean shouldRequestExpirationDate) {
-        mDialog.setTitle(title);
+        mDialogModel.set(ModalDialogProperties.TITLE, title);
         mInstructions.setText(instructions);
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         if (mShouldRequestExpirationDate && (mThisYear == -1 || mThisMonth == -1)) {
@@ -304,8 +298,8 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         showExpirationDateInputsInputs();
     }
 
-    public void dismiss() {
-        mModalDialogManager.dismissDialog(mDialog);
+    public void dismiss(@DialogDismissalCause int dismissalCause) {
+        mModalDialogManager.dismissDialog(mDialogModel, dismissalCause);
     }
 
     public void disableAndWaitForVerification() {
@@ -331,7 +325,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
                 setNoRetryError(errorMessage);
             }
         } else {
-            Runnable dismissRunnable = () -> dismiss();
+            Runnable dismissRunnable = () -> dismiss(DialogDismissalCause.ACTION_ON_CONTENT);
             if (mSuccessMessageDurationMilliseconds > 0) {
                 mVerificationProgressBar.setVisibility(View.GONE);
                 mMainView.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
@@ -747,20 +741,20 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     }
 
     @Override
-    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, int buttonType) {
         if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
             mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                     mMonthInput.getText().toString(), Integer.toString(getFourDigitYear()),
                     mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
         } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
-            mModalDialogManager.dismissDialog(
-                    mDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, int dismissalCause) {
         mDelegate.dismissed();
+        mDialogModel = null;
     }
 
     @VisibleForTesting
@@ -769,8 +763,8 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     }
 
     @VisibleForTesting
-    public ModalDialogView getDialogForTest() {
-        return mDialog;
+    public PropertyModel getDialogForTest() {
+        return mDialogModel;
     }
 
     @VisibleForTesting

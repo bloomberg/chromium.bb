@@ -33,7 +33,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -102,8 +104,9 @@ public class JavascriptTabModalDialogTest {
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
-            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
+            PropertyModel model = mActivity.getModalDialogManager().getCurrentDialogForTest();
+            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
+            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
         });
 
         Assert.assertTrue("JavaScript execution should continue after closing prompt.",
@@ -307,8 +310,10 @@ public class JavascriptTabModalDialogTest {
      * showing.
      */
     private JavascriptTabModalDialog getCurrentDialog() throws ExecutionException {
-        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlocking(
-                () -> mActivity.getModalDialogManager().getCurrentDialogForTest().getController());
+        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlocking(() -> {
+            PropertyModel model = mActivity.getModalDialogManager().getCurrentDialogForTest();
+            return model != null ? model.get(ModalDialogProperties.CONTROLLER) : null;
+        });
     }
 
     /**

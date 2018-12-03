@@ -16,15 +16,12 @@ import android.widget.CheckBox;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -66,11 +63,8 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
                                               R.string.cancel)
                                       .build();
 
-        ModalDialogView dialog = new ModalDialogView(this);
-        PropertyModelChangeProcessor.create(model, dialog, new ModalDialogViewBinder());
-
         new ModalDialogManager(new AppModalPresenter(this), ModalDialogType.APP)
-                .showDialog(dialog, ModalDialogType.APP);
+                .showDialog(model, ModalDialogType.APP);
     }
 
     @Override
@@ -86,7 +80,7 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
 
     private final ModalDialogView.Controller mDialogController = new ModalDialogView.Controller() {
         @Override
-        public void onClick(@ButtonType int buttonType) {
+        public void onClick(PropertyModel model, int buttonType) {
             if (buttonType == ButtonType.NEGATIVE) {
                 finish();
                 return;
@@ -99,7 +93,7 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onDismiss(@DialogDismissalCause int dismissalCause) {
+        public void onDismiss(PropertyModel model, int dismissalCause) {
             finish();
         }
     };
