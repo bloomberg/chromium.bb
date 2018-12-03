@@ -5,12 +5,18 @@
 #ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_AURA_H_
 #define COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_AURA_H_
 
+#include <vector>
+
 #include "components/ui_devtools/Overlay.h"
 #include "components/ui_devtools/overlay_agent.h"
 #include "components/ui_devtools/views/dom_agent_aura.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace aura {
+class Env;
+}
 
 namespace gfx {
 class RenderText;
@@ -35,9 +41,14 @@ class OverlayAgentAura : public OverlayAgent,
                          public ui::EventHandler,
                          public ui::LayerDelegate {
  public:
-  explicit OverlayAgentAura(DOMAgentAura* dom_agent);
+  OverlayAgentAura(DOMAgentAura* dom_agent, aura::Env* env);
   ~OverlayAgentAura() override;
-  int pinned_id() const { return pinned_id_; };
+
+  static OverlayAgentAura* GetInstance() { return overlay_agent_aura_; }
+
+  void RegisterEnv(aura::Env* env);
+
+  int pinned_id() const { return pinned_id_; }
   void SetPinnedNodeId(int pinned_id);
 
   // Overlay::Backend:
@@ -89,6 +100,9 @@ class OverlayAgentAura : public OverlayAgent,
 
   ui::Layer* layer_for_highlighting() { return layer_for_highlighting_.get(); }
 
+  static OverlayAgentAura* overlay_agent_aura_;
+
+  std::vector<aura::Env*> envs_;
   std::unique_ptr<gfx::RenderText> render_text_;
   bool show_size_on_canvas_ = false;
   HighlightRectsConfiguration highlight_rect_config_;

@@ -34,8 +34,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   // server instance has already been created.
   static std::unique_ptr<UiDevToolsServer> CreateForViews(
       network::mojom::NetworkContext* network_context,
-      const char* enable_devtools_flag,
-      int default_port);
+      int port);
 
   // Assumes that the devtools flag is enabled, and was checked when the socket
   // was created.
@@ -54,6 +53,9 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   // Returns a list of attached UiDevToolsClient name + URL
   using NameUrlPair = std::pair<std::string, std::string>;
   static std::vector<NameUrlPair> GetClientNamesAndUrls();
+
+  // Returns true if UI Devtools is enabled by the given commandline switch.
+  static bool IsUiDevToolsEnabled(const char* enable_devtools_flag);
 
   // Returns the port number specified by a command line flag. If a number is
   // not specified as a command line argument, returns the |default_port|.
@@ -95,7 +97,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
 
   const net::NetworkTrafficAnnotationTag tag_;
 
-  // The server (owned by ash for now)
+  // The server (owned by Chrome for now)
   static UiDevToolsServer* devtools_server_;
 
   SEQUENCE_CHECKER(devtools_server_sequence_);

@@ -13,6 +13,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace aura {
+class Env;
 class Window;
 }
 
@@ -22,12 +23,14 @@ class DOMAgentAura : public DOMAgent,
                      public aura::EnvObserver,
                      public aura::WindowObserver {
  public:
-  DOMAgentAura();
+  explicit DOMAgentAura(aura::Env* env);
   ~DOMAgentAura() override;
 
-  const std::vector<gfx::NativeWindow>& root_windows() const {
-    return root_windows_;
-  };
+  static DOMAgentAura* GetInstance() { return dom_agent_aura_; }
+
+  void RegisterEnv(aura::Env* env);
+  void RegisterRootWindow(aura::Window* root);
+  const std::vector<aura::Window*>& root_windows() const { return roots_; }
 
  private:
   // aura::EnvObserver:
@@ -50,7 +53,10 @@ class DOMAgentAura : public DOMAgent,
   std::unique_ptr<protocol::DOM::Node> BuildTreeForUIElement(
       UIElement* ui_element) override;
 
-  std::vector<aura::Window*> root_windows_;
+  static DOMAgentAura* dom_agent_aura_;
+
+  std::vector<aura::Env*> envs_;
+  std::vector<aura::Window*> roots_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgentAura);
 };

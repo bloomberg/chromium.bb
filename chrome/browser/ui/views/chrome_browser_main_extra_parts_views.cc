@@ -20,11 +20,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/common/chrome_switches.h"
-#include "components/ui_devtools/css_agent.h"
-#include "components/ui_devtools/devtools_server.h"
-#include "components/ui_devtools/views/dom_agent_aura.h"
-#include "components/ui_devtools/views/overlay_agent_aura.h"
+#include "components/ui_devtools/switches.h"
+#include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -32,7 +29,6 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
 #include "services/ws/public/mojom/constants.mojom.h"
-#include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -51,12 +47,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/ui_base_features.h"
-#endif
-
-ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
-}
+ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {}
 
 ChromeBrowserMainExtraPartsViews::~ChromeBrowserMainExtraPartsViews() {
   constrained_window::SetConstrainedWindowViewsClient(nullptr);
@@ -93,33 +84,12 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
-  // Start devtools server
-  constexpr int kUiDevToolsDefaultPort = 9223;
-  network::mojom::NetworkContext* network_context =
-      g_browser_process->system_network_context_manager()->GetContext();
-  devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViews(
-      network_context, switches::kEnableUiDevTools, kUiDevToolsDefaultPort);
-  if (devtools_server_) {
-    auto dom_backend = std::make_unique<ui_devtools::DOMAgentAura>();
-#if defined(OS_CHROMEOS)
-    // OverlayAgentAura intends to handle input events targeting any UI surface,
-    // and so installs itself as a local aura::Env pre-target ui::EventHandler.
-    // In multi-process Mash, Chrome's local aura::Env can only handle events
-    // target Chrome's own aura::Windows, not those targeting Ash or mojo apps.
-    // TODO(crbug.com/896977): Init the devtools server in Ash on Chrome OS.
-    LOG_IF(WARNING, features::IsMultiProcessMash())
-        << "Chrome cannot handle Ash system ui and mojo app events in Mash.";
-#endif
-    auto overlay_backend =
-        std::make_unique<ui_devtools::OverlayAgentAura>(dom_backend.get());
-    auto css_backend =
-        std::make_unique<ui_devtools::CSSAgent>(dom_backend.get());
-    auto devtools_client = std::make_unique<ui_devtools::UiDevToolsClient>(
-        "UiDevToolsClient", devtools_server_.get());
-    devtools_client->AddAgent(std::move(dom_backend));
-    devtools_client->AddAgent(std::move(css_backend));
-    devtools_client->AddAgent(std::move(overlay_backend));
-    devtools_server_->AttachClient(std::move(devtools_client));
+  if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
+          ui_devtools::switches::kEnableUiDevTools)) {
+    // Start the UI Devtools server using Chrome's local aura::Env instance.
+    // ChromeBrowserMainExtraPartsAsh wires up Ash UI for SingleProcessMash.
+    devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
+        g_browser_process->system_network_context_manager()->GetContext());
   }
 #endif
 
