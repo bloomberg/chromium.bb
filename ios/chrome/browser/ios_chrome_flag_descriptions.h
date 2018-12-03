@@ -46,6 +46,9 @@ extern const char
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
 
+extern const char kEnableSyncUSSBookmarksName[];
+extern const char kEnableSyncUSSBookmarksDescription[];
+
 extern const char kSyncPseudoUSSFaviconsName[];
 extern const char kSyncPseudoUSSFaviconsDescription[];
 

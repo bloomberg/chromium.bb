@@ -53,6 +53,10 @@ const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
     "If enabled, prevents popping up the credit card offer-to-save prompt if "
     "it has repeatedly been ignored, declined, or failed.";
 
+const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
+const char kEnableSyncUSSBookmarksDescription[] =
+    "Enables the new, experimental implementation of bookmark sync";
+
 const char kSyncPseudoUSSFaviconsName[] = "Enable pseudo-USS for favicon sync.";
 const char kSyncPseudoUSSFaviconsDescription[] =
     "Enable new USS-based codepath for sync datatypes FAVICON_IMAGES and "
