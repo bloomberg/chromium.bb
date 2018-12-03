@@ -212,7 +212,7 @@ bool HTMLFormElement::ValidateInteractively() {
       ToHTMLFormControlElement(element)->HideVisibleValidationMessage();
   }
 
-  HeapVector<Member<HTMLFormControlElement>> unhandled_invalid_controls;
+  ListedElement::List unhandled_invalid_controls;
   if (!CheckInvalidControlsAndCollectUnhandled(
           &unhandled_invalid_controls, kCheckValidityDispatchInvalidEvent))
     return true;
@@ -227,7 +227,7 @@ bool HTMLFormElement::ValidateInteractively() {
 
   // Focus on the first focusable control and show a validation message.
   for (const auto& unhandled : unhandled_invalid_controls) {
-    if (unhandled->IsFocusable()) {
+    if (ToHTMLElement(unhandled)->IsFocusable()) {
       unhandled->ShowValidationMessage();
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormValidationShowedMessage);
@@ -237,7 +237,7 @@ bool HTMLFormElement::ValidateInteractively() {
   // Warn about all of unfocusable controls.
   if (GetDocument().GetFrame()) {
     for (const auto& unhandled : unhandled_invalid_controls) {
-      if (unhandled->IsFocusable())
+      if (ToHTMLElement(unhandled)->IsFocusable())
         continue;
       String message(
           "An invalid form control with name='%name' is not focusable.");
@@ -725,7 +725,7 @@ bool HTMLFormElement::checkValidity() {
 }
 
 bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
-    HeapVector<Member<HTMLFormControlElement>>* unhandled_invalid_controls,
+    ListedElement::List* unhandled_invalid_controls,
     CheckValidityEventBehavior event_behavior) {
   // Copy listedElements because event handlers called from
   // HTMLFormControlElement::checkValidity() might change listedElements.

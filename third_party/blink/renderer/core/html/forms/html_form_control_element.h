@@ -35,12 +35,6 @@
 namespace blink {
 
 class HTMLFormElement;
-class ValidationMessageClient;
-
-enum CheckValidityEventBehavior {
-  kCheckValidityDispatchNoEvent,
-  kCheckValidityDispatchInvalidEvent
-};
 
 // HTMLFormControlElement is the default implementation of
 // ListedElement, and listed element implementations should use
@@ -97,25 +91,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   virtual void SetActivatedSubmit(bool) {}
 
   bool willValidate() const override;
-
-  void UpdateVisibleValidationMessage();
-  void HideVisibleValidationMessage();
-  bool checkValidity(
-      HeapVector<Member<HTMLFormControlElement>>* unhandled_invalid_controls =
-          nullptr,
-      CheckValidityEventBehavior = kCheckValidityDispatchInvalidEvent);
-  bool reportValidity();
-  // This must be called only after the caller check the element is focusable.
-  void ShowValidationMessage();
-  bool IsValidationMessageVisible() const;
-  // This must be called when a validation constraint or control value is
-  // changed.
-  void SetNeedsValidityCheck();
-  void setCustomValidity(const String&) final;
-  void FindCustomValidationMessageTextDirection(const String& message,
-                                                TextDirection& message_dir,
-                                                String& sub_message,
-                                                TextDirection& sub_message_dir);
 
   bool IsReadOnly() const;
   bool IsDisabledOrReadOnly() const;
@@ -177,10 +152,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   void DidRecalcStyle(StyleRecalcChange) override;
 
-  // This must be called any time the result of willValidate() has changed.
-  void SetNeedsWillValidateCheck();
-  virtual bool RecalcWillValidate() const;
-
   virtual void ResetImpl() {}
   virtual bool SupportsAutofocus() const;
 
@@ -193,31 +164,10 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;
 
-  ValidationMessageClient* GetValidationMessageClient() const;
-
-  // Requests validity recalc for the form owner, if one exists.
-  void FormOwnerSetNeedsValidityCheck();
-  // Requests validity recalc for all ancestor fieldsets, if exist.
-  void FieldSetAncestorsSetNeedsValidityCheck(Node*);
-
   unsigned unique_renderer_form_control_id_;
 
   WebString autofill_section_;
   enum WebAutofillState autofill_state_;
-
-  enum DataListAncestorState { kUnknown, kInsideDataList, kNotInsideDataList };
-  mutable enum DataListAncestorState data_list_ancestor_state_;
-
-  bool has_validation_message_ : 1;
-  // The initial value of will_validate_ depends on the derived class. We can't
-  // initialize it with a virtual function in the constructor. will_validate_
-  // is not deterministic as long as will_validate_initialized_ is false.
-  mutable bool will_validate_initialized_ : 1;
-  mutable bool will_validate_ : 1;
-
-  // Cache of valid().
-  bool is_valid_ : 1;
-  bool validity_is_dirty_ : 1;
 
   bool blocks_form_submission_ : 1;
 };

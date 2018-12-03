@@ -385,7 +385,7 @@ void HTMLInputElement::InitializeTypeInParsing() {
     CreateShadowSubtree();
   }
 
-  SetNeedsWillValidateCheck();
+  UpdateWillValidateCache();
 
   if (!default_value.IsNull())
     input_type_->WarnIfValueIsInvalid(default_value);
@@ -444,7 +444,7 @@ void HTMLInputElement::UpdateType() {
     CreateShadowSubtree();
   }
 
-  SetNeedsWillValidateCheck();
+  UpdateWillValidateCache();
 
   if (placeholder_changed) {
     // We need to update the UA shadow and then the placeholder visibility flag

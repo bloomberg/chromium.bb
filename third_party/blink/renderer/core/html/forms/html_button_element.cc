@@ -94,7 +94,7 @@ void HTMLButtonElement::ParseAttribute(
       type_ = BUTTON;
     else
       type_ = SUBMIT;
-    SetNeedsWillValidateCheck();
+    UpdateWillValidateCache();
     if (formOwner() && isConnected())
       formOwner()->InvalidateDefaultButtonStyle();
   } else {

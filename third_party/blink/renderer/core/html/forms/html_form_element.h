@@ -144,9 +144,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   // Validates each of the controls, and stores controls of which 'invalid'
   // event was not canceled to the specified vector. Returns true if there
   // are any invalid controls in this form.
-  bool CheckInvalidControlsAndCollectUnhandled(
-      HeapVector<Member<HTMLFormControlElement>>*,
-      CheckValidityEventBehavior);
+  bool CheckInvalidControlsAndCollectUnhandled(ListedElement::List*,
+                                               CheckValidityEventBehavior);
 
   Element* ElementFromPastNamesMap(const AtomicString&);
   void AddToPastNamesMap(Element*, const AtomicString& past_name);

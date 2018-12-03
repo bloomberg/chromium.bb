@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -38,7 +39,13 @@ class FormData;
 class HTMLElement;
 class HTMLFormElement;
 class Node;
+class ValidationMessageClient;
 class ValidityState;
+
+enum CheckValidityEventBehavior {
+  kCheckValidityDispatchNoEvent,
+  kCheckValidityDispatchInvalidEvent
+};
 
 // https://html.spec.whatwg.org/multipage/forms.html#category-listed
 class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
@@ -69,11 +76,14 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   void FormRemovedFromTree(const Node& form_root);
 
+  bool WillValidate() const;
+
   // ValidityState attribute implementations
   bool CustomError() const;
 
-  // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
-  // stepMismatch, tooLong, tooShort and valueMissing must call willValidate
+  // Functions for ValidityState interface methods.
+  // Override functions for PatterMismatch, RangeOverflow, RangerUnderflow,
+  // StepMismatch, TooLong, TooShort and ValueMissing must call WillValidate
   // method.
   virtual bool HasBadInput() const;
   virtual bool PatternMismatch() const;
@@ -84,10 +94,33 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual bool TooShort() const;
   virtual bool TypeMismatch() const;
   virtual bool ValueMissing() const;
+  bool Valid() const;
+
+  using List = HeapVector<Member<ListedElement>>;
+
   virtual String validationMessage() const;
   virtual String ValidationSubMessage() const;
-  bool Valid() const;
   virtual void setCustomValidity(const String&);
+  void UpdateVisibleValidationMessage();
+  void HideVisibleValidationMessage();
+  bool checkValidity(
+      List* unhandled_invalid_controls = nullptr,
+      CheckValidityEventBehavior = kCheckValidityDispatchInvalidEvent);
+  bool reportValidity();
+  // This must be called only after the caller check the element is focusable.
+  void ShowValidationMessage();
+  bool IsValidationMessageVisible() const;
+  void FindCustomValidationMessageTextDirection(const String& message,
+                                                TextDirection& message_dir,
+                                                String& sub_message,
+                                                TextDirection& sub_message_dir);
+
+  // For Element::IsValidElement(), which is for :valid :invalid selectors.
+  bool IsValidElement();
+
+  // This must be called when a validation constraint or control value is
+  // changed.
+  void SetNeedsValidityCheck();
 
   // This should be called when |disabled| content attribute is changed.
   virtual void DisabledAttributeChanged();
@@ -107,8 +140,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
   bool IsActuallyDisabled() const;
 
-  typedef HeapVector<Member<ListedElement>> List;
-
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -125,6 +156,10 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual void WillChangeForm();
   virtual void DidChangeForm();
 
+  // This must be called any time the result of WillValidate() has changed.
+  void UpdateWillValidateCache();
+  virtual bool RecalcWillValidate() const;
+
   String CustomValidationMessage() const;
 
   // False; There are no FIELDSET ancestors.
@@ -136,17 +171,42 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   void UpdateAncestorDisabledState() const;
   void SetFormAttributeTargetObserver(FormAttributeTargetObserver*);
   void ResetFormAttributeTargetObserver();
+  // Requests validity recalc for the form owner, if one exists.
+  void FormOwnerSetNeedsValidityCheck();
+  // Requests validity recalc for all ancestor fieldsets, if exist.
+  void FieldSetAncestorsSetNeedsValidityCheck(Node*);
+
+  ValidationMessageClient* GetValidationMessageClient() const;
 
   Member<FormAttributeTargetObserver> form_attribute_target_observer_;
   Member<HTMLFormElement> form_;
   Member<ValidityState> validity_state_;
   String custom_validation_message_;
+  bool has_validation_message_ : 1;
   // If form_was_set_by_parser_ is true, form_ is always non-null.
-  bool form_was_set_by_parser_;
+  bool form_was_set_by_parser_ : 1;
+
+  // The initial value of will_validate_ depends on the derived class. We can't
+  // initialize it with a virtual function in the constructor. will_validate_
+  // is not deterministic as long as will_validate_initialized_ is false.
+  mutable bool will_validate_initialized_ : 1;
+  mutable bool will_validate_ : 1;
+
+  // Cache of IsValidElement().
+  bool is_valid_ : 1;
+  bool validity_is_dirty_ : 1;
 
   enum class AncestorDisabledState { kUnknown, kEnabled, kDisabled };
   mutable AncestorDisabledState ancestor_disabled_state_ =
       AncestorDisabledState::kUnknown;
+
+  enum class DataListAncestorState {
+    kUnknown,
+    kInsideDataList,
+    kNotInsideDataList
+  };
+  mutable enum DataListAncestorState data_list_ancestor_state_ =
+      DataListAncestorState::kUnknown;
 };
 
 CORE_EXPORT HTMLElement* ToHTMLElement(ListedElement*);
