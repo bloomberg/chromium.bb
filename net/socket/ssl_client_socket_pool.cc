@@ -339,8 +339,7 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   const std::string& host = params_->host_and_port().host();
   bool tls13_supported = IsTLS13ExperimentHost(host);
 
-  if (result == OK ||
-      (params_->ignore_certificate_errors() && IsCertificateError(result))) {
+  if (result == OK) {
     DCHECK(!connect_timing_.ssl_start.is_null());
     base::TimeDelta connect_duration =
         connect_timing_.ssl_end - connect_timing_.ssl_start;

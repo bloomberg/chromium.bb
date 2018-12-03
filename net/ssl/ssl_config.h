@@ -127,6 +127,9 @@ struct NET_EXPORT SSLConfig {
   // response to the user explicitly accepting the bad certificate.
   std::vector<CertAndStatus> allowed_bad_certs;
 
+  // True if all certificate errors should be ignored.
+  bool ignore_certificate_errors;
+
   // True if, for a single connection, any dependent network fetches should
   // be disabled. This can be used to avoid triggering re-entrancy in the
   // network layer. For example, fetching a PAC script over HTTPS may cause
