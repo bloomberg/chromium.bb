@@ -143,7 +143,10 @@ class FakeTabController : public TabController {
 
 class TabTest : public ChromeViewsTestBase {
  public:
-  TabTest() {}
+  TabTest() {
+    // Prevent the fake clock from starting at 0 which is the null time.
+    fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
+  }
   ~TabTest() override {}
 
   static TabIcon* GetTabIcon(const Tab& tab) { return tab.icon_; }
@@ -312,7 +315,8 @@ class TabTest : public ChromeViewsTestBase {
     // Forward the clock enough for any running animations to finish.
     DCHECK(icon->clock_ == &fake_clock_);
     fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
-    icon->UpdateLoadingAnimationState();
+    icon->StepLoadingAnimation(icon->waiting_state_.elapsed_time);
+    icon->animation_state_ = icon->pending_animation_state_;
   }
 
   static float GetLoadingProgress(TabIcon* icon) {
@@ -650,6 +654,7 @@ TEST_F(TabTest, LayeredThrobber) {
   // Reset.
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a drag started and stopped during a load: layer painting stops
@@ -668,6 +673,7 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab load starting and stopping during tab dragging (or with
@@ -679,6 +685,7 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_FALSE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 }
 
