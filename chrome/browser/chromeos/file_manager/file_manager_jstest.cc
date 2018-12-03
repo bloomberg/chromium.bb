@@ -15,8 +15,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsModelTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/actions_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/actions_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {

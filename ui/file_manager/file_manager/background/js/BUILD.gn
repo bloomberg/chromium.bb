@@ -182,6 +182,8 @@ js_library("mock_drive_sync_handler") {
     "//ui/webui/resources/js/cr:event_target",
   ]
   externs_list = [ "../../../externs/background/drive_sync_handler.js" ]
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
 }
 
 js_library("drive_sync_handler") {
