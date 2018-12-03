@@ -224,16 +224,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   // dependent so we can't have a single generic test.
 }
 
-// Flaky on Android (especially on Marshmallow). crbug.com/896466
-#if defined(OS_ANDROID)
-#define MAYBE_CompositorWorksWhenReusingRenderer \
-  DISABLED_CompositorWorksWhenReusingRenderer
-#else
-#define MAYBE_CompositorWorksWhenReusingRenderer \
-  CompositorWorksWhenReusingRenderer
-#endif
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
-                       MAYBE_CompositorWorksWhenReusingRenderer) {
+                       CompositorWorksWhenReusingRenderer) {
   ASSERT_TRUE(embedded_test_server()->Start());
   auto* web_contents = shell()->web_contents();
   // Load a page that draws new frames infinitely.
