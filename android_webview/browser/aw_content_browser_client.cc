@@ -272,6 +272,12 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   context_params->http_cache_max_size = 20 * 1024 * 1024;  // 20M
   context_params->http_cache_path = AwBrowserContext::GetCacheDir();
 
+  // WebView does not currently support Certificate Transparency.
+  context_params->enforce_chrome_ct_policy = false;
+
+  // WebView does not support ftp yet.
+  context_params->enable_ftp_url_support = false;
+
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
 
