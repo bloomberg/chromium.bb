@@ -533,6 +533,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
       host_impl_->EvictedUIResourcesExist();
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
+  host_impl_->WillSendBeginMainFrame();
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,

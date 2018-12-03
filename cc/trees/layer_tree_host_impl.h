@@ -306,6 +306,7 @@ class CC_EXPORT LayerTreeHostImpl
     return viewport_damage_rect_;
   }
 
+  virtual void WillSendBeginMainFrame() {}
   virtual void DidSendBeginMainFrame() {}
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
