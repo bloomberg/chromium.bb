@@ -52,8 +52,8 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   void MarkAsSynchronized() { is_synchronized_ = true; }
 
   void Trace(blink::Visitor* visitor) {
-    visitor->Trace(constructor_.Cast<v8::Value>());
-    visitor->Trace(process_.Cast<v8::Value>());
+    visitor->Trace(constructor_);
+    visitor->Trace(process_);
     visitor->Trace(audio_param_descriptors_);
   };
   const char* NameInHeapSnapshot() const override {

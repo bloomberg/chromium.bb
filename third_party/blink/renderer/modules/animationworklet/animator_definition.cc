@@ -20,8 +20,8 @@ AnimatorDefinition::AnimatorDefinition(v8::Isolate* isolate,
 AnimatorDefinition::~AnimatorDefinition() = default;
 
 void AnimatorDefinition::Trace(Visitor* visitor) {
-  visitor->Trace(constructor_.Cast<v8::Value>());
-  visitor->Trace(animate_.Cast<v8::Value>());
+  visitor->Trace(constructor_);
+  visitor->Trace(animate_);
 }
 
 v8::Local<v8::Function> AnimatorDefinition::ConstructorLocal(

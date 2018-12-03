@@ -93,6 +93,9 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   Member<Modulator> settings_object_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-record
+  // TODO(keishi): Visitor only defines a trace method for v8::Value so this
+  // needs to be cast.
+  GC_PLUGIN_IGNORE("757708")
   TraceWrapperV8Reference<v8::Module> record_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
