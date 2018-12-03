@@ -200,6 +200,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Whether all types of menus use prefix selection for items.
   bool all_menus_use_prefix_selection;
 
+  // Margins for footnotes (HIGHLIGHTED item at the end of a menu).
+  int footnote_vertical_margin;
+
  private:
   // Configures a MenuConfig as appropriate for the current platform.
   void Init();

@@ -1069,6 +1069,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item in the wrench menu">
         H&amp;elp
       </message>
+      <message name="IDS_MANAGED_BY_ORG" desc="The text label of the 'Managed by' UI in the app menu, for enterprise users">
+        Managed by your organization
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
           Import bookmarks and settings...
@@ -1105,9 +1108,6 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
-        </message>
-        <message name="IDS_MANAGED_BY_ORG" desc="The text label of the 'Managed by' UI in the app menu, for enterprise users">
-          Managed by your organization
         </message>
       </if>
       <if expr="use_titlecase">
@@ -1146,9 +1146,6 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
-        </message>
-        <message name="IDS_MANAGED_BY_ORG" desc="The text label of the 'Managed by' UI in the app menu, for enterprise users">
-          Managed by your Organization
         </message>
       </if>
 
