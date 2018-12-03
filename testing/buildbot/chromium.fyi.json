@@ -4288,7 +4288,7 @@
         "args": [
           "--num-retries=3",
           "--debug",
-          "--additional-driver-flag=--enable-blink-gen-property-trees"
+          "--additional-driver-flag=--enable-blink-features=BlinkGenPropertyTrees"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
