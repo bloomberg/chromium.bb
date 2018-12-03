@@ -35,7 +35,7 @@ const base::Feature kEnableZeroStateSuggestions{
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppSearchResultRanker{
-    "EnableAppSearchResultRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableAppSearchResultRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
