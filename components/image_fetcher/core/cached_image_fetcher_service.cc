@@ -36,4 +36,9 @@ CachedImageFetcherService::CreateCachedImageFetcher() {
       image_cache_, read_only_);
 }
 
+scoped_refptr<ImageCache> CachedImageFetcherService::ImageCacheForTesting()
+    const {
+  return image_cache_;
+}
+
 }  // namespace image_fetcher

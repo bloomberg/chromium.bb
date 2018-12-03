@@ -40,6 +40,8 @@ class CachedImageFetcherService : public KeyedService {
   // Create an instance of CachedImageFetcher based on the ImageCache.
   std::unique_ptr<CachedImageFetcher> CreateCachedImageFetcher();
 
+  scoped_refptr<ImageCache> ImageCacheForTesting() const;
+
  private:
   CreateImageDecoderCallback create_image_decoder_callback_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
