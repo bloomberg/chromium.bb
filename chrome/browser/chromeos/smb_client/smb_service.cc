@@ -135,11 +135,12 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const std::string& username,
                        const std::string& password,
                        bool use_chromad_kerberos,
+                       bool should_open_file_manager_after_mount,
                        MountResponse callback) {
   DCHECK(temp_file_manager_);
 
   CallMount(options, share_path, username, password, use_chromad_kerberos,
-            std::move(callback));
+            should_open_file_manager_after_mount, std::move(callback));
 }
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
@@ -154,6 +155,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const std::string& username_input,
                            const std::string& password_input,
                            bool use_chromad_kerberos,
+                           bool should_open_file_manager_after_mount,
                            MountResponse callback) {
   std::string username;
   std::string password;
@@ -208,7 +210,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
-                     use_chromad_kerberos));
+                     use_chromad_kerberos,
+                     should_open_file_manager_after_mount));
 
   profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
                                   share_path.value());
@@ -219,6 +222,7 @@ void SmbService::OnMountResponse(
     const file_system_provider::MountOptions& options,
     const base::FilePath& share_path,
     bool is_kerberos_chromad,
+    bool should_open_file_manager_after_mount,
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
@@ -235,7 +239,7 @@ void SmbService::OnMountResponse(
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
 
-  if (result == base::File::FILE_OK) {
+  if (result == base::File::FILE_OK && should_open_file_manager_after_mount) {
     OpenFileManager(mount_options.file_system_id);
   }
 

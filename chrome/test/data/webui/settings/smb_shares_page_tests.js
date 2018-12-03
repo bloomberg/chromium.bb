@@ -12,9 +12,10 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  smbMount(smbUrl, smbName, username, password, authMethod) {
+  smbMount(smbUrl, smbName, username, password, authMethod, inSettings) {
     this.methodCalled(
-        'smbMount', [smbUrl, smbName, username, password, authMethod]);
+        'smbMount',
+        [smbUrl, smbName, username, password, authMethod, inSettings]);
     return Promise.resolve(SmbMountResult.SUCCESS);
   }
 
@@ -74,6 +75,7 @@ suite('AddSmbShareDialogTests', function() {
     const expectedUsername = 'username';
     const expectedPassword = 'password';
     const expectedAuthMethod = 'credentials';
+    const expectedShouldOpenFileManager = false;
 
     const url = addDialog.$$('#address');
     expectTrue(!!url);
@@ -95,6 +97,7 @@ suite('AddSmbShareDialogTests', function() {
     expectTrue(!!addButton);
 
     addDialog.authenticationMethod_ = expectedAuthMethod;
+    addDialog.shouldOpenFileManagerAfterMount = expectedShouldOpenFileManager;
 
     addButton.click();
     return smbBrowserProxy.whenCalled('smbMount').then(function(args) {
@@ -103,6 +106,7 @@ suite('AddSmbShareDialogTests', function() {
       expectEquals(expectedUsername, args[2]);
       expectEquals(expectedPassword, args[3]);
       expectEquals(expectedAuthMethod, args[4]);
+      expectEquals(expectedShouldOpenFileManager, args[5]);
     });
   });
 

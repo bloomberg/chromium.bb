@@ -44,9 +44,12 @@ cr.define('smb_shares', function() {
      * @param {string} username
      * @param {string} password
      * @param {string} authMethod
+     * @param {boolean} shouldOpenFileManagerAfterMount
      * @return {!Promise<SmbMountResult>}
      */
-    smbMount(smbUrl, smbName, username, password, authMethod) {}
+    smbMount(
+        smbUrl, smbName, username, password, authMethod,
+        shouldOpenFileManagerAfterMount) {}
 
     /**
      * Starts the file share discovery process.
@@ -57,10 +60,13 @@ cr.define('smb_shares', function() {
   /** @implements {smb_shares.SmbBrowserProxy} */
   class SmbBrowserProxyImpl {
     /** @override */
-    smbMount(smbUrl, smbName, username, password, authMethod) {
+    smbMount(
+        smbUrl, smbName, username, password, authMethod,
+        shouldOpenFileManagerAfterMount) {
       return cr.sendWithPromise(
           'smbMount', smbUrl, smbName, username, password,
-          authMethod == SmbAuthMethod.KERBEROS);
+          authMethod == SmbAuthMethod.KERBEROS,
+          shouldOpenFileManagerAfterMount);
     }
 
     /** @override */
