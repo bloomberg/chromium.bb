@@ -1027,8 +1027,10 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NUMBER))
             << " "
             << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
-            << " " << base::UTF16ToUTF8(
-                          credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+            << " "
+            << base::UTF16ToUTF8(
+                   credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR))
+            << " " << credit_card.use_count() << " " << credit_card.use_date();
 }
 
 void CreditCard::SetNameOnCardFromSeparateParts() {
