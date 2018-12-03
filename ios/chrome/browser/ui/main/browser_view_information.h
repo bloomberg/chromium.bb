@@ -18,19 +18,27 @@ class ChromeBrowserState;
 // Information about the Browser View, controllers and tab model.
 @protocol BrowserViewInformation<NSObject>
 
-// The normal (non-OTR) BrowserViewController
+// The normal (non-incognito, non-OTR) BrowserCoordinator.
+@property(nonatomic, strong, readonly)
+    BrowserCoordinator* mainBrowserCoordinator;
+// The incognito (a.k.a OTR) BrowserCoordinator.
+@property(nonatomic, strong, readonly)
+    BrowserCoordinator* incognitoBrowserCoordinator;
+// The BrowserCoordinator that is currently being used (one of mainBVC or
+// otrBVC). The other, if present, is in suspended mode..
+@property(nonatomic, weak, readonly)
+    BrowserCoordinator* currentBrowserCoordinator;
+
+// The BrowserViewController corresponding to |mainBrowserCoordinator|.
 @property(nonatomic, readonly) BrowserViewController* mainBVC;
-// The normal (non-OTR) TabModel corresponding to mainBVC.
+// The normal (non-OTR) TabModel corresponding to |mainBrowserCoordinator|.
 @property(nonatomic, retain) TabModel* mainTabModel;
-// The OTR BrowserViewController.
+// The BrowserViewController corresponding to |incognitoBrowserCoordinator|.
 @property(nonatomic, readonly) BrowserViewController* otrBVC;
-// The OTR TabModel corresponding to otrBVC.
+// The OTR TabModel corresponding to |incognitoBrowserCoordinator|.
 @property(nonatomic, retain) TabModel* otrTabModel;
-// The BrowserViewController that is currently being used (one of mainBVC or
-// otrBVC). The other, if present, is in suspended mode.
-@property(nonatomic, weak) BrowserViewController* currentBVC;
-// The BrowserCoordinator corresponding to |currentBVC|.
-@property(nonatomic, readonly) BrowserCoordinator* currentBrowserCoordinator;
+// The BrowserViewController corresponding to |currentBrowserCoordinator|.
+@property(nonatomic, readonly) BrowserViewController* currentBVC;
 
 // Halts all tabs from all TabModels.
 - (void)haltAllTabs;
