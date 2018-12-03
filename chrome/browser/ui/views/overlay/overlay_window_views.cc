@@ -148,6 +148,12 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   explicit OverlayWindowWidgetDelegate(views::Widget* widget)
       : widget_(widget) {
     DCHECK(widget_);
+#if defined(OS_CHROMEOS)
+    // PIP windows on ChromeOS are not activatable by default.
+    // It'll be explicitly made activatable when necessary for
+    // accessibility.
+    set_can_activate(false);
+#endif
   }
   ~OverlayWindowWidgetDelegate() override = default;
 
@@ -561,14 +567,16 @@ void OverlayWindowViews::Close() {
 }
 
 void OverlayWindowViews::Show() {
-  views::Widget::Show();
 #if defined(OS_CHROMEOS)
+  views::Widget::ShowInactive();
   // For rounded corners.
   if (ash::features::IsPipRoundedCornersEnabled()) {
     decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
         GetNativeWindow(), GetNativeWindow(), GetRootView()->layer(),
         ash::kPipRoundedCornerRadius);
   }
+#else
+  views::Widget::Show();
 #endif
 
   // If this is not the first time the window is shown, this will be a no-op.
