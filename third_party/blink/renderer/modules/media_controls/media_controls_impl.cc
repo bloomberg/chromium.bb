@@ -30,6 +30,8 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
@@ -1414,6 +1416,28 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     download_iph_manager_->UpdateInProductHelp();
 
   UpdateOverflowAndTrackListCSSClassForPip();
+  UpdateOverflowMenuItemCSSClass();
+}
+
+// This method is responsible for adding css class to overflow menu list
+// items to achieve the animation that items appears one after another when
+// open the overflow menu.
+void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
+  unsigned int id = 0;
+  for (Element* item = ElementTraversal::LastChild(*overflow_list_); item;
+       item = ElementTraversal::PreviousSibling(*item)) {
+    const CSSPropertyValueSet* inline_style = item->InlineStyle();
+    DOMTokenList& class_list = item->classList();
+
+    // We don't care if the hidden element still have animated-* CSS class
+    if (inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
+      continue;
+
+    AtomicString css_class =
+        AtomicString("animated-") + AtomicString::Number(id++);
+    if (!class_list.contains(css_class))
+      class_list.setValue(css_class);
+  }
 }
 
 void MediaControlsImpl::UpdateScrubbingMessageFits() const {
