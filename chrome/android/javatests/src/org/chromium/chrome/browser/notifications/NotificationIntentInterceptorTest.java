@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -99,6 +100,7 @@ public class NotificationIntentInterceptorTest {
     @Test
     @MediumTest
     @RetryOnFailure
+    @DisabledTest
     public void testContentIntentInterception() {
         // Send notification.
         NotificationManager notificationManager =
