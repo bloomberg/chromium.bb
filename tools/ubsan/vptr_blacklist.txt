@@ -90,9 +90,6 @@ src:*/ppapi/proxy/proxy_channel.cc
 # obj/chrome/libbrowser.a(obj/chrome/browser/net/browser.predictor.o):../../chrome/browser/net/predictor.cc:__unnamed_577: error: undefined reference to 'typeinfo for ProxyAdvisor'
 src:*/chrome/browser/net/predictor.cc
 
-# obj/third_party/pdfium/libfpdfapi.a(obj/third_party/pdfium/core/src/fpdfapi/fpdf_render/fpdfapi.fpdf_render_text.o):../../third_party/pdfium/core/src/fpdfapi/fpdf_render/:__unnamed_360: error: undefined reference to 'typeinfo for CPDF_InlineImages'
-src:*/third_party/pdfium/core/src/fpdfapi/fpdf_render/fpdf_render_text.cpp
-
 # obj/third_party/libwebm/libwebm.a(obj/third_party/libwebm/source/libwebm.mkvmuxer.o)(.data.rel..L__unnamed_2+0x18): error: undefined reference to 'typeinfo for mkvparser::IMkvReader'
 src:*/third_party/libwebm/source/mkvmuxer.cpp
 
