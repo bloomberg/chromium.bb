@@ -102,7 +102,6 @@ public class FullscreenVideoTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "crbug.com/906840")
     public void testFullscreenDimensions() throws InterruptedException, TimeoutException {
         String url =
                 mTestServerRule.getServer().getURL("/content/test/data/media/video-player.html");
