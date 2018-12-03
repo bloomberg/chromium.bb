@@ -36,12 +36,14 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
 @property(nonatomic, strong) UILabel* messageLabel;
 // The image that will be displayed.
 @property(nonatomic, strong) UIImage* image;
+// The inner ScrollView so the whole content can be seen even if it is taller
+// than the TableView.
+@property(nonatomic, strong) UIScrollView* scrollView;
+// The height constraint of the ScrollView.
+@property(nonatomic, strong) NSLayoutConstraint* scrollViewHeight;
 @end
 
 @implementation TableViewEmptyView
-@synthesize message = _message;
-@synthesize messageLabel = _messageLabel;
-@synthesize image = _image;
 
 - (instancetype)initWithFrame:(CGRect)frame
                       message:(NSString*)message
@@ -83,12 +85,33 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   return @"TableViewEmptyView";
 }
 
+- (void)setScrollViewContentInsets:(UIEdgeInsets)scrollViewContentInsets {
+  _scrollViewContentInsets = scrollViewContentInsets;
+  self.scrollView.contentInset = scrollViewContentInsets;
+  self.scrollViewHeight.constant =
+      scrollViewContentInsets.top + scrollViewContentInsets.bottom;
+}
+
 #pragma mark - UIView
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
+  [super willMoveToSuperview:newSuperview];
+
+  [self createSubviews];
+}
+
+#pragma mark - Private
+
+- (void)createSubviews {
   // Return if the subviews have already been created and added.
   if (!(self.subviews.count == 0))
     return;
+
+  // Scroll view used to scroll the content if it is too big.
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  scrollView.contentInset = self.scrollViewContentInsets;
+  self.scrollView = scrollView;
 
   UIImageView* imageView = [[UIImageView alloc] initWithImage:self.image];
   imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -106,13 +129,40 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   verticalStack.axis = UILayoutConstraintAxisVertical;
   verticalStack.spacing = kStackViewVerticalSpacing;
   verticalStack.distribution = UIStackViewDistributionFill;
+  verticalStack.layoutMarginsRelativeArrangement = YES;
+  verticalStack.layoutMargins = UIEdgeInsetsMake(kStackViewVerticalSpacing, 0,
+                                                 kStackViewVerticalSpacing, 0);
   verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:verticalStack];
+
+  [scrollView addSubview:verticalStack];
+  [self addSubview:scrollView];
+
+  // The scroll view should contains the stack view without scrolling enabled if
+  // it is small enough.
+  NSLayoutConstraint* scrollViewHeightConstraint = [scrollView.heightAnchor
+      constraintEqualToAnchor:verticalStack.heightAnchor
+                     constant:(self.scrollViewContentInsets.top +
+                               self.scrollViewContentInsets.bottom)];
+  scrollViewHeightConstraint.priority = UILayoutPriorityDefaultLow;
+  scrollViewHeightConstraint.active = YES;
+  self.scrollViewHeight = scrollViewHeightConstraint;
 
   [NSLayoutConstraint activateConstraints:@[
-    [verticalStack.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    // The vertical stack is horizontal centered.
+    [verticalStack.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
+    [verticalStack.bottomAnchor
+        constraintEqualToAnchor:scrollView.bottomAnchor],
     [verticalStack.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-    [verticalStack.widthAnchor constraintEqualToConstant:kStackViewWidth]
+    [verticalStack.widthAnchor constraintEqualToConstant:kStackViewWidth],
+
+    // Have the scroll view taking the full width of self and be vertically
+    // centered, which is useful when the label isn't taking the full height.
+    [scrollView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    [scrollView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor],
+    [scrollView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.bottomAnchor],
+    [scrollView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [scrollView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
   ]];
 }
 
