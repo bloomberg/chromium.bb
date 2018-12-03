@@ -32,9 +32,4 @@ public interface ToolbarTabController {
      * Opens hompage in the current tab.
      */
     void openHomepage();
-
-    /**
-     * Opens the Memex UI in the current tab.
-     */
-    void openMemexUI();
 }

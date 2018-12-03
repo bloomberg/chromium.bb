@@ -1364,9 +1364,6 @@ extern const char kCCTModulePostMessageDescription[];
 extern const char kChromeDuetName[];
 extern const char kChromeDuetDescription[];
 
-extern const char kChromeMemexName[];
-extern const char kChromeMemexDescription[];
-
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 

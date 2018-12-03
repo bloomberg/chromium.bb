@@ -2279,11 +2279,6 @@ const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";
 
-const char kChromeMemexName[] = "Chrome Memex";
-const char kChromeMemexDescription[] =
-    "Enables Chrome Memex homepage on Android. Restricted to opted-in "
-    "Googlers.";
-
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "

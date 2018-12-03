@@ -96,7 +96,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTResourcePrefetch,
     &kChromeDuetFeature,
     &kChromeSmartSelection,
-    &kChromeMemexFeature,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsThumbnailDominantColor,
@@ -252,9 +251,6 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
 
 const base::Feature kChromeDuetFeature{"ChromeDuet",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeMemexFeature{"ChromeMemex",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

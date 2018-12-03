@@ -81,7 +81,6 @@ import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -1389,23 +1388,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
         }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
-    }
-
-    @Override
-    public void openMemexUI() {
-        TabModel model = mTabModelSelector.getModel(false);
-        for (int i = 0; i < model.getCount(); i++) {
-            String url = model.getTabAt(i).getUrl();
-            if (url.startsWith(UrlConstants.CHROME_MEMEX_URL)
-                    || url.startsWith(UrlConstants.CHROME_MEMEX_DEV_URL)) {
-                model.setIndex(i, TabSelectionType.FROM_USER);
-                return;
-            }
-        }
-
-        mTabModelSelector.openNewTab(
-                new LoadUrlParams(UrlConstants.CHROME_MEMEX_URL, PageTransition.AUTO_BOOKMARK),
-                TabLaunchType.FROM_EXTERNAL_APP, null, false);
     }
 
     /**

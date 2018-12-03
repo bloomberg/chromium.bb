@@ -570,11 +570,6 @@ public class ToolbarPhone
         if (mLocationBar != null && mLocationBar.hasFocus()) return;
 
         if (mToggleTabStackButton == v) {
-            if (ChromeFeatureList.isInitialized()
-                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
-                openMemexUI();
-                return;
-            }
             handleToggleTabStack();
         } else if (mNewTabButton == v) {
             v.setEnabled(false);
@@ -604,11 +599,6 @@ public class ToolbarPhone
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == mToggleTabStackButton && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
-            handleToggleTabStack();
-            return true;
-        }
         CharSequence description = null;
         if (v == mToggleTabStackButton) {
             description = getResources().getString(R.string.open_tabs);
