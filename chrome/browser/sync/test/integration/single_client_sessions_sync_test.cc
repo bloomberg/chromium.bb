@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -24,6 +25,7 @@
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/synced_session_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -47,6 +49,7 @@ using sessions_helper::OpenTabFromSourceIndex;
 using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
+using sessions_helper::WaitForTabsToLoad;
 using sessions_helper::WindowsMatch;
 using typed_urls_helper::GetUrlFromClient;
 
@@ -227,6 +230,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
   // Close one of the two tabs immediately after issuing an navigation. We also
   // issue another navigation to make sure association logic kicks in.
   NavigateTab(0, GURL(kURL3));
+  ASSERT_TRUE(WaitForTabsToLoad(0, {GURL(kURL1), GURL(kURL3)}));
   CloseTab(/*index=*/0, /*tab_index=*/1);
   NavigateTab(0, GURL(kURL4));
 
