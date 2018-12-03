@@ -362,7 +362,6 @@
     skontaktuj się z administratorem sieci, by sprawdzić, czy
     on działa. Jeśli sądzisz, że serwer proxy nie powinien
     być używany, zmień <ph name="LINK_START" />jego ustawienia<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Proponuj zapisywanie haseł internetowych</translation>
 <translation id="1512210426710821809">Jedynym sposobem cofnięcia tej czynności jest ponowna instalacja systemu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Zaimportowane z przeglądarki Safari</translation>
 <translation id="1521442365706402292">Zarządzaj certyfikatami</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">Nie, dziękuję</translation>
 <translation id="1525740877599838384">Do określania lokalizacji używaj tylko Wi-Fi</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
-<translation id="1529116897397289129">Tutaj pojawią się zapisane karty</translation>
 <translation id="1529891865407786369">Źródło zasilania</translation>
 <translation id="1529899284660134226">Zarządzaj udostępnionymi plikami i folderami</translation>
 <translation id="1530838837447122178">Otwórz ustawienia myszy i touchpada</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Serwery nazw</translation>
 <translation id="1729533290416704613">Kontroluje także to, jaka strona wyświetla się po wyszukiwaniu w omniboksie.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Aby usunąć aplikacje, otwórz Ustawienia &gt; Sklep Google Play &gt; Zarządzaj ustawieniami Androida &gt; Aplikacje lub Menedżer aplikacji. Następnie kliknij aplikację, którą chcesz odinstalować (jeśli to konieczne, przesuń palcem w prawo lub w lewo, by ją znaleźć), a potem kliknij Odinstaluj lub Wyłącz.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Łącznie: <ph name="SHEETS_LABEL" /> – <ph name="NUMBER_OF_SHEETS" /> (<ph name="PAGE_OR_PAGES_LABEL" /> – <ph name="NUMBER_OF_PAGES" />)</translation>
 <translation id="1731911755844941020">Wysyłanie żądania...</translation>
 <translation id="1732215134274276513">Odpinanie kart</translation>
 <translation id="1733383495376208985">Szyfruj synchronizowane dane własnym <ph name="BEGIN_LINK" />hasłem synchronizacji<ph name="END_LINK" />. Nie obejmuje to form płatności ani adresów w Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Błąd podczas podłączania udziału. Udziału nie znaleziono w sieci.</translation>
 <translation id="2148756636027685713">Formatowanie zostało zakończone.</translation>
 <translation id="2148892889047469596">Przesyłaj kartę</translation>
-<translation id="2149850907588596975">Hasła i formularze</translation>
 <translation id="2150139952286079145">Szukaj urządzeń docelowych</translation>
 <translation id="2150661552845026580">Dodać „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="2151576029659734873">Wprowadzono nieprawidłowy indeks tabulacji.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Odczyt i zmiana wpisanego tekstu</translation>
 <translation id="2208158072373999562">Archiwum ZIP</translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
-<translation id="2212126039311489237">Drukuj w oknie systemowym</translation>
 <translation id="2214884991347062907">Nieprawidłowe hasło – spróbuj ponownie</translation>
 <translation id="2217501013957346740">Utwórz nazwę –</translation>
 <translation id="2218019600945559112">Myszka i touchpad</translation>
@@ -1269,7 +1264,6 @@
 <translation id="2888807692577297075">Żadne elementy nie pasują do zapytania &lt;b&gt;„<ph name="SEARCH_STRING" />”&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Otwórz link przy użyciu...</translation>
 <translation id="2889925978073739256">Nadal blokuj wtyczki spoza piaskownicy</translation>
-<translation id="2890678560483811744">Odwołanie do strony spoza zakresu</translation>
 <translation id="2893168226686371498">Domyślna przeglądarka</translation>
 <translation id="289644616180464099">Karta SIM jest zablokowana</translation>
 <translation id="289695669188700754">Identyfikator klucza: <ph name="KEY_ID" /></translation>
@@ -2279,7 +2273,6 @@
 <translation id="4482194545587547824">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług</translation>
 <translation id="4495419450179050807">Nie pokazuj na tej stronie</translation>
 <translation id="449938344715680828">Naciśnij |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, a potem |<ph name="ACCELERATOR3" />|, by wyjść</translation>
-<translation id="4499718683476608392">Włącz autouzupełnianie danych karty kredytowej, by wypełniać formularze jednym kliknięciem</translation>
 <translation id="4500114933761911433">We wtyczce <ph name="PLUGIN_NAME" /> wystąpił poważny błąd</translation>
 <translation id="450099669180426158">Ikona wykrzyknika</translation>
 <translation id="4501530680793980440">Potwierdź usunięcie</translation>
@@ -2589,7 +2582,6 @@
 <translation id="4971412780836297815">Otwórz po zakończeniu</translation>
 <translation id="4972129977812092092">Edytuj drukarkę</translation>
 <translation id="4972164225939028131">Nieprawidłowe hasło</translation>
-<translation id="497287958838527945">Karty kredytowe i adresy z Google Pay.</translation>
 <translation id="4973307593867026061">Dodaj drukarki</translation>
 <translation id="4973523518332075481">Użyj nazwy, której długość nie przekracza <ph name="MAX_LENGTH" /> znaków</translation>
 <translation id="4974733135013075877">Wyjdź i aktywuj blokadę dostępu dla dzieci</translation>
@@ -3117,7 +3109,6 @@
 <translation id="5752453871435543420">Kopia zapasowa Chrome OS w chmurze</translation>
 <translation id="5756163054456765343">C&amp;entrum pomocy</translation>
 <translation id="5759728514498647443">Dokumenty wysłane do drukowania z aplikacji <ph name="APP_NAME" /> można odczytać w aplikacji <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Ustawienia kart kredytowych</translation>
 <translation id="5763315388120433852">Skonfiguruj sieciowe udziały plików i zarządzaj nimi.</translation>
 <translation id="5763751966069581670">Nie znaleziono urządzeń USB</translation>
 <translation id="5764483294734785780">Za&amp;pisz element audio jako...</translation>
@@ -3629,7 +3620,6 @@
 <translation id="6508248480704296122">Powiązane z: <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplikacja: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licencja na multimedia</translation>
-<translation id="6510568984200103950">Mniej ustawień</translation>
 <translation id="6513247462497316522">Google Chrome będzie używać komórkowej transmisji danych, jeśli nie jest dostępne połączenie z inną siecią.</translation>
 <translation id="6514010653036109809">Dostępne urządzenie:</translation>
 <translation id="6514565641373682518">Ta strona wyłączyła kursor myszy.</translation>
@@ -3810,7 +3800,6 @@
 <translation id="6805647936811177813">Zaloguj się do urządzenia <ph name="TOKEN_NAME" />, aby zaimportować certyfikat klienta z witryny <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Włącz monitorowanie RLZ w <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Zarządzaj udostępnianiem Linuksowi</translation>
-<translation id="6807889908376551050">Pokaż wszystkie...</translation>
 <translation id="6810613314571580006">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o potwierdzenie.</translation>
 <translation id="6810768462515084623">Ups. Wygląda na to, że Twoje hasło jest już nieaktualne. Ustaw nowe na drugim urządzeniu i spróbuj jeszcze raz.</translation>
 <translation id="6812349420832218321">Przeglądarki <ph name="PRODUCT_NAME" /> nie możesz uruchamiać jako użytkownik root.</translation>
@@ -5004,7 +4993,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8637542770513281060">Twój komputer ma moduł zabezpieczeń, który umożliwia zastosowanie wielu krytycznych funkcji zabezpieczeń w systemie operacyjnym Chrome. Więcej informacji znajdziesz w Centrum pomocy Chromebooka na stronie: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Jest dostępna aktualizacja systemu. Trwa przygotowanie do pobrania…</translation>
 <translation id="8639047128869322042">Szukam szkodliwego oprogramowania…</translation>
-<translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
 <translation id="8642171459927087831">Token dostępu</translation>
 <translation id="8642947597466641025">Powiększ tekst</translation>
 <translation id="8643418457919840804">Aby kontynuować, wybierz opcję:</translation>
@@ -5020,7 +5008,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8655972064210167941">Nie udało się zalogować, bo nie można zweryfikować hasła. Skontaktuj się z administratorem lub spróbuj ponownie.</translation>
 <translation id="8656619792520327915">Dodaj inny klucz bezpieczeństwa Bluetooth</translation>
 <translation id="8656768832129462377">Nie sprawdzaj</translation>
-<translation id="8658595122208653918">Zmień opcje drukarki...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> udostępnia ekran i dźwięk karcie <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Chwileczkę</translation>
 <translation id="8661290697478713397">Otwórz link w oknie inco&amp;gnito</translation>

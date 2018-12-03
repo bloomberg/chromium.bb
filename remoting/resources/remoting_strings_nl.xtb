@@ -191,7 +191,7 @@ Pc</translation>
 <translation id="4973800994433240357">Door het installatieprogramma voor de Chromoting-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="4974476491460646149">Verbinding verbroken voor <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
-<translation id="5059773780693835145">Er is een aanvullende configuratiestap vereist voordat je deze machine extern met <ph name="PRODUCT_NAME" /> kunt beheren.
+<translation id="5059773780693835145">Er is een aanvullende configuratiestap vereist voordat je deze machine extern kunt beheren met <ph name="PRODUCT_NAME" />.
 
 Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>

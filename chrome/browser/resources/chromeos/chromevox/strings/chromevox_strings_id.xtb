@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Sembunyikan filter streaming acara</translation>
 <translation id="1088219014394087294">Tanpa judul.</translation>
 <translation id="1106741348836243114">Mengaktifkan atau menonaktifkan masukan suara (earcons).</translation>
-<translation id="1108651818222110612">subti</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Geser dua jari ke atas</translation>
 <translation id="1124771028211010580">Gaya tampilan saat ini adalah berdampingan.</translation>
@@ -196,7 +195,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="2737520612859577214">Akhir superskrip</translation>
 <translation id="2749275490991666823">Dicentang</translation>
 <translation id="27527859628328957">Melompat ke item yang dapat difokuskan berikutnya</translation>
-<translation id="276402504937943375">daftar isi</translation>
 <translation id="2770781857296573485">Masukkan penjelajahan grup</translation>
 <translation id="2777845298774924149">Keluar</translation>
 <translation id="2781264313200109999">Awal link</translation>
@@ -489,6 +487,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">default</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Putuskan</translation>
 <translation id="481165870889056555">Mengumumkan judul dari halaman saat ini</translation>
 <translation id="4826415162591436065">Navigasi ke depan</translation>
 <translation id="4826604887384865800">Lompatan berikutnya</translation>
@@ -558,6 +557,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5291783959063340370">Objek</translation>
 <translation id="5302089807023311274">Referensi bibliografi</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
+<translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5310788376443009632">dihapus:</translation>
 <translation id="5320727453979144100">Mode lekat diaktifkan</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
@@ -773,6 +773,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="712735679809149106">pengulangan kata</translation>
 <translation id="713824876195128146">Blockquote berikutnya</translation>
 <translation id="7143034430156387447">Beralih antara braille 6 titik dan 8 titik</translation>
+<translation id="7143207342074048698">Menyambungkan</translation>
 <translation id="7157306005867877619">Abstrak</translation>
 <translation id="7161425887892204659">Akhir teks yang cocok</translation>
 <translation id="7161771961008409533">Tombol pop-up</translation>
@@ -836,7 +837,6 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7625690649919402823">Tabel berikutnya</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Kelas <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Tidak ada judul tingkat 3 sebelumnya.</translation>
-<translation id="7647456547678091388">tips</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, kotak teks</translation>
 <translation id="7663318257180412551">Judul 2</translation>
 <translation id="7674576868851035240">Tautan berikutnya</translation>
@@ -962,6 +962,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8940925288729953902">Tombol Pengubah</translation>
 <translation id="8943175951035496220">Tidak ada sel di kanan.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Lupakan</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Tidak ada tabel.</translation>
 <translation id="9040132695316389094">Judul 1</translation>

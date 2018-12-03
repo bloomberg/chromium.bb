@@ -225,14 +225,6 @@
 <translation id="1523774894176285446">Alternatív böngésző indítása a meghatározott webhelyekhez.</translation>
 <translation id="152657506688053119">Az alapértelmezett keresési szolgáltató alternatív URL-jeinek listája.</translation>
 <translation id="1530812829012954197">Mindig jelenítse meg a következő URL-mintákat a gazdagép böngészőjében</translation>
-<translation id="1532965933165453786">Lehetővé teszi a Fast Transition (gyors váltás) funkció engedélyezését és letiltását.
-      Minden felhasználóra és az eszköz minden felületére vonatkozik.
-      A Fast Transition funkció használatához ezt és a hálózatonkénti ONC tulajdonságot is engedélyezni kell.
-      Beállítása után a Fast Transition funkció addig érvényben marad, amíg a házirend módosításával le nem tiltják.
-
-      Ha a házirend nincs beállítva, a rendszer nem használja a Fast Transition funkciót.
-      Ha a házirend beállítása hamis, a rendszer nem használja a Fast Transition funkciót.
-      Ha a házirend beállítása igaz, a rendszer használja a Fast Transition funkciót, amennyiben a vezeték nélküli hozzáférési pont is támogatja.</translation>
 <translation id="1541170838458414064">Nyomtatás oldalméretének korlátozása</translation>
 <translation id="1553684822621013552">Ha a házirend értéke igaz, akkor az ARC engedélyezve lesz a felhasználó
       számára (további házirend-ellenőrzések alapján – az ARC továbbra sem
@@ -295,6 +287,9 @@
 <translation id="1803646570632580723">Az indítóban megjeleníteni kívánt rögzített alkalmazások listája</translation>
 <translation id="1808715480127969042">Cookie-k letiltása ezeken a webhelyeken</translation>
 <translation id="1810261428246410396">Az azonnali internetmegosztás használatának engedélyezése</translation>
+<translation id="1817685358399181673">Ez a házirend határozza meg a <ph name="PLUGIN_VM_NAME" /> rendszerképét a felhasználó számára. A házirendet úgy állíthatja be, hogy megadja az URL-t, ahonnan az eszköz le tudja tölteni a rendszerképet és a letöltött fájl integritásának ellenőrzésére szolgáló SHA-256 hash-értéket.
+
+      A házirendet olyan karakterláncként kell megadni, amely kifejezi az URL-t és a JSON-formátumban lévő hash-értéket.</translation>
 <translation id="1827523283178827583">Használjon fix proxyszervereket</translation>
 <translation id="1843117931376765605">Frissítési arány felhasználói irányelvekhez</translation>
 <translation id="1844620919405873871">Beállítja a gyorsfeloldással kapcsolatos házirendeket.</translation>
@@ -457,6 +452,10 @@
 <translation id="214901426630414675">Nyomtatás kétoldalas módjának korlátozása</translation>
 <translation id="2149330464730004005">Színes nyomtatás engedélyezése</translation>
 <translation id="2156132677421487971">Beállítja a(z) <ph name="PRODUCT_NAME" /> termékre vonatkozó házirendeket. Ez a funkció lehetővé teszi a felhasználók számára, hogy a böngészőből továbbítsák a lapok, a webhelyek vagy az asztal tartalmát a távoli kijelzők és hangrendszerek felé.</translation>
+<translation id="2163878108829382394">
+        Ha a házirend értéke igaz, a felhőkezelési regisztráció kötelező, és ha nem teljesül, megakadályozza a Chrome indítási folyamatát.
+
+        Ha a házirend beállítatlanul marad, vagy értéke hamis, a felhőkezelési regisztráció nem kötelező, és ha nem teljesül, nem akadályozza meg a Chrome indítási folyamatát.</translation>
 <translation id="2166472654199325139">Felnőtteknek szóló tartalmakkal rendelkező webhelyek szűrésének kikapcsolása</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
@@ -672,6 +671,7 @@
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
 <translation id="2693108589792503178">A jelszómódosítási URL beállítása.</translation>
+<translation id="2696531058295423290">A <ph name="PLUGIN_VM_NAME" /> használatának engedélyezése az eszközök számára <ph name="PRODUCT_OS_NAME" /> rendszeren.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
@@ -1359,6 +1359,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4483649828988077221">Az automatikus frissítés letiltása</translation>
 <translation id="4485425108474077672">Az Új lap oldal URL-jének beállítása</translation>
 <translation id="4492287494009043413">Képernyőképek készítésének letiltása</translation>
+<translation id="449423975179525290">A <ph name="PLUGIN_VM_NAME" /> kapcsolódó házirendjeinek beállításai.</translation>
 <translation id="450537894712826981">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott médiafájlokat a merevlemezen tárolja.
 
       Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> attól függetlenül használni fogja a megadott méretű gyorsítótárat, hogy a felhasználó megadta-e a „--media-cache-size” jelölőt. A házirendben meghatározott érték nem abszolút határ, inkább egy javaslat a gyorsítótárazó rendszer számára. A néhány megabájt alatti, túl kicsi értékeket a rendszer automatikusan felkerekíti egy használható minimumra.
@@ -2627,6 +2628,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Vegye figyelembe, hogy ezek a korlátozások érvényesek a weboldaltartalmak által indított letöltésekre, valamint a „link letöltése…” helyi menüpont letöltéseire is. Ezek a korlátozások nem érvényesek az aktuálisan megjelenített oldal mentésére és letöltésére, illetve a PDF-ként való mentésre a nyomtatási beállítások között.
 
       Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
+<translation id="7642803091923523695">A PluginVm futtatásának engedélyezése az eszköz számára.
+
+      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, a <ph name="PLUGIN_VM_NAME" /> nincs engedélyezve az eszközön. Ha a házirend értéke igaz, a <ph name="PLUGIN_VM_NAME" /> engedélyezve van az eszközön, amennyiben az egyéb beállítások is engedélyezik. A <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> értékének igaznak kell lennie, a <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> esetén pedig a <ph name="PLUGIN_VM_NAME" /> beállítást kell alkalmazni, hogy engedélyezve legyen a futtatás.</translation>
 <translation id="7643883929273267746">A <ph name="PRODUCT_NAME" /> böngészőben látható fiókok korlátozása</translation>
 <translation id="7651739109954974365">Meghatározza, hogy engedélyezett legyen-e az adatbarangolás az eszköz esetében. Ha a beállítás igaz, akkor az adatbarangolás engedélyezett. Ha nincs beállítva, vagy a beállítás hamis, akkor az adatbarangolás nem érhető el.</translation>
 <translation id="7673194325208122247">Időtartam (ezredmásodperc)</translation>
@@ -3084,6 +3088,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha ez a beállítás engedélyezett, vagy nincs beállítva, a böngészési és letöltési előzmények törölhetők.
 
       Ha a beállítás le van tiltva, a böngészési és letöltési előzmények nem törölhetők.</translation>
+<translation id="8758831693895931466">Kötelező felhőkezelési regisztráció engedélyezése</translation>
 <translation id="8759829385824155666">Engedélyezett Kerberos-titkosítástípusok</translation>
 <translation id="8764119899999036911">Meghatározza, hogy a generált Kerberos SPN a kanonikus DNS-néven vagy az eredetileg beírt néven alapul-e. Ha engedélyezi ezt a beállítást, a CNAME keresés kimarad, és a rendszer a szerver beírt nevét fogja használni. Ha letiltja vagy konfigurálatlanul hagyja ezt a beállítást, a rendszer a szerver kanonikus nevét CNAME kereséssel fogja meghatározni.</translation>
 <translation id="8782750230688364867">Megadja azt a százalékot, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, amikor az eszköz prezentációs módban van.

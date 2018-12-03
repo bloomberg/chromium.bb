@@ -362,7 +362,6 @@
     hubungi administrator jaringan untuk memastikan server
     proxy bekerja. Jika Anda merasa tidak seharusnya menggunakan
     server proxy, sesuaikan <ph name="LINK_START" />setelan proxy<ph name="LINK_END" /> Anda.</translation>
-<translation id="1511388193702657997">Tawarkan untuk menyimpan sandi web Anda</translation>
 <translation id="1512210426710821809">Satu-satunya cara untuk mengurungkan tindakan ini adalah dengan menginstal ulang <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Diimpor Dari Safari</translation>
 <translation id="1521442365706402292">Kelola sertifikat</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">Lain Kali</translation>
 <translation id="1525740877599838384">Hanya gunakan Wi-Fi untuk menentukan lokasi</translation>
 <translation id="1526560967942511387">Dokumen Tanpa Judul</translation>
-<translation id="1529116897397289129">Kartu yang disimpan akan muncul di sini</translation>
 <translation id="1529891865407786369">Sumber listrik</translation>
 <translation id="1529899284660134226">Kelola file &amp; folder bersama</translation>
 <translation id="1530838837447122178">Buka setelan perangkat touchpad dan mouse</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Nama server</translation>
 <translation id="1729533290416704613">Juga mengontrol halaman apa yang ditampilkan saat Anda menelusuri dari Omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Untuk menghapus aplikasi, buka Setelan &gt; Google Play Store &gt; Kelola preferensi Android &gt; Aplikasi atau Pengelola aplikasi. Lalu, tap aplikasi yang ingin diuninstal (Anda mungkin perlu menggeser ke kanan atau ke kiri untuk mencari aplikasi). Selanjutnya, tap Uninstal atau Nonaktifkan.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Mengirimkan permintaan...</translation>
 <translation id="1732215134274276513">Lepas Sematan Tab</translation>
 <translation id="1733383495376208985">Enkripsikan data yang disinkronkan dengan <ph name="BEGIN_LINK" />frasa sandi siknronisasi<ph name="END_LINK" /> Anda sendiri. Data ini tidak mencakup alamat dan metode pembayaran dari Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Error saat memasang URL berbagi. URL berbagi yang ditentukan tidak ditemukan di jaringan.</translation>
 <translation id="2148756636027685713">Pemformatan selesai</translation>
 <translation id="2148892889047469596">Transmisikan tab</translation>
-<translation id="2149850907588596975">Sandi dan formulir</translation>
 <translation id="2150139952286079145">Telusuri tujuan</translation>
 <translation id="2150661552845026580">Tambahkan "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Indeks tab yang dimasukkan tidak valid.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Membaca dan mengubah apa saja yang Anda ketik</translation>
 <translation id="2208158072373999562">Arsip Zip</translation>
 <translation id="220858061631308971">Masukkan kode PIN ini ke "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Cetak menggunakan dialog sistem</translation>
 <translation id="2214884991347062907">Sandi salah, coba lagi</translation>
 <translation id="2217501013957346740">Buat nama -</translation>
 <translation id="2218019600945559112">Mouse dan touchpad</translation>
@@ -1269,7 +1264,6 @@
 <translation id="2888807692577297075">Tidak ada item yang cocok &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Buka link dengan...</translation>
 <translation id="2889925978073739256">Lanjutkan pemblokiran plugin yang tidak dimasukkan kotak pasir</translation>
-<translation id="2890678560483811744">Di luar referensi halaman batas</translation>
 <translation id="2893168226686371498">Browser default</translation>
 <translation id="289644616180464099">Kartu SIM terkunci</translation>
 <translation id="289695669188700754">ID Kunci: <ph name="KEY_ID" /></translation>
@@ -2279,7 +2273,6 @@
 <translation id="4482194545587547824">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran dan layanan Google lainnya</translation>
 <translation id="4495419450179050807">Jangan tampilkan pada halaman ini</translation>
 <translation id="449938344715680828">Tekan |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| lalu |<ph name="ACCELERATOR3" />| untuk keluar</translation>
-<translation id="4499718683476608392">Aktifkan IsiOtomatis kartu kredit untuk mengisi formulir dengan sekali klik</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> telah error</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Konfirmasi Penghapusan</translation>
@@ -2589,7 +2582,6 @@
 <translation id="4971412780836297815">Buka setelah selesai</translation>
 <translation id="4972129977812092092">Edit printer</translation>
 <translation id="4972164225939028131">Sandi salah</translation>
-<translation id="497287958838527945">Kartu kredit dan alamat yang menggunakan Google Pay.</translation>
 <translation id="4973307593867026061">Tambahkan printer</translation>
 <translation id="4973523518332075481">Gunakan nama yang terdiri dari <ph name="MAX_LENGTH" /> karakter atau kurang</translation>
 <translation id="4974733135013075877">Keluar dan aktifkan kunci anak</translation>
@@ -3117,7 +3109,6 @@
 <translation id="5752453871435543420">Cadangan Awan Chrome OS</translation>
 <translation id="5756163054456765343">Pusat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang Anda kirim untuk dicetak melalui <ph name="APP_NAME" /> dapat dibaca oleh <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Setelan kartu kredit</translation>
 <translation id="5763315388120433852">Siapkan atau kelola berbagi file jaringan.</translation>
 <translation id="5763751966069581670">Tidak ada perangkat USB yang ditemukan</translation>
 <translation id="5764483294734785780">Sim&amp;pan audio sebagai...</translation>
@@ -3629,7 +3620,6 @@
 <translation id="6508248480704296122">Berkaitan dengan <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplikasi: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Lisensi Media</translation>
-<translation id="6510568984200103950">Lebih sedikit setelan</translation>
 <translation id="6513247462497316522">Google Chrome akan menggunakan data seluler jika Anda tidak tersambung ke jaringan lain.</translation>
 <translation id="6514010653036109809">Perangkat yang tersedia:</translation>
 <translation id="6514565641373682518">Halaman ini telah menonaktifkan kursor mouse Anda.</translation>
@@ -3810,7 +3800,6 @@
 <translation id="6805647936811177813">Harap masuk ke <ph name="TOKEN_NAME" /> untuk mengimpor sertifikat dari <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktifkan pelacakan RLZ pada <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Kelola fitur berbagi Linux</translation>
-<translation id="6807889908376551050">Tampilkan Semua...</translation>
 <translation id="6810613314571580006">Otomatis masuk ke situs web menggunakan kredensial yang tersimpan. Jika fitur ini dinonaktifkan, Anda akan dimintai konfirmasi setiap kali masuk ke situs web.</translation>
 <translation id="6810768462515084623">Maaf.  Sepertinya sandi sudah tidak berlaku. Harap perbarui sandi di perangkat yang lain dan coba lagi.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> tidak dapat dijalankan sebagai akar.</translation>
@@ -5003,7 +4992,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8637542770513281060">Komputer Anda berisi modul aman, yang digunakan untuk menerapkan banyak fitur keamanan kritis di Chrome OS. Buka Pusat Bantuan Chromebook untuk mempelajari lebih lanjut: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Pembaruan sistem tersedia. Bersiap mendownload...</translation>
 <translation id="8639047128869322042">Memeriksa software berbahaya...</translation>
-<translation id="8639963783467694461">Setelan Isi-otomatis</translation>
 <translation id="8642171459927087831">Token Akses</translation>
 <translation id="8642947597466641025">Perbesar Teks</translation>
 <translation id="8643418457919840804">Untuk melanjutkan, pilih salah satu opsi:</translation>
@@ -5019,7 +5007,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8655972064210167941">Proses masuk gagal karena sandi Anda tidak dapat diverifikasi. Hubungi administrator atau coba lagi.</translation>
 <translation id="8656619792520327915">Tambahkan kunci keamanan Bluetooth lainnya</translation>
 <translation id="8656768832129462377">Jangan periksa</translation>
-<translation id="8658595122208653918">Ubah opsi printer...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> membagikan layar dan audio Anda dengan <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Tunggu sebentar</translation>
 <translation id="8661290697478713397">Buka Tautan di Jendela Penya&amp;maran</translation>

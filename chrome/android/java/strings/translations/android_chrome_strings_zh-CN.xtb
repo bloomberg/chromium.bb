@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
 <translation id="1868024384445905608">Chrome 现可更快速地下载文件</translation>
-<translation id="187628348035757895">开发者选项</translation>
 <translation id="1880072593381090678">Chrome 中的热门网页</translation>
 <translation id="1883903952484604915">我的文件</translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
-<translation id="6436016483175965362">快速预览</translation>
 <translation id="6437478888915024427">网页信息</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">需解锁才能复制您的密码</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6910211073230771657">已删除</translation>
 <translation id="6912998170423641340">阻止网站读取剪贴板中的文字和图片</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
-<translation id="728491846437309531">Google 助理可以协助您更快速、更轻松地通过网络处理各项事务</translation>
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>

@@ -210,14 +210,6 @@
 <translation id="1523774894176285446">对于配置的网站要启动的替代浏览器。</translation>
 <translation id="152657506688053119">默认搜索服务提供商的备选网址列表</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
-<translation id="1532965933165453786">允许启用或停用快速切换功能。
-      这适用于所有用户以及相应设备上的所有界面。
-      若想使用快速切换功能，您不仅需启用此设置，还需启用基于网络的 ONC 属性。
-      快速切换功能一经启用便会一直有效，除非通过更改此政策停用该功能。
-
-      如果此政策未设置，系统便不会使用快速切换功能。
-      如果设为 false，系统不会使用快速切换功能。
-      如果设为 true，系统会使用快速切换功能（如果无线接入点支持该功能的话）。</translation>
 <translation id="1541170838458414064">限制打印页面大小</translation>
 <translation id="1553684822621013552">如果将这项政策设为 true，系统会为用户启用 ARC（需要经过额外的政策设置检查；如果目前的用户会话中已启用暂存模式或多帐号登录功能，则用户仍然无法使用 ARC）。
 
@@ -272,6 +264,9 @@
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
 <translation id="1810261428246410396">允许使用即时网络共享功能。</translation>
+<translation id="1817685358399181673">此政策可指定用户的 <ph name="PLUGIN_VM_NAME" /> 图片。要设置此政策，请指定可供所用设备下载相应图片的网址，并指定用于验证下载内容是否完整的 SHA-256 哈希值。
+
+      应采用以 JSON 格式表示网址和哈希值的字符串形式来指定此政策。</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="1844620919405873871">配置快速解锁相关政策。</translation>
@@ -428,6 +423,10 @@
 <translation id="214901426630414675">限制双面打印模式</translation>
 <translation id="2149330464730004005">启用彩色打印</translation>
 <translation id="2156132677421487971">为 <ph name="PRODUCT_NAME" /> 配置相关政策。借助这项功能，用户可从浏览器将标签页、网站或桌面中的内容发送到远程显示器和音响系统。</translation>
+<translation id="2163878108829382394">
+        当此政策设为 True 时，云管理注册是强制性的。如果注册失败，Chrome 便无法正常启动。
+
+        当此政策设为 False 或未设置时，云管理注册是可选的。如果注册失败，Chrome 仍能正常启动。</translation>
 <translation id="2166472654199325139">不滤除提供成人内容的网站</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
@@ -643,6 +642,7 @@
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2693108589792503178">配置用于更改密码的网址。</translation>
+<translation id="2696531058295423290">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" />。</translation>
 <translation id="2731627323327011390">禁止 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> 证书</translation>
 <translation id="2742843273354638707">在“打开新的标签页”页面和 <ph name="PRODUCT_OS_NAME" />应用启动器中不显示“Chrome 网上应用店”应用和页脚链接。
 
@@ -901,7 +901,7 @@
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3388153794103186066">让您能够以列表的形式设置一系列网址，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，该政策将会无效并会被忽略。
 
-        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出相应请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
+        USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
 
         如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
 
@@ -1324,6 +1324,7 @@
 <translation id="4483649828988077221">停用自动更新功能</translation>
 <translation id="4485425108474077672">配置“打开新的标签页”页面网址</translation>
 <translation id="4492287494009043413">停用截取屏幕截图功能</translation>
+<translation id="449423975179525290">配置与 <ph name="PLUGIN_VM_NAME" /> 相关的政策。</translation>
 <translation id="450537894712826981">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存媒体文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--media-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
@@ -2558,6 +2559,9 @@
       请注意，这些限制适用于从网页内容以及“下载链接…”上下文菜单选项触发的下载内容。这些限制不适用于保存/下载当前显示的页面，也不适用于通过打印选项另存为 PDF 文件。
 
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
+<translation id="7642803091923523695">允许此设备运行 PluginVm。
+
+      如果此政策设为 false 或未设置，系统不会为该设备启用 <ph name="PLUGIN_VM_NAME" />。如果此政策设为 true，系统会为该设备启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该设备运行它。若想运行 <ph name="PLUGIN_VM_NAME" />，需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true 并设置 <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />。</translation>
 <translation id="7643883929273267746">限制可在<ph name="PRODUCT_NAME" />中显示的帐号</translation>
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
 <translation id="7673194325208122247">时间段（毫秒）</translation>
@@ -2988,6 +2992,7 @@
       如果已启用此设置或将此设置留空，则可以删除浏览和下载记录。
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
+<translation id="8758831693895931466">启用强制性云管理注册</translation>
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。

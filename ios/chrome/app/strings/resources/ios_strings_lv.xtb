@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Google pakalpojumu noteikumi</translation>
 <translation id="430793432425771671">Sinhronizēt visu</translation>
 <translation id="4342284590510997375">Jauns</translation>
-<translation id="434816576838749873">E-pasta lietotnes atlasīšana</translation>
 <translation id="4359125752503270327">Šī lapa tiks atvērta citā lietojumprogrammā.</translation>
 <translation id="4370827530403103842">Sinhronizācija nedarbojas. Pieskarieties, lai novērstu problēmu.</translation>
 <translation id="4375040482473363939">Meklēšana ar QR kodu</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
 <translation id="441868831736628555">Konfidencialitātes paziņojums</translation>
-<translation id="4460091562821778167">Vaicāt man, kuru lietotni izmantot katru reizi</translation>
 <translation id="4476574785019001431">Iestatījumi</translation>
 <translation id="4496373720959965247">Pievienojiet cilnes un pārslēdzieties starp lapām</translation>
 <translation id="4508750114462689118">Aizvērt pierakstīšanās piedāvājumu</translation>
@@ -278,7 +276,6 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="5554368826343982379">Sinhronizēšana un personalizācija</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5614553682702429503">Vai saglabāt paroli?</translation>
-<translation id="5619279135193775234">Pasts</translation>
 <translation id="5626245204502895507">Pašlaik failu nevar lejupielādēt.</translation>
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
 <translation id="6136914049981179737">Pirms sek.</translation>
 <translation id="616831107264507309">Lasīt vēlāk</translation>
+<translation id="6177442314419606057">Meklēšana pārlūkā Chrome</translation>
 <translation id="6184086493125982861">Rādīt cilnes</translation>
 <translation id="6187302354554850004">Pēdējoreiz sinhr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Nelasīts</translation>
@@ -382,7 +380,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
 <translation id="7159472599653637159">Pieprasīt mobilo vietni</translation>
 <translation id="7167621057293532233">Datu tipi</translation>
-<translation id="7175593937868963913">Rakstīt e-pasta ziņojumu</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
 <translation id="722055596168483966">Google pakalpojumu personalizēšana</translation>
@@ -415,6 +412,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
 <translation id="7772032839648071052">Apstipriniet ieejas frāzi</translation>
 <translation id="7781829728241885113">Vakar</translation>
+<translation id="778855399387580014">Meklējiet jaunā Chrome cilnē.</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="7840771868269352570">Jūsu atlasītie vienumi tiks noņemti.</translation>
 <translation id="7856733331829174190">Lejupielāde neizdevās</translation>

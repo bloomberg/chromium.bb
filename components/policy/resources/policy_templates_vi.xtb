@@ -228,14 +228,6 @@
 <translation id="1523774894176285446">Trình duyệt thay thế để chạy các trang web đã định cấu hình.</translation>
 <translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
-<translation id="1532965933165453786">Cho phép bật hoặc tắt tính năng Chuyển đổi nhanh.
-      Tính năng này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị.
-      Để sử dụng tính năng Chuyển đổi nhanh, bạn cần phải bật cả tùy chọn cài đặt này và thuộc tính ONC trên mỗi mạng.
-      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách này thành tắt tính năng Chuyển đổi nhanh.
-
-      Nếu không đặt chính sách này, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
-      Nếu đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
-      Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>
 <translation id="1541170838458414064">Giới hạn kích thước trang in</translation>
 <translation id="1553684822621013552">Khi chính sách này được đặt thành true, ARC sẽ được bật cho người dùng
       (theo kiểm tra cài đặt chính sách bổ sung - ARC sẽ vẫn không khả
@@ -298,6 +290,9 @@
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
+<translation id="1817685358399181673">Chính sách này nêu rõ hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách nêu rõ URL mà từ đó thiết bị có thể tải xuống hình ảnh và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
+
+      Chính sách này phải được xác định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -467,6 +462,10 @@
 <translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
+<translation id="2163878108829382394">
+        Nếu bạn đặt chính sách này thành True, thì việc đăng ký tính năng quản lý đám mây là bắt buộc và sẽ chặn quá trình khởi động Chrome nếu quá trình này không thực hiện được.
+
+        Nếu bạn không đặt hoặc đặt chính sách này thành False, thì việc đăng ký tính năng quản lý đám mây là tùy chọn và sẽ không chặn quá trình khởi động Chrome nếu quá trình này không thực hiện được.</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
@@ -695,6 +694,7 @@
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
+<translation id="2696531058295423290">Cho phép các thiết bị sử dụng <ph name="PLUGIN_VM_NAME" /> trên <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
 
@@ -960,9 +960,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chỉ có thể đặt chính sách này thành đề xuất. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ đề xuất lên trên cùng, tuy nhiên, người dùng luôn được phép chọn bất kỳ ngôn ngữ nào được <ph name="PRODUCT_OS_NAME" /> hỗ trợ cho phiên của họ.
       </translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
-<translation id="3388153794103186066">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng ID sản phẩm và nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
+<translation id="3388153794103186066">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng ID sản phẩm và ID nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
 
-        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL được phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
+        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
 
         Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ được sử dụng cho cấu hình cá nhân của người dùng.
 
@@ -1403,6 +1403,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4483649828988077221">Tắt tính năng tự động cập nhật</translation>
 <translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
+<translation id="449423975179525290">Định cấu hình chính sách liên quan đến <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Định cấu hình kích thước bộ nhớ đệm mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp phương tiện đã lưu vào bộ nhớ đệm trên đĩa.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm được cung cấp cho dù người dùng đã chỉ định cờ '--media-cache-size' hay chưa. Giá trị được chỉ định trong chính sách này không phải là ranh giới cứng nhắc mà là một đề xuất cho hệ thống lưu vào bộ nhớ đệm, mọi giá trị dưới vài megabyte là quá nhỏ và sẽ được làm tròn lên đến mức tối thiểu hợp lý.
@@ -2720,6 +2721,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Lưu ý rằng những hạn chế này áp dụng cho nội dung tải xuống được kích hoạt từ nội dung trang web, cũng như tùy chọn menu ngữ cảnh 'tải liên kết xuống...'. Các hạn chế này không áp dụng cho việc lưu/tải xuống trang hiện hiển thị, cũng như không áp dụng cho việc lưu dưới dạng tệp PDF từ các tùy chọn in.
 
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
+<translation id="7642803091923523695">Cho phép thiết bị này chạy PluginVm.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành false, thì <ph name="PLUGIN_VM_NAME" /> không được phép chạy trên thiết bị này. Nếu bạn đặt chính sách này thành true, thì <ph name="PLUGIN_VM_NAME" /> được phép chạy trên thiết bị này với điều kiện các tùy chọn cài đặt khác cũng cho phép. Bạn cần đặt <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> thành true và đặt <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> để <ph name="PLUGIN_VM_NAME" /> được phép chạy.</translation>
 <translation id="7643883929273267746">Hạn chế các tài khoản được hiển thị trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Xác định liệu chuyển vùng dữ liệu có được bật cho thiết bị hay không. Nếu được đặt thành đúng, chuyển vùng dữ liệu sẽ được phép. Nếu không được định cấu hình hoặc được đặt thành sai, chuyển vùng dữ liệu sẽ không khả dụng.</translation>
 <translation id="7673194325208122247">Khoảng thời gian (mili giây)</translation>
@@ -2852,9 +2856,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Khi không đặt chính sách này trên thiết bị được quản lý, thiết bị sẽ không được phép sử dụng máy ảo.
       Các thiết bị chưa được quản lý được phép sử dụng máy ảo.</translation>
 <translation id="8001701200415781021">Hạn chế Tài khoản Google nào được phép đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /></translation>
-<translation id="8009554972280451023">Nếu bạn bật tùy chọn cài đặt này, thì các tùy chọn cài đặt lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tắt đồng bộ hóa trên đám mây.
+<translation id="8009554972280451023">Nếu bạn bật tùy chọn cài đặt này, thì các tùy chọn cài đặt lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tính năng tắt đồng bộ hóa trên đám mây.
 
-      Nếu tắt hoặc chưa đặt chính sách này thì bạn chỉ có thể sử dụng các cấu hình cục bộ thông thường.
+      Nếu tắt hoặc không đặt chính sách này thì bạn chỉ có thể sử dụng các cấu hình cục bộ thông thường.
 
       Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả tính năng đồng bộ hóa dữ liệu, ghi đè <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Xoay màn hình 0 độ</translation>
@@ -3180,6 +3184,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu cài đặt này được bật hoặc không được đặt, lịch sử duyệt web và lịch sử tải xuống có thể bị xóa.
 
       Nếu cài đặt này bị tắt, không thể xóa lịch sử duyệt web và lịch sử tải xuống.</translation>
+<translation id="8758831693895931466">Cho phép chính sách đăng ký tính năng quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 

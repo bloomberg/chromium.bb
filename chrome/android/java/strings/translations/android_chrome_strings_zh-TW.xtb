@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1868024384445905608">Chrome 現在的檔案下載速度更快了</translation>
-<translation id="187628348035757895">開發人員選項</translation>
 <translation id="1880072593381090678">Chrome 常用網頁</translation>
 <translation id="1883903952484604915">我的檔案</translation>
 <translation id="1887786770086287077">這部裝置的位置資訊存取權已關閉。請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中予以開啟。</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">列印…</translation>
 <translation id="6416782512398055893">已下載 <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">選擇搜尋引擎</translation>
-<translation id="6436016483175965362">快速預覽</translation>
 <translation id="6437478888915024427">頁面資訊</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜尋與網址建議</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史記錄、密碼和其他設定</translation>
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">解鎖即可複製你的密碼</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個開啟的分頁}other{%1$d 個開啟的分頁}}</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6910211073230771657">已刪除</translation>
 <translation id="6912998170423641340">禁止網站讀取剪貼簿中的文字和圖片</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
-<translation id="728491846437309531">Google 助理可幫助你輕鬆快速地在網站上完成工作</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>

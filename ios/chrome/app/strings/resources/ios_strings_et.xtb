@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Teenusetingimused</translation>
 <translation id="430793432425771671">Sünkrooni kõik</translation>
 <translation id="4342284590510997375">Uus</translation>
-<translation id="434816576838749873">E-posti rakenduse valimine</translation>
 <translation id="4359125752503270327">See leht avatakse teises rakenduses.</translation>
 <translation id="4370827530403103842">Sünkroonimine ei tööta. Puudutage parandamiseks.</translation>
 <translation id="4375040482473363939">QR-koodi otsing</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Privaatsusteatis</translation>
-<translation id="4460091562821778167">Küsi minult iga kord, millist rakendust kasutada</translation>
 <translation id="4476574785019001431">Seaded</translation>
 <translation id="4496373720959965247">Lisage vahelehti ja vahetage lehti</translation>
 <translation id="4508750114462689118">Sule sisselogimisviip</translation>
@@ -278,7 +276,6 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="5554368826343982379">Sünkroonimine ja isikupärastamine</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5614553682702429503">Kas salvestada parool?</translation>
-<translation id="5619279135193775234">E-post</translation>
 <translation id="5626245204502895507">Faili ei õnnestunud praegu alla laadida.</translation>
 <translation id="5659593005791499971">Meil</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6127379762771434464">Üksus eemaldati</translation>
 <translation id="6136914049981179737">Sek. eest</translation>
 <translation id="616831107264507309">Hiljem lugemiseks</translation>
+<translation id="6177442314419606057">Otsing Chrome'ist</translation>
 <translation id="6184086493125982861">Kuva vahelehed</translation>
 <translation id="6187302354554850004">Viimati sünkr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Lugemata</translation>
@@ -382,7 +380,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7136892417564438900">Kaamera pole saadaval</translation>
 <translation id="7159472599653637159">Taotle mobiilisaiti</translation>
 <translation id="7167621057293532233">Andmetüübid</translation>
-<translation id="7175593937868963913">Meili koostamine</translation>
 <translation id="7189598951263744875">Jaga ...</translation>
 <translation id="7203585745079012652">Vastuste esitamine</translation>
 <translation id="722055596168483966">Google'i teenuste isikupärastamine</translation>
@@ -415,6 +412,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7769602470925380267">Nõustu ja logi välja</translation>
 <translation id="7772032839648071052">Kinnitage parool</translation>
 <translation id="7781829728241885113">Eile</translation>
+<translation id="778855399387580014">Alustage otsingut uuel Chrome'i vahelehel.</translation>
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7840771868269352570">Teie valitud üksused eemaldatakse.</translation>
 <translation id="7856733331829174190">Ei saanud alla laadida</translation>

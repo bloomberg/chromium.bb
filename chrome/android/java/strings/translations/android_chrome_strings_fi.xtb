@@ -114,7 +114,6 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1829244130665387512">Haku sivulta</translation>
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="1868024384445905608">Chrome lataa tiedostot nyt nopeammin</translation>
-<translation id="187628348035757895">Kehittäjäasetukset</translation>
 <translation id="1880072593381090678">Suosittuja Chromen sivuja</translation>
 <translation id="1883903952484604915">Omat tiedostot</translation>
 <translation id="1887786770086287077">Sijainti on poissa käytöstä tällä laitteella. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="641643625718530986">Tulosta…</translation>
 <translation id="6416782512398055893">Ladattu: <ph name="MBS" /> Mt</translation>
 <translation id="6433501201775827830">Valitse hakukone</translation>
-<translation id="6436016483175965362">Esikatselu</translation>
 <translation id="6437478888915024427">Sivun tiedot</translation>
 <translation id="6447842834002726250">Evästeet</translation>
 <translation id="6448273550210938826">Haku ja URL-ehdotukset</translation>
@@ -773,7 +771,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6868088497967843822">Kirjaudu ja käytä kirjanmerkkejä, historiaa, salasanoja ja muita asetuksiasi kaikissa laitteissasi.</translation>
 <translation id="688738109438487280">Lisää olemassa olevat tiedot tilille <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Avaa lukitus kopioidaksesi salasanan</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d avoin välilehti}other{%1$d avointa välilehteä}}</translation>
 <translation id="6896758677409633944">Kopioi</translation>
 <translation id="6910211073230771657">Poistettu</translation>
 <translation id="6912998170423641340">Estä sivustoja lukemasta tekstiä ja kuvia leikepöydältä</translation>
@@ -825,7 +822,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> valittu</translation>
 <translation id="7253272406652746122">Lisää Google-tili laitteen Asetukset-sovelluksen Tilit-sivulla.</translation>
 <translation id="7274013316676448362">Estetty sivusto</translation>
-<translation id="728491846437309531">Google Assistant voi auttaa sinua hoitamaan asioita verkossa nopeammin ja helpommin</translation>
 <translation id="729975465115245577">Laitteella ei ole sovellusta, johon salasanatiedoston voisi tallentaa.</translation>
 <translation id="7302081693174882195">Lisätiedot: Lajiteltu säästetyn datan mukaan</translation>
 <translation id="7333031090786104871">Edellisen sivuston lisääminen kesken</translation>

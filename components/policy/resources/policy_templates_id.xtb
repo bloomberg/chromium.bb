@@ -214,7 +214,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="1523774894176285446">Browser alternatif untuk membuka situs yang dikonfigurasi.</translation>
 <translation id="152657506688053119">Daftar URL pengganti untuk penyedia penelusuran default</translation>
 <translation id="1530812829012954197">Selalu urai pola URL berikut di browser host</translation>
-<translation id="1532965933165453786">Mengizinkan pengaktifan atau penonaktifan Fast Transition. Kebijakan ini berlaku untuk semua pengguna dan untuk semua antarmuka di perangkat. Agar Fast Transition dapat digunakan, setelan ini dan properti ONC per jaringan perlu diaktifkan. Setelah disetel, Fast Transition akan terus berlanjut hingga kebijakan ini dinonaktifkan. Jika kebijakan tidak disetel, Fast Transition tidak akan digunakan. Jika disetel ke false, Fast Transition tidak akan digunakan. Jika disetel ke true, Fast Transition akan digunakan saat titik akses nirkabel mendukungnya.</translation>
 <translation id="1541170838458414064">Batasi ukuran halaman pencetakan</translation>
 <translation id="1553684822621013552">Jika kebijakan ini disetel ke True, ARC akan diaktifkan untuk pengguna
       (tunduk pada pemeriksaan setelan kebijakan tambahan - ARC akan tetap
@@ -2077,7 +2076,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6553143066970470539">Persentase kecerahan layar</translation>
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
-<translation id="6563458316362153786">Aktifkan 802.11r Fast Transition</translation>
+<translation id="6563458316362153786">Aktifkan Transisi Cepat 802.11r</translation>
 <translation id="6565312346072273043">Menyetel status default fitur aksesibilitas keyboard di layar pada layar masuk.
 
           Jika kebijakan ini disetel ke true, keyboard di layar akan diaktifkan saat layar masuk ditampilkan.

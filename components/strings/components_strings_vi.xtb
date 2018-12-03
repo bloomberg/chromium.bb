@@ -87,6 +87,7 @@
 <translation id="1426410128494586442">Có</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="1484290072879560759">Chọn địa chỉ giao hàng</translation>
+<translation id="1501859676467574491">Hiển thị các thẻ từ Tài khoản Google của bạn</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
     &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
@@ -384,7 +385,7 @@
 <translation id="3427092606871434483">Cho phép (mặc định)</translation>
 <translation id="3427342743765426898">&amp;Làm lại chỉnh sửa</translation>
 <translation id="342781501876943858">Chromium khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
-<translation id="3430691998045392297">Thời gian chiếu phim khác nhau. Bạn có muốn tiếp tục không?</translation>
+<translation id="3430691998045392297">Thời gian chiếu phim là khác nhau. Bạn có muốn tiếp tục không?</translation>
 <translation id="3431636764301398940">Lưu thẻ này vào thiết bị này</translation>
 <translation id="3447661539832366887">Chủ sở hữu của thiết bị này đã tắt trò chơi khủng long.</translation>
 <translation id="3447884698081792621">Hiển thị chứng chỉ (do <ph name="ISSUER" /> cấp)</translation>
@@ -434,7 +435,7 @@
 <translation id="3736520371357197498">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" /> trước khi các chương trình nguy hiểm bị xóa.</translation>
 <translation id="3739623965217189342">Liên kết đã sao chép</translation>
 <translation id="3744899669254331632">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web này đã gửi thông tin đăng nhập hỗn độn mà Chromium không thể xử lý. Lỗi mạng và các cuộc tấn công thường chỉ diễn ra tạm thời nên trang này có thể sẽ hoạt động sau.</translation>
-<translation id="3745099705178523657">Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
+<translation id="3745099705178523657">Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="3748148204939282805">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn làm việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
 <translation id="3759461132968374835">Bạn không nhận được báo cáo sự cố nào gần đây. Sự cố xảy ra khi báo cáo sự cố đã bị tắt sẽ không xuất hiện ở đây.</translation>
@@ -575,7 +576,7 @@
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4785689107224900852">Chuyển sang tab này</translation>
 <translation id="4792143361752574037">Đã xảy ra sự cố khi truy cập vào các tệp phiên. Tính năng lưu vào ổ đĩa hiện bị vô hiệu hóa. Vui lòng tải lại trang để thử lại.</translation>
-<translation id="4798078619018708837">Hãy nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
+<translation id="4798078619018708837">Hãy nhập ngày hết hạn và số CVC của <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web gửi thông tin đăng nhập đã mã hóa mà Google Chrome không thể xử lý. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó trang này có thể sẽ hoạt động lại sau.</translation>
@@ -627,7 +628,7 @@
 <translation id="5141240743006678641">Mã hóa mật khẩu đã đồng bộ hóa với thông tin đăng nhập Google của bạn</translation>
 <translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
 <translation id="5159010409087891077">Mở trang trong cửa sổ Ẩn danh mới (⇧⌘N)</translation>
-<translation id="516920405563544094">Hãy nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, chúng tôi sẽ chia sẻ thông tin chi tiết thẻ từ Tài khoản Google của bạn với trang web này.</translation>
+<translation id="516920405563544094">Hãy nhập số CVC của <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, thông tin chi tiết thẻ trong Tài khoản Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="5169827969064885044">Bạn có thể mất quyền truy cập vào tài khoản của tổ chức mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5172758083709347301">Máy</translation>

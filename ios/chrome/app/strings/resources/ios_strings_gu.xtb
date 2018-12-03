@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="430793432425771671">બધાને સમન્વયિત કરો</translation>
 <translation id="4342284590510997375">નવું</translation>
-<translation id="434816576838749873">એક ઇમેઇલ ઍપ પસંદ કરો</translation>
 <translation id="4359125752503270327">આ પૃષ્ઠ બીજી અ‍ૅપ્લિકેશનમાં ખુલશે.</translation>
 <translation id="4370827530403103842">સમન્વયન કામ કરતું નથી. ઠીક કરવા માટે ટૅપ કરો.</translation>
 <translation id="4375040482473363939">QR કોડ શોધો</translation>
 <translation id="4378154925671717803">ફોન</translation>
 <translation id="441868831736628555">ગોપનીયતા સૂચના</translation>
-<translation id="4460091562821778167">મને દરેક વખતે પૂછો કે કઈ ઍપનો ઉપયોગ કરવો</translation>
 <translation id="4476574785019001431">સેટિંગ</translation>
 <translation id="4496373720959965247">ટૅબ ઉમેરો અને પેજ વચ્ચે સ્વિચ કરો</translation>
 <translation id="4508750114462689118">સાઇન-ઇન પ્રોમો બંધ કરો</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">સિંક અને વૈયક્તિકરણ</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5614553682702429503">પાસવર્ડ સાચવીએ?</translation>
-<translation id="5619279135193775234">મેઇલ</translation>
 <translation id="5626245204502895507">ફાઇલ આ સમયે ડાઉનલોડ કરી શકાઈ નથી.</translation>
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">આઇટમ દૂર કરી</translation>
 <translation id="6136914049981179737">સેકંડ પહેલાં</translation>
 <translation id="616831107264507309">પછીથી વાંચો</translation>
+<translation id="6177442314419606057">Chromeમાં શોધો</translation>
 <translation id="6184086493125982861">ટૅબ્સ બતાવો</translation>
 <translation id="6187302354554850004">છેલ્લે સમન્વયિત કરેલું: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">વાંચ્યા વગરની</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">કૅમેરો અનુપલબ્ધ છે</translation>
 <translation id="7159472599653637159">મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="7167621057293532233">ડેટા પ્રકાર</translation>
-<translation id="7175593937868963913">ઇમેઇલ કંપોઝ કરો</translation>
 <translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7203585745079012652">જવાબો પાછા બોલો</translation>
 <translation id="722055596168483966">Google સેવાઓને મનગમતી બનાવો</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">સ્વીકારો અને સાઇન આઉટ કરો</translation>
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
+<translation id="778855399387580014">નવા Chrome ટૅબમાં શોધ શરૂ કરો.</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7840771868269352570">તમે પસંદ કરેલી આઇટમ કાઢી નાખવામાં આવશે.</translation>
 <translation id="7856733331829174190">ડાઉનલોડ ન કરી શક્યાં</translation>

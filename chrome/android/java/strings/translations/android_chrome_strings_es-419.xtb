@@ -114,7 +114,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1868024384445905608">Ahora Chrome descarga los archivos más rápido</translation>
-<translation id="187628348035757895">Opciones para desarrolladores</translation>
 <translation id="1880072593381090678">Páginas populares de Chrome</translation>
 <translation id="1883903952484604915">Mis archivos</translation>
 <translation id="1887786770086287077">En este dispositivo, el acceso a la ubicación está desactivado. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">Se descargaron <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Selecciona el motor de búsqueda</translation>
-<translation id="6436016483175965362">Vista rápida</translation>
 <translation id="6437478888915024427">Información de la página</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
@@ -773,7 +771,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6868088497967843822">Accede a tu cuenta para ver los favoritos, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
 <translation id="688738109438487280">Agrega los datos existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea la pantalla para copiar tu contraseña</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestaña abierta}other{%1$d pestañas abiertas}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Impedir que los sitios lean el texto y las imágenes del portapapeles</translation>
@@ -825,7 +822,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
-<translation id="728491846437309531">El Asistente de Google te ayuda a completar tus tareas en la Web de forma más rápida y fácil</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene una app que pueda almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: Ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>

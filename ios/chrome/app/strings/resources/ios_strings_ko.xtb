@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
 <translation id="4342284590510997375">New</translation>
-<translation id="434816576838749873">이메일 앱 선택</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
 <translation id="4378154925671717803">전화기</translation>
 <translation id="441868831736628555">개인정보처리방침</translation>
-<translation id="4460091562821778167">항상 사용할 앱 확인</translation>
 <translation id="4476574785019001431">설정</translation>
 <translation id="4496373720959965247">탭 추가 및 페이지 간에 전환</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">동기화 및 맞춤설정</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5614553682702429503">비밀번호를 저장하시겠습니까?</translation>
-<translation id="5619279135193775234">메일</translation>
 <translation id="5626245204502895507">현재 파일을 다운로드할 수 없습니다.</translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6136914049981179737">초 전</translation>
 <translation id="616831107264507309">나중에 읽기</translation>
+<translation id="6177442314419606057">Chrome에서 검색</translation>
 <translation id="6184086493125982861">탭 표시</translation>
 <translation id="6187302354554850004">최근 동기화: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">읽지않음</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7167621057293532233">데이터 유형</translation>
-<translation id="7175593937868963913">이메일 작성</translation>
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="7781829728241885113">어제</translation>
+<translation id="778855399387580014">새 Chrome 탭에서 검색을 시작합니다.</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7840771868269352570">선택한 항목 삭제</translation>
 <translation id="7856733331829174190">다운로드할 수 없음</translation>

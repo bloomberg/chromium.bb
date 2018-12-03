@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
 <translation id="4342284590510997375">新規</translation>
-<translation id="434816576838749873">メールアプリの選択</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
 <translation id="4375040482473363939">QR コード検索</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
-<translation id="4460091562821778167">使用するアプリを毎回確認する</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">タブを追加してページを切り替えることができます</translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">同期とカスタマイズ</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5614553682702429503">パスワードを保存しますか？</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">今回は、ファイルをダウンロードできませんでした。</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
 <translation id="616831107264507309">後で読む</translation>
+<translation id="6177442314419606057">Chrome で検索</translation>
 <translation id="6184086493125982861">タブを表示</translation>
 <translation id="6187302354554850004">最終同期: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">未読</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
 <translation id="7167621057293532233">データ タイプ</translation>
-<translation id="7175593937868963913">メールの作成</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="7781829728241885113">昨日</translation>
+<translation id="778855399387580014">新しい Chrome タブで検索を開始します。</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7840771868269352570">選択したアイテムが削除されます。</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>

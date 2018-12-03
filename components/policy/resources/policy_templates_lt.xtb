@@ -228,14 +228,6 @@
 <translation id="1523774894176285446">Alternatyvi naršyklė, kuri paleidžiama sukonfigūruotoms svetainėms.</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
-<translation id="1532965933165453786">Leidžiama įgalinti arba išjungti spartųjį perėjimą.
-      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje.
-      Kad būtų naudojamas spartusis perėjimas, turi būti įgalintas ir šis nustatymas, ir tinklo ONC nuosavybė.
-      Nustatytas spartusis perėjimas lieka, kol politika pakeičiama, kad jis būtų išjungtas.
-
-      Jei politika nenustatyta, spartusis perėjimas nenaudojamas.
-      Jei nustatyta kaip „False“, spartusis perėjimas nenaudojamas.
-      Jei nustatyta kaip „True“, spartusis perėjimas naudojamas, kai yra palaikomas belaidžio ryšio prieigos taške.</translation>
 <translation id="1541170838458414064">Spausdinamo puslapio dydžio apribojimas</translation>
 <translation id="1553684822621013552">Kai ši politika yra galiojanti, ARC įgalinama naudotojui
       (taikomos papildomos politikos nustatymų patikros – ARC vis tiek bus

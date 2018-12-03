@@ -114,7 +114,6 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1853692000353488670">Új inkognitólap</translation>
 <translation id="1868024384445905608">Mostantól a Chrome gyorsabban tölti le a fájlokat</translation>
-<translation id="187628348035757895">Fejlesztői beállítások</translation>
 <translation id="1880072593381090678">Népszerű oldalak a Chrome-ból</translation>
 <translation id="1883903952484604915">Saját fájlok</translation>
 <translation id="1887786770086287077">A helyhozzáférés ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
@@ -710,7 +709,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="641643625718530986">Nyomtatás…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB letöltve</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
-<translation id="6436016483175965362">Bepillantás</translation>
 <translation id="6437478888915024427">Oldaladatok</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
 <translation id="6448273550210938826">Keresési és URL-javaslatok</translation>
@@ -773,7 +771,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6868088497967843822">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
 <translation id="688738109438487280">Meglévő adatok hozzáadása a(z) <ph name="TO_ACCOUNT" /> fiókhoz.</translation>
 <translation id="6891726759199484455">Oldja fel a képernyőzárat a jelszó másolásához</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d nyitott lap}other{%1$d nyitott lap}}</translation>
 <translation id="6896758677409633944">Másolás</translation>
 <translation id="6910211073230771657">Törölve</translation>
 <translation id="6912998170423641340">A vágólapon található szövegek és képek megtekintésének letiltása a webhelyek számára</translation>
@@ -825,7 +822,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elem kiválasztva</translation>
 <translation id="7253272406652746122">Adjon hozzá Google-fiókot az eszköz Beállítások alkalmazásának Fiókok oldalán.</translation>
 <translation id="7274013316676448362">Letiltott oldal</translation>
-<translation id="728491846437309531">A Google Segéd segítségével gyorsabban és egyszerűbben elvégezheti teendőit az interneten</translation>
 <translation id="729975465115245577">Az eszközön nincs olyan alkalmazás, amely tárolni tudja a jelszavakat tartalmazó fájlt.</translation>
 <translation id="7302081693174882195">Részletek: Megtakarított adatmennyiség szerinti rendezés</translation>
 <translation id="7333031090786104871">Az előző webhely hozzáadása még folyamatban van</translation>

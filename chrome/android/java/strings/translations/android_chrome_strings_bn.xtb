@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1868024384445905608">Chrome এখন আরও দ্রুত ফাইল ডাউনলোড করে</translation>
-<translation id="187628348035757895">ডেভেলপার বিকল্প</translation>
 <translation id="1880072593381090678">Chrome এর জনপ্রিয় পৃষ্ঠাগুলি</translation>
 <translation id="1883903952484604915">আমার ফাইল</translation>
 <translation id="1887786770086287077">এই ডিভাইসে লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
@@ -712,7 +711,6 @@
 <translation id="641643625718530986">প্রিন্ট...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ডাউনলোড হয়েছে</translation>
 <translation id="6433501201775827830">আপনার সার্চ ইঞ্জিন বেছে নিন</translation>
-<translation id="6436016483175965362">এক ঝলকে</translation>
 <translation id="6437478888915024427">পৃষ্ঠার তথ্য</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
 <translation id="6448273550210938826">সার্চ এবং URL পরামর্শগুলি</translation>
@@ -775,7 +773,6 @@
 <translation id="6868088497967843822">আপনার সকল ডিভাইসে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পেতে প্রবেশ করুন</translation>
 <translation id="688738109438487280">বিদ্যমান ডেটা <ph name="TO_ACCOUNT" /> এ যোগ করুন।</translation>
 <translation id="6891726759199484455">আপনার পাসওয়ার্ড কপি করতে আনলক করুন</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$dটি খোলা ট্যাব}one{%1$dটি খোলা ট্যাব}other{%1$dটি খোলা ট্যাব}}</translation>
 <translation id="6896758677409633944">অনুলিপি</translation>
 <translation id="6910211073230771657">মোছা হয়েছে</translation>
 <translation id="6912998170423641340">ক্লিপবোর্ডের টেক্সট এবং ছবি পড়ার থেকে সাইটগুলিকে ব্লক করুন</translation>
@@ -827,7 +824,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7253272406652746122">আপনার ডিভাইসের সেটিংস অ্যাপ্লিকেশানের অ্যাকাউন্টস পৃষ্ঠা থেকে একটি Google অ্যাকাউন্ট যোগ করুন।</translation>
 <translation id="7274013316676448362">অবরুদ্ধ সাইট</translation>
-<translation id="728491846437309531">Google অ্যাসিস্ট্যান্ট আপনাকে ওয়েবে কাজগুলি দ্রুত এবং সহজে করতে সাহায্য করতে পারে</translation>
 <translation id="729975465115245577">পাসওয়ার্ড ফাইল সেভ করার জন্য আপনার ডিভাইসে কোনও অ্যাপ নেই।</translation>
 <translation id="7302081693174882195">বিবরণ: সেভ করা ডেটার পরিমাণ অনুযায়ী সাজানো হয়েছে</translation>
 <translation id="7333031090786104871">এখনও পূর্বের সাইট যোগ করছে</translation>

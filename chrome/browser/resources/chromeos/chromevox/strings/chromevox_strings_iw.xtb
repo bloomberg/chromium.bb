@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">הסתרת מסננים של אירועים בסטרימינג</translation>
 <translation id="1088219014394087294">אין כותרות.</translation>
 <translation id="1106741348836243114">‏הפעל או השבת משוב צלילים (Earcons).</translation>
-<translation id="1108651818222110612">כותרת משנה</translation>
 <translation id="1120743664840974483">{"א": "אלף", "ב": "בועז", "ג": "גימל", "ד": "דוד", "ה": "הגר", "ו": "וו", "ז": "זאב", "ח": "חוה", "ט": "טיח", "י": "יונה","כ": "כרמל", "ל": "לאה", "מ": "משה", "נ": "נשר", "ס": "סמך","ע": "עין", "פ": "פסל", "צ": "ציפור", "ק": "קורח", "ר": "רות", "ש": "שמיר", "ת": "תלם"}</translation>
 <translation id="1120938014254001895">החלקה מעלה עם שתי אצבעות</translation>
 <translation id="1124771028211010580">התצוגה הנוכחית היא זה לצד זה.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">סוף כתב עילי</translation>
 <translation id="2749275490991666823">מסומן</translation>
 <translation id="27527859628328957">דלג לפריט הבא הניתן למיקוד</translation>
-<translation id="276402504937943375">תוכן העניינים</translation>
 <translation id="2770781857296573485">הזן סקירת קבוצה</translation>
 <translation id="2777845298774924149">יצאת</translation>
 <translation id="2781264313200109999">התחלת קישור</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">סרטוני וידאו</translation>
 <translation id="4764692524839457597">ברירת מחדל</translation>
 <translation id="479989351350248267">Search</translation>
+<translation id="4804818685124855865">נתק</translation>
 <translation id="481165870889056555">הכרזה על הכותרת של הדף הנוכחי</translation>
 <translation id="4826415162591436065">נווט קדימה</translation>
 <translation id="4826604887384865800">הדילוג הבא</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">אובייקט</translation>
 <translation id="5302089807023311274">הפניה לביבליוגרפיה</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, כרטיסייה</translation>
+<translation id="5308380583665731573">התחברות</translation>
 <translation id="5310788376443009632">הוסר:</translation>
 <translation id="5320727453979144100">מצב דביק מופעל</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{פסיק}two{# פסיקים}many{# פסיקים}other{# פסיקים}}</translation>
@@ -773,6 +773,7 @@
 <translation id="712735679809149106">הד מילה</translation>
 <translation id="713824876195128146">‏blockquote הבא</translation>
 <translation id="7143034430156387447">מעבר בין ברייל 6 נקודות ו-8 נקודות</translation>
+<translation id="7143207342074048698">מתחבר</translation>
 <translation id="7157306005867877619">תקציר</translation>
 <translation id="7161425887892204659">סוף התאמת טקסט</translation>
 <translation id="7161771961008409533">לחצן קופץ</translation>
@@ -836,7 +837,6 @@
 <translation id="7625690649919402823">הטבלה הבאה</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), רמה <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">אין כותרת קודמת של רמה 3.</translation>
-<translation id="7647456547678091388">טיפ</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, תיבת טקסט</translation>
 <translation id="7663318257180412551">כותרת 2</translation>
 <translation id="7674576868851035240">הקישור הבא</translation>
@@ -962,6 +962,7 @@
 <translation id="8940925288729953902">מקשי צירוף</translation>
 <translation id="8943175951035496220">אין תא מימין.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">שכח</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">אין טבלאות.</translation>
 <translation id="9040132695316389094">כותרת 1</translation>

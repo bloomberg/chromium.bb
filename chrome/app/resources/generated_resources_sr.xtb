@@ -359,7 +359,6 @@
 <translation id="1510030919967934016">Овој страници је онемогућено да прати локацију на којој се налазите.</translation>
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="1510785804673676069">Ако користите прокси сервер, проверите подешавања проксија или контактирајте администратора мреже да бисте проверили да ли прокси сервер функционише. Ако не сматрате да треба да користите прокси сервер, прилагодите <ph name="LINK_START" />подешавања проксија<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Нуди чување веб-лозинки</translation>
 <translation id="1512210426710821809">Једини начин да ово опозовете је да поново инсталирате <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Увоз из прегледача Safari</translation>
 <translation id="1521442365706402292">Управљај сертификатима</translation>
@@ -368,7 +367,6 @@
 <translation id="1524563461097350801">Не, хвала</translation>
 <translation id="1525740877599838384">Користи само Wi-Fi за одређивање локације</translation>
 <translation id="1526560967942511387">Ненасловљени документ</translation>
-<translation id="1529116897397289129">Сачуване картице ће се појавити овде</translation>
 <translation id="1529891865407786369">Извор напајања</translation>
 <translation id="1529899284660134226">Управљајте дељеним датотекама и директоријумима</translation>
 <translation id="1530838837447122178">Отвори подешавања уређаја за миш и тачпед</translation>
@@ -508,7 +506,6 @@
 <translation id="1726100011689679555">Сервери имена</translation>
 <translation id="1729533290416704613">Контролише и страницу која се приказује када претражујете из омнибокса.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Да бисте уклонили апликације, идите у одељак Подешавања &gt; Google Play продавница &gt; Управљајте Android подешавањима &gt; Апликације или Менаџер апликација. Додирните апликацију коју желите да деинсталирате (можда ћете морати да превучете надесно или налево да бисте пронашли апликацију). Онда додирните Деинсталирај или Онемогући.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Укупно: <ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Шаље се захтев...</translation>
 <translation id="1732215134274276513">Откачи картице</translation>
 <translation id="1733383495376208985">Шифрујте синхронизоване податке помоћу сопствене <ph name="BEGIN_LINK" />приступне фразе за синхронизацију<ph name="END_LINK" />. То не обухвата начине плаћања и адресе из Google Pay-а.</translation>
@@ -779,7 +776,6 @@
 <translation id="2148219725039824548">Грешка при учитавању дељене датотеке. Наведена дељена датотека није пронађена на мрежи.</translation>
 <translation id="2148756636027685713">Форматирање је завршено</translation>
 <translation id="2148892889047469596">Пребаците картицу</translation>
-<translation id="2149850907588596975">Лозинке и обрасци</translation>
 <translation id="2150139952286079145">Претражите одредишта</translation>
 <translation id="2150661552845026580">Желите ли да додате „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="2151576029659734873">Унет је неважећи индекс картице.</translation>
@@ -819,7 +815,6 @@
 <translation id="2204034823255629767">Читање и мењање свега што уносите</translation>
 <translation id="2208158072373999562">Zip архива</translation>
 <translation id="220858061631308971">Унесите овај PIN кôд на уређају „<ph name="DEVICE_NAME" />“:</translation>
-<translation id="2212126039311489237">Штампајте помоћу системског дијалога</translation>
 <translation id="2214884991347062907">Нетачна лозинка. Пробајте поново</translation>
 <translation id="2217501013957346740">Направите име –</translation>
 <translation id="2218019600945559112">Миш и тачпед</translation>
@@ -1265,7 +1260,6 @@
 <translation id="2888807692577297075">Ниједна ставка се не подудара са упитом &lt;b&gt;„<ph name="SEARCH_STRING" />“&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Отвори линк користећи...</translation>
 <translation id="2889925978073739256">Настави блокирање додатних компонената које су изван заштићеног окружења</translation>
-<translation id="2890678560483811744">Превелика референца за странице</translation>
 <translation id="2893168226686371498">Подразумевани прегледач</translation>
 <translation id="289644616180464099">SIM картица је закључана</translation>
 <translation id="289695669188700754">ИД кључа: <ph name="KEY_ID" /></translation>
@@ -2275,7 +2269,6 @@
 <translation id="4482194545587547824">Google може да користи историју прегледања за персонализацију Претраге и других Google услуга</translation>
 <translation id="4495419450179050807">Не приказуј на овој страници</translation>
 <translation id="449938344715680828">Прво притисните |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|, па |<ph name="ACCELERATOR3" />| да бисте изашли</translation>
-<translation id="4499718683476608392">Омогућава аутоматско попуњавање образаца подацима о кредитним картицама једним кликом</translation>
 <translation id="4500114933761911433">Додатна компонента <ph name="PLUGIN_NAME" /> је отказала</translation>
 <translation id="450099669180426158">Икона узвичника</translation>
 <translation id="4501530680793980440">Потврда уклањања</translation>
@@ -2585,7 +2578,6 @@
 <translation id="4971412780836297815">Отвори када буде довршено</translation>
 <translation id="4972129977812092092">Измените штампач</translation>
 <translation id="4972164225939028131">Погрешна лозинка</translation>
-<translation id="497287958838527945">Кредитне картице и адресе из Google Pay-а.</translation>
 <translation id="4973307593867026061">Додај штампаче</translation>
 <translation id="4973523518332075481">Користите назив чији је максимални број знакова <ph name="MAX_LENGTH" /></translation>
 <translation id="4974733135013075877">Изађи и закључај за децу</translation>
@@ -3115,7 +3107,6 @@
 <translation id="5752453871435543420">Резервне копије у клауду за Chrome ОС</translation>
 <translation id="5756163054456765343">Ц&amp;ентар за помоћ</translation>
 <translation id="5759728514498647443">Документе које шаљете на штампање преко <ph name="APP_NAME" /> може да чита <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Подешавања кредитних картица</translation>
 <translation id="5763315388120433852">Подесите дељења датотека на мрежи или управљајте њима.</translation>
 <translation id="5763751966069581670">Није пронађен ниједан USB уређај</translation>
 <translation id="5764483294734785780">Са&amp;чувај аудио снимак као...</translation>
@@ -3627,7 +3618,6 @@
 <translation id="6508248480704296122">Сродно са ставком <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Апл.: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Лиценца за медије</translation>
-<translation id="6510568984200103950">Мање подешавања</translation>
 <translation id="6513247462497316522">Google Chrome ће користити мобилне податке ако нисте повезани са другом мрежом.</translation>
 <translation id="6514010653036109809">Доступан уређај:</translation>
 <translation id="6514565641373682518">Ова страница је онемогућила курсор.</translation>
@@ -3808,7 +3798,6 @@
 <translation id="6805647936811177813">Пријавите се на <ph name="TOKEN_NAME" /> да бисте увезли сертификат клијента са <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Омогући RLZ праћење у производу <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Управљајте Linux дељењем</translation>
-<translation id="6807889908376551050">Прикажи све...</translation>
 <translation id="6810613314571580006">Аутоматски се пријављујте на веб-сајтове помоћу сачуваних акредитива. Када је ова функција онемогућена, тражићемо потврду пре сваког пријављивања на веб-сајт.</translation>
 <translation id="6810768462515084623">Упс, изгледа да вам је истекла лозинка. Обновите је на другом уређају, па пробајте поново.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> не може да се покреће као основни производ.</translation>
@@ -5001,7 +4990,6 @@
 <translation id="8637542770513281060">Рачунар садржи безбедносни модул, који се користи за примену многих изузетно важних безбедносних функција у Chrome ОС-у. Посетите центар за помоћ за Chromebook да бисте сазнали више: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Доступно је ажурирање система. Припрема за преузимање...</translation>
 <translation id="8639047128869322042">Тражи се штетни софтвер…</translation>
-<translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
 <translation id="8642171459927087831">Ознака приступа</translation>
 <translation id="8642947597466641025">Увећај текст</translation>
 <translation id="8643418457919840804">Да бисте наставили, изаберите неку опцију:</translation>
@@ -5017,7 +5005,6 @@
 <translation id="8655972064210167941">Пријављивање није успело јер нисмо успели да верификујемо лозинку. Контактирајте администратора или покушајте поново.</translation>
 <translation id="8656619792520327915">Додај други Bluetooth безбедносни кључ</translation>
 <translation id="8656768832129462377">Не проверавај</translation>
-<translation id="8658595122208653918">Промени опције штампача...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> дели екран и звук са <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Само тренутак</translation>
 <translation id="8661290697478713397">Отвори линк у прозору за пре&amp;гледање без архивирања</translation>

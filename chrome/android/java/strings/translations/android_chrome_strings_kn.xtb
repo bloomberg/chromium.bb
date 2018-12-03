@@ -115,7 +115,6 @@
 <translation id="1829244130665387512">ಪುಟದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="1853692000353488670">ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋ</translation>
 <translation id="1868024384445905608">Chrome ಈಗ ಫೈಲ್‌ಗಳನ್ನು ವೇಗವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡುತ್ತದೆ</translation>
-<translation id="187628348035757895">ಡೆವಲಪರ್ ಆಯ್ಕೆಗಳು</translation>
 <translation id="1880072593381090678">Chrome ನಿಂದ ಜನಪ್ರಿಯ ಪುಟಗಳು</translation>
 <translation id="1883903952484604915">ನನ್ನ ಫೈಲ್‌ಗಳು</translation>
 <translation id="1887786770086287077">ಈ ಸಾಧನದ ಸ್ಥಳ ಪ್ರವೇಶ ಆಫ್ ಆಗಿದೆ. ಅದನ್ನು <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಆನ್ ಮಾಡಿ.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">ಮುದ್ರಿಸು...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6433501201775827830">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಇಂಜಿನ್ ಆಯ್ಕೆಮಾಡಿ</translation>
-<translation id="6436016483175965362">ಇಣುಕು ನೋಟ</translation>
 <translation id="6437478888915024427">ಪುಟದ ಮಾಹಿತಿ</translation>
 <translation id="6447842834002726250">ಕುಕೀಸ್</translation>
 <translation id="6448273550210938826">ಹುಡುಕಾಟ ಮತ್ತು URL ಸಲಹೆಗಳು</translation>
@@ -774,7 +772,6 @@
 <translation id="6868088497967843822">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಡೆಯಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="688738109438487280">ಪ್ರಸ್ತುತ ಡೇಟಾವನ್ನು <ph name="TO_ACCOUNT" /> ಗೆ ಸೇರಿಸಿ.</translation>
 <translation id="6891726759199484455">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಕಲಿಸಲು ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ತೆರೆದಿರುವ ಟ್ಯಾಬ್}one{%1$d ತೆರೆದಿರುವ ಟ್ಯಾಬ್‌ಗಳು}other{%1$d ತೆರೆದಿರುವ ಟ್ಯಾಬ್‌ಗಳು}}</translation>
 <translation id="6896758677409633944">ನಕಲಿಸು</translation>
 <translation id="6910211073230771657">ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="6912998170423641340">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿರುವ ಪಠ್ಯ ಮತ್ತು ಚಿತ್ರಗಳನ್ನು ಓದದಂತೆ ಸೈಟ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -826,7 +823,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7253272406652746122">ನಿಮ್ಮ ಸಾಧನದ ಸೆಟ್ಟಿಂಗ್‌‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಖಾತೆಗಳ ಪುಟದಿಂದ Google ಖಾತೆಯನ್ನು ಸೇರಿಸಿ.</translation>
 <translation id="7274013316676448362">ನಿರ್ಬಂಧಿಸಿರುವ ಸೈಟ್</translation>
-<translation id="728491846437309531">ವೆಬ್‌ನಲ್ಲಿ ವಿಷಯಗಳನ್ನು ತ್ವರಿತವಾಗಿ ಮತ್ತು ಸುಲಭವಾಗಿ ಮಾಡಿ ಮುಗಿಸಲು Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲದು</translation>
 <translation id="729975465115245577">ನಿಮ್ಮ ಸಾಧನವು ಪಾಸ್‌ವರ್ಡ್‌ ಫೈಲ್ ಅನ್ನು ಸಂಗ್ರಹಿಸಿಡಲು ಅಪ್ಲಿಕೇಶನ್‌ ಅನ್ನು ಹೊಂದಿಲ್ಲ.</translation>
 <translation id="7302081693174882195">ವಿವರಗಳು: ಉಳಿಸಿದ ಡೇಟಾ ಪ್ರಮಾಣದ ಆಧಾರದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
 <translation id="7333031090786104871">ಇನ್ನೂ ಹಿಂದಿನ ಸೈಟ್ ಅನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ</translation>

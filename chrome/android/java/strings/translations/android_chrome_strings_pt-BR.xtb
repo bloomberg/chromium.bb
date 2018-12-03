@@ -114,7 +114,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="1868024384445905608">Agora o Chrome faz o download de arquivos mais rapidamente</translation>
-<translation id="187628348035757895">Opções do desenvolvedor</translation>
 <translation id="1880072593381090678">Páginas conhecidas do Chrome</translation>
 <translation id="1883903952484604915">Meus arquivos</translation>
 <translation id="1887786770086287077">O acesso ao local está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="641643625718530986">Imprimir...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s) por download</translation>
 <translation id="6433501201775827830">Escolha seu mecanismo de pesquisa</translation>
-<translation id="6436016483175965362">Visualização rápida</translation>
 <translation id="6437478888915024427">Informações sobre a página</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugestões de pesquisa e URL</translation>
@@ -773,7 +771,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
 <translation id="688738109438487280">Adicionar dados já existentes à conta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloqueie para copiar sua senha</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d guia aberta}one{%1$d guia aberta}other{%1$d guias abertas}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6910211073230771657">Excluído</translation>
 <translation id="6912998170423641340">Impeça que sites leiam textos e imagens da área de transferência</translation>
@@ -825,7 +822,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> itens selecionados</translation>
 <translation id="7253272406652746122">Adicione uma Conta do Google na página de "Contas" do app "Config." do seu dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
-<translation id="728491846437309531">O Google Assistente pode ajudar você a realizar tarefas de forma mais rápida e fácil na Web</translation>
 <translation id="729975465115245577">Seu dispositivo não tem um app para armazenar o arquivo de senhas.</translation>
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>

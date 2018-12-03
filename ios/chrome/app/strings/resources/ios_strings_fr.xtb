@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
 <translation id="4342284590510997375">Nouveau</translation>
-<translation id="434816576838749873">Choisir une application de messagerie</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
-<translation id="4460091562821778167">Demander quelle application utiliser à chaque fois</translation>
 <translation id="4476574785019001431">Paramètres</translation>
 <translation id="4496373720959965247">Ajoutez des onglets pour naviguer d'une page à l'autre</translation>
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
@@ -278,7 +276,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5554368826343982379">Synchronisation et personnalisation</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5614553682702429503">Enregistrer le mot de passe ?</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Impossible de télécharger le fichier pour le moment.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
@@ -383,7 +380,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
-<translation id="7175593937868963913">Rédiger un e-mail</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="722055596168483966">Personnaliser les services Google</translation>

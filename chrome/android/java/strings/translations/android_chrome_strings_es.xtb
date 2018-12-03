@@ -114,7 +114,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1868024384445905608">Ahora Chrome descarga los archivos más rápido</translation>
-<translation id="187628348035757895">Opciones para desarrolladores</translation>
 <translation id="1880072593381090678">Páginas populares de Chrome</translation>
 <translation id="1883903952484604915">Mis archivos</translation>
 <translation id="1887786770086287077">El acceso a la ubicación está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
 <translation id="6433501201775827830">Elegir tu motor de búsqueda</translation>
-<translation id="6436016483175965362">Avance</translation>
 <translation id="6437478888915024427">Información de la página</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
@@ -773,7 +771,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6868088497967843822">Inicia sesión para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos</translation>
 <translation id="688738109438487280">Añade los datos actuales a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea la pantalla para copiar tu contraseña</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestaña abierta}other{%1$d pestañas abiertas}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6912998170423641340">Evitar que los sitios web lean texto e imágenes del portapapeles</translation>
@@ -825,7 +822,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
-<translation id="728491846437309531">El Asistente de Google puede ayudarte a realizar tareas en la Web de forma más rápida y sencilla</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>

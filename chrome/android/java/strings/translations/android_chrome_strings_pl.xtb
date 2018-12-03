@@ -114,7 +114,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="1829244130665387512">Znajdź na stronie</translation>
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="1868024384445905608">Chrome pobiera pliki jeszcze szybciej</translation>
-<translation id="187628348035757895">Opcje programisty</translation>
 <translation id="1880072593381090678">Popularne strony z Chrome</translation>
 <translation id="1883903952484604915">Moje pliki</translation>
 <translation id="1887786770086287077">Dostęp do lokalizacji jest wyłączony na tym urządzeniu. Włącz go w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6416782512398055893">Pobrano <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
-<translation id="6436016483175965362">Szybki podgląd</translation>
 <translation id="6437478888915024427">Informacje o stronie</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="6448273550210938826">Podpowiedzi wyszukiwania i adresów URL</translation>
@@ -773,7 +771,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6868088497967843822">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
 <translation id="688738109438487280">Dodaj istniejące dane do konta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Odblokuj, by skopiować hasło</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otwarta karta}few{%1$d otwarte karty}many{%1$d otwartych kart}other{%1$d otwartej karty}}</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
 <translation id="6910211073230771657">Usunięto</translation>
 <translation id="6912998170423641340">Zablokuj stronom możliwość odczytywania tekstu i obrazów ze schowka</translation>
@@ -825,7 +822,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7250468141469952378">Wybrano <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
-<translation id="728491846437309531">Asystent Google może ułatwić Ci załatwianie różnych spraw przez internet</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>

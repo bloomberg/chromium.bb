@@ -362,7 +362,6 @@
      entre em contato com o administrador da rede para certificar-se de que o 
      servidor proxy esteja funcionando. Se achar que não deve usar um 
      servidor proxy, ajuste suas <ph name="LINK_START" />configurações de proxy<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Oferecer para salvar suas senhas da Web</translation>
 <translation id="1512210426710821809">A única maneira de desfazer essa ação é reinstalando o <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importados do Safari</translation>
 <translation id="1521442365706402292">Gerenciar certificados</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">Não, obrigado</translation>
 <translation id="1525740877599838384">Usar apenas o Wi-Fi para determinar a localização</translation>
 <translation id="1526560967942511387">Documento sem título</translation>
-<translation id="1529116897397289129">Os cards salvos serão exibidos aqui</translation>
 <translation id="1529891865407786369">Fonte de energia</translation>
 <translation id="1529899284660134226">Gerenciar arquivos e pastas compartilhados</translation>
 <translation id="1530838837447122178">Abrir configurações do mouse e touchpad do dispositivo</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Servidores de nomes</translation>
 <translation id="1729533290416704613">Controla também qual página deve ser exibida quando você faz uma pesquisa na Omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Para remover apps, acesse "Config." &gt; "Google Play Store" &gt; "Gerenciar preferências do Android" &gt; "Apps" ou "Gerenciador de apps". Depois, toque no app que você quer desinstalar. Talvez seja necessário deslizar para a direita ou para a esquerda para encontrar o app. Em seguida, toque em "Desinstalar" ou "Desativar".<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Enviando solicitação...</translation>
 <translation id="1732215134274276513">Liberar guias</translation>
 <translation id="1733383495376208985">Criptografar dados sincronizados com sua <ph name="BEGIN_LINK" />senha longa de sincronização<ph name="END_LINK" />. Isso não inclui formas de pagamento e endereços do Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Erro ao ativar o compartilhamento. O compartilhamento especificado não foi encontrado na rede.</translation>
 <translation id="2148756636027685713">Formatação concluída</translation>
 <translation id="2148892889047469596">Transmitir guia</translation>
-<translation id="2149850907588596975">Senhas e formulários</translation>
 <translation id="2150139952286079145">Pesquisar destinos</translation>
 <translation id="2150661552845026580">Adicionar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Índice de guias inválido inserido.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Ler e alterar tudo o que você digitar</translation>
 <translation id="2208158072373999562">Arquivo Zip</translation>
 <translation id="220858061631308971">Digite este código PIN em "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Imprimir utilizando a caixa de diálogo de sistema</translation>
 <translation id="2214884991347062907">Senha incorreta. Tente novamente</translation>
 <translation id="2217501013957346740">Criar um nome –</translation>
 <translation id="2218019600945559112">Mouse e touchpad</translation>
@@ -1269,7 +1264,6 @@
 <translation id="2888807692577297075">Nenhum item corresponde a &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Abrir link com...</translation>
 <translation id="2889925978073739256">Continuar bloqueando plug-ins sem sandbox</translation>
-<translation id="2890678560483811744">Referência de página fora dos limites</translation>
 <translation id="2893168226686371498">Navegador padrão</translation>
 <translation id="289644616180464099">O chip está bloqueado</translation>
 <translation id="289695669188700754">ID da chave: <ph name="KEY_ID" /></translation>
@@ -2279,7 +2273,6 @@
 <translation id="4482194545587547824">O Google pode usar seu histórico de navegação para personalizar a Pesquisa e outros serviços Google</translation>
 <translation id="4495419450179050807">Não mostrar esta página</translation>
 <translation id="449938344715680828">Pressione |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| seguido de |<ph name="ACCELERATOR3" />| para sair</translation>
-<translation id="4499718683476608392">Ativa o preenchimento automático de cartão de crédito para preencher formulários com um único clique</translation>
 <translation id="4500114933761911433">O plug-in <ph name="PLUGIN_NAME" /> falhou</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar remoção</translation>
@@ -2589,7 +2582,6 @@
 <translation id="4971412780836297815">Abrir quando estiver concluído</translation>
 <translation id="4972129977812092092">Editar impressora</translation>
 <translation id="4972164225939028131">Senha incorreta</translation>
-<translation id="497287958838527945">Cartões de crédito e endereços que usam o Google Pay.</translation>
 <translation id="4973307593867026061">Adicionar impressoras</translation>
 <translation id="4973523518332075481">Use um nome que tenha no máximo <ph name="MAX_LENGTH" /> caracteres</translation>
 <translation id="4974733135013075877">Sair e bloquear</translation>
@@ -3118,7 +3110,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5752453871435543420">Backup na nuvem do Chrome OS</translation>
 <translation id="5756163054456765343">Central de ajuda</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão pelo <ph name="APP_NAME" /> podem ser lidos pelo <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Configurações de cartão de crédito</translation>
 <translation id="5763315388120433852">Configurar ou gerenciar compartilhamentos de arquivos de rede.</translation>
 <translation id="5763751966069581670">Nenhum dispositivo USB encontrado</translation>
 <translation id="5764483294734785780">Sal&amp;var áudio como...</translation>
@@ -3631,7 +3622,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6508248480704296122">Relacionado a <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplicativo: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licença de mídia</translation>
-<translation id="6510568984200103950">Menos configurações</translation>
 <translation id="6513247462497316522">Caso você não esteja conectado a outra rede, o Google Chrome utilizará dados móveis.</translation>
 <translation id="6514010653036109809">Dispositivo disponível:</translation>
 <translation id="6514565641373682518">Esta página desativou o cursor do mouse.</translation>
@@ -3812,7 +3802,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6805647936811177813">Faça login para que o <ph name="TOKEN_NAME" /> importe o certificado do cliente de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Ativar rastreamento RLZ no <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Gerenciar compartilhamento do Linux</translation>
-<translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="6810613314571580006">Faça login automaticamente nos websites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes antes de fazer login em um website.</translation>
 <translation id="6810768462515084623">Ops! Parece que sua senha expirou. Renove-a em outro dispositivo e tente novamente.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> não pode ser executado como raiz.</translation>
@@ -5006,7 +4995,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8637542770513281060">Seu computador possui um módulo de segurança, que é utilizado para implementar muitos recursos de segurança importantes no Chrome OS. Visite a Central de Ajuda do Chromebook para saber mais: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">A atualização do sistema está disponível. Preparando para fazer download...</translation>
 <translation id="8639047128869322042">Procurando softwares perigosos…</translation>
-<translation id="8639963783467694461">Configurações de preenchimento automático</translation>
 <translation id="8642171459927087831">Token de acesso</translation>
 <translation id="8642947597466641025">Aumentar o texto</translation>
 <translation id="8643418457919840804">Para continuar, escolha uma opção:</translation>
@@ -5022,7 +5010,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8655972064210167941">O login falhou porque não foi possível confirmar sua senha. Entre em contato com o administrador ou tente novamente.</translation>
 <translation id="8656619792520327915">Adicionar outra chave de segurança Bluetooth</translation>
 <translation id="8656768832129462377">Não verificar</translation>
-<translation id="8658595122208653918">Alterar opções da impressora...</translation>
 <translation id="8658645149275195032">O app <ph name="APP_NAME" /> está compartilhando sua tela e áudio com <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Aguarde um instante</translation>
 <translation id="8661290697478713397">Abrir link na janela &amp;anônima</translation>

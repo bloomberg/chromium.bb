@@ -225,14 +225,6 @@
 <translation id="1523774894176285446">Alternatywna przeglądarka, w której otwierane są skonfigurowane witryny.</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
-<translation id="1532965933165453786">Umożliwia włączanie i wyłączanie szybkiego roamingu.
-      Ta zasada wpływa na wszystkich użytkowników i wszystkie interfejsy urządzenia.
-      Aby używać szybkiego roamingu, włączone musi być zarówno to ustawienie, jak i odpowiednia właściwość w konfiguracji ONC danej sieci.
-      Po włączeniu szybki roaming pozostaje włączony, dopóki nie zostanie wyłączony przez zmianę ustawienia zasady.
-
-      Jeśli zasada nie jest skonfigurowana, szybki roaming nie jest używany.
-      Jeśli zasada ma wartość Fałsz, szybki roaming nie jest używany.
-      Jeśli zasada ma wartość Prawda, szybki roaming jest używany, o ile obsługuje go bezprzewodowy punkt dostępu.</translation>
 <translation id="1541170838458414064">Ogranicz rozmiar drukowanych stron</translation>
 <translation id="1553684822621013552">Gdy ta zasada jest włączona, użytkownik ma dostęp do rozszerzenia ARC
       (zależy to jednak od kontroli dodatkowych ustawień zasad – rozszerzenie ARC nadal jest niedostępne,

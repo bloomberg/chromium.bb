@@ -114,7 +114,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1829244130665387512">Rechercher sur la page</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1868024384445905608">Chrome permet désormais de télécharger des fichiers plus vite</translation>
-<translation id="187628348035757895">Options pour développeurs</translation>
 <translation id="1880072593381090678">Pages populaires de Chrome</translation>
 <translation id="1883903952484604915">Mes fichiers</translation>
 <translation id="1887786770086287077">L'accès à la position est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
@@ -234,7 +233,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="271033894570825754">Nouveau</translation>
 <translation id="2728754400939377704">Trier par site</translation>
 <translation id="2744248271121720757">Appuyez sur un mot pour lancer une recherche instantanée ou afficher les actions associées</translation>
-<translation id="2760323196215778921">Vous devez également activer cette autorisation pour Chrome. Pour plus d'informations, consultez l'article <ph name="BEGIN_LINK" />Paramètres d'Android<ph name="END_LINK" />.</translation>
+<translation id="2760323196215778921">Vous devez également activer cette autorisation pour Chrome. Pour plus d'informations, accédez aux <ph name="BEGIN_LINK" />Paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">à l'instant</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secondes restantes</translation>
 <translation id="2779651927720337254">échec</translation>
@@ -710,7 +709,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
-<translation id="6436016483175965362">Aperçu rapide</translation>
 <translation id="6437478888915024427">Infos sur la page</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Suggestions de recherche et d'URL</translation>
@@ -773,7 +771,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6868088497967843822">Connectez-vous pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="688738109438487280">Ajoutez les données existantes au compte <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Déverrouillez pour copier votre mot de passe</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d onglet ouvert}one{%1$d onglet ouvert}other{%1$d onglets ouverts}}</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6910211073230771657">Supprimé</translation>
 <translation id="6912998170423641340">Interdire aux sites d'accéder en lecture au texte et aux images du presse-papiers</translation>
@@ -825,7 +822,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7250468141469952378">Nombre d'éléments sélectionnés : <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
-<translation id="728491846437309531">L'Assistant Google peut vous aider à gagner en efficacité sur le Web</translation>
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
 <translation id="7302081693174882195">Détails : tri effectué par volume de données enregistrées</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
@@ -926,7 +922,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8037750541064988519"><ph name="DAYS" /> jours restants</translation>
 <translation id="804335162455518893">Carte SD introuvable</translation>
 <translation id="805047784848435650">En fonction de votre historique de navigation</translation>
-<translation id="8051303708327298699">Vous devez également activer ces autorisations pour Chrome. Pour plus d'informations, consultez l'article <ph name="BEGIN_LINK" />Paramètres d'Android<ph name="END_LINK" />.</translation>
+<translation id="8051303708327298699">Vous devez également activer ces autorisations pour Chrome. Pour plus d'informations, accédez aux <ph name="BEGIN_LINK" />Paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mo disponibles</translation>
 <translation id="8058746566562539958">Ouvrir dans nouvel onglet Chrome</translation>
 <translation id="8063895661287329888">Échec de l'ajout du favori</translation>

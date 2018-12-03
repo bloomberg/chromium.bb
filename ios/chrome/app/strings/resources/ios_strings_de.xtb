@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
 <translation id="430793432425771671">Alles synchronisieren</translation>
 <translation id="4342284590510997375">Neu</translation>
-<translation id="434816576838749873">E-Mail-App auswählen</translation>
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
 <translation id="4370827530403103842">Synchronisierung funktioniert nicht. Tippen zum Reparieren.</translation>
 <translation id="4375040482473363939">QR-Code-Suche</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Datenschutzhinweise</translation>
-<translation id="4460091562821778167">Immer nachfragen, welche App verwendet werden soll</translation>
 <translation id="4476574785019001431">Einstellungen</translation>
 <translation id="4496373720959965247">Tabs hinzufügen und zwischen Seiten wechseln</translation>
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
@@ -278,7 +276,6 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5554368826343982379">Synchronisieren und personalisieren</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5614553682702429503">Passwort speichern?</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Die Datei kann momentan nicht heruntergeladen werden.</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6127379762771434464">Eintrag entfernt</translation>
 <translation id="6136914049981179737">Vor Sek.</translation>
 <translation id="616831107264507309">Später lesen</translation>
+<translation id="6177442314419606057">Suche in Chrome</translation>
 <translation id="6184086493125982861">Tabs anzeigen</translation>
 <translation id="6187302354554850004">Letzte Synchr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ungelesen</translation>
@@ -382,7 +380,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7136892417564438900">Kamera ist nicht verfügbar</translation>
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
 <translation id="7167621057293532233">Datentypen</translation>
-<translation id="7175593937868963913">E-Mail schreiben</translation>
 <translation id="7189598951263744875">Teilen...</translation>
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
 <translation id="722055596168483966">Google-Dienste personalisieren</translation>
@@ -415,6 +412,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
 <translation id="7781829728241885113">Gestern</translation>
+<translation id="778855399387580014">Eine Suche in einem neuen Chrome-Tab starten.</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7840771868269352570">Die ausgewählten Elemente werden entfernt.</translation>
 <translation id="7856733331829174190">Fehler beim Download</translation>

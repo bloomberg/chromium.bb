@@ -214,14 +214,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1523774894176285446">Alternative browsere, der skal åbnes for konfigurerede websites.</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
-<translation id="1532965933165453786">Gør det muligt at aktivere eller deaktivere Fast Transition.
-      Dette gælder for alle brugere og for alle grænseflader på enheden.
-      Både denne indstilling og ONC-ejendommen pr. netværk skal aktiveres, før Fast Transition kan bruges.
-      Når indstillingen er angivet, beholdes Fast Transition, indtil politikken ændres for at deaktivere den.
-
-      Hvis politikken ikke konfigureres, anvendes Fast Transition ikke.
-      Hvis den angives som falsk, anvendes Fast Transition ikke.
-      Hvis den angives som sand, anvendes Fast Transition, når det trådløse adgangspunkt understøtter funktionen.</translation>
 <translation id="1541170838458414064">Begræns størrelsen på udskriftsiden</translation>
 <translation id="1553684822621013552">Når denne politik er angivet til sand, aktiveres ARC for brugeren
       (undelagt de øvrige indstillinger for politik. ARC er stadig
@@ -284,6 +276,9 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1803646570632580723">Liste over fastgjorte apps, der skal vises på applisten</translation>
 <translation id="1808715480127969042">Bloker cookies på disse websites</translation>
 <translation id="1810261428246410396">Tillad brug af øjeblikkelig netdeling.</translation>
+<translation id="1817685358399181673">Denne politik angiver <ph name="PLUGIN_VM_NAME" />-billedet for en bruger. Politikken angives ved at angive den webadresse, som enheden kan downloade billedet fra, samt et SHA-256-hash, der bruges til at bekræfte downloadens integritet.
+
+      Politikken skal angives som en streng, der viser webadressen og hashet i JSON-format.</translation>
 <translation id="1827523283178827583">Brug faste proxyservere</translation>
 <translation id="1843117931376765605">Opdateringsfrekvens for brugerpolitik</translation>
 <translation id="1844620919405873871">Konfigurerer politikker for hurtig oplåsning.</translation>
@@ -446,6 +441,10 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="214901426630414675">Begræns udskrivning i duplex-tilstand</translation>
 <translation id="2149330464730004005">Aktivér farveudskrivning</translation>
 <translation id="2156132677421487971">Konfigurer politikker for <ph name="PRODUCT_NAME" />, som er en funktion, der giver brugerne mulighed for at sende indholdet af faner, websites eller skrivebordet fra browseren til eksterne skærme og lydsystemer.</translation>
+<translation id="2163878108829382394">
+        Hvis denne politik er angivet som Sand, er maskinen tilmeldt politikken, og politikken blokerer åbningen af Chrome.
+
+        Hvis denne politik ikke angives eller angives som Falsk, er maskinens tilmelding til politikken valgfri, og politikken blokerer ikke åbningen af Chrome.</translation>
 <translation id="2166472654199325139">Filtrér ikke voksenindhold fra på websites</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
@@ -661,6 +660,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurer webadressen til ændring af adgangskoder.</translation>
+<translation id="2696531058295423290">Tillad, at enheder anvender en <ph name="PLUGIN_VM_NAME" />-politik i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Deaktiver brug af certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
 <translation id="2742843273354638707">Skjul appen Chrome Webshop og linket i sidefoden på siden Ny fane og applisten for <ph name="PRODUCT_OS_NAME" />.
 
@@ -923,7 +923,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3388153794103186066">Gør det muligt at angive en liste over webadresser, der angiver, hvilke sider der automatisk får adgangstilladelse til en USB-enhed med de givne leverandør- og produkt-id'er. Hvert element på listen skal indeholde både enheder og webadresser, før politikken er gyldig. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, regnes politikken som ugyldig og ignoreres.
 
-        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at anmode om tilladelse til den anmodende webadresse for at få adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, som er afgrænset af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
+        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at give den anmodende webadresse adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, adskilt af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
 
         Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
 
@@ -1354,6 +1354,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4483649828988077221">Deaktiver automatisk opdatering</translation>
 <translation id="4485425108474077672">Konfigurer webadressen for siden Ny fane</translation>
 <translation id="4492287494009043413">Deaktiver screenshots</translation>
+<translation id="449423975179525290">Konfigurer <ph name="PLUGIN_VM_NAME" />-relaterede politikker.</translation>
 <translation id="450537894712826981">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
       Hvis du indstiller denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne cachestørrelse, uanset om brugeren har markeret flaget "--media-cache-size" eller ej. Værdien, der er angivet i denne politik, er ikke en hård grænse, men snarere en forslag til et cachelagringssystem, Enhver værdi under et par megabyte er for lille og vil blive rundet op til et fornuftigt minimum.
@@ -2620,6 +2621,9 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Bemærk, at disse begrænsninger gælder for downloads, der aktiveres af websiteindhold såvel som genvejsmenuvalget "download link...". Disse begrænsninger gælder ikke i forbindelse med muligheden for at gemme/downloade den aktuelle side. De gælder heller ikke, når der gemmes som PDF-fil fra udskrivningsmulighederne.
 
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Aktivér PluginVm for denne enhed.
+
+      Hvis politikken angives som Falsk eller ikke angives, aktiveres <ph name="PLUGIN_VM_NAME" /> ikke for denne enhed. Hvis den angives som Sand, aktiveres <ph name="PLUGIN_VM_NAME" /> for enheden, så længe dette også tillades af andre indstillinger. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> skal angives som Sand, og <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> skal angives for <ph name="PLUGIN_VM_NAME" /> for at tillade, at den køres.</translation>
 <translation id="7643883929273267746">Begræns konti, der er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Bestemmer, om dataroaming skal aktiveres for enheden. Hvis den er indstillet til sand, tillades dataroaming. Hvis den ikke er konfigureret eller er angivet til falsk, vil dataroaming ikke være tilgængelig.</translation>
 <translation id="7673194325208122247">Tidsrum (millisekunder)</translation>
@@ -3074,6 +3078,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Hvis denne indstilling er aktiveret eller ikke er angivet, kan browser- og downloadhistorik slettes.
 
       Hvis denne indstilling er deaktiveret, kan browser- og downloadhistorik ikke slettes.</translation>
+<translation id="8758831693895931466">Aktivér obligatorisk tilmelding til politik</translation>
 <translation id="8759829385824155666">Tilladte Kerberos-krypteringstyper</translation>
 <translation id="8764119899999036911">Angiver, om den genererede Kerberos SPN er baseret på det kanoniske DNS-navn eller det navn, der oprindeligt blev indtastet. Hvis du aktiverer denne indstilling, springes CNAME-opslag over, og servernavnet anvendes, sådan som det er indtastet. Hvis du deaktiverer denne indstilling eller ikke angiver den, vil det kanoniske navn på den pågældende server blive fastlagt via CNAME-opslag.</translation>
 <translation id="8782750230688364867">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når enheden er i præsentationstilstand.

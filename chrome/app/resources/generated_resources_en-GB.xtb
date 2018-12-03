@@ -362,7 +362,6 @@
     contact your network administrator to check that the proxy
     server is working. If you don't believe you should be using a
     proxy server, adjust your <ph name="LINK_START" />proxy settings<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Offer to save your web passwords</translation>
 <translation id="1512210426710821809">The only way to undo this is to re-install <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Imported From Safari</translation>
 <translation id="1521442365706402292">Manage certificates</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">No, Thanks</translation>
 <translation id="1525740877599838384">Use only Wi-Fi to determine location</translation>
 <translation id="1526560967942511387">Untitled Document</translation>
-<translation id="1529116897397289129">Saved cards will appear here</translation>
 <translation id="1529891865407786369">Power source</translation>
 <translation id="1529899284660134226">Manage shared files and folders</translation>
 <translation id="1530838837447122178">Open mouse and touchpad device settings</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Name servers</translation>
 <translation id="1729533290416704613">It also controls what page is shown when you search from the Omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app that you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Sending request...</translation>
 <translation id="1732215134274276513">Unpin Tabs</translation>
 <translation id="1733383495376208985">Encrypt synced data with your own <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" />. This doesn't include payment methods and addresses from Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Error mounting share. The specified share was not found on the network.</translation>
 <translation id="2148756636027685713">Formatting finished</translation>
 <translation id="2148892889047469596">Cast tab</translation>
-<translation id="2149850907588596975">Passwords and forms</translation>
 <translation id="2150139952286079145">Search destinations</translation>
 <translation id="2150661552845026580">Add "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Invalid tab index entered.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Read and change anything that you type</translation>
 <translation id="2208158072373999562">Zip archive</translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Print using system dialogue</translation>
 <translation id="2214884991347062907">Wrong password. Try again</translation>
 <translation id="2217501013957346740">Create a name -</translation>
 <translation id="2218019600945559112">Mouse and touchpad</translation>
@@ -1268,7 +1263,6 @@
 <translation id="2888807692577297075">No items match &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Open link with...</translation>
 <translation id="2889925978073739256">Continue blocking unsandboxed plug-ins</translation>
-<translation id="2890678560483811744">Out of bounds page reference</translation>
 <translation id="2893168226686371498">Default browser</translation>
 <translation id="289644616180464099">SIM Card is locked</translation>
 <translation id="289695669188700754">Key ID: <ph name="KEY_ID" /></translation>
@@ -2278,7 +2272,6 @@
 <translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
 <translation id="449938344715680828">Press |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| followed by |<ph name="ACCELERATOR3" />| to exit</translation>
-<translation id="4499718683476608392">Enable credit card Auto-fill to fill in forms in a single click</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> has crashed</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
 <translation id="4501530680793980440">Confirm Removal</translation>
@@ -2588,7 +2581,6 @@
 <translation id="4971412780836297815">Open when done</translation>
 <translation id="4972129977812092092">Edit printer</translation>
 <translation id="4972164225939028131">Wrong password</translation>
-<translation id="497287958838527945">Credit cards and addresses using Google Pay.</translation>
 <translation id="4973307593867026061">Add printers</translation>
 <translation id="4973523518332075481">Use a name that's <ph name="MAX_LENGTH" /> characters or less</translation>
 <translation id="4974733135013075877">Exit and child lock</translation>
@@ -3116,7 +3108,6 @@
 <translation id="5752453871435543420">Chrome OS Cloud backup</translation>
 <translation id="5756163054456765343">Help centre</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME" /> can be read by <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Credit card settings</translation>
 <translation id="5763315388120433852">Set up or manage network file shares.</translation>
 <translation id="5763751966069581670">No USB devices found</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
@@ -3628,7 +3619,6 @@
 <translation id="6508248480704296122">Related to <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Media licence</translation>
-<translation id="6510568984200103950">Fewer settings</translation>
 <translation id="6513247462497316522">Google Chrome will use mobile data if you're not connected to another network.</translation>
 <translation id="6514010653036109809">Available device:</translation>
 <translation id="6514565641373682518">This page has disabled your mouse cursor.</translation>
@@ -3809,7 +3799,6 @@
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Manage Linux sharing</translation>
-<translation id="6807889908376551050">Show All...</translation>
 <translation id="6810613314571580006">Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing in to a website.</translation>
 <translation id="6810768462515084623">Oops! Looks like your password has expired. Please renew it on another device and try again.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> cannot be run as root.</translation>
@@ -5002,7 +4991,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8637542770513281060">Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Centre to learn more: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
 <translation id="8639047128869322042">Checking for harmful software…</translation>
-<translation id="8639963783467694461">Auto-fill settings</translation>
 <translation id="8642171459927087831">Access Token</translation>
 <translation id="8642947597466641025">Make Text Larger</translation>
 <translation id="8643418457919840804">To continue, choose an option:</translation>
@@ -5018,7 +5006,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8655972064210167941">Sign-in failed because your password could not be verified. Please contact your administrator or try again.</translation>
 <translation id="8656619792520327915">Add another Bluetooth security key</translation>
 <translation id="8656768832129462377">Do not check</translation>
-<translation id="8658595122208653918">Change printer options...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> is sharing your screen and audio with <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Just a sec</translation>
 <translation id="8661290697478713397">Open Link in Inco&amp;gnito Window</translation>

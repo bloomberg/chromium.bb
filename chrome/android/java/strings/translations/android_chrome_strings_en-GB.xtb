@@ -114,7 +114,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1868024384445905608">Chrome now downloads files faster</translation>
-<translation id="187628348035757895">Developer options</translation>
 <translation id="1880072593381090678">Popular pages from Chrome</translation>
 <translation id="1883903952484604915">My files</translation>
 <translation id="1887786770086287077">Location access is off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="641643625718530986">Print…</translation>
 <translation id="6416782512398055893">Downloaded <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
-<translation id="6436016483175965362">Sneak peek</translation>
 <translation id="6437478888915024427">Page info</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Search and URL suggestions</translation>
@@ -773,7 +771,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Unlock to copy your password</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6910211073230771657">Deleted</translation>
 <translation id="6912998170423641340">Block sites from reading text and images from the clipboard</translation>
@@ -825,7 +822,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selected</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
-<translation id="728491846437309531">Google Assistant can help you get things done faster and easier on the web</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>

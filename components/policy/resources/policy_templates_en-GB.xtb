@@ -228,14 +228,6 @@
 <translation id="1523774894176285446">Alternative browser to launch for configured websites.</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
-<translation id="1532965933165453786">Allows enabling or disabling Fast Transition.
-      This applies to all users, and to all interfaces on the device.
-      In order for Fast Transition to be used, both this setting and the per-network ONC property need to be enabled.
-      Once set, Fast Transition persists until the policy is changed to disable it.
-
-      If policy is not set, Fast Transition is not used.
-      If set to false, Fast Transition is not used.
-      If set to true, Fast Transition is used when the wireless access point supports it.</translation>
 <translation id="1541170838458414064">Restrict printing page size</translation>
 <translation id="1553684822621013552">When this policy is set to true, ARC will be enabled for the user
       (subject to additional policy settings checks – ARC will still be

@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Умови використання</translation>
 <translation id="430793432425771671">Синхронізувати все</translation>
 <translation id="4342284590510997375">Нове</translation>
-<translation id="434816576838749873">Вибрати поштовий додаток</translation>
 <translation id="4359125752503270327">Ця сторінка відкриється в іншому додатку.</translation>
 <translation id="4370827530403103842">Синхронізація не працює. Торкніться, щоб виправити.</translation>
 <translation id="4375040482473363939">Шукати за QR-кодом</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примітка про конфіденційність</translation>
-<translation id="4460091562821778167">Щоразу запитувати, який додаток використовувати</translation>
 <translation id="4476574785019001431">Налаштування</translation>
 <translation id="4496373720959965247">Додавайте вкладки та переходьте між сторінками</translation>
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">Синхронізація й персоналізація</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5614553682702429503">Зберегти пароль?</translation>
-<translation id="5619279135193775234">Пошта</translation>
 <translation id="5626245204502895507">Зараз неможливо завантажити цей файл.</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5669528293118408608">www</translation>
@@ -383,7 +380,6 @@
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобільний сайт</translation>
 <translation id="7167621057293532233">Типи даних</translation>
-<translation id="7175593937868963913">Написати лист</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7203585745079012652">Озвучувати відповіді</translation>
 <translation id="722055596168483966">Персоналізувати служби Google</translation>

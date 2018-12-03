@@ -114,7 +114,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="1829244130665387512">Vinden op pagina</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="1868024384445905608">Chrome downloadt bestanden nu sneller</translation>
-<translation id="187628348035757895">Ontwikkelaarsopties</translation>
 <translation id="1880072593381090678">Populaire pagina's uit Chrome</translation>
 <translation id="1883903952484604915">Mijn bestanden</translation>
 <translation id="1887786770086287077">Locatietoegang is uitgeschakeld voor dit apparaat. Schakel dit in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="641643625718530986">Afdrukken…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB gedownload</translation>
 <translation id="6433501201775827830">Je zoekmachine kiezen</translation>
-<translation id="6436016483175965362">Voorbeeldweergave</translation>
 <translation id="6437478888915024427">Pagina-informatie</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Zoek- en URL-suggesties</translation>
@@ -773,7 +771,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6868088497967843822">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken</translation>
 <translation id="688738109438487280">Bestaande gegevens toevoegen aan <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Ontgrendelen om je wachtwoord te kopiëren</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tabblad geopend}other{%1$d tabbladen geopend}}</translation>
 <translation id="6896758677409633944">Kopieer</translation>
 <translation id="6910211073230771657">Verwijderd</translation>
 <translation id="6912998170423641340">Voorkomen dat sites tekst en afbeeldingen vanaf het klembord kunnen lezen</translation>
@@ -825,7 +822,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> geselecteerd</translation>
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
-<translation id="728491846437309531">Google Assistent kan je helpen dingen sneller en eenvoudiger gedaan te krijgen op internet</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>

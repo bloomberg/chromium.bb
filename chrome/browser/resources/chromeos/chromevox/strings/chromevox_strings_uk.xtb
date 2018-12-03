@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Сховати фільтри потоку подій</translation>
 <translation id="1088219014394087294">Немає заголовків.</translation>
 <translation id="1106741348836243114">Увімкнути або вимкнути звуковий сигнал (звуковий ефект).</translation>
-<translation id="1108651818222110612">підзаголовок</translation>
 <translation id="1120743664840974483">{"а": "а-зОт", "б": "бОн-да-рів-на", "в": "віт-ро-гон", "г": "га-ра-кі-рі", "ґ": "ґо-ґо-дзи", "д": "до-ли-на", "е": "ерг", "є": "єд-ність-то-си-ла", "ж": "жа-б'є-се-ло", "з": "зо-ло-ту-ха", "и": "то-не-во-но", "і": "І-ван", "ї": "їж-хто-го-ло-ден", "й": "йди-хо-лод-ком", "к": "ко-лі-но", "л": "лі-со-ру-би", "м": "мо-роз", "н": "но-га", "о": "о-ко-лот", "п": "при-мо-роз-ки", "р": "ри-бонь-ка", "с": "са-ха-ра", "т": "тон", "у": "у-па-док", "ф": "фі-лан-тро-пи", "х": "хо-ло-до-чок", "ц": "цьо-ця-дор-ця", "ч": "чор-но-го-ра", "ш": "шо-ло-ви-ло", "щ": "що-ро-ку-мо-роз", "ь": "то-м'я-кий-тон" "ю": "ю-рій-ко-роль", "я": "я-ро-шен-ко"}</translation>
 <translation id="1120938014254001895">Проведіть двома пальцями вгору</translation>
 <translation id="1124771028211010580">Поточний стиль дисплея – паралельний перегляд.</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">Кінець надрядкового тексту</translation>
 <translation id="2749275490991666823">З прапорцем</translation>
 <translation id="27527859628328957">Перейти до наступного інтерактивного елемента</translation>
-<translation id="276402504937943375">зміст</translation>
 <translation id="2770781857296573485">Почати вивчення груп</translation>
 <translation id="2777845298774924149">Ви закрили</translation>
 <translation id="2781264313200109999">Початок посилання</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">відео</translation>
 <translation id="4764692524839457597">за умовчанням</translation>
 <translation id="479989351350248267">пошук</translation>
+<translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="481165870889056555">Повідомити назву поточної сторінки</translation>
 <translation id="4826415162591436065">Перейти вперед</translation>
 <translation id="4826604887384865800">Наступний перехід</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">Об’єкт</translation>
 <translation id="5302089807023311274">Посилання на бібліографію</translation>
 <translation id="5304943142864553931">вкладка <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5310788376443009632">видалено:</translation>
 <translation id="5320727453979144100">Залипання клавіш увімкнено</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{кома}one{# кома}few{# коми}many{# ком}other{# commas}}</translation>
@@ -772,6 +772,7 @@
 <translation id="712735679809149106">озвучення слів</translation>
 <translation id="713824876195128146">Цитування наступного блока</translation>
 <translation id="7143034430156387447">Переключитися між 6- та 8-крапковим шрифтом Брайля</translation>
+<translation id="7143207342074048698">Під’єднання</translation>
 <translation id="7157306005867877619">Автореферат</translation>
 <translation id="7161425887892204659">Кінець збігу в тексті</translation>
 <translation id="7161771961008409533">Кнопка зі спливаючою підказкою</translation>
@@ -835,7 +836,6 @@
 <translation id="7625690649919402823">Наступна таблиця</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), <ph name="GRADE" /> рівень</translation>
 <translation id="7641134354185483015">Немає попереднього заголовка рівня 3.</translation>
-<translation id="7647456547678091388">порада</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, текстове поле</translation>
 <translation id="7663318257180412551">Заголовок 2</translation>
 <translation id="7674576868851035240">Наступне посилання</translation>
@@ -961,6 +961,7 @@
 <translation id="8940925288729953902">Клавіші-модифікатори</translation>
 <translation id="8943175951035496220">Немає клітинки праворуч.</translation>
 <translation id="8978496506222343566">підказка</translation>
+<translation id="8986362086234534611">Видалити</translation>
 <translation id="900114243503212879">файл</translation>
 <translation id="9027462562263121875">Немає таблиць.</translation>
 <translation id="9040132695316389094">Заголовок 1</translation>

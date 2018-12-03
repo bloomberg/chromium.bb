@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Skrýt filtry streamů událostí</translation>
 <translation id="1088219014394087294">Žádné nadpisy.</translation>
 <translation id="1106741348836243114">Zapnout nebo vypnout zvukové signály.</translation>
-<translation id="1108651818222110612">titulek</translation>
 <translation id="1120743664840974483">{"a": "adam", "á": "dlouhé a", "b": "božena", "c": "cyril", "č": "čeněk", "d": "david", "ď": "ďáblice", "e": "emil", "ě": "e s háčkem", "é": "dlouhé e", "f": "františek", "g": "gustav", "h": "helena", "ch": "chrudim", "i": "ivan", "í": "dlouhé měkké i", "j": "josef", "k": "karel", "l": "ludvík", "m": "marie", "n": "neruda", "ň": "nina", "o": "otakar", "ó": "dlouhé o", "p": "petr", "q": "quido", "r": "rudolf", "ř": "řehoř", "s": "svatopluk", "š": "šimon", "t": "tomáš", "ť": "těšnov", "u": "urban", "ů": "u s kroužkem", "ú": "u s čárkou", "v": "václav", "w": "dvojité v", "x": "xaver", "y": "ypsilon", "ý": "dlouhé tvrdé y", "z": "zuzana", "ž": "žofie"}</translation>
 <translation id="1120938014254001895">Přejeďte dvěma prsty nahoru</translation>
 <translation id="1124771028211010580">Aktuální styl zobrazení je vedle sebe.</translation>
@@ -195,7 +194,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2737520612859577214">Konec horního indexu</translation>
 <translation id="2749275490991666823">Zaškrtnuto</translation>
 <translation id="27527859628328957">Přejít na další zaměřitelnou položku</translation>
-<translation id="276402504937943375">obsah</translation>
 <translation id="2770781857296573485">Zahájit průzkum skupin</translation>
 <translation id="2777845298774924149">Ukončeno</translation>
 <translation id="2781264313200109999">Začátek odkazu</translation>
@@ -488,6 +486,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">výchozí</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Odpojit</translation>
 <translation id="481165870889056555">Oznámit název aktuální stránky</translation>
 <translation id="4826415162591436065">Přejít dopředu</translation>
 <translation id="4826604887384865800">Další skok</translation>
@@ -557,6 +556,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografický odkaz</translation>
 <translation id="5304943142864553931">karta <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Připojení</translation>
 <translation id="5310788376443009632">odebráno:</translation>
 <translation id="5320727453979144100">Režim Jedním prstem je zapnut</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{čárka}few{# čárky}many{# commas}other{# čárek}}</translation>
@@ -772,6 +772,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="712735679809149106">vyslovovat slova</translation>
 <translation id="713824876195128146">Další blok citace</translation>
 <translation id="7143034430156387447">Přepnout mezi šestibodovým a osmibodovým Braillovým písmem</translation>
+<translation id="7143207342074048698">Připojování</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
 <translation id="7161425887892204659">Konec shody textu</translation>
 <translation id="7161771961008409533">Tlačítko s vyskakovacím oknem</translation>
@@ -835,7 +836,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7625690649919402823">Další tabulka</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), podoba: <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Žádný předchozí nadpis 3. úrovně.</translation>
-<translation id="7647456547678091388">tip</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textové pole</translation>
 <translation id="7663318257180412551">Nadpis 2</translation>
 <translation id="7674576868851035240">Další odkaz</translation>
@@ -961,6 +961,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8940925288729953902">Modifikační klávesy</translation>
 <translation id="8943175951035496220">Vpravo není žádná buňka.</translation>
 <translation id="8978496506222343566">popisek</translation>
+<translation id="8986362086234534611">Odstranit</translation>
 <translation id="900114243503212879">soubor</translation>
 <translation id="9027462562263121875">Žádné tabulky.</translation>
 <translation id="9040132695316389094">Nadpis 1</translation>

@@ -114,7 +114,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="1829244130665387512">Găsește în pagină</translation>
 <translation id="1853692000353488670">Filă incognito nouă</translation>
 <translation id="1868024384445905608">Acum Chrome descarcă mai rapid fișierele</translation>
-<translation id="187628348035757895">Opțiuni pentru dezvoltatori</translation>
 <translation id="1880072593381090678">Pagini populare din Chrome</translation>
 <translation id="1883903952484604915">Fișierele mele</translation>
 <translation id="1887786770086287077">Accesul la locație este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="641643625718530986">Printați...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB descărcați</translation>
 <translation id="6433501201775827830">Alege motorul de căutare</translation>
-<translation id="6436016483175965362">Previzualizare rapidă</translation>
 <translation id="6437478888915024427">Informații despre pagină</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6448273550210938826">Sugestii de căutare și pentru adrese URL</translation>
@@ -773,7 +771,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
 <translation id="688738109438487280">Adaugă datele existente în <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Deblochează pentru a copia parola</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d filă deschisă}few{%1$d file deschise}other{%1$d de file deschise}}</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6910211073230771657">Șters</translation>
 <translation id="6912998170423641340">Blochează accesul de citire a textului și imaginilor din clipboard pentru site-uri</translation>
@@ -825,7 +822,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
 <translation id="7253272406652746122">Adaugă un Cont Google din pagina Conturi din aplicația Setări a dispozitivului.</translation>
 <translation id="7274013316676448362">Site blocat</translation>
-<translation id="728491846437309531">Asistentul Google te poate ajuta să faci lucrurile mai repede și mai simplu pe web</translation>
 <translation id="729975465115245577">Dispozitivul nu are o aplicație pentru stocarea fișierului parolelor.</translation>
 <translation id="7302081693174882195">Detalii: sortate după volumul de date salvate</translation>
 <translation id="7333031090786104871">Încă se adaugă site-ul anterior</translation>

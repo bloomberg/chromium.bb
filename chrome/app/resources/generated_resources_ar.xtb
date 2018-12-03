@@ -362,7 +362,6 @@
         اتصل بمشرف الشبكة للتحقق من أن الخادم الوكيل
         يعمل. إذا كنت لا ترى أنه يتعين عليك استخدام
         خادم وكيل، فعليك بتعديل <ph name="LINK_START" />إعدادات الخادم الوكيل<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">عرض حفظ كلمات مرور الويب</translation>
 <translation id="1512210426710821809">الوسيلة الوحيدة للتراجع عن هذا الإجراء هي إعادة تثبيت <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">‏تم الاستيراد من Safari</translation>
 <translation id="1521442365706402292">تنظيم الشهادات</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">لا، شكرًا</translation>
 <translation id="1525740877599838384">‏استخدام شبكة Wi-Fi فقط لتحديد الموقع الجغرافي</translation>
 <translation id="1526560967942511387">مستند بلا عنوان</translation>
-<translation id="1529116897397289129">ستظهر هنا البطاقات المحفوظة</translation>
 <translation id="1529891865407786369">مصدر الطاقة</translation>
 <translation id="1529899284660134226">إدارة المجلدات والملفات التي تمت مشاركتها</translation>
 <translation id="1530838837447122178">فتح إعدادات الجهاز للماوس ولوحة اللمس</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">خوادم الأسماء</translation>
 <translation id="1729533290416704613">كما أنها تتحكم في الصفحة التي تظهر عند إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="1730917990259790240">‏<ph name="BEGIN_PARAGRAPH1" />لإزالة التطبيقات، يمكنك الانتقال إلى "الإعدادات" &gt; "متجر Google Play" &gt; "إدارة إعدادات Android المفضّلة" &gt; "التطبيقات" أو "مدير التطبيقات". وبعد ذلك، انقر على التطبيق الذي تريد إلغاء تثبيته (قد يجب التمرير سريعًا إلى اليمين أو اليسار للعثور على التطبيق). ثم انقر على "إلغاء التثبيت" أو "إيقاف".<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">الإجمالي: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">إرسال الطلب...</translation>
 <translation id="1732215134274276513">إزالة تثبيت علامات التبويب</translation>
 <translation id="1733383495376208985">‏تشفير البيانات المتزامنة باستخدام <ph name="BEGIN_LINK" />عبارة مرور المزامنة<ph name="END_LINK" /> الخاصة بك. لا يتضمّن ذلك طرق الدفع والعناوين من Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">حدث خطأ في تحميل المشاركة. لم يتم العثور على المشاركة المُحدَّدة في الشبكة.</translation>
 <translation id="2148756636027685713">انتهت عملية التنسيق</translation>
 <translation id="2148892889047469596">علامة التبويب "إرسال"</translation>
-<translation id="2149850907588596975">كلمات المرور والنماذج</translation>
 <translation id="2150139952286079145">بحث في الوجهات</translation>
 <translation id="2150661552845026580">هل تريد إضافة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="2151576029659734873">تم إدخال فهرس علامات تبويب غير صحيح.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">قراءة وتغيير أي شيء تكتبه</translation>
 <translation id="2208158072373999562">‏أرشيف Zip</translation>
 <translation id="220858061631308971">يُرجى إدخال رمز رقم التعريف الشخصي هذا على "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">الطباعة باستخدام مربع الحوار الخاص بالنظام</translation>
 <translation id="2214884991347062907">كلمة المرور غير صحيحة، يُرجى إعادة المحاولة.</translation>
 <translation id="2217501013957346740">أنشئ اسمًا -</translation>
 <translation id="2218019600945559112">الماوس ولوحة اللمس</translation>
@@ -1268,7 +1263,6 @@
 <translation id="2888807692577297075">‏لا توجد عناصر متطابقة مع  &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">فتح الرابط باستخدام...</translation>
 <translation id="2889925978073739256">متابعة حظر المكونات الإضافية غير المحمية</translation>
-<translation id="2890678560483811744">مرجع صفحة خارج الحدود المفروضة</translation>
 <translation id="2893168226686371498">المتصفح التلقائي</translation>
 <translation id="289644616180464099">‏تم قفل شريحة SIM</translation>
 <translation id="289695669188700754">معرّف المفتاح: <ph name="KEY_ID" /></translation>
@@ -2274,7 +2268,6 @@
 <translation id="4482194545587547824">‏قد يستخدم Google سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="4495419450179050807">عدم الظهور في هذه الصفحة</translation>
 <translation id="449938344715680828">الضغط على |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| ثم |<ph name="ACCELERATOR3" />| للخروج</translation>
-<translation id="4499718683476608392">تفعيل الملء التلقائي لبطاقة الائتمان لملء النماذج بنقرة واحدة</translation>
 <translation id="4500114933761911433">تعطّل <ph name="PLUGIN_NAME" />.</translation>
 <translation id="450099669180426158">رمز علامة التعجب</translation>
 <translation id="4501530680793980440">تأكيد الإزالة</translation>
@@ -2584,7 +2577,6 @@
 <translation id="4971412780836297815">فتح عند اكتمال التنزيل</translation>
 <translation id="4972129977812092092">تعديل الطابعة</translation>
 <translation id="4972164225939028131">كلمة مرور غير صحيحة</translation>
-<translation id="497287958838527945">‏بطاقات الائتمان والعناوين باستخدام Google Pay.</translation>
 <translation id="4973307593867026061">إضافة الطابعات</translation>
 <translation id="4973523518332075481">يرجى استخدام اسم يحتوي على <ph name="MAX_LENGTH" /> حرف أو أقل</translation>
 <translation id="4974733135013075877">الخروج وتشغيل وضع القفل للأطفال</translation>
@@ -3112,7 +3104,6 @@
 <translation id="5752453871435543420">‏النسخ الاحتياطي في السحاب عبر نظام التشغيل Chrome</translation>
 <translation id="5756163054456765343">مركز المساعدة</translation>
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME" /> بواسطة <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">إعدادات بطاقة الائتمان</translation>
 <translation id="5763315388120433852">إعداد مشاركات ملفات الشبكة أو إدارتها</translation>
 <translation id="5763751966069581670">‏لم يتم العثور على أي أجهزة USB</translation>
 <translation id="5764483294734785780">حف&amp;ظ ملف الصوت باسم...</translation>
@@ -3625,7 +3616,6 @@
 <translation id="6508248480704296122">ذات صلة بـ <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">التطبيق: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">ترخيص الوسائط</translation>
-<translation id="6510568984200103950">إعدادات أقل</translation>
 <translation id="6513247462497316522">‏سيستخدم Google Chrome بيانات الجوال إذا لم تكن متصلاً بشبكة أخرى.</translation>
 <translation id="6514010653036109809">الجهاز المتاح:</translation>
 <translation id="6514565641373682518">أوقفت هذه الصفحة مؤشر الماوس.</translation>
@@ -3806,7 +3796,6 @@
 <translation id="6805647936811177813">يُرجى تسجيل الدخول إلى <ph name="TOKEN_NAME" /> لاستيراد شهادة العميل من <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">‏تفعيل تتبع RLZ في <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">‏إدارة المشاركة في Linux</translation>
-<translation id="6807889908376551050">إظهار الكل...</translation>
 <translation id="6810613314571580006">لتسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. عندما تكون الميزة غير مفعّلة، سيُطلب منك التأكيد في كل مرة قبل تسجيل الدخول إلى أحد مواقع الويب.</translation>
 <translation id="6810768462515084623">عفوًا، يبدو أن كلمة المرور منتهية الصلاحية. يُرجى تجديدها على جهاز آخر وإعادة المحاولة.</translation>
 <translation id="6812349420832218321">لا يمكن تشغيل <ph name="PRODUCT_NAME" /> كجذر.</translation>
@@ -4999,7 +4988,6 @@
 <translation id="8637542770513281060">‏يحتوي الكمبيوتر على وحدة آمنة، والتي يتم استخدامها لتنفيذ العديد من ميزات الأمان المهمة في نظام التشغيل Chrome. ويُمكنك الانتقال إلى مركز مساعدة Chromebook للتعرف على مزيد من المعلومات: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">يتوفر تحديث النظام الآن. جارٍ التحضير للتنزيل...</translation>
 <translation id="8639047128869322042">جارٍ التحقق من البرامج الضارة...</translation>
-<translation id="8639963783467694461">إعدادات الملء التلقائي</translation>
 <translation id="8642171459927087831">رمز الدخول المميز</translation>
 <translation id="8642947597466641025">لتكبير النص</translation>
 <translation id="8643418457919840804">للاستمرار، يُرجى تحديد خيار:</translation>
@@ -5015,7 +5003,6 @@
 <translation id="8655972064210167941">فشل تسجيل الدخول، نظرًا لعدم القدرة على التحقق من كلمة مرورك، يُرجى الاتصال بالمسؤول أو إعادة المحاولة.</translation>
 <translation id="8656619792520327915">إضافة مفتاح أمان بلوتوث آخر</translation>
 <translation id="8656768832129462377">عدم التحقق</translation>
-<translation id="8658595122208653918">تغيير خيارات الطابعة...</translation>
 <translation id="8658645149275195032">يشارك <ph name="APP_NAME" /> الشاشة والصوت من خلال <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">لحظة من فضلك</translation>
 <translation id="8661290697478713397">ف&amp;تح رابط في نافذة التصفح المتخفي</translation>

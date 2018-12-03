@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Masquer les filtres de flux d'événements</translation>
 <translation id="1088219014394087294">Aucun titre</translation>
 <translation id="1106741348836243114">Activer ou désactiver les commentaires audio (icônes audio)</translation>
-<translation id="1108651818222110612">sous-titre</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Balayer l'écran vers le haut avec deux doigts</translation>
 <translation id="1124771028211010580">Le style d'affichage actuel est "côte à côte".</translation>
@@ -196,7 +195,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2737520612859577214">Fin du texte en exposant</translation>
 <translation id="2749275490991666823">Cochée</translation>
 <translation id="27527859628328957">Renvoyer à l'élément suivant pouvant être agrandi</translation>
-<translation id="276402504937943375">sommaire</translation>
 <translation id="2770781857296573485">Passer en mode d'exploration par groupe</translation>
 <translation id="2777845298774924149">Fermé</translation>
 <translation id="2781264313200109999">Début du lien</translation>
@@ -489,6 +487,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4763480195061959176">vidéo</translation>
 <translation id="4764692524839457597">par défaut</translation>
 <translation id="479989351350248267">rechercher</translation>
+<translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="481165870889056555">Énoncer le titre de la page actuelle</translation>
 <translation id="4826415162591436065">Navigation vers le bas</translation>
 <translation id="4826604887384865800">Renvoi suivant</translation>
@@ -558,6 +557,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5291783959063340370">Navigation par objet</translation>
 <translation id="5302089807023311274">Référence bibliographique</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, onglet</translation>
+<translation id="5308380583665731573">Connexion</translation>
 <translation id="5310788376443009632">Éléments supprimés :</translation>
 <translation id="5320727453979144100">Mode permanent activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
@@ -773,6 +773,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="712735679809149106">écho des mots</translation>
 <translation id="713824876195128146">Bloc de citation suivant</translation>
 <translation id="7143034430156387447">Alterner entre les méthodes braille à six et huit points</translation>
+<translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7157306005867877619">Résumé</translation>
 <translation id="7161425887892204659">Fin de la correspondance de texte</translation>
 <translation id="7161771961008409533">Bouton pop-up</translation>
@@ -836,7 +837,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7625690649919402823">Tableau suivant</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), niveau <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Aucun titre de niveau 3 précédent</translation>
-<translation id="7647456547678091388">conseil</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, zone de texte</translation>
 <translation id="7663318257180412551">Titre 2</translation>
 <translation id="7674576868851035240">Lien suivant</translation>
@@ -962,6 +962,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8940925288729953902">Touches de modification</translation>
 <translation id="8943175951035496220">Aucune cellule à droite</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Retirer</translation>
 <translation id="900114243503212879">fichier</translation>
 <translation id="9027462562263121875">Aucun tableau</translation>
 <translation id="9040132695316389094">Titre 1</translation>

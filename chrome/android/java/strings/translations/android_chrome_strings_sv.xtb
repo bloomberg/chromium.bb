@@ -114,7 +114,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
-<translation id="187628348035757895">Utvecklaralternativ</translation>
 <translation id="1880072593381090678">Populära sidor från Chrome</translation>
 <translation id="1883903952484604915">Mina filer</translation>
 <translation id="1887786770086287077">Platsåtkomst har inaktiverats på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB har laddats ned</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
-<translation id="6436016483175965362">Tjuvtitt</translation>
 <translation id="6437478888915024427">Sidinformation</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sökning och webbadressförslag</translation>
@@ -773,7 +771,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
 <translation id="688738109438487280">Lägg till befintlig data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås upp om du vill kopiera lösenordet</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d öppen flik}other{%1$d öppna flikar}}</translation>
 <translation id="6896758677409633944">Kopiera</translation>
 <translation id="6910211073230771657">Borttagen</translation>
 <translation id="6912998170423641340">Webbplatser ges inte tillgång till text och bilder i Urklipp</translation>
@@ -825,7 +822,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
 <translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="7274013316676448362">Blockerad webbplats</translation>
-<translation id="728491846437309531">Google-assistenten kan hjälpa dig att få saker och ting gjorda snabbare och enklare på internet</translation>
 <translation id="729975465115245577">Det finns ingen app som kan spara lösenordsfilen på enheten.</translation>
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>

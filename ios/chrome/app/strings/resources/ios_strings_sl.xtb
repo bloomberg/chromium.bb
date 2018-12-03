@@ -116,7 +116,7 @@
 <translation id="2830972654601096923">Upravljanje naslovov ...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Ponastavi nastavitve za prevajanje</translation>
-<translation id="2858204748079866344">Chrome zaradi varovanja vaše zasebnosti ne bo samodejno izpolnil gesla v to polje.</translation>
+<translation id="2858204748079866344">Chrome zaradi varovanja vaše zasebnosti ne bo samodejno izpolnil polja za vnos gesla.</translation>
 <translation id="285960592395650245">Vnovičen poskus prenosa</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2871695793448672541">Skrito, geslo</translation>
@@ -205,12 +205,10 @@
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="430793432425771671">Sinhroniziraj vse</translation>
 <translation id="4342284590510997375">Novo</translation>
-<translation id="434816576838749873">Izbira aplikacije za e-pošto</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obvestilo o zasebnosti</translation>
-<translation id="4460091562821778167">Vsakič vprašaj, katera aplikacija naj se uporabi</translation>
 <translation id="4476574785019001431">Nastavitve</translation>
 <translation id="4496373720959965247">Dodajte zavihke in preklapljate med stranmi</translation>
 <translation id="4508750114462689118">Zapri predstavitev prijave</translation>
@@ -276,7 +274,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5554368826343982379">Sinhronizacija in prilagajanje</translation>
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5614553682702429503">Želite shraniti geslo?</translation>
-<translation id="5619279135193775234">Pošta</translation>
 <translation id="5626245204502895507">Datoteke trenutno ni mogoče prenesti.</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669528293118408608">www</translation>
@@ -315,6 +312,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6127379762771434464">Element odstranjen</translation>
 <translation id="6136914049981179737">Pred sek.</translation>
 <translation id="616831107264507309">Poznejše branje</translation>
+<translation id="6177442314419606057">Iskanje v Chromu</translation>
 <translation id="6184086493125982861">Pokaži zavihke</translation>
 <translation id="6187302354554850004">Nazadnje sinhronizirano: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Neprebrano</translation>
@@ -380,7 +378,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7136892417564438900">Fotoaparat ni na voljo</translation>
 <translation id="7159472599653637159">Zahtevaj spletno mesto za mob. napravo</translation>
 <translation id="7167621057293532233">Vrste podatkov</translation>
-<translation id="7175593937868963913">Novo e-poštno sporočilo</translation>
 <translation id="7189598951263744875">Deli z drugimi</translation>
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="722055596168483966">Prilagajanje Googlovih storitev</translation>
@@ -413,6 +410,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7769602470925380267">Sprejem in odjava</translation>
 <translation id="7772032839648071052">Potrdi geslo</translation>
 <translation id="7781829728241885113">Včeraj</translation>
+<translation id="778855399387580014">Začnite iskanje na novem Chromovem zavihku.</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7840771868269352570">Izbrani elementi bodo odstranjeni.</translation>
 <translation id="7856733331829174190">Prenos ni uspel</translation>

@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="430793432425771671">סנכרן הכל</translation>
 <translation id="4342284590510997375">חדש</translation>
-<translation id="434816576838749873">בחר אפליקציית אימייל</translation>
 <translation id="4359125752503270327">הדף הזה ייפתח ביישום אחר.</translation>
 <translation id="4370827530403103842">הסנכרון לא עובד. הקש כאן לתיקון.</translation>
 <translation id="4375040482473363939">‏חיפוש של קוד QR</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="441868831736628555">הודעת פרטיות</translation>
-<translation id="4460091562821778167">שאל אותי בכל פעם באיזה יישום להשתמש</translation>
 <translation id="4476574785019001431">הגדרות</translation>
 <translation id="4496373720959965247">אפשר להוסיף כרטיסיות ולעבור בין דפים</translation>
 <translation id="4508750114462689118">סגירת קידום הכניסה</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">סנכרון והתאמה אישית</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5614553682702429503">לשמור את הסיסמה?</translation>
-<translation id="5619279135193775234">דואר</translation>
 <translation id="5626245204502895507">לא ניתן להוריד את הקובץ בשלב הזה.</translation>
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6136914049981179737">שניות</translation>
 <translation id="616831107264507309">קרא אחר כך</translation>
+<translation id="6177442314419606057">‏חיפוש ב-Chrome</translation>
 <translation id="6184086493125982861">הצג כרטיסיות</translation>
 <translation id="6187302354554850004">סונכרן לאחרונה: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">פריטים שלא נקראו</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7159472599653637159">בקש אתר שמותאם לנייד</translation>
 <translation id="7167621057293532233">סוגי נתונים</translation>
-<translation id="7175593937868963913">כתיבת אימייל</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
 <translation id="722055596168483966">‏התאמה אישית של שירותי Google</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7781829728241885113">אתמול</translation>
+<translation id="778855399387580014">‏חיפוש בכרטיסיית Chrome חדשה.</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7840771868269352570">הפריטים שבחרת יוסרו.</translation>
 <translation id="7856733331829174190">ההורדה נכשלה</translation>

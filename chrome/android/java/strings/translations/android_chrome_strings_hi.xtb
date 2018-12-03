@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">पेज में ढूंढें</translation>
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
 <translation id="1868024384445905608">Chrome अब ज़्यादा तेज़ी से फ़ाइलें डाउनलोड करता है</translation>
-<translation id="187628348035757895">डेवलपर के लिए सेटिंग और टूल</translation>
 <translation id="1880072593381090678">Chrome से लोकप्रिय पेज</translation>
 <translation id="1883903952484604915">मेरी फ़ाइलें</translation>
 <translation id="1887786770086287077">इस डिवाइस के लिए स्थान एक्सेस बंद है. उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">प्रिंट करें…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> एमबी डाउनलोड किया गया</translation>
 <translation id="6433501201775827830">अपना खोज इंजन चुनें</translation>
-<translation id="6436016483175965362">एक नज़र</translation>
 <translation id="6437478888915024427">पेज की जानकारी</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6448273550210938826">खोज और URL सुझाव</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्त करने के लिए प्रवेश करें</translation>
 <translation id="688738109438487280">मौजूदा डेटा <ph name="TO_ACCOUNT" /> में जोड़ें.</translation>
 <translation id="6891726759199484455">अपना पासवर्ड कॉपी करने के लिए अनलॉक करें</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
 <translation id="6896758677409633944">कॉपी बनाएं</translation>
 <translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6912998170423641340">साइटों को क्लिपबोर्ड से लेख और इमेज पढ़ने से ब्लॉक करें</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> चुने गए</translation>
 <translation id="7253272406652746122">अपने डिवाइस के सेटिंग ऐप्लिकेशन में खाते पेज से कोई Google खाता जोड़ें.</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
-<translation id="728491846437309531">Google Assistant की मदद से आप वेब पर ज़्यादा तेज़ी से और ज़्यादा आसानी से काम कर सकते हैं</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को संग्रहित करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="7333031090786104871">पिछली साइट अभी भी जोड़ी जा रही है</translation>

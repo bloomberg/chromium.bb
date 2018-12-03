@@ -228,14 +228,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1523774894176285446">Nadomestni brskalnik za zagon pri konfiguriranih spletnih mestih.</translation>
 <translation id="152657506688053119">Seznam nadomestnih URL-jev za privzetega ponudnika iskanja</translation>
 <translation id="1530812829012954197">Vedno upodobi te vzorce URL-jev v gostiteljskem brskalniku</translation>
-<translation id="1532965933165453786">Omogoča omogočanje ali onemogočanje hitrega prehoda.
-      To velja za vse uporabnike in za vse vmesnike v napravi.
-      Če želite uporabiti možnost hitrega prehoda, morate omogočiti to nastavitev in lastnost ONC za posamezno omrežje.
-      Ko je možnost hitrega prehoda nastavljena, ostane omogočena, dokler je ne onemogočite s spremembo pravilnika.
-
-      Če pravilnik ni nastavljen, se možnost hitrega prehoda ne uporablja.
-      Če je onemogočen, se možnost hitrega prehoda ne uporablja.
-      Če je omogočen, se možnost hitrega prehoda uporablja, ko ga podpira brezžična dostopna točka.</translation>
 <translation id="1541170838458414064">Omejitev velikosti tiskanih strani</translation>
 <translation id="1553684822621013552">Če je ta pravilnik omogočen, bo ARC omogočen za uporabnika
       (ob upoštevanju dodatnih preverjanj nastavitev pravilnika – ARC še
@@ -298,6 +290,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
 <translation id="1810261428246410396">Dovoli uporabo takojšnje povezave z internetom prek mobilnega telefona</translation>
+<translation id="1817685358399181673">Ta pravilnik določa sliko vtičnika <ph name="PLUGIN_VM_NAME" /> za uporabnika. Ta pravilnik nastavite z določanjem URL-ja, s katerega lahko naprava prenese sliko in razpršilno vrednost SHA-256, ki se uporablja za preverjanje celovitosti prenosa.
+
+      Pravilnik mora biti določen kot niz, ki izraža URL in razpršilno vrednost v obliki JSON.</translation>
 <translation id="1827523283178827583">Uporabi fiksne strežnike proxy</translation>
 <translation id="1843117931376765605">Osveži oceno za uporabniški pravilnik</translation>
 <translation id="1844620919405873871">Konfigurira pravilnike, povezane s hitrim odklepanjem.</translation>
@@ -466,6 +461,10 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="214901426630414675">Omejitev obojestranskega tiskanja</translation>
 <translation id="2149330464730004005">Omogočanje barvnega tiskanja</translation>
 <translation id="2156132677421487971">Konfiguriranje pravilnikov za napravo <ph name="PRODUCT_NAME" /> – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
+<translation id="2163878108829382394">
+        Če je ta pravilnik nastavljen na »True«, je včlanitev v upravljanje v oblaku obvezna in blokira postopek zagona Chroma, če je neuspešna.
+
+        Če pravilnik ni nastavljen ali je nastavljen na »False«, je včlanitev v upravljanje v oblaku izbirna in ne blokira postopka zagona Chroma, če je neuspešna.</translation>
 <translation id="2166472654199325139">Ne filtriraj spletnih mest za izločitev vsebine za odrasle</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
@@ -697,6 +696,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="268577405881275241">Omogoči funkcijo stiskanja podatkov v strežniku proxy</translation>
 <translation id="2693108589792503178">Konfigurirajte URL za spremembo gesla.</translation>
+<translation id="2696531058295423290">Omogočanje napravam, da uporabljajo vtičnik <ph name="PLUGIN_VM_NAME" /> v sistemu <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Onemogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na novem zavihku s povezavami in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
 
@@ -965,7 +965,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3388153794103186066">Omogoča nastavitev seznama URL-jev, ki določajo, katerim spletnim mestom bo samodejno podeljeno dovoljenje za dostop do naprave USB z danim ID-jem izdelka in dobavitelja. Pravilnik je veljaven samo, če vsak element na seznamu vsebuje tako naprave kot tudi URL-je. Vsak element v napravah lahko vsebuje polje z ID-jem dobavitelja in ID-jem izdelka. Vsak izpuščen ID se obravnava kot nadomestni znak z eno izjemo, in sicer, da ID izdelka ne more biti naveden, ne da bi bil naveden tudi ID dobavitelja. Pravilnik sicer ne bo veljaven in bo prezrt.
 
-        Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje največ dva niza z URL-jem, ločena z vejico, ki določata UR z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
+        Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje do dva niza z URL-jem, ločena z vejico, ki določata URL z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
 
         Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultWebUsbGuardSetting«, če je nastavljen, sicer pa iz uporabnikove osebne konfiguracije.
 
@@ -1407,6 +1407,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4483649828988077221">Onemogoči samodejno posodabljanje</translation>
 <translation id="4485425108474077672">Konfiguriranje URL-ja novega zavihka s povezavami</translation>
 <translation id="4492287494009043413">Onemogoči ustvarjanje posnetkov zaslona</translation>
+<translation id="449423975179525290">Konfiguriranje pravilnikov, povezanih z vtičnikom <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih predstavnostnih datotek na disku.
 
 Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabil navedeno velikost predpomnilnika, ne glede na to, ali je uporabnik nastavil zastavico »--media-cache-size«. Vrednost, navedena v tem pravilniku, ni fiksna omejitev, temveč predlog predpomnilniškemu sistemu. Vrednosti pod nekaj megabajti so premajhne in bodo zaokrožene na razumno minimalno vrednost.
@@ -2058,27 +2059,27 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Ta pravilnik vsili nastavitev razširitve <ph name="CHROME_REPORTING_EXTENSION_NAME" /> za poročanje in preglasi vse pravilnike za razširitve, ki se nanašajo na to razširitev.</translation>
 <translation id="6155247658847899816">Ko je nastavljen ta pravilnik, sta ločljivost in faktor povečave za vsak
-      zaslona nastavljena na navedene vrednosti. Nastavitve za zunanji zaslon se 
+      zaslon nastavljena na navedene vrednosti. Nastavitve za zunanji zaslon se 
       uporabijo za vse priključene zunanje zaslone.
 
       Vrednosti za »external_width« in »external_height« morata biti navedeni
       v slikovnih pikah. Vrednosti za »external_scale_percentage« in
       »internal_scale_percentage« morata biti navedeni v odstotkih.
 
-      Če je možnost »external_use_native« nastavljena na »true«, bo pravilnik prezrl
+      Če je nastavitev »external_use_native« omogočena«, bo pravilnik prezrl
       vrednosti za »external_height« in »external_width« in ločljivost zunanjih zaslonov 
       nastavil na njihovo izvorno ločljivost.
 
-      Če je možnost »external_use_native« nastavljena na »false« ali ni navedena in
+      Če je nastavitev »external_use_native« onemogočena ali ni navedena in
       ni navedena vrednost za »external_height« ali »external_width«, pravilnik ne
       vpliva na nastavitve zunanjega zaslona. Če kateri od zaslonov ne podpira
       navedene ločljivosti ali faktorja povečave, se pravilnik zanje ne uporabi.
 
-      Če je zastavica »recommended« nastavljena na »true«, lahko uporabniki
+      Če je zastavica »recommended« omogočena, lahko uporabniki
       po prijavi spremenijo ločljivost in faktor povečave poljubnega zaslona na strani z
       nastavitvami, vendar bodo njihove nastavitve ob naslednjem vnovičnem
       zagonu preglašene z vrednostjo pravilnika. Če je zastavica »recommended«
-      nastavljena na »false« ali ni nastavljena, uporabniki ne morejo spreminjati nastavitev
+      onemogočena« ali ni nastavljena, uporabniki ne morejo spreminjati nastavitev
       zaslona.</translation>
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
@@ -2730,6 +2731,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Upoštevajte, da te omejitve veljajo samo za prenose, sprožene iz vsebine spletne strani, in za možnost priročnega menija »povezava za prenos ...«. Te omejitve ne veljajo niti za shranjevanje/prenos trenutno prikazane strani niti za shranjevanje v obliki PDF iz možnosti tiskanja.
 
       Več informacij o Varnem brskanju je na voljo na strani https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Omogočanje izvajanja vtičnika PluginVm v tej napravi.
+
+      Če je pravilnik nastavljen na »False« ali ni nastavljen, vtičnik <ph name="PLUGIN_VM_NAME" /> za napravo ni omogočen. Če je pravilnik nastavljen na »True«, je vtičnik <ph name="PLUGIN_VM_NAME" /> za napravo omogočen, če je omogočen tudi z drugimi nastavitvami. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> mora biti nastavljeno na »True« in <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> mora biti nastavljeno, da je omogočeno izvajanje vtičnika <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="7643883929273267746">Omejitev računov, ki so vidni v storitvi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Določa, ali je podatkovno gostovanje za napravo omogočeno. Če je pravilnik omogočen, je podatkovno gostovanje omogočeno. Če ni nastavljen ali je onemogočen, podatkovno gostovanje ni na voljo.</translation>
 <translation id="7673194325208122247">Časovno obdobje (milisekunde)</translation>
@@ -2864,7 +2868,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen v upravljani napravi, v napravi ni dovoljeno izvajanje navideznih računalnikov.
       V napravah, ki niso upravljane, je dovoljeno izvajanje navideznih računalnikov.</translation>
 <translation id="8001701200415781021">Omejuje, katere Google Račune je dovoljeno nastaviti kot primarne račune brskalnika v brskalniku <ph name="PRODUCT_NAME" /></translation>
-<translation id="8009554972280451023">Če omogočite to nastavitev, se nastavitve, shranjene v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki za samodejno izpolnjevanje, gesla in ipd. prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
+<translation id="8009554972280451023">Če omogočite to nastavitev, se nastavitve, shranjene v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki za samodejno izpolnjevanje, gesla in ipd. prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje, ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
 
       Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo redni lokalni profili.
 
@@ -3195,6 +3199,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       Če ta nastavitev ni omogočena ali nastavljena, je zgodovino brskanja in zgodovino prenosov mogoče izbrisati
 
       Če je ta nastavitev onemogočena, zgodovine brskanja in zgodovine prenosov ni mogoče izbrisati.</translation>
+<translation id="8758831693895931466">Omogočanje obvezne včlanitve v upravljanje v oblaku</translation>
 <translation id="8759829385824155666">Dovoljene vrste šifriranja Kerberos</translation>
 <translation id="8764119899999036911">Določa, ali ustvarjeni SPN za Kerberos temelji na kanoničnem imenu DNS ali na vnesenem izvirnem imenu.
 

@@ -216,14 +216,6 @@
 <translation id="1523774894176285446">Yapılandırılan web siteleri için başlatılacak alternatif tarayıcı.</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
-<translation id="1532965933165453786">Fast Transition'ın etkinleştirilmesine veya devre dışı bırakılmasına olanak tanır.
-      Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir.
-      Fast Transition'ın kullanılabilmesi için hem bu ayarın hem de ağ başına ONC özelliğinin etkinleştirilmesi gerekir.
-      Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe Fast Transition devam eder.
-
-      Politika ayarlanmazsa Fast Transition kullanılmaz.
-      Yanlış (false) değerine ayarlanırsa Fast Transition kullanılmaz.
-      Doğru (true) değerine ayarlanırsa Fast Transition, kablosuz erişim noktasının desteklemesi durumunda kullanılır.</translation>
 <translation id="1541170838458414064">Yazdırma sayfası boyutunu kısıtla</translation>
 <translation id="1553684822621013552">Bu politika doğru değerine ayarlandığında, ARC kullanıcı için
       etkinleştirilir (ek politika ayarı kontrollerine tabidir; geçerli
@@ -287,6 +279,9 @@
 <translation id="1803646570632580723">Başlatıcıda gösterilecek sabitlenmiş uygulamalar listesi</translation>
 <translation id="1808715480127969042">Bu sitelerdeki çerezleri engelle</translation>
 <translation id="1810261428246410396">Anında Tethering'in kullanılmasına izin ver.</translation>
+<translation id="1817685358399181673">Bu politika bir kullanıcı için <ph name="PLUGIN_VM_NAME" /> resmi belirtiyor. Bu politika, cihazın resmi indirebileceği URL'nin yanı sıra indirme işleminin bütünlüğünü doğrulamak için bir SHA-256 karması belirlenerek ayarlanır.
+
+      Bu politika, URL'yi ve karmayı JSON biçiminde gösteren bir dize olarak belirtilmelidir.</translation>
 <translation id="1827523283178827583">Sabit proxy sunucuları kullan</translation>
 <translation id="1843117931376765605">Kullanıcı politikası için yenileme hızı</translation>
 <translation id="1844620919405873871">Hızlı kilit açmayla ilgili politikaları yapılandırır.</translation>
@@ -455,6 +450,10 @@
 <translation id="214901426630414675">Dupleks yazdırma modunu kısıtla</translation>
 <translation id="2149330464730004005">Renkli yazdırmayı etkinleştir</translation>
 <translation id="2156132677421487971">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan <ph name="PRODUCT_NAME" /> özelliğine ilişkin politikaları yapılandırın.</translation>
+<translation id="2163878108829382394">
+        Bu politika True (Doğru) olarak ayarlanırsa bulut yönetim kaydı zorunlu olur ve başarısız olması halinde Chrome'un işlemi başlatmasını engeller.
+
+        Bu politika ayarlanmadan bırakılır veya False (Yanlış) olarak ayarlanırsa bulut yönetim kaydı isteğe bağlı olur ve başarısız olması halinde Chrome'un işlemi başlatmasını engellemez.</translation>
 <translation id="2166472654199325139">Yetişkinlere uygun içerik için siteler filtreleme</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
@@ -684,6 +683,7 @@
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
 <translation id="2693108589792503178">Şifre değiştirme URL'sini yapılandırır.</translation>
+<translation id="2696531058295423290">Cihazların <ph name="PRODUCT_OS_NAME" /> üzerinde bir <ph name="PLUGIN_VM_NAME" /> kullanmasına izin verir.</translation>
 <translation id="2731627323327011390">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> sertifikalarının kullanımını devre dışı bırak</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
 
@@ -949,7 +949,7 @@
       Bu politika yalnızca öneride bulunabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
       </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
-<translation id="3388153794103186066">Hangi sitelerin sağlanan tedarikçi ve ürün kimlikleriyle USB cihazlarına erişmesine otomatik olarak izin verileceğini belirten bir URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
+<translation id="3388153794103186066">Hangi sitelerin sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına erişmesine otomatik olarak izin verileceğini belirten bir URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yoksayılır.
 
         USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iframe içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yoksayılır.
 
@@ -1389,6 +1389,7 @@ politikayı geçersiz kılamaz.
 <translation id="4483649828988077221">Otomatik Güncelleme'yi devre dışı bırak</translation>
 <translation id="4485425108474077672">Yeni Sekme sayfasının URL'sini yapılandır</translation>
 <translation id="4492287494009043413">Ekran görüntüleri almayı devre dışı bırak</translation>
+<translation id="449423975179525290"><ph name="PLUGIN_VM_NAME" /> ile ilgili politikaları yapılandırır.</translation>
 <translation id="450537894712826981">Önbelleğe alınan medya dosyalarının diskte depolanması için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
       Bu politikayı ayarlarsanız kullanıcı "--media-cache-size" bayrağını belirtmiş olsun veya olmasın, <ph name="PRODUCT_NAME" /> sağlanan önbelllek boyutunu kullanır. Bu politikada belirtilen değer kesin bir sınır değil, daha çok önbellek sistemi için bir öneridir. Birkaç mega baytın altındaki her değer çok küçük sayılır ve mantıklı bir minimum sayı olacak şekilde ayarlanır.
@@ -2692,6 +2693,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu kısıtlamaların web sayfası içeriğinden ve "indirme bağlantısı..." içerik menüsü seçeneğinden tetiklenen indirme işlemleri için geçerli olacağını unutmayın. Bu kısıtlamalar, şu anda görüntülenen sayfayı kaydet / indir veya yazdırma seçeneklerinden PDF olarak kaydetme seçeneği için uygulanmaz.
 
       Güvenli Tarama hakkında daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
+<translation id="7642803091923523695">Bu cihazın PluginVm çalıştırmasını etkinleştirir.
+
+      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verecek şekilde ayarlanması gerekiyor.</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" /> içinde görülebilen hesapları kısıtlama</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
 <translation id="7673194325208122247">Dönem (milisaniye)</translation>
@@ -3142,6 +3146,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu ayar etkinleştirilirse veya ayarlanmazsa, tarama ve indirme geçmişi silinebilir.
 
       Bu ayar devre dışı bırakılırsa, tarama ve indirme geçmişi silinemez.</translation>
+<translation id="8758831693895931466">Zorunlu bulut yönetimi kaydını etkinleştir</translation>
 <translation id="8759829385824155666">İzin verilen Kerberos şifreleme türleri</translation>
 <translation id="8764119899999036911">Kerberos SPN'sinin standart DNS adına mı, yoksa girilen orijinal ada mı dayalı olduğunu belirtir.
 

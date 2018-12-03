@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Amaga els filtres del flux d'esdeveniments</translation>
 <translation id="1088219014394087294">No hi ha cap capçalera.</translation>
 <translation id="1106741348836243114">Activa o desactiva els sons (earcons).</translation>
-<translation id="1108651818222110612">subtítol</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Fes lliscar dos dits cap amunt</translation>
 <translation id="1124771028211010580">L'estil de pantalla actual és paral·lel.</translation>
@@ -195,7 +194,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2737520612859577214">Final del superíndex</translation>
 <translation id="2749275490991666823">Comprovat</translation>
 <translation id="27527859628328957">Ves a l'element enfocable següent</translation>
-<translation id="276402504937943375">Taula de continguts</translation>
 <translation id="2770781857296573485">Entra a l'exploració de grups</translation>
 <translation id="2777845298774924149">S'ha sortit</translation>
 <translation id="2781264313200109999">Inici de l'enllaç</translation>
@@ -488,6 +486,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">opció predeterminada</translation>
 <translation id="479989351350248267">cerca</translation>
+<translation id="4804818685124855865">Desconnecta</translation>
 <translation id="481165870889056555">Presenta el títol de la pàgina actual</translation>
 <translation id="4826415162591436065">Navega cap endavant.</translation>
 <translation id="4826604887384865800">Salt següent</translation>
@@ -557,6 +556,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5291783959063340370">Objecte</translation>
 <translation id="5302089807023311274">Referència bibliogràfica</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestanya</translation>
+<translation id="5308380583665731573">Connecta</translation>
 <translation id="5310788376443009632">s'ha suprimit:</translation>
 <translation id="5320727453979144100">S'ha activat el mode persistent.</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comes}}</translation>
@@ -772,6 +772,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="712735679809149106">retorn de paraules</translation>
 <translation id="713824876195128146">Cita de bloc següent</translation>
 <translation id="7143034430156387447">Alterna entre braille de sis i vuit punts</translation>
+<translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7157306005867877619">Resum</translation>
 <translation id="7161425887892204659">Fi de la coincidència de text</translation>
 <translation id="7161771961008409533">Botó emergent</translation>
@@ -835,7 +836,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7625690649919402823">Taula següent</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), de grau <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">No hi ha cap capçalera anterior del nivell 3.</translation>
-<translation id="7647456547678091388">consell</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, quadre de text</translation>
 <translation id="7663318257180412551">Capçalera 2</translation>
 <translation id="7674576868851035240">Enllaç següent</translation>
@@ -961,6 +961,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8940925288729953902">Tecles modificadores</translation>
 <translation id="8943175951035496220">No hi ha cap cel·la a la dreta.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Oblida</translation>
 <translation id="900114243503212879">fitxer</translation>
 <translation id="9027462562263121875">No hi ha cap taula.</translation>
 <translation id="9040132695316389094">Capçalera 1</translation>

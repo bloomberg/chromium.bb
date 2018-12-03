@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">Atrast lapā</translation>
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
 <translation id="1868024384445905608">Tagad pārlūkā Chrome faili tiek lejupielādēti ātrāk.</translation>
-<translation id="187628348035757895">Izstrādātāju opcijas</translation>
 <translation id="1880072593381090678">Populārākās lapas no pārlūka Chrome</translation>
 <translation id="1883903952484604915">Mani faili</translation>
 <translation id="1887786770086287077">Piekļuve šīs ierīces atrašanās vietai ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="641643625718530986">Drukāt...</translation>
 <translation id="6416782512398055893">Lejupielādēts: <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Meklētājprogrammas izvēle</translation>
-<translation id="6436016483175965362">Ātra apskate</translation>
 <translation id="6437478888915024427">Lapas informācija</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6448273550210938826">Meklēšana un URL ieteikumi</translation>
@@ -773,7 +771,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6868088497967843822">Pierakstieties, lai jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
 <translation id="688738109438487280">Pievienot esošos datus kontam <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Atbloķējiet, lai kopētu paroli</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d atvērta cilne}zero{%1$d atvērtas cilnes}one{%1$d atvērta cilne}other{%1$d atvērtas cilnes}}</translation>
 <translation id="6896758677409633944">Kopēt</translation>
 <translation id="6910211073230771657">Dzēsts</translation>
 <translation id="6912998170423641340">Bloķēt vietņu piekļuvi teksta un attēlu lasīšanai no starpliktuves</translation>
@@ -825,7 +822,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
-<translation id="728491846437309531">Google asistents var palīdzēt jums ātrāk un vieglāk veikt darbu tīmeklī.</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>

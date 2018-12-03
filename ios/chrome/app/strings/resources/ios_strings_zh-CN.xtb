@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>
 <translation id="4342284590510997375">新工具</translation>
-<translation id="434816576838749873">选择电子邮件应用</translation>
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
 <translation id="4370827530403103842">同步功能无法正常运行。点按即可修复此问题。</translation>
 <translation id="4375040482473363939">QR 码搜索</translation>
 <translation id="4378154925671717803">电话机</translation>
 <translation id="441868831736628555">隐私权声明</translation>
-<translation id="4460091562821778167">每次都询问我要使用哪款应用</translation>
 <translation id="4476574785019001431">设置</translation>
 <translation id="4496373720959965247">添加标签页并在网页之间切换</translation>
 <translation id="4508750114462689118">关闭登录推广元素</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">同步和个性化</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5614553682702429503">要保存密码吗？</translation>
-<translation id="5619279135193775234">邮件</translation>
 <translation id="5626245204502895507">该文件目前无法下载。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>
 <translation id="616831107264507309">稍后阅读</translation>
+<translation id="6177442314419606057">在 Chrome 中搜索</translation>
 <translation id="6184086493125982861">显示标签页</translation>
 <translation id="6187302354554850004">上次同步时间：<ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">未读</translation>
@@ -382,7 +380,6 @@
 <translation id="7136892417564438900">无法使用相机</translation>
 <translation id="7159472599653637159">请求移动版网站</translation>
 <translation id="7167621057293532233">数据类型</translation>
-<translation id="7175593937868963913">邮件内容</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
@@ -415,6 +412,7 @@
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7781829728241885113">昨天</translation>
+<translation id="778855399387580014">在新的 Chrome 标签页中发起搜索。</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7840771868269352570">系统将会移除您所选的各项内容。</translation>
 <translation id="7856733331829174190">无法下载</translation>

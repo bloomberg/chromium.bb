@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">پنهان کردن فیلترهای جریان رویداد</translation>
 <translation id="1088219014394087294">عنوانی وجود ندارد.</translation>
 <translation id="1106741348836243114">بازخورد صوتی (نمادهای شنیداری) را روشن یا خاموش کنید.</translation>
-<translation id="1108651818222110612">زیرنویس</translation>
 <translation id="1120743664840974483">{«ا»: «اسب»، «ب»: «بازی»، «پ»: «پروین»، «ت»: «ترانه»، «ث»: «ثریا»، «ج»: «جوجه»، «چ»: «چرخ»، «ح»: «حریم»، « خ»:«خصوصی »، « د»: «دفترچه»، «ذ»: «ذلیل»، «ر»: «روز»، «ز»: «زمان»، «ژ»: «ژولیت»، «س»: «سیاست»، «ش»: «شنبه»، «ص»: «صفحه»، «ض»: «ضروری»، «ط»: «طراوت»، «ظ»: «ظهر»، «ع»: «عصر»، « غ»: «غروب»، «ف»: «فروش»، «ق»: «قلب»، «ک»: «کودکان»، «گ»: «گوشی»، «ل»: «لوله»، «م»: «مرز»، «ن»: «نامناسب»، «و»: «ویلا»، «ه»: «هیاهو»، «ی»: «یادآور»}</translation>
 <translation id="1120938014254001895">تند کشیدن دو انگشت به بالا</translation>
 <translation id="1124771028211010580">سبک نمایش کنونی، پهلو به پهلو است.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">پایان بالانویس</translation>
 <translation id="2749275490991666823">دارای علامت</translation>
 <translation id="27527859628328957">پرش به مورد قابل فوکوس بعدی</translation>
-<translation id="276402504937943375">فهرست مطالب</translation>
 <translation id="2770781857296573485">به کاوش گروه وارد شوید</translation>
 <translation id="2777845298774924149">خارج شد</translation>
 <translation id="2781264313200109999">شروع پیوند</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">ویدئو</translation>
 <translation id="4764692524839457597">پیش‌فرض</translation>
 <translation id="479989351350248267">جستجو</translation>
+<translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="481165870889056555">اعلام عنوان صفحه کنونی</translation>
 <translation id="4826415162591436065">پیمایش به جلو</translation>
 <translation id="4826604887384865800">پرش بعدی</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">شیء</translation>
 <translation id="5302089807023311274">مرجع فهرست منابع</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />، برگه</translation>
+<translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">حذف شد:</translation>
 <translation id="5320727453979144100">حالت چسبان فعال شد</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{کاما}one{# کاما}other{# کاما}}</translation>
@@ -773,6 +773,7 @@
 <translation id="712735679809149106">بازگویی کلمه</translation>
 <translation id="713824876195128146">نقل قول طولانی بعدی</translation>
 <translation id="7143034430156387447">تغییر وضعیت بین بریل ۶ و ۸ نقطه</translation>
+<translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7157306005867877619">انتزاعی</translation>
 <translation id="7161425887892204659">پایان مطابقت نوشتار</translation>
 <translation id="7161771961008409533">دکمه بازشو</translation>
@@ -836,7 +837,6 @@
 <translation id="7625690649919402823">جدول بعدی</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، درجه <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">عنوان سطح ۳ قبلی وجود ندارد.</translation>
-<translation id="7647456547678091388">نکته</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />، <ph name="NAME" />، کادر نوشتار</translation>
 <translation id="7663318257180412551">عنوان ۲</translation>
 <translation id="7674576868851035240">پیوند بعدی</translation>
@@ -962,6 +962,7 @@
 <translation id="8940925288729953902">کلیدهای تغییردهنده</translation>
 <translation id="8943175951035496220">سلولی در راست موجود نیست.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">فراموش شود</translation>
 <translation id="900114243503212879">فایل</translation>
 <translation id="9027462562263121875">جدولی وجود ندارد.</translation>
 <translation id="9040132695316389094">عنوان ۱</translation>

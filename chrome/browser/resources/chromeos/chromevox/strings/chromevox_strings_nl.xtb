@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Filters voor gebeurtenisstream verbergen</translation>
 <translation id="1088219014394087294">Geen koppen.</translation>
 <translation id="1106741348836243114">Geluidsfeedback (earcons) in- of uitschakelen.</translation>
-<translation id="1108651818222110612">ondertitel</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Veeg met twee vingers omhoog</translation>
 <translation id="1124771028211010580">De huidige weergavestijl is naast elkaar.</translation>
@@ -195,7 +194,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2737520612859577214">Einde van superscript</translation>
 <translation id="2749275490991666823">Aangevinkt</translation>
 <translation id="27527859628328957">Springen naar volgend actief item</translation>
-<translation id="276402504937943375">Inhoud</translation>
 <translation id="2770781857296573485">Groepsverkenning openen</translation>
 <translation id="2777845298774924149">Afgesloten</translation>
 <translation id="2781264313200109999">Begin van link</translation>
@@ -488,6 +486,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standaard</translation>
 <translation id="479989351350248267">zoeken</translation>
+<translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="481165870889056555">De titel van de huidige pagina melden</translation>
 <translation id="4826415162591436065">Verder navigeren</translation>
 <translation id="4826604887384865800">Volgende sprong</translation>
@@ -557,6 +556,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5291783959063340370">Object</translation>
 <translation id="5302089807023311274">Bibliografiereferentie</translation>
 <translation id="5304943142864553931">tabblad <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5310788376443009632">verwijderd:</translation>
 <translation id="5320727453979144100">Modus voor vastzetten ingeschakeld</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komma's}}</translation>
@@ -771,6 +771,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="712735679809149106">woordecho</translation>
 <translation id="713824876195128146">Volgend blok met geciteerde tekst</translation>
 <translation id="7143034430156387447">Schakelen tussen zes- en achtpuntsbraille</translation>
+<translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7157306005867877619">Uittreksel</translation>
 <translation id="7161425887892204659">Eind van tekstovereenkomst</translation>
 <translation id="7161771961008409533">Pop-up-knop</translation>
@@ -834,7 +835,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7625690649919402823">Volgende tabel</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), niveau <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Geen vorige kop voor niveau 3.</translation>
-<translation id="7647456547678091388">tip</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, tekstvak</translation>
 <translation id="7663318257180412551">Kop 2</translation>
 <translation id="7674576868851035240">Volgende link</translation>
@@ -960,6 +960,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8940925288729953902">Aanpassingstoetsen</translation>
 <translation id="8943175951035496220">Geen cel aan de rechterkant.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Vergeten</translation>
 <translation id="900114243503212879">bestand</translation>
 <translation id="9027462562263121875">Geen tabellen.</translation>
 <translation id="9040132695316389094">Kop 1</translation>

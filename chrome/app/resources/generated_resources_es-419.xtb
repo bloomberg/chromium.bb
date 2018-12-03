@@ -359,7 +359,6 @@
 <translation id="1510030919967934016">Se bloqueó esta página para que no pueda rastrear tu ubicación.</translation>
 <translation id="1510238584712386396">Selector</translation>
 <translation id="1510785804673676069">Si utilizas un servidor proxy, comprueba la configuración de proxy o comunícate con el administrador de red para asegurarte de que el servidor proxy funcione. Si crees que no necesitas un servidor proxy, modifica la <ph name="LINK_START" />configuración de proxy<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Preguntarme si quiero guardar las contraseñas web</translation>
 <translation id="1512210426710821809">La única forma de deshacer esta acción es volver a instalar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importar de Safari</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
@@ -368,7 +367,6 @@
 <translation id="1524563461097350801">No, gracias</translation>
 <translation id="1525740877599838384">Usar solo Wi-Fi para determinar la ubicación</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
-<translation id="1529116897397289129">Las tarjetas guardadas aparecerán aquí</translation>
 <translation id="1529891865407786369">Fuente de alimentación</translation>
 <translation id="1529899284660134226">Administrar archivos y carpetas compartidos</translation>
 <translation id="1530838837447122178">Abrir configuración del mouse y el panel táctil</translation>
@@ -508,7 +506,6 @@
 <translation id="1726100011689679555">Servidores de nombres</translation>
 <translation id="1729533290416704613">También controla qué página se muestra al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Para quitar apps, ve a Configuración &gt; Google Play Store &gt; Administrar preferencias de Android &gt; Apps o Administrador de aplicaciones. Luego, presiona la app que quieras desinstalar (es posible que debas deslizar el dedo hacia la derecha o la izquierda para encontrarla). A continuación, presiona Desinstalar o Inhabilitar.<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Enviando solicitud...</translation>
 <translation id="1732215134274276513">Desmarcar pestañas</translation>
 <translation id="1733383495376208985">Encriptar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /> (no se incluyen formas de pago ni direcciones de Google Pay).</translation>
@@ -779,7 +776,6 @@
 <translation id="2148219725039824548">Se produjo un error al activar el recurso compartido porque no se lo encontró en la red.</translation>
 <translation id="2148756636027685713">Formato terminado</translation>
 <translation id="2148892889047469596">Transmitir pestaña</translation>
-<translation id="2149850907588596975">Contraseñas y formularios</translation>
 <translation id="2150139952286079145">Buscar destinos</translation>
 <translation id="2150661552845026580">¿Quieres instalar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Se ingresó un índice de pestaña no válido.</translation>
@@ -819,7 +815,6 @@
 <translation id="2204034823255629767">Leer y cambiar todo lo que escribas</translation>
 <translation id="2208158072373999562">Archivo Zip</translation>
 <translation id="220858061631308971">Ingresa este código PIN en "<ph name="DEVICE_NAME" />":</translation>
-<translation id="2212126039311489237">Imprimir utilizando el diálogo del sistema</translation>
 <translation id="2214884991347062907">La contraseña es incorrecta; vuelve a intentarlo</translation>
 <translation id="2217501013957346740">Crear un nombre:</translation>
 <translation id="2218019600945559112">Mouse y panel táctil</translation>
@@ -1266,7 +1261,6 @@
 <translation id="2888807692577297075">No hay elementos que coincidan con &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;.</translation>
 <translation id="2889064240420137087">Abrir el vínculo con...</translation>
 <translation id="2889925978073739256">Seguir bloqueando los complementos no incluidos en la zona de pruebas</translation>
-<translation id="2890678560483811744">Referencia de página fuera de los límites</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="289695669188700754">ID de clave: <ph name="KEY_ID" /></translation>
@@ -1400,7 +1394,7 @@
 <translation id="3090819949319990166">No se puede copiar el archivo crx externo a <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" sincronizado</translation>
 <translation id="3101709781009526431">Fecha y hora</translation>
-<translation id="3104763887980088552">Registro de actividades</translation>
+<translation id="3104763887980088552">Registro de actividad</translation>
 <translation id="310671807099593501">El sitio está usando la conexión Bluetooth</translation>
 <translation id="3115128645424181617">No se puede encontrar el teléfono. Asegúrate de que esté cerca y de que Bluetooth esté activado.</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
@@ -2276,7 +2270,6 @@
 <translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
 <translation id="449938344715680828">Presiona |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| y, luego, |<ph name="ACCELERATOR3" />| para salir</translation>
-<translation id="4499718683476608392">Habilita Autocompletar datos de tarjetas de crédito para llenar formularios con un solo clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> se bloqueó</translation>
 <translation id="450099669180426158">Ícono de signo de exclamación</translation>
 <translation id="4501530680793980440">Confirmar eliminación</translation>
@@ -2586,7 +2579,6 @@
 <translation id="4971412780836297815">Abrir al finalizar</translation>
 <translation id="4972129977812092092">Editar impresora</translation>
 <translation id="4972164225939028131">Contraseña incorrecta</translation>
-<translation id="497287958838527945">Tarjetas de crédito y direcciones con Google Pay</translation>
 <translation id="4973307593867026061">Agregar impresoras</translation>
 <translation id="4973523518332075481">Usa un nombre con <ph name="MAX_LENGTH" /> caracteres o menos</translation>
 <translation id="4974733135013075877">Salir y bloquear para niños</translation>
@@ -3114,7 +3106,6 @@
 <translation id="5752453871435543420">Copia de seguridad en la nube del Sistema operativo Chrome</translation>
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> podrá leer los documentos que envíes a imprimir a través de <ph name="APP_NAME" />.</translation>
-<translation id="5762172915276660232">Configuración de tarjetas de crédito</translation>
 <translation id="5763315388120433852">Configura o administra archivos compartidos de red.</translation>
 <translation id="5763751966069581670">No se encuentraron dispositivos USB</translation>
 <translation id="5764483294734785780">Guardar audio como...</translation>
@@ -3258,7 +3249,7 @@
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="595959584676692139">Vuelve a cargar la página para usar esta extensión</translation>
-<translation id="5962207703002684882">Tu Asistente usa estas grabaciones para crear tu modelo de voz, que se almacena en tu dispositivo. Borra o conserva el modelo en la configuración del Asistente. En los Controles de actividad de Google, podrás ver o borrar los comandos de voz.</translation>
+<translation id="5962207703002684882">Tu Asistente usa estas grabaciones para crear tu modelo de voz, que se almacena en tu dispositivo. Borra o conserva el modelo en la configuración del Asistente. En los Controles de actividad de Google, podrás ver o borrar los comandos por voz.</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón de página principal o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="5971037678316050792">Controlar el estado y la sincronización del adaptador Bluetooth</translation>
@@ -3626,7 +3617,6 @@
 <translation id="6508248480704296122">Relacionada con <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Aplicación: <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licencia de medios</translation>
-<translation id="6510568984200103950">Menos opciones de configuración</translation>
 <translation id="6513247462497316522">Google Chrome utilizará los datos para celulares si no te conectas a otra red.</translation>
 <translation id="6514010653036109809">Dispositivo disponible:</translation>
 <translation id="6514565641373682518">Esta página ha inhabilitado el cursor del mouse.</translation>
@@ -3807,7 +3797,6 @@
 <translation id="6805647936811177813">Accede a <ph name="TOKEN_NAME" /> para importar el certificado de cliente desde <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Habilitar el seguimiento de RLZ en <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="6806699711453372963">Administrar uso compartido de Linux</translation>
-<translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="6810613314571580006">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
 <translation id="6810768462515084623">Parece que caducó la contraseña. Renuévala en otro dispositivo y vuelve a intentarlo.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> no se puede ejecutar como raíz.</translation>
@@ -3817,7 +3806,7 @@
 <translation id="682123305478866682">Transmitir escritorio</translation>
 <translation id="6823506025919456619">Debes acceder a Chrome para ver los dispositivos.</translation>
 <translation id="6824564591481349393">Copiar la dir&amp;ección de correo electrónico</translation>
-<translation id="6824584962142919697">&amp;Analizar elementos</translation>
+<translation id="6824584962142919697">Analizar elementos</translation>
 <translation id="6825184156888454064">Ordenar por nombre</translation>
 <translation id="6826872289184051766">Verificar mediante USB</translation>
 <translation id="6827236167376090743">Este video seguirá reproduciéndose sin parar.</translation>
@@ -5001,7 +4990,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8637542770513281060">Tu computadora cuenta con un módulo de seguridad que se usa para implementar varias funciones clave de seguridad en Sistema operativo Chrome. Para obtener más información, visita el Centro de ayuda de Chromebook: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
 <translation id="8639047128869322042">Buscando software dañino…</translation>
-<translation id="8639963783467694461">Configuración de Autocompletar</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
 <translation id="8642947597466641025">Aumentar el tamaño del texto</translation>
 <translation id="8643418457919840804">Para continuar, elige una opción:</translation>
@@ -5017,7 +5005,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8655972064210167941">Se produjo un error de acceso porque no se pudo verificar la contraseña. Comunícate con el administrador o vuelve a intentarlo.</translation>
 <translation id="8656619792520327915">Agregar otra llave de seguridad Bluetooth</translation>
 <translation id="8656768832129462377">No revisar</translation>
-<translation id="8658595122208653918">Cambiar opciones de impresora…</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> comparte tu pantalla y audio con <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Un momento</translation>
 <translation id="8661290697478713397">Abrir el vínculo en una ventana de incó&amp;gnito</translation>
@@ -5400,7 +5387,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="942954117721265519">No hay imágenes en este directorio.</translation>
 <translation id="943972244133411984">Modificado por</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
-<translation id="947329552760389097">&amp;Analizar elementos</translation>
+<translation id="947329552760389097">Analizar elementos</translation>
 <translation id="952992212772159698">No activado</translation>
 <translation id="957960681186851048">Este sitio intentó descargar varios archivos automáticamente</translation>
 <translation id="9580706199804957">No se pudo establecer una conexión con los servicios de Google</translation>

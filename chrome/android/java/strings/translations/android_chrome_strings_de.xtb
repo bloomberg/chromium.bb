@@ -114,7 +114,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1829244130665387512">Auf Seite suchen</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
-<translation id="187628348035757895">Entwickleroptionen</translation>
 <translation id="1880072593381090678">Beliebte Seiten aus Chrome</translation>
 <translation id="1883903952484604915">Meine Dateien</translation>
 <translation id="1887786770086287077">Der Standortzugriff ist für dieses Gerät deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
@@ -710,7 +709,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
-<translation id="6436016483175965362">Vorschau</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Such- und URL-Vorschläge</translation>
@@ -773,7 +771,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891726759199484455">Entsperren, um Ihr Passwort zu kopieren</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
 <translation id="6896758677409633944">Kopieren</translation>
 <translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6912998170423641340">Websites dürfen keine Texte oder Bilder aus der Zwischenablage abrufen</translation>
@@ -825,7 +822,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
 <translation id="7253272406652746122">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
-<translation id="728491846437309531">Mit Google Assistant können Sie Dinge im Web schneller und einfacher erledigen</translation>
 <translation id="729975465115245577">Auf Ihrem Gerät befindet sich keine App zum Speichern der Passwortdatei.</translation>
 <translation id="7302081693174882195">Details: Nach der Menge der gespeicherten Daten sortiert</translation>
 <translation id="7333031090786104871">Vorherige Website wird noch hinzugefügt</translation>

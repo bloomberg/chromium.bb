@@ -191,7 +191,7 @@ PC</translation>
 <translation id="4973800994433240357">Khi tải xuống Trình cài đặt máy chủ kết nối từ xa trên Chrome, bạn đồng ý với <ph name="LINK_BEGIN" />Điều khoản dịch vụ<ph name="LINK_END" /> của Google.</translation>
 <translation id="4974476491460646149">Đã ngắt kết nối khỏi <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Trước tiên, bạn cần thiết lập máy tính để truy cập từ xa</translation>
-<translation id="5059773780693835145">Bạn phải thực hiện bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng cách sử dụng <ph name="PRODUCT_NAME" />.
+<translation id="5059773780693835145">Bạn cần thực hiện bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng <ph name="PRODUCT_NAME" />.
 
 Để bật chức năng này, hãy chọn '<ph name="BUTTON_NAME" />' để hiển thị ngăn tùy chọn Bảo mật và Quyền riêng tư. Sau đó, chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ngoại tuyến)</translation>

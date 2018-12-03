@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
 <translation id="4342284590510997375">جدید</translation>
-<translation id="434816576838749873">انتخاب برنامه ایمیل</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4370827530403103842">همگام‌سازی کار نمی‌کند. برای رفع اشکال ضربه بزنید.</translation>
 <translation id="4375040482473363939">‏جستجوی کد QR</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
-<translation id="4460091562821778167">هر بار از من بپرسید از کدام برنامه استفاده شود</translation>
 <translation id="4476574785019001431">تنظیمات</translation>
 <translation id="4496373720959965247">برگه اضافه کنید و بین صفحه‌ها جابه‌جا شوید</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
@@ -278,7 +276,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5554368826343982379">همگام‌سازی و شخصی‌سازی</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5614553682702429503">گذرواژه ذخیره شود؟</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">فایل در حال حاضر قابل بارگیری نیست.</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5669528293118408608">www</translation>
@@ -317,6 +314,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6127379762771434464">مورد برداشته شد</translation>
 <translation id="6136914049981179737">ثانیه‌هایی قبل</translation>
 <translation id="616831107264507309">خواندن در فرصتی دیگر</translation>
+<translation id="6177442314419606057">‏جستجو در Chrome</translation>
 <translation id="6184086493125982861">نمایش برگه‌ها</translation>
 <translation id="6187302354554850004">آخرین همگام‌سازی: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">خوانده‌نشده</translation>
@@ -382,7 +380,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7136892417564438900">دوربین غیرقابل‌ دسترسی است</translation>
 <translation id="7159472599653637159">درخواست سایت ویژه دستگاه همراه</translation>
 <translation id="7167621057293532233">انواع داده</translation>
-<translation id="7175593937868963913">نوشتن ایمیل</translation>
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
@@ -415,6 +412,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="7781829728241885113">دیروز</translation>
+<translation id="778855399387580014">‏جستجویی در برگه Chrome جدیدی شروع کنید.</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7840771868269352570">موارد انتخاب‌شده برداشته خواهد شد.</translation>
 <translation id="7856733331829174190">بارگیری نشد</translation>

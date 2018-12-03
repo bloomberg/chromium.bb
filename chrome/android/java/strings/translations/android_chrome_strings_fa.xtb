@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
 <translation id="1868024384445905608">‏اکنون Chrome فایل‌ها را سریع‌تر بارگیری می‌کند</translation>
-<translation id="187628348035757895">گزینه‌های برنامه‌نویس</translation>
 <translation id="1880072593381090678">‏صفحه‌های پرطرفدار Chrome</translation>
 <translation id="1883903952484604915">فایل‌های من</translation>
 <translation id="1887786770086287077">‏دسترسی به مکان برای این دستگاه خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
@@ -709,7 +708,6 @@
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
-<translation id="6436016483175965362">نگاه سریع</translation>
 <translation id="6437478888915024427">اطلاعات صفحه</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی وب</translation>
@@ -772,7 +770,6 @@
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
 <translation id="688738109438487280">افزودن داده‌های موجود به <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">برای کپی کردن گذرواژه‌تان، قفل صفحه را باز کنید</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏%1$d برگه باز}one{‏%1$d برگه باز}other{‏%1$d برگه باز}}</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6910211073230771657">حذف شد</translation>
 <translation id="6912998170423641340">دسترسی به نوشتار و تصاویر بریده‌دان توسط سایت‌ها مسدود شود</translation>
@@ -824,7 +821,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
-<translation id="728491846437309531">‏«دستیار Google» کمک می‌کند کارهایتان را سریع‌تر و راحت‌تر در وب انجام دهید</translation>
 <translation id="729975465115245577">دستگاه شما برنامه‌ای برای ذخیره فایل گذرواژه‌ها ندارد.</translation>
 <translation id="7302081693174882195">جزئیات: مرتب‌شده براساس مقدار داده صرفه‌جویی‌شده</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>

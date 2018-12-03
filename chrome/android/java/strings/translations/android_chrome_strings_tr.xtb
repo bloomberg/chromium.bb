@@ -114,7 +114,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="1868024384445905608">Chrome artık dosyaları daha hızlı indiriyor</translation>
-<translation id="187628348035757895">Geliştirici seçenekleri</translation>
 <translation id="1880072593381090678">Chrome'dan popüler sayfalar</translation>
 <translation id="1883903952484604915">Dosyalarım</translation>
 <translation id="1887786770086287077">Konum erişimi bu cihaz için kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
@@ -710,7 +709,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB indirildi</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>
-<translation id="6436016483175965362">Hızlı göz at</translation>
 <translation id="6437478888915024427">Sayfa bilgileri</translation>
 <translation id="6447842834002726250">Çerezler</translation>
 <translation id="6448273550210938826">Arama ve URL önerileri</translation>
@@ -773,7 +771,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
 <translation id="688738109438487280">Mevcut veriler <ph name="TO_ACCOUNT" /> hesabına eklenir.</translation>
 <translation id="6891726759199484455">Şifrenizi kopyalamak için kilidi açın</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d açık sekme}other{%1$d açık sekme}}</translation>
 <translation id="6896758677409633944">Kopyala</translation>
 <translation id="6910211073230771657">Silindi</translation>
 <translation id="6912998170423641340">Sitelerin panodaki metni ve resimleri okumasını engelleyin</translation>
@@ -825,7 +822,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
-<translation id="728491846437309531">Google Asistan, web'deki işlerinizi daha hızlı ve kolay bir şekilde yapmanıza yardımcı olabilir</translation>
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
 <translation id="7333031090786104871">Önceki siteyi ekleme işlemi devam ediyor.</translation>

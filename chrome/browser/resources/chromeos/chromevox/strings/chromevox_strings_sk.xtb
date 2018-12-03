@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Skryť filtre streamovania udalosti</translation>
 <translation id="1088219014394087294">Žiadne nadpisy</translation>
 <translation id="1106741348836243114">Zapnúť alebo vypnúť zvukovú spätnú väzbu (zvukové signály</translation>
-<translation id="1108651818222110612">podnázov</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Potiahnite dvoma prstami nahor</translation>
 <translation id="1124771028211010580">Aktuálny štýl zobrazenie je vedľa seba.</translation>
@@ -195,7 +194,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2737520612859577214">Koniec horného indexu</translation>
 <translation id="2749275490991666823">Začiarknuté</translation>
 <translation id="27527859628328957">Prejsť na ďalšiu zamerateľnú položku</translation>
-<translation id="276402504937943375">obsah</translation>
 <translation id="2770781857296573485">Vstúpiť do režimu preskúmavania skupín</translation>
 <translation id="2777845298774924149">Ukončené</translation>
 <translation id="2781264313200109999">Začiatok odkazu</translation>
@@ -488,6 +486,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">predvolené</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Odpojiť</translation>
 <translation id="481165870889056555">Oznámiť názov aktuálnej stránky</translation>
 <translation id="4826415162591436065">Prejsť dopredu</translation>
 <translation id="4826604887384865800">Ďalší skok</translation>
@@ -557,6 +556,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografický odkaz</translation>
 <translation id="5304943142864553931">karta <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">Pripojenie</translation>
 <translation id="5310788376443009632">odstránené:</translation>
 <translation id="5320727453979144100">Rýchly režim bol povolený</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{čiarka}few{# čiarky}many{# commas}other{# čiarok}}</translation>
@@ -772,6 +772,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="712735679809149106">zvuková odozva na slová</translation>
 <translation id="713824876195128146">Ďalší blok citácie</translation>
 <translation id="7143034430156387447">Prepínanie medzi 6 a 8-bodovým Braillovým písmom</translation>
+<translation id="7143207342074048698">Pripája sa</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
 <translation id="7161425887892204659">Koniec zhody textu</translation>
 <translation id="7161771961008409533">Kontextové tlačidlo</translation>
@@ -835,7 +836,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7625690649919402823">Ďalšia tabuľka</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), úroveň <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Žiadny predchádzajúci nadpis 3. úrovne</translation>
-<translation id="7647456547678091388">tip</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textové pole</translation>
 <translation id="7663318257180412551">Nadpis 2</translation>
 <translation id="7674576868851035240">Ďalší odkaz</translation>
@@ -961,6 +961,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8940925288729953902">Kláves modifikátora</translation>
 <translation id="8943175951035496220">Vpravo nie je žiadna bunka</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Odstrániť</translation>
 <translation id="900114243503212879">súbor</translation>
 <translation id="9027462562263121875">Žiadne tabuľky</translation>
 <translation id="9040132695316389094">Nadpis 1</translation>

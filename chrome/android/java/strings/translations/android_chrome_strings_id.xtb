@@ -114,7 +114,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1829244130665387512">Cari di halaman</translation>
 <translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="1868024384445905608">Chrome sekarang mendownload file lebih cepat</translation>
-<translation id="187628348035757895">Opsi developer</translation>
 <translation id="1880072593381090678">Halaman populer dari Chrome</translation>
 <translation id="1883903952484604915">File Saya</translation>
 <translation id="1887786770086287077">Akses lokasi dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="641643625718530986">Cetak...</translation>
 <translation id="6416782512398055893">Terdownload <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Pilih mesin telusur Anda</translation>
-<translation id="6436016483175965362">Lihat sekilas</translation>
 <translation id="6437478888915024427">Info halaman</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Saran URL dan penelusuran</translation>
@@ -773,7 +771,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6868088497967843822">Masuk untuk mendapatkan bookmark, histori, sandi, dan setelan Anda lainnya di semua perangkat</translation>
 <translation id="688738109438487280">Menambahkan data yang sudah ada ke <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Buka kunci untuk menyalin sandi Anda</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab terbuka}other{%1$d tab terbuka}}</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6910211073230771657">Dihapus</translation>
 <translation id="6912998170423641340">Blokir situs agar tidak membaca teks dan gambar dari papan klip</translation>
@@ -825,7 +822,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7253272406652746122">Tambahkan Akun Google dari halaman Akun di aplikasi Setelan pada perangkat.</translation>
 <translation id="7274013316676448362">Situs yang diblokir</translation>
-<translation id="728491846437309531">Asisten Google dapat membantu Anda menyelesaikan berbagai hal dengan lebih cepat dan mudah di web</translation>
 <translation id="729975465115245577">Perangkat Anda tidak memiliki aplikasi untuk menyimpan file sandi.</translation>
 <translation id="7302081693174882195">Detail: Diurutkan menurut jumlah kuota yang dihemat</translation>
 <translation id="7333031090786104871">Masih menambahkan situs sebelumnya</translation>

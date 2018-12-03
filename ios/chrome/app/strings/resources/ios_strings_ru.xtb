@@ -206,13 +206,11 @@
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
 <translation id="4342284590510997375">Новое</translation>
-<translation id="434816576838749873">Выберите почтовый клиент</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4370827530403103842">Синхронизация не работает. Нажмите, чтобы исправить.</translation>
 <translation id="4375040482473363939">Поиск по QR-коду</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примечание о конфиденциальности</translation>
-<translation id="4460091562821778167">Всегда спрашивать, какое приложение использовать</translation>
 <translation id="4476574785019001431">Настройки</translation>
 <translation id="4496373720959965247">Добавляйте вкладки и переключайтесь между ними</translation>
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
@@ -278,7 +276,6 @@
 <translation id="5554368826343982379">Синхронизация и персонализация</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5614553682702429503">Сохранение пароля</translation>
-<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Не удалось скачать файлы.</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5669528293118408608">www</translation>
@@ -383,7 +380,6 @@
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобильная версия</translation>
 <translation id="7167621057293532233">Типы данных</translation>
-<translation id="7175593937868963913">Текст сообщения</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
 <translation id="722055596168483966">Персонализировать сервисы Google</translation>

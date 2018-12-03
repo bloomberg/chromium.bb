@@ -35,7 +35,7 @@
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Muestra la configuración de notificaciones. Las notificaciones están desactivadas para una aplicación.}other{Muestra la configuración de notificaciones. Las notificaciones están desactivadas para # aplicaciones.}}</translation>
-<translation id="1525508553941733066">IGNORAR</translation>
+<translation id="1525508553941733066">CERRAR</translation>
 <translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>

@@ -230,14 +230,6 @@
 <translation id="1523774894176285446">Seadistatud veebisaitide puhul käivitatav alternatiivne brauser.</translation>
 <translation id="152657506688053119">Asendus-URL-ide loend vaikeotsingupakkujale</translation>
 <translation id="1530812829012954197">Renderda hostbrauseris alati järgmiste URL-ide mustrid</translation>
-<translation id="1532965933165453786">Võimaldab lubada või keelata kiire ülemineku.
-      See kehtib seadme kõigi kasutajate ja liideste puhul.
-      Kiire ülemineku kasutamiseks peab nii see seade kui ka võrgupõhine ONC atribuut olema lubatud.
-      Pärast määramist jääb kiire ülemineku funktsioon lubatuks, kuni see reeglis keelatakse.
-
-      Kui reegel on määramata, ei kasutata kiiret üleminekut.
-      Kui reegel on seatud väärtusele Väär, ei kasutata kiiret üleminekut.
-      Kui reegel on seatud väärtusele Tõene, kasutatakse kiiret üleminekut juhul, kui juhtmeta pääsupunkt seda toetab.</translation>
 <translation id="1541170838458414064">Prinditava lehe suuruse piiramine</translation>
 <translation id="1553684822621013552">Kui see reegel on tõene, lubatakse ARC kasutaja jaoks
       (oleneb reegli seadete lisakontrollidest – ARC pole endiselt
@@ -300,6 +292,9 @@
 <translation id="1803646570632580723">Kinnitatud rakenduste loend, mida näidatakse käivitis</translation>
 <translation id="1808715480127969042">Blokeeri nende saitide küpsised</translation>
 <translation id="1810261428246410396">Kiirjagamise kasutamise lubamine.</translation>
+<translation id="1817685358399181673">See reegel määrab kasutaja jaoks pistikprogrammi <ph name="PLUGIN_VM_NAME" /> kujutise. Reegli seadistamiseks määratakse URL, kust seade saab alla laadida kujutise ja SHA-256 räsi, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks.
+
+      Reegel tuleb määrata stringina, mis kajastab URL-i ja räsi JSON-vormingus.</translation>
 <translation id="1827523283178827583">Kasuta fikseeritud puhverservereid</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
 <translation id="1844620919405873871">Seadistab kiiravamisega seotud reeglid.</translation>
@@ -468,6 +463,10 @@
 <translation id="214901426630414675">Printimise dupleksrežiimi piiramine</translation>
 <translation id="2149330464730004005">Värvilise printimise lubamine</translation>
 <translation id="2156132677421487971">Seadistab teenuse <ph name="PRODUCT_NAME" /> reeglid. See on funktsioon, mis võimaldab kasutajatel saata vahelehtede, saitide või töölaua sisu brauserist kaugekraanidele või helisüsteemidesse.</translation>
+<translation id="2163878108829382394">
+        Kui selle reegli väärtuseks määratakse Tõene, on pilvehalduses registreerumine kohustuslik. Kui tingimus pole täidetud, blokeeritakse Chrome'i käivitamise protsess.
+
+        Kui selle reegli väärtuseks määratakse Väär või see jäetakse määramata, on pilvehalduses registreerumine valikuline. Kui tingimus pole täidetud, siis Chrome'i käivitamise protsessi ei blokeerita.</translation>
 <translation id="2166472654199325139">Täiskasvanutele mõeldud sisuga saite ei filtreerita</translation>
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
@@ -699,6 +698,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
 <translation id="2693108589792503178">Parooli URL-i muutmise seadistamine.</translation>
+<translation id="2696531058295423290">Lubage seadmetel operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> kasutada pistikprogrammi <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
@@ -1404,6 +1404,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4483649828988077221">Automaatse värskendamise keelamine</translation>
 <translation id="4485425108474077672">Uue vahelehe URL-i seadistamine</translation>
 <translation id="4492287494009043413">Keela ekraanipiltide tegemine</translation>
+<translation id="449423975179525290">Pistikprogrammiga <ph name="PLUGIN_VM_NAME" /> seotud reeglite seadistamine.</translation>
 <translation id="450537894712826981">Seadistab vahemälu mahu, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu salvestatud meediafailide kettale salvestamiseks.
 
      Kui kasutate seda reeglit, kasutab <ph name="PRODUCT_NAME" /> olemasolevat vahemälu mahtu sellest olenemata, kas kasutaja on määranud märgendi „--meedia-vahemälu-maht” või mitte. Selle reegliga määratud väärtus pole kindel limiit, vaid pigem soovitus vahemälusüsteemile. Mõnest megabaidist väiksem väärtus on liiga väike ja see ümardatakse mõistliku miinimumini.
@@ -2725,6 +2726,9 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Pange tähele, et piirangud kehtivad nii kontekstimenüü valikuga „laadi link alla …” kui ka veebisisust käivitatud allalaadimiste puhul. Piirangud ei kehti praegu kuvatava lehe salvestamise/allalaadimise puhul ega printimisvalikutes PDF-failina salvestamisel.
 
       Vaadake ohutu sirvimise kohta lisateavet aadressilt https://developers.google.com/safe-browsing.</translation>
+<translation id="7642803091923523695">Lubage sellel seadmel käitada pistikprogrammi PluginVm.
+
+      Kui selle reegli väärtuseks on määratud Väär või see jäetakse määramata, ei ole pistikprogramm <ph name="PLUGIN_VM_NAME" /> selles seadmes lubatud. Kui väärtuseks on määratud Tõene, on pistikprogramm <ph name="PLUGIN_VM_NAME" /> seadmes lubatud, kui muud seaded seda samuti lubavad. Selleks et pistikprogrammi <ph name="PLUGIN_VM_NAME" /> saaks käitada, peab <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> olema Tõene ja <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> seadistatud.</translation>
 <translation id="7643883929273267746">Teenuses <ph name="PRODUCT_NAME" /> nähtavate kontode piiramine</translation>
 <translation id="7651739109954974365">Määrab, kas seadmes on andmeside rändlusteenus lubatud. Selle reegli aktiveerimisel on andmeside rändlusteenus lubatud. Kui jätate selle reegli seadistamata või keelate, siis ei ole andmeside rändlusteenus saadaval.</translation>
 <translation id="7673194325208122247">Ajavahemik (millisekundites)</translation>
@@ -3189,6 +3193,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui see seade on lubatud või määramata, saab sirvimise ja allalaadimiste ajaloo kustutada.
 
       Kui see seade on keelatud, siis sirvimise ja allalaadimiste ajalugu kustutada ei saa.</translation>
+<translation id="8758831693895931466">Luba kohustuslik pilvehalduses registreerumine</translation>
 <translation id="8759829385824155666">Lubatud Kerberose krüpteerimistüübid</translation>
 <translation id="8764119899999036911">Määrab, kas loodud Kerberose SPN põhineb tavapärasel DNS-i nimel või sisestatud algsel nimel.
 

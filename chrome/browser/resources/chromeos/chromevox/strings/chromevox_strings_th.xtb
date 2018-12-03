@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">ซ่อนตัวกรองสตรีมเหตุการณ์</translation>
 <translation id="1088219014394087294">ไม่มีส่วนหัว</translation>
 <translation id="1106741348836243114">เปิดหรือปิดเสียงความคิดเห็น (earcons)</translation>
-<translation id="1108651818222110612">คำบรรยาย</translation>
 <translation id="1120743664840974483">{"a": "อัลฟ่า", "b": "บราโว่", "c": "ชาร์ลี", "d": "เดลต้า", "e": "เอคโค่", "f": "ฟอกซ์ทรอต", "g": "กอล์ฟ", "h": "โฮเท็ล", "i": "อินเดีย", "j": "จูเลียต","k": "กิโล", "l": "ลิมา", "m": "ไมค์", "n": "โนเวมเบอร์", "o": "ออสการ์","p": "ปาป้า", "q": "ควิเบค", "r": "โรมิโอ", "s": "เซียร์ร่า", "t": "แทงโก้", "u": "ยูนิฟอร์ม", "v": "วิคเตอร์", "w": "วิสกี้","x": "เอ็กซเรย์", "y": "แยงกี้", "z": "ซูลู"}</translation>
 <translation id="1120938014254001895">เลื่อน 2 นิ้วขึ้น</translation>
 <translation id="1124771028211010580">รูปแบบการแสดงผลปัจจุบันคือการแสดงคู่กัน</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">สิ้นสุดข้อความตัวยก</translation>
 <translation id="2749275490991666823">เลือกแล้ว</translation>
 <translation id="27527859628328957">ข้ามไปยังรายการที่โฟกัสได้ถัดไป</translation>
-<translation id="276402504937943375">สารบัญ</translation>
 <translation id="2770781857296573485">ป้อนการสำรวจกลุ่ม</translation>
 <translation id="2777845298774924149">ออกแล้ว</translation>
 <translation id="2781264313200109999">ส่วนต้นของลิงก์</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">วิดีโอ</translation>
 <translation id="4764692524839457597">ค่าเริ่มต้น</translation>
 <translation id="479989351350248267">ค้นหา</translation>
+<translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="481165870889056555">แจ้งชื่อของหน้าเว็บปัจจุบัน</translation>
 <translation id="4826415162591436065">นำทางไปข้างหน้า</translation>
 <translation id="4826604887384865800">การข้ามถัดไป</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">ออบเจ็กต์</translation>
 <translation id="5302089807023311274">ข้อมูลอ้างอิงทางบรรณานุกรม</translation>
 <translation id="5304943142864553931">แท็บ <ph name="TITLE" /></translation>
+<translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5310788376443009632">ลบออกแล้ว:</translation>
 <translation id="5320727453979144100">เปิดใช้งานโหมดติดหนึบแล้ว</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{เครื่องหมายจุลภาค}other{# เครื่องหมายจุลภาค}}</translation>
@@ -772,6 +772,7 @@
 <translation id="712735679809149106">พูดคำ</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
 <translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
+<translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7157306005867877619">บทคัดย่อ</translation>
 <translation id="7161425887892204659">สิ้นสุดข้อความที่ตรงกัน</translation>
 <translation id="7161771961008409533">ปุ่มป๊อปอัป</translation>
@@ -835,7 +836,6 @@
 <translation id="7625690649919402823">ตารางถัดไป</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />) ระดับ <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">ไม่มีส่วนหัวระดับ 3 ก่อนหน้า</translation>
-<translation id="7647456547678091388">เคล็ดลับ</translation>
 <translation id="7659376057562985921">ช่องข้อความ <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">ส่วนหัวระดับ 2</translation>
 <translation id="7674576868851035240">ลิงก์ถัดไป</translation>
@@ -961,6 +961,7 @@
 <translation id="8940925288729953902">คีย์ตัวปรับแต่ง</translation>
 <translation id="8943175951035496220">ไม่มีเซลล์ทางด้านขวา</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">ไม่จำ</translation>
 <translation id="900114243503212879">ไฟล์</translation>
 <translation id="9027462562263121875">ไม่มีตาราง</translation>
 <translation id="9040132695316389094">ส่วนหัวระดับ 1</translation>

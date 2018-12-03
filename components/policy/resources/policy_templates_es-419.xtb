@@ -227,14 +227,6 @@
 <translation id="1523774894176285446">Navegador alternativo que se inicia para sitios web configurados</translation>
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
-<translation id="1532965933165453786">Permite habilitar o inhabilitar la "Transición rápida".
-      Esta acción se aplica a todos los usuarios y todas las interfaces en el dispositivo.
-      Para usar la "Transición rápida", deben habilitarse esta configuración y la propiedad ONC por red.
-      Una vez que se establece, se mantiene la "Transición rápida" hasta que se modifica la política para inhabilitarla.
-
-      Si no se establece la política, no se usa la "Transición rápida".
-      Si se establece como falsa, no se usa la "Transición rápida".
-      Si se establece como verdadera, se usa la "Transición rápida" cuando es compatible con el punto de acceso inalámbrico.</translation>
 <translation id="1541170838458414064">Restringir el tamaño de la página de impresión</translation>
 <translation id="1553684822621013552">Cuando esta política se establece en true, ARC estará habilitado para el usuario
       (sujeto a verificaciones adicionales de configuraciones de políticas. ARC
@@ -936,7 +928,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3388153794103186066">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
 
-        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para solicitar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
+        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
 
         Si no se establece esta política, se usará el valor predeterminado general para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
 
@@ -1989,7 +1981,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       configuración de pantallas externas a las que estén conectadas.
 
       Los valores correspondientes a los campos "external_width" y "external_height" deben especificarse en píxeles.
-      Los valores de los campos "external_scale_percentage" y
+      Los valores de los campos "external_scale_percentage" e
       "internal_scale_percentage" deben especificarse en porcentajes.
 
       Si se establece "external_use_native" como verdadero, la política ignorará
@@ -2114,7 +2106,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6553143066970470539">Porcentaje del brillo de pantalla</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
-<translation id="6563458316362153786">Habilitar la Transición rápida 802.11r</translation>
+<translation id="6563458316362153786">Habilitar la transición rápida 802.11r</translation>
 <translation id="6565312346072273043">Establece el estado predeterminado de la función de accesibilidad del teclado en pantalla en la pantalla de acceso.
 
           Si se establece esta política en True, el teclado en pantalla estará habilitado cuando se muestre la pantalla de acceso.

@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">이벤트 스트림 필터 숨기기</translation>
 <translation id="1088219014394087294">제목이 없습니다.</translation>
 <translation id="1106741348836243114">음성 피드백(이어콘)을 사용 또는 사용 안함으로 설정합니다.</translation>
-<translation id="1108651818222110612">부제</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "fox", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">손가락 두 개를 사용하여 위로 스와이프</translation>
 <translation id="1124771028211010580">현재 디스플레이 스타일은 병렬식입니다.</translation>
@@ -196,7 +195,6 @@
 <translation id="2737520612859577214">위 첨자 끝</translation>
 <translation id="2749275490991666823">선택됨</translation>
 <translation id="27527859628328957">다음 초점 가능 항목으로 이동</translation>
-<translation id="276402504937943375">목차</translation>
 <translation id="2770781857296573485">그룹 탐색 입력</translation>
 <translation id="2777845298774924149">종료함</translation>
 <translation id="2781264313200109999">링크 시작</translation>
@@ -489,6 +487,7 @@
 <translation id="4763480195061959176">동영상</translation>
 <translation id="4764692524839457597">기본값</translation>
 <translation id="479989351350248267">검색</translation>
+<translation id="4804818685124855865">연결 해제</translation>
 <translation id="481165870889056555">현재 페이지의 제목 알림</translation>
 <translation id="4826415162591436065">앞으로 탐색</translation>
 <translation id="4826604887384865800">다음 점프</translation>
@@ -558,6 +557,7 @@
 <translation id="5291783959063340370">객체</translation>
 <translation id="5302089807023311274">참고문헌 참조</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, 탭</translation>
+<translation id="5308380583665731573">연결</translation>
 <translation id="5310788376443009632">삭제됨:</translation>
 <translation id="5320727453979144100">고정 모드 사용함</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{쉼표}other{쉼표 #개}}</translation>
@@ -773,6 +773,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="712735679809149106">단어 에코</translation>
 <translation id="713824876195128146">다음 블록 인용</translation>
 <translation id="7143034430156387447">6점 점자와 8점 점자 간 전환</translation>
+<translation id="7143207342074048698">연결 중</translation>
 <translation id="7157306005867877619">초록</translation>
 <translation id="7161425887892204659">텍스트 일치 끝부분</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
@@ -836,7 +837,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7625690649919402823">다음 표</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />(<ph name="VARIANT" />), <ph name="GRADE" />등급</translation>
 <translation id="7641134354185483015">이전 수준 3 제목이 없습니다.</translation>
-<translation id="7647456547678091388">도움말</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, 입력란</translation>
 <translation id="7663318257180412551">제목 2</translation>
 <translation id="7674576868851035240">다음 링크</translation>
@@ -962,6 +962,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8940925288729953902">특수키</translation>
 <translation id="8943175951035496220">오른쪽에 셀이 없습니다.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">저장 안함</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">표가 없습니다.</translation>
 <translation id="9040132695316389094">제목 1</translation>

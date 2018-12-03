@@ -114,7 +114,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1829244130665387512">Finn på side</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1868024384445905608">Chrome laster ned filer raskere nå</translation>
-<translation id="187628348035757895">Utvikleralternativer</translation>
 <translation id="1880072593381090678">Populære sider fra Chrome</translation>
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="641643625718530986">Skriv ut</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB er lastet ned</translation>
 <translation id="6433501201775827830">Velg søkemotor</translation>
-<translation id="6436016483175965362">Sniktitt</translation>
 <translation id="6437478888915024427">Sideinformasjon</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6448273550210938826">Nettadresse- og søkeforslag</translation>
@@ -773,7 +771,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="688738109438487280">Legg til eksisterende data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås opp for å kopiere passordet ditt</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åpen fane}other{%1$d åpne faner}}</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6910211073230771657">Slettet</translation>
 <translation id="6912998170423641340">Blokkér nettsteder fra å få tilgang til tekst og bilder fra utklippstavlen</translation>
@@ -825,7 +822,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7253272406652746122">Legg til en Google-konto på Kontoer-siden i Innstillinger-appen på enheten din.</translation>
 <translation id="7274013316676448362">Blokkert nettsted</translation>
-<translation id="728491846437309531">Google-assistenten kan hjelpe deg med å gjøre ting raskere og enklere på nettet</translation>
 <translation id="729975465115245577">Enheten din har ingen app som kan lagre passordfilen.</translation>
 <translation id="7302081693174882195">Informasjon: Sortert etter mengden data som er lagret</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>

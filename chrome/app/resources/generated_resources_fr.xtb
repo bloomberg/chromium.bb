@@ -362,7 +362,6 @@
     contactez votre administrateur réseau pour vérifier que le serveur
     proxy fonctionne. Si vous ne pensez pas devoir utiliser de
     serveur proxy, réglez vos <ph name="LINK_START" />paramètres de proxy<ph name="LINK_END" />.</translation>
-<translation id="1511388193702657997">Proposer d'enregistrer mes mots de passe Web</translation>
 <translation id="1512210426710821809">La seule façon d'annuler cette action consiste à réinstaller <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Importés depuis Safari</translation>
 <translation id="1521442365706402292">Gérer les certificats</translation>
@@ -371,7 +370,6 @@
 <translation id="1524563461097350801">Non, merci</translation>
 <translation id="1525740877599838384">N'utiliser que le Wi-Fi pour déterminer la position</translation>
 <translation id="1526560967942511387">Document sans titre</translation>
-<translation id="1529116897397289129">Les cartes enregistrées s'afficheront ici</translation>
 <translation id="1529891865407786369">Source d'alimentation</translation>
 <translation id="1529899284660134226">Gérer les fichiers et dossiers partagés</translation>
 <translation id="1530838837447122178">Accéder aux paramètres de la souris et du pavé tactile</translation>
@@ -511,7 +509,6 @@
 <translation id="1726100011689679555">Serveurs de noms</translation>
 <translation id="1729533290416704613">Elle contrôle également la page qui s'affiche lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Pour supprimer des applications, sélectionnez Paramètres &gt; Google Play Store &gt; Gérer les préférences Android &gt; Applications ou Gestionnaire d'applications, puis appuyez sur l'application que vous souhaitez désinstaller. Vous devrez peut-être balayer l'écran vers la gauche ou la droite pour localiser l'application. Ensuite, appuyez sur "Désinstaller" ou "Désactiver".<ph name="END_PARAGRAPH1" /></translation>
-<translation id="1731589410171062430">Total : <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Envoi de la requête...</translation>
 <translation id="1732215134274276513">Annuler l'épinglage des onglets</translation>
 <translation id="1733383495376208985">Chiffrer les données synchronisées avec votre propre <ph name="BEGIN_LINK" />phrase secrète de synchronisation<ph name="END_LINK" />. Ceci ne s'applique pas aux modes de paiement et adresses Google Pay.</translation>
@@ -782,7 +779,6 @@
 <translation id="2148219725039824548">Erreur lors de l'installation du partage. Le partage indiqué est introuvable sur le réseau.</translation>
 <translation id="2148756636027685713">Formatage terminé</translation>
 <translation id="2148892889047469596">Caster l'onglet</translation>
-<translation id="2149850907588596975">Mots de passe et formulaires</translation>
 <translation id="2150139952286079145">Rechercher des emplacements de destination</translation>
 <translation id="2150661552845026580">Installer "<ph name="EXTENSION_NAME" />" ?</translation>
 <translation id="2151576029659734873">L'index de l'onglet indiqué est incorrect.</translation>
@@ -822,7 +818,6 @@
 <translation id="2204034823255629767">Accéder au contenu que vous saisissez et le modifier</translation>
 <translation id="2208158072373999562">Archive ZIP</translation>
 <translation id="220858061631308971">Veuillez saisir le code d'accès de "<ph name="DEVICE_NAME" />" :</translation>
-<translation id="2212126039311489237">Imprimer via la boîte de dialogue du système</translation>
 <translation id="2214884991347062907">Mot de passe incorrect, veuillez réessayer</translation>
 <translation id="2217501013957346740">Créer un nom</translation>
 <translation id="2218019600945559112">Souris et pavé tactile</translation>
@@ -1269,7 +1264,6 @@
 <translation id="2888807692577297075">Aucun élément ne correspond à votre recherche ("<ph name="SEARCH_STRING" />").</translation>
 <translation id="2889064240420137087">Ouvrir le lien avec...</translation>
 <translation id="2889925978073739256">Continuer à bloquer l'exécution hors bac à sable des plug-ins</translation>
-<translation id="2890678560483811744">Plage de pages hors limite</translation>
 <translation id="2893168226686371498">Navigateur par défaut</translation>
 <translation id="289644616180464099">La carte SIM est verrouillée</translation>
 <translation id="289695669188700754">ID de clé : <ph name="KEY_ID" /></translation>
@@ -2279,7 +2273,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4482194545587547824">Google peut utiliser votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="4495419450179050807">Ne pas afficher sur cette page</translation>
 <translation id="449938344715680828">Appuyez sur |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| et |<ph name="ACCELERATOR3" />| pour quitter la page</translation>
-<translation id="4499718683476608392">Activer la saisie automatique des informations de paiement pour remplir les formulaires d'un simple clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> a planté</translation>
 <translation id="450099669180426158">Icône représentant un point d'exclamation</translation>
 <translation id="4501530680793980440">Confirmer la suppression</translation>
@@ -2589,7 +2582,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4971412780836297815">Ouvrir une fois le téléchargement terminé</translation>
 <translation id="4972129977812092092">Modifier l'imprimante</translation>
 <translation id="4972164225939028131">Mot de passe incorrect</translation>
-<translation id="497287958838527945">Cartes de crédit et adresses utilisées dans Google Pay.</translation>
 <translation id="4973307593867026061">Ajouter des imprimantes</translation>
 <translation id="4973523518332075481">Utilisez un nom comportant <ph name="MAX_LENGTH" /> caractères au maximum</translation>
 <translation id="4974733135013075877">Fermer et activer le verrouillage enfant</translation>
@@ -3118,7 +3110,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5752453871435543420">Sauvegarde Cloud de Chrome OS</translation>
 <translation id="5756163054456765343">C&amp;entre d'aide</translation>
 <translation id="5759728514498647443">Les documents envoyés pour impression via "<ph name="APP_NAME" />" sont lisibles avec "<ph name="APP_NAME" />"</translation>
-<translation id="5762172915276660232">Paramètres de carte de crédit</translation>
 <translation id="5763315388120433852">Configurer ou gérer des partages de fichiers en réseau.</translation>
 <translation id="5763751966069581670">Aucun appareil USB détecté</translation>
 <translation id="5764483294734785780">En&amp;registrer le fichier audio sous...</translation>
@@ -3630,7 +3621,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6508248480704296122">En rapport avec <ph name="NAME_PH" /></translation>
 <translation id="6508261954199872201">Application : <ph name="APP_NAME" /></translation>
 <translation id="6509207748479174212">Licence multimédia</translation>
-<translation id="6510568984200103950">Moins de paramètres</translation>
 <translation id="6513247462497316522">Si vous n'êtes connecté à aucun autre réseau, Google Chrome va utiliser un service Internet mobile.</translation>
 <translation id="6514010653036109809">Appareil disponible :</translation>
 <translation id="6514565641373682518">Cette page a désactivé le curseur de votre souris.</translation>
@@ -3811,7 +3801,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6805647936811177813">Connectez-vous à <ph name="TOKEN_NAME" /> pour importer le certificat client de <ph name="HOST_NAME" /></translation>
 <translation id="680572642341004180">Activer le suivi RLZ pour <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="6806699711453372963">Gérer le partage Linux</translation>
-<translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="6810613314571580006">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="6810768462515084623">Petit problème… Votre mot de passe est arrivé à expiration. Changez-le sur un autre appareil, puis réessayez.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> ne peut pas être exécuté en tant que root.</translation>
@@ -5004,7 +4993,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8637542770513281060">Votre ordinateur contient un module sécurisé qui permet de mettre en œuvre de nombreuses fonctionnalités de sécurité critiques dans Chrome OS. Consultez le centre d'aide Chromebook pour en savoir plus : https://support.google.com/chromebook/?p=sm.</translation>
 <translation id="8637688295594795546">Mise à jour du système disponible. Préparation du téléchargement…</translation>
 <translation id="8639047128869322042">Recherche de logiciels malveillants…</translation>
-<translation id="8639963783467694461">Paramètres de saisie automatique</translation>
 <translation id="8642171459927087831">Jeton d'accès</translation>
 <translation id="8642947597466641025">Augmente la taille du texte</translation>
 <translation id="8643418457919840804">Pour continuer, sélectionnez une option :</translation>
@@ -5020,7 +5008,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8655972064210167941">Échec de la connexion, car il est impossible de valider votre mot de passe. Veuillez contacter votre administrateur ou réessayer.</translation>
 <translation id="8656619792520327915">Ajouter une clé de sécurité Bluetooth</translation>
 <translation id="8656768832129462377">Ne pas vérifier</translation>
-<translation id="8658595122208653918">Modifier les options de l'imprimante…</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> partage votre écran et un contenu audio avec <ph name="TAB_NAME" />.</translation>
 <translation id="8659875081143553823">Une petite seconde…</translation>
 <translation id="8661290697478713397">Ouvrir le lien dans la fenêtre de navi&amp;gation privée</translation>

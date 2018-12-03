@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">Найти на странице</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="1868024384445905608">Теперь файлы в Chrome будут скачиваться ещё быстрее</translation>
-<translation id="187628348035757895">Для разработчиков</translation>
 <translation id="1880072593381090678">Популярные страницы из Chrome</translation>
 <translation id="1883903952484604915">Скачанные</translation>
 <translation id="1887786770086287077">Для устройства отключено определение местоположения. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">Печать</translation>
 <translation id="6416782512398055893">Скачано <ph name="MBS" /> МБ</translation>
 <translation id="6433501201775827830">Выберите поисковую систему</translation>
-<translation id="6436016483175965362">Быстрый просмотр</translation>
 <translation id="6437478888915024427">Информация о странице</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
 <translation id="688738109438487280">Объединить сохраненные данные с данными пользователя <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Чтобы скопировать пароль, разблокируйте экран</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d открытая вкладка}one{%1$d открытая вкладка}few{%1$d открытые вкладки}many{%1$d открытых вкладок}other{%1$d открытой вкладки}}</translation>
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6910211073230771657">Удалено</translation>
 <translation id="6912998170423641340">Блокировать сайтам доступ к тексту и изображениям, скопированным в буфер обмена</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Добавьте аккаунт Google в настройках устройства (раздел "Аккаунты").</translation>
 <translation id="7274013316676448362">Заблокированный сайт</translation>
-<translation id="728491846437309531">Google Ассистент помогает легко и быстро выполнять повседневные задачи в Интернете.</translation>
 <translation id="729975465115245577">На устройстве не установлено приложение для хранения файлов паролей.</translation>
 <translation id="7302081693174882195">Сортировка по объему сэкономленного трафика</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>

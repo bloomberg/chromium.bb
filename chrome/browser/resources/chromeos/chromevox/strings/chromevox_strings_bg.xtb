@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Скриване на филтрите за потоци на събития</translation>
 <translation id="1088219014394087294">Няма заглавия.</translation>
 <translation id="1106741348836243114">Включване или изключване на обратната връзка със звук (звукови сигнали).</translation>
-<translation id="1108651818222110612">подзаглавие</translation>
 <translation id="1120743664840974483">{"а": "антон", "б": "борис", "в": "васил", "г": "георги", "д": "димитър", "е": "елена", "ж": "живко", "з": "захари", "и": "иван", "й": "йордан", "к": "кирил", "л": "людмил", "м": "мария", "н": "николай", "о": "огнян", "п": "петър", "р": "румен", "с": "стефан", "т": "тодор", "у": "уляна", "ф": "филип", "х": "христо", "ц": "цветан", "ч": "чавдар", "ш": "шипка", "щ": "щерю", "ъ": "ер голям", "ь": "ер малък", "ю": "юлия", "я": "явор"}</translation>
 <translation id="1120938014254001895">Прекарайте два пръста нагоре</translation>
 <translation id="1124771028211010580">Използва се изгледът с успоредно показване.</translation>
@@ -195,7 +194,6 @@
 <translation id="2737520612859577214">Край на горния индекс</translation>
 <translation id="2749275490991666823">С отметка</translation>
 <translation id="27527859628328957">Преминаване към следващия елемент, който може да получи фокус</translation>
-<translation id="276402504937943375">съдържание</translation>
 <translation id="2770781857296573485">Влизане в режим за разглеждане на група</translation>
 <translation id="2777845298774924149">Излязохте</translation>
 <translation id="2781264313200109999">Начало на връзката</translation>
@@ -488,6 +486,7 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4764692524839457597">по подразбиране</translation>
 <translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Изключване</translation>
 <translation id="481165870889056555">Съобщаване на заглавието на текущата страница</translation>
 <translation id="4826415162591436065">Навигация напред</translation>
 <translation id="4826604887384865800">Следващият преход</translation>
@@ -557,6 +556,7 @@
 <translation id="5291783959063340370">Обект</translation>
 <translation id="5302089807023311274">Препратка към библиографски запис</translation>
 <translation id="5304943142864553931">„<ph name="TITLE" />“, раздел</translation>
+<translation id="5308380583665731573">Свързване</translation>
 <translation id="5310788376443009632">премахнато:</translation>
 <translation id="5320727453979144100">Фиксираният режим е активиран</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{запетая}other{# запетаи}}</translation>
@@ -772,6 +772,7 @@
 <translation id="712735679809149106">ехо за думите</translation>
 <translation id="713824876195128146">Следващият блоков цитат</translation>
 <translation id="7143034430156387447">Превключване между 6- и 8-точково брайлово писмо</translation>
+<translation id="7143207342074048698">Свързва се</translation>
 <translation id="7157306005867877619">Резюме</translation>
 <translation id="7161425887892204659">Край на съответстващия текст</translation>
 <translation id="7161771961008409533">Бутон с изскачащ прозорец</translation>
@@ -835,7 +836,6 @@
 <translation id="7625690649919402823">Следващата таблица</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), клас <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Няма предишно заглавие от трето ниво.</translation>
-<translation id="7647456547678091388">съвет</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле</translation>
 <translation id="7663318257180412551">Заглавие от второ ниво</translation>
 <translation id="7674576868851035240">Следващата връзка</translation>
@@ -961,6 +961,7 @@
 <translation id="8940925288729953902">Модифициращи клавиши</translation>
 <translation id="8943175951035496220">Няма клетка отдясно.</translation>
 <translation id="8978496506222343566">tltip</translation>
+<translation id="8986362086234534611">Забравяне</translation>
 <translation id="900114243503212879">файл</translation>
 <translation id="9027462562263121875">Няма таблици.</translation>
 <translation id="9040132695316389094">Заглавие от първо ниво</translation>

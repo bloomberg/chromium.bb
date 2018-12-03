@@ -114,7 +114,6 @@
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
-<translation id="187628348035757895">Параметри розробника</translation>
 <translation id="1880072593381090678">Популярні сторінки з Chrome</translation>
 <translation id="1883903952484604915">Мої файли</translation>
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
@@ -710,7 +709,6 @@
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
-<translation id="6436016483175965362">Попередній перегляд</translation>
 <translation id="6437478888915024427">Інформація про сторінку</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
 <translation id="6448273550210938826">Пропозиції пошуку та URL-адрес</translation>
@@ -773,7 +771,6 @@
 <translation id="6868088497967843822">Увійдіть в обліковий запис, щоб мати доступ до своїх закладок, історії, паролів та інших налаштувань на всіх своїх пристроях</translation>
 <translation id="688738109438487280">Додати наявні дані в обліковий запис <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Розблокуйте, щоб скопіювати пароль</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6910211073230771657">Видалено</translation>
 <translation id="6912998170423641340">Не дозволяти сайтам переглядати тексти й зображення в буфері обміну</translation>
@@ -825,7 +822,6 @@
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
-<translation id="728491846437309531">Google Асистент допоможе швидко та легко виконувати різноманітні завдання в Інтернеті</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>

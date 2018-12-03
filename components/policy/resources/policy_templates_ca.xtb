@@ -214,13 +214,6 @@
 <translation id="1523774894176285446">Navegador alternatiu que cal iniciar per als llocs web configurats.</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
-<translation id="1532965933165453786">Permet activar o desactivar la transició ràpida.
-      S'aplica a tots els usuaris i a totes les interfícies del dispositiu.
-      Per poder utilitza la transició ràpida, s'han d'activar tant aquesta opció com la propietat ONC de cada xarxa.
-      Un cop establerta la transició ràpida, no es desactiva fins que no es canvia la política amb aquesta finalitat.
-
-      Si no s'estableix la política o s'estableix en "false", no s'utilitza la transició ràpida.
-      Si s'estableix en "true", la transició ràpida s'utilitza quan el punt d'accés sense fil ho admet.</translation>
 <translation id="1541170838458414064">Restringeix la mida de la pàgina d'impressió</translation>
 <translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
       (depenent de les comprovacions addicionals de la configuració de la política;
@@ -925,11 +918,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Aquesta política només es pot establir com a recomanada. Pots fer-la servir per moure una sèrie de configuracions regionals recomanades al capdamunt de la llista, però els usuaris sempre poden triar per a la sessió qualsevol de les configuracions admeses a <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
-<translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors indicats de proveïdor i producte. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no s'especifica també un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
+<translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
 
         El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
 
-        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting, si està establerta, o de la configuració personal de l'usuari, si no ho està.
 
         Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
