@@ -189,10 +189,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
     return session_decides_what_to_write_;
   }
 
-  bool fix_is_useful_for_retransmission() const {
-    return fix_is_useful_for_retransmission_;
-  }
-
  private:
   friend class test::QuicUnackedPacketMapPeer;
 
@@ -258,9 +254,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // If true, let session decides what to write.
   bool session_decides_what_to_write_;
-
-  // Latched value of quic_reloadable_flag_quic_fix_is_useful_for_retrans.
-  const bool fix_is_useful_for_retransmission_;
 };
 
 }  // namespace quic

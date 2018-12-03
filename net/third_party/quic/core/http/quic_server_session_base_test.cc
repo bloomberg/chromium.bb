@@ -334,12 +334,6 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
 
   session_->OnConfigNegotiated();
   const size_t kAvailableStreamLimit = session_->MaxAvailableStreams();
-  EXPECT_EQ(
-      session_->max_open_incoming_streams() * kMaxAvailableStreamsMultiplier,
-      session_->MaxAvailableStreams());
-  // The protocol specification requires that there can be at least 10 times
-  // as many available streams as the connection's maximum open streams.
-  EXPECT_LE(10 * kMaxStreamsForTest, kAvailableStreamLimit);
 
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
   EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(

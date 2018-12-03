@@ -138,15 +138,27 @@ TEST_F(QuicUtilsTest, RetransmissionTypeToPacketState) {
 }
 
 TEST_F(QuicUtilsTest, IsIetfPacketHeader) {
+  // IETF QUIC short header
   uint8_t first_byte = 0;
   EXPECT_TRUE(QuicUtils::IsIetfPacketHeader(first_byte));
+  EXPECT_TRUE(QuicUtils::IsIetfPacketShortHeader(first_byte));
 
+  // IETF QUIC long header
+  first_byte |= (FLAGS_LONG_HEADER | FLAGS_DEMULTIPLEXING_BIT);
+  EXPECT_TRUE(QuicUtils::IsIetfPacketHeader(first_byte));
+  EXPECT_FALSE(QuicUtils::IsIetfPacketShortHeader(first_byte));
+
+  // IETF QUIC long header, version negotiation.
+  first_byte = 0;
   first_byte |= FLAGS_LONG_HEADER;
   EXPECT_TRUE(QuicUtils::IsIetfPacketHeader(first_byte));
+  EXPECT_FALSE(QuicUtils::IsIetfPacketShortHeader(first_byte));
 
+  // GQUIC
   first_byte = 0;
   first_byte |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID;
   EXPECT_FALSE(QuicUtils::IsIetfPacketHeader(first_byte));
+  EXPECT_FALSE(QuicUtils::IsIetfPacketShortHeader(first_byte));
 }
 
 }  // namespace

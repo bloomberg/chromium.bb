@@ -162,27 +162,22 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_process_stateless_reset_at_client_only,
-    false)
+    true)
 
 // If true, do not retransmit old window update frames.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2,
-          false)
+          true)
 
 // If ture, make QuicSession::GetStream faster by skipping the lookup into
 // static stream map, when possible.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_session_faster_get_stream, true)
 
-// If true, when session decides what to write, set a approximate retransmission
-// for packets to be retransmitted. Also check packet state in
-// IsPacketUsefulForRetransmittableData.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_is_useful_for_retrans, true)
-
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
 // If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
 // use the async interface to KeyExchange::CalculateSharedKeys.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, true)
 
 // If true, increase size of random bytes in IETF stateless reset packet.
 QUIC_FLAG(bool,
@@ -207,7 +202,7 @@ QUIC_FLAG(bool,
 // retransmittable frames.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_mark_for_loss_retransmission,
-          false)
+          true)
 
 // If true, enable version 45.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_45, false)
@@ -233,7 +228,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_unidirectional_server_push_stream,
-          false)
+          true)
 
 // If true, a QUIC connection will attempt to process decryptable packets when
 // a new decryption key is made available.

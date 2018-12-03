@@ -501,8 +501,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
 
   if (manager_.session_decides_what_to_write() &&
-      GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission) &&
-      GetQuicReloadableFlag(quic_fix_is_useful_for_retrans)) {
+      GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission)) {
     QuicPacketNumber unacked[] = {2};
     VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   } else {
@@ -622,8 +621,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
 
   if (manager_.session_decides_what_to_write() &&
-      GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission) &&
-      GetQuicReloadableFlag(quic_fix_is_useful_for_retrans)) {
+      GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission)) {
     QuicPacketNumber unacked[] = {2};
     VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   } else {

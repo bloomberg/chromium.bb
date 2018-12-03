@@ -114,6 +114,9 @@ class QuartcSessionTest : public QuicTest {
 
   void Init() {
     // To enable SendMessage.
+    // TODO(b/119779614): Currently QuartcSession test creates quic connection
+    // directly, so we have to set version to enable SendMessag. QuartcSession
+    // test should use QuartcFactory, which already sets required version.
     SetQuicReloadableFlag(quic_enable_version_45, true);
 
     client_transport_ =

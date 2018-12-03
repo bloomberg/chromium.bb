@@ -112,6 +112,10 @@ class QuicEndpoint : public Endpoint,
   bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
     return true;
   };
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+    return true;
+  };
+
   // End QuicConnectionVisitorInterface implementation.
 
   // Begin SessionNotifierInterface methods:

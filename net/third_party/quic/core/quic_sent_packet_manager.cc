@@ -441,8 +441,7 @@ void QuicSentPacketManager::HandleRetransmission(
   }
 
   unacked_packets_.NotifyFramesLost(*transmission_info, transmission_type);
-  if (!unacked_packets_.fix_is_useful_for_retransmission() ||
-      transmission_info->retransmittable_frames.empty()) {
+  if (transmission_info->retransmittable_frames.empty()) {
     return;
   }
 
@@ -527,8 +526,7 @@ QuicPendingRetransmission QuicSentPacketManager::NextPendingRetransmission() {
 QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
     QuicPacketNumber packet_number,
     const QuicTransmissionInfo& transmission_info) const {
-  if (unacked_packets_.fix_is_useful_for_retransmission() &&
-      session_decides_what_to_write()) {
+  if (session_decides_what_to_write()) {
     return packet_number;
   }
   QuicPacketNumber retransmission = transmission_info.retransmission;

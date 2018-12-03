@@ -42,6 +42,56 @@ class QuicStreamPeer;
 }  // namespace test
 
 class QuicSession;
+class QuicStream;
+
+// Buffers frames for a stream until the first byte of that frame arrives.
+class QUIC_EXPORT_PRIVATE PendingStream
+    : public QuicStreamSequencer::StreamInterface {
+ public:
+  PendingStream(QuicStreamId id, QuicSession* session);
+  PendingStream(const PendingStream&) = delete;
+  PendingStream(PendingStream&&) = default;
+  ~PendingStream() override = default;
+
+  // QuicStreamSequencer::StreamInterface
+  void OnDataAvailable() override;
+  void OnFinRead() override;
+  void AddBytesConsumed(QuicByteCount bytes) override;
+  void Reset(QuicRstStreamErrorCode error) override;
+  void CloseConnectionWithDetails(QuicErrorCode error,
+                                  const QuicString& details) override;
+  QuicStreamId id() const override;
+  const QuicSocketAddress& PeerAddressOfLatestPacket() const override;
+
+  // Buffers the contents of |frame|. Frame must have a non-zero offset.
+  // If the data violates flow control, the connection will be closed.
+  void OnStreamFrame(const QuicStreamFrame& frame);
+
+ private:
+  friend class QuicStream;
+
+  bool MaybeIncreaseHighestReceivedOffset(QuicStreamOffset new_offset);
+
+  // ID of this stream.
+  QuicStreamId id_;
+
+  // Session which owns this.
+  QuicSession* session_;
+
+  // Bytes read refers to payload bytes only: they do not include framing,
+  // encryption overhead etc.
+  uint64_t stream_bytes_read_;
+
+  // True if a frame containing a fin has been received.
+  bool fin_received_;
+
+  // Connection-level flow controller. Owned by the session.
+  QuicFlowController* connection_flow_controller_;
+  // Stream-level flow controller.
+  QuicFlowController flow_controller_;
+  // Stores the buffered frames.
+  QuicStreamSequencer sequencer_;
+};
 
 class QUIC_EXPORT_PRIVATE QuicStream
     : public QuicStreamSequencer::StreamInterface {
@@ -64,6 +114,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
              QuicSession* session,
              bool is_static,
              StreamType type);
+  QuicStream(PendingStream pending, StreamType type);
   QuicStream(const QuicStream&) = delete;
   QuicStream& operator=(const QuicStream&) = delete;
 
@@ -280,6 +331,12 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // this method or not.
   void SendStopSending(uint16_t code);
 
+  // Invoked when QUIC receives a STOP_SENDING frame for this stream, informing
+  // the application that the peer has sent a STOP_SENDING. The default
+  // implementation is a noop. Is to be overridden by the application-specific
+  // QuicStream class.
+  virtual void OnStopSending(uint16_t code);
+
  protected:
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume. If FIN is consumed, the write side is
@@ -358,6 +415,16 @@ class QUIC_EXPORT_PRIVATE QuicStream
  private:
   friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
+
+  QuicStream(QuicStreamId id,
+             QuicSession* session,
+             QuicStreamSequencer sequencer,
+             bool is_static,
+             StreamType type,
+             uint64_t stream_bytes_read,
+             bool fin_received,
+             QuicFlowController flow_controller,
+             QuicFlowController* connection_flow_controller);
 
   // Subclasses and consumers should use reading_stopped.
   bool read_side_closed() const { return read_side_closed_; }

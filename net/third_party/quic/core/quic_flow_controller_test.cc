@@ -40,9 +40,8 @@ class QuicFlowControllerTest : public QuicTest {
                                          Perspective::IS_CLIENT);
     session_ = QuicMakeUnique<MockQuicSession>(connection_);
     flow_controller_ = QuicMakeUnique<QuicFlowController>(
-        session_.get(), connection_, stream_id_, Perspective::IS_CLIENT,
-        send_window_, receive_window_, should_auto_tune_receive_window_,
-        &session_flow_controller_);
+        session_.get(), stream_id_, send_window_, receive_window_,
+        should_auto_tune_receive_window_, &session_flow_controller_);
   }
 
   bool ClearControlFrame(const QuicFrame& frame) {

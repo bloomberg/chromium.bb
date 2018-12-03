@@ -41,13 +41,12 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
     : public QuicFlowControllerInterface {
  public:
   QuicFlowController(QuicSession* session,
-                     QuicConnection* connection,
                      QuicStreamId id,
-                     Perspective perspective,
                      QuicStreamOffset send_window_offset,
                      QuicStreamOffset receive_window_offset,
                      bool should_auto_tune_receive_window,
                      QuicFlowControllerInterface* session_flow_controller);
+
   QuicFlowController(const QuicFlowController&) = delete;
   QuicFlowController(QuicFlowController&&) = default;
   QuicFlowController& operator=(const QuicFlowController&) = delete;

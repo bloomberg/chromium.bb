@@ -91,6 +91,10 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // packet header.
   static bool IsIetfPacketHeader(uint8_t first_byte);
 
+  // Returns true if header with |first_byte| is considered as an IETF QUIC
+  // short packet header.
+  static bool IsIetfPacketShortHeader(uint8_t first_byte);
+
   // Returns ID to denote an invalid stream of |version|.
   static QuicStreamId GetInvalidStreamId(QuicTransportVersion version);
 

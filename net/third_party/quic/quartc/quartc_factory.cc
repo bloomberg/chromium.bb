@@ -36,7 +36,10 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
 
   // Enable version 45+ to enable SendMessage API.
-  SetQuicReloadableFlag(quic_enable_version_46, true);
+  SetQuicReloadableFlag(quic_enable_version_45, true);
+
+  // Fix for inconsistent reporting of crypto handshake.
+  SetQuicReloadableFlag(quic_fix_has_pending_crypto_data, true);
 
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
@@ -53,16 +56,33 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   SetQuicReloadableFlag(quic_enable_ack_decimation, false);
   copt.push_back(kAKD2);
 
+  // Use unlimited decimation in order to reduce number of unbundled ACKs.
+  copt.push_back(kAKDU);
+
   // Enable time-based loss detection.
   copt.push_back(kTIME);
+
+  QuicSentPacketManager& sent_packet_manager =
+      quic_connection->sent_packet_manager();
+
+  // Default delayed ack time is 25ms.
+  // If data packets are sent less often (e.g. because p-time was modified),
+  // we would force acks to be sent every 25ms regardless, increasing
+  // overhead. Since generally we guarantee a packet every 20ms, changing
+  // this value should have miniscule effect on quality on good connections,
+  // but on poor connections, changing this number significantly reduced the
+  // number of ack-only packets.
+  // The p-time can go up to as high as 120ms, and when it does, it's
+  // when the low overhead is the most important thing. Ideally it should be
+  // above 120ms, but it cannot be higher than 0.5*RTO, which equals to 100ms.
+  sent_packet_manager.set_delayed_ack_time(
+      QuicTime::Delta::FromMilliseconds(100));
 
   switch (quartc_session_config.congestion_control_type) {
     case kBBR:
       copt.push_back(kTBBR);
       break;
     case kGoogCC: {
-      QuicSentPacketManager& sent_packet_manager =
-          quic_connection->sent_packet_manager();
       SendAlgorithmInterface* sender = CreateGoogCcSender(
           clock_, sent_packet_manager.GetRttStats(),
           &sent_packet_manager.unacked_packets(), GetRandomGenerator(),

@@ -370,13 +370,8 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   std::vector<QuicPacketNumber> unacked3;
   std::vector<QuicPacketNumber> retransmittable3;
   if (unacked_packets_.session_decides_what_to_write()) {
-    if (unacked_packets_.fix_is_useful_for_retransmission()) {
-      unacked3 = {3, 5, 6};
-      retransmittable3 = {3, 5, 6};
-    } else {
-      unacked3 = {1, 3, 5, 6};
-      retransmittable3 = {1, 3, 5, 6};
-    }
+    unacked3 = {3, 5, 6};
+    retransmittable3 = {3, 5, 6};
   } else {
     unacked3 = {3, 5, 6};
     retransmittable3 = {5, 6};
@@ -395,13 +390,8 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   std::vector<QuicPacketNumber> unacked4;
   std::vector<QuicPacketNumber> retransmittable4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    if (unacked_packets_.fix_is_useful_for_retransmission()) {
-      unacked4 = {3, 5, 7};
-      retransmittable4 = {3, 5, 7};
-    } else {
-      unacked4 = {1, 3, 5, 7};
-      retransmittable4 = {1, 3, 5, 7};
-    }
+    unacked4 = {3, 5, 7};
+    retransmittable4 = {3, 5, 7};
   } else {
     unacked4 = {3, 5, 7};
     retransmittable4 = {7};
@@ -478,11 +468,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
 
   std::vector<QuicPacketNumber> unacked4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    if (unacked_packets_.fix_is_useful_for_retransmission()) {
-      unacked4 = {4, 6};
-    } else {
-      unacked4 = {1, 3, 4, 6};
-    }
+    unacked4 = {4, 6};
   } else {
     unacked4 = {4, 6};
   }
@@ -491,11 +477,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
   VerifyInFlightPackets(pending4, QUIC_ARRAYSIZE(pending4));
   std::vector<QuicPacketNumber> retransmittable4;
   if (unacked_packets_.session_decides_what_to_write()) {
-    if (unacked_packets_.fix_is_useful_for_retransmission()) {
-      retransmittable4 = {4, 6};
-    } else {
-      retransmittable4 = {1, 3, 4, 6};
-    }
+    retransmittable4 = {4, 6};
   } else {
     retransmittable4 = {6};
   }

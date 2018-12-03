@@ -45,15 +45,158 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 // static
 const SpdyPriority QuicStream::kDefaultPriority;
 
+PendingStream::PendingStream(QuicStreamId id, QuicSession* session)
+    : id_(id),
+      session_(session),
+      stream_bytes_read_(0),
+      fin_received_(false),
+      connection_flow_controller_(session->flow_controller()),
+      flow_controller_(session,
+                       id,
+                       GetReceivedFlowControlWindow(session),
+                       GetInitialStreamFlowControlWindowToSend(session),
+                       session_->flow_controller()->auto_tune_receive_window(),
+                       session_->flow_controller()),
+      sequencer_(this) {}
+
+void PendingStream::OnDataAvailable() {
+  QUIC_BUG << "OnDataAvailable should not be called.";
+  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected data available");
+}
+
+void PendingStream::OnFinRead() {
+  QUIC_BUG << "OnFinRead should not be called.";
+  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected fin read");
+}
+
+void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
+  QUIC_BUG << "AddBytesConsumed should not be called.";
+  CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "Unexpected bytes consumed");
+}
+
+void PendingStream::Reset(QuicRstStreamErrorCode error) {
+  session_->SendRstStream(id_, error, 0);
+}
+
+void PendingStream::CloseConnectionWithDetails(QuicErrorCode error,
+                                               const QuicString& details) {
+  session_->connection()->CloseConnection(
+      error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+}
+
+QuicStreamId PendingStream::id() const {
+  return id_;
+}
+
+const QuicSocketAddress& PendingStream::PeerAddressOfLatestPacket() const {
+  return session_->connection()->last_packet_source_address();
+}
+
+void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
+  DCHECK_EQ(frame.stream_id, id_);
+  DCHECK_NE(0u, frame.offset);
+
+  bool is_stream_too_long =
+      (frame.offset > kMaxStreamLength) ||
+      (kMaxStreamLength - frame.offset < frame.data_length);
+  if (is_stream_too_long) {
+    // Close connection if stream becomes too long.
+    QUIC_PEER_BUG
+        << "Receive stream frame reaches max stream length. frame offset "
+        << frame.offset << " length " << frame.data_length;
+    CloseConnectionWithDetails(
+        QUIC_STREAM_LENGTH_OVERFLOW,
+        "Peer sends more data than allowed on this stream.");
+    return;
+  }
+
+  if (frame.fin) {
+    fin_received_ = true;
+  }
+
+  // This count includes duplicate data received.
+  size_t frame_payload_size = frame.data_length;
+  stream_bytes_read_ += frame_payload_size;
+
+  // Flow control is interested in tracking highest received offset.
+  // Only interested in received frames that carry data.
+  if (frame_payload_size > 0 &&
+      MaybeIncreaseHighestReceivedOffset(frame.offset + frame_payload_size)) {
+    // As the highest received offset has changed, check to see if this is a
+    // violation of flow control.
+    if (flow_controller_.FlowControlViolation() ||
+        connection_flow_controller_->FlowControlViolation()) {
+      CloseConnectionWithDetails(
+          QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
+          "Flow control violation after increasing offset");
+      return;
+    }
+  }
+
+  sequencer_.OnStreamFrame(frame);
+}
+
+bool PendingStream::MaybeIncreaseHighestReceivedOffset(
+    QuicStreamOffset new_offset) {
+  uint64_t increment =
+      new_offset - flow_controller_.highest_received_byte_offset();
+  if (!flow_controller_.UpdateHighestReceivedOffset(new_offset)) {
+    return false;
+  }
+
+  // If |new_offset| increased the stream flow controller's highest received
+  // offset, increase the connection flow controller's value by the incremental
+  // difference.
+  connection_flow_controller_->UpdateHighestReceivedOffset(
+      connection_flow_controller_->highest_received_byte_offset() + increment);
+  return true;
+}
+
+QuicStream::QuicStream(PendingStream pending, StreamType type)
+    : QuicStream(pending.id_,
+                 pending.session_,
+                 std::move(pending.sequencer_),
+                 /*is_static=*/false,
+                 type,
+                 pending.stream_bytes_read_,
+                 pending.fin_received_,
+                 std::move(pending.flow_controller_),
+                 pending.connection_flow_controller_) {}
+
 QuicStream::QuicStream(QuicStreamId id,
                        QuicSession* session,
                        bool is_static,
                        StreamType type)
-    : sequencer_(this),
+    : QuicStream(id,
+                 session,
+                 QuicStreamSequencer(this),
+                 is_static,
+                 type,
+                 0,
+                 false,
+                 QuicFlowController(
+                     session,
+                     id,
+                     GetReceivedFlowControlWindow(session),
+                     GetInitialStreamFlowControlWindowToSend(session),
+                     session->flow_controller()->auto_tune_receive_window(),
+                     session->flow_controller()),
+                 session->flow_controller()) {}
+
+QuicStream::QuicStream(QuicStreamId id,
+                       QuicSession* session,
+                       QuicStreamSequencer sequencer,
+                       bool is_static,
+                       StreamType type,
+                       uint64_t stream_bytes_read,
+                       bool fin_received,
+                       QuicFlowController flow_controller,
+                       QuicFlowController* connection_flow_controller)
+    : sequencer_(std::move(sequencer)),
       id_(id),
       session_(session),
       priority_(kDefaultPriority),
-      stream_bytes_read_(0),
+      stream_bytes_read_(stream_bytes_read),
       stream_error_(QUIC_STREAM_NO_ERROR),
       connection_error_(QUIC_NO_ERROR),
       read_side_closed_(false),
@@ -62,19 +205,12 @@ QuicStream::QuicStream(QuicStreamId id,
       fin_sent_(false),
       fin_outstanding_(false),
       fin_lost_(false),
-      fin_received_(false),
+      fin_received_(fin_received),
       rst_sent_(false),
       rst_received_(false),
       perspective_(session_->perspective()),
-      flow_controller_(session_,
-                       session_->connection(),
-                       id_,
-                       perspective_,
-                       GetReceivedFlowControlWindow(session),
-                       GetInitialStreamFlowControlWindowToSend(session),
-                       session_->flow_controller()->auto_tune_receive_window(),
-                       session_->flow_controller()),
-      connection_flow_controller_(session_->flow_controller()),
+      flow_controller_(std::move(flow_controller)),
+      connection_flow_controller_(connection_flow_controller),
       stream_contributes_to_connection_flow_control_(true),
       busy_counter_(0),
       add_random_padding_after_fin_(false),
@@ -926,5 +1062,7 @@ void QuicStream::SendStopSending(uint16_t code) {
   }
   session_->SendStopSending(code, id_);
 }
+
+void QuicStream::OnStopSending(uint16_t code) {}
 
 }  // namespace quic
