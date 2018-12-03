@@ -15,10 +15,12 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
@@ -212,6 +214,10 @@ void AssistantContainerView::AddedToWidget() {
 
 ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() const {
   return ax::mojom::Role::kWindow;
+}
+
+base::string16 AssistantContainerView::GetAccessibleWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_WINDOW);
 }
 
 int AssistantContainerView::GetDialogButtons() const {

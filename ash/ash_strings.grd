@@ -1697,6 +1697,9 @@ This file contains the strings for ash.
       </message>
 
       <!-- Assistant -->
+      <message name="IDS_ASH_ASSISTANT_WINDOW" desc="The accessible description of the Assistant window.">
+        Assistant
+      </message>
       <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT" desc="Message shown as a placeholder in Assistant's input textfield when empty.">
         Type a message
       </message>
