@@ -104,15 +104,6 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   }
 }
 
-// ui::DialogModel -------------------------------------------------------------
-
-base::string16 BookmarkBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK)
-                                       ? IDS_DONE
-                                       : IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
-}
-
 // views::WidgetDelegate -------------------------------------------------------
 
 views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
@@ -148,6 +139,13 @@ void BookmarkBubbleView::WindowClosing() {
 }
 
 // views::DialogDelegate -------------------------------------------------------
+
+base::string16 BookmarkBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK)
+                                       ? IDS_DONE
+                                       : IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
+}
 
 views::View* BookmarkBubbleView::CreateExtraView() {
   edit_button_ = views::MdTextButton::CreateSecondaryUiButton(

@@ -301,7 +301,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                               GetAccessibilityTokensCallback callback) override;
 
   // DialogObserver:
-  void OnDialogModelChanged() override;
+  void OnDialogChanged() override;
 
   // FocusChangeListener:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;

@@ -12,7 +12,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/base/models/dialog_model.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -831,21 +830,21 @@ bool BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
     bool* is_button_enabled,
     bool* is_button_default) {
   *button_exists = false;
-  ui::DialogModel* model =
+  views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  if (!model || !(model->GetDialogButtons() & button))
+  if (!dialog || !(dialog->GetDialogButtons() & button))
     return true;
   *button_exists = true;
-  *button_label = model->GetDialogButtonLabel(button);
-  *is_button_enabled = model->IsDialogButtonEnabled(button);
-  *is_button_default = button == model->GetDefaultDialogButton();
+  *button_label = dialog->GetDialogButtonLabel(button);
+  *is_button_enabled = dialog->IsDialogButtonEnabled(button);
+  *is_button_default = button == dialog->GetDefaultDialogButton();
   return true;
 }
 
 bool BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
-  ui::DialogModel* model =
+  views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  *buttons_exist = model && model->GetDialogButtons();
+  *buttons_exist = dialog && dialog->GetDialogButtons();
   return true;
 }
 
@@ -1024,7 +1023,7 @@ void BridgedNativeWidgetHostImpl::GetAccessibilityTokens(
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, DialogObserver:
 
-void BridgedNativeWidgetHostImpl::OnDialogModelChanged() {
+void BridgedNativeWidgetHostImpl::OnDialogChanged() {
   // Note it's only necessary to clear the TouchBar. If the OS needs it again,
   // a new one will be created.
   bridge()->ClearTouchBar();

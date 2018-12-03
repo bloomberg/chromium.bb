@@ -74,10 +74,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
 
-  // ui::DialogModel:
-  int GetDialogButtons() const override;
-
   // views::DialogDelegate:
+  int GetDialogButtons() const override;
   views::View* CreateExtraView() override;
   bool Close() override;
 

@@ -88,7 +88,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void ChildVisibilityChanged(View* child) override;
 
   // DialogObserver:
-  void OnDialogModelChanged() override;
+  void OnDialogChanged() override;
 
   // Update the dialog buttons to match the dialog's delegate.
   void UpdateDialogButtons();

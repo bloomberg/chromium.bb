@@ -9,12 +9,12 @@
 
 namespace views {
 
-// Allows properties on a ui::DialogModel to be observed.
+// Allows properties on a DialogDelegate to be observed.
 class VIEWS_EXPORT DialogObserver {
  public:
   // Invoked when a dialog signals a model change. E.g., the enabled buttons, or
   // the button titles.
-  virtual void OnDialogModelChanged() = 0;
+  virtual void OnDialogChanged() = 0;
 };
 
 }  // namespace views
