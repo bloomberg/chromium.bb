@@ -2,14 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var volumeManager = null;
-var metadataModel = null;
-var shortcutsModel = null;
-var driveSyncHandler = null;
-var ui = null;
-var driveFileSystem = null;
-var providedFileSystem = null;
+'use strict';
 
+/**
+ * @type {!MockVolumeManager}
+ */
+var volumeManager;
+
+/**
+ * @type {!FileSystem}
+ */
+var driveFileSystem;
+
+/**
+ * @type {!FileSystem}
+ */
+var providedFileSystem;
+
+/**
+ * @type {!MockDriveSyncHandler}
+ */
+var driveSyncHandler;
+
+/**
+ * MockFolderShortcutsModel
+ * @extends {FolderShortcutsDataModel}
+ * @constructor
+ */
 function MockFolderShortcutsModel() {
   this.has = false;
 }
@@ -20,75 +39,102 @@ MockFolderShortcutsModel.prototype.exists = function() {
 
 MockFolderShortcutsModel.prototype.add = function(entry) {
   this.has = true;
+  return 0;
 };
 
 MockFolderShortcutsModel.prototype.remove = function(entry) {
   this.has = false;
+  return 0;
 };
 
-function MockUI() {
-  this.listContainer = {
-    currentView: {
-      updateListItemsMetadata: function() {
-      }
-    }
-  };
+/**
+ * @type {!MockFolderShortcutsModel}
+ */
+var shortcutsModel;
 
-  this.alertDialog = {
-    showHtml: function() {
+/**
+ * MockUI
+ * @extends {ActionModelUI}
+ * @constructor
+ */
+function MockUI() {
+  this.listContainer = /** @type {!ListContainer} */ ({
+    currentView: {
+      updateListItemsMetadata: function() {},
     }
-  };
+  });
+
+  this.alertDialog = /** @type {!FilesAlertDialog} */ ({
+    showHtml: function() {},
+  });
+
+  this.errorDialog = /** @type {!ErrorDialog} */ ({
+    showHtml: function() {},
+  });
 }
 
+/**
+ * @type {!MockUI}
+ */
+var ui;
+
 function setUp() {
+  // Mock loadTimeData strings.
   window.loadTimeData.getString = id => id;
   window.loadTimeData.data = {};
-  window.chrome = {
+
+  // Mock Chrome APIs.
+  var mockChrome = {
     runtime: {
-      lastError: null
+      lastError: null,
     },
     fileManagerPrivate: {
       // The following closures are set per test case.
       getCustomActions: null,
       executeCustomAction: null,
-      pinDriveFile: null
+      pinDriveFile: null,
     },
   };
+  installMockChrome(mockChrome);
   new MockCommandLinePrivate();
 
+  // Setup Drive file system.
   volumeManager = new MockVolumeManager();
-  volumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.PROVIDED,
-      'provided',
-      'Provided');
+  var type = VolumeManagerCommon.VolumeType.DRIVE;
+  driveFileSystem =
+      assert(volumeManager.getCurrentProfileVolumeInfo(type).fileSystem);
 
-  driveFileSystem = volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE).fileSystem;
-  providedFileSystem = volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.PROVIDED).fileSystem;
+  // Setup Provided file system.
+  type = VolumeManagerCommon.VolumeType.PROVIDED;
+  volumeManager.createVolumeInfo(type, 'provided', 'Provided');
+  providedFileSystem =
+      assert(volumeManager.getCurrentProfileVolumeInfo(type).fileSystem);
 
-  metadataModel = new MockMetadataModel(null);
+  // Create mock action model components.
   shortcutsModel = new MockFolderShortcutsModel();
   driveSyncHandler = new MockDriveSyncHandler();
   ui = new MockUI();
 }
 
 /**
- * Tests that the correct actions are available for a directory in Google Drive.
+ * Tests that the correct actions are available for a Google Drive directory.
  */
 function testDriveDirectoryEntry(callback) {
   driveFileSystem.entries['/test'] =
-      new MockDirectoryEntry(driveFileSystem, '/test', {});
+      new MockDirectoryEntry(driveFileSystem, '/test');
+
+  var metadataModel = new MockMetadataModel({
+    canShare: true,
+  });
 
   var model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
-  metadataModel.properties = {
-    canShare: true,
-  };
+
   var invalidated = 0;
   model.addEventListener('invalidated', function() {
     invalidated++;
   });
+
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
     assertEquals(3, Object.keys(actions).length);
@@ -141,19 +187,21 @@ function testDriveDirectoryEntry(callback) {
 }
 
 /**
- * Tests that the correct actions are available for a file in Google Drive.
+ * Tests that the correct actions are available for a Google Drive file.
  */
 function testDriveFileEntry(callback) {
   driveFileSystem.entries['/test.txt'] =
-      new MockFileEntry(driveFileSystem, '/test.txt', {});
+      new MockFileEntry(driveFileSystem, '/test.txt');
+
+  var metadataModel = new MockMetadataModel({
+    hosted: false,
+    pinned: false,
+  });
 
   var model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [driveFileSystem.entries['/test.txt']]);
   var invalidated = 0;
-  metadataModel.properties = {
-    hosted: false,
-    pinned: false
-  };
+
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
     assertEquals(3, Object.keys(actions).length);
@@ -238,14 +286,16 @@ function testDriveFileEntry(callback) {
  */
 function testTeamDriveRootEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team', {});
+      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team');
+
+  var metadataModel = new MockMetadataModel({
+    canShare: true,
+  });
 
   var model = new ActionsModel(
       volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
       [driveFileSystem.entries['/team_drives/ABC Team']]);
-  metadataModel.properties = {
-    canShare: true,
-  };
+
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
@@ -270,15 +320,16 @@ function testTeamDriveRootEntry(callback) {
  */
 function testTeamDriveDirectoryEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team/Folder 1'] =
-      new MockDirectoryEntry(
-          driveFileSystem, '/team_drives/ABC Team/Folder 1', {});
+      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team/Folder 1');
+
+  var metadataModel = new MockMetadataModel({
+    canShare: true,
+  });
 
   var model = new ActionsModel(
       volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
       [driveFileSystem.entries['/team_drives/ABC Team/Folder 1']]);
-  metadataModel.properties = {
-    canShare: true,
-  };
+
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
@@ -310,12 +361,17 @@ function testTeamDriveDirectoryEntry(callback) {
 function testTeamDriveFileEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt'] =
       new MockFileEntry(
-          driveFileSystem, '/team_drives/ABC Team/Folder 1/test.txt', {});
+          driveFileSystem, '/team_drives/ABC Team/Folder 1/test.txt');
+
+  var metadataModel = new MockMetadataModel({
+    hosted: false,
+    pinned: false,
+  });
 
   var model = new ActionsModel(
       volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
       [driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt']]);
-  metadataModel.properties = {hosted: false, pinned: false};
+
   return reportPromise(
       model.initialize().then(function() {
         var actions = model.getActions();
@@ -347,7 +403,7 @@ function testTeamDriveFileEntry(callback) {
  */
 function testProvidedEntry(callback) {
   providedFileSystem.entries['/test'] =
-      new MockDirectoryEntry(providedFileSystem, '/test', {});
+      new MockDirectoryEntry(providedFileSystem, '/test');
 
   chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {
     assertEquals(1, entries.length);
@@ -364,12 +420,16 @@ function testProvidedEntry(callback) {
     ]);
   };
 
+  var metadataModel = new MockMetadataModel(null);
+
   var model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
+
   var invalidated = 0;
   model.addEventListener('invalidated', function() {
     invalidated++;
   });
+
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
     assertEquals(2, Object.keys(actions).length);
@@ -417,17 +477,20 @@ function testProvidedEntry(callback) {
  */
 function testProvidedEntryWithError(callback) {
   providedFileSystem.entries['/test'] =
-      new MockDirectoryEntry(providedFileSystem, '/test', {});
+      new MockDirectoryEntry(providedFileSystem, '/test');
 
   chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {
     chrome.runtime.lastError = {
       message: 'Failed to fetch custom actions.'
     };
-    callback(null);
+    callback(['error']);
   };
+
+  var metadataModel = new MockMetadataModel(null);
 
   var model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
+
   return reportPromise(model.initialize().then(function() {
     var actions = model.getActions();
     assertEquals(0, Object.keys(actions).length);
