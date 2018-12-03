@@ -56,8 +56,8 @@ enum {
   // maximum dimensions, in exchange for a smaller maximum canvas size.
   kMaxCanvasArea = 32768 * 8192,  // Maximum canvas area in CSS pixels
 
-  // In Skia, we will also limit width/height to 32767.
-  kMaxSkiaDim = 32767  // Maximum width/height in CSS pixels.
+  // In Skia, we will also limit width/height to 65535.
+  kMaxSkiaDim = 65535  // Maximum width/height in CSS pixels.
 };
 
 bool PLATFORM_EXPORT IsValidImageSize(const IntSize&);
