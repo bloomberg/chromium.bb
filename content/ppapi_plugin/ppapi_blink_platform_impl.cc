@@ -20,11 +20,8 @@
 
 #if defined(OS_MACOSX)
 #include "content/child/child_process_sandbox_support_impl_mac.h"
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_LINUX)
 #include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
-#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
-#include "third_party/icu/source/common/unicode/utf16.h"
 #endif
 
 using blink::WebSandboxSupport;
@@ -36,94 +33,12 @@ typedef struct CGFont* CGFontRef;
 
 namespace content {
 
-#if defined(OS_LINUX)
-
-class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
- public:
-  explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
-      : font_loader_(std::move(font_loader)) {}
-  ~SandboxSupport() override {}
-
-  SandboxSupport();
-  void GetFallbackFontForCharacter(
-      WebUChar32 character,
-      const char* preferred_locale,
-      blink::OutOfProcessFont* fallbackFont) override;
-  void MatchFontByPostscriptNameOrFullFontName(
-      const char* font_unique_name,
-      blink::OutOfProcessFont* fallback_font) override;
-  void GetWebFontRenderStyleForStrike(const char* family,
-                                      int size,
-                                      bool is_bold,
-                                      bool is_italic,
-                                      float device_scale_factor,
-                                      blink::WebFontRenderStyle* out) override;
-
- private:
-  // WebKit likes to ask us for the correct font family to use for a set of
-  // unicode code points. It needs this information frequently so we cache it
-  // here.
-  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
-  sk_sp<font_service::FontLoader> font_loader_;
-  // For debugging https://crbug.com/312965
-  base::SequenceCheckerImpl creation_thread_sequence_checker_;
-};
-
-PpapiBlinkPlatformImpl::SandboxSupport::SandboxSupport() {}
-
-void PpapiBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
-    WebUChar32 character,
-    const char* preferred_locale,
-    blink::OutOfProcessFont* fallbackFont) {
-  ppapi::ProxyLock::AssertAcquired();
-  // For debugging crbug.com/312965
-  CHECK(creation_thread_sequence_checker_.CalledOnValidSequence());
-  const std::map<int32_t, blink::OutOfProcessFont>::const_iterator iter =
-      unicode_font_families_.find(character);
-  if (iter != unicode_font_families_.end()) {
-    fallbackFont->name = iter->second.name;
-    fallbackFont->filename = iter->second.filename;
-    fallbackFont->fontconfig_interface_id =
-        iter->second.fontconfig_interface_id;
-    fallbackFont->ttc_index = iter->second.ttc_index;
-    fallbackFont->is_bold = iter->second.is_bold;
-    fallbackFont->is_italic = iter->second.is_italic;
-    return;
-  }
-
-  content::GetFallbackFontForCharacter(font_loader_, character,
-                                       preferred_locale, fallbackFont);
-  unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
-}
-
-void PpapiBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
-    const char* family,
-    int size,
-    bool is_bold,
-    bool is_italic,
-    float device_scale_factor,
-    blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
-                          device_scale_factor, out);
-}
-
-void PpapiBlinkPlatformImpl::SandboxSupport::
-    MatchFontByPostscriptNameOrFullFontName(
-        const char* font_unique_name,
-        blink::OutOfProcessFont* uniquely_matched_font) {
-  content::MatchFontByPostscriptNameOrFullFontName(
-      font_loader_, font_unique_name, uniquely_matched_font);
-}
-
-#endif
-
 PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
 #if defined(OS_LINUX)
   font_loader_ =
       sk_make_sp<font_service::FontLoader>(ChildThread::Get()->GetConnector());
   SkFontConfigInterface::SetGlobal(font_loader_);
-  sandbox_support_.reset(
-      new PpapiBlinkPlatformImpl::SandboxSupport(font_loader_));
+  sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #elif defined(OS_MACOSX)
   sandbox_support_.reset(
       new WebSandboxSupportMac(ChildThread::Get()->GetConnector()));

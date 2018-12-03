@@ -111,21 +111,12 @@
 
 #if defined(OS_MACOSX)
 #include "content/child/child_process_sandbox_support_impl_mac.h"
-#include "content/common/mac/font_loader.h"
+#elif defined(OS_LINUX)
+#include "content/child/child_process_sandbox_support_impl_linux.h"
 #endif
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#include <map>
-#include <string>
-
-#include "base/synchronization/lock.h"
-#include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
-#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
-#include "third_party/icu/source/common/unicode/utf16.h"
-#endif
 #endif
 
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -193,40 +184,6 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_LINUX)
-class RendererBlinkPlatformImpl::SandboxSupport
-    : public blink::WebSandboxSupport {
- public:
-  explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
-      : font_loader_(std::move(font_loader)) {}
-  ~SandboxSupport() override {}
-
-  void GetFallbackFontForCharacter(
-      blink::WebUChar32 character,
-      const char* preferred_locale,
-      blink::OutOfProcessFont* fallbackFont) override;
-  void MatchFontByPostscriptNameOrFullFontName(
-      const char* font_unique_name,
-      blink::OutOfProcessFont* fallback_font) override;
-  void GetWebFontRenderStyleForStrike(const char* family,
-                                      int size,
-                                      bool is_bold,
-                                      bool is_italic,
-                                      float device_scale_factor,
-                                      blink::WebFontRenderStyle* out) override;
-
- private:
-  // WebKit likes to ask us for the correct font family to use for a set of
-  // unicode code points. It needs this information frequently so we cache it
-  // here.
-  base::Lock unicode_font_families_mutex_;
-  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
-  sk_sp<font_service::FontLoader> font_loader_;
-};
-#endif  // defined(OS_LINUX)
-
-//------------------------------------------------------------------------------
-
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : BlinkPlatformImpl(main_thread_scheduler->DefaultTaskRunner(),
@@ -261,8 +218,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 #if defined(OS_MACOSX)
     sandbox_support_.reset(new WebSandboxSupportMac(connector_.get()));
 #else
-    sandbox_support_.reset(
-        new RendererBlinkPlatformImpl::SandboxSupport(font_loader_));
+    sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #endif
   } else {
     DVLOG(1) << "Disabling sandbox support for testing.";
@@ -557,54 +513,6 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
   return WebString::FromUTF8(
       storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin)));
 }
-
-//------------------------------------------------------------------------------
-
-#if defined(OS_LINUX)
-
-void RendererBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
-    blink::WebUChar32 character,
-    const char* preferred_locale,
-    blink::OutOfProcessFont* fallbackFont) {
-  base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, blink::OutOfProcessFont>::const_iterator iter =
-      unicode_font_families_.find(character);
-  if (iter != unicode_font_families_.end()) {
-    fallbackFont->name = iter->second.name;
-    fallbackFont->filename = iter->second.filename;
-    fallbackFont->fontconfig_interface_id =
-        iter->second.fontconfig_interface_id;
-    fallbackFont->ttc_index = iter->second.ttc_index;
-    fallbackFont->is_bold = iter->second.is_bold;
-    fallbackFont->is_italic = iter->second.is_italic;
-    return;
-  }
-
-  content::GetFallbackFontForCharacter(font_loader_, character,
-                                       preferred_locale, fallbackFont);
-  unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
-}
-
-void RendererBlinkPlatformImpl::SandboxSupport::
-    MatchFontByPostscriptNameOrFullFontName(
-        const char* font_unique_name,
-        blink::OutOfProcessFont* fallback_font) {
-  content::MatchFontByPostscriptNameOrFullFontName(
-      font_loader_, font_unique_name, fallback_font);
-}
-
-void RendererBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
-    const char* family,
-    int size,
-    bool is_bold,
-    bool is_italic,
-    float device_scale_factor,
-    blink::WebFontRenderStyle* out) {
-  GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
-                          device_scale_factor, out);
-}
-
-#endif
 
 //------------------------------------------------------------------------------
 

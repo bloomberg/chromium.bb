@@ -47,7 +47,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
 #endif
 
 #if defined(OS_LINUX)
-  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
