@@ -22,7 +22,6 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFill
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
-import android.support.test.espresso.Espresso;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.SmallTest;
 import android.text.method.PasswordTransformationMethod;
@@ -39,7 +38,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -126,7 +124,6 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    @FlakyTest(message = "https://crbug.com/854326")
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -154,7 +151,6 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    @FlakyTest(message = "https://crbug.com/854326")
     public void testPasswordSheetDisplaysNoPasswordsMessageAndOptions()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -185,18 +181,17 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    @FlakyTest(message = "crbug.com/855617")
     public void testPasswordSheetTriggersCallback() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<Field> clicked = new AtomicReference<>();
 
         AccessorySheetData accessorySheetData = new AccessorySheetData("Passwords");
         accessorySheetData.getUserInfoList().add(
-                createUserInfo("mpark@abc.com", "ShorterPassword"));
+                createUserInfo("mpark@abc.com", "ShorterPassword", clicked::set));
         accessorySheetData.getUserInfoList().add(createUserInfo("mayap@xyz.com", "PWD"));
         accessorySheetData.getUserInfoList().add(createUserInfo("park@googlemail.com", "P@$$W0rt"));
         accessorySheetData.getUserInfoList().add(
-                createUserInfo("mayapark@gmail.com", "SomeHiddenLongPassword", clicked::set));
+                createUserInfo("mayapark@gmail.com", "SomeHiddenLongPassword"));
         mHelper.sendCredentials(accessorySheetData);
 
         // Focus the field to bring up the accessory.
@@ -204,19 +199,17 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.waitForKeyboard();
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
 
-        // Scroll down and click the suggestion.
-        whenDisplayed(withChild(withText("Passwords"))).perform(scrollToPosition(7));
-        whenDisplayed(withText("mayapark@gmail.com")).perform(click());
+        // Click the suggestion.
+        whenDisplayed(withText("mpark@abc.com")).perform(click());
 
         // The callback should have triggered and set the reference to the selected Item.
         assertThat(clicked.get(), notNullValue());
-        assertThat(clicked.get().getDisplayText(), equalTo("mayapark@gmail.com"));
+        assertThat(clicked.get().getDisplayText(), equalTo("mpark@abc.com"));
     }
 
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    @FlakyTest(message = "crbug.com/855617")
     public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -229,12 +222,8 @@ public class PasswordAccessoryIntegrationTest {
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
-        onView(withText(containsString("No saved passwords"))).check(matches(isDisplayed()));
-
-        Espresso.pressBack();
-
-        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
-        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+        onView(withText(containsString("No Saved passwords for this site")))
+                .check(matches(isDisplayed()));
     }
 
     /**
