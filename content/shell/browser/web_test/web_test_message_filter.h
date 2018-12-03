@@ -23,10 +23,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -48,7 +44,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
   WebTestMessageFilter(int render_process_id,
                        storage::DatabaseTracker* database_tracker,
                        storage::QuotaManager* quota_manager,
-                       net::URLRequestContextGetter* request_context_getter,
                        network::mojom::NetworkContext* network_context);
 
  private:
@@ -77,7 +72,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const base::Optional<base::string16>& reply);
   void OnSimulateWebNotificationClose(const std::string& title, bool by_user);
   void OnDeleteAllCookies();
-  void OnDeleteAllCookiesForNetworkService();
   void OnSetPermission(const std::string& name,
                        blink::mojom::PermissionStatus status,
                        const GURL& origin,
@@ -94,7 +88,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   network::mojom::CookieManagerPtr cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestMessageFilter);

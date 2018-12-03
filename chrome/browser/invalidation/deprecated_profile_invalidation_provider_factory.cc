@@ -162,6 +162,7 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         IdentityManagerFactory::GetForProfile(profile)));
   }
 
+  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
   std::unique_ptr<TiclInvalidationService> service =
       std::make_unique<TiclInvalidationService>(
           GetUserAgent(), identity_provider.get(),

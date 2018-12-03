@@ -13,6 +13,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport_impl.h"
@@ -122,9 +123,10 @@ void CastBindConnectorRequest(
 namespace cast {
 
 CastTransportHostFilter::CastTransportHostFilter(Profile* profile)
-    : BrowserMessageFilter(CastMsgStart),
-      url_request_context_getter_(profile->GetRequestContext()),
-      weak_factory_(this) {}
+    : BrowserMessageFilter(CastMsgStart), weak_factory_(this) {
+  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
+  url_request_context_getter_ = profile->GetRequestContext();
+}
 
 CastTransportHostFilter::~CastTransportHostFilter() {}
 

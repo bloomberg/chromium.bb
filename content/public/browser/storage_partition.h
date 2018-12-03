@@ -17,10 +17,23 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
+class ChromeURLRequestContextGetter;
 class GURL;
 
 namespace base {
 class Time;
+}
+
+namespace cast {
+class CastTransportHostFilter;
+}
+
+namespace extensions {
+class MessagePropertyProvider;
+}
+
+namespace invalidation {
+class DeprecatedProfileInvalidationProviderFactory;
 }
 
 namespace storage {
@@ -65,6 +78,22 @@ class HostZoomMap;
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 
+// See comment below on GetURLRequestContext.
+class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
+ private:
+  // https://crbug.com/806817
+  friend class cast::CastTransportHostFilter;
+  // https://crbug.com/875032
+  friend class invalidation::DeprecatedProfileInvalidationProviderFactory;
+  // ChannelID is being removed now.
+  friend class extensions::MessagePropertyProvider;
+  // Uses URLRequestContextGetter to cast to a derived class.
+  friend class ::ChromeURLRequestContextGetter;
+  ScopedAllowGetURLRequestContext();
+  ~ScopedAllowGetURLRequestContext();
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowGetURLRequestContext);
+};
+
 // Defines what persistent state a child process can access.
 //
 // The StoragePartition defines the view each child process has of the
@@ -74,6 +103,10 @@ class ZoomLevelDelegate;
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
+  // http://crbug.com/837753 these methods shouldn't be called when the network
+  // service is enabled. There are a few remaining callers which have to
+  // instantiate a ScopedAllowGetURLRequestContext object while they make this
+  // call.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
 

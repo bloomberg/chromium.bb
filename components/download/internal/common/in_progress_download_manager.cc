@@ -22,6 +22,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 
@@ -370,10 +371,15 @@ void InProgressDownloadManager::StartDownloadWithItem(
   // so that the DownloadItem can salvage what it can out of a failed
   // resumption attempt.
 
-  download->Start(
-      std::move(download_file), std::move(info->request_handle), *info,
-      std::move(url_loader_factory_getter),
-      delegate_ ? delegate_->GetURLRequestContextGetter(*info) : nullptr);
+  net::URLRequestContextGetter* url_request_context_getter = nullptr;
+  if (delegate_ &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_request_context_getter = delegate_->GetURLRequestContextGetter(*info);
+  }
+
+  download->Start(std::move(download_file), std::move(info->request_handle),
+                  *info, std::move(url_loader_factory_getter),
+                  url_request_context_getter);
 
   if (download_start_observer_)
     download_start_observer_->OnDownloadStarted(download);

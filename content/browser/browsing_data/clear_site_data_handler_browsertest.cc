@@ -208,17 +208,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         base::BindRepeating(&ClearSiteDataHandlerBrowserTest::HandleRequest,
                             base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
-
-    // Initialize the cookie store pointer on the IO thread.
-    base::RunLoop run_loop;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearSiteDataHandlerBrowserTest::InitializeCookieStore,
-            base::Unretained(this),
-            base::Unretained(storage_partition()->GetURLRequestContext()),
-            run_loop.QuitClosure()));
-    run_loop.Run();
   }
 
   BrowserContext* browser_context() {
@@ -227,14 +216,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   StoragePartition* storage_partition() {
     return BrowserContext::GetDefaultStoragePartition(browser_context());
-  }
-
-  void InitializeCookieStore(
-      net::URLRequestContextGetter* request_context_getter,
-      base::Closure callback) {
-    cookie_store_ =
-        request_context_getter->GetURLRequestContext()->cookie_store();
-    std::move(callback).Run();
   }
 
   // Adds a cookie for the |url|. Used in the cookie integration tests.
@@ -514,8 +495,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   TestBrowsingDataRemoverDelegate embedder_delegate_;
-
-  net::CookieStore* cookie_store_;
 };
 
 // Tests that the header is recognized on the beginning, in the middle, and on
