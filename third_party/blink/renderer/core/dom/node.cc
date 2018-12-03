@@ -2793,10 +2793,40 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
 }
 
 HTMLSlotElement* Node::AssignedSlot() const {
-  // assignedSlot doesn't need to call updateDistribution().
+  // assignedSlot doesn't need to recalc assignment.
   DCHECK(!IsPseudoElement());
-  if (ShadowRoot* root = V1ShadowRootOfParent())
+  ShadowRoot* root = V1ShadowRootOfParent();
+  if (!root)
+    return nullptr;
+  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
     return root->AssignedSlotFor(*this);
+  }
+
+  if (!root->HasSlotAssignment())
+    return nullptr;
+
+  // TODO(hayato): Node::AssignedSlot() shouldn't be called while
+  // in executing RecalcAssignment(), however, unfortunately,
+  // that could happen as follows:
+  //
+  // 1. RecalsAssignment() can detach a node
+  // 2. Then, DetachLayoutTree() may use FlatTreeTraversal via the hook of
+  // AXObjectCacheImpl::ChildrenChanged().
+  //
+  // Note that using FlatTreeTraversal in detaching layout tree should be banned
+  // in the long term.
+  //
+  // If we can remove such code path, we don't need to check
+  // IsInSlotAssignmentRecalc() here.
+  if (root->NeedsSlotAssignmentRecalc() ||
+      GetDocument().IsInSlotAssignmentRecalc()) {
+    // FlatTreeNodeData is not realiable here. Entering slow path.
+    return root->AssignedSlotFor(*this);
+  }
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
+    DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot());
+    return data->AssignedSlot();
+  }
   return nullptr;
 }
 
@@ -2812,10 +2842,10 @@ HTMLSlotElement* Node::FinalDestinationSlot() const {
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding() {
-  // assignedSlot doesn't need to call updateDistribution().
+  // assignedSlot doesn't need to recalc slot assignment
   if (ShadowRoot* root = V1ShadowRootOfParent()) {
     if (root->GetType() == ShadowRootType::kOpen)
-      return root->AssignedSlotFor(*this);
+      return AssignedSlot();
   }
   return nullptr;
 }

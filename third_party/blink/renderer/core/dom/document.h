@@ -1466,6 +1466,15 @@ class CORE_EXPORT Document : public ContainerNode,
 #else
   bool IsSlotAssignmentRecalcForbidden() { return false; }
 #endif
+  unsigned& SlotAssignmentRecalcDepth() {
+    return slot_assignment_recalc_depth_;
+  }
+  bool IsInSlotAssignmentRecalc() const {
+    // Since we forbid recursive slot assignement recalc, the depth should be
+    // <= 1.
+    DCHECK_LE(slot_assignment_recalc_depth_, 1u);
+    return slot_assignment_recalc_depth_ == 1;
+  }
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
   bool IsLazyLoadPolicyEnforced() const;
@@ -1915,6 +1924,7 @@ class CORE_EXPORT Document : public ContainerNode,
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_;
 #endif
+  unsigned slot_assignment_recalc_depth_ = 0;
 
   bool needs_to_record_ukm_outlive_time_;
 
