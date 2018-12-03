@@ -81,10 +81,6 @@ Polymer({
     showMultidevice: Boolean,
 
     havePlayStoreApp: Boolean,
-
-    // TODO(jdoerrie): https://crbug.com/854562.
-    // Remove once Autofill Home is launched.
-    autofillHomeEnabled: Boolean,
   },
 
   /** @override */

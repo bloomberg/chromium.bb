@@ -74,7 +74,8 @@ const ShowPasswordBehavior = {
   },
 };
 
-/** @typedef {{
+/**
+ * @typedef {{
  *    entry: !chrome.passwordsPrivate.PasswordUiEntry,
  *    password: string
  * }}

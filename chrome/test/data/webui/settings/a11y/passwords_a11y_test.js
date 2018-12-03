@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Define accessibility tests for the MANAGE_PASSWORDS route. */
+/** @fileoverview Define accessibility tests for the PASSWORDS route. */
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
@@ -10,13 +10,13 @@ GEN_INCLUDE([
 ]);
 
 /**
- * Test fixture for MANAGE PASSWORDS
+ * Test fixture for PASSWORDS
  * @constructor
  * @extends {PolymerTest}
  */
-function SettingsA11yManagePasswords() {}
+function SettingsA11yPasswords() {}
 
-SettingsA11yManagePasswords.prototype = {
+SettingsA11yPasswords.prototype = {
   __proto__: SettingsAccessibilityTest.prototype,
 
   // Include files that define the mocha tests.
@@ -25,9 +25,9 @@ SettingsA11yManagePasswords.prototype = {
   ]),
 };
 
-AccessibilityTest.define('SettingsA11yManagePasswords', {
+AccessibilityTest.define('SettingsA11yPasswords', {
   /** @override */
-  name: 'MANAGE_PASSWORDS',
+  name: 'PASSWORDS',
   /** @type {PasswordManager} */
   passwordManager: null,
   /** @type {PasswordsSectionElement}*/
@@ -56,20 +56,20 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       // settings-ui. Simply calling settings.navigateTo(route) prevents
       // use of mock APIs for fake data.
       window.history.pushState(
-          'object or string', 'Test', settings.routes.MANAGE_PASSWORDS.path);
+          'object or string', 'Test', settings.routes.PASSWORDS.path);
 
       PasswordManagerImpl.instance_ = new TestPasswordManager();
       this.passwordManager = PasswordManagerImpl.instance_;
 
       const settingsUi = document.createElement('settings-ui');
 
-      // The settings section will expand to load the MANAGE_PASSWORDS route
-      // (based on the URL set above) once the settings-ui element is attached
+      // The settings section will expand to load the PASSWORDS route (based on
+      // the URL set above) once the settings-ui element is attached
       settingsUi.addEventListener('settings-section-expanded', () => {
         // Passwords section should be loaded before setup is complete.
         this.passwordsSection = settingsUi.$$('settings-main')
                                     .$$('settings-basic-page')
-                                    .$$('settings-people-page')
+                                    .$$('settings-autofill-page')
                                     .$$('passwords-section');
         assertTrue(!!this.passwordsSection);
 

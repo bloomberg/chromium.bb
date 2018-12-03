@@ -7,20 +7,28 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":address_edit_dialog",
+    ":autofill_browser_proxy",
+    ":autofill_page",
     ":autofill_section",
     ":credit_card_edit_dialog",
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
-    ":passwords_and_forms_page",
     ":passwords_section",
     ":payments_section",
     ":show_password_behavior",
   ]
 }
 
-js_library("passwords_and_forms_page") {
+js_library("autofill_browser_proxy") {
   deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("autofill_page") {
+  deps = [
+    ":autofill_browser_proxy",
     ":autofill_section",
     ":passwords_section",
     ":payments_section",

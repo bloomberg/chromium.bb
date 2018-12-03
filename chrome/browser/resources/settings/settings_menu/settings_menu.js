@@ -17,10 +17,6 @@ Polymer({
       notify: true,
     },
 
-    // TODO(jdoerrie): https://crbug.com/854562.
-    // Remove once Autofill Home is launched.
-    autofillHomeEnabled: Boolean,
-
     /**
      * Dictionary defining page visibility.
      * @type {!GuestModePageVisibility}

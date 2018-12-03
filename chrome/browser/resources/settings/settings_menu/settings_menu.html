@@ -109,6 +109,11 @@
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{peoplePageTitle}
       </a>
+      <a id="autofill" href="/autofill"
+          hidden="[[!pageVisibility.autofill]]">
+        <iron-icon icon="settings:assignment"></iron-icon>
+        $i18n{autofillPageTitle}
+      </a>
       <a id="appearance" href="/appearance"
         hidden="[[!pageVisibility.appearance]]">
         <iron-icon icon="settings:palette"></iron-icon>
@@ -168,13 +173,6 @@
             <iron-icon icon="cr:security"></iron-icon>
             $i18n{privacyPageTitle}
           </a>
-          <template is="dom-if" if="[[!autofillHomeEnabled]]">
-            <a id="passwordsAndForms" href="/passwordsAndForms"
-                hidden="[[!pageVisibility.passwordsAndForms]]">
-              <iron-icon icon="settings:assignment"></iron-icon>
-              $i18n{passwordsAndAutofillPageTitle}
-            </a>
-          </template>
           <a href="/languages">
             <iron-icon icon="settings:language"></iron-icon>
             $i18n{languagesPageTitle}

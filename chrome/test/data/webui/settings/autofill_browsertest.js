@@ -20,14 +20,14 @@ GEN_INCLUDE(
  * @constructor
  * @extends {PolymerTest}
  */
-function PasswordsAndFormsBrowserTest() {}
+function AutofillBrowserTest() {}
 
-PasswordsAndFormsBrowserTest.prototype = {
+AutofillBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/passwords_and_forms_page/' +
-      'passwords_and_forms_page.html',
+  browsePreload: 'chrome://settings/autofill_page/' +
+      'autofill_page.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
@@ -48,7 +48,7 @@ PasswordsAndFormsBrowserTest.prototype = {
 };
 
 /** This test will validate that the section is loaded with data. */
-TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
+TEST_F('AutofillBrowserTest', 'uiTests', function() {
   let passwordManager;
   let autofillManager;
   let paymentsManager;
@@ -57,16 +57,16 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
    * Creates a new passwords and forms element.
    * @return {!Object}
    */
-  function createPasswordsAndFormsElement(prefsElement) {
-    const element = document.createElement('settings-passwords-and-forms-page');
+  function createAutofillElement(prefsElement) {
+    const element = document.createElement('settings-autofill-page');
     element.prefs = prefsElement.prefs;
     document.body.appendChild(element);
 
     // TODO(dpapad): Update this once migration to Polymer 2 is done.
     const domIfTag = Polymer.DomIf ? 'dom-if' : 'template';
     element.$$(`${domIfTag}[route-path="/passwords"]`).if = true;
-    element.$$(`${domIfTag}[route-path="/autofill"]`).if = true;
     element.$$(`${domIfTag}[route-path="/payments"]`).if = true;
+    element.$$(`${domIfTag}[route-path="/addresses"]`).if = true;
     Polymer.dom.flush();
     return element;
   }
@@ -181,7 +181,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
   suite('PasswordsAndForms', function() {
     test('baseLoadAndRemove', function() {
       return createPrefs(true, true).then(function(prefs) {
-        const element = createPasswordsAndFormsElement(prefs);
+        const element = createAutofillElement(prefs);
 
         const passwordsExpectations = basePasswordExpectations();
         passwordManager.assertExpectations(passwordsExpectations);
@@ -211,7 +211,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadPasswordsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        const element = createPasswordsAndFormsElement(prefs);
+        const element = createAutofillElement(prefs);
 
         const list =
             [FakeDataMaker.passwordEntry(), FakeDataMaker.passwordEntry()];
@@ -236,7 +236,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadExceptionsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        const element = createPasswordsAndFormsElement(prefs);
+        const element = createAutofillElement(prefs);
 
         const list =
             [FakeDataMaker.exceptionEntry(), FakeDataMaker.exceptionEntry()];
@@ -257,7 +257,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadAddressesAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        const element = createPasswordsAndFormsElement(prefs);
+        const element = createAutofillElement(prefs);
 
         const list =
             [FakeDataMaker.addressEntry(), FakeDataMaker.addressEntry()];
@@ -278,14 +278,14 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadCreditCardsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        const element = createPasswordsAndFormsElement(prefs);
+        const element = createAutofillElement(prefs);
 
         const list =
             [FakeDataMaker.creditCardEntry(), FakeDataMaker.creditCardEntry()];
         paymentsManager.lastCallback.addCreditCardListChangedListener(list);
         Polymer.dom.flush();
 
-        assertEquals(list, element.$$('#paymentSection').creditCards);
+        assertEquals(list, element.$$('#paymentsSection').creditCards);
 
         // The callback is coming from the manager, so the element shouldn't
         // have additional calls to the manager after the base expectations.

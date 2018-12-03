@@ -14,11 +14,6 @@ namespace features {
 const base::Feature kAffiliationBasedMatching = {
     "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables links to the setting pages from the Chrome profile menu for Passwords
-// and Autofill.
-const base::Feature kAutofillHome = {"AutofillHome",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Recovers lost passwords on Mac by deleting the ones that cannot be decrypted
 // with the present encryption key from the Keychain.
 const base::Feature kDeleteCorruptedPasswords = {

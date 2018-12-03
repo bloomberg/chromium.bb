@@ -11,6 +11,7 @@
  *   ACCESSIBILITY: (undefined|!settings.Route),
  *   ACCOUNTS: (undefined|!settings.Route),
  *   ADVANCED: (undefined|!settings.Route),
+ *   ADDRESSES: (undefined|!settings.Route),
  *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
@@ -48,7 +49,6 @@
  *   LANGUAGES: (undefined|!settings.Route),
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
- *   MANAGE_PASSWORDS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
@@ -214,10 +214,6 @@ cr.define('settings', function() {
     /** @type {!SettingsRoutes} */
     const r = {};
 
-    const autofillHomeEnabled =
-        loadTimeData.valueExists('autofillHomeEnabled') &&
-        loadTimeData.getBoolean('autofillHomeEnabled');
-
     // Root pages.
     r.BASIC = new Route('/');
     r.ABOUT = new Route('/help');
@@ -249,6 +245,13 @@ cr.define('settings', function() {
       r.FONTS = r.APPEARANCE.createChild('/fonts');
     }
 
+    if (pageVisibility.autofill !== false) {
+      r.AUTOFILL = r.BASIC.createSection('/autofill', 'autofill');
+      r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
+      r.PAYMENTS = r.AUTOFILL.createChild('/payments');
+      r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
+    }
+
     if (pageVisibility.defaultBrowser !== false) {
       r.DEFAULT_BROWSER =
           r.BASIC.createSection('/defaultBrowser', 'defaultBrowser');
@@ -278,11 +281,6 @@ cr.define('settings', function() {
     if (pageVisibility.people !== false) {
       r.PEOPLE = r.BASIC.createSection('/people', 'people');
       r.SYNC = r.PEOPLE.createChild('/syncSetup');
-      if (autofillHomeEnabled) {
-        r.AUTOFILL = r.PEOPLE.createChild('/autofill');
-        r.MANAGE_PASSWORDS = r.PEOPLE.createChild('/passwords');
-        r.PAYMENTS = r.PEOPLE.createChild('/payments');
-      }
       // <if expr="not chromeos">
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
       // </if>
@@ -376,14 +374,6 @@ cr.define('settings', function() {
             r.DATETIME.createChild('/dateTime/timeZone');
       }
       // </if>
-
-      if (!autofillHomeEnabled && pageVisibility.passwordsAndForms !== false) {
-        r.PASSWORDS =
-            r.ADVANCED.createSection('/passwordsAndForms', 'passwordsAndForms');
-        r.AUTOFILL = r.PASSWORDS.createChild('/autofill');
-        r.MANAGE_PASSWORDS = r.PASSWORDS.createChild('/passwords');
-        r.PAYMENTS = r.PASSWORDS.createChild('/payments');
-      }
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
       // <if expr="chromeos">

@@ -204,7 +204,7 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.*
 -SessionRestorePageLoadMetricsBrowserTest.*
 -SessionRestoreTest.*
--SettingsA11yManagePasswords.*
+-SettingsA11yPasswords.*
 -SettingsA11ySignOut.*
 -SettingsAccessibilityTest.*
 -StartupBrowserCreatorFirstRunTest.*

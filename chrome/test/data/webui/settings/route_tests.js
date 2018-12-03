@@ -209,9 +209,9 @@ suite('route', function() {
     settings.pageVisibility = {
       advancedSettings: false,
       appearance: false,
+      autofill: false,
       defaultBrowser: false,
       onStartup: false,
-      passwordsAndForms: false,
       people: false,
       reset: false,
     };
@@ -223,9 +223,9 @@ suite('route', function() {
 
     assertFalse(hasRoute('ADVANCED'));
     assertFalse(hasRoute('APPEARANCE'));
+    assertFalse(hasRoute('AUTOFILL'));
     assertFalse(hasRoute('DEFAULT_BROWSER'));
     assertFalse(hasRoute('ON_STARTUP'));
-    assertFalse(hasRoute('PASSWORDS'));
     assertFalse(hasRoute('PEOPLE'));
     assertFalse(hasRoute('RESET'));
   });

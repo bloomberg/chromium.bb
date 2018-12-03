@@ -1400,11 +1400,13 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
-                                 Profile* profile) {
+void AddAutofillStrings(content::WebUIDataSource* html_source,
+                        Profile* profile) {
   LocalizedString localized_strings[] = {
-      {"passwordsAndAutofillPageTitle",
-       IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE},
+      {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
+      {"passwords", IDS_SETTINGS_PASSWORDS},
+      {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
+      {"noCreditCardsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
       {"enableProfilesLabel", IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL},
@@ -1422,7 +1424,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
       {"removeAddress", IDS_SETTINGS_ADDRESS_REMOVE},
       {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
       {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
-      {"creditCardsDetail", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_DETAIL},
       {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
       {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
       {"creditCardName", IDS_SETTINGS_NAME_ON_CREDIT_CARD},
@@ -1447,7 +1448,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_LABEL},
       {"passwordsAutosigninDescription",
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC},
-      {"passwordsDetail", IDS_SETTINGS_PASSWORDS_DETAIL},
       {"savedPasswordsHeading", IDS_SETTINGS_PASSWORDS_SAVED_HEADING},
       {"passwordExceptionsHeading", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING},
       {"deletePasswordException", IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION},
@@ -1484,28 +1484,9 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
       {"exportPasswordsFailTipsAnotherFolder",
        IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER}};
 
-  // TODO(https://crbug.com/854562): Integrate these strings into the
-  // |localized_strings| array once Autofill Home is fully launched.
-  if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
-    html_source->AddLocalizedString("autofill",
-                                    IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
-    html_source->AddLocalizedString("passwords",
-                                    IDS_SETTINGS_PASSWORDS_AUTOFILL_HOME);
-    html_source->AddLocalizedString("creditCards",
-                                    IDS_AUTOFILL_PAYMENT_METHODS);
-    html_source->AddLocalizedString("noCreditCardsFound",
-                                    IDS_SETTINGS_PAYMENT_METHODS_NONE);
-  } else {
-    html_source->AddLocalizedString("autofill", IDS_SETTINGS_AUTOFILL);
-    html_source->AddLocalizedString("passwords", IDS_SETTINGS_PASSWORDS);
-    html_source->AddLocalizedString("creditCards",
-                                    IDS_SETTINGS_AUTOFILL_CREDIT_CARD_HEADING);
-    html_source->AddLocalizedString("noCreditCardsFound",
-                                    IDS_SETTINGS_CREDIT_CARD_NONE);
-  }
-
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
+
   html_source->AddString(
       "managePasswordsLabel",
       l10n_util::GetStringFUTF16(
@@ -1787,21 +1768,11 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"personalizeGoogleServicesTitle",
      IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
     {"existingPassphraseTitle", IDS_SETTINGS_EXISTING_PASSPHRASE_TITLE},
+    {"enablePaymentsIntegrationCheckboxLabel",
+     IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-
-  if (base::FeatureList::IsEnabled(password_manager::features::kAutofillHome)) {
-    // TODO(https://crbug.com/854562): Integrate this string into the
-    // |localized_strings| array once Autofill Home is fully launched.
-    html_source->AddLocalizedString(
-        "enablePaymentsIntegrationCheckboxLabel",
-        IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-  } else {
-    html_source->AddLocalizedString(
-        "enablePaymentsIntegrationCheckboxLabel",
-        IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-  }
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
@@ -2762,6 +2733,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
   AddA11yStrings(html_source);
   AddAboutStrings(html_source);
+  AddAutofillStrings(html_source, profile);
   AddAppearanceStrings(html_source, profile);
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -2775,7 +2747,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDownloadsStrings(html_source);
   AddLanguagesStrings(html_source);
   AddOnStartupStrings(html_source);
-  AddPasswordsAndFormsStrings(html_source, profile);
   AddPeopleStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source, profile);

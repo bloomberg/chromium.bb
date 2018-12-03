@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//ui/webui/webui_features.gni")
+import("../optimize_webui.gni")
 
 if (optimize_webui) {
   settings_pak_file = "settings_resources.pak"
@@ -72,6 +72,7 @@ group("closure_compile") {
     "android_apps_page:closure_compile",
     "animation:closure_compile",
     "appearance_page:closure_compile",
+    "autofill_page:closure_compile",
     "basic_page:closure_compile",
     "bluetooth_page:closure_compile",
     "change_password_page:closure_compile",
@@ -87,7 +88,6 @@ group("closure_compile") {
     "languages_page:closure_compile",
     "multidevice_page:closure_compile",
     "on_startup_page:closure_compile",
-    "passwords_and_forms_page:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
     "printing_page:closure_compile",
