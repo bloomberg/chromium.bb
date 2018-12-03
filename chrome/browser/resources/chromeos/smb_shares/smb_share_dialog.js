@@ -13,11 +13,6 @@ Polymer({
 
   behaviors: [I18nBehavior],
 
-  /** @override */
-  attached: function() {
-    this.$.addShareDialog.open();
-  },
-
   /** @private */
   onDialogClose_: function() {
     chrome.send('dialogClose');
