@@ -512,87 +512,78 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
   }
 }
 
-// Returns true if the node's role uses PosInSet and SetSize
-// Returns false otherwise.
-bool AXNode::IsSetSizePosInSetUsedInRole() const {
-  switch (data().role) {
-    case ax::mojom::Role::kArticle:
-    case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kMenuItem:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kTab:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kTreeItem:
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kRadioButton:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-// Returns true if a node's role matches with the role of its container.
-// Returns false otherwise.
-bool AXNode::ContainerRoleMatches(AXNode* container) const {
-  ax::mojom::Role container_role = container->data().role;
-  switch (data().role) {
-    case ax::mojom::Role::kArticle:
-      return container_role == ax::mojom::Role::kFeed;
-
-    case ax::mojom::Role::kListItem:
-      return container_role == ax::mojom::Role::kList ||
-             container_role == ax::mojom::Role::kGroup;
-
-    case ax::mojom::Role::kMenuItem:
-      return container_role == ax::mojom::Role::kMenu ||
-             container_role == ax::mojom::Role::kGroup ||
-             container_role == ax::mojom::Role::kMenuBar;
-
-    case ax::mojom::Role::kMenuItemRadio:
-      return container_role == ax::mojom::Role::kGroup ||
-             container_role == ax::mojom::Role::kMenu ||
-             container_role == ax::mojom::Role::kMenuBar;
-
-    case ax::mojom::Role::kTab:
-      return container_role == ax::mojom::Role::kTabList;
-
-    case ax::mojom::Role::kMenuItemCheckBox:
-      return container_role == ax::mojom::Role::kMenu ||
-             container_role == ax::mojom::Role::kMenuBar;
-
-    case ax::mojom::Role::kTreeItem:
-      return container_role == ax::mojom::Role::kTree ||
-             container_role == ax::mojom::Role::kGroup;
-
-    case ax::mojom::Role::kListBoxOption:
-      return container_role == ax::mojom::Role::kListBox;
-
-    case ax::mojom::Role::kRadioButton:
-      return container_role == ax::mojom::Role::kRadioGroup;
-
-    default:
-      return false;
-  }
-}
-
+// pos_in_set and set_size related functions.
+// Uses AXTree's cache to calculate node's pos_in_set.
 int32_t AXNode::GetPosInSet() {
-  int32_t pos = -1;
-  int32_t size = -1;
-  ComputeSetSizePosInSet(&pos, &size);
-  return pos;
-}
-int32_t AXNode::GetSetSize() {
-  int32_t pos = -1;
-  int32_t size = -1;
-  ComputeSetSizePosInSet(&pos, &size);
-  return size;
+  // Only allow this to be called on nodes that can hold pos_in_set values,
+  // which are defined in the ARIA spec.
+  if (!IsItemLike(data().role))
+    return 0;
+
+  // See AXTree::GetPosInSet
+  return tree_->GetPosInSet(*this);
 }
 
-// Finds and returns a pointer to node's container.
-// Is not required to have a role that matches node's role.
-// Returns nullptr if node is not contained within container.
-AXNode* AXNode::GetContainer() const {
+// Uses AXTree's cache to calculate node's pos_in_set.
+int32_t AXNode::GetSetSize() {
+  // Only allow this to be called on nodes that can hold set_size values, which
+  // are defined in the ARIA spec.
+  if (!(IsItemLike(data().role) || IsSetLike(data().role)))
+    return 0;
+
+  // See AXTree::GetSetSize
+  return tree_->GetSetSize(*this);
+}
+
+// Returns true if the role of ordered set matches the role of item.
+// Returns false otherwise.
+bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
+  ax::mojom::Role item_role = data().role;
+
+  // Switch on role of ordered set
+  switch (ordered_set->data().role) {
+    case ax::mojom::Role::kFeed:
+      return item_role == ax::mojom::Role::kArticle;
+
+    case ax::mojom::Role::kList:
+      return item_role == ax::mojom::Role::kListItem;
+
+    case ax::mojom::Role::kGroup:
+      return item_role == ax::mojom::Role::kListItem ||
+             item_role == ax::mojom::Role::kMenuItem ||
+             item_role == ax::mojom::Role::kMenuItemRadio ||
+             item_role == ax::mojom::Role::kTreeItem;
+
+    case ax::mojom::Role::kMenu:
+      return item_role == ax::mojom::Role::kMenuItem ||
+             item_role == ax::mojom::Role::kMenuItemRadio ||
+             item_role == ax::mojom::Role::kMenuItemCheckBox;
+
+    case ax::mojom::Role::kMenuBar:
+      return item_role == ax::mojom::Role::kMenuItem ||
+             item_role == ax::mojom::Role::kMenuItemRadio ||
+             item_role == ax::mojom::Role::kMenuItemCheckBox;
+
+    case ax::mojom::Role::kTabList:
+      return item_role == ax::mojom::Role::kTab;
+
+    case ax::mojom::Role::kTree:
+      return item_role == ax::mojom::Role::kTreeItem;
+
+    case ax::mojom::Role::kListBox:
+      return item_role == ax::mojom::Role::kListBoxOption;
+
+    case ax::mojom::Role::kRadioGroup:
+      return item_role == ax::mojom::Role::kRadioButton;
+
+    default:
+      return false;
+  }
+}
+
+// Finds ordered set that immediately contains node.
+// Is not required for set's role to match node's role.
+AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
   // Continue walking up while parent is invalid, ignored, or is a generic
   // container.
@@ -602,128 +593,6 @@ AXNode* AXNode::GetContainer() const {
     result = result->parent();
   }
   return result;
-}
-
-// Populates items vector with all nodes within container whose roles match.
-void AXNode::PopulateContainerItems(AXNode* container,
-                                    AXNode* local_parent,
-                                    std::vector<AXNode*>& items) const {
-  // Stop searching current path if roles of local_parent and container match.
-  // Don't compare the container to itself.
-  if (!(container == local_parent))
-    if (local_parent->data().role == container->data().role)
-      return;
-
-  for (int i = 0; i < local_parent->child_count(); ++i) {
-    AXNode* child = local_parent->children_[i];
-    // Add child to items if role matches with root container's role.
-    if (child->ContainerRoleMatches(container))
-      items.push_back(child);
-    // Recurse if there is a generic container or is ignored.
-    if (child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kIgnored) {
-      PopulateContainerItems(container, child, items);
-    }
-  }
-}
-
-// Computes pos_in_set and set_size values for this node.
-void AXNode::ComputeSetSizePosInSet(int32_t* out_pos_in_set,
-                                    int32_t* out_set_size) {
-  // Error checks
-  AXNode* container = GetContainer();
-  if (!(container && IsSetSizePosInSetUsedInRole() &&
-        ContainerRoleMatches(container))) {
-    *out_pos_in_set = 0;
-    *out_set_size = 0;
-    return;
-  }
-
-  // Find all items within parent container and add to vector.
-  std::vector<AXNode*> items;
-  PopulateContainerItems(container, container, items);
-
-  // Necessary for calculating set_size. Keeps track of largest assigned
-  // kSetSize for each role.
-  std::unordered_map<ax::mojom::Role, int> largest_assigned_set_size;
-
-  // Iterate over vector of items and calculate pos_in_set and set_size for
-  // each. Items is not guaranteed to be populated with items of the same role.
-  // Use dictionary that maps role to frequency to calculate pos_in_set.
-  std::unordered_map<ax::mojom::Role, int> role_counts;
-  AXNode* node;
-  ax::mojom::Role node_role;
-
-  // Compute pos_in_set values.
-  for (unsigned int i = 0; i < items.size(); ++i) {
-    node = items[i];
-    node_role = node->data().role;
-    int32_t pos_in_set_value = 0;
-
-    if (role_counts.find(node_role) == role_counts.end())
-      // This is the first node with its role.
-      pos_in_set_value = 1;
-    else {
-      // This is the next node with its role.
-      pos_in_set_value = role_counts[node_role] + 1;
-    }
-
-    // Check if node has kPosInSet assigned. This assignment takes precedence
-    // over previous assignment.
-    if (node->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
-      pos_in_set_value =
-          node->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
-      // If invalid assignment (decrease or duplicate), adjust value.
-      if (pos_in_set_value <= role_counts[node_role]) {
-        pos_in_set_value = role_counts[node_role] + 1;
-      }
-    }
-
-    // Assign pos_in_set and update role counts.
-    if (node == this) {
-      *out_pos_in_set = pos_in_set_value;
-    }
-    role_counts[node_role] = pos_in_set_value;
-
-    // Check if kSetSize is assigned and update if it's the largest assigned
-    // kSetSize.
-    if (node->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
-      largest_assigned_set_size[node_role] =
-          std::max(largest_assigned_set_size[node_role],
-                   node->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
-  }
-
-  // Compute set_size values.
-  for (unsigned int j = 0; j < items.size(); ++j) {
-    node = items[j];
-    node_role = node->data().role;
-
-    // TODO (akihiroota): List objects should report SetSize
-
-    // The SetSize of a node is the maximum of the following candidate values:
-    // 1. The PosInSet of the last value in the container (with same role as
-    // node's)
-    // 2. The Largest assigned SetSize in the container
-    // 3. The SetSize assigned within the node's container
-    int32_t pos_candidate = role_counts[node_role];
-    int32_t largest_set_size_candidate = 0;
-    if (largest_assigned_set_size.find(node_role) !=
-        largest_assigned_set_size.end()) {
-      largest_set_size_candidate = largest_assigned_set_size[node_role];
-    }
-    int32_t container_candidate = 0;
-    if (container->HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
-      container_candidate =
-          container->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-    }
-
-    // Assign set_size
-    if (node == this) {
-      *out_set_size =
-          std::max(std::max(pos_candidate, largest_set_size_candidate),
-                   container_candidate);
-    }
-  }
 }
 
 }  // namespace ui
