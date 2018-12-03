@@ -38,6 +38,12 @@
                                      title:(NSString*)title
                                    message:(NSString*)message
     NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
