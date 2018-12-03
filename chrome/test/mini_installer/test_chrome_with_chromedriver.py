@@ -96,14 +96,14 @@ def CreateChromedriver(args):
   chrome_options.add_argument('log-file=' + log_file)
   chrome_options.add_argument('enable-logging')
   chrome_options.add_argument('v=1')
+  emit_log = False
   try:
     driver = webdriver.Chrome(
       args.chromedriver_path,
       chrome_options=chrome_options)
     yield driver
   except:
-    with open(log_file) as fh:
-      logging.error(fh.read())
+    emit_log = True
     raise
   finally:
     if driver:
@@ -112,8 +112,16 @@ def CreateChromedriver(args):
     # To help with local crash analysis, change None to tempfile.gettempdir().
     # TODO(grt): Copy crash dumps into ${ISOLATED_OUTDIR}.
     CollectCrashReports(user_data_dir, None)
-    DeleteWithRetry(log_file, os.remove)
-    DeleteWithRetry(user_data_dir, shutil.rmtree)
+    try:
+      DeleteWithRetry(user_data_dir, shutil.rmtree)
+    except:
+      emit_log = True
+      raise
+    finally:
+      if emit_log:
+        with open(log_file) as fh:
+          logging.error(fh.read())
+      DeleteWithRetry(log_file, os.remove)
 
 
 def main():
