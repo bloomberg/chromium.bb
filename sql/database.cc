@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -1139,7 +1140,7 @@ void Database::Poison() {
 //
 // static
 bool Database::Delete(const base::FilePath& path) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath journal_path = Database::JournalPath(path);
   base::FilePath wal_path = Database::WriteAheadLogPath(path);
