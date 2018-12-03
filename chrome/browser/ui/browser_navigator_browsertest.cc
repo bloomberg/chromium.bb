@@ -1320,9 +1320,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that the settings page isn't opened in the incognito
 // window.
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_Disposition_Settings_UseNonIncognitoWindow) {
+                       Disposition_Settings_UseNonIncognitoWindow) {
   RunUseNonIncognitoWindowTest(GetSettingsURL());
 }
 
@@ -1350,9 +1349,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that the settings page isn't opened in the incognito
 // window from a non-incognito window (bookmark open-in-incognito trigger).
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-    DISABLED_Disposition_Settings_UseNonIncognitoWindowForBookmark) {
+                       Disposition_Settings_UseNonIncognitoWindowForBookmark) {
   NavigateParams params(browser(), GetSettingsURL(),
                         ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = WindowOpenDisposition::OFF_THE_RECORD;
@@ -1374,9 +1372,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // of whether the user is trying to open it in incognito mode or not.
 // This test verifies that if incognito mode is forced (by policy), settings
 // page doesn't open at all.
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-    DISABLED_Disposition_Settings_DoNothingIfIncognitoIsForced) {
+                       Disposition_Settings_DoNothingIfIncognitoIsForced) {
   RunDoNothingIfIncognitoIsForcedTest(GetSettingsURL());
 }
 
@@ -1397,9 +1394,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test makes sure a crashed singleton tab reloads from a new navigation.
-// http://crbug.com/396371
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_NavigateToCrashedSingletonTab) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateToCrashedSingletonTab) {
   GURL singleton_url(GetContentSettingsURL());
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser(), singleton_url, ui::PAGE_TRANSITION_LINK);
