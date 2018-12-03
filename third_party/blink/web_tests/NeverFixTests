@@ -134,6 +134,14 @@ fast/harness/results.html [ WontFix ]
  [ Win ] fast/text/aat-morx.html [ WontFix ]
  [ Android ] fast/text/aat-morx.html [ WontFix ]
 
+# AAT Small Caps test not supported on platforms other than Mac 10.13.
+ [ Linux ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Win ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Android ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.10 ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.11 ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.12 ] fast/text/small-caps-aat.html [ WontFix ]
+
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
 
