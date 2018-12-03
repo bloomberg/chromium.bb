@@ -88,10 +88,10 @@ Value CopyAndMaybeConvert(const Value& value,
     schema->MaskSensitiveValues(&value_copy);
   if (!convert_values)
     return value_copy;
-  if (value.is_dict())
+  if (value_copy.is_dict())
     return Value(DictionaryToJSONString(value_copy));
 
-  if (!value.is_list()) {
+  if (!value_copy.is_list()) {
     return value_copy;
   }
 

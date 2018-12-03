@@ -182,6 +182,11 @@
 #   policy itself, but also the content of the JSON strings inside the policy.
 #   Do not use this field when adding new policies.
 #
+#   In order to hide sensitive policy values from the user, you can use
+#   'sensitiveValue': True (default 'False') in the associated schema. Those
+#   values will be masked with '********' in the chrome://policy UI and policy
+#   exports. 'sensitiveValue' can be applied to all schema types.
+#
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
 #   persistent IDs for all fields (but not for groups!) are needed. These are
