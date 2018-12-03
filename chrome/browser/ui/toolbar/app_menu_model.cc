@@ -813,7 +813,7 @@ void AppMenuModel::Build() {
 
   if (chrome::ShouldDisplayManagedUi(browser_->profile())) {
     AddSeparator(ui::LOWER_SEPARATOR);
-    const int kIconSize = 20;
+    const int kIconSize = 18;
     const auto icon = gfx::CreateVectorIcon(gfx::IconDescription(
         vector_icons::kBusinessIcon, kIconSize, gfx::kChromeIconGrey,
         base::TimeDelta(), gfx::kNoneIcon));

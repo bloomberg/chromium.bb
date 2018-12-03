@@ -285,6 +285,11 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     item->SetIcon(icon);
   if (type == SUBMENU || type == ACTIONABLE_SUBMENU)
     item->CreateSubmenu();
+  if (type == HIGHLIGHTED) {
+    const MenuConfig& config = MenuConfig::instance();
+    item->SetMargins(config.footnote_vertical_margin,
+                     config.footnote_vertical_margin);
+  }
   if (GetDelegate() && !GetDelegate()->IsCommandVisible(item_id))
     item->SetVisible(false);
   submenu_->AddChildViewAt(item, index);
@@ -1115,7 +1120,7 @@ int MenuItemView::GetTopMargin() const {
                  ? MenuConfig::instance().item_top_margin
                  : MenuConfig::instance().item_no_icon_top_margin;
   }
-  return margin + corner_radius_ / 2;
+  return margin;
 }
 
 int MenuItemView::GetBottomMargin() const {
@@ -1126,10 +1131,7 @@ int MenuItemView::GetBottomMargin() const {
                  ? MenuConfig::instance().item_bottom_margin
                  : MenuConfig::instance().item_no_icon_bottom_margin;
   }
-  // Add half of |corner_radius_| in both GetTopMargin() and GetBottomMargin(),
-  // so that they add up to exactly |corner_radius_|. When |corner_radius_| is
-  // odd, we need to add 1 here to avoid the height being off by 1.
-  return margin + corner_radius_ / 2 + (corner_radius_ % 2);
+  return margin;
 }
 
 gfx::Size MenuItemView::GetChildPreferredSize() const {
@@ -1249,6 +1251,12 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
   // Don't apply minimums to menus without controllers or to comboboxes.
   if (!GetMenuController() || GetMenuController()->is_combobox())
+    return;
+
+  // TODO(nicolaso): PaintBackground() doesn't cover the whole area in footnotes
+  // when minimum height is set too high. For now, just ignore minimum height
+  // for HIGHLIGHTED elements.
+  if (GetType() == HIGHLIGHTED)
     return;
 
   int used =

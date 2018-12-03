@@ -70,7 +70,8 @@ MenuConfig::MenuConfig()
       padded_separator_left_margin(64),
       arrow_key_selection_wraps(true),
       show_context_menu_accelerators(true),
-      all_menus_use_prefix_selection(false) {
+      all_menus_use_prefix_selection(false),
+      footnote_vertical_margin(11) {
   Init();
 }
 
