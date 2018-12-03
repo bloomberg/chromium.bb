@@ -353,7 +353,7 @@ deps = {
   },
 
   'src/ios/third_party/material_internationalization_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-internationalization-ios.git' + '@' + 'c62f2cacaba48f8901ad811f23c2cbc9581364aa',
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-internationalization-ios.git' + '@' + '456dff8c910a913517232f48f10f223e3210a1dd',
       'condition': 'checkout_ios',
   },
 
