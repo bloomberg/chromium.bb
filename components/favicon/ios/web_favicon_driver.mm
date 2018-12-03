@@ -24,8 +24,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(favicon::WebFaviconDriver);
-
 // Callback for the download of favicon.
 using ImageDownloadCallback =
     base::Callback<void(int image_id,

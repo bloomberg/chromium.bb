@@ -22,8 +22,6 @@
 
 using web::NavigationItem;
 
-DEFINE_WEB_STATE_USER_DATA_KEY(IOSChromeSyncedTabDelegate);
-
 namespace {
 
 // Helper to access the correct NavigationItem, accounting for pending entries.
