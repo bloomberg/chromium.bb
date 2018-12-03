@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
@@ -228,7 +228,8 @@ class DataUseMeasurementTest : public testing::Test {
     context_->Init();
   }
 
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   TestDataUseAscriber ascriber_;
   TestURLRequestClassifier* url_request_classifier_;
