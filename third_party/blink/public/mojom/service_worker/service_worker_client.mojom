@@ -30,12 +30,15 @@ struct ServiceWorkerClientQueryOptions {
 // Holds the information related to a service worker client.
 // https://w3c.github.io/ServiceWorker/#client
 //
-// An invalid client info can be indicated by setting the client_uuid to the
+// An invalid client info can be indicated by setting the |client_uuid| to the
 // empty string. Sometimes this is needed when the browser process couldn't
 // find a client.
 struct ServiceWorkerClientInfo {
   // Client#url
   url.mojom.Url url;
+
+  // Client#frameType.
+  network.mojom.RequestContextFrameType frame_type = network.mojom.RequestContextFrameType.kNone;
 
   // Client#id
   string client_uuid;
@@ -43,15 +46,13 @@ struct ServiceWorkerClientInfo {
   // Client#type
   ServiceWorkerClientType client_type;
 
+  // WindowClient#visibilityState
   // Set to |true| if it's a non-window client.
   bool page_hidden = true;
 
   // WindowClient#focused
-  // Set to false if it's a non-window client.
+  // Set to |false| if it's a non-window client.
   bool is_focused = false;
-
-  // Set to |kNone| if it's a non-window client.
-  network.mojom.RequestContextFrameType frame_type = network.mojom.RequestContextFrameType.kNone;
 
   // The time this window was last focused. Set to base::TimeTicks() if it's
   // a non-window client.

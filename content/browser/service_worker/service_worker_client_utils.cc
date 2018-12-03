@@ -131,12 +131,12 @@ blink::mojom::ServiceWorkerClientInfoPtr GetWindowClientInfoOnUI(
   DCHECK_NE(visibility, PageVisibilityState::kPrerender);
   bool page_hidden = visibility != PageVisibilityState::kVisible;
   return blink::mojom::ServiceWorkerClientInfo::New(
-      render_frame_host->GetLastCommittedURL(), client_uuid,
-      blink::mojom::ServiceWorkerClientType::kWindow, page_hidden,
-      render_frame_host->IsFocused(),
+      render_frame_host->GetLastCommittedURL(),
       render_frame_host->GetParent()
           ? network::mojom::RequestContextFrameType::kNested
           : network::mojom::RequestContextFrameType::kTopLevel,
+      client_uuid, blink::mojom::ServiceWorkerClientType::kWindow, page_hidden,
+      render_frame_host->IsFocused(),
       render_frame_host->frame_tree_node()->last_focus_time(), create_time);
 }
 
@@ -328,10 +328,10 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
     return;
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      host->url(), host->client_uuid(), host_client_type,
+      host->url(), network::mojom::RequestContextFrameType::kNone,
+      host->client_uuid(), host_client_type,
       /*page_hidden=*/true,
-      /*is_focused=*/false, network::mojom::RequestContextFrameType::kNone,
-      base::TimeTicks(), host->create_time());
+      /*is_focused=*/false, base::TimeTicks(), host->create_time());
   out_clients->push_back(std::move(client_info));
 }
 
@@ -542,10 +542,10 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
   }
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      provider_host->url(), provider_host->client_uuid(),
-      provider_host->client_type(), /*page_hidden=*/true,
-      /*is_focused=*/false, network::mojom::RequestContextFrameType::kNone,
-      base::TimeTicks(), provider_host->create_time());
+      provider_host->url(), network::mojom::RequestContextFrameType::kNone,
+      provider_host->client_uuid(), provider_host->client_type(),
+      /*page_hidden=*/true,
+      /*is_focused=*/false, base::TimeTicks(), provider_host->create_time());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), std::move(client_info)));
