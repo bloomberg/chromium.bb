@@ -63,3 +63,22 @@ TEST_F(FullscreenMediatorTest, ObserveEnabledState) {
   model().DecrementDisabledCounter();
   EXPECT_TRUE(observer().enabled());
 }
+
+// Tests that changes to the model's toolbar heights are forwarded to observers.
+TEST_F(FullscreenMediatorTest, ObserveViewportInsets) {
+  const CGFloat kExpandedHeight = 100.0;
+  const CGFloat kCollapsedHeight = 50.0;
+  const CGFloat kBottomHeight = 60.0;
+  model().SetExpandedToolbarHeight(kExpandedHeight);
+  model().SetCollapsedToolbarHeight(kCollapsedHeight);
+  model().SetBottomToolbarHeight(kBottomHeight);
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
+      observer().min_viewport_insets(),
+      UIEdgeInsetsMake(kCollapsedHeight, 0, 0, 0)));
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
+      observer().max_viewport_insets(),
+      UIEdgeInsetsMake(kExpandedHeight, 0, kBottomHeight, 0)));
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
+      observer().current_viewport_insets(),
+      UIEdgeInsetsMake(kExpandedHeight, 0, kBottomHeight, 0)));
+}

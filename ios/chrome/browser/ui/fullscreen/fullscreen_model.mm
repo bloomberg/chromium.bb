@@ -84,6 +84,10 @@ void FullscreenModel::SetCollapsedToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   collapsed_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetCollapsedToolbarHeight() const {
@@ -96,6 +100,10 @@ void FullscreenModel::SetExpandedToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   expanded_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetExpandedToolbarHeight() const {
@@ -108,6 +116,10 @@ void FullscreenModel::SetBottomToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   bottom_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetBottomToolbarHeight() const {
