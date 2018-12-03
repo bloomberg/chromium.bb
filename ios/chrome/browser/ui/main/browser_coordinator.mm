@@ -140,6 +140,16 @@
 
 #pragma mark - Public
 
+- (void)setActive:(BOOL)active {
+  DCHECK_EQ(_active, self.viewController.active);
+  if (_active == active) {
+    return;
+  }
+  _active = active;
+
+  self.viewController.active = active;
+}
+
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.passKitCoordinator stop];
