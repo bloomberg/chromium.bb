@@ -12,4 +12,5 @@ android_java_prebuilt("netty_all_java") {
   enable_bytecode_checks = false
   testonly = true
   jar_path = NETTY4_JAR_FILE
+  proguard_configs = [ "proguard.flags" ]
 }
