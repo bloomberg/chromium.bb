@@ -67,7 +67,6 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #else
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif
@@ -262,10 +261,6 @@ void PeopleHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
       base::BindRepeating(&PeopleHandler::HandleGetSyncStatus,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "SyncSetupManageOtherPeople",
-      base::BindRepeating(&PeopleHandler::HandleManageOtherPeople,
                           base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -829,13 +824,6 @@ void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   ResolveJavascriptCallback(*callback_id, *GetSyncStatusDictionary());
-}
-
-void PeopleHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
-#if !defined(OS_CHROMEOS)
-  UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-#endif  // !defined(OS_CHROMEOS)
 }
 
 void PeopleHandler::CloseSyncSetup() {
