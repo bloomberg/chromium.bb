@@ -134,7 +134,7 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(0, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 }
 
 TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
@@ -146,7 +146,7 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(10, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 }
 
 }  // namespace
