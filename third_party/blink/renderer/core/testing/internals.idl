@@ -44,6 +44,8 @@ enum EffectiveConnectionType {
     unsigned long getResourcePriority (DOMString url, Document document);
     DOMString getResourceHeader (DOMString url, DOMString header, Document document);
 
+    bool doesWindowHaveUrlFragment(Window window);
+
     CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 
     ShadowRoot createUserAgentShadowRoot(Element host);

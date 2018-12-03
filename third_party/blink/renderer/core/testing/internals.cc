@@ -471,6 +471,15 @@ int Internals::getResourcePriority(const String& url, Document* document) {
   return static_cast<int>(resource->GetResourceRequest().Priority());
 }
 
+bool Internals::doesWindowHaveUrlFragment(DOMWindow* window) {
+  if (window->IsRemoteDOMWindow())
+    return false;
+  return ToLocalFrame(window->GetFrame())
+      ->GetDocument()
+      ->Url()
+      .HasFragmentIdentifier();
+}
+
 String Internals::getResourceHeader(const String& url,
                                     const String& header,
                                     Document* document) {
