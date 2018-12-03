@@ -268,7 +268,7 @@ class CONTENT_EXPORT RenderThreadImpl
   using LayerTreeFrameSinkCallback =
       base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   void RequestNewLayerTreeFrameSink(
-      int widget_routing_id,
+      int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      int32_t widget_routing_id,
+      int32_t routing_id,
       std::unique_ptr<viz::CopyOutputRequest> request);
 
   // True if we are running layout tests. This currently disables forwarding
