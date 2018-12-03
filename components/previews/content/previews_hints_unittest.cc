@@ -47,7 +47,6 @@ class PreviewsHintsTest : public testing::Test {
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
     previews_hints_ = PreviewsHints::CreateFromHintsComponent(info);
-    previews_hints_->Initialize();
   }
 
   PreviewsHints* previews_hints() { return previews_hints_.get(); }

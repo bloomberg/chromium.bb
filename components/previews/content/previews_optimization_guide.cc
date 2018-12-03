@@ -140,9 +140,6 @@ void PreviewsOptimizationGuide::UpdateHints(
     std::unique_ptr<PreviewsHints> hints) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
-  if (hints_) {
-    hints_->Initialize();
-  }
 
   // Record the result of updating the hints. This is used as a signal for the
   // hints being fully processed in testing.

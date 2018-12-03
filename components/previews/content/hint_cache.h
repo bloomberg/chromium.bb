@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 #include <unordered_set>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -28,8 +27,44 @@ using HintLoadedCallback =
 // of the hints in a persisted backing store.
 class HintCache {
  public:
-  HintCache();
-  ~HintCache();
+  // Data is used to generate and store the hint data for the cache. After the
+  // hints from the hints protobuf are fully added to Data, it is moved into the
+  // HintCache constructor.
+  class Data {
+   public:
+    Data();
+    ~Data();
+
+    void AddHint(const optimization_guide::proto::Hint& hint);
+    bool HasHints() const;
+
+   private:
+    friend class HintCache;
+
+    // The move constructor is private, as it is only intended for use by the
+    // HintCache constructor. An rvalue reference to a HintCache::Data object is
+    // moved into the HintCache's |data_| member variable during construction.
+    Data(Data&& other);
+
+    // The set of host suffixes that have Hint data.
+    std::unordered_set<std::string> activation_list_;
+
+    // The in-memory cache of hints. Maps host suffix to Hint proto.
+    std::map<std::string, optimization_guide::proto::Hint> memory_cache_;
+
+    DISALLOW_COPY_AND_ASSIGN(Data);
+  };
+
+  // The hint cache can only be constructed from a Data object rvalue reference,
+  // which is used to move construct the HintCache's |data_| variable. After
+  // this, |data_| is immutable.
+  //
+  // Example:
+  //   HintCache::Data data;
+  //   data.AddHint(hint1);
+  //   data.AddHint(hint2);
+  //   HintCache hint_cache(std::move(data));
+  explicit HintCache(Data&& data);
 
   // Returns whether the cache has a hint data for |host| locally (whether
   // in memory or persisted on disk).
@@ -46,24 +81,16 @@ class HintCache {
   // Returns the hint data for |host| found in memory, otherwise nullptr.
   const optimization_guide::proto::Hint* GetHint(const std::string& host) const;
 
-  // Adds |hint| to the cache.
-  void AddHint(const optimization_guide::proto::Hint& hint);
-
-  // Adds |hints| to the cache.
-  void AddHints(const std::vector<optimization_guide::proto::Hint>& hints);
-
  private:
   // Returns the most specific host suffix of the host name that is present
   // in the activation list.
   std::string DetermineHostSuffix(const std::string& host) const;
 
-  // The set of host suffixes that have Hint data.
-  std::unordered_set<std::string> activation_list_;
+  // |data_| contains all of the hint data available in the cache. It is
+  // immutable.
+  const Data data_;
 
-  // The in-memory cache of hints. Maps host suffix to Hint proto.
-  // TODO(dougarnett): Add MRU subset support (mru_cache) with backing store.
-  std::map<std::string, optimization_guide::proto::Hint> memory_cache_;
-
+  // TODO(dougarnett): Add MRU subset support (mru_cache).
   // TODO(dougarnett): Add a backing store with all hints.
 
   SEQUENCE_CHECKER(sequence_checker_);
