@@ -30,7 +30,6 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_packets.h"
@@ -193,8 +192,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
 #endif
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
-      websocket_endpoint_lock_manager_(
-          std::make_unique<WebSocketEndpointLockManager>()),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -262,10 +259,10 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       "http_network_session/" + base::IntToString(g_next_shard_id.GetNext());
   normal_socket_pool_manager_ = CreateSocketPoolManager(
       NORMAL_SOCKET_POOL, context, ssl_session_cache_shard,
-      websocket_endpoint_lock_manager_.get());
+      &websocket_endpoint_lock_manager_);
   websocket_socket_pool_manager_ = CreateSocketPoolManager(
       WEBSOCKET_SOCKET_POOL, context, ssl_session_cache_shard,
-      websocket_endpoint_lock_manager_.get());
+      &websocket_endpoint_lock_manager_);
 
   if (params_.enable_http2) {
     next_protos_.push_back(kProtoHTTP2);
