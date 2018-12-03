@@ -21,19 +21,34 @@ namespace {
 
 enum class CompressionType { kSnappy, kZlib, kBrotli };
 
-void LogThroughputAndLatency(size_t chunk_size,
-                             size_t chunk_count,
-                             base::TimeTicks tick,
-                             base::TimeTicks tock) {
+void LogResults(CompressionType compression_type,
+                bool compression,
+                size_t chunk_size,
+                size_t chunk_count,
+                double compression_ratio,
+                base::TimeTicks tick,
+                base::TimeTicks tock) {
   size_t total_size = chunk_size * chunk_count;
   double elapsed_us = (tock - tick).InMicrosecondsF();
   double throughput = total_size / elapsed_us;
   double latency_us = elapsed_us / chunk_count;
-  LOG(INFO) << "  Throughput = " << throughput << "MB/s";
-  LOG(INFO) << "  Latency (size = " << chunk_size << ") = " << latency_us
-            << "us";
-  LOG(INFO) << "AS_CSV=" << chunk_size << "," << throughput << ","
-            << latency_us;
+
+  std::string compression_name;
+  switch (compression_type) {
+    case CompressionType::kSnappy:
+      compression_name = "snappy";
+      break;
+    case CompressionType::kZlib:
+      compression_name = "zlib";
+      break;
+    case CompressionType::kBrotli:
+      compression_name = "brotli";
+      break;
+  }
+  LOG(INFO) << compression_name << ","
+            << (compression ? "compression" : "decompression") << ","
+            << chunk_size << "," << throughput << "," << latency_us << ","
+            << compression_ratio;
 }
 
 void CompressChunks(const std::string& contents,
@@ -99,7 +114,8 @@ void BenchmarkDecompression(const std::string& contents,
   }
   auto tock = base::TimeTicks::Now();
 
-  LogThroughputAndLatency(chunk_size, compressed_chunks.size(), tick, tock);
+  LogResults(compression_type, false, chunk_size, compressed_chunks.size(), 0.,
+             tick, tock);
 }
 
 void BenchmarkCompression(const std::string& contents,
@@ -115,8 +131,8 @@ void BenchmarkCompression(const std::string& contents,
     compressed_size += compressed_chunk.size();
 
   double ratio = contents.size() / static_cast<double>(compressed_size);
-  LOG(INFO) << "  Compression ratio = " << ratio;
-  LogThroughputAndLatency(chunk_size, compressed_chunks.size(), tick, tock);
+  LogResults(compression_type, true, chunk_size, compressed_chunks.size(),
+             ratio, tick, tock);
 }
 
 }  // namespace
@@ -146,23 +162,8 @@ int main(int argc, char** argv) {
   for (CompressionType compression_type :
        {CompressionType::kSnappy, CompressionType::kZlib,
         CompressionType::kBrotli}) {
-    switch (compression_type) {
-      LOG(INFO) << "\n\n\n\n";
-      case CompressionType::kSnappy:
-        LOG(INFO) << "Snappy";
-        break;
-      case CompressionType::kZlib:
-        LOG(INFO) << "Zlib";
-        break;
-      case CompressionType::kBrotli:
-        LOG(INFO) << "Brotli";
-        break;
-    }
     for (size_t size = kPageSize; size < contents.size(); size *= 2) {
-      LOG(INFO) << "Size = " << size;
-      LOG(INFO) << "Compression";
       BenchmarkCompression(repeated_contents, size, compression_type);
-      LOG(INFO) << "Decompression";
       BenchmarkDecompression(repeated_contents, size, compression_type);
     }
   }
