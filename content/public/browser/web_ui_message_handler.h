@@ -23,6 +23,7 @@ class ListValue;
 
 namespace content {
 
+class TestWebUI;
 class WebUI;
 class WebUIImpl;
 
@@ -136,6 +137,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
  private:
   // Provide external classes access to web_ui(), set_web_ui(), and
   // RenderViewReused.
+  friend class TestWebUI;
   friend class WebUIImpl;
   friend class ::WebUIBrowserTest;
   friend class ::MojoWebUIBrowserTest;
