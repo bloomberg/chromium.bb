@@ -8,12 +8,12 @@
  *     canvas with the screenshot. Called with null if the screenshot failed.
  */
 function takeScreenshot(callback) {
-  var screenshotStream = null;
-  var video = document.createElement('video');
+  let screenshotStream = null;
+  const video = document.createElement('video');
 
   video.addEventListener('canplay', function(e) {
     if (screenshotStream) {
-      var canvas = document.createElement('canvas');
+      const canvas = document.createElement('canvas');
       canvas.setAttribute('width', video.videoWidth);
       canvas.setAttribute('height', video.videoHeight);
       canvas.getContext('2d').drawImage(

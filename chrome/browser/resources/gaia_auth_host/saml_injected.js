@@ -131,14 +131,14 @@ PasswordInputScraper.prototype = {
    * @param {!HTMLInputElement} passworField The password field to track.
    */
   trackPasswordField: function(passwordField) {
-    var existing = this.passwordFields_.filter(function(element) {
+    const existing = this.passwordFields_.filter(function(element) {
       return element === passwordField;
     });
     if (existing.length != 0)
       return;
 
-    var index = this.passwordFields_.length;
-    var fieldId = passwordField.id || passwordField.name || '';
+    const index = this.passwordFields_.length;
+    const fieldId = passwordField.id || passwordField.name || '';
     passwordField.addEventListener(
         'input', this.onPasswordChanged_.bind(this, index, fieldId));
     this.passwordFields_.push(passwordField);
@@ -150,7 +150,7 @@ PasswordInputScraper.prototype = {
    * the updated value.
    */
   maybeSendUpdatedPassword: function(index, fieldId) {
-    var newValue = this.passwordFields_[index].value;
+    const newValue = this.passwordFields_[index].value;
     if (newValue == this.passwordValues_[index])
       return;
 
@@ -159,7 +159,7 @@ PasswordInputScraper.prototype = {
     // Use an invalid char for URL as delimiter to concatenate page url,
     // password field index and id to construct a unique ID for the password
     // field.
-    var passwordId =
+    const passwordId =
         this.pageURL_.split('#')[0].split('?')[0] + '|' + index + '|' + fieldId;
     this.channel_.send(
         {name: 'updatePassword', id: passwordId, password: newValue});
@@ -179,12 +179,12 @@ PasswordInputScraper.prototype = {
 function onGetSAMLFlag(channel, isSAMLPage) {
   if (!isSAMLPage)
     return;
-  var pageURL = window.location.href;
+  const pageURL = window.location.href;
 
   channel.send({name: 'pageLoaded', url: pageURL});
 
-  var initPasswordScraper = function() {
-    var passwordScraper = new PasswordInputScraper();
+  const initPasswordScraper = function() {
+    const passwordScraper = new PasswordInputScraper();
     passwordScraper.init(channel, pageURL, document.documentElement);
   };
 
@@ -200,11 +200,11 @@ function onGetSAMLFlag(channel, isSAMLPage) {
   }
 }
 
-var channel = Channel.create();
+const channel = Channel.create();
 channel.connect('injected');
 channel.sendWithCallback(
     {name: 'getSAMLFlag'}, onGetSAMLFlag.bind(undefined, channel));
 
-var apiCallForwarder = new APICallForwarder();
+const apiCallForwarder = new APICallForwarder();
 apiCallForwarder.init(channel);
 })();

@@ -5,11 +5,11 @@
 /**
  * This view displays information on ChromeOS specific features.
  */
-var CrosView = (function() {
+const CrosView = (function() {
   'use strict';
 
-  var fileContent;
-  var passcode = '';
+  let fileContent;
+  let passcode = '';
 
   /**
    *  Clear file input div
@@ -69,7 +69,7 @@ var CrosView = (function() {
   function setFileContent_(result) {
     fileContent = result;
     // Parse the JSON to get at the top level "Type" property.
-    var jsonObject;
+    let jsonObject;
     // Ignore any parse errors: they'll get handled in the C++ import code.
     try {
       jsonObject = JSON.parse(fileContent);
@@ -90,7 +90,7 @@ var CrosView = (function() {
    *  @private
    */
   function clearParseStatus_(error) {
-    var parseStatus = $(CrosView.PARSE_STATUS_ID);
+    const parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = true;
     parseStatus.textContent = '';
   }
@@ -101,7 +101,7 @@ var CrosView = (function() {
    *  @private
    */
   function setParseStatus_(error) {
-    var parseStatus = $(CrosView.PARSE_STATUS_ID);
+    const parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = false;
     parseStatus.textContent = error ? 'ONC file parse failed: ' + error :
                                       'ONC file successfully parsed';
@@ -133,8 +133,8 @@ var CrosView = (function() {
    */
   function handleFileChangeEvent_(event) {
     clearParseStatus_();
-    var file = event.target.files[0];
-    var reader = new FileReader();
+    const file = event.target.files[0];
+    const reader = new FileReader();
     reader.onloadend = function(e) {
       setFileContent_(reader.result);
     };

@@ -16,33 +16,33 @@ cr.define('cr.login', function() {
    * The lowest version of the credentials passing API supported.
    * @type {number}
    */
-  var MIN_API_VERSION_VERSION = 1;
+  const MIN_API_VERSION_VERSION = 1;
 
   /**
    * The highest version of the credentials passing API supported.
    * @type {number}
    */
-  var MAX_API_VERSION_VERSION = 1;
+  const MAX_API_VERSION_VERSION = 1;
 
   /**
    * The key types supported by the credentials passing API.
    * @type {Array} Array of strings.
    */
-  var API_KEY_TYPES = [
+  const API_KEY_TYPES = [
     'KEY_TYPE_PASSWORD_PLAIN',
   ];
 
   /** @const */
-  var SAML_HEADER = 'google-accounts-saml';
+  const SAML_HEADER = 'google-accounts-saml';
 
   /** @const */
-  var injectedScriptName = 'samlInjected';
+  const injectedScriptName = 'samlInjected';
 
   /**
    * The script to inject into webview and its sub frames.
    * @type {string}
    */
-  var injectedJs = String.raw`
+  const injectedJs = String.raw`
       // <include src="webview_saml_injected.js">
   `;
 
@@ -61,7 +61,7 @@ cr.define('cr.login', function() {
    * @return {string} The host name of the URL.
    */
   function extractDomain(url) {
-    var a = document.createElement('a');
+    const a = document.createElement('a');
     a.href = url;
     return a.hostname;
   }
@@ -202,7 +202,7 @@ cr.define('cr.login', function() {
      * @return {string}
      */
     get firstScrapedPassword() {
-      var scraped = this.getConsolidatedScrapedPasswords_();
+      const scraped = this.getConsolidatedScrapedPasswords_();
       return scraped.length ? scraped[0] : '';
     },
 
@@ -220,8 +220,8 @@ cr.define('cr.login', function() {
      * @private
      */
     getConsolidatedScrapedPasswords_: function() {
-      var passwords = {};
-      for (var property in this.passwordStore_) {
+      const passwords = {};
+      for (const property in this.passwordStore_) {
         passwords[this.passwordStore_[property]] = true;
       }
       return Object.keys(passwords);
@@ -310,7 +310,7 @@ cr.define('cr.login', function() {
     onInsecureRequest: function(details) {
       if (!this.blockInsecureContent)
         return {};
-      var strippedUrl = stripParams(details.url);
+      const strippedUrl = stripParams(details.url);
       this.dispatchEvent(new CustomEvent(
           'insecureContentBlocked', {detail: {url: strippedUrl}}));
       return {cancel: true};
@@ -321,16 +321,16 @@ cr.define('cr.login', function() {
      * @private
      */
     onHeadersReceived_: function(details) {
-      var headers = details.responseHeaders;
+      const headers = details.responseHeaders;
 
       // Check whether GAIA headers indicating the start or end of a SAML
       // redirect are present.
-      for (var i = 0; headers && i < headers.length; ++i) {
-        var header = headers[i];
-        var headerName = header.name.toLowerCase();
+      for (let i = 0; headers && i < headers.length; ++i) {
+        const header = headers[i];
+        const headerName = header.name.toLowerCase();
 
         if (headerName == SAML_HEADER) {
-          var action = header.value.toLowerCase();
+          const action = header.value.toLowerCase();
           if (action == 'start')
             this.pendingIsSamlPage_ = true;
           else if (action == 'end')
@@ -348,7 +348,7 @@ cr.define('cr.login', function() {
       if (port.targetWindow != this.webview_.contentWindow)
         return;
 
-      var channel = Channel.create();
+      const channel = Channel.create();
       channel.init(port);
 
       channel.registerMessage('apiCall', this.onAPICall_.bind(this, channel));
@@ -383,7 +383,7 @@ cr.define('cr.login', function() {
      * @private
      */
     onAPICall_: function(channel, msg) {
-      var call = msg.call;
+      const call = msg.call;
       if (call.method == 'initialize') {
         if (!Number.isInteger(call.requestedVersion) ||
             call.requestedVersion < MIN_API_VERSION_VERSION) {
