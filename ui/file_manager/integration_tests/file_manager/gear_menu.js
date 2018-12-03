@@ -151,8 +151,8 @@ async function runHiddenFilesTestWithMenuItem(
  * Tests toggling the show-hidden-files menu option on Downloads.
  */
 testcase.showHiddenFilesDownloads = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN, []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN, []);
 
   await runHiddenFilesTest(
       appId, BASIC_LOCAL_ENTRY_SET, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN);
@@ -162,8 +162,8 @@ testcase.showHiddenFilesDownloads = async function() {
  * Tests toggling the show-hidden-files menu option on Drive.
  */
 testcase.showHiddenFilesDrive = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN);
 
   await runHiddenFilesTest(
       appId, BASIC_DRIVE_ENTRY_SET, BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN);
@@ -176,7 +176,7 @@ testcase.showHiddenFilesDrive = async function() {
 testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
     async function() {
   // Open Files.App on Play Files.
-  const appId = await openNewWindow(null, RootPath.ANDROID_FILES);
+  const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
 
   // Wait for the file list to appear.
@@ -228,7 +228,7 @@ testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
  */
 testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = async function() {
   // Open Files.App on Play Files.
-  const appId = await openNewWindow(null, RootPath.ANDROID_FILES);
+  const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN);
 
   // Wait for the file list to appear.
@@ -246,7 +246,7 @@ testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = async function() {
  */
 testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = async function() {
   const MENU_ITEM_SELECTOR = '#gear-menu-toggle-hidden-android-folders';
-  const appId = await openNewWindow(null, RootPath.ANDROID_FILES);
+  const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN);
 
   // Wait for the file list to appear.
@@ -318,7 +318,7 @@ testcase.showPasteIntoCurrentFolder = async function() {
   await addEntries(['local'], entrySet);
 
   // Open Files.App on Downloads.
-  const appId = await openNewWindow(null, RootPath.DOWNLOADS);
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
   await remoteCall.waitForElement(appId, '#file-list');
 
   // Wait for the files to appear in the file list.
@@ -393,7 +393,7 @@ testcase.showSelectAllInCurrentFolder = async function() {
   const entrySet = [ENTRIES.newlyAdded];
 
   // Open Files.App on Downloads.
-  const appId = await openNewWindow(null, RootPath.DOWNLOADS);
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
   await remoteCall.waitForElement(appId, '#file-list');
 
   // Wait for the gear menu button to appear.
@@ -450,8 +450,8 @@ testcase.showSelectAllInCurrentFolder = async function() {
  * directory tree.
  */
 testcase.newFolderInDownloads = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.hello], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // Focus the directory tree.
   await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);

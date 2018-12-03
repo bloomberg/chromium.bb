@@ -76,8 +76,8 @@ function waitForDirectoryTreeItemLost(appId, name) {
  * @param {string} path The path to be tested, Downloads or Drive.
  */
 async function keyboardCopy(path) {
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.world], [ENTRIES.world]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.world], [ENTRIES.world]);
 
   // Copy the file into the same file list.
   chrome.test.assertTrue(
@@ -99,8 +99,8 @@ async function keyboardCopy(path) {
  * @param {string} path The path to be tested, Downloads or Drive.
  */
 async function keyboardDelete(path) {
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.hello], [ENTRIES.hello]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.hello], [ENTRIES.hello]);
 
   // Delete the file from the file list.
   chrome.test.assertTrue(
@@ -122,8 +122,8 @@ async function keyboardDelete(path) {
  * @param {string} treeItem The directory tree item selector.
  */
 async function keyboardDeleteFolder(path, treeItem) {
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.photos], [ENTRIES.photos]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
   await expandRoot(appId, treeItem);
@@ -189,8 +189,8 @@ async function renameFile(appId, oldName, newName) {
  */
 async function testRenameFolder(path, treeItem) {
   const textInput = '#file-list .table-row[renaming] input.rename';
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.photos], [ENTRIES.photos]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
   await expandRoot(appId, treeItem);
@@ -254,8 +254,8 @@ async function testRenameFolder(path, treeItem) {
 async function testRenameFile(path) {
   const newFile = [['New File Name.txt', '51 bytes', 'Plain text', '']];
 
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.hello], [ENTRIES.hello]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.hello], [ENTRIES.hello]);
 
   // Rename the file.
   await renameFile(appId, 'hello.txt', 'New File Name.txt');
@@ -322,8 +322,8 @@ testcase.renameNewFolderDrive = function() {
  */
 testcase.keyboardSelectDriveDirectoryTree = async function() {
   // Open Files app.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.world], [ENTRIES.hello]);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.world], [ENTRIES.hello]);
 
   // Focus the directory tree.
   await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
@@ -355,8 +355,8 @@ testcase.keyboardSelectDriveDirectoryTree = async function() {
  */
 testcase.keyboardDisableCopyWhenDialogDisplayed = async function() {
   // Open Files app.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.hello], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // Select a file for deletion.
   chrome.test.assertTrue(

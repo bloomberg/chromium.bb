@@ -13,8 +13,8 @@
  */
 async function imageOpen(path) {
   // Open Files.App on |path|, add image3 to Downloads and Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, path, null, [ENTRIES.image3], [ENTRIES.image3]);
+  const appId =
+      await setupAndWaitUntilReady(path, [ENTRIES.image3], [ENTRIES.image3]);
 
   // Open the image file in Files app.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -42,8 +42,7 @@ async function imageOpenGalleryOpen(path) {
   const testImages = [ENTRIES.image3, ENTRIES.desktop];
 
   // Open Files.App on |path|, add test images to Downloads and Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, path, null, testImages, testImages);
+  const appId = await setupAndWaitUntilReady(path, testImages, testImages);
 
   // Open an image file in Files app.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

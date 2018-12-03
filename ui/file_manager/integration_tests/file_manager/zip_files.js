@@ -78,8 +78,8 @@ function getUnzippedFileListRowEntriesAbsolutePathsSubdir() {
  */
 testcase.zipFileOpenDownloads = async function() {
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchive], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -103,9 +103,8 @@ testcase.zipFileOpenDownloads = async function() {
  */
 testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveWithAbsolutePaths],
-      []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveWithAbsolutePaths], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -143,8 +142,8 @@ testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
  */
 testcase.zipFileOpenDrive = async function() {
   // Open Files app on Drive containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.zipArchive]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.zipArchive]);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -170,8 +169,8 @@ testcase.zipFileOpenUsb = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.beautiful]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.beautiful]);
 
   // Mount empty USB volume in the Drive window.
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
@@ -223,8 +222,8 @@ function getZipSelectionFileListRowEntries() {
  */
 testcase.zipCreateFileDownloads = async function() {
   // Open Files app on Downloads containing ENTRIES.photos.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Select the file.
   chrome.test.assertTrue(
@@ -256,8 +255,8 @@ testcase.zipCreateFileDownloads = async function() {
  */
 testcase.zipCreateFileDrive = async function() {
   // Open Files app on Drive containing ENTRIES.photos.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.photos]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.photos]);
 
   // Select the file.
   chrome.test.assertTrue(
@@ -291,8 +290,8 @@ testcase.zipCreateFileUsb = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.beautiful]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.beautiful]);
 
   // Mount empty USB volume in the Drive window.
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
@@ -342,8 +341,8 @@ testcase.zipCreateFileUsb = async function() {
  */
 testcase.zipFileOpenDownloadsShiftJIS = async function() {
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveSJIS], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveSJIS], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -383,8 +382,8 @@ testcase.zipFileOpenDownloadsShiftJIS = async function() {
  */
 testcase.zipFileOpenDownloadsMacOs = async function() {
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveMacOs], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveMacOs], []);
 
   // Select the zip file.
   chrome.test.assertTrue(

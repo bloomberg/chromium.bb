@@ -71,7 +71,7 @@ testcase.sortColumns = async function() {
     ENTRIES.hello,
   ]);
 
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Click the 'Name' column header and check the list.
   await remoteCall.callRemoteTestUtil(

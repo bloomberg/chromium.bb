@@ -16,29 +16,28 @@ async function verifyRecents(appId, expectedRecents = RECENT_ENTRY_SET) {
 
 testcase.recentsDownloads = async function() {
   // Populate downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, BASIC_LOCAL_ENTRY_SET, []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   await verifyRecents(appId);
 };
 
 testcase.recentsDrive = async function() {
   // Populate drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
   await verifyRecents(appId);
 };
 
 testcase.recentsDownloadsAndDrive = async function() {
   // Populate both downloads and drive with disjoint sets of files.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null,
-      [ENTRIES.beautiful, ENTRIES.hello, ENTRIES.photos],
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.hello, ENTRIES.photos],
       [ENTRIES.desktop, ENTRIES.world, ENTRIES.testDocument]);
   await verifyRecents(appId);
 };
 
 testcase.recentsDownloadsAndDriveWithOverlap = async function() {
   // Populate both downloads and drive with overlapping sets of files.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   await verifyRecents(appId, RECENT_ENTRY_SET.concat(RECENT_ENTRY_SET));
 };

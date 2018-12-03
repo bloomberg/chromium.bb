@@ -152,23 +152,23 @@ async function expandRoot(appId, selector) {
 }
 
 testcase.selectCreateFolderDownloads = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, BASIC_LOCAL_ENTRY_SET, []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   await expandRoot(appId, TREEITEM_DOWNLOADS);
   await selectFirstFileListItem(appId);
   await createNewFolder(appId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
 };
 
 testcase.createFolderDownloads = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, BASIC_LOCAL_ENTRY_SET, []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   await expandRoot(appId, TREEITEM_DOWNLOADS);
   await createNewFolder(appId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
 };
 
 testcase.createFolderNestedDownloads = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, BASIC_LOCAL_ENTRY_SET, []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   await expandRoot(appId, TREEITEM_DOWNLOADS);
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -176,8 +176,8 @@ testcase.createFolderNestedDownloads = async function() {
 };
 
 testcase.createFolderDrive = async function() {
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
   await expandRoot(appId, TREEITEM_DRIVE);
   await createNewFolder(appId, BASIC_DRIVE_ENTRY_SET, TREEITEM_DRIVE);
 };

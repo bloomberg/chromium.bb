@@ -32,7 +32,7 @@ function getProviderNameForTest(manifest) {
  */
 async function setUpProvider(manifest) {
   await sendTestMessage({name: 'launchProviderExtension', manifest: manifest});
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   return appId;
 }
 

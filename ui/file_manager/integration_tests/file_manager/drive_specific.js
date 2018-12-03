@@ -29,7 +29,7 @@ var SEARCH_RESULTS_ENTRY_SET = [
  */
 async function startDriveSearchWithAutoComplete() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Focus the search box.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -64,7 +64,7 @@ async function startDriveSearchWithAutoComplete() {
  */
 testcase.driveOpenSidebarOffline = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Click the icon of the Offline volume.
   chrome.test.assertFalse(!await remoteCall.callRemoteTestUtil(
@@ -85,8 +85,8 @@ testcase.driveOpenSidebarSharedWithMe = async function() {
       await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true';
 
   // Open Files app on Drive containing "Shared with me" file entries.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET.concat([
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat([
         ENTRIES.sharedDirectory,
         ENTRIES.sharedDirectoryFile,
       ]));
@@ -164,7 +164,7 @@ testcase.drivePressEnterToSearch = async function() {
  * Tests pinning a file to a mobile network.
  */
 testcase.drivePinFileMobileNetwork = async function() {
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
   var caller = getCaller();
   await sendTestMessage({name: 'useCellularNetwork'});
   await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
@@ -214,7 +214,7 @@ testcase.drivePinFileMobileNetwork = async function() {
  */
 testcase.drivePressCtrlAFromSearch = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Focus the search box.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -236,7 +236,7 @@ testcase.drivePressCtrlAFromSearch = async function() {
  * Pin hello.txt in the old Drive client.
  */
 testcase.PRE_driveMigratePinnedFile = async function() {
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
   await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
   await remoteCall.waitForElement(appId, ['.table-row[selected]']);
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -258,7 +258,7 @@ testcase.PRE_driveMigratePinnedFile = async function() {
  */
 testcase.driveMigratePinnedFile = async function() {
   // After enabling DriveFS, ensure the file is still pinned.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
   await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
   await remoteCall.waitForElement(appId, ['.table-row[selected]']);
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -291,7 +291,7 @@ testcase.driveBackupPhotos = async function() {
   let date;
 
   // Open Files app on local downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount USB volume in the Downloads window.
   await sendTestMessage({name: 'mountFakeUsbDcim'});
@@ -337,9 +337,8 @@ testcase.driveBackupPhotos = async function() {
  */
 testcase.PRE_driveRecoverDirtyFiles = async function() {
   // Open Files app on downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.neverSync],
-      [ENTRIES.directoryA]);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.neverSync], [ENTRIES.directoryA]);
 
   // Select never-sync.txt.
   chrome.test.assertTrue(
@@ -397,8 +396,7 @@ testcase.PRE_driveRecoverDirtyFiles = async function() {
 testcase.driveRecoverDirtyFiles = async function() {
   // After enabling DriveFS, ensure the dirty files have been
   // recovered into Downloads.
-  const {appId} =
-      await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null, [], []);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [], []);
 
   // Wait for the Recovered files directory to be in Downloads.
   let expectedEntryRows = [
@@ -433,7 +431,7 @@ testcase.driveAvailableOfflineGearMenu = async function() {
       'cr-menu-item[command="#toggle-pinned"]:not([disabled])';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null, []);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
 
   // Select a file.
   chrome.test.assertTrue(

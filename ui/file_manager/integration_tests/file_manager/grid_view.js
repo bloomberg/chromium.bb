@@ -20,7 +20,7 @@ async function showGridView(rootPath, expectedSet) {
       expectedSet.map((entryInfo) => entryInfo.nameText).sort();
 
   // Open Files app on |rootPath|.
-  const {appId} = await setupAndWaitUntilReady(null, rootPath);
+  const appId = await setupAndWaitUntilReady(rootPath);
 
   // Click the grid view button.
   await remoteCall.waitForElement(appId, '#view-button');

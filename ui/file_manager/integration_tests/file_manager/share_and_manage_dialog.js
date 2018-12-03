@@ -14,9 +14,8 @@
 async function shareWithOthersExpectBrowserURL(
     path, url, teamDrive = undefined) {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [],
-      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
 
   // Navigate to the specified team drive if one is specified.
   if (teamDrive !== undefined) {
@@ -76,9 +75,8 @@ async function shareWithOthersExpectBrowserURL(
 async function manageWithDriveExpectBrowserURL(
     path, url, teamDrive = undefined) {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [],
-      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
 
   // Navigate to the specified team drive if one is specified.
   if (teamDrive !== undefined) {
@@ -110,7 +108,6 @@ async function manageWithDriveExpectBrowserURL(
       appId, '#file-context-menu:not([hidden])'));
 
   // Wait for the "Manage in Drive" menu item to appear.
-
   chrome.test.assertTrue(!!await remoteCall.waitForElement(
       appId, '[command="#manage-in-drive"]:not([hidden]):not([disabled])'));
 
@@ -197,9 +194,8 @@ testcase.shareDirectoryTeamDrive = async function() {
   const path = 'teamDriveADirectory';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [],
-      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
 
   // Navigate to the team drive.
   await remoteCall.navigateWithDirectoryTree(

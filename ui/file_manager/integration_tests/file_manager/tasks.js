@@ -53,7 +53,7 @@ var DRIVE_FAKE_TASKS = [
  * @param {Array<FakeTask>} fakeTasks Fake tasks.
  */
 async function setupTaskTest(rootPath, fakeTasks) {
-  const {appId} = await setupAndWaitUntilReady(null, rootPath);
+  const appId = await setupAndWaitUntilReady(rootPath);
   await remoteCall.callRemoteTestUtil('overrideTasks', appId, [fakeTasks]);
   return appId;
 }

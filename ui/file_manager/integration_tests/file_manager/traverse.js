@@ -9,8 +9,8 @@
  * @param {string} path Root path to be traversed.
  */
 async function traverseDirectories(path) {
-  // Set up File Manager. Do not add initial files.
-  const appId = await openNewWindow(null, path);
+  // Open Files app. Do not add initial files.
+  const appId = await openNewWindow(path);
 
   // Check the initial view.
   await remoteCall.waitForElement(appId, '#detail-table');

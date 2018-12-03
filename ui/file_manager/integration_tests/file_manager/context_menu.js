@@ -48,8 +48,8 @@ async function maybeCopyToClipboard(appId, commandId, file = 'hello.txt') {
  */
 async function checkContextMenu(commandId, path, expectedEnabledState) {
   // Open Files App on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], COMPLEX_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPLEX_DRIVE_ENTRY_SET);
 
   // Optionally copy hello.txt into the clipboard if needed.
   await maybeCopyToClipboard(appId, commandId);
@@ -265,7 +265,7 @@ testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = function() {
  */
 testcase.checkContextMenusForInputElements = async function() {
   // Open FilesApp on Downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Query all input elements.
   const elements = await remoteCall.callRemoteTestUtil(
@@ -323,8 +323,8 @@ testcase.checkContextMenusForInputElements = async function() {
 async function checkContextMenuInDriveFolder(
     commandId, folderName, expectedEnabledState) {
   // Open Files App on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], COMPLEX_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPLEX_DRIVE_ENTRY_SET);
 
   // Optionally copy hello.txt into the clipboard if needed.
   await maybeCopyToClipboard(appId, commandId);
@@ -408,8 +408,8 @@ testcase.checkPasteDisabledInsideReadOnlyFolder = function() {
 async function checkContextMenuForDriveFolderInTree(
     commandId, folderSelector, expectedEnabledState) {
   // Open Files App on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], COMPLEX_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPLEX_DRIVE_ENTRY_SET);
 
   // Optionally copy hello.txt into the clipboard if needed.
   await maybeCopyToClipboard(appId, commandId);
@@ -540,8 +540,8 @@ async function checkTeamDriveContextMenuInTree(
       `.tree-item[full-path-for-testing="/team_drives/${teamDriveName}"]`;
 
   // Open Files App on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], TEAM_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], TEAM_DRIVE_ENTRY_SET);
 
   // Focus the file list.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(

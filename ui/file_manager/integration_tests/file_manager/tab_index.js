@@ -9,7 +9,7 @@
  */
 testcase.tabindexSearchBoxFocus = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Check that the file list has the focus on launch.
   await remoteCall.waitForElement(appId, ['#file-list:focus']);
@@ -36,7 +36,7 @@ testcase.tabindexSearchBoxFocus = async function() {
  */
 testcase.tabindexFocus = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Check that the file list has the focus on launch.
   await remoteCall.waitForElement(appId, ['#file-list:focus']);
@@ -68,7 +68,7 @@ testcase.tabindexFocus = async function() {
  */
 testcase.tabindexFocusDownloads = async function() {
   // Open Files app on Downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check that the file list has the focus on launch.
   await remoteCall.waitForElement(appId, ['#file-list:focus']);
@@ -97,7 +97,7 @@ testcase.tabindexFocusDownloads = async function() {
  */
 testcase.tabindexFocusDirectorySelected = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DRIVE, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
   // Check that the file list has the focus on launch.
   await Promise.all([
