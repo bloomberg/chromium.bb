@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
@@ -85,12 +84,10 @@ class ChromeImpl : public Chrome {
   std::unique_ptr<DevToolsClient> devtools_websocket_client_;
 
  private:
-  typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
-
   void UpdateWebViews(const WebViewsInfo& views_info, bool w3c_compliant);
 
   // Web views in this list are in the same order as they are opened.
-  WebViewList web_views_;
+  std::list<std::unique_ptr<WebViewImpl>> web_views_;
   std::vector<std::unique_ptr<DevToolsEventListener>> devtools_event_listeners_;
   std::string page_load_strategy_;
 };

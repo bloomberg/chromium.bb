@@ -6,11 +6,11 @@
 #define CHROME_TEST_CHROMEDRIVER_SESSION_THREAD_MAP_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/linked_ptr.h"
 #include "base/threading/thread.h"
 
-typedef std::map<std::string, linked_ptr<base::Thread> > SessionThreadMap;
+using SessionThreadMap = std::map<std::string, std::unique_ptr<base::Thread>>;
 
 #endif  // CHROME_TEST_CHROMEDRIVER_SESSION_THREAD_MAP_H_

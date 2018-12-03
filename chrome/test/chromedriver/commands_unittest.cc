@@ -137,8 +137,8 @@ TEST(CommandsTest, GetSessions) {
   SessionThreadMap map;
   Session session("id");
   Session session2("id2");
-  map[session.id] = make_linked_ptr(new base::Thread("1"));
-  map[session2.id] = make_linked_ptr(new base::Thread("2"));
+  map[session.id] = std::make_unique<base::Thread>("1");
+  map[session2.id] = std::make_unique<base::Thread>("2");
 
   int count = 0;
 
@@ -182,8 +182,8 @@ TEST(CommandsTest, QuitAll) {
   SessionThreadMap map;
   Session session("id");
   Session session2("id2");
-  map[session.id] = make_linked_ptr(new base::Thread("1"));
-  map[session2.id] = make_linked_ptr(new base::Thread("2"));
+  map[session.id] = std::make_unique<base::Thread>("1");
+  map[session2.id] = std::make_unique<base::Thread>("2");
 
   int count = 0;
   Command cmd = base::Bind(&ExecuteStubQuit, &count);
@@ -225,13 +225,13 @@ void OnSimpleCommand(base::RunLoop* run_loop,
 
 TEST(CommandsTest, ExecuteSessionCommand) {
   SessionThreadMap map;
-  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  auto thread = std::make_unique<base::Thread>("1");
   ASSERT_TRUE(thread->Start());
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
-  map[id] = thread;
+  map[id] = std::move(thread);
 
   base::DictionaryValue params;
   params.SetInteger("param", 5);
@@ -319,10 +319,10 @@ void OnNoSuchSessionAndQuit(base::RunLoop* run_loop,
 
 TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
   SessionThreadMap map;
-  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  auto thread = std::make_unique<base::Thread>("1");
   ASSERT_TRUE(thread->Start());
   std::string id("id");
-  map[id] = thread;
+  map[id] = std::move(thread);
 
   base::MessageLoop loop;
   base::RunLoop run_loop;
@@ -713,14 +713,14 @@ void OnSessionCommand(base::RunLoop* run_loop,
 
 TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   SessionThreadMap map;
-  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  auto thread = std::make_unique<base::Thread>("1");
   ASSERT_TRUE(thread->Start());
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
 
-  map[id] = thread;
+  map[id] = std::move(thread);
 
   base::DictionaryValue params;
   auto listener = std::make_unique<MockCommandListener>();
@@ -804,19 +804,20 @@ void VerifySessionWasDeleted() {
 
 TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   SessionThreadMap map;
-  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  auto thread = std::make_unique<base::Thread>("1");
+  base::Thread* thread_ptr = thread.get();
   ASSERT_TRUE(thread->Start());
   std::string id("id");
   thread->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&internal::CreateSessionOnSessionThreadForTesting, id));
-  map[id] = thread;
+  map[id] = std::move(thread);
 
   // In SuccessNotifyingCommandListenersBeforeCommand, we verified BeforeCommand
   // was called before (as opposed to after) command execution. We don't need to
   // verify this again, so we can just add |listener| with PostTask.
   auto listener = std::make_unique<FailingCommandListener>();
-  thread->task_runner()->PostTask(
+  thread_ptr->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AddListenerToSessionIfSessionExists,
                                 std::move(listener)));
 
@@ -836,6 +837,6 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
       base::Bind(&OnFailBecauseErrorNotifyingListeners, &run_loop));
   run_loop.Run();
 
-  thread->task_runner()->PostTask(FROM_HERE,
-                                  base::BindOnce(&VerifySessionWasDeleted));
+  thread_ptr->task_runner()->PostTask(FROM_HERE,
+                                      base::BindOnce(&VerifySessionWasDeleted));
 }
