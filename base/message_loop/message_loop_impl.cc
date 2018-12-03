@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/debug/task_annotator.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_task_runner.h"
@@ -18,7 +19,9 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/sequenced_task_source.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/task/common/operations_controller.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
@@ -30,6 +33,13 @@
 #elif defined(OS_ANDROID)
 #include "base/message_loop/message_pump_android.h"
 #endif
+
+namespace {
+
+constexpr base::Feature kLockFreeScheduleWork{"LockFreeScheduleWork",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
 
 namespace base {
 
@@ -63,6 +73,12 @@ class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
  private:
   internal::OperationsController operations_controller_;
 
+  // An optional lock, only instantiated and used when kLockFreeScheduleWork is
+  // experimentally disabled. This lock is undesired, we only run a retroactive
+  // experiment to reintroduce it to confirm that we see the impact of its
+  // removal across our new swath of jank metrics.
+  Optional<Lock> undesired_operations_lock_;
+
   // A TaskAnnotator which is owned by this Controller to be able to use it
   // without locking |message_loop_lock_|. It cannot be owned by MessageLoop
   // because this Controller cannot access |message_loop_| safely without the
@@ -79,6 +95,8 @@ class MessageLoopImpl::Controller : public SequencedTaskSource::Observer {
 MessageLoopImpl::Controller::Controller(MessageLoopImpl* message_loop)
     : message_loop_(message_loop) {
   DCHECK(message_loop_);
+  if (!FeatureList::IsEnabled(kLockFreeScheduleWork))
+    undesired_operations_lock_.emplace();
 }
 
 void MessageLoopImpl::Controller::WillQueueTask(PendingTask* task) {
@@ -92,6 +110,12 @@ void MessageLoopImpl::Controller::DidQueueTask(bool was_empty) {
   auto operation_token = operations_controller_.TryBeginOperation();
   if (!operation_token)
     return;
+
+  // This is a retroactive experiment to determine the performance improvement
+  // caused by the removal of this lock in an earlier CL.
+  Optional<AutoLock> undesired_schedule_work_lock;
+  if (undesired_operations_lock_)
+    undesired_schedule_work_lock.emplace(*undesired_operations_lock_);
 
   // Some scenarios can result in getting to this point on multiple threads at
   // once, e.g.:
