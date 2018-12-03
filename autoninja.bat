@@ -10,7 +10,11 @@ REM Execute whatever is printed by autoninja.py.
 REM Also print it to reassure that the right settings are being used.
 FOR /f "usebackq tokens=*" %%a in (`python %~dp0autoninja.py "%*"`) do echo %%a & %%a
 @if errorlevel 1 goto buildfailure
-@if "%NINJA_SUMMARIZE_BUILD%" == "1" python %~dp0post_build_ninja_summary.py %*
+
+REM Use call to invoke python script here, because we use python via python.bat.
+@if "%NINJA_SUMMARIZE_BUILD%" == "1" call python.bat %~dp0post_build_ninja_summary.py %*
+@call python.bat %~dp0ninjalog_uploader_wrapper.py --cmdline %*
+
 exit /b
 :buildfailure
 REM Return an error code of 1 so that if a developer types:
