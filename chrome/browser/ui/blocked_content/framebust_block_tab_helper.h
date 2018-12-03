@@ -66,6 +66,8 @@ class FramebustBlockTabHelper
   // distribution of the URLs in blocked_urls().
   std::vector<ClickCallback> callbacks_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(FramebustBlockTabHelper);
 };
 

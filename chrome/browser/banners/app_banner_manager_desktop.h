@@ -62,6 +62,8 @@ class AppBannerManagerDesktop
 
   std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerDesktop);
 };
 

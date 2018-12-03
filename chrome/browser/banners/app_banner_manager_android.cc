@@ -450,4 +450,6 @@ void JNI_AppBannerManager_SetTotalEngagementToTrigger(
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerAndroid)
+
 }  // namespace banners

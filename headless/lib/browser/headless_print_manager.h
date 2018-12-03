@@ -116,6 +116,8 @@ class HeadlessPrintManager
   bool ignore_invalid_page_ranges_ = false;
   std::string data_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(HeadlessPrintManager);
 };
 

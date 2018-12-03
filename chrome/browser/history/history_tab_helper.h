@@ -61,6 +61,8 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // history system. Only applies to the main frame of the page.
   base::TimeTicks last_load_completion_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(HistoryTabHelper);
 };
 

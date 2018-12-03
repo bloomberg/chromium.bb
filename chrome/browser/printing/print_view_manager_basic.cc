@@ -24,4 +24,6 @@ PrintViewManagerBasic::PrintViewManagerBasic(content::WebContents* web_contents)
 PrintViewManagerBasic::~PrintViewManagerBasic() {
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManagerBasic)
+
 }  // namespace printing

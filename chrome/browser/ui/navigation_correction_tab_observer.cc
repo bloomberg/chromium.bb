@@ -106,3 +106,5 @@ void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
       google_apis::GetAPIKey(),
       google_util::GetGoogleSearchURL(google_base_url));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationCorrectionTabObserver)

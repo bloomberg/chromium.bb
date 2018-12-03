@@ -37,6 +37,8 @@ class WebContentsTopSitesObserver
   // Underlying TopSites instance, may be null during testing.
   TopSites* top_sites_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsTopSitesObserver);
 };
 

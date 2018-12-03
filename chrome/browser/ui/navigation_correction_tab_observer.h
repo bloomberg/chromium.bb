@@ -54,6 +54,8 @@ class NavigationCorrectionTabObserver
   std::unique_ptr<GoogleURLTracker::Subscription>
       google_url_updated_subscription_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(NavigationCorrectionTabObserver);
 };
 

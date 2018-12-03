@@ -48,6 +48,8 @@ class DistillabilityDriver
 
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(DistillabilityDriver);
 };
 

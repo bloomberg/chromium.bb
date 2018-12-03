@@ -92,6 +92,8 @@ class ContentFaviconDriver
   // Web Manifest URL or empty URL if none.
   GURL manifest_url_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ContentFaviconDriver);
 };
 

@@ -233,3 +233,5 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   data.input_encodings.push_back(handle->GetSearchableFormEncoding());
   url_service->Add(std::make_unique<TemplateURL>(data));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchEngineTabHelper)

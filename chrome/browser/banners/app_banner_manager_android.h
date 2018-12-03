@@ -159,6 +159,8 @@ class AppBannerManagerAndroid
   // Whether WebAPKs can be installed.
   bool can_install_webapk_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerAndroid);
 };
 

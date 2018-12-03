@@ -79,4 +79,6 @@ void DistillabilityDriver::OnInterfaceRequestFromFrame(
   frame_interfaces_.TryBindInterface(interface_name, interface_pipe);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DistillabilityDriver)
+
 }  // namespace dom_distiller

@@ -193,3 +193,5 @@ bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(
   return profile->GetPrefs()->GetBoolean(
       prefs::kAbusiveExperienceInterventionEnforce);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SafeBrowsingTriggeredPopupBlocker)

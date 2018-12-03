@@ -114,3 +114,5 @@ const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::
   return previews_ui_service->GetResourceLoadingHintsResourcePatternsToBlock(
       document_gurl);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ResourceLoadingHintsWebContentsObserver)

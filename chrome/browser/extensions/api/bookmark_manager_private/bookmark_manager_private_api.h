@@ -116,6 +116,8 @@ class BookmarkManagerPrivateDragEventRouter
   void ClearBookmarkNodeData();
 
  private:
+  friend class content::WebContentsUserData<
+      BookmarkManagerPrivateDragEventRouter>;
   // Helper to actually dispatch an event to extension listeners.
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
@@ -124,6 +126,8 @@ class BookmarkManagerPrivateDragEventRouter
   content::WebContents* web_contents_;
   Profile* profile_;
   bookmarks::BookmarkNodeData bookmark_drag_data_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateDragEventRouter);
 };

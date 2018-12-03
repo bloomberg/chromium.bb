@@ -28,11 +28,13 @@ class OfflinerUserData : public content::WebContentsUserData<OfflinerUserData> {
   BackgroundLoaderOffliner* offliner() { return offliner_; }
 
  private:
+  friend class content::WebContentsUserData<OfflinerUserData>;
   // The offliner that the WebContents is attached to. The offliner owns the
   // Delegate which owns the WebContents that this data is attached to.
   // Therefore, its lifetime should exceed that of the WebContents, so this
   // should always be non-null.
   BackgroundLoaderOffliner* offliner_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace offline_pages

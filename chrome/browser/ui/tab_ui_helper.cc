@@ -151,3 +151,5 @@ void TabUIHelper::UpdateFavicon(
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabUIHelper)

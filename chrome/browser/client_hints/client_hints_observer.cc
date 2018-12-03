@@ -91,3 +91,5 @@ void ClientHintsObserver::PersistClientHints(
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientHintsObserver)

@@ -89,8 +89,12 @@ class VisibilityTimerTabHelper
   };
   base::circular_deque<Task> task_queue_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(VisibilityTimerTabHelper);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(VisibilityTimerTabHelper)
 
 VisibilityTimerTabHelper::VisibilityTimerTabHelper(
     content::WebContents* contents)

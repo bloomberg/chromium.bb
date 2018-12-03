@@ -100,4 +100,6 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
   swap_ticks_ = GetTimeTicksFromPrerenderManager();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrerenderTabHelper)
+
 }  // namespace prerender

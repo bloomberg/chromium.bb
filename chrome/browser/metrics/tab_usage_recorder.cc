@@ -44,8 +44,12 @@ class TabUsageRecorder::WebContentsData
 
   base::TimeTicks last_inactive_time_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabUsageRecorder::WebContentsData)
 
 TabUsageRecorder::WebContentsData::~WebContentsData() = default;
 

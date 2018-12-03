@@ -109,4 +109,6 @@ void OffscreenTabsOwner::DestroyTab(OffscreenTab* tab) {
   }
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OffscreenTabsOwner)
+
 }  // namespace extensions

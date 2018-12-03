@@ -62,7 +62,10 @@ class SubresourceFilterObserverManager
   void NotifyAdSubframeDetected(content::RenderFrameHost* render_frame_host);
 
  private:
+  friend class content::WebContentsUserData<SubresourceFilterObserverManager>;
   base::ObserverList<SubresourceFilterObserver>::Unchecked observers_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterObserverManager);
 };
 

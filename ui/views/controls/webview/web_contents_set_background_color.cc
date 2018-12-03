@@ -52,4 +52,6 @@ void WebContentsSetBackgroundColor::RenderViewHostChanged(
   new_host->GetWidget()->GetView()->SetBackgroundColor(color_);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsSetBackgroundColor)
+
 }  // namespace views

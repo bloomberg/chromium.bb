@@ -121,6 +121,7 @@ class OomInterventionTabHelper
       scoped_observer_;
 
   base::WeakPtrFactory<OomInterventionTabHelper> weak_ptr_factory_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 #endif  // CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_

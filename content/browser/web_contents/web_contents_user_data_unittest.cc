@@ -21,7 +21,10 @@ class WebContentsAttachedClass1
  private:
   explicit WebContentsAttachedClass1(WebContents* contents) {}
   friend class WebContentsUserData<WebContentsAttachedClass1>;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsAttachedClass1)
 
 class WebContentsAttachedClass2
     : public WebContentsUserData<WebContentsAttachedClass2> {
@@ -31,7 +34,10 @@ class WebContentsAttachedClass2
  private:
   explicit WebContentsAttachedClass2(WebContents* contents) {}
   friend class WebContentsUserData<WebContentsAttachedClass2>;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsAttachedClass2)
 
 typedef RenderViewHostTestHarness WebContentsUserDataTest;
 

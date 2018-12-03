@@ -91,4 +91,6 @@ bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
   return !(*this == right);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabManager::WebContentsData)
+
 }  // namespace resource_coordinator

@@ -33,6 +33,8 @@ class HatsHelper : public content::WebContentsObserver,
 
   Profile* profile() const;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(HatsHelper);
 };
 

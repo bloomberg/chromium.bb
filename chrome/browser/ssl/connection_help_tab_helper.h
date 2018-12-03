@@ -50,6 +50,8 @@ class ConnectionHelpTabHelper
   GURL GetHelpCenterURL();
 
   GURL testing_url_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelper);
 };
 #endif  // CHROME_BROWSER_SSL_CONNECTION_HELP_TAB_HELPER_H_

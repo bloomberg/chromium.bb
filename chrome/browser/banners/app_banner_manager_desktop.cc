@@ -139,4 +139,6 @@ void AppBannerManagerDesktop::OnEngagementEvent(
   AppBannerManager::OnEngagementEvent(web_contents, url, score, type);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop)
+
 }  // namespace banners

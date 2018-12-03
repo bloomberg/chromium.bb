@@ -101,4 +101,6 @@ void AwPrintManager::OnScriptedPrint(
   render_frame_host->Send(reply_msg);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AwPrintManager)
+
 }  // namespace android_webview

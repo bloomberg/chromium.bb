@@ -33,6 +33,8 @@ class AudioFocusWebContentsObserver
   // The audio focus group id is used to group media sessions together for apps.
   base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(AudioFocusWebContentsObserver);
 };
 

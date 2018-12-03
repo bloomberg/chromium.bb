@@ -636,3 +636,5 @@ void NTPUserDataLogger::RecordDoodleImpression(base::TimeDelta time,
     should_record_doodle_load_time_ = false;
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NTPUserDataLogger)

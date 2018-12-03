@@ -24,6 +24,8 @@ class ViewAndroidHelper
   // The owning view that has a hold of the current window.
   ui::ViewAndroid* view_android_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ViewAndroidHelper);
 };
 

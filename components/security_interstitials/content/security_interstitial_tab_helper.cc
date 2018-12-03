@@ -154,4 +154,6 @@ void SecurityInterstitialTabHelper::ReportPhishingError() {
   NOTREACHED();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityInterstitialTabHelper)
+
 }  //  namespace security_interstitials

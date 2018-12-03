@@ -51,10 +51,15 @@ class AutoFetchPageLoadWatcher::NavigationObserver
   }
 
  private:
+  friend class content::WebContentsUserData<
+      AutoFetchPageLoadWatcher::NavigationObserver>;
   AutoFetchPageLoadWatcher* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutoFetchPageLoadWatcher::NavigationObserver)
 
 // static
 void AutoFetchPageLoadWatcher::CreateForWebContents(

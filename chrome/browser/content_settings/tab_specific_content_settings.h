@@ -483,6 +483,8 @@ class TabSpecificContentSettings
   // navigation. Used to determine whether to display the settings in page info.
   std::set<ContentSettingsType> content_settings_changed_via_page_info_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };
 

@@ -111,8 +111,12 @@ class TestPreviewsWebContentsObserver
   }
 
  private:
+  friend class content::WebContentsUserData<TestPreviewsWebContentsObserver>;
   content::ReloadType last_navigation_reload_type_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TestPreviewsWebContentsObserver)
 
 class TestOptOutObserver : public page_load_metrics::PageLoadMetricsObserver {
  public:

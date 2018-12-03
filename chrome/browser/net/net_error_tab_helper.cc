@@ -320,4 +320,6 @@ void NetErrorTabHelper::UpdateHighScore(uint32_t high_score) {
   easter_egg_high_score_.SetValue(static_cast<int>(high_score));
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NetErrorTabHelper)
+
 }  // namespace chrome_browser_net

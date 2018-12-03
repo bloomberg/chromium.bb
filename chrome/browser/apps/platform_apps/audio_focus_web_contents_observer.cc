@@ -65,4 +65,6 @@ void AudioFocusWebContentsObserver::DidFinishNavigation(
       ->SetAudioFocusGroupId(audio_focus_group_id_);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AudioFocusWebContentsObserver)
+
 }  // namespace apps

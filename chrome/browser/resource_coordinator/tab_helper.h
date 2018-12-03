@@ -86,6 +86,8 @@ class ResourceCoordinatorTabHelper
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorTabHelper);
 };
 

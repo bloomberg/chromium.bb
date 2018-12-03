@@ -185,3 +185,5 @@ void FindTabHelper::HandleFindReply(int request_id,
         content::Details<FindNotificationDetails>(&last_search_result_));
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(FindTabHelper)

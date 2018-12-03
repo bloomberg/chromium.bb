@@ -90,6 +90,7 @@ class TabManager::WebContentsData
   }
 
  private:
+  friend class content::WebContentsUserData<TabManager::WebContentsData>;
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, TabLoadingState);
@@ -120,6 +121,7 @@ class TabManager::WebContentsData
   bool is_purged_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace resource_coordinator

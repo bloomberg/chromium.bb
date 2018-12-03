@@ -87,3 +87,5 @@ void PopupOpenerTabHelper::DidStartNavigation(
   if (!navigation_handle->IsRendererInitiated())
     has_opened_popup_since_last_user_gesture_ = false;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PopupOpenerTabHelper)

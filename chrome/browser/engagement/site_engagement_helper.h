@@ -169,6 +169,7 @@ class SiteEngagementService::Helper
   SiteEngagementService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 #endif  // CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_HELPER_H_

@@ -41,6 +41,7 @@ class PdfNupConverterClient
       mojom::PdfNupConverter::NupDocumentConvertCallback callback);
 
  private:
+  friend class content::WebContentsUserData<PdfNupConverterClient>;
   void OnDidNupPdfDocumentConvert(
       int document_cookie,
       mojom::PdfNupConverter::NupDocumentConvertCallback callback,
@@ -62,6 +63,8 @@ class PdfNupConverterClient
   std::map<int, mojom::PdfNupConverterPtr> pdf_nup_converter_map_;
 
   content::WebContents* web_contents_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PdfNupConverterClient);
 };

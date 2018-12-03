@@ -469,3 +469,5 @@ bool SearchTabHelper::IsInputInProgress() const {
   return omnibox_view && omnibox_view->model()->user_input_in_progress() &&
          omnibox_view->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchTabHelper)

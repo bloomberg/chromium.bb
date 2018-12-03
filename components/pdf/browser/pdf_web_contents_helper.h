@@ -66,6 +66,7 @@ class PDFWebContentsHelper
       content::TouchSelectionControllerClientManager* manager) override;
 
  private:
+  friend class content::WebContentsUserData<PDFWebContentsHelper>;
   PDFWebContentsHelper(content::WebContents* web_contents,
                        std::unique_ptr<PDFWebContentsHelperClient> client);
 
@@ -97,6 +98,8 @@ class PDFWebContentsHelper
   bool has_selection_ = false;
 
   mojom::PdfListenerPtr remote_pdf_client_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
 };

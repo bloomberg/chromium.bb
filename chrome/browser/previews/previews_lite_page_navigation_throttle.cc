@@ -192,6 +192,7 @@ class WebContentsLifetimeHelper
   }
 
  private:
+  friend class content::WebContentsUserData<WebContentsLifetimeHelper>;
   // The url to monitor for. When it is seen, |info_| will be attached to that
   // navigation.
   GURL restarted_navigation_url_;
@@ -203,7 +204,10 @@ class WebContentsLifetimeHelper
   content::WebContents* web_contents_;
   std::unordered_set<content::NavigationHandle*> navigations_;
   base::WeakPtrFactory<WebContentsLifetimeHelper> weak_factory_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsLifetimeHelper)
 
 bool HandlePreviewsLitePageURLRewrite(
     GURL* url,

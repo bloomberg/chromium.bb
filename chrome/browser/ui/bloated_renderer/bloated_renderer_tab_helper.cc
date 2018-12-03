@@ -152,3 +152,5 @@ void BloatedRendererTabHelper::OnRendererIsBloated(
         BloatedRendererHandlingInBrowser::kCannotReload);
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BloatedRendererTabHelper)

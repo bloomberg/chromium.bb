@@ -198,4 +198,6 @@ void ResourceCoordinatorTabHelper::ResetFlag() {
   first_time_favicon_set_ = false;
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ResourceCoordinatorTabHelper)
+
 }  // namespace resource_coordinator

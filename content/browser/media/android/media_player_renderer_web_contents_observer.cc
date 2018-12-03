@@ -41,4 +41,6 @@ void MediaPlayerRendererWebContentsObserver::WebContentsDestroyed() {
   players_.clear();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaPlayerRendererWebContentsObserver)
+
 }  // namespace content

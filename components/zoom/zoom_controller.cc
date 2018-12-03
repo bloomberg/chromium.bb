@@ -397,4 +397,6 @@ bool ZoomController::PageScaleFactorIsOne() const {
   return content::HostZoomMap::PageScaleFactorIsOne(web_contents());
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ZoomController)
+
 }  // namespace zoom

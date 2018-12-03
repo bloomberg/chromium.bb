@@ -1038,4 +1038,6 @@ bool MediaSessionImpl::IsActionSupported(
          base::ContainsKey(routed_service_->actions(), action);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)
+
 }  // namespace content

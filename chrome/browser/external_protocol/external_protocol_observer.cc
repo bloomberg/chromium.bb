@@ -21,3 +21,5 @@ void ExternalProtocolObserver::DidGetUserInteraction(
   if (type != blink::WebInputEvent::kGestureScrollBegin)
     ExternalProtocolHandler::PermitLaunchUrl();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ExternalProtocolObserver)

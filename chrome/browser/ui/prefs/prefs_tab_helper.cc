@@ -493,3 +493,5 @@ void PrefsTabHelper::NotifyWebkitPreferencesChanged(
 
   web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefsTabHelper)

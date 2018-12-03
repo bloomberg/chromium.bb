@@ -63,6 +63,8 @@ class SecurityStateTabHelper
   // True if this browser tab is in non-guest Incognito mode.
   bool is_incognito_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelper);
 };
 

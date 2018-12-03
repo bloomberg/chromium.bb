@@ -109,6 +109,7 @@ class CommonNameMismatchRedirectObserver
   }
 
  private:
+  friend class content::WebContentsUserData<CommonNameMismatchRedirectObserver>;
   CommonNameMismatchRedirectObserver(content::WebContents* web_contents,
                                      const std::string& request_url_hostname,
                                      const std::string& suggested_url_hostname)
@@ -145,8 +146,12 @@ class CommonNameMismatchRedirectObserver
   const std::string request_url_hostname_;
   const std::string suggested_url_hostname_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(CommonNameMismatchRedirectObserver);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CommonNameMismatchRedirectObserver)
 
 void RecordUMA(SSLErrorHandler::UMAEvent event) {
   UMA_HISTOGRAM_ENUMERATION(kHistogram, event,
@@ -1065,3 +1070,5 @@ int SSLErrorHandler::CalculateOptionsMask(int cert_error,
   }
   return options_mask;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLErrorHandler)

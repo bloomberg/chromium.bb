@@ -78,6 +78,8 @@ class InsecureSensitiveInputDriverFactory
 
   std::set<content::RenderFrameHost*> frames_with_visible_password_fields_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(InsecureSensitiveInputDriverFactory);
 };
 

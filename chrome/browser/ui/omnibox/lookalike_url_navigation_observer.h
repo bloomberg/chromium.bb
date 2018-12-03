@@ -56,10 +56,12 @@ class LookalikeUrlNavigationObserver
       content::NavigationHandle* navigation_handle) override;
 
  private:
+  friend class content::WebContentsUserData<LookalikeUrlNavigationObserver>;
   // Returns a site that the user has used before that |url| may be attempting
   // to spoof, based on skeleton comparison.
   std::string GetMatchingSiteEngagementDomain(SiteEngagementService* service,
                                               const GURL& url);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_LOOKALIKE_URL_NAVIGATION_OBSERVER_H_

@@ -232,3 +232,5 @@ void HistoryTabHelper::WebContentsDestroyed() {
     hs->ClearCachedDataForContextID(context_id);
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryTabHelper)

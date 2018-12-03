@@ -23,6 +23,7 @@ class WebContentsForcedTitle
   ~WebContentsForcedTitle() override;
 
  private:
+  friend class content::WebContentsUserData<WebContentsForcedTitle>;
   WebContentsForcedTitle(content::WebContents* web_contents,
                          const base::string16& title);
 
@@ -30,6 +31,8 @@ class WebContentsForcedTitle
   void TitleWasSet(content::NavigationEntry* entry) override;
 
   base::string16 title_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsForcedTitle);
 };

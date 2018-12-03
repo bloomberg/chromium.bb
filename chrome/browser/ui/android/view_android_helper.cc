@@ -20,3 +20,5 @@ void ViewAndroidHelper::SetViewAndroid(ui::ViewAndroid* view_android) {
 ui::ViewAndroid* ViewAndroidHelper::GetViewAndroid() {
   return view_android_;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ViewAndroidHelper)

@@ -51,6 +51,8 @@ class ChromeLanguageDetectionTabHelper
   // for multiple render frames.
   mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ChromeLanguageDetectionTabHelper);
 };
 

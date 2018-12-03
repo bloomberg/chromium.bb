@@ -35,6 +35,8 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   content::WebContents* web_contents_;
   bool is_in_vr_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(VrTabHelper);
 };
 

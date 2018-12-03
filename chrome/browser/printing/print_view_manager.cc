@@ -279,4 +279,6 @@ bool PrintViewManager::OnMessageReceived(
          PrintViewManagerBase::OnMessageReceived(message, render_frame_host);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManager)
+
 }  // namespace printing

@@ -40,6 +40,8 @@ class FullscreenWithinTabHelper
 
   bool is_fullscreen_within_tab_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(FullscreenWithinTabHelper);
 };
 

@@ -207,3 +207,5 @@ void SoundContentSettingObserver::UpdateAutoplayPolicy() {
   web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 #endif
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SoundContentSettingObserver)

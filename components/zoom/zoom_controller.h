@@ -196,6 +196,8 @@ class ZoomController : public content::WebContentsObserver,
 
   std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
 

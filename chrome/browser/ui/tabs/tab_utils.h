@@ -49,6 +49,7 @@ struct LastMuteMetadata
  private:
   explicit LastMuteMetadata(content::WebContents* contents) {}
   friend class content::WebContentsUserData<LastMuteMetadata>;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 namespace chrome {

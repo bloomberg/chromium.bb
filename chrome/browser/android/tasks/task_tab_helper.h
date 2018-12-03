@@ -45,6 +45,8 @@ class TaskTabHelper : public content::WebContentsObserver,
   int last_pruned_navigation_entry_index_;
   std::map<int, int> entry_index_to_spoke_count_map_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TaskTabHelper);
 };
 

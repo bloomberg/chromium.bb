@@ -70,6 +70,7 @@ class PrintCompositeClient
   void SetUserAgent(const std::string& user_agent) { user_agent_ = user_agent; }
 
  private:
+  friend class content::WebContentsUserData<PrintCompositeClient>;
   // Callback functions for getting the replies.
   static void OnDidCompositePageToPdf(
       mojom::PdfCompositor::CompositePageToPdfCallback callback,
@@ -107,6 +108,8 @@ class PrintCompositeClient
   std::map<int, base::flat_set<uint64_t>> printed_subframes_;
 
   std::string user_agent_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrintCompositeClient);
 };

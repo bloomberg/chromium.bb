@@ -78,6 +78,8 @@ class HungPluginTabHelper
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(HungPluginTabHelper);
 };
 

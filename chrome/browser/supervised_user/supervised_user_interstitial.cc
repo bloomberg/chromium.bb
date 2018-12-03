@@ -106,8 +106,12 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
   WebContents* web_contents_;
   base::WeakPtrFactory<TabCloser> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TabCloser);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabCloser)
 
 }  // namespace
 

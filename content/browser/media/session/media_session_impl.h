@@ -399,6 +399,8 @@ class MediaSessionImpl : public MediaSession,
   // Timer used for debouncing MediaSessionInfoChanged events.
   std::unique_ptr<base::OneShotTimer> info_changed_timer_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };
 
