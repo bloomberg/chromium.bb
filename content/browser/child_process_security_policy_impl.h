@@ -137,12 +137,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // this method exactly once.
   void Add(int child_id);
 
-  // Upon creation, worker thread child processes should register themselves by
-  // calling this this method exactly once. Workers that are not shared will
-  // inherit permissions from their parent renderer process identified with
-  // |main_render_process_id|.
-  void AddWorker(int worker_child_id, int main_render_process_id);
-
   // Upon destruction, child processess should unregister themselves by caling
   // this method exactly once.
   void Remove(int child_id);
@@ -303,7 +297,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   typedef std::set<std::string> SchemeSet;
   typedef std::map<int, std::unique_ptr<SecurityState>> SecurityStateMap;
-  typedef std::map<int, int> WorkerToMainProcessMap;
   typedef std::map<storage::FileSystemType, int> FileSystemPermissionPolicyMap;
 
   // Obtain an instance of ChildProcessSecurityPolicyImpl via GetInstance().
@@ -335,9 +328,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int permission);
 
   // Determines if certain permissions were granted for a file. |permissions|
-  // is an internally defined bit-set. If |child_id| is a worker process,
-  // this returns true if either the worker process or its parent renderer
-  // has permissions for the file.
+  // is an internally defined bit-set.
   bool HasPermissionsForFile(int child_id,
                              const base::FilePath& file,
                              int permissions);
@@ -376,10 +367,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_ GUARDED_BY(lock_);
-
-  // This maps keeps the record of which js worker thread child process
-  // corresponds to which main js thread child process.
-  WorkerToMainProcessMap worker_map_ GUARDED_BY(lock_);
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 
