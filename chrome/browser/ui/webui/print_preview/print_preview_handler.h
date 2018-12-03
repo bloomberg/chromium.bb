@@ -227,11 +227,6 @@ class PrintPreviewHandler
   // Generates new token and sends back to UI.
   void HandleGetAccessToken(const base::ListValue* args);
 
-  // Brings up Chrome printing setting page to allow the user to configure local
-  // printers or Google Cloud printers. |args| is unused.
-  // TODO (rbpotter): Remove this when the old Print Preview page is deleted.
-  void HandleManagePrinters(const base::ListValue* args);
-
   // Gathers UMA stats when the print preview dialog is about to close.
   // |args| is unused.
   void HandleClosePreviewDialog(const base::ListValue* args);
@@ -239,16 +234,6 @@ class PrintPreviewHandler
   // Asks the browser for several settings that are needed before the first
   // preview is displayed.
   void HandleGetInitialSettings(const base::ListValue* args);
-
-  // Forces the opening of a new tab. |args| should consist of one element: the
-  // URL to set the new tab to.
-  //
-  // NOTE: This is needed to open register promo for Cloud Print as a new tab.
-  // Javascript's "window.open" opens a new window popup (since initiated from
-  // async HTTP request) and worse yet, on Windows and Chrome OS, the opened
-  // window opens behind the initiator window.
-  // TODO(rbpotter): Remove this when the old Print Preview page is deleted.
-  void HandleForceOpenNewTab(const base::ListValue* args);
 
   void SendInitialSettings(const std::string& callback_id,
                            const std::string& default_printer);
