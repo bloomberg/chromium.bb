@@ -14,6 +14,25 @@
 
 namespace extensions {
 
+class PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() {}
+  DECLARE_EXTENSION_FUNCTION(
+      "passwordsPrivate.recordPasswordsPageAccessInSettings",
+      PASSWORDSPRIVATE_RECORDPASSWORDSPAGEACCESSINSETTINGS);
+
+ protected:
+  ~PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction);
+};
+
 class PasswordsPrivateRemoveSavedPasswordFunction :
     public UIThreadExtensionFunction {
  public:
