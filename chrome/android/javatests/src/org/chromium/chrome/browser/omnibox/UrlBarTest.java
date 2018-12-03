@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -221,6 +222,7 @@ public class UrlBarTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
+    @DisabledTest
     public void testRefocusing() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         UrlBar urlBar = getUrlBar();
