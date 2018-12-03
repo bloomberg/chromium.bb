@@ -310,10 +310,6 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       WriteAttribute(false, state_value, &line);
   }
 
-  int id_value;
-  node.GetInteger("id", &id_value);
-  WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
-
   for (const char* attribute_name : ATK_OBJECT_ATTRIBUTES) {
     std::string attribute_value;
     if (node.GetString(attribute_name, &attribute_value)) {
