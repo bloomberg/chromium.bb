@@ -88,23 +88,22 @@ void SessionSyncTestHelper::VerifySyncedSession(
   }
 }
 
-void SessionSyncTestHelper::BuildTabSpecifics(
+sync_pb::SessionSpecifics SessionSyncTestHelper::BuildTabSpecifics(
     const std::string& tag,
     SessionID window_id,
-    SessionID tab_id,
-    sync_pb::SessionSpecifics* tab_base) {
-  BuildTabSpecifics(tag, window_id, tab_id, ++max_tab_node_id_, tab_base);
+    SessionID tab_id) {
+  return BuildTabSpecifics(tag, window_id, tab_id, ++max_tab_node_id_);
 }
 
-void SessionSyncTestHelper::BuildTabSpecifics(
+sync_pb::SessionSpecifics SessionSyncTestHelper::BuildTabSpecifics(
     const std::string& tag,
     SessionID window_id,
     SessionID tab_id,
-    int tab_node_id,
-    sync_pb::SessionSpecifics* tab_base) {
-  tab_base->set_session_tag(tag);
-  tab_base->set_tab_node_id(tab_node_id);
-  sync_pb::SessionTab* tab = tab_base->mutable_tab();
+    int tab_node_id) {
+  sync_pb::SessionSpecifics specifics;
+  specifics.set_session_tag(tag);
+  specifics.set_tab_node_id(tab_node_id);
+  sync_pb::SessionTab* tab = specifics.mutable_tab();
   tab->set_tab_id(tab_id.id());
   tab->set_tab_visual_index(1);
   tab->set_current_navigation_index(0);
@@ -115,6 +114,7 @@ void SessionSyncTestHelper::BuildTabSpecifics(
   navigation->set_referrer(kReferrer);
   navigation->set_title(kTitle);
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
+  return specifics;
 }
 
 void SessionSyncTestHelper::Reset() {
@@ -125,19 +125,19 @@ sync_pb::SessionSpecifics SessionSyncTestHelper::BuildForeignSession(
     const std::string& tag,
     const std::vector<SessionID>& tab_list,
     std::vector<sync_pb::SessionSpecifics>* tabs) {
-  sync_pb::SessionSpecifics meta;
-  BuildSessionSpecifics(tag, &meta);
-  AddWindowSpecifics(SessionID::FromSerializedValue(1), tab_list, &meta);
-  std::vector<sync_pb::SessionSpecifics> tabs1;
-  tabs1.resize(tab_list.size());
-  for (size_t i = 0; i < tab_list.size(); ++i) {
-    BuildTabSpecifics(tag, SessionID::FromSerializedValue(1), tab_list[i],
-                      &tabs1[i]);
+  const SessionID window_id = SessionID::FromSerializedValue(1);
+  sync_pb::SessionSpecifics header;
+  BuildSessionSpecifics(tag, &header);
+  AddWindowSpecifics(window_id, tab_list, &header);
+
+  if (tabs) {
+    tabs->clear();
+    for (SessionID tab_id : tab_list) {
+      tabs->push_back(BuildTabSpecifics(tag, window_id, tab_id));
+    }
   }
 
-  if (tabs)
-    tabs->swap(tabs1);
-  return meta;
+  return header;
 }
 
 }  // namespace sync_sessions
