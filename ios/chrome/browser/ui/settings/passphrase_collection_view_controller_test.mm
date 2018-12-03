@@ -52,7 +52,7 @@ PassphraseCollectionViewControllerTest::CreateNiceProfileSyncServiceMock(
       CreateProfileSyncServiceParamsForTest(
           nullptr, ios::ChromeBrowserState::FromBrowserState(context));
   return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
-      &init_params);
+      std::move(init_params));
 }
 
 PassphraseCollectionViewControllerTest::PassphraseCollectionViewControllerTest()

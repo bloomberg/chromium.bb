@@ -75,7 +75,8 @@ class CWVSyncControllerTest : public PlatformTest {
     init_params.signin_scoped_device_id_callback = base::BindRepeating(
         &signin::GetSigninScopedDeviceId, browser_state_.GetPrefs());
     profile_sync_service_ =
-        std::make_unique<browser_sync::ProfileSyncServiceMock>(&init_params);
+        std::make_unique<browser_sync::ProfileSyncServiceMock>(
+            std::move(init_params));
 
     account_tracker_service_.Initialize(browser_state_.GetPrefs(),
                                         base::FilePath());

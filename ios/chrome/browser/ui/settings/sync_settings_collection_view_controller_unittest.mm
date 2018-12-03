@@ -126,7 +126,7 @@ class SyncSettingsCollectionViewControllerTest
         CreateProfileSyncServiceParamsForTest(
             nullptr, ios::ChromeBrowserState::FromBrowserState(context));
     return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
-        &init_params);
+        std::move(init_params));
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
