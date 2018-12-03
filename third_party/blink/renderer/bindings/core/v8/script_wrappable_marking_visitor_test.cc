@@ -233,9 +233,7 @@ class HandleContainer
   HandleContainer() = default;
   virtual ~HandleContainer() = default;
 
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(handle_.Cast<v8::Value>());
-  }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(handle_); }
 
   void SetValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
     handle_.Set(isolate, string);

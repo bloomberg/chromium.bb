@@ -154,8 +154,8 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
 }
 
 void CSSPaintDefinition::Trace(Visitor* visitor) {
-  visitor->Trace(constructor_.Cast<v8::Value>());
-  visitor->Trace(paint_.Cast<v8::Value>());
+  visitor->Trace(constructor_);
+  visitor->Trace(paint_);
   visitor->Trace(instance_);
   visitor->Trace(context_settings_);
   visitor->Trace(script_state_);

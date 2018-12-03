@@ -328,9 +328,9 @@ void CSSLayoutDefinition::Instance::Trace(blink::Visitor* visitor) {
 }
 
 void CSSLayoutDefinition::Trace(Visitor* visitor) {
-  visitor->Trace(constructor_.Cast<v8::Value>());
-  visitor->Trace(intrinsic_sizes_.Cast<v8::Value>());
-  visitor->Trace(layout_.Cast<v8::Value>());
+  visitor->Trace(constructor_);
+  visitor->Trace(intrinsic_sizes_);
+  visitor->Trace(layout_);
   visitor->Trace(script_state_);
 }
 
