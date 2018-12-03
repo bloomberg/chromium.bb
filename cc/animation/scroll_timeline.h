@@ -53,6 +53,17 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
 
   void PromoteScrollTimelinePendingToActive();
 
+  base::Optional<ElementId> GetActiveIdForTest() const { return active_id_; }
+  base::Optional<ElementId> GetPendingIdForTest() const { return pending_id_; }
+  ScrollDirection GetDirectionForTest() const { return direction_; }
+  base::Optional<double> GetStartScrollOffsetForTest() const {
+    return start_scroll_offset_;
+  }
+  base::Optional<double> GetEndScrollOffsetForTest() const {
+    return end_scroll_offset_;
+  }
+  double GetTimeRangeForTest() const { return time_range_; }
+
  private:
   // The scroller which this ScrollTimeline is based on. The same underlying
   // scroll source may have different ids in the pending and active tree (see

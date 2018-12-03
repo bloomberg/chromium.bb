@@ -1720,6 +1720,7 @@ jumbo_source_set("unit_tests") {
     "animation/list_interpolation_functions_test.cc",
     "animation/property_handle_test.cc",
     "animation/scroll_timeline_test.cc",
+    "animation/scroll_timeline_util_test.cc",
     "animation/timing_calculations_test.cc",
     "animation/timing_input_test.cc",
     "clipboard/data_object_test.cc",

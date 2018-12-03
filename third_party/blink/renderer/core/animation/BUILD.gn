@@ -182,6 +182,8 @@ blink_core_sources("animation") {
     "sampled_effect.h",
     "scroll_timeline.cc",
     "scroll_timeline.h",
+    "scroll_timeline_util.cc",
+    "scroll_timeline_util.h",
     "shadow_interpolation_functions.cc",
     "shadow_interpolation_functions.h",
     "side_index.h",
