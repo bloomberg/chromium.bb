@@ -992,6 +992,7 @@ if (!is_component_build) {
       "cronet_impl_common_proguard.cfg",
       "test/proguard.cfg",
       "//base/android/proguard/chromium_apk.flags",
+      "//testing/android/proguard_for_test.flags",
     ]
   }
 
