@@ -23,15 +23,16 @@
 
 namespace {
 
-infobars::InfoBarDelegate::NavigationDetails
-NavigationDetailsFromLoadCommittedDetails(
-    const web::LoadCommittedDetails& load_details) {
+infobars::InfoBarDelegate::NavigationDetails CreateNavigationDetails(
+    web::NavigationItem* navigation_item,
+    bool is_in_page) {
   infobars::InfoBarDelegate::NavigationDetails navigation_details;
-  navigation_details.entry_id = load_details.item->GetUniqueID();
-  const ui::PageTransition transition = load_details.item->GetTransitionType();
+  navigation_details.entry_id = navigation_item->GetUniqueID();
+  const ui::PageTransition transition = navigation_item->GetTransitionType();
   navigation_details.is_navigation_to_different_page =
-      ui::PageTransitionIsMainFrame(transition) && !load_details.is_in_page;
-  // web::LoadCommittedDetails doesn't store this information, default to false.
+      ui::PageTransitionIsMainFrame(transition) && !is_in_page;
+  // Default to false, since iOS callbacks do not specify if navigation was a
+  // repace state navigation .
   navigation_details.did_replace_entry = false;
   navigation_details.is_reload =
       ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
@@ -74,7 +75,9 @@ void InfoBarManagerImpl::NavigationItemCommitted(
     web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   DCHECK_EQ(web_state_, web_state);
-  OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
+  OnNavigation(CreateNavigationDetails(
+      web_state->GetNavigationManager()->GetLastCommittedItem(),
+      load_details.is_in_page));
 }
 
 void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {
