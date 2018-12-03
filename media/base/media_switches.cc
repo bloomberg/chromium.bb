@@ -302,7 +302,7 @@ const base::Feature kNewEncodeCpuLoadEstimator{
 
 // Use the new Remote Playback / media flinging pipeline.
 const base::Feature kNewRemotePlaybackPipeline{
-    "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NewRemotePlaybackPipeline", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
 const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
