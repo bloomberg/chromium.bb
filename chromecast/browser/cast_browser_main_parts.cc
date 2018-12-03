@@ -43,7 +43,6 @@
 #include "chromecast/browser/tts/tts_platform_stub.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_buildflags.h"
-#include "chromecast/common/global_descriptors.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
@@ -411,16 +410,9 @@ void CastBrowserMainParts::ToolkitInitialized() {
 
 int CastBrowserMainParts::PreCreateThreads() {
 #if defined(OS_ANDROID)
-  // GPU process is started immediately after threads are created,
-  // requiring ChildProcessCrashObserver to be initialized beforehand.
-  base::FilePath crash_dumps_dir;
-  if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
-    LOG(ERROR) << "Could not find crash dump location.";
-  }
   crash_reporter::ChildExitObserver::Create();
   crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
-      std::make_unique<crash_reporter::ChildProcessCrashObserver>(
-          crash_dumps_dir, kAndroidMinidumpDescriptor));
+      std::make_unique<crash_reporter::ChildProcessCrashObserver>());
 #endif
 
   cast_browser_process_->SetPrefService(
@@ -588,7 +580,9 @@ void CastBrowserMainParts::StartPeriodicCrashReportUpload() {
 void CastBrowserMainParts::OnStartPeriodicCrashReportUpload() {
   base::FilePath crash_dir;
   CrashHandler::GetCrashDumpLocation(&crash_dir);
-  CrashHandler::UploadDumps(crash_dir, "", "");
+  base::FilePath reports_dir;
+  CrashHandler::GetCrashReportsLocation(&reports_dir);
+  CrashHandler::UploadDumps(crash_dir, reports_dir, "", "");
 }
 #endif  // defined(OS_ANDROID)
 

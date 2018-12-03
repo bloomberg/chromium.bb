@@ -14,6 +14,7 @@ generate_jni("minidump_uploader_jni_headers") {
 static_library("minidump_uploader") {
   sources = [
     "rewrite_minidumps_as_mimes.cc",
+    "rewrite_minidumps_as_mimes.h",
   ]
 
   deps = [

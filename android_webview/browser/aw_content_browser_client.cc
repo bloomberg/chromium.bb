@@ -30,7 +30,6 @@
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
@@ -49,7 +48,7 @@
 #include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/crash/content/browser/child_exit_observer_android.h"
+#include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
@@ -72,6 +71,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -368,7 +368,8 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
            process_type == switches::kUtilityProcess)
         << process_type;
     // Pass crash reporter enabled state to renderer processes.
-    if (crash_reporter::IsCrashReporterEnabled()) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kEnableCrashReporter)) {
       command_line->AppendSwitch(::switches::kEnableCrashReporter);
     }
   }
@@ -588,8 +589,11 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kAndroidWebViewLocalePakDescriptor, fd, region);
 
-  ::crash_reporter::ChildExitObserver::GetInstance()
-      ->BrowserChildProcessStarted(child_process_id, mappings);
+  int crash_signal_fd =
+      crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
+  if (crash_signal_fd >= 0) {
+    mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
+  }
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(
