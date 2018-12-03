@@ -24,6 +24,7 @@ import multiprocessing
 import os
 import platform
 import socket
+import subprocess
 import sys
 
 from third_party import httplib2
@@ -37,18 +38,55 @@ def IsGoogler(server):
     except httplib2.HttpLib2Error:
         return False
 
+def ParseGNArgs(gn_args):
+    """Parse gn_args as json and return config dictionary.
+
+    >>> ParseGNArgs("[]")
+    {}
+    >>> ParseGNArgs('[{\
+    "current": {"value": "true"}, \
+    "default": {"value": "false"}, \
+    "name": "is_component_build"}]')
+    {u'is_component_build': u'true'}
+    """
+    configs = json.loads(gn_args)
+    build_configs = {}
+    for config in configs:
+        build_configs[config["name"]] = config["current"]["value"]
+    return build_configs
+
+
 def GetMetadata(cmdline, ninjalog):
     """Get metadata for uploaded ninjalog."""
 
-    # TODO(tikuta): Support build_configs from args.gn.
-
     build_dir = os.path.dirname(ninjalog)
+
+    build_configs = {}
+
+    try:
+        args = ['gn', 'args', build_dir, '--list', '--overrides-only',
+                '--short', '--json']
+        if sys.platform == 'win32':
+            # gn in PATH is bat file in windows environment (except cygwin).
+            args = ['cmd', '/c'] + args
+
+        gn_args = subprocess.check_output(args)
+        build_configs = ParseGNArgs(gn_args)
+    except subprocess.CalledProcessError as e:
+        logging.error("Failed to call gn %s", e)
+        build_configs = {}
+
+    # Stringify config.
+    for k in build_configs:
+        build_configs[k] = str(build_configs[k])
+
     metadata = {
         'platform': platform.system(),
         'cwd': build_dir,
         'hostname': socket.gethostname(),
         'cpu_core': multiprocessing.cpu_count(),
         'cmdline': cmdline,
+        'build_configs': build_configs,
     }
 
     return metadata
