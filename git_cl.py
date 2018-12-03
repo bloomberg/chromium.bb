@@ -1110,7 +1110,9 @@ class Changelist(object):
 
   def _load_codereview_impl(self, codereview=None, **kwargs):
     if codereview:
-      assert codereview in _CODEREVIEW_IMPLEMENTATIONS
+      assert codereview in _CODEREVIEW_IMPLEMENTATIONS, (
+          'codereview {} not in {}'.format(codereview,
+                                           _CODEREVIEW_IMPLEMENTATIONS))
       cls = _CODEREVIEW_IMPLEMENTATIONS[codereview]
       self._codereview = codereview
       self._codereview_impl = cls(self, **kwargs)
