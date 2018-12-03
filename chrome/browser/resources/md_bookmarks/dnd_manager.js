@@ -376,7 +376,26 @@ cr.define('bookmarks', function() {
       }
 
       const state = bookmarks.Store.getInstance().data;
-      const draggedNodes = dragData.elements.map((item) => item.id);
+
+      let draggedNodes = [];
+
+      if (isBookmarkItem(dragElement)) {
+        const displayingItems =
+            assert(state.nodes[state.selectedFolder].children);
+
+        for (const itemId of displayingItems) {
+          for (const element of dragData.elements) {
+            if (element.id == itemId) {
+              draggedNodes.push(element.id);
+            }
+          }
+        }
+      } else {
+        draggedNodes = dragData.elements.map((item) => item.id);
+      }
+
+      assert(draggedNodes.length == dragData.elements.length);
+
       const dragNodeIndex = draggedNodes.indexOf(dragElement.itemId);
       assert(dragNodeIndex != -1);
 
