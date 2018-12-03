@@ -399,6 +399,10 @@ enum class ShowTabSwitcherSnapshotResult {
   StartupTasks* _startupTasks;
 }
 
+// Redefined from BrowserViewInformation.
+@property(nonatomic, weak, readwrite)
+    BrowserCoordinator* currentBrowserCoordinator;
+
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
@@ -1293,10 +1297,10 @@ enum class ShowTabSwitcherSnapshotResult {
   TabModel* tabModel;
   if (launchMode == ApplicationMode::INCOGNITO) {
     tabModel = otrTabModel;
-    self.currentBVC = self.otrBVC;
+    self.currentBrowserCoordinator = self.incognitoBrowserCoordinator;
   } else {
     tabModel = mainTabModel;
-    self.currentBVC = self.mainBVC;
+    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
   }
   if (_tabSwitcherIsActive) {
     DCHECK(!_dismissingTabSwitcher);
@@ -1498,13 +1502,16 @@ enum class ShowTabSwitcherSnapshotResult {
                                        transition:ui::PAGE_TRANSITION_TYPED
                                        completion:nil];
     } else {
-      [self dismissModalDialogsWithCompletion:^{
-        self.currentBVC = [command inIncognito] ? self.otrBVC : self.mainBVC;
-        DCHECK(self.currentBVC.browserState->IsOffTheRecord() ==
-               command.inIncognito);
-        [self.currentBVC webPageOrderedOpen:command];
-      }
-                               dismissOmnibox:YES];
+      [self
+          dismissModalDialogsWithCompletion:^{
+            self.currentBrowserCoordinator =
+                [command inIncognito] ? self.incognitoBrowserCoordinator
+                                      : self.mainBrowserCoordinator;
+            DCHECK(self.currentBVC.browserState->IsOffTheRecord() ==
+                   command.inIncognito);
+            [self.currentBVC webPageOrderedOpen:command];
+          }
+                             dismissOmnibox:YES];
     }
 
   } else {
@@ -1799,17 +1806,28 @@ enum class ShowTabSwitcherSnapshotResult {
   return [_browserViewWrangler currentBVC];
 }
 
-// Note that the current tab of |bvc| will normally be reloaded by this method.
-// If a new tab is about to be added, call expectNewForegroundTab on the BVC
-// first to avoid extra work and possible page load side-effects for the tab
-// being replaced.
-- (void)setCurrentBVC:(BrowserViewController*)bvc {
-  DCHECK(bvc != nil);
-  if (self.currentBVC == bvc)
+- (BrowserCoordinator*)mainBrowserCoordinator {
+  DCHECK(_browserViewWrangler);
+  return _browserViewWrangler.mainBrowserCoordinator;
+}
+
+- (BrowserCoordinator*)incognitoBrowserCoordinator {
+  DCHECK(_browserViewWrangler);
+  return _browserViewWrangler.incognitoBrowserCoordinator;
+}
+
+// Note that the current tab of |browserCoordinator|'s BVC will normally be
+// reloaded by this method. If a new tab is about to be added, call
+// expectNewForegroundTab on the BVC first to avoid extra work and possible page
+// load side-effects for the tab being replaced.
+- (void)setCurrentBrowserCoordinator:(BrowserCoordinator*)browserCoordinator {
+  DCHECK(browserCoordinator);
+  if (self.currentBrowserCoordinator == browserCoordinator)
     return;
 
   DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setCurrentBVC:bvc storageSwitcher:self];
+  [_browserViewWrangler setCurrentBrowserCoordinator:browserCoordinator
+                                     storageSwitcher:self];
 
   if (!_dismissingTabSwitcher)
     [self displayCurrentBVCAndFocusOmnibox:NO];
@@ -1856,7 +1874,7 @@ enum class ShowTabSwitcherSnapshotResult {
   if ([self.currentTabModel count] == 0U) {
     [self showTabSwitcher];
   } else {
-    self.currentBVC = self.mainBVC;
+    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
   }
 }
 
@@ -1877,10 +1895,12 @@ enum class ShowTabSwitcherSnapshotResult {
 #pragma mark - Mode Switching
 
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
-  BrowserViewController* bvc = command.inIncognito ? self.otrBVC : self.mainBVC;
-  DCHECK(bvc);
-  [bvc expectNewForegroundTab];
-  self.currentBVC = bvc;
+  BrowserCoordinator* browserCoordinator =
+      command.inIncognito ? self.incognitoBrowserCoordinator
+                          : self.mainBrowserCoordinator;
+  DCHECK(browserCoordinator);
+  [browserCoordinator.viewController expectNewForegroundTab];
+  self.currentBrowserCoordinator = browserCoordinator;
   [self openURLInNewTab:command];
 }
 
@@ -2103,9 +2123,10 @@ enum class ShowTabSwitcherSnapshotResult {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
 
   _dismissingTabSwitcher = YES;
-  BrowserViewController* targetBVC =
-      (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
-  self.currentBVC = targetBVC;
+  BrowserCoordinator* targetBrowserCoordinator =
+      (tabModel == self.mainTabModel) ? self.mainBrowserCoordinator
+                                      : self.incognitoBrowserCoordinator;
+  self.currentBrowserCoordinator = targetBrowserCoordinator;
 
   // The call to set currentBVC above does not actually display the BVC, because
   // _dismissingTabSwitcher is YES.  So: Force the BVC transition to start.
@@ -2120,10 +2141,10 @@ enum class ShowTabSwitcherSnapshotResult {
 
   if (_modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
-    self.currentBVC = self.mainBVC;
+    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
   } else if (_modeToDisplayOnTabSwitcherDismissal ==
              TabSwitcherDismissalMode::INCOGNITO) {
-    self.currentBVC = self.otrBVC;
+    self.currentBrowserCoordinator = self.incognitoBrowserCoordinator;
   }
 
   _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
@@ -2315,8 +2336,9 @@ enum class ShowTabSwitcherSnapshotResult {
                       withURL:(const GURL&)url
                    transition:(ui::PageTransition)transition
                    completion:(ProceduralBlock)completion {
-  BrowserViewController* targetBVC =
-      targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
+  BrowserCoordinator* targetBrowserCoordinator =
+      targetMode == ApplicationMode::NORMAL ? self.mainBrowserCoordinator
+                                            : self.incognitoBrowserCoordinator;
   NSUInteger tabIndex = NSNotFound;
 
   ProceduralBlock startupCompletion =
@@ -2349,26 +2371,29 @@ enum class ShowTabSwitcherSnapshotResult {
           targetMode == ApplicationMode::NORMAL
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
-      [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
-      tab = [targetBVC addSelectedTabWithURL:url
-                                     atIndex:tabIndex
-                                  transition:transition];
+      [targetBrowserCoordinator.viewController
+          appendTabAddedCompletion:tabOpenedCompletion];
+      tab = [targetBrowserCoordinator.viewController
+          addSelectedTabWithURL:url
+                        atIndex:tabIndex
+                     transition:transition];
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
       self.NTPActionAfterTabSwitcherDismissal =
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
-      tab = [_tabSwitcher dismissWithNewTabAnimationToModel:targetBVC.tabModel
-                                                    withURL:url
-                                                    atIndex:tabIndex
-                                                 transition:transition];
+      tab = [_tabSwitcher
+          dismissWithNewTabAnimationToModel:targetBrowserCoordinator.tabModel
+                                    withURL:url
+                                    atIndex:tabIndex
+                                 transition:transition];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {
-      [targetBVC expectNewForegroundTab];
+      [targetBrowserCoordinator.viewController expectNewForegroundTab];
     }
-    self.currentBVC = targetBVC;
+    self.currentBrowserCoordinator = targetBrowserCoordinator;
     tab = [self openOrReuseTabInMode:targetMode
                              withURL:url
                           transition:transition

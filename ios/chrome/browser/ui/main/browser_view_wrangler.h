@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 
 @protocol ApplicationCommands;
+@class BrowserCoordinator;
 @class DeviceSharingManager;
 @protocol TabModelObserver;
 
@@ -42,16 +43,14 @@ class ChromeBrowserState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Set the current BVC to be |bvc|, and use |storageSwitcher| to handle the
-// storage switch. |bvc| should be one of the view controller instances already
-// owned by the receiver (either |mainBVC| or |otrBVBC|), and this method does
-// not retain or take ownership of |bvc|.
-// Note that the BrowserViewInformation protocol defines
-// |currentBVC| as a readwrite property, so users of this class can directly
-// call -setCurrentBVC: and bypass the logic in this method; that should only be
-// done on BVC instances who do not yet have a browser state.
-- (void)setCurrentBVC:(BrowserViewController*)bvc
-      storageSwitcher:(id<BrowserStateStorageSwitching>)storageSwitcher;
+// Set the current BrowserCoordinator to be |browserCoordinator|, and use
+// |storageSwitcher| to handle the storage switch. |browserCoordinator| should
+// be one of the BrowserCoordinator instances already owned by the receiver
+// (either |mainBrowserCoordinator| or |incognitoBrowserCoordinator|), and this
+// method does not retain or take ownership of |browserCoordinator|.
+- (void)setCurrentBrowserCoordinator:(BrowserCoordinator*)browserCoordinator
+                     storageSwitcher:
+                         (id<BrowserStateStorageSwitching>)storageSwitcher;
 
 // Update the device sharing manager. This should be done after updates to the
 // tab model. This class creates and manages the state of the sharing manager.
