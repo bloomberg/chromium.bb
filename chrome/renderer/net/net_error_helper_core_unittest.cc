@@ -2696,23 +2696,23 @@ const std::string GetExpectedAvailableContentAsJson() {
   std::string want_json = R"([
     {
       "ID": "ID",
-      "attribution_base64": "YXR0cmlidXRpb24=",
+      "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8Abg==",
       "content_type": 0,
       "date_modified": "date_modified",
       "name_space": "name_space",
-      "snippet_base64": "c25pcHBldA==",
+      "snippet_base64": "AHMAbgBpAHAAcABlAHQ=",
       "thumbnail_data_uri": "data:image/png;base64,abc",
-      "title_base64": "dGl0bGU="
+      "title_base64": "AHQAaQB0AGwAZQ=="
     },
     {
       "ID": "ID2",
-      "attribution_base64": "YXR0cmlidXRpb24y",
+      "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8AbgAy",
       "content_type": 3,
       "date_modified": "date_modified2",
       "name_space": "name_space2",
-      "snippet_base64": "c25pcHBldDI=",
+      "snippet_base64": "AHMAbgBpAHAAcABlAHQAMg==",
       "thumbnail_data_uri": "data:image/png;base64,abc",
-      "title_base64": "dGl0bGUy"
+      "title_base64": "AHQAaQB0AGwAZQAy"
     }
   ])";
   base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
