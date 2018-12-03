@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
@@ -88,8 +89,11 @@ public final class DownloadNotificationFactory {
                     contentText =
                             DownloadUtils.getPendingStatusString(downloadUpdate.getPendingState());
                 } else {
-                    contentText = DownloadUtils.getProgressTextForNotification(
-                            downloadUpdate.getProgress());
+                    // Incognito mode should hide download progress details like file size.
+                    OfflineItem.Progress progress = downloadUpdate.getIsOffTheRecord()
+                            ? OfflineItem.Progress.createIndeterminateProgress()
+                            : downloadUpdate.getProgress();
+                    contentText = DownloadUtils.getProgressTextForNotification(progress);
                 }
 
                 iconId = downloadUpdate.getIsDownloadPending()
