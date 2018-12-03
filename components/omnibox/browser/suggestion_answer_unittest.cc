@@ -272,6 +272,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_EQ(0U, urls.size());
 
   {
+    // Test with the image URL supplied by the "i" (image) param.
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kExperimentalUi);
     json =
@@ -287,6 +288,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
     urls.clear();
   }
 
+  // Test with the image URL supplied by the "il" (image line) param.
   json =
       "{ \"l\" : ["
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
@@ -298,6 +300,9 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
   urls.clear();
 
+  // Test with image URLs supplied by both the "i" and "il" params. In this
+  // case, prefer the URL provided by the "i" param because the new answer code
+  // uses this.
   json =
       "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
       "  \"l\" : ["
@@ -308,9 +313,11 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_TRUE(ParseAnswer(json, &answer));
   answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(GURL("https://gstatic.com/bar.png"), urls[0]);
+  EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
   urls.clear();
 
+  // Test with the image URL supplied by both "il" params. In this case, prefer
+  // the URL in the second line as the first is currently not used.
   json =
       "{ \"l\" : ["
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }],"
@@ -320,6 +327,5 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_TRUE(ParseAnswer(json, &answer));
   answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
-  // Note: first_line_.image_url() is not used in practice (so it's ignored).
   EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[0]);
 }

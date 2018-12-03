@@ -103,7 +103,7 @@ const base::Feature kOmniboxRichEntitySuggestions{
 // Feature used to enable enhanced presentation showing larger images, currently
 // only used on desktop platforms.
 const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
