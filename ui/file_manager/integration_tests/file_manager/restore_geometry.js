@@ -9,7 +9,7 @@
  */
 testcase.restoreGeometry = async function() {
   // Set up Files app.
-  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Resize the window to minimal dimensions.
   await remoteCall.callRemoteTestUtil('resizeWindow', appId, [640, 480]);
@@ -24,7 +24,7 @@ testcase.restoreGeometry = async function() {
   await remoteCall.waitForWindowGeometry(appId, 650, 490);
 
   // Open another window, where the current view is restored.
-  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+  appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check the next window's size.
   await remoteCall.waitForWindowGeometry(appId, 650, 490);
@@ -37,7 +37,7 @@ testcase.restoreGeometryMaximized = async function() {
   var caller = getCaller();
 
   // Set up Files app.
-  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Maximize the window
   await remoteCall.callRemoteTestUtil('maximizeWindow', appId, []);
@@ -54,7 +54,7 @@ testcase.restoreGeometryMaximized = async function() {
   await remoteCall.closeWindowAndWait(appId);
 
   // Open a Files app window again.
-  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+  appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check that the newly opened window is maximized initially.
   await repeatUntil(async function() {

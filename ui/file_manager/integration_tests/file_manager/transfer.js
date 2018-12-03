@@ -141,8 +141,8 @@ async function transferBetweenVolumes(transferInfo) {
       BASIC_DRIVE_ENTRY_SET;
 
   // Open files app.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, localFiles, driveFiles);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, localFiles, driveFiles);
 
   // Expand Drive root if either src or dst is within Drive.
   if (transferInfo.source.isTeamDrive || transferInfo.destination.isTeamDrive) {

@@ -13,7 +13,7 @@ testcase.installLinuxPackageDialog = async function() {
   const okButton = dialog + ' .cr-dialog-ok:not([hidden])';
 
 
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add entries to crostini volume, but do not mount.
   await addEntries(['crostini'], [ENTRIES.debPackage]);

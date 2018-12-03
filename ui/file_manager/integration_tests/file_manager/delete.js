@@ -7,7 +7,7 @@
 testcase.deleteMenuItemNoEntrySelected = async function() {
   const contextMenu = '#file-context-menu:not([hidden])';
 
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Right click the list without selecting an entry.
   chrome.test.assertTrue(
@@ -42,7 +42,8 @@ testcase.deleteEntryWithToolbar = async function() {
     ENTRIES.beautiful,
   ]);
 
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Confirm entries in the directory before the deletion.
   await remoteCall.waitForFiles(

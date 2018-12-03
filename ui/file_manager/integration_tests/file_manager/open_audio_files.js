@@ -90,7 +90,7 @@ async function audioOpenClose(path) {
   const track = [ENTRIES.beautiful];
 
   // Open Files.App on |path|, add an audio file to Downloads and Drive.
-  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+  const appId = await setupAndWaitUntilReady(path, track, track);
 
   // Open an audio file from |path|.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -117,8 +117,7 @@ async function audioOpenTrackDownloads() {
   const track = [ENTRIES.beautiful];
 
   // Open Files.App on Downloads, add an audio file to Downloads.
-  const {appId} =
-      await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null, track, []);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, track, []);
 
   // Open an audio file from Downloads.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -148,8 +147,7 @@ async function audioOpenMultipleTracksDrive() {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   // Open Files.App on Drive, add the audio files to Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, RootPath.DRIVE, null, [], tracks);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], tracks);
 
   // Open an audio file from Drive.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -205,8 +203,7 @@ async function audioAutoAdvance(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   // Open Files.App on |path|, add audio files to Downloads and Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+  const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -239,7 +236,7 @@ async function audioRepeatAllModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
   // Open Files.App on |path|, add an audio file to Downloads and Drive.
-  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+  const appId = await setupAndWaitUntilReady(path, track, track);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -280,7 +277,7 @@ async function audioNoRepeatModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
   // Open Files.App on |path|, add an audio file to Downloads and Drive.
-  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+  const appId = await setupAndWaitUntilReady(path, track, track);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -314,7 +311,7 @@ async function audioRepeatOneModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
   // Open Files.App on |path|, add an audio file to Downloads and Drive.
-  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+  const appId = await setupAndWaitUntilReady(path, track, track);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -362,8 +359,7 @@ async function audioRepeatAllModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   // Open Files.App on |path|, add audio files to Downloads and Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+  const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -410,8 +406,7 @@ async function audioNoRepeatModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   // Open Files.App on |path|, add audio files to Downloads and Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+  const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -445,8 +440,7 @@ async function audioRepeatOneModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
   // Open Files.App on |path|, add audio files to Downloads and Drive.
-  const {appId} =
-      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+  const appId = await setupAndWaitUntilReady(path, tracks, tracks);
 
   // Open an audio file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

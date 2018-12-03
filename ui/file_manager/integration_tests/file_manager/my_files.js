@@ -18,8 +18,8 @@ testcase.showMyFiles = async function() {
   ];
 
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Get the directory tree elements.
   const dirTreeQuery = ['#directory-tree [dir-type]'];
@@ -56,8 +56,8 @@ testcase.showMyFiles = async function() {
  */
 testcase.hideSearchButton = async function() {
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Select Downloads folder.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -99,8 +99,8 @@ testcase.directoryTreeRefresh = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Mount a USB volume.
   await sendTestMessage({name: 'mountFakeUsb'});
@@ -119,8 +119,8 @@ testcase.directoryTreeRefresh = async function() {
  */
 testcase.myFilesDisplaysAndOpensEntries = async function() {
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Select My Files folder.
   const myFilesQuery = '#directory-tree [entry-label="My files"]';
@@ -175,8 +175,8 @@ testcase.myFilesUpdatesChildren = async function() {
   await addEntries(['local'], [hiddenFolder]);
 
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.beautiful], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
   // Select Downloads folder.
   const isDriveQuery = false;
@@ -225,8 +225,8 @@ testcase.myFilesFolderRename = async function() {
   const textInput = '#file-list .table-row[renaming] input.rename';
 
   // Open Files app on local Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Select "My files" folder via directory tree.
   const myFilesQuery = '#directory-tree [entry-label="My files"]';

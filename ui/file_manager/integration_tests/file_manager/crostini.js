@@ -7,8 +7,8 @@ testcase.mountCrostini = async function() {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinxuFiles = '#directory-tree [volume-type-icon="crostini"]';
 
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.hello], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
   // Add entries to crostini volume, but do not mount.
   await addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET);
@@ -37,8 +37,8 @@ testcase.sharePathWithCrostini = async function() {
   const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
 
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Ensure fake Linux files root is shown.
   await remoteCall.waitForElement(appId, fakeLinuxFiles);

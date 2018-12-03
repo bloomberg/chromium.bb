@@ -9,7 +9,7 @@
  * add destination directory.
  */
 async function setupForDirectoryTreeContextMenuTest() {
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add destination directory.
   await new addEntries(['local'], [new TestEntryInfo({
@@ -360,7 +360,7 @@ testcase.dirRenameWithContextMenu = function() {
  * folder. crbug.com/885328.
  */
 testcase.dirRenameUpdateChildrenBreadcrumbs = async function() {
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add child-folder inside /photos/
   await new addEntries(['local'], [new TestEntryInfo({

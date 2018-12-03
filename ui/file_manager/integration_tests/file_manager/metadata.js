@@ -115,8 +115,8 @@ const testEntries = [
  */
 testcase.metadataDrive = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, testEntries, testEntries);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, testEntries, testEntries);
 
   // Navigate 2 folders deep, because navigating in directory tree might
   // trigger further metadata fetches.
@@ -154,8 +154,8 @@ testcase.metadataDrive = async function() {
  */
 testcase.metadataDownloads = async function() {
   // Open Files app on Downloads.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, testEntries, testEntries);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, testEntries, testEntries);
 
   // Navigate 2 folders deep, because navigating in directory tree might
   // triggers further metadata fetches.
@@ -215,8 +215,7 @@ testcase.metadataLargeDrive = async function() {
   }
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, entries, entries);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, entries, entries);
 
   // Navigate only 1 folder deep,which is slightly different from
   // metadatatDrive test.
@@ -283,9 +282,8 @@ testcase.metadataTeamDrives = async function() {
   const teamDriveTreeItem = '#directory-tree [entry-label="Team Drives"]';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, downloadsEntries,
-      entries.concat(driveEntries));
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, downloadsEntries, entries.concat(driveEntries));
 
   // Navigate to Team Drives root.
   await remoteCall.navigateWithDirectoryTree(

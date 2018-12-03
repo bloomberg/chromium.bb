@@ -20,8 +20,9 @@ testcase.suggestAppDialog = async function() {
     }
   };
 
-  // Set up File Manager.
-  const {appId} = await setupAndWaitUntilReady(appState, RootPath.DRIVE);
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET, appState);
 
   // Select a file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

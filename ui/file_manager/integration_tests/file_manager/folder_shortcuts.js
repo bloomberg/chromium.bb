@@ -215,8 +215,8 @@ async function clickShortcut(appId, directory) {
  */
 testcase.traverseFolderShortcuts = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], FOLDER_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], FOLDER_ENTRY_SET);
 
   // Expand the directory tree.
   await expandDirectoryTree(appId);
@@ -267,7 +267,7 @@ testcase.traverseFolderShortcuts = async function() {
  */
 testcase.addRemoveFolderShortcuts = async function() {
   async function openFilesAppOnDrive() {
-    const appId = await openNewWindow(null, RootPath.DRIVE);
+    const appId = await openNewWindow(RootPath.DRIVE);
     await remoteCall.waitForElement(appId, '#file-list');
     await remoteCall.waitForFiles(appId, DIRECTORY.Drive.contents);
     return appId;

@@ -14,10 +14,10 @@ async function fileDisplay(path, defaultEntries) {
   const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
 
   // Open Files app on the given |path| with default file entries.
-  const {appId, fileList} = await setupAndWaitUntilReady(null, path, null);
+  const appId = await setupAndWaitUntilReady(path);
 
   // Verify the default file list is present in |result|.
-  chrome.test.assertEq(defaultList, fileList);
+  await remoteCall.waitForFiles(appId, defaultList);
 
   // Add new file entries.
   await addEntries(['local', 'drive'], [ENTRIES.newlyAdded]);
@@ -50,8 +50,7 @@ testcase.fileDisplayDriveOffline = async function() {
       [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos, ENTRIES.testDocument];
 
   // Open Files app on Drive with the given test files.
-  const {appId} =
-      await setupAndWaitUntilReady(null, RootPath.DRIVE, null, [], driveFiles);
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], driveFiles);
 
   // Retrieve all file list entries that could be rendered 'offline'.
   const offlineEntry = '#file-list .table-row.file.dim-offline';
@@ -93,8 +92,8 @@ testcase.fileDisplayDriveOffline = async function() {
  */
 testcase.fileDisplayDriveOnline = async function() {
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], BASIC_DRIVE_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
 
   // Retrieve all file list row entries.
   const fileEntry = '#file-list .table-row';
@@ -114,8 +113,8 @@ testcase.fileDisplayDriveOnline = async function() {
  */
 testcase.fileDisplayComputers = async function() {
   // Open Files app on Drive with Computers registered.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], COMPUTERS_ENTRY_SET);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPUTERS_ENTRY_SET);
 
   // Navigate to Comuter Grand Root.
   await remoteCall.navigateWithDirectoryTree(
@@ -138,7 +137,7 @@ testcase.fileDisplayMtp = async function() {
   const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
   // Open Files app on local downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount MTP volume in the Downloads window.
   await sendTestMessage({name: 'mountFakeMtp'});
@@ -162,7 +161,7 @@ testcase.fileDisplayUsb = async function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on local downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount USB volume in the Downloads window.
   await sendTestMessage({name: 'mountFakeUsb'});
@@ -189,7 +188,7 @@ testcase.fileDisplayUsb = async function() {
  */
 async function searchDownloads(searchTerm, expectedResults) {
   // Open Files app on local downloads.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Focus the search box.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -229,7 +228,7 @@ testcase.fileSearchCaseInsensitive = function() {
 testcase.fileSearchNotFound = async function() {
   var searchTerm = 'blahblah';
 
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Focus the search box.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -401,8 +400,8 @@ testcase.fileDisplayWithoutDrive = async function() {
       'getVolumesCount', null, (count) => count === 1, args);
 
   // Open the files app.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.newlyAdded], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.newlyAdded], []);
 
   // Wait for the loading indicator blink to finish.
   await remoteCall.waitForElement(
@@ -485,8 +484,8 @@ testcase.fileDisplayWithoutDriveThenDisable = async function() {
  */
 testcase.fileDisplayMountWithFakeItemSelected = async function() {
   // Open Files app on Drive with the given test files.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.newlyAdded], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.newlyAdded], []);
 
   // Ensure Downloads has loaded.
   await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
@@ -515,8 +514,8 @@ testcase.fileDisplayMountWithFakeItemSelected = async function() {
  */
 testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async function() {
   // Open Files app on Drive with the given test files.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [ENTRIES.newlyAdded],
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [ENTRIES.newlyAdded],
       [ENTRIES.testSharedDocument, ENTRIES.hello]);
 
   // Navigate to Shared with me.

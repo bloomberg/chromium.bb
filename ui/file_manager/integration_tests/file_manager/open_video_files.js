@@ -28,7 +28,7 @@ function waitForPlaying(filename) {
  * @param {string} path Directory path to be tested.
  */
 async function videoOpen(path) {
-  const {appId} = await setupAndWaitUntilReady(null, path, null);
+  const appId = await setupAndWaitUntilReady(path);
 
   // Open the video.
   chrome.test.assertTrue(
