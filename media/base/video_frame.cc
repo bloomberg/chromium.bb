@@ -78,9 +78,8 @@ static std::string StorageTypeToString(
   return "INVALID";
 }
 
-// Returns true if |frame| is accesible mapped in the VideoFrame memory space.
 // static
-static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
+bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
   return
 #if defined(OS_LINUX)
       // This is not strictly needed but makes explicit that, at VideoFrame

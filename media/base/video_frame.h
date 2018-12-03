@@ -344,6 +344,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static void HashFrameForTesting(base::MD5Context* context,
                                   const scoped_refptr<VideoFrame>& frame);
 
+  // Returns true if |frame| is accesible mapped in the VideoFrame memory space.
+  // static
+  static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type);
+
   // Returns true if |frame| is accessible and mapped in the VideoFrame memory
   // space. If false, clients should refrain from accessing data(),
   // visible_data() etc.
