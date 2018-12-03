@@ -67,11 +67,13 @@ class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
 
 class WindowAndroid::ScopedOnBeginFrame {
  public:
-  explicit ScopedOnBeginFrame(WindowAndroid::WindowBeginFrameSource* bfs);
+  explicit ScopedOnBeginFrame(WindowAndroid::WindowBeginFrameSource* bfs,
+                              bool allow_reentrancy);
   ~ScopedOnBeginFrame();
 
  private:
   WindowAndroid::WindowBeginFrameSource* const begin_frame_source_;
+  const bool reentrant_;
   std::vector<base::OnceClosure> vsync_complete_callbacks_;
 };
 
@@ -100,7 +102,7 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
       // BeginFrames.
       last_begin_frame_args_.deadline =
           base::TimeTicks::Now() + last_begin_frame_args_.interval;
-      ScopedOnBeginFrame scope(this);
+      ScopedOnBeginFrame scope(this, true /* allow_reentrancy */);
       obs->OnBeginFrame(last_begin_frame_args_);
     }
   }
@@ -118,7 +120,7 @@ void WindowAndroid::WindowBeginFrameSource::RemoveObserver(
 }
 
 void WindowAndroid::WindowBeginFrameSource::OnGpuNoLongerBusy() {
-  ScopedOnBeginFrame scope(this);
+  ScopedOnBeginFrame scope(this, false /* allow_reentrancy */);
   for (auto& obs : observers_)
     obs.OnBeginFrame(last_begin_frame_args_);
 }
@@ -151,14 +153,26 @@ void WindowAndroid::WindowBeginFrameSource::AddBeginFrameCompletionCallback(
 }
 
 WindowAndroid::ScopedOnBeginFrame::ScopedOnBeginFrame(
-    WindowAndroid::WindowBeginFrameSource* bfs)
-    : begin_frame_source_(bfs) {
+    WindowAndroid::WindowBeginFrameSource* bfs,
+    bool allow_reentrancy)
+    : begin_frame_source_(bfs),
+      reentrant_(allow_reentrancy &&
+                 begin_frame_source_->vsync_complete_callbacks_ptr_) {
+  if (reentrant_) {
+    DCHECK(begin_frame_source_->vsync_complete_callbacks_ptr_);
+    return;
+  }
   DCHECK(!begin_frame_source_->vsync_complete_callbacks_ptr_);
   begin_frame_source_->vsync_complete_callbacks_ptr_ =
       &vsync_complete_callbacks_;
 }
 
 WindowAndroid::ScopedOnBeginFrame::~ScopedOnBeginFrame() {
+  if (reentrant_) {
+    DCHECK_NE(&vsync_complete_callbacks_,
+              begin_frame_source_->vsync_complete_callbacks_ptr_);
+    return;
+  }
   DCHECK_EQ(&vsync_complete_callbacks_,
             begin_frame_source_->vsync_complete_callbacks_ptr_);
   begin_frame_source_->vsync_complete_callbacks_ptr_ = nullptr;
