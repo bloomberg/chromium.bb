@@ -14,15 +14,13 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * The Permission dialog that is app modal.
  */
 class PermissionAppModalDialogView {
-    private final ModalDialogView mDialogView;
+    private final PropertyModel mDialogModel;
 
     PermissionAppModalDialogView(
             ModalDialogView.Controller controller, PermissionDialogDelegate delegate) {
@@ -38,7 +36,7 @@ class PermissionAppModalDialogView {
         TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 messageTextView, delegate.getDrawableId(), 0, 0, 0);
 
-        PropertyModel model =
+        mDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, controller)
                         .with(ModalDialogProperties.CUSTOM_VIEW, customView)
@@ -48,15 +46,12 @@ class PermissionAppModalDialogView {
                                 delegate.getSecondaryButtonText())
                         .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
                         .build();
-
-        mDialogView = new ModalDialogView(context);
-        PropertyModelChangeProcessor.create(model, mDialogView, new ModalDialogViewBinder());
     }
 
     /**
-     * @return The {@link ModalDialogView} for the permission dialog.
+     * @return The dialog model for the permission dialog.
      */
-    ModalDialogView getDialogView() {
-        return mDialogView;
+    PropertyModel getDialogModel() {
+        return mDialogModel;
     }
 }

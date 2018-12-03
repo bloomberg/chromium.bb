@@ -37,14 +37,16 @@ public class ModalDialogViewBinder
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_DISABLED == propertyKey) {
             view.setButtonEnabled(ModalDialogView.ButtonType.NEGATIVE,
                     !model.get(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED));
-        } else if (ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE == propertyKey) {
-            view.setCancelOnTouchOutside(model.get(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE));
-        } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
-            view.setContentDescription(model.get(ModalDialogProperties.CONTENT_DESCRIPTION));
         } else if (ModalDialogProperties.TITLE_SCROLLABLE == propertyKey) {
             view.setTitleScrollable(model.get(ModalDialogProperties.TITLE_SCROLLABLE));
         } else if (ModalDialogProperties.CONTROLLER == propertyKey) {
-            view.setController(model.get(ModalDialogProperties.CONTROLLER));
+            view.setOnButtonClickedCallback((buttonType) -> {
+                model.get(ModalDialogProperties.CONTROLLER).onClick(model, buttonType);
+            });
+        } else if (ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE == propertyKey) {
+            // Intentionally left empty since this is a property for the dialog container.
+        } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
+            // Intentionally left empty since this is a property used for the dialog container.
         } else {
             assert false : "Unhandled property detected in ModalDialogViewBinder!";
         }

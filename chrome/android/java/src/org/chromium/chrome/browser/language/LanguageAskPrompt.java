@@ -26,9 +26,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.components.language.AndroidLanguageMetricsBridge;
@@ -257,7 +255,6 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
     private ListScrollListener mListScrollListener;
     private ModalDialogManager mModalDialogManager;
-    private ModalDialogView mDialog;
     private HashSet<String> mLanguagesUpdate;
     private HashSet<String> mInitialLanguages;
 
@@ -357,27 +354,23 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
                                 R.string.cancel)
                         .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                         .build();
-        mDialog = new ModalDialogView(activity);
-        PropertyModelChangeProcessor.create(model, mDialog, new ModalDialogViewBinder());
 
         mModalDialogManager = activity.getModalDialogManager();
-        mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.APP);
     }
 
     @Override
-    public void onClick(int buttonType) {
+    public void onClick(PropertyModel model, int buttonType) {
         if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
-            mModalDialogManager.dismissDialog(
-                    mDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         } else {
             saveLanguages();
-            mModalDialogManager.dismissDialog(
-                    mDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
         }
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, int dismissalCause) {
         if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
             recordPromptEvent(PROMPT_EVENT_SAVED);
         } else {

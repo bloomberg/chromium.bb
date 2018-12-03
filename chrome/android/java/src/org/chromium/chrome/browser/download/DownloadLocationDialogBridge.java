@@ -16,9 +16,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.base.WindowAndroid;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
  */
 public class DownloadLocationDialogBridge implements ModalDialogView.Controller {
     private long mNativeDownloadLocationDialogBridge;
-    private ModalDialogView mLocationDialog;
+    private PropertyModel mDialogModel;
     private DownloadLocationCustomView mCustomView;
     private ModalDialogManager mModalDialogManager;
     private long mTotalBytes;
@@ -53,7 +51,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         mNativeDownloadLocationDialogBridge = 0;
         if (mModalDialogManager != null) {
             mModalDialogManager.dismissDialog(
-                    mLocationDialog, DialogDismissalCause.DISMISSED_BY_NATIVE);
+                    mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
         }
     }
 
@@ -63,7 +61,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         // If the activity has gone away, just clean up the native pointer.
         if (activity == null) {
-            onDismiss(DialogDismissalCause.ACTIVITY_DESTROYED);
+            onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
@@ -78,22 +76,22 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     }
 
     @Override
-    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, int buttonType) {
         switch (buttonType) {
             case ModalDialogView.ButtonType.POSITIVE:
                 mModalDialogManager.dismissDialog(
-                        mLocationDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
             case ModalDialogView.ButtonType.NEGATIVE:
                 mModalDialogManager.dismissDialog(
-                        mLocationDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                        model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 break;
             default:
         }
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, int dismissalCause) {
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
                 handleResponses(mCustomView.getFileName(), mCustomView.getDirectoryOption(),
@@ -103,7 +101,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
                 cancel();
                 break;
         }
-        mLocationDialog = null;
+        mDialogModel = null;
         mCustomView = null;
     }
 
@@ -127,7 +125,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         }
 
         // Already showing the dialog.
-        if (mLocationDialog != null) return;
+        if (mDialogModel != null) return;
 
         // Actually show the dialog.
         mCustomView = (DownloadLocationCustomView) LayoutInflater.from(mContext).inflate(
@@ -135,7 +133,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         mCustomView.initialize(mDialogType, new File(mSuggestedPath));
 
         Resources resources = mContext.getResources();
-        PropertyModel model =
+        mDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, this)
                         .with(ModalDialogProperties.TITLE, getTitle(mTotalBytes, mDialogType))
@@ -146,10 +144,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
                                 R.string.cancel)
                         .build();
 
-        mLocationDialog = new ModalDialogView(mContext);
-        PropertyModelChangeProcessor.create(model, mLocationDialog, new ModalDialogViewBinder());
-
-        mModalDialogManager.showDialog(mLocationDialog, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
     private String getTitle(long totalBytes, @DownloadLocationDialogType int dialogType) {

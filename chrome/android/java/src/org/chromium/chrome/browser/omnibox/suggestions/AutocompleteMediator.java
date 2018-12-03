@@ -31,9 +31,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -123,7 +121,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private float mMaxMatchContentsWidth;
 
     private WindowAndroid mWindowAndroid;
-    private ModalDialogView mSuggestionDeleteDialog;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -688,22 +685,18 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
 
         ModalDialogView.Controller dialogController = new ModalDialogView.Controller() {
             @Override
-            public void onDismiss(int dismissalCause) {
-                mSuggestionDeleteDialog = null;
-            }
-
-            @Override
-            public void onClick(int buttonType) {
+            public void onClick(PropertyModel model, int buttonType) {
                 if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
                     RecordUserAction.record("MobileOmniboxDeleteRequested");
                     mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
-                    manager.dismissDialog(
-                            mSuggestionDeleteDialog, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                    manager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
-                    manager.dismissDialog(
-                            mSuggestionDeleteDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                    manager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 }
             }
+
+            @Override
+            public void onDismiss(PropertyModel model, int dismissalCause) {}
         };
 
         Resources resources = mContext.getResources();
@@ -719,13 +712,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                         .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                         .build();
 
-        mSuggestionDeleteDialog = new ModalDialogView(mContext);
-        PropertyModelChangeProcessor.create(
-                model, mSuggestionDeleteDialog, new ModalDialogViewBinder());
-
         // Prevent updates to the shown omnibox suggestions list while the dialog is open.
         stopAutocomplete(false);
-        manager.showDialog(mSuggestionDeleteDialog, ModalDialogManager.ModalDialogType.APP);
+        manager.showDialog(model, ModalDialogManager.ModalDialogType.APP);
     }
 
     /**
