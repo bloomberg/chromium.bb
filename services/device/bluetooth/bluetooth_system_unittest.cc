@@ -142,6 +142,9 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
                               object_path));
     adapter_object_paths_to_next_responses_[object_path];
 
+    GetProperties(object_path)->powered.ReplaceValue(false);
+    GetProperties(object_path)->discovering.ReplaceValue(false);
+
     for (auto& observer : observers_)
       observer.AdapterAdded(object_path);
   }
