@@ -1160,14 +1160,17 @@ class WizardControllerDeviceStateExplicitRequirementTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDeviceStateExplicitRequirementTest);
 };
 
-// Tets the control flow for Forced Re-Enrollment. First, a connection error
+// Test the control flow for Forced Re-Enrollment. First, a connection error
 // occurs, leading to a network error screen. On the network error screen, the
 // test verifies that the user may enter a guest session if FRE was not
 // explicitly required, and that the user may not enter a guest session if FRE
 // was explicitly required. Then, a retyr is performed and FRE indicates that
 // the device should be enrolled.
+//
+// TODO(https://crbug.com/911154) Flaky time outs on Linux Chromium OS ASan
+// LSan bot.
 IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
-                       ControlFlowForcedReEnrollment) {
+                       DISABLED_ControlFlowForcedReEnrollment) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
