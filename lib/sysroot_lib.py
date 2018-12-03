@@ -14,6 +14,7 @@ import os
 from chromite.cbuildbot import binhost
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -72,11 +73,18 @@ _wrapper_dir = '/usr/local/bin'
 
 _IMPLICIT_SYSROOT_DEPS = 'IMPLICIT_SYSROOT_DEPS'
 
-_CONFIGURATION_PATH = 'etc/make.conf.board_setup'
+_MAKE_CONF = 'etc/make.conf'
+_MAKE_CONF_BOARD_SETUP = 'etc/make.conf.board_setup'
+_MAKE_CONF_BOARD = 'etc/make.conf.board'
+_MAKE_CONF_USER = 'etc/make.conf.user'
+_MAKE_CONF_HOST_SETUP = 'etc/make.conf.host_setup'
+
+_CONFIGURATION_PATH = _MAKE_CONF_BOARD_SETUP
 
 _CACHE_PATH = 'var/cache/edb/chromeos'
 
 _CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
+_CHROMIUMOS_CONFIG = os.path.join(_CHROMIUMOS_OVERLAY, 'chromeos', 'config')
 _ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
 
 _CHROME_BINHOST_SUFFIX = '-LATEST_RELEASE_CHROME_BINHOST.conf'
@@ -136,14 +144,41 @@ def _DictToKeyValue(dictionary):
   return '\n'.join(output)
 
 
+def _GetMakeConfGenericPath():
+  """Get the path to the make.conf.generic-target file."""
+  return os.path.join(_CHROMIUMOS_CONFIG, 'make.conf.generic-target')
+
+
+def _GetChrootMakeConfUserPath():
+  """Get the path to the chroot's make.conf.user file."""
+  return '/%s' % _MAKE_CONF_USER
+
+
 class Sysroot(object):
   """Class that encapsulate the interaction with sysroots."""
 
   def __init__(self, path):
     self.path = path
-    self._config_file = os.path.join(path, _CONFIGURATION_PATH)
-    self._cache_file = os.path.join(path, _CACHE_PATH)
+    self._config_file = self._Path(_CONFIGURATION_PATH)
+    self._cache_file = self._Path(_CACHE_PATH)
     self._cache_file_lock = self._cache_file + '.lock'
+
+  def Exists(self):
+    """Check if the sysroot exists."""
+    return os.path.exists(self.path)
+
+  def _Path(self, *args):
+    """Helper to build out a path within the sysroot.
+
+    Pass args as if calling os.path.join().
+
+    Args:
+      args (str): path components to join.
+
+    Returns:
+      str
+    """
+    return os.path.join(self.path, *args)
 
   def GetStandardField(self, field):
     """Returns the value of a standard field.
@@ -212,7 +247,7 @@ class Sysroot(object):
     """
     if friendly_name:
       return os.path.join(_wrapper_dir, '%s-%s' % (command, friendly_name))
-    return os.path.join(self.path, 'build', 'bin', command)
+    return self._Path('build', 'bin', command)
 
   def CreateAllWrappers(self, friendly_name=None):
     """Creates all the wrappers.
@@ -258,11 +293,55 @@ class Sysroot(object):
     # Create a link to the debug symbols in the chroot so that gdb can detect
     # them.
     debug_symlink = os.path.join('/usr/lib/debug', self.path.lstrip('/'))
-    sysroot_debug = os.path.join(self.path, 'usr/lib/debug')
+    sysroot_debug = self._Path('usr/lib/debug')
     osutils.SafeMakedirs(os.path.dirname(debug_symlink), sudo=True)
-    osutils.SafeMakedirs(sysroot_debug, sudo=True)
+    osutils.SafeMakedirs(os.path.dirname(sysroot_debug), sudo=True)
 
     osutils.SafeSymlink(sysroot_debug, debug_symlink, sudo=True)
+
+  def InstallMakeConf(self):
+    """Make sure the make.conf file exists and is up to date."""
+    config_file = _GetMakeConfGenericPath()
+    osutils.SafeSymlink(config_file, self._Path(_MAKE_CONF), sudo=True)
+
+  def InstallMakeConfBoard(self, accepted_licenses=None, local_only=False):
+    """Make sure the make.conf.board file exists and is up to date.
+
+    Args:
+      accepted_licenses (str): Any additional accepted licenses.
+      local_only (bool): Whether prebuilts can be fetched from remote sources.
+    """
+    board_conf = self.GenerateBoardMakeConf(accepted_licenses=accepted_licenses)
+    make_conf_path = self._Path(_MAKE_CONF_BOARD)
+    osutils.WriteFile(make_conf_path, board_conf, sudo=True)
+
+    # Once make.conf.board has been generated, generate the binhost config.
+    # We need to do this in two steps as the binhost generation step needs
+    # portageq to be available.
+    binhost_conf = self.GenerateBinhostConf(local_only=local_only)
+    osutils.WriteFile(make_conf_path, '%s\n%s\n' % (board_conf, binhost_conf),
+                      sudo=True)
+
+  def InstallMakeConfBoardSetup(self, board):
+    """Make sure the sysroot has the make.conf.board_setup file.
+
+    Args:
+      board (str): The name of the board being setup in the sysroot.
+    """
+    osutils.WriteFile(self._Path(_MAKE_CONF_BOARD_SETUP),
+                      self.GenerateBoardSetupConfig(board), sudo=True)
+
+  def InstallMakeConfUser(self):
+    """Make sure the sysroot has the make.conf.user file.
+
+    This method assumes the chroot's make.conf.user file exists.
+    See chroot_util.CreateMakeConfUser() to create one if needed.
+    Only works inside the chroot.
+    """
+    make_user = _GetChrootMakeConfUserPath()
+    link_path = self._Path(_MAKE_CONF_USER)
+    if not os.path.exists(link_path):
+      osutils.SafeSymlink(make_user, link_path, sudo=True)
 
   def _GenerateConfig(self, toolchains, board_overlays, portdir_overlays,
                       header, **kwargs):
@@ -300,11 +379,11 @@ class Sysroot(object):
 
     return '\n'.join((header, _DictToKeyValue(config)))
 
-  def GenerateBoardConfig(self, board):
-    """Generates the configuration for a given board.
+  def GenerateBoardSetupConfig(self, board):
+    """Generates the setup configuration for a given board.
 
     Args:
-      board: board name to use to generate the configuration.
+      board (str): board name to use to generate the configuration.
     """
     toolchains = toolchain.GetToolchainsForBoard(board)
 
@@ -323,10 +402,9 @@ class Sysroot(object):
     Args:
       config: configuration to use.
     """
-    path = os.path.join(self.path, _CONFIGURATION_PATH)
-    osutils.WriteFile(path, config, makedirs=True, sudo=True)
+    osutils.WriteFile(self._config_file, config, makedirs=True, sudo=True)
 
-  def GenerateMakeConf(self, accepted_licenses=None):
+  def GenerateBoardMakeConf(self, accepted_licenses=None):
     """Generates the board specific make.conf.
 
     Args:
@@ -372,7 +450,10 @@ class Sysroot(object):
     """Returns the binhost configuration.
 
     Args:
-      local_only: If True, use binary packages from local boards only.
+      local_only (bool): If True, use binary packages from local boards only.
+
+    Returns:
+      str - The config contents.
     """
     board = self.GetStandardField(STANDARD_FIELD_BOARD_USE)
     if local_only:
@@ -429,7 +510,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     """Gets the latest chrome binhost for |board|.
 
     Args:
-      board: The board to use.
+      board (str): The board to use.
     """
     extra_useflags = os.environ.get('USE', '').split()
     compat_id = binhost.CalculateCompatId(board, extra_useflags)
@@ -461,7 +542,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     """Returns the postsubmit binhost to use.
 
     Args:
-      board: Board name.
+      board (str): Board name.
     """
     prefixes = []
     arch = self.GetStandardField(STANDARD_FIELD_ARCH)
@@ -493,103 +574,83 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
   def CreateSkeleton(self):
     """Creates a sysroot skeleton."""
     needed_dirs = [
-        os.path.join(self.path, 'etc', 'portage', 'hooks'),
-        os.path.join(self.path, 'etc'),
-        os.path.join(self.path, 'etc', 'portage', 'profile'),
-        os.path.join('/', 'usr', 'local', 'bin'),
+        self._Path('etc', 'portage', 'hooks'),
+        self._Path('etc', 'portage', 'profile'),
+        '/usr/local/bin',
     ]
     for d in needed_dirs:
       osutils.SafeMakedirs(d, sudo=True)
 
-    make_user = os.path.join('/', 'etc', 'make.conf.user')
-    link = os.path.join(self.path, 'etc', 'make.conf.user')
-    if not os.path.exists(make_user):
-      osutils.WriteFile(make_user, '', sudo=True)
-    osutils.SafeSymlink(make_user, link, sudo=True)
-
     # Create links for portage hooks.
     hook_glob = os.path.join(constants.CROSUTILS_DIR, 'hooks', '*')
     for filename in glob.glob(hook_glob):
-      linkpath = os.path.join(self.path, 'etc', 'portage', 'hooks',
-                              os.path.basename(filename))
+      linkpath = self._Path('etc', 'portage', 'hooks',
+                            os.path.basename(filename))
       osutils.SafeSymlink(filename, linkpath, sudo=True)
 
-  def _SelectDefaultMakeConf(self):
-    """Selects the best make.conf file possible.
-
-    The best make.conf possible is the ARCH-specific make.conf. If it does not
-    exist, we use the generic make.conf.
-    """
-    make_conf = os.path.join(
-        constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos',
-        'config', 'make.conf.generic-target')
-    link = os.path.join(self.path, 'etc', 'make.conf')
-    osutils.SafeSymlink(make_conf, link, sudo=True)
-
-  def _GenerateProfile(self):
-    """Generates the portage profile for this sysroot.
-
-    The generated portage profile depends on the profiles of all used bricks in
-    order as well as the general brillo profile for this architecture.
-    """
-    overlays = self.GetStandardField(STANDARD_FIELD_BOARD_OVERLAY).splitlines()
-    profile_list = [os.path.join(o, 'profiles', 'base') for o in overlays]
-
-    # Keep only the profiles that exist.
-    profile_list = [p for p in profile_list if os.path.exists(p)]
-
-    # Add the arch specific profile.
-    # The profile list is ordered from the lowest to the highest priority. This
-    # profile has to go first so that other profiles can override it.
-    arch = self.GetStandardField(STANDARD_FIELD_ARCH)
-    profile_list.insert(0, 'chromiumos:default/linux/%s/brillo' % arch)
-
-    generated_parent = os.path.join(self.path, 'build', 'generated_profile',
-                                    'parent')
-    osutils.WriteFile(
-        generated_parent, '\n'.join(profile_list), sudo=True, makedirs=True)
-    profile_link = os.path.join(self.path, 'etc', 'portage', 'make.profile')
-    osutils.SafeMakedirs(os.path.dirname(profile_link), sudo=True)
-    osutils.SafeSymlink(os.path.dirname(generated_parent), profile_link,
-                        sudo=True)
-
-  def GeneratePortageConfig(self):
-    """Generates the portage config.
-
-    This step will:
-    * create the portage wrappers.
-    * create the symlink to the architecture-specific make.conf
-    * generate make.conf.board (binhost, gsutil setup and various portage
-      configuration)
-    * choose the best portage profile possible.
-    """
-    self.CreateAllWrappers()
-    self._SelectDefaultMakeConf()
-    self._GenerateProfile()
-
-    make_conf = self.GenerateMakeConf()
-    make_conf_path = os.path.join(self.path, 'etc', 'make.conf.board')
-    osutils.WriteFile(make_conf_path, make_conf, sudo=True)
-
-    # Once make.conf.board has been generated, generate the binhost config.
-    # We need to do this in two steps as the binhost generation step needs
-    # portageq to be available.
-    osutils.WriteFile(make_conf_path,
-                      '\n'.join([make_conf, self.GenerateBinhostConf()]),
-                      sudo=True)
-
-  def UpdateToolchain(self):
+  def UpdateToolchain(self, board, pkg_init=True, local_init=True):
     """Updates the toolchain packages.
 
     This will install both the toolchains and the packages that are implicitly
     needed (gcc-libs, linux-headers).
+
+    Args:
+      board (str): The name of the board.
+      pkg_init (bool): Whether to install the implicit dependencies.
+      local_init (bool): Whether to use local packages to bootstrap the
+        implicit dependencies.
     """
     toolchain.InstallToolchain(self)
 
-    if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
-      emerge = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
-                '--sysroot=%s' % self.path]
+    if pkg_init and not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
+      # Emerge the implicit dependencies.
+      emerge = ['emerge-%s' % board, '--root-deps=rdeps', '--select', '--quiet']
+
+      if local_init:
+        emerge += ['--getbinpkg', '--usepkg']
+
       cros_build_lib.SudoRunCommand(
-          emerge + ['--root-deps=rdeps', '--usepkg', '--getbinpkg', '--select',
-                    'gcc-libs', 'linux-headers'])
+          emerge + ['sys-kernel/linux-headers', 'sys-libs/gcc-libs',
+                    'sys-libs/libcxx', 'sys-libs/libcxxabi'])
+      # Record we've installed them so we don't call emerge each time.
       self.SetCachedField(_IMPLICIT_SYSROOT_DEPS, 'yes')
+
+  def Delete(self, async=False):
+    """Delete the sysroot.
+
+    Optionally run asynchronously. Async delete moves the sysroot into a temp
+    directory and then deletes the tempdir with a background task.
+
+    Args:
+      async (bool): Whether to run the delete as an async operation.
+    """
+    rm = ['rm', '-rf', '--one-file-system', '--']
+    if async:
+      # Make the temporary directory in the same folder as the sysroot were
+      # deleting to avoid crossing disks, mounts, etc. that'd cause us to
+      # synchronously copy the entire thing before we delete it.
+      cwd = os.path.normpath(self._Path('..'))
+      try:
+        result = cros_build_lib.SudoRunCommand(['mktemp', '-d', '-p', cwd],
+                                               print_cmd=False,
+                                               redirect_stdout=True, cwd=cwd)
+      except cros_build_lib.RunCommandError:
+        # Fall back to a synchronous delete just in case.
+        logging.notice('Error deleting sysroot asynchronously. Deleting '
+                       'synchronously instead. This may take a minute.')
+        return self.Delete(async=False)
+
+      tempdir = result.output.strip()
+      cros_build_lib.SudoRunCommand(['mv', self.path, tempdir], quiet=True)
+      if not os.fork():
+        # Child process, just delete the sysroot root and _exit.
+        result = cros_build_lib.SudoRunCommand(rm + [tempdir], quiet=True,
+                                               error_code_ok=True)
+        if result.returncode:
+          # Log it so it can be handled manually.
+          logging.warning('Unable to delete old sysroot now at %s: %s', tempdir,
+                          result.error)
+        # pylint: disable=protected-access
+        os._exit(result.returncode)
+    else:
+      cros_build_lib.SudoRunCommand(rm + [self.path], quiet=True)

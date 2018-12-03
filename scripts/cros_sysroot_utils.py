@@ -81,10 +81,8 @@ def main(argv):
   if opts.command == 'create-wrappers':
     sysroot.CreateAllWrappers(opts.friendlyname)
   elif opts.command == 'generate-config':
-    config = sysroot.GenerateBoardConfig(opts.board)
-
-    output.write('\n' + config)
+    output.write('\n' + sysroot.GenerateBoardSetupConfig(opts.board))
   elif opts.command == 'generate-make-conf':
-    output.write('\n' + sysroot.GenerateMakeConf(opts.accepted_licenses))
+    output.write('\n' + sysroot.GenerateBoardMakeConf(opts.accepted_licenses))
   elif opts.command == 'generate-binhosts':
     output.write('\n' + sysroot.GenerateBinhostConf(opts.local_only))

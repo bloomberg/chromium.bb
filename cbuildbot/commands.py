@@ -308,6 +308,8 @@ def SetupBoard(buildroot, board, usepkg,
     cmd.append('--profile=%s' % profile)
 
   if not usepkg:
+    # TODO(crbug.com/922144): Uses the underscore variant of an argument, will
+    #  require updating tests when the arguments are cleaned up.
     cmd.extend(LOCAL_BUILD_FLAGS)
 
   if force:

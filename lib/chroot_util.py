@@ -26,6 +26,20 @@ if cros_build_lib.IsInsideChroot():
 
 _HOST_PKGS = ('virtual/target-sdk', 'world',)
 
+_DEFAULT_MAKE_CONF_USER = """
+# This file is useful for doing global (chroot and all board) changes.
+# Tweak emerge settings, ebuild env, etc...
+#
+# Make sure to append variables unless you really want to clobber all
+# existing settings.  e.g. You most likely want:
+#   FEATURES="${FEATURES} ..."
+#   USE="${USE} foo"
+# and *not*:
+#   USE="foo"
+#
+# This also is a good place to setup ACCEPT_LICENSE.
+"""
+
 
 def _GetToolchainPackages():
   """Get a list of host toolchain packages."""
@@ -199,3 +213,13 @@ def TempDirInChroot(**kwargs):
   kwargs['base_dir'] = path_util.FromChrootPath(base_dir)
   tempdir = osutils.TempDir(**kwargs)
   yield tempdir.tempdir
+
+
+def CreateMakeConfUser():
+  """Create default make.conf.user file in the chroot if it does not exist."""
+  path = '/etc/make.conf.user'
+  if not cros_build_lib.IsInsideChroot():
+    path = path_util.FromChrootPath(path)
+
+  if not os.path.exists(path):
+    osutils.WriteFile(path, _DEFAULT_MAKE_CONF_USER, sudo=True)

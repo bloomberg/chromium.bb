@@ -1602,6 +1602,26 @@ def GetDefaultBoard():
   return default_board
 
 
+def SetDefaultBoard(board):
+  """Set the default board.
+
+  Args:
+    board (str): The name of the board to save as the default.
+
+  Returns:
+    bool - True if successfully wrote default, False otherwise.
+  """
+  config_path = os.path.join(constants.CROSUTILS_DIR, '.default_board')
+  try:
+    with open(config_path, 'w') as f:
+      f.write(board)
+  except IOError as e:
+    logging.error('Unable to write default board: %s', e.message)
+    return False
+
+  return True
+
+
 def GetBoard(device_board, override_board=None, force=False):
   """Gets the board name to use.
 

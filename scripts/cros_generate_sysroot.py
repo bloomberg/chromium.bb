@@ -75,7 +75,7 @@ class GenerateSysroot(object):
   def _InstallToolchain(self):
     # Create the sysroot's config.
     sysroot = sysroot_lib.Sysroot(self.sysroot)
-    sysroot.WriteConfig(sysroot.GenerateBoardConfig(self.options.board))
+    sysroot.WriteConfig(sysroot.GenerateBoardSetupConfig(self.options.board))
     toolchain.InstallToolchain(sysroot, configure=False)
 
   def _InstallKernelHeaders(self):

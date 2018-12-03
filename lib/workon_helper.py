@@ -231,6 +231,8 @@ class WorkonHelper(object):
     # unpack it on /. After unpacking, the symlinks will point to
     # .config/cros_workon/amd64-host instead of .config/cros_workon/host.
     # Regenerating the symlinks here corrects it. crbug.com/23096.
+    # Note: This is currently also relied upon as an indirect fix for
+    # crbug.com/679831. Search the bug number for instance(s).
     self._RefreshSymlinks()
 
   @property
