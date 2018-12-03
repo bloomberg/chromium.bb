@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "google_apis/drive/test_util.h"
@@ -56,7 +56,7 @@ class LocalFileReaderTest : public ::testing::Test {
         std::make_unique<LocalFileReader>(worker_thread_->task_runner().get());
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<base::Thread> worker_thread_;
   std::unique_ptr<LocalFileReader> file_reader_;
