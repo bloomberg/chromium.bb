@@ -110,6 +110,9 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
     on_homepage_search_callback_ = callback;
   }
 
+  // A speculative fix for https://crbug.com/907379.
+  bool ShouldUpdateExistingAccessPointRlz() override { return false; }
+
  private:
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
