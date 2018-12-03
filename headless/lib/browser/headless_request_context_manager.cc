@@ -397,6 +397,12 @@ HeadlessRequestContextManager::CreateNetworkContextParams() {
         user_data_path_.Append(FILE_PATH_LITERAL("Cookies"));
     context_params->channel_id_path =
         user_data_path_.Append(FILE_PATH_LITERAL("Origin Bound Certs"));
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDiskCacheDir)) {
+    context_params->http_cache_path =
+        command_line->GetSwitchValuePath(switches::kDiskCacheDir);
+  } else if (!user_data_path_.empty()) {
     context_params->http_cache_path =
         user_data_path_.Append(FILE_PATH_LITERAL("Cache"));
   }
