@@ -4,8 +4,6 @@
 
 source_set("cells") {
   sources = [
-    "table_view_accessory_item.h",
-    "table_view_accessory_item.mm",
     "table_view_activity_indicator_header_footer_item.h",
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cells_constants.h",
@@ -16,6 +14,8 @@ source_set("cells") {
     "table_view_disclosure_header_footer_item.mm",
     "table_view_header_footer_item.h",
     "table_view_header_footer_item.mm",
+    "table_view_image_item.h",
+    "table_view_image_item.mm",
     "table_view_item.h",
     "table_view_item.mm",
     "table_view_link_header_footer_item.h",
@@ -62,9 +62,9 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "table_view_accessory_item_unittest.mm",
     "table_view_detail_text_item_unittest.mm",
     "table_view_header_footer_item_unittest.mm",
+    "table_view_image_item_unittest.mm",
     "table_view_item_unittest.mm",
     "table_view_text_button_item_unittest.mm",
     "table_view_text_header_footer_item_unittest.mm",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 
 #include "base/i18n/rtl.h"
 #include "base/mac/foundation_util.h"
@@ -13,7 +13,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation TableViewAccessoryItem
+@implementation TableViewImageItem
 
 @synthesize cellAccessibilityIdentifier = _cellAccessibilityIdentifier;
 @synthesize image = _image;
@@ -22,7 +22,7 @@
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [TableViewAccessoryCell class];
+    self.cellClass = [TableViewImageCell class];
   }
   return self;
 }
@@ -31,8 +31,8 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
 
-  TableViewAccessoryCell* cell =
-      base::mac::ObjCCastStrict<TableViewAccessoryCell>(tableCell);
+  TableViewImageCell* cell =
+      base::mac::ObjCCastStrict<TableViewImageCell>(tableCell);
   if (self.image) {
     cell.imageView.hidden = NO;
     cell.imageView.image = self.image;
@@ -43,6 +43,7 @@
 
   cell.titleLabel.text = self.title;
   cell.accessibilityIdentifier = self.cellAccessibilityIdentifier;
+  cell.chevronImageView.hidden = self.hideChevron;
   cell.imageView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   if (styler.cellTitleColor)
@@ -51,7 +52,7 @@
 
 @end
 
-@implementation TableViewAccessoryCell
+@implementation TableViewImageCell
 @synthesize imageView = _imageView;
 @synthesize titleLabel = _titleLabel;
 
@@ -73,19 +74,19 @@
     _titleLabel.adjustsFontForContentSizeCategory = YES;
 
     // Disclosure ImageView.
-    UIImageView* disclosureImageView = [[UIImageView alloc]
+    _chevronImageView = [[UIImageView alloc]
         initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
-    [disclosureImageView
+    [_chevronImageView
         setContentHuggingPriority:UILayoutPriorityDefaultHigh
                           forAxis:UILayoutConstraintAxisHorizontal];
     // TODO(crbug.com/870841): Use default accessory type.
     if (base::i18n::IsRTL())
-      disclosureImageView.transform = CGAffineTransformMakeRotation(M_PI);
+      _chevronImageView.transform = CGAffineTransformMakeRotation(M_PI);
 
     // Horizontal stack view holds imageView, title, and disclosureView.
     UIStackView* horizontalStack =
         [[UIStackView alloc] initWithArrangedSubviews:@[
-          _imageView, _titleLabel, disclosureImageView
+          _imageView, _titleLabel, _chevronImageView
         ]];
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
     horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;

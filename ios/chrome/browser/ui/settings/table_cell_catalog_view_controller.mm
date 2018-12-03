@@ -9,8 +9,8 @@
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -104,18 +104,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textItem.masked = YES;
   [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
 
-  TableViewAccessoryItem* textAccessoryItem =
-      [[TableViewAccessoryItem alloc] initWithType:ItemTypeTextAccessoryImage];
-  textAccessoryItem.title = @"Text Accessory with History Image";
-  textAccessoryItem.image = [UIImage imageNamed:@"show_history"];
-  [model addItem:textAccessoryItem
-      toSectionWithIdentifier:SectionIdentifierText];
+  TableViewImageItem* textImageItem =
+      [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryImage];
+  textImageItem.title = @"Image Item with History Image";
+  textImageItem.image = [UIImage imageNamed:@"show_history"];
+  [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
 
-  textAccessoryItem = [[TableViewAccessoryItem alloc]
-      initWithType:ItemTypeTextAccessoryNoImage];
-  textAccessoryItem.title = @"Text Accessory No Image";
-  [model addItem:textAccessoryItem
-      toSectionWithIdentifier:SectionIdentifierText];
+  textImageItem =
+      [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryNoImage];
+  textImageItem.title = @"Image Item with No Image";
+  [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
+
+  textImageItem =
+      [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryNoImage];
+  textImageItem.title = @"Image Item with No Image and no Chevron";
+  textImageItem.hideChevron = YES;
+  [model addItem:textImageItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewTextItem* textItemDefault =
       [[TableViewTextItem alloc] initWithType:ItemTypeText];
