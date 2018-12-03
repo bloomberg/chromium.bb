@@ -1645,6 +1645,41 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
+TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceTouchpadPinch) {
+  EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
+
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchBegin,
+                                     blink::kWebGestureDeviceTouchpad);
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
+                                     blink::kWebGestureDeviceTouchpad, 1.1f, 10,
+                                     20);
+  // The second update should coalesce with the first.
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
+                                     blink::kWebGestureDeviceTouchpad, 1.1f, 10,
+                                     20);
+  // The third update has a different anchor so it should not be coalesced.
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchUpdate,
+                                     blink::kWebGestureDeviceTouchpad, 1.1f, 11,
+                                     21);
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGesturePinchEnd,
+                                     blink::kWebGestureDeviceTouchpad);
+
+  // Only the PinchBegin was dispatched.
+  EXPECT_EQ(3ul, event_queue().size());
+  EXPECT_EQ(1ul, event_disposition_recorder_.size());
+
+  ASSERT_EQ(WebInputEvent::kGesturePinchUpdate,
+            event_queue()[0]->event().GetType());
+  EXPECT_FLOAT_EQ(
+      1.21f,
+      ToWebGestureEvent(event_queue()[0]->event()).data.pinch_update.scale);
+  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+            event_queue()[1]->event().GetType());
+  EXPECT_EQ(WebInputEvent::kGesturePinchEnd,
+            event_queue()[2]->event().GetType());
+}
+
 TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
