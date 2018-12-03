@@ -601,6 +601,7 @@ class WebStateObserverMock : public WebStateObserver {
  public:
   WebStateObserverMock() = default;
 
+  MOCK_METHOD2(NavigationItemsPruned, void(WebState*, size_t));
   MOCK_METHOD2(DidStartNavigation, void(WebState*, NavigationContext*));
   MOCK_METHOD2(DidFinishNavigation, void(WebState*, NavigationContext*));
   MOCK_METHOD1(DidStartLoading, void(WebState*));
@@ -1974,6 +1975,79 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
     return web_state()->GetNavigationManager()->CanGoBack();
   }));
   EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoForward());
+}
+
+// Tests that new page load calls NavigationItemsPruned callback if there were
+// forward navigation items.
+TEST_P(WebStateObserverTest, NewPageLoadDestroysForwardItems) {
+  // Perform first navigation.
+  const GURL first_url = test_server_->GetURL("/echoall");
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, TitleWasSet(web_state())).Times(2);
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(first_url));
+
+  // Perform second navigation.
+  const GURL hash_url = test_server_->GetURL("/echoall#1");
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
+  }
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  // No ShouldAllowResponse callback for same-document navigations.
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(hash_url));
+
+  // Go back to create forward navigation items.
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Called once each for CanGoBack and CanGoForward;
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
+  }
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  // No ShouldAllowResponse callbacks for same-document back-forward
+  // navigations.
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(ExecuteBlockAndWaitForLoad(first_url, ^{
+    navigation_manager()->GoBack();
+  }));
+
+  // New page load destroys forward navigation entries.
+  const GURL url = test_server_->GetURL("/echo");
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Called once each for CanGoBack and CanGoForward;
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
+  } else {
+    // TODO(crbug.com/910894): NavigationItemsPruned is not called if
+    // slim-navigation-manager feature is enabled.
+    EXPECT_CALL(observer_,
+                NavigationItemsPruned(web_state(), /*pruned_item_count=*/1));
+  }
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(url));
 }
 
 // Verifies that WebState::CreateWithStorageSession does not call any
