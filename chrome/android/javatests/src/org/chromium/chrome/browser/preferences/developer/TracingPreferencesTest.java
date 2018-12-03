@@ -38,7 +38,6 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -49,7 +48,6 @@ import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -147,7 +145,6 @@ public class TracingPreferencesTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/899894")
     public void testRecordTrace() throws Exception {
         Context context = ContextUtils.getApplicationContext();
@@ -250,7 +247,6 @@ public class TracingPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testNotificationsDisabledMessage() throws Exception {
         mMockNotificationManager.setNotificationsEnabled(false);
 
@@ -276,7 +272,6 @@ public class TracingPreferencesTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testSelectCategories() throws Exception {
         // We need a renderer so that its tracing categories will be populated.
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -340,7 +335,6 @@ public class TracingPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testSelectMode() throws Exception {
         Context context = ContextUtils.getApplicationContext();
         Preferences activity =
