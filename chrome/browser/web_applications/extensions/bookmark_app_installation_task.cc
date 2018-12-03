@@ -132,6 +132,9 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
     case web_app::InstallSource::kSystemInstalled:
       helper_->set_is_system_app();
       break;
+    case web_app::InstallSource::kArc:
+      NOTREACHED();
+      break;
   }
 
   if (!app_info_.create_shortcuts)

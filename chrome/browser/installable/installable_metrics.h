@@ -77,6 +77,9 @@ enum class WebappInstallSource {
   // PWA ambient badge in browser Tab.
   AMBIENT_BADGE_CUSTOM_TAB = 9,
 
+  // Installation via ARC on Chrome OS.
+  ARC = 10,
+
   // Add any new values above this one.
   COUNT,
 };

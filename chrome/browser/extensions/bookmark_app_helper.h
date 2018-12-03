@@ -93,6 +93,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_system_app() { return is_system_app_; }
 
+  void set_is_no_network_install() { is_no_network_install_ = true; }
+
+  bool is_no_network_install() { return is_no_network_install_; }
+
   // If called, desktop shortcuts will not be created.
   void set_skip_shortcut_creation() { create_shortcuts_ = false; }
 
@@ -184,6 +188,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   bool is_default_app_ = false;
 
   bool is_system_app_ = false;
+
+  // If true, means that |web_app_info_| holds all the data needed for
+  // installation and we should not try to fetch a manifest.
+  bool is_no_network_install_ = false;
 
   bool create_shortcuts_ = true;
 

@@ -87,6 +87,11 @@ enum class InstallSource {
   // The corresponding SynchronizeInstalledApps call site is in
   // SystemWebAppManager::RefreshPolicyInstalledApps.
   kSystemInstalled = 3,
+  // Installed from ARC.
+  //
+  // There is no call to SynchronizeInstalledApps for this type, as these apps
+  // are not installed via PendingAppManager.
+  kArc = 4,
 };
 
 }  // namespace web_app
