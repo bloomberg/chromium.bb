@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_detailed_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 
 namespace views {
 class Button;
@@ -62,8 +63,11 @@ class ASH_EXPORT NetworkStateListDetailedView
   // Launches the WebUI settings in a browser and closes the system menu.
   void ShowSettings();
 
-  // Update UI components.
+  // Update info and settings buttons in header.
   void UpdateHeaderButtons();
+
+  // Update scanning progress bar.
+  void UpdateScanningBar();
 
   // Create and manage the network info bubble.
   void ToggleInfoBubble();
@@ -71,7 +75,10 @@ class ASH_EXPORT NetworkStateListDetailedView
   void OnInfoBubbleDestroyed();
   views::View* CreateNetworkInfoView();
 
-  // Periodically request a network scan.
+  // Scan and start timer to periodically request a network scan.
+  void ScanAndStartTimer();
+
+  // Request a network scan.
   void CallRequestScan();
 
   // Type of list (all networks or vpn)
@@ -85,6 +92,9 @@ class ASH_EXPORT NetworkStateListDetailedView
 
   // A small bubble for displaying network info.
   InfoBubble* info_bubble_;
+
+  // Timer for starting and stopping network scans.
+  base::RepeatingTimer network_scan_repeating_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };
