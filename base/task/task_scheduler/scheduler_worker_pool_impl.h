@@ -227,8 +227,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   TimeDelta MayBlockThreshold() const;
 
   // Starts calling AdjustMaxTasks() periodically on
-  // |service_thread_task_runner_| if not already requested.
-  void ScheduleAdjustMaxTasksIfNeeded();
+  // |service_thread_task_runner_|.
+  void ScheduleAdjustMaxTasks();
+
+  // Returns true if ScheduleAdjustMaxTasks() must be called.
+  bool MustScheduleAdjustMaxTasksLockRequired();
 
   // Calls AdjustMaxTasks() and schedules it again as necessary. May only be
   // called from the service thread.
