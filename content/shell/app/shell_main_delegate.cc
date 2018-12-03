@@ -27,10 +27,10 @@
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
-#include "content/shell/browser/layout_test/layout_test_browser_main.h"
-#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/web_test/web_test_browser_main.h"
+#include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/layout_test/layout_test_content_client.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_content_client.h"
@@ -367,7 +367,7 @@ int ShellMainDelegate::RunProcess(
   browser_runner_.reset(BrowserMainRunner::Create());
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kRunWebTests)
-             ? LayoutTestBrowserMain(main_function_params, browser_runner_)
+             ? WebTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
 }
 
@@ -440,7 +440,7 @@ void ShellMainDelegate::PreCreateMainMessageLoop() {
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new LayoutTestContentBrowserClient
+                            ? new WebTestContentBrowserClient
                             : new ShellContentBrowserClient);
 
   return browser_client_.get();
