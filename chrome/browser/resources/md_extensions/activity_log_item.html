@@ -19,7 +19,8 @@
         margin-inline-start: 10px;
       }
 
-      #page-url-link {
+      .page-url-link {
+        flex-grow: 1;
         margin-inline-start: 16px;
       }
     </style>
@@ -28,8 +29,19 @@
       <span id="api-call">[[data.apiCall]]</span>
       <span id="activity-count">[[data.count]]</span>
     </div>
-    <div id="page-url" hidden$="[[!data.pageUrl]]">
-      <a id="page-url-link" href="[[data.pageUrl]]">[[data.pageUrl]]</a>
+    <div id="page-url-list"
+        hidden$="[[!shouldShowPageUrls_(data)]]">
+      <template is="dom-repeat" items="[[getPageUrls_(data)]]">
+        <div class="page-url layout horizontal">
+          <a class="page-url-link" href="[[item.page]]">
+            [[item.page]]
+          </a>
+          <span class="page-url-count"
+              hidden$="[[!shouldShowPageUrlCount_(data)]]">
+            [[item.count]]
+          </span>
+        </div>
+      </template>
     </div>
   </template>
   <script src="activity_log_item.js"></script>

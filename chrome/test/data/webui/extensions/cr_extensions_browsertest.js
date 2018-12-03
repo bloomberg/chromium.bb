@@ -217,6 +217,26 @@ TEST_F('CrExtensionsActivityLogTest', 'All', () => {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+// Extension Activity Log Item Tests
+
+CrExtensionsActivityLogItemTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/activity_log_item.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'activity_log_item_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsActivityLogItemTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
 CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {

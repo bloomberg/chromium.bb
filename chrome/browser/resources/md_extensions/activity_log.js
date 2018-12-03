@@ -28,6 +28,61 @@ cr.define('extensions', function() {
     getExtensionActivityLog(extensionId) {}
   }
 
+  /**
+   * Group activity log entries by the API call and merge their counts.
+   * We currently assume that every API call matches to one activity type.
+   * @param {!Array<!chrome.activityLogPrivate.ExtensionActivity>}
+   *     activityData
+   * @return {!Map<string, !extensions.ApiGroup>}
+   */
+  function groupActivitiesByApiCall(activityData) {
+    const activitiesByApiCall = new Map();
+
+    for (const activity of activityData) {
+      const apiCall = activity.apiCall;
+      const count = activity.count;
+      const pageUrl = activity.pageUrl;
+
+      if (!activitiesByApiCall.has(apiCall)) {
+        const apiGroup = {
+          apiCall,
+          count,
+          activityType: activity.activityType,
+          countsByUrl: pageUrl ? new Map([[pageUrl, count]]) : new Map()
+        };
+        activitiesByApiCall.set(apiCall, apiGroup);
+      } else {
+        const apiGroup = activitiesByApiCall.get(apiCall);
+        apiGroup.count += count;
+
+        if (pageUrl) {
+          const currentCount = apiGroup.countsByUrl.get(pageUrl) || 0;
+          apiGroup.countsByUrl.set(pageUrl, currentCount + count);
+        }
+      }
+    }
+
+    return activitiesByApiCall;
+  }
+
+  /**
+   * Sort activities by the total count for each API call. Resolve ties by the
+   * alphabetical order of the API call name.
+   * @param {!Map<string, !extensions.ApiGroup>} activitiesByApiCall
+   * @return {!Array<!extensions.ApiGroup>}
+   */
+  function sortActivitiesByCallCount(activitiesByApiCall) {
+    return Array.from(activitiesByApiCall.values()).sort(function(a, b) {
+      if (a.count != b.count)
+        return b.count - a.count;
+      if (a.apiCall < b.apiCall)
+        return -1;
+      if (a.apiCall > b.apiCall)
+        return 1;
+      return 0;
+    });
+  }
+
   const ActivityLog = Polymer({
     is: 'extensions-activity-log',
 
@@ -43,10 +98,15 @@ cr.define('extensions', function() {
       delegate: Object,
 
       /**
+       * An array representing the activity log. Stores activities grouped by
+       * API call sorted in descending order of the call count.
        * @private
-       * @type {!chrome.activityLogPrivate.ActivityResultSet|undefined}
+       * @type {!Array<!extensions.ApiGroup>}
        */
-      activityData_: Object,
+      activityData_: {
+        type: Array,
+        value: () => [],
+      },
 
       /**
        * @private
@@ -99,7 +159,7 @@ cr.define('extensions', function() {
      */
     shouldShowEmptyActivityLogMessage_: function() {
       return this.pageState_ === ActivityLogPageState.LOADED &&
-          (!this.activityData_ || this.activityData_.activities.length === 0);
+          this.activityData_.length === 0;
     },
 
     /**
@@ -116,7 +176,7 @@ cr.define('extensions', function() {
      */
     shouldShowActivities_: function() {
       return this.pageState_ === ActivityLogPageState.LOADED &&
-          !!this.activityData_ && this.activityData_.activities.length > 0;
+          this.activityData_.length > 0;
     },
 
     /** @private */
@@ -130,7 +190,8 @@ cr.define('extensions', function() {
       this.pageState_ = ActivityLogPageState.LOADING;
       this.delegate.getExtensionActivityLog(this.extensionId).then(result => {
         this.pageState_ = ActivityLogPageState.LOADED;
-        this.activityData_ = result;
+        this.activityData_ = sortActivitiesByCallCount(
+            groupActivitiesByApiCall(result.activities));
         this.onDataFetched.resolve();
       });
     },
