@@ -3958,13 +3958,6 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
     return;
   }
 
-  if (phase == StyleUpdatePhase::kRebuildLayoutTree &&
-      element->NeedsReattachLayoutTree()) {
-    // We were already updated in RecalcStyle and ready for reattach.
-    DCHECK(element->GetNonAttachedStyle());
-    return;
-  }
-
   if (!CanGeneratePseudoElement(kPseudoIdFirstLetter)) {
     GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
     return;
@@ -3975,6 +3968,13 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
 
   if (!remaining_text_layout_object) {
     GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    return;
+  }
+
+  if (phase == StyleUpdatePhase::kRebuildLayoutTree &&
+      element->NeedsReattachLayoutTree()) {
+    // We were already updated in RecalcStyle and ready for reattach.
+    DCHECK(element->GetNonAttachedStyle());
     return;
   }
 
