@@ -32,6 +32,7 @@
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_client_auth_cache.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
@@ -42,6 +43,10 @@ namespace trace_event {
 class ProcessMemoryDump;
 }
 }
+
+namespace quic {
+class QuicClock;
+}  // namespace quic
 
 namespace net {
 
@@ -66,11 +71,6 @@ class ProxyResolutionService;
 #if BUILDFLAG(ENABLE_REPORTING)
 class ReportingService;
 #endif
-}  // namespace net
-namespace quic {
-class QuicClock;
-}  // namespace quic
-namespace net {
 class QuicCryptoClientStreamFactory;
 class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
@@ -78,7 +78,6 @@ class SSLClientSocketPool;
 class SSLConfigService;
 class TransportClientSocketPool;
 class TransportSecurityState;
-class WebSocketEndpointLockManager;
 
 // Specifies the maximum HPACK dynamic table size the server is allowed to set.
 const uint32_t kSpdyMaxHeaderTableSize = 64 * 1024;
@@ -316,7 +315,7 @@ class NET_EXPORT HttpNetworkSession {
   }
   SSLConfigService* ssl_config_service() { return ssl_config_service_; }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
-    return websocket_endpoint_lock_manager_.get();
+    return &websocket_endpoint_lock_manager_;
   }
   SpdySessionPool* spdy_session_pool() { return &spdy_session_pool_; }
   QuicStreamFactory* quic_stream_factory() { return &quic_stream_factory_; }
@@ -404,8 +403,7 @@ class NET_EXPORT HttpNetworkSession {
 
   HttpAuthCache http_auth_cache_;
   SSLClientAuthCache ssl_client_auth_cache_;
-  std::unique_ptr<WebSocketEndpointLockManager>
-      websocket_endpoint_lock_manager_;
+  WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
   std::unique_ptr<ClientSocketPoolManager> normal_socket_pool_manager_;
   std::unique_ptr<ClientSocketPoolManager> websocket_socket_pool_manager_;
   std::unique_ptr<ServerPushDelegate> push_delegate_;
