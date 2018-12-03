@@ -59,13 +59,13 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   ~BookmarkBubbleView() override;
 
   // LocationBarBubbleDelegateView:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
   bool GetExtraViewPadding(int* padding) override;
   views::View* CreateFootnoteView() override;

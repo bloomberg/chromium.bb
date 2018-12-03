@@ -96,6 +96,35 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   return params;
 }
 
+int DialogDelegate::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+}
+
+int DialogDelegate::GetDefaultDialogButton() const {
+  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+    return ui::DIALOG_BUTTON_OK;
+  if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
+    return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+base::string16 DialogDelegate::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_APP_OK);
+  if (button == ui::DIALOG_BUTTON_CANCEL) {
+    if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
+  }
+  NOTREACHED();
+  return base::string16();
+}
+
+bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
+  return true;
+}
+
 View* DialogDelegate::CreateExtraView() {
   return NULL;
 }
@@ -138,35 +167,6 @@ void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
 
 bool DialogDelegate::ShouldSnapFrameWidth() const {
   return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
-}
-
-int DialogDelegate::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-int DialogDelegate::GetDefaultDialogButton() const {
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
-    return ui::DIALOG_BUTTON_OK;
-  if (GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL)
-    return ui::DIALOG_BUTTON_CANCEL;
-  return ui::DIALOG_BUTTON_NONE;
-}
-
-base::string16 DialogDelegate::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_APP_OK);
-  if (button == ui::DIALOG_BUTTON_CANCEL) {
-    if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
-  }
-  NOTREACHED();
-  return base::string16();
-}
-
-bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return true;
 }
 
 View* DialogDelegate::GetInitiallyFocusedView() {
@@ -241,7 +241,7 @@ void DialogDelegate::RemoveObserver(DialogObserver* observer) {
 
 void DialogDelegate::DialogModelChanged() {
   for (DialogObserver& observer : observer_list_)
-    observer.OnDialogModelChanged();
+    observer.OnDialogChanged();
 }
 
 DialogDelegate::~DialogDelegate() {

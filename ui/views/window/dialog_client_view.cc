@@ -274,7 +274,7 @@ void DialogClientView::ChildVisibilityChanged(View* child) {
   ChildPreferredSizeChanged(child);
 }
 
-void DialogClientView::OnDialogModelChanged() {
+void DialogClientView::OnDialogChanged() {
   UpdateDialogButtons();
 }
 

@@ -838,7 +838,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   // platform and other factors.
   void UseNativeWidgetAura() { use_native_widget_aura_ = true; }
 
-  // ui::DialogModel override.
+  // BubbleDialogDelegateView:
   int GetDialogButtons() const override { return 0; }
 
   void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
