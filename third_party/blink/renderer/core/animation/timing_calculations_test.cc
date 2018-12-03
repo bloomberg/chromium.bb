@@ -55,6 +55,10 @@ TEST(AnimationTimingCalculationsTest, ActiveTime) {
   EXPECT_EQ(0, CalculateActiveTime(20, Timing::FillMode::BOTH, 0,
                                    AnimationEffect::kPhaseActive,
                                    AnimationEffect::kPhaseBefore, timing));
+  timing.start_delay = -10;
+  EXPECT_EQ(5, CalculateActiveTime(20, Timing::FillMode::BACKWARDS, -5,
+                                   AnimationEffect::kPhaseActive,
+                                   AnimationEffect::kPhaseBefore, timing));
 
   // Active Phase
   timing.start_delay = 10;

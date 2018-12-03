@@ -180,9 +180,15 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   if (needs_update) {
     const double active_duration = RepeatedDuration();
+    // TODO(yigu): Direction of WorkletAnimation is always forwards based on
+    // the calculation. Need to unify the logic to handle it correctly.
+    // https://crbug.com/896249.
+    const AnimationDirection direction =
+        (GetAnimation() && GetAnimation()->playbackRate() < 0) ? kBackwards
+                                                               : kForwards;
 
     const Phase current_phase =
-        CalculatePhase(active_duration, local_time, timing_);
+        CalculatePhase(active_duration, local_time, direction, timing_);
     // FIXME: parentPhase depends on groups being implemented.
     const AnimationEffect::Phase kParentPhase = AnimationEffect::kPhaseActive;
     const double active_time = CalculateActiveTime(
@@ -227,12 +233,21 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       const double local_active_duration =
           kLocalIterationDuration * timing_.iteration_count;
       DCHECK_GE(local_active_duration, 0);
+      const double end_time = std::max(
+          timing_.start_delay + active_duration + timing_.end_delay, 0.0);
+      const double before_active_boundary_time =
+          std::max(std::min(timing_.start_delay, end_time), 0.0);
+      // local_local_time should be greater than or equal to the
+      // before_active_boundary_time once the local_time goes past the start
+      // delay.
       const double local_local_time =
           local_time < timing_.start_delay
               ? local_time
-              : local_active_duration + timing_.start_delay;
-      const AnimationEffect::Phase local_current_phase =
-          CalculatePhase(local_active_duration, local_local_time, timing_);
+              : std::max(local_active_duration + timing_.start_delay,
+                         before_active_boundary_time);
+
+      const AnimationEffect::Phase local_current_phase = CalculatePhase(
+          local_active_duration, local_local_time, direction, timing_);
       const double local_active_time = CalculateActiveTime(
           local_active_duration,
           ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()),
