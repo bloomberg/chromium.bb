@@ -122,11 +122,11 @@ bool CheckElementComposited(const Node& target) {
 }
 
 base::Optional<CompositorElementId> GetCompositorScrollElementId(
-    const Node& node) {
-  if (!node.GetLayoutObject() || !node.GetLayoutObject()->UniqueId())
+    const Node* node) {
+  if (!node || !node->GetLayoutObject() || !node->GetLayoutObject()->UniqueId())
     return base::nullopt;
   return CompositorElementIdFromUniqueObjectId(
-      node.GetLayoutObject()->UniqueId(),
+      node->GetLayoutObject()->UniqueId(),
       CompositorElementIdNamespace::kScroll);
 }
 
@@ -199,7 +199,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   ScrollTimeline* scroll_timeline = ToScrollTimeline(timeline);
   Node* scroll_source = scroll_timeline->ResolvedScrollSource();
   base::Optional<CompositorElementId> element_id =
-      GetCompositorScrollElementId(*scroll_source);
+      GetCompositorScrollElementId(scroll_source);
 
   DoubleOrScrollTimelineAutoKeyword time_range;
   scroll_timeline->timeRange(time_range);
@@ -209,7 +209,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   // TODO(smcgruer): If the scroll source later gets a LayoutBox (e.g. was
   // display:none and now isn't), we need to update the compositor to have the
   // correct orientation and start/end offset information.
-  LayoutBox* box = scroll_source->GetLayoutBox();
+  LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
 
   CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
       scroll_timeline->GetOrientation(), box ? box->Style() : nullptr);
@@ -572,7 +572,7 @@ void WorkletAnimation::UpdateOnCompositor() {
 
   if (timeline_->IsScrollTimeline()) {
     Node* scroll_source = ToScrollTimeline(timeline_)->ResolvedScrollSource();
-    LayoutBox* box = scroll_source->GetLayoutBox();
+    LayoutBox* box = scroll_source ? scroll_source->GetLayoutBox() : nullptr;
 
     base::Optional<double> start_scroll_offset;
     base::Optional<double> end_scroll_offset;
@@ -591,7 +591,7 @@ void WorkletAnimation::UpdateOnCompositor() {
       end_scroll_offset = resolved_end_scroll_offset;
     }
     compositor_animation_->UpdateScrollTimeline(
-        GetCompositorScrollElementId(*scroll_source), start_scroll_offset,
+        GetCompositorScrollElementId(scroll_source), start_scroll_offset,
         end_scroll_offset);
   }
 }

@@ -31,6 +31,14 @@ test(function() {
 
 test(function() {
   const scrollTimeline = new ScrollTimeline(
+      { scrollSource: null, timeRange: 100 });
+
+  // Null maps to the document scrolling element.
+  assert_equals(scrollTimeline.scrollSource, document.scrollingElement);
+}, 'ScrollTimeline can be created with a null scrollSource');
+
+test(function() {
+  const scrollTimeline = new ScrollTimeline(
       { timeRange: 100, orientation: 'block' });
 
   assert_equals(scrollTimeline.scrollSource, document.scrollingElement);
