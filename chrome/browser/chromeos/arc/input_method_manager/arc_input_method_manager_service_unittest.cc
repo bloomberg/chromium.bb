@@ -927,19 +927,22 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
   client->FlushForTesting();
   base::RunLoop().RunUntilIdle();  // Allow observers to fire and process.
-  ASSERT_TRUE(client->is_keyboard_enabled());
+  ASSERT_FALSE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's disabled when the ARC IME is activated.
   imm()->state()->SetActiveInputMethod(arc_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
   client->FlushForTesting();
-  EXPECT_FALSE(client->is_keyboard_enabled());
+  EXPECT_TRUE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's re-enabled when the ARC IME is deactivated.
   imm()->state()->SetActiveInputMethod(component_extension_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
   client->FlushForTesting();
-  EXPECT_TRUE(client->is_keyboard_enabled());
+  EXPECT_FALSE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
