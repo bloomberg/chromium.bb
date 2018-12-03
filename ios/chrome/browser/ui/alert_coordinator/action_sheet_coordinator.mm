@@ -40,13 +40,6 @@ enum class AnchorMode {
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
-                                   message:(NSString*)message {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                     title:(NSString*)title
                                    message:(NSString*)message
                                       rect:(CGRect)rect
                                       view:(UIView*)view {
