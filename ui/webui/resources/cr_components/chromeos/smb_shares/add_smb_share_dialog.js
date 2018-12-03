@@ -17,6 +17,11 @@ Polymer({
       value: '',
     },
 
+    shouldOpenFileManagerAfterMount: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {string} */
     mountUrl_: {
       type: String,
@@ -104,7 +109,8 @@ Polymer({
     this.browserProxy_
         .smbMount(
             this.mountUrl_, this.mountName_.trim(), this.username_,
-            this.password_, this.authenticationMethod_)
+            this.password_, this.authenticationMethod_,
+            this.shouldOpenFileManagerAfterMount)
         .then(result => {
           this.onAddShare_(result);
         });
