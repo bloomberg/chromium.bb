@@ -211,6 +211,11 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "stable",
+    "base": "http/tests/streams/transferable/enabled",
+    "args": ["--stable-release-mode"]
+  },
+  {
     "prefix": "linux-subpixel",
     "base": "platform/linux/fast/text/subpixel",
     "args": ["--enable-webkit-text-subpixel-positioning"]
