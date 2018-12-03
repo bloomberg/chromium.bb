@@ -836,13 +836,13 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
 
   // When spoken feedback is on, the AppList should not toggle.
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
   RunAllPendingInMessageLoop();
   GetAppListTestHelper()->CheckVisibility(true);
 

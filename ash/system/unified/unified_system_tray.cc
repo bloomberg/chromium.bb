@@ -206,7 +206,7 @@ void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
 }
 
 bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void UnifiedSystemTray::AddInkDropLayer(ui::Layer* ink_drop_layer) {

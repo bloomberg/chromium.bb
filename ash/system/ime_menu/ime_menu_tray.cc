@@ -430,7 +430,7 @@ bool ImeMenuTray::ShouldShowBottomButtons() {
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
   return keyboard_suppressed_ &&
-         !Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
+         !Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {
@@ -502,7 +502,7 @@ base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
 }
 
 bool ImeMenuTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void ImeMenuTray::HideBubble(const TrayBubbleView* bubble_view) {

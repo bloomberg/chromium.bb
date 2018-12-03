@@ -504,7 +504,7 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+    if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
       return false;
   }
   return true;
@@ -800,7 +800,7 @@ void HandleToggleCapsLock() {
 }
 
 bool CanHandleToggleDictation() {
-  return Shell::Get()->accessibility_controller()->IsDictationEnabled();
+  return Shell::Get()->accessibility_controller()->dictation_enabled();
 }
 
 void HandleToggleDictation() {
@@ -916,7 +916,7 @@ void HandleToggleHighContrast() {
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  const bool current_enabled = controller->IsHighContrastEnabled();
+  const bool current_enabled = controller->high_contrast_enabled();
   const bool dialog_ever_accepted =
       controller->HasHighContrastAcceleratorDialogBeenAccepted();
 
@@ -963,7 +963,7 @@ void HandleToggleSpokenFeedback() {
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetSpokenFeedbackEnabled(!controller->IsSpokenFeedbackEnabled(),
+  controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
                                        A11Y_NOTIFICATION_SHOW);
 }
 

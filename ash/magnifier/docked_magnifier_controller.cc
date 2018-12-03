@@ -50,7 +50,7 @@ constexpr char kDockedMagnifierViewportWindowName[] =
 
 // Returns true if High Contrast mode is enabled.
 bool IsHighContrastEnabled() {
-  return Shell::Get()->accessibility_controller()->IsHighContrastEnabled();
+  return Shell::Get()->accessibility_controller()->high_contrast_enabled();
 }
 
 // Returns the current cursor location in screen coordinates.

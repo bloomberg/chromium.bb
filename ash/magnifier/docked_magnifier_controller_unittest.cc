@@ -695,13 +695,13 @@ TEST_F(DockedMagnifierTest, HighContrastMode) {
   // Enable High Contrast mode, and expect the viewport layer to be inverted.
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
   EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   EXPECT_TRUE(viewport_layer->layer_inverted());
 
   // Disable High Contrast, the layer should be updated accordingly.
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(false);
   EXPECT_FALSE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   EXPECT_FALSE(viewport_layer->layer_inverted());
 
   // Now, disable the Docked Magnifier, enable High Contrast, and then re-enable
@@ -710,7 +710,7 @@ TEST_F(DockedMagnifierTest, HighContrastMode) {
   EXPECT_FALSE(magnifier->GetEnabled());
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
   EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   magnifier->SetEnabled(true);
   EXPECT_TRUE(magnifier->GetEnabled());
   const ui::Layer* new_viewport_layer =

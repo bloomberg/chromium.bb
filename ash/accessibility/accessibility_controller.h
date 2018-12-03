@@ -69,50 +69,50 @@ class ASH_EXPORT AccessibilityController
   bool HasDisplayRotationAcceleratorDialogBeenAccepted() const;
 
   void SetAutoclickEnabled(bool enabled);
-  bool IsAutoclickEnabled() const;
+  bool autoclick_enabled() const { return autoclick_enabled_; }
   void SetAutoclickEventType(mojom::AutoclickEventType event_type);
 
   void SetCaretHighlightEnabled(bool enabled);
-  bool IsCaretHighlightEnabled() const;
+  bool caret_highlight_enabled() const { return caret_highlight_enabled_; }
 
   void SetCursorHighlightEnabled(bool enabled);
-  bool IsCursorHighlightEnabled() const;
+  bool cursor_highlight_enabled() const { return cursor_highlight_enabled_; }
 
   void SetDictationEnabled(bool enabled);
-  bool IsDictationEnabled() const;
+  bool dictation_enabled() const { return dictation_enabled_; }
 
   void SetFocusHighlightEnabled(bool enabled);
-  bool IsFocusHighlightEnabled() const;
+  bool focus_highlight_enabled() const { return focus_highlight_enabled_; }
 
   void SetFullscreenMagnifierEnabled(bool enabled);
 
   void SetHighContrastEnabled(bool enabled);
-  bool IsHighContrastEnabled() const;
+  bool high_contrast_enabled() const { return high_contrast_enabled_; }
 
   void SetLargeCursorEnabled(bool enabled);
-  bool IsLargeCursorEnabled() const;
+  bool large_cursor_enabled() const { return large_cursor_enabled_; }
 
   void SetMonoAudioEnabled(bool enabled);
-  bool IsMonoAudioEnabled() const;
+  bool mono_audio_enabled() const { return mono_audio_enabled_; }
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
-  bool IsSpokenFeedbackEnabled() const;
+  bool spoken_feedback_enabled() const { return spoken_feedback_enabled_; }
 
   void SetSelectToSpeakEnabled(bool enabled);
-  bool IsSelectToSpeakEnabled() const;
+  bool select_to_speak_enabled() const { return select_to_speak_enabled_; }
 
   void RequestSelectToSpeakStateChange();
   mojom::SelectToSpeakState GetSelectToSpeakState() const;
 
   void SetStickyKeysEnabled(bool enabled);
-  bool IsStickyKeysEnabled() const;
+  bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
 
   void SetVirtualKeyboardEnabled(bool enabled);
-  bool IsVirtualKeyboardEnabled() const;
+  bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
 
-  bool IsDictationActive() const;
   void SetDictationActive(bool is_active);
+  bool dictation_active() const { return dictation_active_; }
 
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert);
