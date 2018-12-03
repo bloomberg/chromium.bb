@@ -14,7 +14,7 @@ such APK for you.
 
 To use this script, you need to
 1. Build 32-bit APK as usual.
-2. Build 64-bit APK with GN variable build_apk_secondary_abi=false.
+2. Build 64-bit APK with GN variable build_apk_secondary_abi=false OR true.
 3. Use this script to merge 2 APKs.
 
 """
@@ -53,9 +53,10 @@ class ApkMergeFailure(Exception):
   pass
 
 
-def UnpackApk(file_name, dst):
+def UnpackApk(file_name, dst, ignore_paths=()):
   zippy = zipfile.ZipFile(file_name)
-  zippy.extractall(dst)
+  files_to_extract = [f for f in zippy.namelist() if f not in ignore_paths]
+  zippy.extractall(dst, files_to_extract)
 
 
 def GetNonDirFiles(top, base_dir):
@@ -150,6 +151,15 @@ def AddDiffFiles(diff_files, tmp_dir_32, out_zip, expected_files,
                                  compress=compress)
 
 
+def GetTargetAbiPath(apk_path, shared_library):
+  with zipfile.ZipFile(apk_path) as z:
+    matches = [p for p in z.namelist() if p.endswith(shared_library)]
+  if len(matches) != 1:
+    raise ApkMergeFailure('Found multiple/no libs for %s: %s' % (
+        shared_library, matches))
+  return matches[0]
+
+
 def GetSecondaryAbi(apk_zipfile, shared_library):
   ret = ''
   for name in apk_zipfile.namelist():
@@ -188,7 +198,10 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
     expected_files[f] = not args.uncompress_shared_libraries
 
   # need to unpack APKs to compare their contents
-  UnpackApk(args.apk_64bit, tmp_dir_64)
+  assets_path = 'base/assets' if args.bundle else 'assets'
+  exclude_files_64 = ['%s/snapshot_blob_32.bin' % assets_path,
+                      GetTargetAbiPath(args.apk_32bit, args.shared_library)]
+  UnpackApk(args.apk_64bit, tmp_dir_64, exclude_files_64)
   UnpackApk(args.apk_32bit, tmp_dir_32)
 
   ignores = ['META-INF', 'AndroidManifest.xml']
@@ -197,6 +210,10 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   if args.debug:
     # see http://crbug.com/648720
     ignores += ['webview_licenses.notice']
+  if args.bundle:
+    # if merging a bundle we must ignore the bundle specific
+    # proto files as they will always be different.
+    ignores += ['BundleConfig.pb', 'native.pb', 'resources.pb']
 
   dcmp = filecmp.dircmp(
       tmp_dir_64,
@@ -210,7 +227,7 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   CheckFilesExpected(diff_files, expected_files, args.component_build)
 
   with zipfile.ZipFile(tmp_apk, 'w') as out_zip:
-    exclude_patterns = ['META-INF/*']
+    exclude_patterns = ['META-INF/*'] + exclude_files_64
 
     # If there are libraries for which we don't want the 32 bit versions, we
     # should remove them here.
@@ -244,6 +261,7 @@ def main():
   parser.add_argument('--page-align-shared-libraries', action='store_true',
                       help='Obsolete, but remains for backwards compatibility')
   parser.add_argument('--uncompress-shared-libraries', action='store_true')
+  parser.add_argument('--bundle', action='store_true')
   parser.add_argument('--debug', action='store_true')
   # This option shall only used in debug build, see http://crbug.com/631494.
   parser.add_argument('--ignore-classes-dex', action='store_true')
