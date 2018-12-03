@@ -360,12 +360,10 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
                           weak_factory_.GetWeakPtr(),
                           extension_misc::kGoogleSpeechSynthesisExtensionId));
 
-  if (::switches::AreExperimentalAccessibilityFeaturesEnabled()) {
-    AddComponentFromDir(
-        base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
-        extension_misc::kEspeakSpeechSynthesisExtensionId,
-        base::RepeatingClosure());
-  }
+  AddComponentFromDir(
+      base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
+      extension_misc::kEspeakSpeechSynthesisExtensionId,
+      base::RepeatingClosure());
 }
 #endif
 
