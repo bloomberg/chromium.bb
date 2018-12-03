@@ -202,7 +202,6 @@ public abstract class ChromeFeatureList {
             "ContextualSuggestionsIPHReverseScroll";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
-    public static final String DEVELOPER_PREFERENCES = "DeveloperPreferences";
     public static final String DONT_PREFETCH_LIBRARIES = "DontPrefetchLibraries";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
     public static final String DOWNLOAD_PROGRESS_INFOBAR = "DownloadProgressInfoBar";

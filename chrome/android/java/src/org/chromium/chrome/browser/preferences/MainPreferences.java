@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsE
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
+import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -158,11 +159,6 @@ public class MainPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
         }
 
-        // Developer preferences are only shown when the feature is enabled.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DEVELOPER_PREFERENCES)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_DEVELOPER));
-        }
-
         // This checks whether Autofill Assistant is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
             getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
@@ -214,6 +210,12 @@ public class MainPreferences extends PreferenceFragment
                     ContextualSuggestionsEnabledStateUtils.getEnabledState());
         } else {
             removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
+        }
+
+        if (DeveloperPreferences.shouldShowDeveloperPreferences()) {
+            addPreferenceIfAbsent(PREF_DEVELOPER);
+        } else {
+            removePreferenceIfPresent(PREF_DEVELOPER);
         }
 
         ChromeBasePreference dataReduction =

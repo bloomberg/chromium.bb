@@ -1394,9 +1394,18 @@ Your Google account may have other forms of browsing history like searches and a
         Download occurs only on Wi-Fi
       </message>
 
-      <!-- Developer preferences -->
-      <message name="IDS_PREFS_DEVELOPER" desc="Title for the Developer preferences page in Chrome settings, which is hidden for regular uses and shows settings and tools aimed at Chrome and web developers. [CHAR-LIMIT=32]">
+      <!-- Developer preferences (not translated, since not aimed at end-users) -->
+      <message name="IDS_PREFS_DEVELOPER" translateable="false" desc="Title for the Developer preferences page in Chrome settings, which is hidden for regular uses and shows settings and tools aimed at Chrome and web developers. [CHAR-LIMIT=32]">
         Developer options
+      </message>
+      <message name="IDS_PREFS_DEVELOPER_ENABLE_COUNTDOWN" translateable="false" desc="The toast shown when the Developer preferences will be enabled after a few more taps on the Chrome version.">
+        {TAPS, plural, =1 {%1$d more tap to enable Developer options.} other {%1$d more taps to enable Developer options.}}
+      </message>
+      <message name="IDS_PREFS_DEVELOPER_ENABLED" translateable="false" desc="The toast shown when the Developer preferences are enabled (i.e. shown in settings).">
+        Developer options are now enabled.
+      </message>
+      <message name="IDS_PREFS_DEVELOPER_ALREADY_ENABLED" translateable="false" desc="The toast shown when the Developer preferences were already enabled previously and the user taps on the Chrome version.">
+        Developer options are already enabled.
       </message>
 
       <!-- Tracing preferences (not translated, since part of developer preferences) -->
