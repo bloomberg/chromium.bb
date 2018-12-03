@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/suppressed_form_fetcher.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -78,7 +78,8 @@ class SuppressedFormFetcherTest : public testing::Test {
   PasswordManagerClientWithMockStore* mock_client() { return &client_; }
 
  private:
-  base::MessageLoop message_loop_;  // Needed by the MockPasswordStore.
+  base::test::ScopedTaskEnvironment
+      task_environment_;  // Needed by the MockPasswordStore.
 
   MockConsumer consumer_;
   PasswordManagerClientWithMockStore client_;

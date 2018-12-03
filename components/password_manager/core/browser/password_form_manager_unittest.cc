@@ -11,13 +11,13 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -984,7 +984,7 @@ class PasswordFormManagerTest : public testing::Test {
 
  private:
   // Necessary for callbacks, and for TestAutofillDriver.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   PasswordForm observed_form_;
   PasswordForm saved_match_;

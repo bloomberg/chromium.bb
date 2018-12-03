@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "net/url_request/url_request_test_util.h"
@@ -69,7 +69,8 @@ class HSTSQueryTest : public testing::Test {
   network::NetworkContext* network_context() { return network_context_.get(); }
 
  private:
-  base::MessageLoop message_loop_;  // Used by request_context_.
+  // Used by request_context_.
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   network::mojom::NetworkContextPtr network_context_pipe_;
   std::unique_ptr<network::NetworkContext> network_context_;

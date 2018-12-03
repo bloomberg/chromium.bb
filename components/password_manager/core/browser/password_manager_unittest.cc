@@ -11,13 +11,13 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
@@ -389,7 +389,7 @@ class PasswordManagerTest : public testing::Test {
   }
 
   const GURL test_url_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;

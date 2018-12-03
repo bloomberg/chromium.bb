@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,7 +63,8 @@ class FormSaverImplTest : public testing::Test {
   ~FormSaverImplTest() override { mock_store_->ShutdownOnUIThread(); }
 
  protected:
-  base::MessageLoop message_loop_;  // For the MockPasswordStore.
+  // For the MockPasswordStore.
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<StrictMock<MockPasswordStore>> mock_store_;
   FormSaverImpl form_saver_;
 
