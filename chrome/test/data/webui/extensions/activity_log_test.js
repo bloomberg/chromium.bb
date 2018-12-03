@@ -35,12 +35,21 @@ suite('ExtensionsActivityLogTest', function() {
         activityType: 'dom_access',
         apiCall: 'Storage.getItem',
         args: 'null',
-        count: 9,
+        count: 35,
         extensionId: EXTENSION_ID,
         other: {domVerb: 'method'},
         pageTitle: 'Test Extension',
         pageUrl: `chrome-extension://${EXTENSION_ID}/index.html`,
         time: 1541203131994.837
+      },
+      {
+        activityId: '301',
+        activityType: 'api_call',
+        apiCall: 'i18n.getUILanguage',
+        args: 'null',
+        count: 30,
+        extensionId: EXTENSION_ID,
+        time: 1541203172002.664
       },
     ]
   };
@@ -72,15 +81,26 @@ suite('ExtensionsActivityLogTest', function() {
     testVisible('#no-activities', false);
     testVisible('#loading-activities', false);
     testVisible('#activity-list', true);
+
+    const activityLogItems =
+        activityLog.shadowRoot.querySelectorAll('activity-log-item');
+    expectEquals(activityLogItems.length, 2);
+
+    // Test the order of the activity log items here. This test is in this
+    // file because the logic to group activity log items by their API call
+    // is in activity_log.js.
     expectEquals(
-        activityLog.shadowRoot.querySelectorAll('activity-log-item').length, 2);
+        activityLogItems[0].$$('#api-call').innerText, 'i18n.getUILanguage');
+    expectEquals(activityLogItems[0].$$('#activity-count').innerText, '40');
+
+    expectEquals(
+        activityLogItems[1].$$('#api-call').innerText, 'Storage.getItem');
+    expectEquals(activityLogItems[1].$$('#activity-count').innerText, '35');
   });
 
   test('message shown when no activities present for extension', function() {
     // Spoof an API call and pretend that the extension has no activities.
-    activityLog.activityData_ = {
-      activities: [],
-    };
+    activityLog.activityData_ = [];
 
     Polymer.dom.flush();
 
