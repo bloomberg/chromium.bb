@@ -556,15 +556,20 @@ void FetchManager::Loader::DidReceiveResponse(
 
   for (auto& it : response.HttpHeaderFields())
     response_data->HeaderList()->Append(it.key, it.value);
+
+  // Corresponds to https://fetch.spec.whatwg.org/#main-fetch step:
+  // "If |internalResponse|’s URL list is empty, then set it to a clone of
+  // |request|’s URL list."
   if (response.UrlListViaServiceWorker().IsEmpty()) {
-    // Note: |urlListViaServiceWorker| is empty, unless the response came from a
-    // service worker, in which case it will only be empty if it was created
-    // through MakeGarbageCollected<Response>().
+    // Note: |UrlListViaServiceWorker()| is empty, unless the response came from
+    // a service worker, in which case it will only be empty if it was created
+    // through new Response().
     response_data->SetURLList(url_list_);
   } else {
     DCHECK(response.WasFetchedViaServiceWorker());
     response_data->SetURLList(response.UrlListViaServiceWorker());
   }
+
   response_data->SetMIMEType(response.MimeType());
   response_data->SetResponseTime(response.ResponseTime());
 
