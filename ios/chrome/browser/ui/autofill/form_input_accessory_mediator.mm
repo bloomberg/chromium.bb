@@ -288,9 +288,9 @@
   NSString* frameID;
   if (frame) {
     frameID = base::SysUTF8ToNSString(frame->GetFrameId());
-  } else {
-    frameID = base::SysUTF8ToNSString(params.frame_id);
   }
+  DCHECK(frameID.length ||
+         !autofill::switches::IsAutofillIFrameMessagingEnabled());
 
   [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
   [self synchronizeNavigationControls];
