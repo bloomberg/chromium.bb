@@ -74,6 +74,10 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
 
  private:
   friend class DisconnectTetheringOperationTest;
+  FRIEND_TEST_ALL_PREFIXES(DisconnectTetheringOperationTest, TestSuccess);
+  FRIEND_TEST_ALL_PREFIXES(DisconnectTetheringOperationTest, TestFailure);
+  FRIEND_TEST_ALL_PREFIXES(DisconnectTetheringOperationTest,
+                           DisconnectRequestSentOnceAuthenticated);
 
   void SetClockForTest(base::Clock* clock_for_test);
 

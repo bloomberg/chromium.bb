@@ -209,6 +209,8 @@ static_library("test_support") {
     "mock_tether_host_response_recorder.h",
     "proto_test_util.cc",
     "proto_test_util.h",
+    "test_timer_factory.cc",
+    "test_timer_factory.h",
   ]
 
   public_deps = [
@@ -217,6 +219,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//chromeos",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",

@@ -16,12 +16,11 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/proto_test_util.h"
-#include "chromeos/components/tether/timer_factory.h"
+#include "chromeos/components/tether/test_timer_factory.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
@@ -64,28 +63,6 @@ class MockOperationObserver : public ConnectTetheringOperation::Observer {
 };
 
 }  // namespace
-
-class TestTimerFactory : public TimerFactory {
- public:
-  ~TestTimerFactory() override = default;
-
-  // TimerFactory:
-  std::unique_ptr<base::OneShotTimer> CreateOneShotTimer() override {
-    EXPECT_FALSE(device_id_for_next_timer_.empty());
-    base::MockOneShotTimer* mock_timer = new base::MockOneShotTimer();
-    device_id_to_timer_map_[device_id_for_next_timer_] = mock_timer;
-    return base::WrapUnique(mock_timer);
-  }
-
-  void set_device_id_for_next_timer(
-      const std::string& device_id_for_next_timer) {
-    device_id_for_next_timer_ = device_id_for_next_timer;
-  }
-
- private:
-  std::string device_id_for_next_timer_;
-  base::flat_map<std::string, base::MockOneShotTimer*> device_id_to_timer_map_;
-};
 
 class ConnectTetheringOperationTest : public testing::Test {
  protected:
