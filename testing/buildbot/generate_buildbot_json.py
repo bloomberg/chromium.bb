@@ -600,6 +600,13 @@ class BBJSONGenerator(object):
     # aren't idempotent yet. https://crbug.com/549140.
     result['swarming']['idempotent'] = False
 
+    # The GPU tests act much like integration tests for the entire browser, and
+    # tend to uncover flakiness bugs more readily than other test suites. In
+    # order to surface any flakiness more readily to the developer of the CL
+    # which is introducing it, we disable retries with patch on the commit
+    # queue.
+    result['should_retry_with_patch'] = False
+
     args = [
       test_to_run,
       '--show-stdout',
