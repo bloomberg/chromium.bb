@@ -54,8 +54,11 @@ namespace {
 // Delimiter in the url that looks for the size specification.
 const char kSizeParameter[] = "size/";
 
-// Size of the fallback icon (letter + circle), in dp.
-const int kFallbackIconSizeDip = 48;
+// Size of the icon background (gray circle), in dp.
+const int kIconSizeDip = 48;
+
+// Size of the favicon fallback (letter + colored circle), in dp.
+const int kFallbackSizeDip = 32;
 
 // URL to the server favicon service. "alt=404" means the service will return a
 // 404 if an icon can't be found.
@@ -122,17 +125,19 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   return parsed;
 }
 
-// Draws a circle of a given |size| in the |canvas| and fills it with
-// |background_color|.
+// Draws a circle of a given |size| and |offset| in the |canvas| and fills it
+// with |background_color|.
 void DrawCircleInCanvas(gfx::Canvas* canvas,
                         int size,
+                        int offset,
                         SkColor background_color) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(background_color);
   int corner_radius = static_cast<int>(size * 0.5 + 0.5);
-  canvas->DrawRoundRect(gfx::Rect(0, 0, size, size), corner_radius, flags);
+  canvas->DrawRoundRect(gfx::Rect(offset, offset, size, size), corner_radius,
+                        flags);
 }
 
 // Will paint the appropriate letter in the center of specified |canvas| of
@@ -145,7 +150,7 @@ void DrawFallbackIconLetter(const GURL& icon_url,
   if (icon_text.empty())
     return;
 
-  const double kDefaultFontSizeRatio = 0.44;
+  const double kDefaultFontSizeRatio = 0.34;
   int font_size = static_cast<int>(size * kDefaultFontSizeRatio);
   if (font_size <= 0)
     return;
@@ -187,31 +192,39 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
   return SkColorSetRGB(hash[0], hash[1], hash[2]);
 }
 
-// For the given |icon_url|, will render a fallback icon with an appropriate
-// letter in a circle.
+// For the given |icon_url|, will render |favicon| within a gray, circular
+// background. If |favicon| is not specifed, will use a colored circular
+// monogram instead.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
                                             const SkBitmap& favicon,
-                                            int size) {
+                                            int icon_size,
+                                            int fallback_size) {
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(size, size, false);
+  bitmap.allocN32Pixels(icon_size, icon_size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-  if (!favicon.empty()) {
-    constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
-    DrawCircleInCanvas(&canvas, size, /*background_color=*/kFaviconBackground);
-    DrawFavicon(favicon, &canvas, size);
-  } else {
-    SkColor background_color = GetBackgroundColorForUrl(icon_url);
-    // If luminance is too high, the white text will become unreadable. Invert
-    // the background color to achieve better constrast. The constant comes
-    // W3C Accessibility standards.
-    if (color_utils::GetRelativeLuminance(background_color) > 0.179f)
-      background_color = color_utils::InvertColor(background_color);
 
-    DrawCircleInCanvas(&canvas, size, background_color);
-    DrawFallbackIconLetter(icon_url, size, &canvas);
+  // Draw the gray background.
+  constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+  DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
+                     /*background_color=*/kFaviconBackground);
+  DrawFavicon(favicon, &canvas, icon_size);
+
+  // If necessary, draw the colored fallback monogram.
+  if (favicon.empty()) {
+    SkColor fallback_color = GetBackgroundColorForUrl(icon_url);
+    // If luminance is too high, the white text will become unreadable. Invert
+    // the background color to achieve better contrast. The constant comes from
+    // W3C Accessibility standards.
+    if (color_utils::GetRelativeLuminance(fallback_color) > 0.179f)
+      fallback_color = color_utils::InvertColor(fallback_color);
+
+    int offset = (icon_size - fallback_size) / 2;
+    DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
+    DrawFallbackIconLetter(icon_url, icon_size, &canvas);
   }
+
   std::vector<unsigned char> bitmap_data;
   bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
   DCHECK(result);
@@ -431,8 +444,11 @@ void NtpIconSource::OnServerFaviconAvailable(
 void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
                                                  const SkBitmap& bitmap) {
   int desired_overall_size_in_pixel =
-      std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
+      std::ceil(kIconSizeDip * request.device_scale_factor);
+  int desired_fallback_size_in_pixel =
+      std::ceil(kFallbackSizeDip * request.device_scale_factor);
   std::vector<unsigned char> bitmap_data =
-      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel);
+      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
+                       desired_fallback_size_in_pixel);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }
