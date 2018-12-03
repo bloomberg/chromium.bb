@@ -1,12 +1,7 @@
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/729849
 
-Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
-Bug(none) virtual/outofblink-cors/http/tests/security/cors-rfc1918 [ Crash Timeout ]
-Bug(none) virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
-Bug(none) virtual/outofblink-cors-ns/http/tests/security/cors-rfc1918 [ Crash Timeout ]
-Bug(none) virtual/outofblink-cors-ns/http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
 # Only passes with Network Servce enabled (unfortunately these expectations still
 # allow Failure or Timeout from the top-level expectations though).
@@ -33,5 +28,9 @@ crbug.com/910212 virtual/reporting-api/external/wpt/content-security-policy/repo
 crbug.com/910212 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-sends-reports-on-violation.https.sub.html [ Failure ]
 crbug.com/910212 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-works-on-frame-src.https.sub.html [ Failure ]
 
-# Uncategorized failure.
-Bug(none) virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
+# Skip virtual/outofblink-cors when NetworkService is on, since it's only
+# intended to be run with NetworkService off.
+Bug(none) virtual/outofblink-cors [ Skip ]
+# Skip virtual/outofblink-cors-ns on this bot, since when run normally it
+# already forces NetworkService on, so there is no need to run it again here.
+Bug(none) virtual/outofblink-cors-ns [ Skip ]
