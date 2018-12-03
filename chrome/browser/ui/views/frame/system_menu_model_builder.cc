@@ -165,12 +165,13 @@ void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
 
   // If this does not belong to a profile or there is no window, or the window
   // is not owned by anyone, we don't show the menu addition.
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
   const AccountId account_id =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
   aura::Window* window = browser()->window()->GetNativeWindow();
   if (!account_id.is_valid() || !window ||
-      !manager->GetWindowOwner(window).is_valid())
+      !client->GetWindowOwner(window).is_valid())
     return;
 
   model->AddSeparator(ui::NORMAL_SEPARATOR);

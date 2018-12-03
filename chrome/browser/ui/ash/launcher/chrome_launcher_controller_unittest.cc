@@ -1258,8 +1258,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
     // Remember the profile name so that we can destroy it upon destruction.
     created_profiles_[profile] = account_id.GetUserEmail();
-    if (MultiUserWindowManager::GetInstance())
-      MultiUserWindowManager::GetInstance()->AddUser(profile);
+    if (MultiUserWindowManagerClient::GetInstance())
+      MultiUserWindowManagerClient::GetInstance()->AddUser(profile);
     if (launcher_controller_)
       launcher_controller_->AdditionalUserAddedToSession(profile);
     return profile;
@@ -2636,7 +2636,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Create a browser item in the LauncherController.
   InitLauncherController();
 
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
 
   // First create an app when the user is active.
   std::string user2 = "user2";
@@ -2652,8 +2653,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     EXPECT_EQ(4, model_->item_count());
 
     // Transfer the app to the other screen and switch users.
-    manager->ShowWindowForUser(v1_app->browser()->window()->GetNativeWindow(),
-                               account_id2);
+    client->ShowWindowForUser(v1_app->browser()->window()->GetNativeWindow(),
+                              account_id2);
     EXPECT_EQ(4, model_->item_count());
     SwitchActiveUser(account_id2);
     EXPECT_EQ(3, model_->item_count());
@@ -2716,11 +2717,12 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        TestLauncherActivationPullsBackWindow) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
 
   // Create a second test profile. The first is the one in profile() created in
   // BrowserWithTestWindowTest::SetUp().
-  // No need to add the profiles to the MultiUserWindowManager here.
+  // No need to add the profiles to the MultiUserWindowManagerClient here.
   // CreateMultiUserProfile() already does that.
   TestingProfile* profile2 = CreateMultiUserProfile("user2");
   const AccountId current_user =
@@ -2731,20 +2733,20 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       CreateBrowserWithTestWindowForProfile(profile()));
   BrowserWindow* browser_window = browser->window();
   aura::Window* window = browser_window->GetNativeWindow();
-  manager->SetWindowOwner(window, current_user);
+  client->SetWindowOwner(window, current_user);
 
   // Check that an activation of the window on its owner's desktop does not
   // change the visibility to another user.
   launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
-  EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
+  EXPECT_TRUE(client->IsWindowOnDesktopOfUser(window, current_user));
 
   // Transfer the window to another user's desktop and check that activating it
   // does pull it back to that user.
-  manager->ShowWindowForUser(
-      window, multi_user_util::GetAccountIdFromProfile(profile2));
-  EXPECT_FALSE(manager->IsWindowOnDesktopOfUser(window, current_user));
+  client->ShowWindowForUser(window,
+                            multi_user_util::GetAccountIdFromProfile(profile2));
+  EXPECT_FALSE(client->IsWindowOnDesktopOfUser(window, current_user));
   launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
-  EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
+  EXPECT_TRUE(client->IsWindowOnDesktopOfUser(window, current_user));
 }
 
 // Check that a running windowed V1 application will be properly pinned and
@@ -3232,7 +3234,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item2);
 
   // Transferred browsers of other users should not show up in the list.
-  MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+  MultiUserWindowManagerClient::GetInstance()->ShowWindowForUser(
       browser()->window()->GetNativeWindow(), account_id2);
   CheckAppMenu(launcher_controller_.get(), item_browser, 1, one_menu_item2);
 
@@ -3345,7 +3347,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   CheckAppMenu(launcher_controller_.get(), item_gmail, 0, nullptr);
 
   // Transfer the browser of the first user - it should still not show up.
-  MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+  MultiUserWindowManagerClient::GetInstance()->ShowWindowForUser(
       browser()->window()->GetNativeWindow(), account_id2);
 
   CheckAppMenu(launcher_controller_.get(), item_browser, 0, nullptr);
@@ -3480,7 +3482,8 @@ TEST_F(ChromeLauncherControllerTest, Active) {
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppFollowsTeleportedWindow) {
   InitLauncherController();
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
 
   // Create and add three users / profiles, and go to #1's desktop.
   TestingProfile* profile1 = CreateMultiUserProfile("user-1");
@@ -3507,7 +3510,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
 
   // Teleport the app from user #1 to the desktop #2 should show it.
-  manager->ShowWindowForUser(v2_app_1.window()->GetNativeWindow(), account_id2);
+  client->ShowWindowForUser(v2_app_1.window()->GetNativeWindow(), account_id2);
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
 
@@ -3593,7 +3596,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
     SwitchActiveUser(account_id);
     // The following expectation does not work in current impl. It was working
-    // before because MultiUserWindowManagerChromeOS is not attached to user
+    // before because MultiUserWindowManagerClientImpl is not attached to user
     // associated with profile() hence not actually handling windows for the
     // user. It is a real bug. See http://crbug.com/693634
     // EXPECT_EQ(2, model_->item_count());

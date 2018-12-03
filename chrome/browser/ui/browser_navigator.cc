@@ -504,19 +504,20 @@ void Navigate(NavigateParams* params) {
     // When the newly created browser was spawned by a browser which visits
     // another user's desktop, it should be shown on the same desktop as the
     // originating one. (This is part of the desktop separation per profile).
-    MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
-    // Some unit tests have no manager instantiated.
-    if (manager) {
+    MultiUserWindowManagerClient* client =
+        MultiUserWindowManagerClient::GetInstance();
+    // Some unit tests have no client instantiated.
+    if (client) {
       aura::Window* src_window = source_browser->window()->GetNativeWindow();
       aura::Window* new_window = params->browser->window()->GetNativeWindow();
       const AccountId& src_account_id =
-          manager->GetUserPresentingWindow(src_window);
-      if (src_account_id != manager->GetUserPresentingWindow(new_window)) {
+          client->GetUserPresentingWindow(src_window);
+      if (src_account_id != client->GetUserPresentingWindow(new_window)) {
         // Once the window gets presented, it should be shown on the same
         // desktop as the desktop of the creating browser. Note that this
         // command will not show the window if it wasn't shown yet by the
         // browser creation.
-        manager->ShowWindowForUser(new_window, src_account_id);
+        client->ShowWindowForUser(new_window, src_account_id);
       }
     }
   }

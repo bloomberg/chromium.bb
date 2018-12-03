@@ -45,12 +45,13 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     return profile;
   }
 
-  MultiUserWindowManagerChromeOS* GetUserWindowManager() {
+  MultiUserWindowManagerClientImpl* GetUserWindowManager() {
     if (!multi_user_window_manager_) {
       multi_user_window_manager_ =
-          new MultiUserWindowManagerChromeOS(test_account_id1_);
+          new MultiUserWindowManagerClientImpl(test_account_id1_);
       multi_user_window_manager_->Init();
-      MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
+      MultiUserWindowManagerClient::SetInstanceForTest(
+          multi_user_window_manager_);
     }
     return multi_user_window_manager_;
   }
@@ -68,7 +69,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    MultiUserWindowManager::DeleteInstance();
+    MultiUserWindowManagerClient::DeleteInstance();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -77,7 +78,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* second_profile_;
-  MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  MultiUserWindowManagerClientImpl* multi_user_window_manager_;
 
   // |fake_user_manager_| is owned by |user_manager_enabler_|
   chromeos::FakeChromeUserManager* fake_user_manager_;

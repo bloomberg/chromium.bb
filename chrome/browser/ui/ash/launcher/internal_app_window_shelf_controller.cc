@@ -49,7 +49,7 @@ void InternalAppWindowShelfController::ActiveUserChanged(
       continue;
     }
 
-    if (MultiUserWindowManager::GetInstance()
+    if (MultiUserWindowManagerClient::GetInstance()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(app_window);
@@ -134,7 +134,7 @@ void InternalAppWindowShelfController::RegisterAppWindow(
   // Keyboard Shortcut Viewer has a global instance so it can be shared with
   // different users.
   if (shelf_id.app_id != app_list::kInternalAppIdKeyboardShortcutViewer) {
-    MultiUserWindowManager::GetInstance()->SetWindowOwner(
+    MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   }

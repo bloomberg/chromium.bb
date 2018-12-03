@@ -12,32 +12,33 @@
 #include "components/user_manager/user_manager.h"
 
 namespace {
-MultiUserWindowManager* g_multi_user_window_manager_instance = nullptr;
+MultiUserWindowManagerClient* g_multi_user_window_manager_instance = nullptr;
 }  // namespace
 
 // static
-MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
+MultiUserWindowManagerClient* MultiUserWindowManagerClient::GetInstance() {
   return g_multi_user_window_manager_instance;
 }
 
-MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
+MultiUserWindowManagerClient* MultiUserWindowManagerClient::CreateInstance() {
   DCHECK(!g_multi_user_window_manager_instance);
   if (SessionControllerClient::IsMultiProfileAvailable()) {
-    MultiUserWindowManagerChromeOS* manager =
-        new MultiUserWindowManagerChromeOS(
+    MultiUserWindowManagerClientImpl* manager =
+        new MultiUserWindowManagerClientImpl(
             user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
     g_multi_user_window_manager_instance = manager;
     manager->Init();
   } else {
     // Use a stub when multi-profile is not available.
-    g_multi_user_window_manager_instance = new MultiUserWindowManagerStub();
+    g_multi_user_window_manager_instance =
+        new MultiUserWindowManagerClientStub();
   }
 
   return g_multi_user_window_manager_instance;
 }
 
 // static
-bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
+bool MultiUserWindowManagerClient::ShouldShowAvatar(aura::Window* window) {
   // Session restore can open a window for the first user before the instance
   // is created.
   if (!g_multi_user_window_manager_instance)
@@ -51,15 +52,15 @@ bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
 }
 
 // static
-void MultiUserWindowManager::DeleteInstance() {
+void MultiUserWindowManagerClient::DeleteInstance() {
   DCHECK(g_multi_user_window_manager_instance);
   delete g_multi_user_window_manager_instance;
   g_multi_user_window_manager_instance = nullptr;
 }
 
 // static
-void MultiUserWindowManager::SetInstanceForTest(
-    MultiUserWindowManager* instance) {
+void MultiUserWindowManagerClient::SetInstanceForTest(
+    MultiUserWindowManagerClient* instance) {
   if (g_multi_user_window_manager_instance)
     DeleteInstance();
   g_multi_user_window_manager_instance = instance;

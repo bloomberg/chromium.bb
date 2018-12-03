@@ -45,7 +45,7 @@ class ChromeNativeAppWindowViewsAuraAsh
       public ExclusiveAccessBubbleViewsContext,
       public ash::wm::WindowStateObserver,
       public aura::WindowObserver,
-      public MultiUserWindowManager::Observer,
+      public MultiUserWindowManagerClient::Observer,
       public ash::mojom::MenuDelegate {
  public:
   ChromeNativeAppWindowViewsAuraAsh();
@@ -136,7 +136,7 @@ class ChromeNativeAppWindowViewsAuraAsh
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // MultiUserWindowManager::Observer:
+  // MultiUserWindowManagerClient::Observer:
   void OnOwnerEntryAdded(aura::Window* window) override;
   void OnOwnerEntryChanged(aura::Window* window) override;
 

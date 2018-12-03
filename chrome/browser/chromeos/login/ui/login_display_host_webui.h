@@ -50,7 +50,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public display::DisplayObserver,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
-                              public MultiUserWindowManager::Observer {
+                              public MultiUserWindowManagerClient::Observer {
  public:
   LoginDisplayHostWebUI();
   ~LoginDisplayHostWebUI() override;
@@ -129,7 +129,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
 
-  // chrome::MultiUserWindowManager::Observer:
+  // MultiUserWindowManagerClient::Observer:
   void OnUserSwitchAnimationFinished() override;
 
  private:
