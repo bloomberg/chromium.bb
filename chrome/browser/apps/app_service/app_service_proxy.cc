@@ -31,10 +31,11 @@ AppServiceProxy::AppServiceProxy(Profile* profile) {
   app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
 
 #if defined(OS_CHROMEOS)
-  // The AppServiceProxy is also a publisher, of built-in apps. That
+  // The AppServiceProxy is also a publisher, of a variety of app types. That
   // responsibility isn't intrinsically part of the AppServiceProxy, but doing
-  // that here is as good a place as any.
+  // that here, for each such app type, is as good a place as any.
   built_in_chrome_os_apps_.Initialize(app_service_, profile);
+  extension_apps_.Initialize(app_service_, profile);
 #endif  // OS_CHROMEOS
 }
 

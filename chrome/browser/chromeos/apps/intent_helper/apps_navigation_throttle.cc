@@ -227,6 +227,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       break;
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kExtension:
       NOTREACHED();
   }
   RecordUma(launch_name, app_type, close_reason, should_persist);
@@ -363,6 +364,7 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
           return PickerAction::PWA_APP_PRESSED;
         case apps::mojom::AppType::kBuiltIn:
         case apps::mojom::AppType::kCrostini:
+        case apps::mojom::AppType::kExtension:
           NOTREACHED();
       }
   }

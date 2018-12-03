@@ -3125,6 +3125,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "apps/app_service/built_in_chromeos_apps.cc",
       "apps/app_service/built_in_chromeos_apps.h",
+      "apps/app_service/extension_apps.cc",
+      "apps/app_service/extension_apps.h",
       "ash_service_registry.cc",
       "ash_service_registry.h",
       "component_updater/cros_component_installer_chromeos.cc",
