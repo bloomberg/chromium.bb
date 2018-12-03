@@ -29,7 +29,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_lite_page_url_handler.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"

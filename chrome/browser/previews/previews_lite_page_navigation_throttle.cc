@@ -35,7 +35,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_lite_page_url_handler.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -326,7 +326,7 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   if (previews::params::IsInLitePageRedirectControl()) {
     previews::PreviewsUserData::ServerLitePageInfo* info =
         GetOrCreateServerLitePageInfo();
-    info->status = previews::PreviewsUserData::ServerLitePageStatus::kControl;
+    info->status = previews::ServerLitePageStatus::kControl;
     return false;
   }
   return true;
@@ -442,8 +442,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
       previews::params::LitePagePreviewsNavigationTimeoutDuration();
   std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo>
       timed_out_info = info->Clone();
-  timed_out_info->status =
-      previews::PreviewsUserData::ServerLitePageStatus::kError;
+  timed_out_info->status = previews::ServerLitePageStatus::kFailure;
   if (timeout > base::TimeDelta()) {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
@@ -538,8 +537,7 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
     // it is pointing towards the original page, it is considered a bypass.
     // Otherwise it is just a forwarded bypass.
     if (GURL(original_url) == navigation_handle()->GetURL()) {
-      GetServerLitePageInfo()->status =
-          previews::PreviewsUserData::ServerLitePageStatus::kBypass;
+      GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kBypass;
       manager_->AddSingleBypass(navigation_handle()->GetURL().spec());
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "Previews.ServerLitePage.HttpOnlyFallbackPenalty",
@@ -550,7 +548,7 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
       UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                                 ServerResponse::kRedirect);
       GetServerLitePageInfo()->status =
-          previews::PreviewsUserData::ServerLitePageStatus::kRedirect;
+          previews::ServerLitePageStatus::kRedirect;
     }
 
     // Check if the original host should be blacklisted, as directed by the
@@ -587,8 +585,7 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
 
   UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                             ServerResponse::kFailed);
-  GetServerLitePageInfo()->status =
-      previews::PreviewsUserData::ServerLitePageStatus::kError;
+  GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kFailure;
 
   // The Preview was triggered but there was some irrecoverable issue (like
   // there is no network connection). Load the original page and let it go
@@ -632,7 +629,7 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               ServerResponse::kOk);
     GetOrCreateServerLitePageInfo()->status =
-        previews::PreviewsUserData::ServerLitePageStatus::kSuccess;
+        previews::ServerLitePageStatus::kSuccess;
 
     return content::NavigationThrottle::PROCEED;
   }
@@ -665,7 +662,7 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
 
   previews::PreviewsUserData::ServerLitePageInfo* info =
       GetOrCreateServerLitePageInfo();
-  info->status = previews::PreviewsUserData::ServerLitePageStatus::kError;
+  info->status = previews::ServerLitePageStatus::kFailure;
   LoadAndBypass(
       navigation_handle()->GetWebContents(), manager_,
       MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string()),

@@ -311,6 +311,7 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint, first_input_delay,
       parse_blocked_on_script_load_duration, parse_stop, page_end_time,
+      lite_page_redirect_penalty_, lite_page_redirect_status_,
       navigation_start_to_main_frame_fetch_start_, network_bytes,
       original_network_bytes, total_page_size_bytes, cached_fraction,
       app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id,

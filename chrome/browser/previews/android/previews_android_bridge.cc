@@ -10,7 +10,7 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_lite_page_url_handler.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PreviewsAndroidBridge_jni.h"
 

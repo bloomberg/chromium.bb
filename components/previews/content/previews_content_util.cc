@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/previews_lite_page_url_handler.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 
 namespace previews {
 

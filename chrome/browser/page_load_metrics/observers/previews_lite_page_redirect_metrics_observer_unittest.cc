@@ -13,6 +13,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
 
+const base::TimeDelta kNavigationPenalty = base::TimeDelta::FromMinutes(1);
+
 class TestPreviewsLitePageRedirectMetricsObserver
     : public PreviewsLitePageRedirectMetricsObserver {
  public:
@@ -36,6 +38,9 @@ class TestPreviewsLitePageRedirectMetricsObserver
             ->CreatePreviewsUserDataForNavigationHandle(navigation_handle, 0u);
 
     if (preview_info_) {
+      preview_info_->original_navigation_start =
+          navigation_handle->NavigationStart() - kNavigationPenalty;
+
       data->set_server_lite_page_info(preview_info_->Clone());
       data->set_navigation_ect(ect_);
     }
@@ -99,12 +104,18 @@ TEST_F(PreviewsLitePageRedirectMetricsObserverTest, TestPingbackSent) {
   previews::PreviewsUserData::ServerLitePageInfo info;
   info.drp_session_key = "meow";
   info.page_id = 1337U;
+  info.status = previews::ServerLitePageStatus::kSuccess;
 
   ResetTest();
   RunLitePageRedirectTest(&info, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   NavigateToUntrackedUrl();
   ValidatePreviewsStateInPingback();
   ValidateTimes();
+
+  EXPECT_EQ(pingback_client()->timing()->lite_page_redirect_penalty.value(),
+            kNavigationPenalty);
+  EXPECT_EQ(pingback_client()->timing()->lite_page_redirect_status.value(),
+            previews::ServerLitePageStatus::kSuccess);
 }
 
 TEST_F(PreviewsLitePageRedirectMetricsObserverTest, TestPingbackNotSent) {
