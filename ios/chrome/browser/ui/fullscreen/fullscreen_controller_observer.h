@@ -5,7 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_OBSERVER_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_OBSERVER_H_
 
-#include <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UIKit.h>
 
 #include "base/macros.h"
 
@@ -17,6 +17,11 @@ class FullscreenControllerObserver {
  public:
   FullscreenControllerObserver() = default;
   virtual ~FullscreenControllerObserver() = default;
+
+  // Invoked when the maximum or minimum viewport insets for |controller| have
+  // been updated.
+  virtual void FullscreenViewportInsetRangeChanged(
+      FullscreenController* controller) {}
 
   // Invoked after a scrolling event has caused |controller| to calculate
   // |progress|.  A |progress| value of 1.0 denotes that the toolbar should be

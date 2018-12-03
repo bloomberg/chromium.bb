@@ -63,6 +63,13 @@ void FullscreenMediator::Disconnect() {
   controller_ = nullptr;
 }
 
+void FullscreenMediator::FullscreenModelToolbarHeightsUpdated(
+    FullscreenModel* model) {
+  for (auto& observer : observers_) {
+    observer.FullscreenViewportInsetRangeChanged(controller_);
+  }
+}
+
 void FullscreenMediator::FullscreenModelProgressUpdated(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);

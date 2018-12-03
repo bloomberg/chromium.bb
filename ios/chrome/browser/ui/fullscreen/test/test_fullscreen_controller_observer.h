@@ -10,6 +10,11 @@
 // Test version of FullscreenControllerObserver.
 class TestFullscreenControllerObserver : public FullscreenControllerObserver {
  public:
+  UIEdgeInsets min_viewport_insets() const { return min_viewport_insets_; }
+  UIEdgeInsets max_viewport_insets() const { return max_viewport_insets_; }
+  UIEdgeInsets current_viewport_insets() const {
+    return current_viewport_insets_;
+  }
   CGFloat progress() const { return progress_; }
   bool enabled() const { return enabled_; }
   FullscreenAnimator* animator() const { return animator_; }
@@ -17,6 +22,8 @@ class TestFullscreenControllerObserver : public FullscreenControllerObserver {
 
  private:
   // FullscreenControllerObserver:
+  void FullscreenViewportInsetRangeChanged(
+      FullscreenController* controller) override;
   void FullscreenProgressUpdated(FullscreenController* controller,
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,
@@ -26,6 +33,9 @@ class TestFullscreenControllerObserver : public FullscreenControllerObserver {
   void FullscreenControllerWillShutDown(
       FullscreenController* controller) override;
 
+  UIEdgeInsets min_viewport_insets_ = UIEdgeInsetsZero;
+  UIEdgeInsets max_viewport_insets_ = UIEdgeInsetsZero;
+  UIEdgeInsets current_viewport_insets_ = UIEdgeInsetsZero;
   CGFloat progress_ = 0.0;
   bool enabled_ = true;
   __weak FullscreenAnimator* animator_ = nil;
