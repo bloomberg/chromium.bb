@@ -14,13 +14,9 @@ class FilePath;
 namespace android_webview {
 namespace crash_reporter {
 
-void EnableCrashReporter(const std::string& process_type, int crash_signal_fd);
+void EnableCrashReporter(const std::string& process_type);
 bool GetCrashDumpLocation(base::FilePath* crash_dir);
-void AddGpuFingerprintToMicrodumpCrashHandler(
-    const std::string& gpu_fingerprint);
-bool DumpWithoutCrashingToFd(int fd);
-bool IsCrashReporterEnabled();
-void SuppressDumpGeneration();
+
 }  // namespace crash_reporter
 }  // namespace android_webview
 

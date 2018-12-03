@@ -37,7 +37,8 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.components.crash.browser.CrashDumpManager;
+import org.chromium.components.crash.browser.ChildProcessCrashObserver;
+import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
@@ -407,15 +408,26 @@ public class ChromeBrowserInitializer {
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
         ServiceManagerStartupUtils.registerEnabledFeatures();
 
-        // When a minidump is detected, extract and append a logcat to it, then upload it to the
-        // crash server. Note that the logcat extraction might fail. This is ok; in that case, the
-        // minidump will be found and uploaded upon the next browser launch.
-        CrashDumpManager.registerUploadCallback(new CrashDumpManager.UploadMinidumpCallback() {
-            @Override
-            public void tryToUploadMinidump(File minidump) {
-                AsyncTask.THREAD_POOL_EXECUTOR.execute(new LogcatExtractionRunnable(minidump));
-            }
-        });
+        // When a child process crashes, search for the most recent minidump for the child's process
+        // ID and attach a logcat to it. Then upload it to the crash server. Note that the logcat
+        // extraction might fail. This is ok; in that case, the minidump will be found and uploaded
+        // upon the next browser launch.
+        ChildProcessCrashObserver.registerCrashCallback(
+                new ChildProcessCrashObserver.ChildCrashedCallback() {
+                    @Override
+                    public void childCrashed(int pid) {
+                        CrashFileManager crashFileManager = new CrashFileManager(
+                                ContextUtils.getApplicationContext().getCacheDir());
+
+                        File minidump = crashFileManager.getMinidumpSansLogcatForPid(pid);
+                        if (minidump != null) {
+                            AsyncTask.THREAD_POOL_EXECUTOR.execute(
+                                    new LogcatExtractionRunnable(minidump));
+                        } else {
+                            Log.e(TAG, "Missing dump for child " + pid);
+                        }
+                    }
+                });
 
         MemoryPressureUma.initializeForBrowser();
         if (mTasksToRunWithNative != null) {

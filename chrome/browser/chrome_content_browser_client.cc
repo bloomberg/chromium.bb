@@ -423,8 +423,10 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
 #include "base/debug/leak_annotations.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#endif  // !defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif
 
@@ -749,7 +751,11 @@ bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+int GetCrashSignalFD(const base::CommandLine& command_line) {
+  return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
+}
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path;
@@ -824,7 +830,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 
   return -1;
 }
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID)
 
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1914,7 +1920,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     client_info->client_id);
   }
 #elif defined(OS_POSIX)
-  if (breakpad::IsCrashReporterEnabled()) {
+#if defined(OS_ANDROID)
+  bool enable_crash_reporter = true;
+#else
+  bool enable_crash_reporter = breakpad::IsCrashReporterEnabled();
+#endif
+  if (enable_crash_reporter) {
     std::string switch_value;
     std::unique_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
@@ -3507,18 +3518,14 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->ShareWithRegion(kAndroidSecondaryLocalePakDescriptor, fd, region);
   }
 
-  crash_reporter::ChildExitObserver::GetInstance()->BrowserChildProcessStarted(
-      child_process_id, mappings);
-
   base::FilePath app_data_path;
   base::PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
   DCHECK(!app_data_path.empty());
-#else
+#endif  // defined(OS_ANDROID)
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
   }
-#endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
