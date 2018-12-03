@@ -117,10 +117,18 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   NOTREACHED();
   return gfx::ImageSkia();
 #else
-  if (!IsEditingOrEmpty()) {
+
+  // For tests, model_ will be null.
+  if (!model_) {
+    AutocompleteMatch fake_match;
+    fake_match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+    const gfx::VectorIcon& vector_icon = fake_match.GetVectorIcon(false);
+    return gfx::CreateVectorIcon(vector_icon, dip_size, color);
+  }
+
+  if (model_->ShouldShowCurrentPageIcon()) {
     // Query in Omnibox.
-    if (model_ &&
-        model_->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */)) {
+    if (model_->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */)) {
       gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
           std::move(on_icon_fetched));
       if (!icon.IsEmpty())
@@ -131,16 +139,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
         controller_->GetLocationBarModel()->GetVectorIcon(), dip_size, color);
   }
 
-  // For tests, model_ will be null.
-  if (!model_) {
-    AutocompleteMatch fake_match;
-    fake_match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
-    const gfx::VectorIcon& vector_icon = fake_match.GetVectorIcon(false);
-    return gfx::CreateVectorIcon(vector_icon, dip_size, color);
-  }
-
   gfx::Image favicon;
-
   AutocompleteMatch match = model_->CurrentMatch(nullptr);
   if (AutocompleteMatch::IsSearchType(match.type)) {
     // For search queries, display default search engine's favicon.

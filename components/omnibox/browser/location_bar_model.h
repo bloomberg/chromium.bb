@@ -54,8 +54,9 @@ class LocationBarModel {
 
   // Returns the id of the icon to show to the left of the address, based on the
   // current URL.  When search term replacement is active, this returns a search
-  // icon.  This doesn't cover specialized icons while the user is editing; see
-  // OmniboxView::GetIcon().
+  // icon.  This always shows the icon based on the current page's security
+  // state, and doesn't account for user editing, or show any specialized icons
+  // for input in progress. See OmniboxView::GetIcon() for those.
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
 
   // Returns text for the omnibox secure verbose chip, displayed next to the
