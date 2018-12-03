@@ -36,6 +36,7 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   void requestEntries(const String& cache_id,
                       int skip_count,
                       int page_size,
+                      protocol::Maybe<String> path_filter,
                       std::unique_ptr<RequestEntriesCallback>) override;
   void deleteCache(const String& cache_id,
                    std::unique_ptr<DeleteCacheCallback>) override;
