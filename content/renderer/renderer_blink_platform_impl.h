@@ -300,7 +300,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
 
 #if defined(OS_LINUX)
-  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
