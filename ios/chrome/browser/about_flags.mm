@@ -482,6 +482,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(crash_report::kDetectMainThreadFreeze,
                                     kDetectMainThreadFreezeVariations,
                                     "DetectMainThreadFreeze")},
+    {"enable-sync-uss-bookmarks",
+     flag_descriptions::kEnableSyncUSSBookmarksName,
+     flag_descriptions::kEnableSyncUSSBookmarksDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
 };
 
 // Add all switches from experimental flags to |command_line|.
