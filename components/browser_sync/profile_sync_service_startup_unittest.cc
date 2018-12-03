@@ -211,9 +211,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   EXPECT_EQ(base::Time(), sync_prefs()->GetLastSyncedTime());
   EXPECT_FALSE(sync_prefs()->IsFirstSetupComplete());
 
-  // Confirmation isn't needed before sign in occurs.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
-
   // This tells the ProfileSyncService that setup is now in progress, which
   // causes it to try starting up the engine. We're not signed in yet though, so
   // that won't work.
@@ -223,10 +220,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
-
-  // Confirmation isn't needed before sign in occurs, or when setup is already
-  // in progress.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
   // Simulate successful signin. This will cause ProfileSyncService to start,
   // since all conditions are now fulfilled.
@@ -242,9 +235,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
 
-  // Setup is already in progress, so confirmation still isn't needed.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
-
   // Simulate the UI telling sync it has finished setting up. Note that this is
   // a two-step process: Releasing the SetupInProgressHandle, and marking first
   // setup complete.
@@ -252,7 +242,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   // Now setup isn't in progress anymore, but Sync is still waiting to be told
   // that the initial setup was completed.
   ASSERT_FALSE(sync_service()->IsSetupInProgress());
-  EXPECT_TRUE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
 
@@ -264,7 +253,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   sync_service()->GetUserSettings()->SetFirstSetupComplete();
 
   // This should have fully enabled sync.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
@@ -296,9 +284,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
   EXPECT_EQ(base::Time(), sync_prefs()->GetLastSyncedTime());
   EXPECT_FALSE(sync_prefs()->IsFirstSetupComplete());
 
-  // Confirmation isn't needed before sign in occurs.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
-
   // This tells the ProfileSyncService that setup is now in progress, which
   // causes it to try starting up the engine. We're not signed in yet though, so
   // that won't work.
@@ -308,10 +293,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
             sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
-
-  // Confirmation isn't needed before sign in occurs, or when setup is already
-  // in progress.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
   SimulateTestUserSignin();
 
@@ -324,9 +305,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
             sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
-
-  // Setup is already in progress, so confirmation still isn't needed.
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
   // Simulate the UI telling sync it has finished setting up. Note that this is
   // a two-step process: Releasing the SetupInProgressHandle, and marking first
@@ -344,7 +322,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
   // Sync-the-feature is still not active, but rather pending confirmation.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
-  EXPECT_TRUE(sync_service()->IsSyncConfirmationNeeded());
 
   // Marking first setup complete will let ProfileSyncService reconfigure the
   // DataTypeManager in full Sync-the-feature mode.
@@ -356,7 +333,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
   // This should have fully enabled sync.
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
-  EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
 

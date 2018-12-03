@@ -376,7 +376,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
   InitializeForNthSync();
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
-  EXPECT_FALSE(service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 }
@@ -393,7 +392,6 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, NeedsConfirmation) {
   sync_prefs.SetKeepEverythingSynced(true);
   service()->Initialize();
 
-  EXPECT_TRUE(service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   // Note: At this point the engine *can* start, but nothing has kicked it off
@@ -425,7 +423,6 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, NeedsConfirmation) {
   sync_prefs.SetKeepEverythingSynced(true);
   service()->Initialize();
 
-  EXPECT_TRUE(service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
 
