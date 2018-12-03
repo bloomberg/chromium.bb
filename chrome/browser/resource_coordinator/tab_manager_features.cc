@@ -26,7 +26,7 @@ const base::Feature kCustomizedTabLoadTimeout{
 // Enables TabLoader improvements for reducing the overhead of session restores
 // involving many many tabs.
 const base::Feature kInfiniteSessionRestore{"InfiniteSessionRestore",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables proactive tab freezing and discarding.
 const base::Feature kProactiveTabFreezeAndDiscard{

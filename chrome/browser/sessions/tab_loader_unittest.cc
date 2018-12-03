@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/variations/variations_params_manager.h"
@@ -45,6 +46,7 @@ class TabLoaderTest : public testing::Test {
         &TabLoaderTest::OnTabLoaderCreated, base::Unretained(this));
     TabLoaderTester::SetConstructionCallbackForTesting(&construction_callback_);
     test_web_contents_factory_.reset(new content::TestWebContentsFactory);
+    test_policy_.reset(new testing::ScopedAlwaysLoadSessionRestoreTestPolicy());
   }
 
   void TearDown() override {
@@ -57,6 +59,7 @@ class TabLoaderTest : public testing::Test {
     TabLoaderTester::SetConstructionCallbackForTesting(nullptr);
     test_web_contents_factory_.reset();
     thread_bundle_.RunUntilIdle();
+    test_policy_.reset();
   }
 
   void SimulateLoadTimeout() {
@@ -140,6 +143,8 @@ class TabLoaderTest : public testing::Test {
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile testing_profile_;
+  std::unique_ptr<testing::ScopedAlwaysLoadSessionRestoreTestPolicy>
+      test_policy_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabLoaderTest);
@@ -324,6 +329,8 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
 
 TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
   namespace rc = resource_coordinator;
+
+  test_policy_.reset();
 
   std::set<std::string> features;
   features.insert(features::kInfiniteSessionRestore.name);
