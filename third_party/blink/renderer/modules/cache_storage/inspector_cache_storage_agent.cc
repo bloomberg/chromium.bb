@@ -194,6 +194,7 @@ struct DataRequestParams {
   String cache_name;
   int skip_count;
   int page_size;
+  String path_filter;
 };
 
 struct RequestResponse {
@@ -215,11 +216,30 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
                        std::unique_ptr<RequestEntriesCallback> callback)
       : params_(params),
         num_responses_left_(num_responses),
-        responses_(num_responses),
         cache_ptr_(std::move(cache_ptr)),
         callback_(std::move(callback)) {}
 
-  void Dispatch(Vector<mojom::blink::FetchAPIRequestPtr> requests) {
+  void Dispatch(Vector<mojom::blink::FetchAPIRequestPtr> old_requests) {
+    Vector<mojom::blink::FetchAPIRequestPtr> requests;
+    if (params_.path_filter.IsEmpty()) {
+      requests = std::move(old_requests);
+    } else {
+      for (auto& request : old_requests) {
+        String urlPath(request->url.GetPath());
+        if (!urlPath.Contains(params_.path_filter,
+                              WTF::kTextCaseUnicodeInsensitive))
+          continue;
+        requests.push_back(std::move(request));
+      }
+    }
+    size_t requestSize = requests.size();
+    if (!requestSize) {
+      callback_->sendSuccess(Array<DataEntry>::create(), false);
+      return;
+    }
+
+    responses_ = Vector<RequestResponse>(requestSize);
+    num_responses_left_ = requestSize;
     for (const auto& request : requests) {
       cache_ptr_->Match(
           request.Clone(), mojom::blink::QueryParams::New(),
@@ -486,6 +506,7 @@ void InspectorCacheStorageAgent::requestEntries(
     const String& cache_id,
     int skip_count,
     int page_size,
+    protocol::Maybe<String> path_filter,
     std::unique_ptr<RequestEntriesCallback> callback) {
   String cache_name;
   mojom::blink::CacheStorage* cache_storage = nullptr;
@@ -499,6 +520,7 @@ void InspectorCacheStorageAgent::requestEntries(
   params.cache_name = cache_name;
   params.page_size = page_size;
   params.skip_count = skip_count;
+  params.path_filter = path_filter.fromMaybe("");
 
   cache_storage->Open(
       cache_name,

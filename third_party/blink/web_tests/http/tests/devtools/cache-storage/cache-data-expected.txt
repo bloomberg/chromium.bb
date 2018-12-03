@@ -16,6 +16,23 @@ Dumping CacheStorage tree:
     cache: testCache2 - http://127.0.0.1:8000
         /1, default, text/plain, 0
         /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
+        /L/11, default, text/plain, 0
+    cache: testCache3 - http://127.0.0.1:8000
+        /devtools/resources/image.png, basic, image/png, 647
+Dumping CacheStorage tree with URL path filter string "2"
+    cache: testCache1 - http://127.0.0.1:8000
+        /2, default, text/plain, 0
+    cache: testCache2 - http://127.0.0.1:8000
+        /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
+    cache: testCache3 - http://127.0.0.1:8000
+        (no matching entries)
+Dumping CacheStorage tree with URL path filter string "image"
+    cache: testCache1 - http://127.0.0.1:8000
+        (no matching entries)
+    cache: testCache2 - http://127.0.0.1:8000
+        (no matching entries)
     cache: testCache3 - http://127.0.0.1:8000
         /devtools/resources/image.png, basic, image/png, 647
 
