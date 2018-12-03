@@ -429,11 +429,15 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
             partition->GetPath(), in_memory, &protocol_handlers,
             std::move(request_interceptors)));
   }
-  partition->SetMediaURLRequestContext(
-      partition_domain.empty() ?
-      browser_context_->CreateMediaRequestContext() :
-      browser_context_->CreateMediaRequestContextForStoragePartition(
-          partition->GetPath(), in_memory));
+
+  // A separate media cache isn't used with the network service.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    partition->SetMediaURLRequestContext(
+        partition_domain.empty()
+            ? browser_context_->CreateMediaRequestContext()
+            : browser_context_->CreateMediaRequestContextForStoragePartition(
+                  partition->GetPath(), in_memory));
+  }
   partition->GetCookieStoreContext()->ListenToCookieChanges(
       partition->GetNetworkContext(), base::DoNothing());
 

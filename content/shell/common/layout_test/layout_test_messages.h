@@ -38,7 +38,6 @@ IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClose,
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_BlockThirdPartyCookies,
                     bool /* block */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)
-IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookiesForNetworkService)
 IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     std::string /* name */,
                     blink::mojom::PermissionStatus /* status */,

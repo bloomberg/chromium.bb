@@ -147,6 +147,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -4345,7 +4346,9 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
-  if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
+  if (url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
+      // http://crbug.com/893323: get this working with network service.
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
     scoped_refptr<net::URLRequestContextGetter> request_context(
         resource_type == RESOURCE_TYPE_MEDIA

@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 
 using content::BrowserThread;
 
@@ -250,6 +251,7 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     content::URLRequestInterceptorScopedVector request_interceptors,
     network::mojom::NetworkContextRequest network_context_request,
     network::mojom::NetworkContextParamsPtr network_context_params) {
+  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
   return ChromeURLRequestContextGetter::CreateAndInit(

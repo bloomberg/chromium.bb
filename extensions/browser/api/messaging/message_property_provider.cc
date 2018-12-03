@@ -40,6 +40,7 @@ void MessagePropertyProvider::GetChannelID(
     return;
   }
 
+  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       storage_partition->GetURLRequestContext();
   base::PostTaskWithTraits(

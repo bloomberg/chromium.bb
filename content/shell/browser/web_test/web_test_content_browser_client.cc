@@ -129,8 +129,7 @@ void WebTestContentBrowserClient::RenderProcessWillLaunch(
       BrowserContext::GetDefaultStoragePartition(browser_context());
   host->AddFilter(new WebTestMessageFilter(
       host->GetID(), partition->GetDatabaseTracker(),
-      partition->GetQuotaManager(), partition->GetURLRequestContext(),
-      partition->GetNetworkContext()));
+      partition->GetQuotaManager(), partition->GetNetworkContext()));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(

@@ -17,15 +17,13 @@ class ClientCertificateDelegate;
 namespace net {
 class SSLCertRequestInfo;
 class SSLPrivateKey;
-class URLRequest;
 class X509Certificate;
 }
 
 class SSLClientAuthRequestorMock
     : public base::RefCountedThreadSafe<SSLClientAuthRequestorMock> {
  public:
-  SSLClientAuthRequestorMock(
-      net::URLRequest* request,
+  explicit SSLClientAuthRequestorMock(
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info);
 
   std::unique_ptr<content::ClientCertificateDelegate> CreateDelegate();

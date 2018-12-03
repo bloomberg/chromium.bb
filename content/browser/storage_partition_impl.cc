@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -83,6 +84,9 @@ using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
 namespace content {
 
 namespace {
+
+// Only used when the network service is enabled.
+bool g_allow_get_url_request_context = false;
 
 base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
     g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
@@ -253,6 +257,20 @@ void ClearSessionStorageOnUIThread(
 }
 
 }  // namespace
+
+ScopedAllowGetURLRequestContext::ScopedAllowGetURLRequestContext() {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+  DCHECK(!g_allow_get_url_request_context);
+  g_allow_get_url_request_context = true;
+}
+
+ScopedAllowGetURLRequestContext::~ScopedAllowGetURLRequestContext() {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+  DCHECK(g_allow_get_url_request_context);
+  g_allow_get_url_request_context = false;
+}
 
 // Class to own the NetworkContext wrapping a storage partitions
 // URLRequestContext, when the ContentBrowserClient doesn't provide a
@@ -475,7 +493,6 @@ class StoragePartitionImpl::DataDeletionHelper {
       const OriginMatcherFunction& origin_matcher,
       CookieDeletionFilterPtr cookie_deletion_filter,
       const base::FilePath& path,
-      net::URLRequestContextGetter* rq_context,
       DOMStorageContextWrapper* dom_storage_context,
       storage::QuotaManager* quota_manager,
       storage::SpecialStoragePolicy* special_storage_policy,
@@ -747,11 +764,20 @@ base::FilePath StoragePartitionImpl::GetPath() {
 }
 
 net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
+  // TODO(jam): enable for all, still used on WebView and Chromecast
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    DCHECK(g_allow_get_url_request_context);
+#endif
   return url_request_context_.get();
 }
 
 net::URLRequestContextGetter*
 StoragePartitionImpl::GetMediaURLRequestContext() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    DCHECK(g_allow_get_url_request_context);
+#endif
   return media_url_request_context_.get();
 }
 
@@ -958,10 +984,9 @@ void StoragePartitionImpl::ClearDataImpl(
   deletion_helpers_running_++;
   helper->ClearDataOnUIThread(
       storage_origin, origin_matcher, std::move(cookie_deletion_filter),
-      GetPath(), GetURLRequestContext(), dom_storage_context_.get(),
-      quota_manager_.get(), special_storage_policy_.get(),
-      filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
-      perform_cleanup, begin, end);
+      GetPath(), dom_storage_context_.get(), quota_manager_.get(),
+      special_storage_policy_.get(), filesystem_context_.get(),
+      GetCookieManagerForBrowserProcess(), perform_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -1112,7 +1137,6 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const OriginMatcherFunction& origin_matcher,
     CookieDeletionFilterPtr cookie_deletion_filter,
     const base::FilePath& path,
-    net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
     storage::QuotaManager* quota_manager,
     storage::SpecialStoragePolicy* special_storage_policy,

@@ -219,10 +219,12 @@ StoragePartition* GetStoragePartitionFromConfig(
 void SaveSessionStateOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     AppCacheServiceImpl* appcache_service) {
-  net::URLRequestContext* context = context_getter->GetURLRequestContext();
-  context->cookie_store()->SetForceKeepSessionState();
-  context->channel_id_service()->GetChannelIDStore()->
-      SetForceKeepSessionState();
+  if (context_getter) {
+    net::URLRequestContext* context = context_getter->GetURLRequestContext();
+    context->channel_id_service()
+        ->GetChannelIDStore()
+        ->SetForceKeepSessionState();
+  }
   appcache_service->set_force_keep_session_state();
 }
 
@@ -557,13 +559,15 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
+    scoped_refptr<net::URLRequestContextGetter> context_getter;
+    // Channel ID isn't supported with network service.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+      context_getter = storage_partition->GetURLRequestContext();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &SaveSessionStateOnIOThread,
-            base::WrapRefCounted(storage_partition->GetURLRequestContext()),
-            static_cast<AppCacheServiceImpl*>(
-                storage_partition->GetAppCacheService())));
+        base::BindOnce(&SaveSessionStateOnIOThread, context_getter,
+                       static_cast<AppCacheServiceImpl*>(
+                           storage_partition->GetAppCacheService())));
   }
 
   storage_partition->GetCookieManagerForBrowserProcess()

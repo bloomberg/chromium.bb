@@ -24,9 +24,6 @@
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -37,16 +34,13 @@ WebTestMessageFilter::WebTestMessageFilter(
     int render_process_id,
     storage::DatabaseTracker* database_tracker,
     storage::QuotaManager* quota_manager,
-    net::URLRequestContextGetter* request_context_getter,
     network::mojom::NetworkContext* network_context)
     : BrowserMessageFilter(LayoutTestMsgStart),
       render_process_id_(render_process_id),
       database_tracker_(database_tracker),
-      quota_manager_(quota_manager),
-      request_context_getter_(request_context_getter) {
+      quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (network_context)
-    network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
 }
 
 WebTestMessageFilter::~WebTestMessageFilter() {}
@@ -68,7 +62,7 @@ base::TaskRunner* WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case LayoutTestHostMsg_TestFinishedInSecondaryRenderer::ID:
     case LayoutTestHostMsg_InitiateCaptureDump::ID:
     case LayoutTestHostMsg_InspectSecondaryWindow::ID:
-    case LayoutTestHostMsg_DeleteAllCookiesForNetworkService::ID:
+    case LayoutTestHostMsg_DeleteAllCookies::ID:
       return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
           .get();
   }
@@ -89,8 +83,6 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClose,
                         OnSimulateWebNotificationClose)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookiesForNetworkService,
-                        OnDeleteAllCookiesForNetworkService)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ResetPermissions, OnResetPermissions)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged,
@@ -172,19 +164,9 @@ void WebTestMessageFilter::OnSimulateWebNotificationClose(
 }
 
 void WebTestMessageFilter::OnDeleteAllCookies() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::URLRequestContext* context =
-      request_context_getter_->GetURLRequestContext();
-  if (context)
-    context->cookie_store()->DeleteAllAsync(net::CookieStore::DeleteCallback());
-}
-
-void WebTestMessageFilter::OnDeleteAllCookiesForNetworkService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (cookie_manager_) {
-    cookie_manager_->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
-                                   base::BindOnce([](uint32_t) {}));
-  }
+  cookie_manager_->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
+                                 base::BindOnce([](uint32_t) {}));
 }
 
 void WebTestMessageFilter::OnSetPermission(
