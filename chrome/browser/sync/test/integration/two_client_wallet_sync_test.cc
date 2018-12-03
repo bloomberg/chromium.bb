@@ -437,6 +437,67 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     TwoClientWalletSyncTest,
+    UpdateCreditCardMetadataWithChangedBillingAddressId_RemoteToLocalConflict) {
+  InitWithDefaultFeatures();
+
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Sumulate going offline on both clients.
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
+
+  // Update the billing address id on both clients to different local ids.
+  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
+  ASSERT_EQ(1u, credit_cards.size());
+  CreditCard card = *credit_cards[0];
+  ASSERT_EQ(kDefaultBillingAddressID, card.billing_address_id());
+  card.set_billing_address_id(kLocalBillingAddressId);
+  base::Time lower_new_use_date = base::Time::Now();
+  ASSERT_NE(lower_new_use_date, card.use_date());
+  card.set_use_date(lower_new_use_date);
+  // We treat the corner-case of merging data after initial sync (with
+  // use_count==1) differently, set use-count to a higher value.
+  card.set_use_count(2);
+  UpdateServerCardMetadata(0, card);
+
+  credit_cards = GetServerCreditCards(1);
+  ASSERT_EQ(1u, credit_cards.size());
+  card = *credit_cards[0];
+  ASSERT_EQ(kDefaultBillingAddressID, card.billing_address_id());
+  card.set_billing_address_id(kLocalBillingAddressId2);
+  base::Time higher_new_use_date = base::Time::Now();
+  ASSERT_NE(higher_new_use_date, card.use_date());
+  ASSERT_LT(lower_new_use_date, higher_new_use_date);
+  card.set_use_date(higher_new_use_date);
+  // We treat the corner-case of merging data after initial sync (with
+  // use_count==1) differently, set use-count to a higher value.
+  card.set_use_count(2);
+  UpdateServerCardMetadata(1, card);
+
+  // Simulate going online again.
+  fake_server::FakeServerHttpPostProvider::EnableNetwork();
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+
+  // Wait for the clients to coverge and both resolve the conflicts by taking
+  // maxima in both components.
+  EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
+
+  credit_cards = GetServerCreditCards(0);
+  EXPECT_EQ(1U, credit_cards.size());
+  EXPECT_EQ(kLocalBillingAddressId2, credit_cards[0]->billing_address_id());
+  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+  credit_cards = GetServerCreditCards(1);
+  EXPECT_EQ(1U, credit_cards.size());
+  EXPECT_EQ(kLocalBillingAddressId2, credit_cards[0]->billing_address_id());
+  EXPECT_EQ(higher_new_use_date, credit_cards[0]->use_date());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_LocalToRemote) {
   InitWithDefaultFeatures();
 
