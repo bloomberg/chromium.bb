@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -102,11 +101,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    @Feature({"keyboard-accessory"})
-    @DisabledTest(message = "crbug.com/854224")
-    // TODO(fhorschig): Figure out why this test exists. If a keyboard is shown, the accessory
-    // should be there. If there is no keyboard, there shouldn't be an accessory. Looks more like a
-    // keyboard test than an accessory test.
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     public void testAutofocusedFieldDoesNotShowKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
@@ -118,7 +113,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    @Feature({"keyboard-accessory"})
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     @DisabledTest(message = "crbug.com/854224")
     public void testTapInputFieldShowsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
@@ -137,7 +132,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    @Feature({"keyboard-accessory"})
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     @DisabledTest(message = "crbug.com/836027")
     public void testSwitchFieldsRescrollsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
@@ -163,7 +158,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
      */
     @Test
     @MediumTest
-    @Feature({"keyboard-accessory"})
+    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     @DisabledTest(message = "crbug.com/847959")
     public void testSelectSuggestionHidesKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
