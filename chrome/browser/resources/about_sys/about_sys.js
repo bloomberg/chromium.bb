@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // Contents of lines that act as delimiters for multi-line values.
-var DELIM_START = '---------- START ----------';
-var DELIM_END = '---------- END ----------';
+const DELIM_START = '---------- START ----------';
+const DELIM_END = '---------- END ----------';
 
 // Limit file size to 10 MiB to prevent hanging on accidental upload.
-var MAX_FILE_SIZE = 10485760;
+const MAX_FILE_SIZE = 10485760;
 
 function getValueDivForButton(button) {
   return $(button.id.substr(0, button.id.length - 4));
@@ -23,7 +23,7 @@ function handleDragOver(e) {
 }
 
 function handleDrop(e) {
-  var file = e.dataTransfer.files[0];
+  const file = e.dataTransfer.files[0];
   if (file) {
     e.preventDefault();
     importLog(file);
@@ -38,7 +38,7 @@ function showError(fileName) {
  * Toggles whether an item is collapsed or expanded.
  */
 function changeCollapsedStatus() {
-  var valueDiv = getValueDivForButton(this);
+  const valueDiv = getValueDivForButton(this);
   if (valueDiv.parentNode.className == 'number-collapsed') {
     valueDiv.parentNode.className = 'number-expanded';
     this.textContent = loadTimeData.getString('collapseBtn');
@@ -52,9 +52,9 @@ function changeCollapsedStatus() {
  * Collapses all log items.
  */
 function collapseAll() {
-  var valueDivs = document.getElementsByClassName('stat-value');
-  for (var i = 0; i < valueDivs.length; i++) {
-    var button = getButtonForValueDiv(valueDivs[i]);
+  const valueDivs = document.getElementsByClassName('stat-value');
+  for (let i = 0; i < valueDivs.length; i++) {
+    const button = getButtonForValueDiv(valueDivs[i]);
     if (button && button.className != 'button-hidden') {
       button.textContent = loadTimeData.getString('expandBtn');
       valueDivs[i].parentNode.className = 'number-collapsed';
@@ -66,9 +66,9 @@ function collapseAll() {
  * Expands all log items.
  */
 function expandAll() {
-  var valueDivs = document.getElementsByClassName('stat-value');
-  for (var i = 0; i < valueDivs.length; i++) {
-    var button = getButtonForValueDiv(valueDivs[i]);
+  const valueDivs = document.getElementsByClassName('stat-value');
+  for (let i = 0; i < valueDivs.length; i++) {
+    const button = getButtonForValueDiv(valueDivs[i]);
     if (button && button.className != 'button-hidden') {
       button.textContent = loadTimeData.getString('collapseBtn');
       valueDivs[i].parentNode.className = 'number-expanded';
@@ -80,10 +80,10 @@ function expandAll() {
  * Collapse only those log items with multi-line values.
  */
 function collapseMultiLineStrings() {
-  var valueDivs = document.getElementsByClassName('stat-value');
-  var nameDivs = document.getElementsByClassName('stat-name');
-  for (var i = 0; i < valueDivs.length; i++) {
-    var button = getButtonForValueDiv(valueDivs[i]);
+  const valueDivs = document.getElementsByClassName('stat-value');
+  const nameDivs = document.getElementsByClassName('stat-name');
+  for (let i = 0; i < valueDivs.length; i++) {
+    const button = getButtonForValueDiv(valueDivs[i]);
     button.onclick = changeCollapsedStatus;
     if (valueDivs[i].scrollHeight > (nameDivs[i].scrollHeight * 2)) {
       button.className = '';
@@ -102,7 +102,7 @@ function collapseMultiLineStrings() {
  */
 function importLog(file) {
   if (file && file.size <= MAX_FILE_SIZE) {
-    var reader = new FileReader();
+    const reader = new FileReader();
     reader.onload = function() {
       if (parseSystemLog(this.result)) {
         // Reset table title and status
@@ -125,14 +125,14 @@ function importLog(file) {
  * @return {boolean} True if the log was parsed successfully.
  */
 function parseSystemLog(text) {
-  var details = [];
-  var lines = text.split('\n');
-  for (var i = 0, len = lines.length; i < len; i++) {
+  const details = [];
+  const lines = text.split('\n');
+  for (let i = 0, len = lines.length; i < len; i++) {
     // Skip empty lines.
     if (!lines[i])
       continue;
 
-    var delimiter = lines[i].indexOf('=');
+    const delimiter = lines[i].indexOf('=');
     if (delimiter <= 0) {
       if (i == lines.length - 1)
         break;
@@ -140,8 +140,8 @@ function parseSystemLog(text) {
       return false;
     }
 
-    var name = lines[i].substring(0, delimiter);
-    var value = '';
+    const name = lines[i].substring(0, delimiter);
+    let value = '';
     // Set value if non-empty
     if (lines[i].length > delimiter + 1)
       value = lines[i].substring(delimiter + 1);
@@ -167,7 +167,7 @@ function parseSystemLog(text) {
     details.push({'statName': name, 'statValue': value});
   }
 
-  var templateData = {'details': details};
+  const templateData = {'details': details};
   jstProcess(new JsEvalContext(templateData), $('t'));
 
   collapseMultiLineStrings();
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
   $('collapseAll').onclick = collapseAll;
   $('expandAll').onclick = expandAll;
 
-  var tp = $('t');
+  const tp = $('t');
   tp.addEventListener('dragover', handleDragOver, false);
   tp.addEventListener('drop', handleDrop, false);
 

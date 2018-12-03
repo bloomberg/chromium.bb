@@ -7,15 +7,15 @@
  * help users migrate to using net-export and the catapult netlog_viewer.
  */
 
-var EventsView = (function() {
+const EventsView = (function() {
   'use strict';
 
   // This is defined in index.html, but for all intents and purposes is part
   // of this view.
-  var LOAD_LOG_FILE_DROP_TARGET_ID = 'events-view-drop-target';
+  const LOAD_LOG_FILE_DROP_TARGET_ID = 'events-view-drop-target';
 
   // We inherit from DivView.
-  var superClass = DivView;
+  const superClass = DivView;
 
   /**
    *  @constructor
@@ -26,7 +26,7 @@ var EventsView = (function() {
     // Call superclass's constructor.
     superClass.call(this, EventsView.MAIN_BOX_ID);
 
-    var dropTarget = $(LOAD_LOG_FILE_DROP_TARGET_ID);
+    const dropTarget = $(LOAD_LOG_FILE_DROP_TARGET_ID);
     dropTarget.ondragenter = this.onDrag.bind(this);
     dropTarget.ondragover = this.onDrag.bind(this);
     dropTarget.ondrop = this.onDrop.bind(this);
@@ -58,7 +58,7 @@ var EventsView = (function() {
       // (currently between DOMStringList and Array). These have different APIs
       // so assuming one type or the other was breaking things. See
       // http://crbug.com/115433. TODO(dbeam): Remove when standardized more.
-      var indexOf = Array.prototype.indexOf;
+      const indexOf = Array.prototype.indexOf;
       return indexOf.call(event.dataTransfer.types, 'Files') == -1 ||
           event.dataTransfer.files.length > 1;
     },
@@ -68,7 +68,7 @@ var EventsView = (function() {
      * file, redirect to the events tab to show the depreciation message.
      */
     onDrop: function(event) {
-      var indexOf = Array.prototype.indexOf;
+      const indexOf = Array.prototype.indexOf;
       if (indexOf.call(event.dataTransfer.types, 'Files') == -1 ||
           event.dataTransfer.files.length != 1) {
         return;

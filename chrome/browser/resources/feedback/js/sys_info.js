@@ -6,19 +6,19 @@
  * The global load time data that contains the localized strings that we will
  * get from the main page when this page first loads.
  */
-var loadTimeData = null;
+let loadTimeData = null;
 
 /**
  * A queue of a sequence of closures that will incrementally build the sys info
  * html table.
  */
-var tableCreationClosuresQueue = [];
+const tableCreationClosuresQueue = [];
 
 /**
  * The time used to post delayed tasks in MS. Currently set to be enough for two
  * frames.
  */
-var STANDARD_DELAY_MS = 32;
+const STANDARD_DELAY_MS = 32;
 
 function getValueDivForButton(button) {
   return $(button.id.substr(0, button.id.length - 4));
@@ -40,7 +40,7 @@ function getButtonForValueDiv(valueDiv) {
 function expand(button, valueDiv, delayFactor) {
   button.textContent = loadTimeData.getString('sysinfoPageCollapseBtn');
   // Show the spinner container.
-  var valueCell = valueDiv.parentNode;
+  const valueCell = valueDiv.parentNode;
   valueCell.firstChild.hidden = false;
   // Expanding huge logs can take a very long time, so we do it after a delay
   // to have a chance to render the spinner.
@@ -65,7 +65,7 @@ function collapse(button, valueDiv) {
  * Toggles whether an item is collapsed or expanded.
  */
 function changeCollapsedStatus() {
-  var valueDiv = getValueDivForButton(this);
+  const valueDiv = getValueDivForButton(this);
   if (valueDiv.parentNode.className == 'number-collapsed')
     expand(this, valueDiv, 1);
   else
@@ -76,11 +76,11 @@ function changeCollapsedStatus() {
  * Collapses all log items.
  */
 function collapseAll() {
-  var valueDivs = document.getElementsByClassName('stat-value');
-  for (var i = 0; i < valueDivs.length; ++i) {
+  const valueDivs = document.getElementsByClassName('stat-value');
+  for (let i = 0; i < valueDivs.length; ++i) {
     if (valueDivs[i].parentNode.className != 'number-expanded')
       continue;
-    var button = getButtonForValueDiv(valueDivs[i]);
+    const button = getButtonForValueDiv(valueDivs[i]);
     if (button)
       collapse(button, valueDivs[i]);
   }
@@ -90,20 +90,20 @@ function collapseAll() {
  * Expands all log items.
  */
 function expandAll() {
-  var valueDivs = document.getElementsByClassName('stat-value');
-  for (var i = 0; i < valueDivs.length; ++i) {
+  const valueDivs = document.getElementsByClassName('stat-value');
+  for (let i = 0; i < valueDivs.length; ++i) {
     if (valueDivs[i].parentNode.className != 'number-collapsed')
       continue;
-    var button = getButtonForValueDiv(valueDivs[i]);
+    const button = getButtonForValueDiv(valueDivs[i]);
     if (button)
       expand(button, valueDivs[i], i + 1);
   }
 }
 
 function createNameCell(key) {
-  var nameCell = document.createElement('td');
+  const nameCell = document.createElement('td');
   nameCell.setAttribute('class', 'name');
-  var nameDiv = document.createElement('div');
+  const nameDiv = document.createElement('div');
   nameDiv.setAttribute('class', 'stat-name');
   nameDiv.appendChild(document.createTextNode(key));
   nameCell.appendChild(nameDiv);
@@ -111,11 +111,11 @@ function createNameCell(key) {
 }
 
 function createButtonCell(key, isMultiLine) {
-  var buttonCell = document.createElement('td');
+  const buttonCell = document.createElement('td');
   buttonCell.setAttribute('class', 'button-cell');
 
   if (isMultiLine) {
-    var button = document.createElement('button');
+    const button = document.createElement('button');
     button.setAttribute('id', '' + key + '-value-btn');
     button.onclick = changeCollapsedStatus;
     button.textContent = loadTimeData.getString('sysinfoPageExpandBtn');
@@ -126,15 +126,15 @@ function createButtonCell(key, isMultiLine) {
 }
 
 function createValueCell(key, value, isMultiLine) {
-  var valueCell = document.createElement('td');
-  var valueDiv = document.createElement('div');
+  const valueCell = document.createElement('td');
+  const valueDiv = document.createElement('div');
   valueDiv.setAttribute('class', 'stat-value');
   valueDiv.setAttribute('id', '' + key + '-value');
   valueDiv.appendChild(document.createTextNode(value));
 
   if (isMultiLine) {
     valueCell.className = 'number-collapsed';
-    var loadingContainer = $('spinner-container').cloneNode(true);
+    const loadingContainer = $('spinner-container').cloneNode(true);
     loadingContainer.setAttribute('id', '' + key + '-value-loading');
     loadingContainer.hidden = true;
     valueCell.appendChild(loadingContainer);
@@ -147,10 +147,10 @@ function createValueCell(key, value, isMultiLine) {
 }
 
 function createTableRow(key, value) {
-  var row = document.createElement('tr');
+  const row = document.createElement('tr');
 
   // Avoid using element.scrollHeight as it's very slow. crbug.com/653968.
-  var isMultiLine = value.split('\n').length > 2 || value.length > 1000;
+  const isMultiLine = value.split('\n').length > 2 || value.length > 1000;
 
   row.appendChild(createNameCell(key));
   row.appendChild(createButtonCell(key, isMultiLine));
@@ -173,7 +173,7 @@ function finishPageLoading() {
  * Pops a closure from the front of the queue and executes it.
  */
 function processQueue() {
-  var closure = tableCreationClosuresQueue.shift();
+  const closure = tableCreationClosuresQueue.shift();
   if (closure)
     closure();
 
@@ -202,8 +202,8 @@ function createTableRowWrapper(key, value) {
  * the table.
  */
 function createTable(systemInfo) {
-  for (var key in systemInfo) {
-    var item = systemInfo[key];
+  for (const key in systemInfo) {
+    const item = systemInfo[key];
     tableCreationClosuresQueue.push(
         createTableRowWrapper(item['key'], item['value']));
   }

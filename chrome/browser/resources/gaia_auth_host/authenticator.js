@@ -21,43 +21,43 @@ cr.define('cr.login', function() {
   // TODO(rogerta): should use gaia URL from GaiaUrls::gaia_url() instead
   // of hardcoding the prod URL here.  As is, this does not work with staging
   // environments.
-  var IDP_ORIGIN = 'https://accounts.google.com/';
-  var IDP_PATH = 'ServiceLogin?skipvpage=true&sarp=1&rm=hide';
-  var CONTINUE_URL =
+  const IDP_ORIGIN = 'https://accounts.google.com/';
+  const IDP_PATH = 'ServiceLogin?skipvpage=true&sarp=1&rm=hide';
+  const CONTINUE_URL =
       'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html';
-  var SIGN_IN_HEADER = 'google-accounts-signin';
-  var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
-  var LOCATION_HEADER = 'location';
-  var SERVICE_ID = 'chromeoslogin';
-  var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
-  var EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
-  var SAML_REDIRECTION_PATH = 'samlredirect';
-  var BLANK_PAGE_URL = 'about:blank';
+  const SIGN_IN_HEADER = 'google-accounts-signin';
+  const EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
+  const LOCATION_HEADER = 'location';
+  const SERVICE_ID = 'chromeoslogin';
+  const EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
+  const EMBEDDED_SETUP_CHROMEOS_ENDPOINT_V2 = 'embedded/setup/v2/chromeos';
+  const SAML_REDIRECTION_PATH = 'samlredirect';
+  const BLANK_PAGE_URL = 'about:blank';
 
   /**
    * The source URL parameter for the constrained signin flow.
    */
-  var CONSTRAINED_FLOW_SOURCE = 'chrome';
+  const CONSTRAINED_FLOW_SOURCE = 'chrome';
 
   /**
    * Enum for the authorization mode, must match AuthMode defined in
    * chrome/browser/ui/webui/inline_login_ui.cc.
    * @enum {number}
    */
-  var AuthMode = {DEFAULT: 0, OFFLINE: 1, DESKTOP: 2};
+  const AuthMode = {DEFAULT: 0, OFFLINE: 1, DESKTOP: 2};
 
   /**
    * Enum for the authorization type.
    * @enum {number}
    */
-  var AuthFlow = {DEFAULT: 0, SAML: 1};
+  const AuthFlow = {DEFAULT: 0, SAML: 1};
 
   /**
    * Supported Authenticator params.
    * @type {!Array<string>}
    * @const
    */
-  var SUPPORTED_PARAMS = [
+  const SUPPORTED_PARAMS = [
     'gaiaId',        // Obfuscated GAIA ID to skip the email prompt page
                      // during the re-auth flow.
     'gaiaUrl',       // Gaia url to use.
@@ -326,7 +326,7 @@ cr.define('cr.login', function() {
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     if (data.doSamlRedirect) {
-      var url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
+      let url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
       url = appendParam(url, 'domain', data.enterpriseEnrollmentDomain);
       url = appendParam(
           url, 'continue',
@@ -338,7 +338,7 @@ cr.define('cr.login', function() {
       return url;
     }
 
-    var url;
+    let url;
     if (data.gaiaPath)
       url = this.idpOrigin_ + data.gaiaPath;
     else if (this.isNewGaiaFlow)
@@ -362,7 +362,7 @@ cr.define('cr.login', function() {
       if (data.endpointGen)
         url = appendParam(url, 'endpoint_gen', data.endpointGen);
       if (data.chromeOSApiVersion == 2) {
-        var mi = '';
+        let mi = '';
         if (data.menuGuestMode)
           mi += 'gm,';
         if (data.menuKeyboardOptions)
@@ -424,7 +424,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onRequestCompleted_ = function(details) {
-    var currentUrl = details.url;
+    const currentUrl = details.url;
 
     if (!this.isNewGaiaFlow &&
         currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
@@ -439,10 +439,10 @@ cr.define('cr.login', function() {
       this.trusted_ = false;
 
     if (this.isConstrainedWindow_) {
-      var isEmbeddedPage = false;
+      let isEmbeddedPage = false;
       if (this.idpOrigin_ && currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
-        var headers = details.responseHeaders;
-        for (var i = 0; headers && i < headers.length; ++i) {
+        const headers = details.responseHeaders;
+        for (let i = 0; headers && i < headers.length; ++i) {
           if (headers[i].name.toLowerCase() == EMBEDDED_FORM_HEADER) {
             isEmbeddedPage = true;
             break;
@@ -494,7 +494,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onPopState_ = function(e) {
-    var state = e.state;
+    const state = e.state;
     if (state && state.url)
       this.webview_.src = state.url;
   };
@@ -507,19 +507,19 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onHeadersReceived_ = function(details) {
-    var currentUrl = details.url;
+    const currentUrl = details.url;
     if (currentUrl.lastIndexOf(this.idpOrigin_, 0) != 0)
       return;
 
-    var headers = details.responseHeaders;
-    for (var i = 0; headers && i < headers.length; ++i) {
-      var header = headers[i];
-      var headerName = header.name.toLowerCase();
+    const headers = details.responseHeaders;
+    for (let i = 0; headers && i < headers.length; ++i) {
+      const header = headers[i];
+      const headerName = header.name.toLowerCase();
       if (headerName == SIGN_IN_HEADER) {
-        var headerValues = header.value.toLowerCase().split(',');
-        var signinDetails = {};
+        const headerValues = header.value.toLowerCase().split(',');
+        const signinDetails = {};
         headerValues.forEach(function(e) {
-          var pair = e.split('=');
+          const pair = e.split('=');
           signinDetails[pair[0].trim()] = pair[1].trim();
         });
         // Removes "" around.
@@ -530,7 +530,7 @@ cr.define('cr.login', function() {
       } else if (headerName == LOCATION_HEADER) {
         // If the "choose what to sync" checkbox was clicked, then the continue
         // URL will contain a source=3 field.
-        var location = decodeURIComponent(header.value);
+        const location = decodeURIComponent(header.value);
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
       }
     }
@@ -565,7 +565,7 @@ cr.define('cr.login', function() {
     if (!this.isGaiaMessage(e))
       return;
 
-    var msg = e.data;
+    const msg = e.data;
     if (msg.method == 'attemptLogin') {
       this.email_ = msg.email;
       if (this.authMode == AuthMode.DESKTOP)
@@ -609,7 +609,7 @@ cr.define('cr.login', function() {
       // does not expect it to be called immediately.
       // TODO(xiyuan): Change to synchronous call when iframe based code
       // is removed.
-      var invokeConfirmPassword =
+      const invokeConfirmPassword =
           (function() {
             this.confirmPasswordCallback(
                 this.email_, this.samlHandler_.scrapedPasswordCount);
@@ -628,7 +628,8 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.maybeCompleteAuth_ = function() {
-    var missingGaiaInfo = !this.email_ || !this.gaiaId_ || !this.sessionIndex_;
+    const missingGaiaInfo =
+        !this.email_ || !this.gaiaId_ || !this.sessionIndex_;
     if (missingGaiaInfo && !this.skipForNow_) {
       if (this.missingGaiaInfoCallback)
         this.missingGaiaInfoCallback();
@@ -747,7 +748,7 @@ cr.define('cr.login', function() {
       if (!Array.isArray(this.services_)) {
         console.error('FATAL: Bad services type:' + typeof this.services_);
       } else {
-        for (var i = 0; i < this.services_.length; ++i) {
+        for (let i = 0; i < this.services_.length; ++i) {
           if (typeof this.services_[i] == 'string')
             continue;
 
@@ -865,9 +866,9 @@ cr.define('cr.login', function() {
     }
 
     // Posts a message to IdP pages to initiate communication.
-    var currentUrl = this.webview_.src;
+    const currentUrl = this.webview_.src;
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
-      var msg = {
+      const msg = {
         'method': 'handshake',
       };
 
@@ -919,7 +920,7 @@ cr.define('cr.login', function() {
     // Note: <webview> prints error message to console if |contentWindow| is not
     // defined.
     // TODO(dzhioev): remove the message. http://crbug.com/469522
-    var webviewWindow = this.webview_.contentWindow;
+    const webviewWindow = this.webview_.contentWindow;
     return !!webviewWindow && webviewWindow === e.source;
   };
 
