@@ -205,7 +205,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
-  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+  if (crostini::IsCrostiniUIAllowedForProfile(profile,
+                                              false /* check_policy */)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
@@ -336,6 +337,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           ash::stylus_utils::HasInternalStylus());
 
   html_source->AddBoolean("showCrostini",
+                          crostini::IsCrostiniUIAllowedForProfile(
+                              profile, false /* check_policy */));
+
+  html_source->AddBoolean("allowCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(profile));
 
   html_source->AddBoolean("isDemoSession",

@@ -200,7 +200,8 @@
         <template is="dom-if" if="[[showCrostini]]" restamp>
           <settings-section page-title="$i18n{crostiniPageTitle}"
               section="crostini">
-            <settings-crostini-page prefs="{{prefs}}">
+            <settings-crostini-page prefs="{{prefs}}"
+                allow-crostini="[[allowCrostini_]]">
             </settings-crostini-page>
           </settings-section>
         </template>

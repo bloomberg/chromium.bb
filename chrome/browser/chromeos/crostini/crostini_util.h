@@ -33,9 +33,12 @@ void SetCrostiniUIAllowedForTesting(bool enabled);
 // or it is in the flow to set up managed account creation.
 bool IsCrostiniAllowedForProfile(Profile* profile);
 
-// Returns true if crostini UI can be shown. Implies crostini is allowed to
-// run.
-bool IsCrostiniUIAllowedForProfile(Profile* profile);
+// When |check_policy| is true, returns true if fully interactive crostini UI
+// may be shown. Implies crostini is allowed to run.
+// When check_policy is false, returns true if crostini UI is not forbidden by
+// hardware, flags, etc, even if it is forbidden by the enterprise policy. The
+// UI uses this to indicate that crostini is available but disabled by policy.
+bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
 
 // Returns whether if Crostini has been enabled, i.e. the user has launched it
 // at least once and not deleted it.
