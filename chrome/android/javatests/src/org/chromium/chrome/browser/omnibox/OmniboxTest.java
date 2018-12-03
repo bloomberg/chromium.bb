@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -461,6 +462,7 @@ public class OmniboxTest {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
+    @DisabledTest
     public void testShrinkingAutocompleteTextResults()
             throws InterruptedException, ExecutionException {
         Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
