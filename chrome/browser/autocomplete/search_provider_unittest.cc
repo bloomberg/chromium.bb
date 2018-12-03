@@ -2234,11 +2234,18 @@ TEST_F(SearchProviderTest, DontCacheCalculatorSuggestions) {
     const ExpectedMatch async_matches[4];
     const ExpectedMatch sync_matches[4];
   } cases[] = {
-    { "[\"1+2\",[\"3\", \"1+2+3+4+5\"],[],[],"
+    { "[\"1+2\",[\"= 3\", \"1+2+3+4+5\"],[],[],"
        "{\"google:verbatimrelevance\":1300,"
         "\"google:suggesttype\":[\"CALCULATOR\", \"QUERY\"],"
         "\"google:suggestrelevance\":[1200, 900]}]",
-      { { "1+2", true }, { "3", false }, { "1+2+3+4+5", false },
+      // The contents of the second match here are set to the query (the result
+      // is placed in the description instead) and therefore the
+      // allowed_to_default_match value is true for the second match (despite
+      // being received asynchronously) because of the logic in
+      // SearchProvider::PersistTopSuggestions which allows it to be promoted
+      // based on the fact that it has the same contents as the previous top
+      // match.
+      { { "1+2", true }, { "1+2", true }, { "1+2+3+4+5", false },
         kEmptyExpectedMatch },
       { { "1+23", true }, { "1+2+3+4+5", false }, kEmptyExpectedMatch,
         kEmptyExpectedMatch } },
