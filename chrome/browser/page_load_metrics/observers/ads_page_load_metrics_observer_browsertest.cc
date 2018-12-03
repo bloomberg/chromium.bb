@@ -59,6 +59,23 @@ std::ostream& operator<<(std::ostream& os, Origin origin) {
   }
 }
 
+enum class SandboxOption {
+  kNoSandbox,
+  kSandboxDisallowDownloads,
+  kSandboxAllowDownloads,
+};
+
+std::ostream& operator<<(std::ostream& os, SandboxOption sandbox_option) {
+  switch (sandbox_option) {
+    case SandboxOption::kNoSandbox:
+      return os << "NoSandbox";
+    case SandboxOption::kSandboxDisallowDownloads:
+      return os << "SandboxDisallowDownloads";
+    case SandboxOption::kSandboxAllowDownloads:
+      return os << "SandboxAllowDownloads";
+  }
+}
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -606,31 +623,55 @@ INSTANTIATE_TEST_CASE_P(
 
 class SubframeDownloadSandboxOriginAdGestureBrowserTest
     : public AdsPageLoadMetricsObserverResourceBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<Origin,
-                                                      bool /* sandbox */,
-                                                      bool /* cross_origin */,
-                                                      bool /* ad_frame */,
-                                                      bool /* gesture */>> {};
+      public ::testing::WithParamInterface<
+          std::tuple<Origin,
+                     bool /* enable_blocking_downloads_in_sandbox */,
+                     SandboxOption,
+                     bool /* cross_origin */,
+                     bool /* ad_frame */,
+                     bool /* gesture */>> {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    bool enable_blocking_downloads_in_sandbox;
+    std::tie(std::ignore, enable_blocking_downloads_in_sandbox, std::ignore,
+             std::ignore, std::ignore, std::ignore) = GetParam();
+    std::string cmd = enable_blocking_downloads_in_sandbox
+                          ? "enable-blink-features"
+                          : "disable-blink-features";
+    command_line->AppendSwitchASCII(cmd, "BlockingDownloadsInSandbox");
+  }
+};
 
 // Subframe download events are reported correctly.
 IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
                        Download) {
   Origin origin;
-  bool sandbox;
+  bool enable_blocking_downloads_in_sandbox;
+  SandboxOption sandbox_option;
   bool cross_origin;
   bool ad_frame;
   bool gesture;
-  std::tie(origin, sandbox, cross_origin, ad_frame, gesture) = GetParam();
-  SCOPED_TRACE(::testing::Message() << "sandbox = " << sandbox << ", "
-                                    << "cross_origin = " << cross_origin << ", "
-                                    << "ad_frame = " << ad_frame << ", "
-                                    << "gesture = " << gesture);
+  std::tie(origin, enable_blocking_downloads_in_sandbox, sandbox_option,
+           cross_origin, ad_frame, gesture) = GetParam();
+  SCOPED_TRACE(::testing::Message()
+               << "origin = " << origin << ", "
+               << "enable_blocking_downloads_in_sandbox = "
+               << enable_blocking_downloads_in_sandbox << ", "
+               << "sandbox_option = " << sandbox_option << ", "
+               << "cross_origin = " << cross_origin << ", "
+               << "ad_frame = " << ad_frame << ", "
+               << "gesture = " << gesture);
 
   base::HistogramTester histogram_tester;
+  size_t expected_download_count =
+      enable_blocking_downloads_in_sandbox &&
+              sandbox_option == SandboxOption::kSandboxDisallowDownloads
+          ? 0
+          : 1;
+
   std::unique_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverTerminal(
           content::BrowserContext::GetDownloadManager(browser()->profile()),
-          1 /* wait_count */,
+          expected_download_count /* wait_count */,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -655,7 +696,11 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
           .spec();
   const char* id = "test";
   const char* sandbox_param =
-      sandbox ? "'allow-scripts allow-same-origin'" : "undefined";
+      sandbox_option == SandboxOption::kNoSandbox
+          ? "undefined"
+          : sandbox_option == SandboxOption::kSandboxDisallowDownloads
+                ? "'allow-scripts allow-same-origin'"
+                : "'allow-scripts allow-same-origin allow-downloads'";
 
   content::TestNavigationObserver navigation_observer(web_contents());
   std::string script = base::StringPrintf("%s('%s','%s',%s);", method,
@@ -672,8 +717,18 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
   download_observer->WaitForFinished();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
+  if (expected_download_count == 0) {
+    histogram_tester.ExpectTotalCount(
+        "Download.Subframe.SandboxOriginAdGesture", 0 /* expected_count */);
+    return;
+  }
+
   unsigned expected_value = 0;
-  if (sandbox)
+  bool expected_sandbox_bit =
+      enable_blocking_downloads_in_sandbox
+          ? sandbox_option == SandboxOption::kSandboxDisallowDownloads
+          : sandbox_option != SandboxOption::kNoSandbox;
+  if (expected_sandbox_bit)
     expected_value |= blink::DownloadStats::kSandboxBit;
   if (cross_origin)
     expected_value |= blink::DownloadStats::kCrossOriginBit;
@@ -686,7 +741,7 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
       "Download.Subframe.SandboxOriginAdGesture", expected_value,
       1 /* expected_count */);
 
-  if (sandbox && origin == Origin::kNavigation) {
+  if (expected_sandbox_bit && origin == Origin::kNavigation) {
     blink::mojom::WebFeature feature =
         gesture ? blink::mojom::WebFeature::
                       kNavigationDownloadInSandboxWithUserGesture
@@ -700,9 +755,12 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     SubframeDownloadSandboxOriginAdGestureBrowserTest,
-    ::testing::Combine(::testing::Values(Origin::kNavigation,
-                                         Origin::kAnchorAttribute),
-                       ::testing::Bool(),
-                       ::testing::Bool(),
-                       ::testing::Bool(),
-                       ::testing::Bool()));
+    ::testing::Combine(
+        ::testing::Values(Origin::kNavigation, Origin::kAnchorAttribute),
+        ::testing::Bool(),
+        ::testing::Values(SandboxOption::kNoSandbox,
+                          SandboxOption::kSandboxDisallowDownloads,
+                          SandboxOption::kSandboxAllowDownloads),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool()));

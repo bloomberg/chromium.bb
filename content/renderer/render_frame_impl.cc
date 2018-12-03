@@ -492,9 +492,12 @@ WebURLRequest CreateURLRequestForNavigation(
 }
 
 NavigationDownloadPolicy GetDownloadPolicy(
+    bool prevent_sandboxed_download,
     bool is_opener_navigation,
     const blink::WebURLRequest& request,
     const WebSecurityOrigin& current_origin) {
+  if (prevent_sandboxed_download)
+    return NavigationDownloadPolicy::kDisallowSandbox;
   if (!is_opener_navigation)
     return NavigationDownloadPolicy::kAllow;
   bool gesture = request.HasUserGesture();
@@ -511,7 +514,8 @@ NavigationDownloadPolicy GetDownloadPolicy(
 CommonNavigationParams MakeCommonNavigationParams(
     const WebSecurityOrigin& current_origin,
     std::unique_ptr<blink::WebNavigationInfo> info,
-    int load_flags) {
+    int load_flags,
+    bool prevent_sandboxed_download) {
   Referrer referrer(
       GURL(info->url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
@@ -547,8 +551,9 @@ CommonNavigationParams MakeCommonNavigationParams(
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info->url_request.GetExtraData());
   DCHECK(extra_data);
-  NavigationDownloadPolicy download_policy = GetDownloadPolicy(
-      info->is_opener_navigation, info->url_request, current_origin);
+  NavigationDownloadPolicy download_policy =
+      GetDownloadPolicy(prevent_sandboxed_download, info->is_opener_navigation,
+                        info->url_request, current_origin);
   return CommonNavigationParams(
       info->url_request.Url(), referrer, extra_data->transition_type(),
       navigation_type, download_policy,
@@ -6795,9 +6800,14 @@ void RenderFrameImpl::BeginNavigationInternal(
       blink::mojom::NavigationInitiatorPtrInfo(
           std::move(info->navigation_initiator_handle), 0));
 
+  bool prevent_sandboxed_download =
+      (frame_->EffectiveSandboxFlags() & blink::WebSandboxFlags::kDownloads) !=
+          blink::WebSandboxFlags::kNone &&
+      info->blocking_downloads_in_sandbox_enabled;
+
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),
-                                 load_flags),
+                                 load_flags, prevent_sandboxed_download),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
 
