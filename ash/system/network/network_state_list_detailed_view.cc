@@ -58,6 +58,11 @@ bool IsSecondaryUser() {
          !session_controller->IsUserPrimary();
 }
 
+bool IsWifiEnabled() {
+  return NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi());
+}
+
 }  // namespace
 
 // A bubble which displays network info.
@@ -194,6 +199,7 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
+  UpdateScanningBar();
   Layout();
 }
 
@@ -209,8 +215,8 @@ void NetworkStateListDetailedView::Init() {
 
   Update();
 
-  if (list_type_ == LIST_TYPE_NETWORK)
-    CallRequestScan();
+  if (list_type_ == LIST_TYPE_NETWORK && IsWifiEnabled())
+    ScanAndStartTimer();
 }
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
@@ -298,13 +304,25 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
           Shell::Get()->session_controller()->ShouldEnableSettings());
     }
   }
-  if (list_type_ == LIST_TYPE_NETWORK) {
-    NetworkStateHandler* network_state_handler =
-        NetworkHandler::Get()->network_state_handler();
-    const bool scanning = network_state_handler->GetScanningByType(
-        NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
-    ShowProgress(-1, scanning);
-  }
+}
+
+void NetworkStateListDetailedView::UpdateScanningBar() {
+  if (list_type_ != LIST_TYPE_NETWORK)
+    return;
+
+  bool is_wifi_enabled = IsWifiEnabled();
+  if (is_wifi_enabled && !network_scan_repeating_timer_.IsRunning())
+    ScanAndStartTimer();
+
+  if (!is_wifi_enabled && network_scan_repeating_timer_.IsRunning())
+    network_scan_repeating_timer_.Stop();
+
+  const bool scanning_bar_visible =
+      is_wifi_enabled &&
+      NetworkHandler::Get()->network_state_handler()->GetScanningByType(
+          NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
+
+  ShowProgress(-1, scanning_bar_visible);
 }
 
 void NetworkStateListDetailedView::ToggleInfoBubble() {
@@ -380,15 +398,20 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   return label;
 }
 
+void NetworkStateListDetailedView::ScanAndStartTimer() {
+  CallRequestScan();
+  network_scan_repeating_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kRequestScanDelaySeconds), this,
+      &NetworkStateListDetailedView::CallRequestScan);
+}
+
 void NetworkStateListDetailedView::CallRequestScan() {
+  if (!IsWifiEnabled())
+    return;
+
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan(
       NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
-  // Periodically request a scan while this UI is open.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
-      base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
 }
 
 }  // namespace tray
