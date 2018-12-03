@@ -15,6 +15,7 @@
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/test/echo/echo_service.h"
+#include "services/test/echo/public/mojom/echo.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -87,11 +88,13 @@ base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-void ShellWebClient::RegisterServices(StaticServiceMap* services) {
-  service_manager::EmbeddedServiceInfo echo_info;
-  echo_info.factory = base::Bind(&echo::CreateEchoService);
-  echo_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  services->insert(std::make_pair("echo", echo_info));
+std::unique_ptr<service_manager::Service> ShellWebClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == echo::mojom::kServiceName)
+    return std::make_unique<echo::EchoService>(std::move(request));
+
+  return nullptr;
 }
 
 std::unique_ptr<base::Value> ShellWebClient::GetServiceManifestOverlay(

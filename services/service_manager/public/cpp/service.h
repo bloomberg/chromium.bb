@@ -32,7 +32,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   // This should really only be called on a Service instance that has a bound
   // connection to the Service Manager, e.g. a functioning ServiceBinding. If
   // the service never calls |Terminate()|, it will effectively leak.
-  static void RunAsyncUntilTermination(std::unique_ptr<Service> service);
+  //
+  // If |callback| is non-null, it will be invoked after |service| is destroyed.
+  static void RunAsyncUntilTermination(std::unique_ptr<Service> service,
+                                       base::OnceClosure callback = {});
 
   // Sets a closure to run when the service wants to self-terminate. This may be
   // used by whomever created the Service instance in order to clean up

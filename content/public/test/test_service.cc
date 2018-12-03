@@ -14,13 +14,13 @@ namespace content {
 
 const char kTestServiceUrl[] = "system:content_test_service";
 
-TestService::TestService() : service_binding_(this) {
+TestService::TestService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface<mojom::TestService>(
-      base::Bind(&TestService::Create, base::Unretained(this)));
+      base::BindRepeating(&TestService::Create, base::Unretained(this)));
 }
 
-TestService::~TestService() {
-}
+TestService::~TestService() = default;
 
 void TestService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
@@ -31,8 +31,8 @@ void TestService::OnBindInterface(
 }
 
 void TestService::Create(mojom::TestServiceRequest request) {
-  DCHECK(!service_binding_.is_bound());
-  service_binding_.Bind(std::move(request));
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(request));
 }
 
 void TestService::DoSomething(DoSomethingCallback callback) {

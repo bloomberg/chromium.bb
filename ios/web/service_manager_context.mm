@@ -191,18 +191,7 @@ ServiceManagerContext::ServiceManagerContext() {
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  // Embed any services from //ios/web here.
-
-  // Embed services from the client of //ios/web.
-  WebClient::StaticServiceMap services;
-  GetWebClient()->RegisterServices(&services);
-  for (const auto& entry : services) {
-    packaged_services_connection_->AddEmbeddedService(entry.first,
-                                                      entry.second);
-  }
-
   packaged_services_connection_->Start();
-
   browser_connection->Start();
 }
 

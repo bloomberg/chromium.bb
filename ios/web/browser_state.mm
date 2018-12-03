@@ -313,13 +313,6 @@ void BrowserState::Initialize(BrowserState* browser_state,
     browser_state->SetUserData(kServiceManagerConnection,
                                std::move(connection_holder));
 
-    // New embedded service factories should be added to |connection| here.
-    WebClient::StaticServiceMap services;
-    browser_state->RegisterServices(&services);
-    for (const auto& entry : services) {
-      connection->AddEmbeddedService(entry.first, entry.second);
-    }
-
     connection->Start();
   }
 }

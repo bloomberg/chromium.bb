@@ -21,7 +21,6 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 

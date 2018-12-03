@@ -12,6 +12,8 @@
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace heap_profiling {
 
@@ -29,12 +31,8 @@ class HeapProfilingService
       HeapProfiler::DumpProcessesForTracingCallback;
 
  public:
-  HeapProfilingService();
+  explicit HeapProfilingService(service_manager::mojom::ServiceRequest request);
   ~HeapProfilingService() override;
-
-  // Factory method for creating the service. Used by the ServiceManager piping
-  // to instantiate this thing.
-  static std::unique_ptr<service_manager::Service> CreateService();
 
   // Lifescycle events that occur after the service has started to spinup.
   void OnStart() override;
@@ -66,11 +64,12 @@ class HeapProfilingService
       DumpProcessesForTracingCallback callback,
       VmRegions vm_regions);
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
-  mojo::Binding<mojom::ProfilingService> binding_;
+  mojo::Binding<mojom::ProfilingService> binding_{this};
 
   mojo::Binding<memory_instrumentation::mojom::HeapProfiler>
-      heap_profiler_binding_;
+      heap_profiler_binding_{this};
 
   memory_instrumentation::mojom::HeapProfilerHelperPtr helper_;
   ConnectionManager connection_manager_;
@@ -78,7 +77,7 @@ class HeapProfilingService
   bool keep_small_allocations_ = false;
 
   // Must be last.
-  base::WeakPtrFactory<HeapProfilingService> weak_factory_;
+  base::WeakPtrFactory<HeapProfilingService> weak_factory_{this};
 };
 
 }  // namespace heap_profiling
