@@ -88,8 +88,6 @@ void BackgroundFetchRegistration::OnProgress(
   result_ = result;
   failure_reason_ = failure_reason;
 
-  // TODO(crbug.com/875201): Update records in |records_|.
-
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())
     return;
@@ -242,21 +240,11 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   ScriptState::Scope scope(script_state);
   HeapVector<Member<BackgroundFetchRecord>> to_return;
   to_return.ReserveInitialCapacity(settled_fetches.size());
-  for (auto& fetch : settled_fetches) {
-    // If there isn't a record for this fetch in records_ already, create one.
-    auto iter = records_.find(fetch->request->url);
-    BackgroundFetchRecord* record = nullptr;
-    if (iter == records_.end()) {
-      Request* request = Request::Create(script_state, *(fetch->request));
-      auto* new_record =
-          MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
-      DCHECK(new_record);
-      records_.Set(request->url(), new_record);
 
-      record = new_record;
-    } else {
-      record = iter->value;
-    }
+  for (auto& fetch : settled_fetches) {
+    Request* request = Request::Create(script_state, *(fetch->request));
+    auto* record =
+        MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
 
     UpdateRecord(record, fetch->response);
     to_return.push_back(record);
@@ -268,11 +256,13 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
       resolver->Resolve();
       return;
     }
+
     DCHECK_EQ(settled_fetches.size(), 1u);
     DCHECK_EQ(to_return.size(), 1u);
     resolver->Resolve(to_return[0]);
     return;
   }
+
   resolver->Resolve(to_return);
 }
 
@@ -373,7 +363,6 @@ void BackgroundFetchRegistration::Dispose() {
 
 void BackgroundFetchRegistration::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
-  visitor->Trace(records_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
