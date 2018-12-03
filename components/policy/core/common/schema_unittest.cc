@@ -1232,14 +1232,48 @@ TEST(SchemaTest, ItemsReference) {
 
 TEST(SchemaTest, SchemaNodeMetadataSensitiveValues) {
   std::string error;
+
+  const std::string kNormalBooleanSchema = "normal_boolean";
+  const std::string kSensitiveBooleanSchema = "sensitive_boolean";
+  const std::string kSensitiveStringSchema = "sensitive_string";
+  const std::string kSensitiveObjectSchema = "sensitive_object";
+  const std::string kSensitiveArraySchema = "sensitive_array";
+  const std::string kSensitiveIntegerSchema = "sensitive_integer";
+  const std::string kSensitiveNumberSchema = "sensitive_number";
   Schema schema = Schema::Parse(R"({
     "type": "object",
     "properties": {
-      "foo": {
+      "normal_boolean": {
         "type": "boolean"
       },
-      "bar": {
+      "sensitive_boolean": {
+        "type": "boolean",
+        "sensitiveValue": true
+      },
+      "sensitive_string": {
         "type": "string",
+        "sensitiveValue": true
+      },
+      "sensitive_object": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "sensitiveValue": true
+      },
+      "sensitive_array": {
+        "type": "array",
+        "items": {
+          "type": "boolean"
+        },
+        "sensitiveValue": true
+      },
+      "sensitive_integer": {
+        "type": "integer",
+        "sensitiveValue": true
+      },
+      "sensitive_number": {
+        "type": "number",
         "sensitiveValue": true
       }
     }
@@ -1249,31 +1283,72 @@ TEST(SchemaTest, SchemaNodeMetadataSensitiveValues) {
   ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
   EXPECT_FALSE(schema.IsSensitiveValue());
 
-  Schema foo_schema = schema.GetKnownProperty("foo");
-  ASSERT_TRUE(foo_schema.valid());
-  EXPECT_EQ(base::Value::Type::BOOLEAN, foo_schema.type());
-  EXPECT_FALSE(foo_schema.IsSensitiveValue());
+  Schema normal_boolean = schema.GetKnownProperty(kNormalBooleanSchema);
+  ASSERT_TRUE(normal_boolean.valid());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, normal_boolean.type());
+  EXPECT_FALSE(normal_boolean.IsSensitiveValue());
 
-  Schema bar_schema = schema.GetKnownProperty("bar");
-  ASSERT_TRUE(bar_schema.valid());
-  EXPECT_EQ(base::Value::Type::STRING, bar_schema.type());
-  EXPECT_TRUE(bar_schema.IsSensitiveValue());
+  Schema sensitive_boolean = schema.GetKnownProperty(kSensitiveBooleanSchema);
+  ASSERT_TRUE(sensitive_boolean.valid());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, sensitive_boolean.type());
+  EXPECT_TRUE(sensitive_boolean.IsSensitiveValue());
+
+  Schema sensitive_string = schema.GetKnownProperty(kSensitiveStringSchema);
+  ASSERT_TRUE(sensitive_string.valid());
+  EXPECT_EQ(base::Value::Type::STRING, sensitive_string.type());
+  EXPECT_TRUE(sensitive_string.IsSensitiveValue());
+
+  Schema sensitive_object = schema.GetKnownProperty(kSensitiveObjectSchema);
+  ASSERT_TRUE(sensitive_object.valid());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, sensitive_object.type());
+  EXPECT_TRUE(sensitive_object.IsSensitiveValue());
+
+  Schema sensitive_array = schema.GetKnownProperty(kSensitiveArraySchema);
+  ASSERT_TRUE(sensitive_array.valid());
+  EXPECT_EQ(base::Value::Type::LIST, sensitive_array.type());
+  EXPECT_TRUE(sensitive_array.IsSensitiveValue());
+
+  Schema sensitive_integer = schema.GetKnownProperty(kSensitiveIntegerSchema);
+  ASSERT_TRUE(sensitive_integer.valid());
+  EXPECT_EQ(base::Value::Type::INTEGER, sensitive_integer.type());
+  EXPECT_TRUE(sensitive_integer.IsSensitiveValue());
+
+  Schema sensitive_number = schema.GetKnownProperty(kSensitiveNumberSchema);
+  ASSERT_TRUE(sensitive_number.valid());
+  EXPECT_EQ(base::Value::Type::DOUBLE, sensitive_number.type());
+  EXPECT_TRUE(sensitive_number.IsSensitiveValue());
 
   // Run |MaskSensitiveValues| on the top-level schema
+  base::DictionaryValue object;
+  object.SetKey("objectProperty", base::Value(true));
+  base::ListValue array;
+  array.GetList().push_back(base::Value(true));
+
   base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey("foo", base::Value(true));
-  value.SetKey("bar", base::Value("testvalue"));
+  value.SetKey(kNormalBooleanSchema, base::Value(true));
+  value.SetKey(kSensitiveBooleanSchema, base::Value(true));
+  value.SetKey(kSensitiveStringSchema, base::Value("testvalue"));
+  value.SetKey(kSensitiveObjectSchema, std::move(object));
+  value.SetKey(kSensitiveArraySchema, std::move(array));
+  value.SetKey(kSensitiveIntegerSchema, base::Value(42));
+  value.SetKey(kSensitiveNumberSchema, base::Value(3.141));
   schema.MaskSensitiveValues(&value);
 
+  base::Value value_masked("********");
   base::Value value_expected(base::Value::Type::DICTIONARY);
-  value_expected.SetKey("foo", base::Value(true));
-  value_expected.SetKey("bar", base::Value("********"));
+  value_expected.SetKey(kNormalBooleanSchema, base::Value(true));
+  value_expected.SetKey(kSensitiveBooleanSchema, value_masked.Clone());
+  value_expected.SetKey(kSensitiveStringSchema, value_masked.Clone());
+  value_expected.SetKey(kSensitiveObjectSchema, value_masked.Clone());
+  value_expected.SetKey(kSensitiveArraySchema, value_masked.Clone());
+  value_expected.SetKey(kSensitiveIntegerSchema, value_masked.Clone());
+  value_expected.SetKey(kSensitiveNumberSchema, value_masked.Clone());
   EXPECT_EQ(value_expected, value);
 
   // Run |MaskSensitiveValues| on a sub-schema
-  base::Value bar_value("testvalue");
-  bar_schema.MaskSensitiveValues(&bar_value);
-  EXPECT_EQ(base::Value("********"), bar_value);
+  base::Value string_value("testvalue");
+  sensitive_string.MaskSensitiveValues(&string_value);
+  EXPECT_EQ(value_masked.Clone(), string_value);
 }
 
 TEST(SchemaTest, SchemaNodeNoSensitiveValues) {

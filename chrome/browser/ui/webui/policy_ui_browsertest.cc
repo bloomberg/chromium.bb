@@ -548,16 +548,47 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  const std::string kNewPolicyName = "new_policy";
-  const std::string kSensitivePolicyName = "sensitive_policy";
+  const std::string kNormalBooleanPolicy = "normal_boolean";
+  const std::string kSensitiveBooleanPolicy = "sensitive_boolean";
+  const std::string kSensitiveStringPolicy = "sensitive_string";
+  const std::string kSensitiveObjectPolicy = "sensitive_object";
+  const std::string kSensitiveArrayPolicy = "sensitive_array";
+  const std::string kSensitiveIntegerPolicy = "sensitive_integer";
+  const std::string kSensitiveNumberPolicy = "sensitive_number";
   std::string json_data = R"({
     "type": "object",
     "properties": {
-      "new_policy": {
-        "type": "string"
+      "normal_boolean": {
+        "type": "boolean"
       },
-      "sensitive_policy": {
+      "sensitive_boolean": {
+        "type": "boolean",
+        "sensitiveValue": true
+      },
+      "sensitive_string": {
         "type": "string",
+        "sensitiveValue": true
+      },
+      "sensitive_object": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "sensitiveValue": true
+      },
+      "sensitive_array": {
+        "type": "array",
+        "items": {
+          "type": "boolean"
+        },
+        "sensitiveValue": true
+      },
+      "sensitive_integer": {
+        "type": "integer",
+        "sensitiveValue": true
+      },
+      "sensitive_number": {
+        "type": "number",
         "sensitiveValue": true
       }
     }
@@ -606,29 +637,76 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   std::vector<std::vector<std::string>> expected_policies =
       expected_chrome_policies;
   expected_policies.push_back(PopulateExpectedPolicy(
-      kNewPolicyName, std::string(), std::string(), nullptr, false));
+      kNormalBooleanPolicy, std::string(), std::string(), nullptr, false));
   expected_policies.push_back(PopulateExpectedPolicy(
-      kSensitivePolicyName, std::string(), std::string(), nullptr, false));
+      kSensitiveArrayPolicy, std::string(), std::string(), nullptr, false));
+  expected_policies.push_back(PopulateExpectedPolicy(
+      kSensitiveBooleanPolicy, std::string(), std::string(), nullptr, false));
+  expected_policies.push_back(PopulateExpectedPolicy(
+      kSensitiveIntegerPolicy, std::string(), std::string(), nullptr, false));
+  expected_policies.push_back(PopulateExpectedPolicy(
+      kSensitiveNumberPolicy, std::string(), std::string(), nullptr, false));
+  expected_policies.push_back(PopulateExpectedPolicy(
+      kSensitiveObjectPolicy, std::string(), std::string(), nullptr, false));
+  expected_policies.push_back(PopulateExpectedPolicy(
+      kSensitiveStringPolicy, std::string(), std::string(), nullptr, false));
 
   // Verify if policy UI includes policy that extension have.
   VerifyPolicies(expected_policies);
 
+  auto object_value = std::make_unique<base::DictionaryValue>();
+  object_value->SetKey("objectProperty", base::Value(true));
+  auto array_value = std::make_unique<base::ListValue>();
+  array_value->GetList().push_back(base::Value(true));
+
   policy::PolicyMap values;
-  values.Set(kNewPolicyName, policy::POLICY_LEVEL_MANDATORY,
+  values.Set(kNormalBooleanPolicy, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>("value1"), nullptr);
-  values.Set(kSensitivePolicyName, policy::POLICY_LEVEL_MANDATORY,
+             std::make_unique<base::Value>(true), nullptr);
+  values.Set(kSensitiveArrayPolicy, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>("value2"), nullptr);
+             std::move(array_value), nullptr);
+  values.Set(kSensitiveBooleanPolicy, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(true), nullptr);
+  values.Set(kSensitiveIntegerPolicy, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(42), nullptr);
+  values.Set(kSensitiveNumberPolicy, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(3.141), nullptr);
+  values.Set(kSensitiveObjectPolicy, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::move(object_value), nullptr);
+  values.Set(kSensitiveStringPolicy, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>("value"), nullptr);
   UpdateProviderPolicyForNamespace(extension_policy_namespace, values);
 
   // Add extension policy with values to expected policy list.
+  const std::string mask_value = "********";
   std::vector<std::vector<std::string>> expected_policies_with_values =
       expected_chrome_policies;
-  expected_policies_with_values.push_back(PopulateExpectedPolicy(
-      kNewPolicyName, "value1", "Cloud", values.Get(kNewPolicyName), false));
   expected_policies_with_values.push_back(
-      PopulateExpectedPolicy(kSensitivePolicyName, "********", "Cloud",
-                             values.Get(kSensitivePolicyName), false));
+      PopulateExpectedPolicy(kNormalBooleanPolicy, "true", "Cloud",
+                             values.Get(kNormalBooleanPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveArrayPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveArrayPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveBooleanPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveBooleanPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveIntegerPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveIntegerPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveNumberPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveNumberPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveObjectPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveObjectPolicy), false));
+  expected_policies_with_values.push_back(
+      PopulateExpectedPolicy(kSensitiveStringPolicy, mask_value, "Cloud",
+                             values.Get(kSensitiveStringPolicy), false));
   VerifyPolicies(expected_policies_with_values);
 }
