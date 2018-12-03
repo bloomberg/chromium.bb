@@ -27,6 +27,7 @@
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
+#include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
@@ -213,17 +214,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
   base::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
 };
 
-// SessionRestorePolicy that always allow tabs to load.
-class TestSessionRestorePolicy
-    : public resource_coordinator::SessionRestorePolicy {
- public:
-  // Always allow tabs to load so we can test the behavior of SessionRestore
-  // independently from the policy logic.
-  bool ShouldLoad(content::WebContents* contents) const override {
-    return true;
-  }
-};
-
 // Activates the smart restore behaviour and tracks the loading of tabs.
 class SmartSessionRestoreTest : public SessionRestoreTest,
                                       public content::NotificationObserver {
@@ -231,12 +221,10 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
   SmartSessionRestoreTest() {}
 
   void SetUp() override {
-    TabLoaderDelegate::SetSessionRestorePolicyForTesting(&test_policy_);
     SessionRestoreTest::SetUp();
   }
 
   void TearDown() override {
-    TabLoaderDelegate::SetSessionRestorePolicyForTesting(nullptr);
     SessionRestoreTest::TearDown();
   }
 
@@ -281,7 +269,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
   std::vector<content::WebContents*> web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   size_t num_tabs_;
-  TestSessionRestorePolicy test_policy_;
+  testing::ScopedAlwaysLoadSessionRestoreTestPolicy test_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreTest);
 };

@@ -2407,24 +2407,6 @@
             ]
         }
     ],
-    "InfiniteSessionRestore": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InfiniteSessionRestore"
-                    ]
-                }
-            ]
-        }
-    ],
     "InstanceID": [
         {
             "platforms": [

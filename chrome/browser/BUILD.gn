@@ -5255,6 +5255,8 @@ static_library("test_support") {
       "profile_resetter/profile_resetter_test_base.h",
       "sessions/session_restore_test_helper.cc",
       "sessions/session_restore_test_helper.h",
+      "sessions/session_restore_test_utils.cc",
+      "sessions/session_restore_test_utils.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
       "sessions/tab_loader_tester.cc",

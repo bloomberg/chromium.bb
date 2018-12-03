@@ -259,10 +259,11 @@ struct InfiniteSessionRestoreParams {
   // This is the 75th percentile of Memory.Renderer.PrivateMemoryFootprint.
   static constexpr base::FeatureParam<int> kMbFreeMemoryPerTabToRestore{
       &features::kInfiniteSessionRestore, "MbFreeMemoryPerTabToRestore", 150};
-  // This is the 75th percentile of SessionRestore.RestoredTab.TimeSinceActive.
+  // This value has been determined by a Finch experiment, it reduces user pain
+  // without impacting the gains from this feature.
   static constexpr base::FeatureParam<int> kMaxTimeSinceLastUseToRestore{
       &features::kInfiniteSessionRestore, "MaxTimeSinceLastUseToRestore",
-      6 * base::Time::kSecondsPerHour};
+      30 * base::Time::kHoursPerDay* base::Time::kSecondsPerHour};
   // Taken from an informal survey of Googlers on min engagement of things they
   // think *must* load. Note that about 25% of session-restore tabs fall above
   // this threshold (see SessionRestore.RestoredTab.SiteEngagementScore).
