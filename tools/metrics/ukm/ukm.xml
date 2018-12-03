@@ -900,6 +900,13 @@ be describing additional metrics about the same event.
     <summary>
       Opt-in UseCounter feature.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
