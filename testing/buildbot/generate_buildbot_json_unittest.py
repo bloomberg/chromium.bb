@@ -1053,6 +1053,7 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "foo_tests",
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1216,6 +1217,7 @@ GPU_DIMENSIONS_WATERFALL_OUTPUT = """\
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "foo_test",
+        "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
