@@ -170,7 +170,7 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
   request->method = method;
   request->is_reload = false;
   request->referrer = blink::mojom::Referrer::New();
-  request->headers = base::flat_map<std::string, std::string>();
+  request->headers = {};
   return request;
 }
 

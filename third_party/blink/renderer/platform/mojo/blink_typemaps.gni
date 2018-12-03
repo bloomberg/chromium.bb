@@ -15,6 +15,7 @@ typemaps = [
   "//third_party/blink/renderer/platform/mojo/big_buffer.typemap",
   "//third_party/blink/renderer/platform/mojo/big_string.typemap",
   "//third_party/blink/renderer/platform/mojo/canonical_cookie.typemap",
+  "//third_party/blink/renderer/platform/mojo/fetch_api_request_headers.typemap",
   "//third_party/blink/renderer/platform/mojo/file.typemap",
   "//third_party/blink/renderer/platform/mojo/geometry.typemap",
   "//third_party/blink/renderer/platform/mojo/kurl.typemap",

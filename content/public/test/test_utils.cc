@@ -130,7 +130,7 @@ blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
   auto request = blink::mojom::FetchAPIRequest::New();
   request->url = url;
   request->method = method;
-  request->headers = headers;
+  request->headers = {headers.begin(), headers.end()};
   request->referrer = std::move(referrer);
   request->is_reload = is_reload;
   return request;

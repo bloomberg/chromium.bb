@@ -75,8 +75,10 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   fetch_api_request->cache_mode = kCacheMode;
   fetch_api_request->redirect_mode = kRedirectMode;
   fetch_api_request->request_context_type = kContext;
-  for (int i = 0; headers[i].key; ++i)
-    fetch_api_request->headers.insert(headers[i].key, headers[i].value);
+  for (int i = 0; headers[i].key; ++i) {
+    fetch_api_request->headers.insert(String(headers[i].key),
+                                      String(headers[i].value));
+  }
   fetch_api_request->referrer =
       mojom::blink::Referrer::New(KURL(NullURL(), referrer), kReferrerPolicy);
 
