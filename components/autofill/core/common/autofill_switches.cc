@@ -19,7 +19,7 @@ const char kAutofillServerURL[] = "autofill-server-url";
 // The randomized encoding type to use when sending metadata uploads. The
 // value of the parameter must be one of the valid integer values of the
 // AutofillRandomizedValue_EncodingType enum.
-extern const char kAutofillMetadataUploadEncoding[] =
+const char kAutofillMetadataUploadEncoding[] =
     "autofill-metadata-upload-encoding";
 
 // Force hiding the local save checkbox in the autofill dialog box for getting

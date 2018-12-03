@@ -290,8 +290,8 @@ const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile{
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to use the API or use the legacy server.
-extern const base::Feature kAutofillUseApi{"AutofillUseApi",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUseApi{"AutofillUseApi",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the PaymentsCustomerData is used to make requests to
 // Google Payments.
