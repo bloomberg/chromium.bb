@@ -49,8 +49,6 @@ class PreviewsHints {
       const GURL& document_url,
       const optimization_guide::proto::Hint& hint);
 
-  void Initialize();
-
   // Whether the URL is whitelisted for the given previews type. If so,
   // |out_inflation_percent| and |out_ect_threshold| will be populated if
   // metadata is available for them. This first checks the top-level whitelist
@@ -115,8 +113,6 @@ class PreviewsHints {
   std::map<url_matcher::URLMatcherConditionSet::ID,
            std::set<std::pair<PreviewsType, int>>>
       whitelist_;
-
-  std::vector<optimization_guide::proto::Hint> initial_hints_;
 
   // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
   std::unique_ptr<HostFilter> lite_page_redirect_blacklist_;
