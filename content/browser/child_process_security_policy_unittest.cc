@@ -26,7 +26,6 @@ namespace content {
 namespace {
 
 const int kRendererID = 42;
-const int kWorkerRendererID = kRendererID + 1;
 
 #if defined(FILE_PATH_USES_DRIVE_LETTERS)
 #define TEST_PATH(x) FILE_PATH_LITERAL("c:") FILE_PATH_LITERAL(x)
@@ -830,28 +829,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
                                         base::File::FLAG_TEMPORARY));
   p->Remove(kRendererID);
 
-  // Grant file permissions for the file to main thread renderer process,
-  // make sure its worker thread renderer process inherits those.
-  p->Add(kRendererID);
-  GrantPermissionsForFile(p, kRendererID, granted_file,
-                             base::File::FLAG_OPEN |
-                             base::File::FLAG_READ);
-  EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, granted_file,
-                                       base::File::FLAG_OPEN |
-                                       base::File::FLAG_READ));
-  EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, granted_file,
-                                       base::File::FLAG_WRITE));
-  p->AddWorker(kWorkerRendererID, kRendererID);
-  EXPECT_TRUE(p->HasPermissionsForFile(kWorkerRendererID, granted_file,
-                                       base::File::FLAG_OPEN |
-                                       base::File::FLAG_READ));
-  EXPECT_FALSE(p->HasPermissionsForFile(kWorkerRendererID, granted_file,
-                                        base::File::FLAG_WRITE));
-  p->Remove(kRendererID);
-  EXPECT_FALSE(p->HasPermissionsForFile(kWorkerRendererID, granted_file,
-                                        base::File::FLAG_OPEN |
-                                        base::File::FLAG_READ));
-  p->Remove(kWorkerRendererID);
 
   p->Add(kRendererID);
   GrantPermissionsForFile(p, kRendererID, relative_file,

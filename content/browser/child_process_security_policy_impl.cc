@@ -417,17 +417,9 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id) {
   AddChild(child_id);
 }
 
-void ChildProcessSecurityPolicyImpl::AddWorker(int child_id,
-                                               int main_render_process_id) {
-  base::AutoLock lock(lock_);
-  AddChild(child_id);
-  worker_map_[child_id] = main_render_process_id;
-}
-
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   base::AutoLock lock(lock_);
   security_state_.erase(child_id);
-  worker_map_.erase(child_id);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
@@ -985,18 +977,7 @@ bool ChildProcessSecurityPolicyImpl::CanDeleteFromFileSystem(
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
-  bool result = ChildProcessHasPermissionsForFile(child_id, file, permissions);
-  if (!result) {
-    // If this is a worker thread that has no access to a given file,
-    // let's check that its renderer process has access to that file instead.
-    auto iter = worker_map_.find(child_id);
-    if (iter != worker_map_.end() && iter->second != 0) {
-      result = ChildProcessHasPermissionsForFile(iter->second,
-                                                 file,
-                                                 permissions);
-    }
-  }
-  return result;
+  return ChildProcessHasPermissionsForFile(child_id, file, permissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
