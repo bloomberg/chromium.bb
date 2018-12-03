@@ -16,6 +16,7 @@ include_rules = [
   "+components/crash/core",
   "+components/download/public/common",
   "+components/heap_profiling",
+  "+components/minidump_uploader",
   "+components/navigation_interception",
   "+components/policy/core/browser",
   "+components/policy/core/common",
@@ -56,6 +57,9 @@ include_rules = [
 
   "+storage/browser/quota",
   "+storage/common/quota",
+
+  "+third_party/crashpad/crashpad/client",
+  "+third_party/crashpad/crashpad/util",
 
   "+ui/gfx",
   "+ui/gl",

@@ -233,10 +233,11 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
                                 scoped_refptr<net::SSLPrivateKey>)>&
           continue_callback);
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_FUCHSIA)
   // Returns the crash signal FD corresponding to the current process type.
   int GetCrashSignalFD(const base::CommandLine& command_line);
 
+#if !defined(OS_ANDROID)
   // Creates a CrashHandlerHost instance for the given process type.
   breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
       const std::string& process_type);
@@ -248,6 +249,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // with OS for this).
   std::unique_ptr<MemoryPressureControllerImpl> memory_pressure_controller_;
 #endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_FUCHSIA)
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.

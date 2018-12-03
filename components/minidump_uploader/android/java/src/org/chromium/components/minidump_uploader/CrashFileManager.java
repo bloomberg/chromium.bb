@@ -28,26 +28,21 @@ import java.util.regex.Pattern;
 
 /**
  * The CrashFileManager is responsible for managing the "Crash Reports" directory containing
- * minidump files and shepherding them through a state machine represented by the file names. Note
- * that the second step is optional.
- *  1. foo.dmp is a minidump file, written to the directory by Breakpad.
- * (2) foo.dmpNNNNN is a minidump file, where NNNNN is the PID (process id) of the crashing
- *     process. This step is optional -- that is, a minidump could fail to have its PID included in
- *     the filename.
- *  3. foo.dmp.try0 or foo.dmpNNNNN.try0 is a minidump file with recent logcat output attached to
- *     it; or a file for which logcat output has been intentionally omitted. Notably,
- *     Webview-generated minidumps do not include logcat output.
- *  4. foo.dmpNNNNN.tryM for M > 0 is a minidump file that's been attempted to be uploaded to the
+ * minidump files and shepherding them through a state machine represented by the file names.
+ *  1. Minidumps are read from Crashpad's CrashReportDatabase and re-written as MIME files in the
+ *     "Crash Reports" directory as foo.dmpNNNNN where NNNNN is the PID (process id) of the
+ *     crashing process.
+ *  2. foo.dmpNNNNN.try0 is a minidump file with recent logcat output attached to it; or a file for
+ *     which logcat output has been intentionally omitted. Notably, Webview-generated minidumps do
+ *     not include logcat output.
+ *  3. foo.dmpNNNNN.tryM for M > 0 is a minidump file that's been attempted to be uploaded to the
  *     crash server, but for which M upload attempts have failed.
- *  5. foo.up.tryM and foo.upNNNNN.tryM are both valid possible names for a successfully uploaded
- *     file.
- *  6. foo.skipped.tryM and foo.skippedNNNNN.tryM are both valid possible names for a file whose
- *     upload was skipped. An upload may be skipped, for example, if the user has not consented to
- *     uploading crash reports. These files are marked as skipped rather than deleted immediately to
- *     allow the user to manually initiate an upload.
- *  7. foo.forced.tryM and foo.forcedNNNNN.tryM are both valid possible names for a file that the
- *     user has manually requested to upload.
- *  8. foo.tmp is a temporary file.
+ *  4. foo.upNNNNN.tryM names a successfully uploaded file.
+ *  5. foo.skippedNNNNN.tryM names for a file whose upload was skipped. An upload may be skipped,
+ *     for example, if the user has not consented to uploading crash reports. These files are marked
+ *     as skipped rather than deleted immediately to allow the user to manually initiate an upload.
+ *  6. foo.forcedNNNNN.tryM names a file that the user has manually requested to upload.
+ *  7. foo.tmp is a temporary file.
  */
 public class CrashFileManager {
     private static final String TAG = "CrashFileManager";
@@ -351,9 +346,11 @@ public class CrashFileManager {
 
     /**
      * Returns the most recent minidump without a logcat for a given pid, or null if no such
-     * minidump exists.
+     * minidump exists. This method begins by reading all minidumps from Crashpad's database and
+     * rewriting them as MIME files in the Crash Reports directory.
      */
     public File getMinidumpSansLogcatForPid(int pid) {
+        importCrashpadMinidumps();
         File[] foundFiles = listCrashFiles(
             Pattern.compile("\\.dmp" + Integer.toString(pid) + "\\z"));
         return foundFiles.length > 0 ? foundFiles[0] : null;
@@ -361,11 +358,14 @@ public class CrashFileManager {
 
     /**
      * Returns all minidump files that definitely do not have logcat output, sorted by modification
-     * time stamp. Note: This method does not provide an "if and only if" test: it may return omit
-     * some files that lack logcat output, if logcat output has been intentionally skipped for those
-     * minidumps. However, any files returned definitely lack logcat output.
+     * time stamp. This method begins by reading all minidumps from Crashpad's database and
+     * rewriting them as MIME files in the Crash Reports directory. Note: This method does not
+     * provide an "if and only if" test: it may return omit some files that lack logcat output, if
+     * logcat output has been intentionally skipped for those minidumps. However, any files returned
+     * definitely lack logcat output.
      */
     public File[] getMinidumpsSansLogcat() {
+        importCrashpadMinidumps();
         return listCrashFiles(MINIDUMP_SANS_LOGCAT_PATTERN);
     }
 

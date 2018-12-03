@@ -154,11 +154,8 @@ int ShellBrowserMainParts::PreCreateThreads() {
       base::CommandLine::ForCurrentProcess();
   crash_reporter::ChildExitObserver::Create();
   if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
-    base::FilePath crash_dumps_dir =
-        command_line->GetSwitchValuePath(switches::kCrashDumpsDir);
     crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
-        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
-            crash_dumps_dir, kAndroidMinidumpDescriptor));
+        std::make_unique<crash_reporter::ChildProcessCrashObserver>());
   }
 #endif
 
