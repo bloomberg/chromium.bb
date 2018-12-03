@@ -6,9 +6,9 @@
 # some enhancements since the commands on Mac are slightly different than on
 # Linux.
 
-import("../goma.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/coverage/coverage.gni")
+import("../goma.gni")
 if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
 }
@@ -19,9 +19,9 @@ assert(host_os == "mac")
 
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/clang_static_analyzer.gni")
+import("//build/toolchain/concurrent_links.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//build/toolchain/concurrent_links.gni")
 
 declare_args() {
   # Reduce the number of tasks using the copy_bundle_data and compile_xcassets
@@ -205,7 +205,7 @@ template("mac_toolchain") {
     tool("cc") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$env_wrapper $cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
       outputs = [
@@ -216,7 +216,7 @@ template("mac_toolchain") {
     tool("cxx") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$env_wrapper $cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
@@ -227,7 +227,7 @@ template("mac_toolchain") {
     tool("asm") {
       # For GCC we can just use the C compiler to compile assembly.
       depfile = "{{output}}.d"
-      command = "$env_wrapper $cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [
@@ -238,7 +238,7 @@ template("mac_toolchain") {
     tool("objc") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$env_wrapper $cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJC {{output}}"
       outputs = [
@@ -249,7 +249,7 @@ template("mac_toolchain") {
     tool("objcxx") {
       depfile = "{{output}}.d"
       precompiled_header_type = "gcc"
-      command = "$env_wrapper $cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
       outputs = [
