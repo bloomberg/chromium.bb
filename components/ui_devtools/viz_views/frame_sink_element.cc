@@ -25,7 +25,11 @@ FrameSinkElement::FrameSinkElement(
       frame_sink_id_(frame_sink_id),
       frame_sink_manager_(frame_sink_manager),
       is_root_(is_root),
-      has_created_frame_sink_(has_created_frame_sink) {}
+      has_created_frame_sink_(has_created_frame_sink) {
+  // DOMAgentViz handles all of the FrameSink events, so it owns all of the
+  // FrameSinkElements.
+  set_owns_children(false);
+}
 
 FrameSinkElement::~FrameSinkElement() {}
 

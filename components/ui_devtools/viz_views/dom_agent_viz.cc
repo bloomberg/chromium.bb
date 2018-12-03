@@ -60,14 +60,11 @@ DOMAgentViz::~DOMAgentViz() {
 
 void DOMAgentViz::OnRegisteredFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
-  if (!base::ContainsKey(frame_sink_elements_, frame_sink_id)) {
-    // If a FrameSink was just registered we don't know anything about
-    // hierarchy. So we should attach it to the RootElement.
-    element_root()->AddChild(
-        new FrameSinkElement(frame_sink_id, frame_sink_manager_, this,
-                             element_root(), /*is_root=*/false,
+  // If a FrameSink was just registered we don't know anything about
+  // hierarchy. So we should attach it to the RootElement.
+  element_root()->AddChild(
+      CreateFrameSinkElement(frame_sink_id, element_root(), /*is_root=*/false,
                              /*has_created_frame_sink=*/false));
-  }
 }
 
 void DOMAgentViz::OnInvalidatedFrameSinkId(
@@ -78,7 +75,7 @@ void DOMAgentViz::OnInvalidatedFrameSinkId(
   // A FrameSinkElement with |frame_sink_id| can only be invalidated after
   // being destroyed.
   DCHECK(!it->second->has_created_frame_sink());
-  DestroyElementAndRemoveSubtree(it->second);
+  DestroyElementAndRemoveSubtree(it->second.get());
 }
 
 void DOMAgentViz::OnCreatedCompositorFrameSink(
@@ -112,8 +109,8 @@ void DOMAgentViz::OnRegisteredFrameSinkHierarchy(
   DCHECK(it_parent != frame_sink_elements_.end());
   DCHECK(it_child != frame_sink_elements_.end());
 
-  FrameSinkElement* child = it_child->second;
-  FrameSinkElement* new_parent = it_parent->second;
+  FrameSinkElement* child = it_child->second.get();
+  FrameSinkElement* new_parent = it_parent->second.get();
 
   // TODO: Add support for |child| to have multiple parents.
   Reparent(new_parent, child);
@@ -128,7 +125,7 @@ void DOMAgentViz::OnUnregisteredFrameSinkHierarchy(
   auto it_child = frame_sink_elements_.find(child_frame_sink_id);
   DCHECK(it_child != frame_sink_elements_.end());
 
-  FrameSinkElement* child = it_child->second;
+  FrameSinkElement* child = it_child->second.get();
 
   // TODO: Add support for |child| to have multiple parents: only adds |child|
   // to RootElement if all parents of |child| are unregistered.
@@ -136,28 +133,27 @@ void DOMAgentViz::OnUnregisteredFrameSinkHierarchy(
 }
 
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
-    FrameSinkElement* frame_sink_element,
-    const viz::FrameSinkId& frame_sink_id) {
-  frame_sink_elements_.emplace(frame_sink_id, frame_sink_element);
+    UIElement* parent_element,
+    const viz::FrameSinkId& parent_id) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
   // Once the FrameSinkElement is created it calls this function to build its
-  // subtree. So we iterate through |frame_sink_element|'s children and
+  // subtree. So we iterate through |parent_element|'s children and
   // recursively build the subtree for them.
-  for (auto& child : frame_sink_manager_->GetChildrenByParent(frame_sink_id)) {
+  for (auto& child_id : frame_sink_manager_->GetChildrenByParent(parent_id)) {
     bool has_created_frame_sink =
-        !!frame_sink_manager_->GetFrameSinkForId(child);
+        !!frame_sink_manager_->GetFrameSinkForId(child_id);
 
-    FrameSinkElement* f_s_element = new FrameSinkElement(
-        child, frame_sink_manager_, this, frame_sink_element,
-        /*is_root=*/false, has_created_frame_sink);
+    FrameSinkElement* child_element = CreateFrameSinkElement(
+        child_id, parent_element, /*is_root=*/false, has_created_frame_sink);
 
-    children->addItem(BuildTreeForFrameSink(f_s_element, child));
-    frame_sink_element->AddChild(f_s_element);
+    children->addItem(BuildTreeForFrameSink(child_element, child_id));
+    parent_element->AddChild(child_element);
   }
+
   std::unique_ptr<DOM::Node> node =
-      BuildNode("FrameSink", frame_sink_element->GetAttributes(),
-                std::move(children), frame_sink_element->node_id());
+      BuildNode("FrameSink", parent_element->GetAttributes(),
+                std::move(children), parent_element->node_id());
   return node;
 }
 
@@ -169,12 +165,15 @@ protocol::Response DOMAgentViz::enable() {
 protocol::Response DOMAgentViz::disable() {
   frame_sink_manager_->RemoveObserver(this);
   Clear();
-  element_root()->ClearChildren();
   return DOMAgent::disable();
 }
 
 std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
   std::vector<UIElement*> children;
+
+  // All of the FrameSinkElements and SurfaceElements are owned here, so make
+  // sure the root element doesn't delete our pointers.
+  element_root()->set_owns_children(false);
 
   // Find all elements that are not part of any hierarchy. This will be
   // FrameSinks that are either root, or detached.
@@ -195,11 +194,8 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
         frame_sink_manager_->GetFrameSinkForId(frame_sink_id);
     bool is_root = support && support->is_root();
     bool has_created_frame_sink = !!support;
-    // TODO(sgilhuly): Use unique_ptr instead of new for the FrameSinkElements.
-    UIElement* frame_sink_element =
-        new FrameSinkElement(frame_sink_id, frame_sink_manager_, this,
-                             element_root(), is_root, has_created_frame_sink);
-    children.push_back(frame_sink_element);
+    children.push_back(CreateFrameSinkElement(frame_sink_id, element_root(),
+                                              is_root, has_created_frame_sink));
   }
 
   return children;
@@ -208,19 +204,13 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForUIElement(
     UIElement* ui_element) {
   if (ui_element->type() == UIElementType::FRAMESINK) {
-    FrameSinkElement* frame_sink_element =
-        static_cast<FrameSinkElement*>(ui_element);
-    return BuildTreeForFrameSink(frame_sink_element,
-                                 frame_sink_element->frame_sink_id());
+    return BuildTreeForFrameSink(ui_element,
+                                 FrameSinkElement::From(ui_element));
   }
   return nullptr;
 }
 
 void DOMAgentViz::Clear() {
-  for (auto& entry : frame_sink_elements_) {
-    entry.second->ClearChildren();
-    delete entry.second;
-  }
   frame_sink_elements_.clear();
 }
 
@@ -238,7 +228,6 @@ void DOMAgentViz::DestroyElementAndRemoveSubtree(UIElement* element) {
 
 void DOMAgentViz::Reparent(UIElement* new_parent, UIElement* child) {
   DestroySubtree(child);
-  child->ClearChildren();
 
   // This removes the child element from the Node map. It has to be added with
   // null parent to recreate the entry.
@@ -250,10 +239,7 @@ void DOMAgentViz::Reparent(UIElement* new_parent, UIElement* child) {
 
 void DOMAgentViz::DestroyElement(UIElement* element) {
   if (element->type() == UIElementType::FRAMESINK) {
-    // TODO(sgilhuly): Use unique_ptr, so that the element doesn't need to be
-    // deleted manually.
     frame_sink_elements_.erase(FrameSinkElement::From(element));
-    delete element;
   } else {
     NOTREACHED();
   }
@@ -265,6 +251,18 @@ void DOMAgentViz::DestroySubtree(UIElement* element) {
     DestroyElement(child);
   }
   element->ClearChildren();
+}
+
+FrameSinkElement* DOMAgentViz::CreateFrameSinkElement(
+    const viz::FrameSinkId& frame_sink_id,
+    UIElement* parent,
+    bool is_root,
+    bool is_client_connected) {
+  DCHECK(!base::ContainsKey(frame_sink_elements_, frame_sink_id));
+  frame_sink_elements_[frame_sink_id] = std::make_unique<FrameSinkElement>(
+      frame_sink_id, frame_sink_manager_, this, parent, is_root,
+      is_client_connected);
+  return frame_sink_elements_[frame_sink_id].get();
 }
 
 }  // namespace ui_devtools
