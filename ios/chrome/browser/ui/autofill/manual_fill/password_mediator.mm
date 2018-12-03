@@ -54,29 +54,28 @@ BOOL AreCredentialsAtIndexesConnected(
 
 @interface ManualFillPasswordMediator ()<ManualFillContentDelegate,
                                          PasswordFetcherDelegate>
+
 // The |WebStateList| containing the active web state. Used to filter the list
 // of credentials based on the active web state.
 @property(nonatomic, assign) WebStateList* webStateList;
+
 // The password fetcher to query the user profile.
 @property(nonatomic, strong) PasswordFetcher* passwordFetcher;
+
 // A cache of the credentials fetched from the store, not synced. Useful to
 // reuse the mediator.
 @property(nonatomic, strong) NSArray<ManualFillCredential*>* credentials;
+
 // If the filter is disabled, the "Show All Passwords" button is not included
 // in the model.
 @property(nonatomic, assign, readonly) BOOL isAllPasswordButtonEnabled;
 
+// YES if the password fetcher has completed at least one fetch.
+@property(nonatomic, assign) BOOL passwordFetcherDidFetch;
+
 @end
 
 @implementation ManualFillPasswordMediator
-
-@synthesize consumer = _consumer;
-@synthesize contentDelegate = _contentDelegate;
-@synthesize credentials = _credentials;
-@synthesize disableFilter = _disableFilter;
-@synthesize navigationDelegate = _navigationDelegate;
-@synthesize passwordFetcher = _passwordFetcher;
-@synthesize webStateList = _webStateList;
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
                        passwordStore:
@@ -93,15 +92,6 @@ BOOL AreCredentialsAtIndexesConnected(
   return self;
 }
 
-- (void)setConsumer:(id<ManualFillPasswordConsumer>)consumer {
-  if (consumer == _consumer) {
-    return;
-  }
-  _consumer = consumer;
-  [self postCredentialsToConsumer];
-  [self postActionsToConsumer];
-}
-
 #pragma mark - PasswordFetcherDelegate
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
@@ -116,7 +106,8 @@ BOOL AreCredentialsAtIndexesConnected(
     [credentials addObject:credential];
   }
   self.credentials = credentials;
-  [self postCredentialsToConsumer];
+  self.passwordFetcherDidFetch = YES;
+  [self postDataToConsumer];
 }
 
 #pragma mark - UISearchResultsUpdating
@@ -140,6 +131,17 @@ BOOL AreCredentialsAtIndexesConnected(
 }
 
 #pragma mark - Private
+
+- (void)postDataToConsumer {
+  // To avoid duplicating the metric tracking how many passwords are sent to the
+  // consumer, only post credentials if at least the first fetch is done. Or
+  // else there will be spam metrics with 0 passwords everytime the screen is
+  // open.
+  if (self.passwordFetcherDidFetch) {
+    [self postCredentialsToConsumer];
+    [self postActionsToConsumer];
+  }
+}
 
 // Posts the credentials to the consumer. If filtered is |YES| it only post the
 // ones associated with the active web state.
@@ -193,15 +195,6 @@ BOOL AreCredentialsAtIndexesConnected(
                          delegate:self];
     [items addObject:item];
   }
-  if (credentials.count == 0) {
-    auto noItemsItem = [[ManualFillActionItem alloc]
-        initWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_MANUAL_FALLBACK_NO_PASSWORDS_FOR_SITE)
-               action:nil];
-    noItemsItem.enabled = NO;
-    noItemsItem.showSeparator = YES;
-    [items addObject:noItemsItem];
-  }
   return items;
 }
 
@@ -251,6 +244,16 @@ BOOL AreCredentialsAtIndexesConnected(
 
 - (BOOL)isAllPasswordButtonEnabled {
   return !self.disableFilter;
+}
+
+#pragma mark - Setters
+
+- (void)setConsumer:(id<ManualFillPasswordConsumer>)consumer {
+  if (consumer == _consumer) {
+    return;
+  }
+  _consumer = consumer;
+  [self postDataToConsumer];
 }
 
 #pragma mark - ManualFillContentDelegate
