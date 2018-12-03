@@ -100,8 +100,8 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
 
 std::unique_ptr<TestBrowserWindow> CreateTestBrowserWindow(
     aura::Window* parent) {
-  auto window =
-      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  auto window = std::make_unique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_NORMAL, parent->env());
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(gfx::Rect(0, 0, 200, 200));
   parent->AddChild(window.get());
