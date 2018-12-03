@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -82,14 +84,23 @@ public class AddToHomescreenManagerTest {
             + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
+    private static final String NON_MASKABLE_MANIFEST_TEST_PAGE_PATH =
+            "/chrome/test/data/banners/manifest_test_page.html";
+    private static final String MASKABLE_MANIFEST_TEST_PAGE_PATH =
+            "/chrome/test/data/banners/manifest_test_page.html?manifest=manifest_maskable.json";
+    private static final String MANIFEST_TEST_PAGE_TITLE = "Web app banner test page";
+
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public String mRequestedShortcutTitle;
         public Intent mRequestedShortcutIntent;
+        public boolean mRequestedShortcutAdaptable;
 
         @Override
-        public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
+        public void addShortcutToHomescreen(
+                String title, Bitmap icon, boolean iconAdaptable, Intent shortcutIntent) {
             mRequestedShortcutTitle = title;
             mRequestedShortcutIntent = shortcutIntent;
+            mRequestedShortcutAdaptable = iconAdaptable;
         }
 
         @Override
@@ -100,6 +111,7 @@ public class AddToHomescreenManagerTest {
         public void clearRequestedShortcutData() {
             mRequestedShortcutTitle = null;
             mRequestedShortcutIntent = null;
+            mRequestedShortcutAdaptable = false;
         }
     }
 
@@ -195,6 +207,31 @@ public class AddToHomescreenManagerTest {
                 SECOND_WEBAPP_HTML, newLaunchIntent.getStringExtra(ShortcutHelper.EXTRA_URL));
         Assert.assertEquals(WEBAPP_ACTION_NAME, newLaunchIntent.getAction());
         Assert.assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature("{Webapp}")
+    // The test manifest fulfills the requirements of a WebAPK so disable WebAPKs to force plain old
+    // add to home screen.
+    @CommandLineFlags.Add({"disable-features=ImprovedA2HS"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
+    public void testAddAdaptableShortcut() throws Exception {
+        // Test the baseline of no adaptive icon.
+        loadUrl(mTestServerRule.getServer().getURL(NON_MASKABLE_MANIFEST_TEST_PAGE_PATH),
+                MANIFEST_TEST_PAGE_TITLE);
+        addShortcutToTab(mTab, "", true);
+
+        Assert.assertFalse(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
+
+        mShortcutHelperDelegate.clearRequestedShortcutData();
+
+        // Test the adaptive icon.
+        loadUrl(mTestServerRule.getServer().getURL(MASKABLE_MANIFEST_TEST_PAGE_PATH),
+                MANIFEST_TEST_PAGE_TITLE);
+        addShortcutToTab(mTab, "", true);
+
+        Assert.assertTrue(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
     }
 
     @Test
