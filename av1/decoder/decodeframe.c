@@ -4716,6 +4716,18 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   pbi->hold_ref_buf = 1;
 }
 
+// If the refresh_frame_flags bitmask is set, update reference frame id values
+// and mark frames as valid for reference.
+static void update_ref_frame_id(AV1_COMMON *const cm, int frame_id) {
+  int refresh_frame_flags = cm->current_frame.refresh_frame_flags;
+  for (int i = 0; i < REF_FRAMES; i++) {
+    if ((refresh_frame_flags >> i) & 1) {
+      cm->ref_frame_id[i] = frame_id;
+      cm->valid_for_referencing[i] = 1;
+    }
+  }
+}
+
 static void show_existing_frame_reset(AV1Decoder *const pbi,
                                       int existing_frame_idx) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4735,20 +4747,10 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
     pbi->need_resync = 0;
   }
 
+  // Note that the displayed frame must be valid for referencing in order to
+  // have been selected.
   if (cm->seq_params.frame_id_numbers_present_flag) {
-    /* If bitmask is set, update reference frame id values and
-       mark frames as valid for reference.
-       Note that the displayed frame be valid for referencing
-       in order to have been selected.
-    */
-    int refresh_frame_flags = cm->current_frame.refresh_frame_flags;
-    int display_frame_id = cm->ref_frame_id[existing_frame_idx];
-    for (int i = 0; i < REF_FRAMES; i++) {
-      if ((refresh_frame_flags >> i) & 1) {
-        cm->ref_frame_id[i] = display_frame_id;
-        cm->valid_for_referencing[i] = 1;
-      }
-    }
+    update_ref_frame_id(cm, cm->ref_frame_id[existing_frame_idx]);
   }
 
   cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
@@ -5228,15 +5230,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->cur_frame->frame_type = current_frame->frame_type;
 
   if (seq_params->frame_id_numbers_present_flag) {
-    /* If bitmask is set, update reference frame id values and
-       mark frames as valid for reference */
-    int refresh_frame_flags = current_frame->refresh_frame_flags;
-    for (int i = 0; i < REF_FRAMES; i++) {
-      if ((refresh_frame_flags >> i) & 1) {
-        cm->ref_frame_id[i] = cm->current_frame_id;
-        cm->valid_for_referencing[i] = 1;
-      }
-    }
+    update_ref_frame_id(cm, cm->current_frame_id);
   }
 
   const int might_bwd_adapt =
