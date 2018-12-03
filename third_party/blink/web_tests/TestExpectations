@@ -5725,6 +5725,7 @@ crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-docume
 # Flaky crash due to "bad mojo message".
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+crbug.com/906952 virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
 #Sheriff 2018-11-21
 
