@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -35,7 +36,7 @@ class GrCacheControllerTest : public testing::Test {
     task_runner_ = new base::TestMockTimeTaskRunner();
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), std::move(surface), std::move(context),
-        false /* use_virtualized_gl_contexts */);
+        false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
 
     controller_ =

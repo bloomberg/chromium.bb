@@ -256,7 +256,8 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   scoped_refptr<raster::RasterDecoderContextState> context_state =
       new raster::RasterDecoderContextState(
           new gl::GLShareGroup(), surface_, context_,
-          feature_info->workarounds().use_virtualized_gl_contexts);
+          feature_info->workarounds().use_virtualized_gl_contexts,
+          base::DoNothing());
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),
                                        std::move(context_state)));

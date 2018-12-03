@@ -103,8 +103,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // Remove the channel for a particular renderer.
   void RemoveChannel(int client_id);
 
-  void LoseAllContexts();
-  void MaybeExitOnContextLost();
+  void OnContextLost(bool synthetic_loss);
 
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
@@ -167,6 +166,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // raster::GrShaderCache::Client implementation.
   void StoreShader(const std::string& key, const std::string& shader) override;
 
+ private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
                                           int client_id);
@@ -177,6 +177,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void HandleMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  void LoseAllContexts();
+  void MaybeExitOnContextLost();
 
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU

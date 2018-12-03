@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -363,7 +364,7 @@ class CommandBufferSetup {
     scoped_refptr<raster::RasterDecoderContextState> context_state =
         new raster::RasterDecoderContextState(
             share_group_, surface_, context_,
-            config_.workarounds.use_virtualized_gl_contexts);
+            config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,

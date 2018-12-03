@@ -647,7 +647,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool use_ddl_ = false;
 
   bool has_robustness_extension_ = false;
-  bool context_was_lost_ = false;
   bool reset_by_robustness_extension_ = false;
 
   // The current decoder error communicates the decoder error through command
@@ -973,6 +972,8 @@ bool RasterDecoderImpl::MakeCurrent() {
     return false;
   }
 
+  // TODO(https://crbug.com/902904): Switch to
+  // raster_decoder_context_state_->MakeCurrent(nullptr).
   if (!context_->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "  RasterDecoderImpl: Context lost during MakeCurrent.";
     MarkContextLost(error::kMakeCurrentFailed);
@@ -1204,7 +1205,7 @@ void RasterDecoderImpl::SetLevelInfo(uint32_t client_id,
 }
 
 bool RasterDecoderImpl::WasContextLost() const {
-  return context_was_lost_;
+  return raster_decoder_context_state_->context_lost;
 }
 
 bool RasterDecoderImpl::WasContextLostByRobustnessExtension() const {
@@ -1219,13 +1220,9 @@ void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
   // Don't make GL calls in here, the context might not be current.
   command_buffer_service()->SetContextLostReason(reason);
   current_decoder_error_ = error::kLostContext;
-  context_was_lost_ = true;
 
   state_.MarkContextLost();
-  raster_decoder_context_state_->context_lost = true;
-
-  if (gr_context())
-    gr_context()->abandonContext();
+  raster_decoder_context_state_->MarkContextLost();
 }
 
 bool RasterDecoderImpl::CheckResetStatus() {

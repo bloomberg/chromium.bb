@@ -52,16 +52,10 @@ void GrCacheController::ScheduleGrContextCleanup() {
 void GrCacheController::PurgeGrCache(uint64_t idle_id) {
   purge_gr_cache_cb_.Cancel();
 
-  if (context_state_->context_lost)
-    return;
-
-  // Skip unnecessary MakeCurrent to improve
+  // We don't care which surface is current. This improves
   // performance. https://crbug.com/457431
-  if (!context_state_->context->IsCurrent(nullptr) &&
-      !context_state_->context->MakeCurrent(context_state_->surface.get())) {
-    context_state_->context_lost = true;
+  if (!context_state_->MakeCurrent(nullptr))
     return;
-  }
 
   // If the idle id changed, the context was used after this callback was
   // posted. Schedule another one.

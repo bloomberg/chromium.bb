@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/bind_helpers.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -53,7 +54,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), surface_, context_,
-        false /* use_virtualized_gl_contexts */);
+        false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
