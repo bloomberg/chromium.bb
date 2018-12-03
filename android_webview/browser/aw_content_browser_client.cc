@@ -25,6 +25,7 @@
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_content_client.h"
@@ -269,7 +270,7 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   context_params->enable_data_url_support = true;
 
   context_params->http_cache_enabled = true;
-  context_params->http_cache_max_size = 20 * 1024 * 1024;  // 20M
+  context_params->http_cache_max_size = GetHttpCacheSize();
   context_params->http_cache_path = AwBrowserContext::GetCacheDir();
 
   // WebView does not currently support Certificate Transparency.

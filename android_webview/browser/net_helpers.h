@@ -14,6 +14,10 @@ class AwContentsIoThreadClient;
 // Gets the net-layer load_flags which reflect |client|'s cache mode.
 int GetCacheModeForClient(AwContentsIoThreadClient* client);
 
+// Determines the desired size for WebView's on-disk HttpCache, measured in
+// Bytes.
+int GetHttpCacheSize();
+
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_BROWSER_NET_HELPERS_H_
