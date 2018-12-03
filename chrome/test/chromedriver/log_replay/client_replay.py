@@ -78,7 +78,6 @@ _COMMANDS = {
     "Click": (Method.POST, "/session/:sessionId/click"),
     "ClickElement": (Method.POST, "/session/:sessionId/element/:id/click"),
     "CloseWindow": (Method.DELETE, "/session/:sessionId/window"),
-    "DeleteActions": (Method.DELETE, "/session/:sessionId/actions"),
     "DeleteAllCookies": (Method.DELETE, "/session/:sessionId/cookie"),
     "DeleteCookie": (Method.DELETE, "/session/:sessionId/cookie/:name"),
     "DeleteNetworkConditions":
@@ -179,6 +178,7 @@ _COMMANDS = {
     "PerformActions": (Method.POST, "/session/:sessionId/actions"),
     "Quit": (Method.DELETE, "/session/:sessionId"),
     "Refresh": (Method.POST, "/session/:sessionId/refresh"),
+    "ReleaseActions": (Method.DELETE, "/session/:sessionId/actions"),
     "RemoveLocalStorageItem":
     (Method.DELETE, "/session/:sessionId/local_storage/key/:key"),
     "RemoveSessionStorageItem":

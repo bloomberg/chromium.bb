@@ -367,6 +367,12 @@ Status ProcessInputActionSequence(
     const base::DictionaryValue* action_sequence,
     std::unique_ptr<base::DictionaryValue>* result);
 
+Status ExecuteReleaseActions(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout);
+
 Status ExecuteGetWindowRect(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
