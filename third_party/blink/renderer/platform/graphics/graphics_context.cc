@@ -665,7 +665,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
 
   AdjustLineToPixelBoundaries(p1, p2, width);
   canvas_->drawLine(p1.X(), p1.Y(), p2.X(), p2.Y(),
-                    ApplyHighContrastFilter(&flags));
+                    ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::DrawLineForText(const FloatPoint& pt, float width) {
@@ -743,7 +743,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
     return;
 
   font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                ApplyHighContrastFilter(&flags));
+                ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -788,7 +788,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
 
   DrawTextPasses([&font, &text_info, &point, this](const PaintFlags& flags) {
     font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                  ApplyHighContrastFilter(&flags));
+                  ApplyHighContrastFilter(flags));
   });
 }
 
@@ -816,7 +816,7 @@ void GraphicsContext::DrawEmphasisMarksInternal(const Font& font,
       [&font, &text_info, &mark, &point, this](const PaintFlags& flags) {
         font.DrawEmphasisMarks(canvas_, text_info, mark, point,
                                device_scale_factor_,
-                               ApplyHighContrastFilter(&flags));
+                               ApplyHighContrastFilter(flags));
       });
 }
 
@@ -847,7 +847,7 @@ void GraphicsContext::DrawBidiText(
                   this](const PaintFlags& flags) {
     if (font.DrawBidiText(canvas_, run_info, point,
                           custom_font_not_ready_action, device_scale_factor_,
-                          ApplyHighContrastFilter(&flags)))
+                          ApplyHighContrastFilter(flags)))
       paint_controller_.SetTextPainted();
   });
 }
@@ -1011,7 +1011,7 @@ void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawOval(oval, ApplyHighContrastFilter(&flags));
+  canvas_->drawOval(oval, ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
@@ -1019,7 +1019,7 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawPath(path, ApplyHighContrastFilter(&flags));
+  canvas_->drawPath(path, ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
@@ -1027,7 +1027,7 @@ void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(rect, ApplyHighContrastFilter(&flags));
+  canvas_->drawRect(rect, ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
@@ -1035,7 +1035,7 @@ void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRRect(rrect, ApplyHighContrastFilter(&flags));
+  canvas_->drawRRect(rrect, ApplyHighContrastFilter(flags));
 }
 
 void GraphicsContext::FillPath(const Path& path_to_fill) {
@@ -1423,22 +1423,14 @@ bool GraphicsContext::ShouldApplyHighContrastFilterToImage(Image& image) {
 Color GraphicsContext::ApplyHighContrastFilter(const Color& input) const {
   if (!high_contrast_filter_)
     return input;
-
-  SkColor sk_input =
-      SkColorSetARGB(input.Alpha(), input.Red(), input.Green(), input.Blue());
-  SkColor sk_output = high_contrast_filter_->filterColor(sk_input);
-  return Color(MakeRGBA(SkColorGetR(sk_output), SkColorGetG(sk_output),
-                        SkColorGetB(sk_output), SkColorGetA(sk_output)));
+  return Color(high_contrast_filter_->filterColor(input.Rgb()));
 }
 
 PaintFlags GraphicsContext::ApplyHighContrastFilter(
-    const PaintFlags* input) const {
-  if (input && !high_contrast_filter_)
-    return *input;
-
-  PaintFlags output;
-  if (input)
-    output = *input;
+    const PaintFlags& input) const {
+  PaintFlags output(input);
+  if (!high_contrast_filter_)
+    return output;
   if (output.HasShader()) {
     output.setColorFilter(high_contrast_filter_);
   } else {
