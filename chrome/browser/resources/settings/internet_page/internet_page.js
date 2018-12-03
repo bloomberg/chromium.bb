@@ -617,9 +617,13 @@ Polymer({
         console.error(
             'networkingPrivate.startConnect error: ' + message +
             ' For: ' + properties.GUID);
-        this.showConfig_(
-            true /* configAndConnect */, properties.Type, properties.GUID,
-            name);
+
+        // There is no configuration flow for Instant Tethering networks.
+        if (properties.Type != CrOnc.Type.TETHER) {
+          this.showConfig_(
+              true /* configAndConnect */, properties.Type, properties.GUID,
+              name);
+        }
       }
     });
   },
