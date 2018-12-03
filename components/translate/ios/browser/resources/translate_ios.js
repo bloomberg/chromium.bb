@@ -64,42 +64,48 @@ __gCrWeb.translate['installCallbacks'] = function() {
 
 /**
  * Redefine XMLHttpRequest's open to capture request configurations.
+ * Only redefines once because this script may be injected multiple times.
  */
-XMLHttpRequest.prototype.realOpen = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-  this.savedMethod = method;
-  this.savedUrl = url;
-  this.savedAsync = async;
-  this.savedUser = user;
-  this.savedPassword = password;
-  this.realOpen(method, url, async, user, password);
+if (typeof(XMLHttpRequest.prototype.realOpen) == 'undefined') {
+  XMLHttpRequest.prototype.realOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+    this.savedMethod = method;
+    this.savedUrl = url;
+    this.savedAsync = async;
+    this.savedUser = user;
+    this.savedPassword = password;
+    this.realOpen(method, url, async, user, password);
+  }
 }
 
 /**
- * XMLHttpRequests still outstanding.
+ * Translate XMLHttpRequests still outstanding.
  * @type {Array<XMLHttpRequest>}
  */
-var xhrs = [];
+__gCrWeb.translate['xhrs'] = [];
 
 /**
  * Redefine XMLHttpRequest's send to call into the browser if it matches the
  * predefined translate security origin.
+ * Only redefines once because this script may be injected multiple times.
  */
-XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
-XMLHttpRequest.prototype.send = function(body) {
-  // If this is a translate request, save this xhr and proxy the request to the
-  // browser. Else, pass it through to the original implementation.
-  // |securityOrigin| is predefined by translate_script.cc.
-  if (this.savedUrl.startsWith(securityOrigin)) {
-    var length = xhrs.push(this);
-    __gCrWeb.message.invokeOnHost({
-        'command': 'translate.sendrequest',
-        'method': this.savedMethod,
-        'url': this.savedUrl,
-        'body': body,
-        'requestID': length - 1});
-  } else {
-    this.realSend(body);
+if (typeof(XMLHttpRequest.prototype.realSend) == 'undefined') {
+  XMLHttpRequest.prototype.realSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(body) {
+    // If this is a translate request, save this xhr and proxy the request to
+    // the browser. Else, pass it through to the original implementation.
+    // |securityOrigin| is predefined by translate_script.cc.
+    if (this.savedUrl.startsWith(securityOrigin)) {
+      var length = __gCrWeb.translate['xhrs'].push(this);
+      __gCrWeb.message.invokeOnHost({
+          'command': 'translate.sendrequest',
+          'method': this.savedMethod,
+          'url': this.savedUrl,
+          'body': body,
+          'requestID': length - 1});
+    } else {
+      this.realSend(body);
+    }
   }
 }
 
@@ -117,7 +123,7 @@ __gCrWeb.translate['handleResponse'] = function(url, requestID, status,
                                                 statusText, responseURL,
                                                 responseText) {
   // Retrive xhr object that's waiting for the response.
-  xhr = xhrs[requestID];
+  xhr = __gCrWeb.translate['xhrs'][requestID];
 
   // Configure xhr as it would have been if it was sent.
   Object.defineProperties(xhr, {
@@ -146,7 +152,7 @@ __gCrWeb.translate['handleResponse'] = function(url, requestID, status,
   xhr.onreadystatechange();
 
   // Clean it up
-  delete xhrs[requestID];
+  delete __gCrWeb.translate['xhrs'][requestID];
 };
 
 }());  // End of anonymous function.
