@@ -12,7 +12,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
-#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -2949,21 +2948,6 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
   if (!is_active())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen);
-}
-
-void RenderFrameHostImpl::NotifyWebReportingCrashID(
-    const std::string& crash_id) {
-  DCHECK(frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe());
-
-  if (base::IsValidGUID(web_reporting_crash_id_)) {
-    web_reporting_crash_id_ = crash_id;
-    return;
-  }
-
-  // If the received crash ID is not valid, then the renderer is misbehaving and
-  // should be killed.
-  bad_message::ReceivedBadMessage(
-      GetProcess(), bad_message::RFH_INVALID_WEB_REPORTING_CRASH_ID);
 }
 
 #if defined(OS_ANDROID)
@@ -6122,13 +6106,6 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   if (!frame_tree_node_->IsMainFrame() && !IsCrossProcessSubframe())
     return;
 
-  // If there is no |web_reporting_crash_id_| at this point, then the renderer
-  // will not know about it, but create one here anyways so the report can be
-  // uniquely identified.
-  if (web_reporting_crash_id_.empty()) {
-    web_reporting_crash_id_ = base::GenerateGUID();
-  }
-
   // Check the termination status to see if a crash occurred (and potentially
   // determine the |reason| for the crash).
   std::string reason;
@@ -6151,9 +6128,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
   }
 
   // Construct the crash report.
-  DCHECK(base::IsValidGUID(web_reporting_crash_id_));
   auto body = base::DictionaryValue();
-  body.SetString("crashId", web_reporting_crash_id_);
   if (!reason.empty())
     body.SetString("reason", reason);
 

@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
@@ -214,11 +213,8 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   auto report = response->GetList().begin();
   auto* type = report->FindKeyOfType("type", base::Value::Type::STRING);
   auto* url = report->FindKeyOfType("url", base::Value::Type::STRING);
-  auto* id =
-      report->FindPathOfType({"body", "crashId"}, base::Value::Type::STRING);
 
   EXPECT_EQ("crash", type->GetString());
   EXPECT_EQ(base::StringPrintf("https://example.com:%d/original", port()),
             url->GetString());
-  EXPECT_TRUE(base::IsValidGUID(id->GetString()));
 }
