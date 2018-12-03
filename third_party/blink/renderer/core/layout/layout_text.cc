@@ -1608,15 +1608,16 @@ bool LayoutText::CanOptimizeSetText() const {
   return Parent()->IsLayoutBlockFlow() &&
          (Parent()->ShouldApplyLayoutContainment() &&
           Parent()->ShouldApplySizeContainment()) &&
-         FirstTextBox() &&
-         (FirstTextBox() == LastTextBox() &&
-          // If "line-height" is "normal" we might need to recompute the
-          // baseline which is not straight forward.
-          !StyleRef().LineHeight().IsNegative() &&
-          // We would need to recompute the position if "direction" is "rtl".
-          StyleRef().IsLeftToRightDirection() &&
-          // We would need to layout the text if it is justified.
-          (StyleRef().GetTextAlign(true) != ETextAlign::kJustify));
+         FirstTextBox() && FirstTextBox() == LastTextBox() &&
+         FirstTextBox()->Root().FirstChild() ==
+             FirstTextBox()->Root().LastChild() &&
+         // If "line-height" is "normal" we might need to recompute the
+         // baseline which is not straight forward.
+         !StyleRef().LineHeight().IsNegative() &&
+         // We would need to recompute the position if "direction" is "rtl".
+         StyleRef().IsLeftToRightDirection() &&
+         // We would need to layout the text if it is justified.
+         (StyleRef().GetTextAlign(true) != ETextAlign::kJustify);
 }
 
 void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
