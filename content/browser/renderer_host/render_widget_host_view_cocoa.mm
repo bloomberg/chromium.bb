@@ -250,19 +250,15 @@ void ExtractUnderlines(NSAttributedString* string,
       updateWithInsertionPointVisibility:textSelectionRange_.is_empty()];
   if (!touchBarItem.candidateListVisible)
     return;
-  if (!textSelectionRange_.IsValid()) {
-    [touchBarItem setCandidates:@[]
-               forSelectedRange:NSMakeRange(NSNotFound, 0)
-                       inString:nil];
-
-    // Bump the sequence number so that any request in flight is ignored.
-    textSuggestionsSequenceNumber_ += 1;
+  if (!textSelectionRange_.IsValid() ||
+      textSelectionOffset_ > textSelectionRange_.GetMin())
     return;
-  }
 
   NSRange selectionRange = textSelectionRange_.ToNSRange();
   NSString* selectionText = base::SysUTF16ToNSString(textSelectionText_);
   selectionRange.location -= textSelectionOffset_;
+  if (NSMaxRange(selectionRange) > selectionText.length)
+    return;
   NSSpellChecker* spell_checker = spellCheckerForTesting_
                                       ? spellCheckerForTesting_
                                       : [NSSpellChecker sharedSpellChecker];
