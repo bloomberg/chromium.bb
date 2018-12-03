@@ -108,6 +108,8 @@ class Internals final : public ScriptWrappable {
   int getResourcePriority(const String& url, Document*);
   String getResourceHeader(const String& url, const String& header, Document*);
 
+  bool doesWindowHaveUrlFragment(DOMWindow*);
+
   CSSStyleDeclaration* computedStyleIncludingVisitedInfo(Node*) const;
 
   void setBrowserControlsState(float top_height,
