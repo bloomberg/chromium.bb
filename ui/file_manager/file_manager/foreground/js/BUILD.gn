@@ -165,6 +165,7 @@ js_library("mock_folder_shortcut_data_model") {
   testonly = true
   deps = [
     "//ui/file_manager/file_manager/common/js:mock_entry",
+    "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
 }
 
@@ -406,6 +407,7 @@ js_library("folder_shortcuts_data_model") {
     "//ui/file_manager/file_manager/common/js:async_util",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -523,6 +525,16 @@ js_library("navigation_list_model") {
     ":folder_shortcuts_data_model",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
+  ]
+}
+
+js_unittest("navigation_list_model_unittest") {
+  deps = [
+    ":mock_folder_shortcut_data_model",
+    ":navigation_list_model",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
 }
 
@@ -699,6 +711,7 @@ js_library("webui_command_extender") {
 js_unit_tests("unit_tests") {
   deps = [
     ":file_list_model_unittest",
+    ":navigation_list_model_unittest",
     ":progress_center_item_group_unittest",
     ":providers_model_unittest",
     ":spinner_controller_unittest",
