@@ -350,12 +350,10 @@ void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
   DCHECK(initialized());
   DCHECK(transport_security_state());
   auto barrier = base::BarrierClosure(
-      2, base::BindOnce(
-             [](base::OnceClosure callback) {
-               base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                                        std::move(callback));
-             },
-             completion));
+      2, base::BindOnce(base::IgnoreResult(&base::PostTaskWithTraits),
+                        FROM_HERE, base::TaskTraits(web::WebThread::UI),
+                        std::move(completion)));
+
   transport_security_state()->DeleteAllDynamicDataSince(time, barrier);
   http_server_properties()->Clear(barrier);
 }
