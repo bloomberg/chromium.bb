@@ -49,7 +49,7 @@ ResourceResponse CreateTestResourceResponse() {
 
 void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   const char kTestData[] = "test data";
-  MockResource* resource = MockResource::Create(response.Url());
+  MockResource* resource = MockResource::Create(response.CurrentRequestUrl());
   resource->SetResponse(response);
   resource->SendCachedMetadata(kTestData, sizeof(kTestData));
   return;

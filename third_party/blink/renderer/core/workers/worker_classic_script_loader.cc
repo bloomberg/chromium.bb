@@ -158,8 +158,9 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
 
-  if (forbid_cross_origin_redirects_ && url_ != response.Url() &&
-      !SecurityOrigin::AreSameSchemeHostPort(url_, response.Url())) {
+  if (forbid_cross_origin_redirects_ && url_ != response.CurrentRequestUrl() &&
+      !SecurityOrigin::AreSameSchemeHostPort(url_,
+                                             response.CurrentRequestUrl())) {
     // Forbid cross-origin redirects to ensure the request and response URLs
     // have the same SecurityOrigin.
     execution_context_->AddConsoleMessage(ConsoleMessage::Create(
@@ -170,12 +171,13 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   }
 
   identifier_ = identifier;
-  if (response.WasFetchedViaServiceWorker() &&
-      !response.OriginalURLViaServiceWorker().IsEmpty()) {
-    response_url_ = response.OriginalURLViaServiceWorker();
-  } else {
-    response_url_ = response.Url();
-  }
+  response_url_ = response.ResponseUrl();
+  // The response URL may be empty if a service worker did respondWith(new
+  // Response()) to generate a response.
+  // TODO(falken): Change this to an empty URL if that is indeed spec
+  // conformant.
+  if (response_url_.IsEmpty())
+    response_url_ = response.CurrentRequestUrl();
 
   response_encoding_ = response.TextEncodingName();
   app_cache_id_ = response.AppCacheID();
@@ -284,11 +286,12 @@ void WorkerClassicScriptLoader::ProcessContentSecurityPolicy(
   // directly.  Otherwise, the Worker inherits the policy from the parent
   // document (which is implemented in WorkerMessagingProxy, and
   // m_contentSecurityPolicy should be left as nullptr to inherit the policy).
-  if (!response.Url().ProtocolIs("blob") &&
-      !response.Url().ProtocolIs("file") &&
-      !response.Url().ProtocolIs("filesystem")) {
+  if (!response.CurrentRequestUrl().ProtocolIs("blob") &&
+      !response.CurrentRequestUrl().ProtocolIs("file") &&
+      !response.CurrentRequestUrl().ProtocolIs("filesystem")) {
     content_security_policy_ = ContentSecurityPolicy::Create();
-    content_security_policy_->SetOverrideURLForSelf(response.Url());
+    content_security_policy_->SetOverrideURLForSelf(
+        response.CurrentRequestUrl());
     content_security_policy_->DidReceiveHeaders(
         ContentSecurityPolicyResponseHeaders(response));
   }

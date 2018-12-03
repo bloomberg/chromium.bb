@@ -7551,7 +7551,7 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "no image");
     return false;
   }
-  const KURL& url = image->CachedImage()->GetResponse().Url();
+  const KURL& url = image->CachedImage()->GetResponse().CurrentRequestUrl();
   if (url.IsNull() || url.IsEmpty() || !url.IsValid()) {
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "invalid image");
     return false;

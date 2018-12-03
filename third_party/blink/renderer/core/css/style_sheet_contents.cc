@@ -340,16 +340,15 @@ void StyleSheetContents::ParseAuthorStyleSheet(
   bool is_same_origin_request =
       security_origin && security_origin->CanRequest(BaseURL());
 
-  // When the response was fetched via the Service Worker, the original URL may
+  // When the response was fetched via the Service Worker, the response URL may
   // not be same as the base URL.
-  // TODO(horo): When we will use the original URL as the base URL, we can
+  // TODO(horo): When we will use the response URL as the base URL, we can
   // remove this check. crbug.com/553535
   if (is_same_origin_request &&
       cached_style_sheet->GetResponse().WasFetchedViaServiceWorker()) {
-    const KURL original_url(
-        cached_style_sheet->GetResponse().OriginalURLViaServiceWorker());
-    // |originalURL| is empty when the response is created in the SW.
-    if (!original_url.IsEmpty() && !security_origin->CanRequest(original_url))
+    const KURL response_url(cached_style_sheet->GetResponse().ResponseUrl());
+    // |response_url| is empty when the response is created in the SW.
+    if (!response_url.IsEmpty() && !security_origin->CanRequest(response_url))
       is_same_origin_request = false;
   }
 

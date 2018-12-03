@@ -50,7 +50,8 @@ void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
   HeapVector<Member<ConsoleMessage>> error_messages;
   if (WasModuleLoadSuccessful(script_resource, &error_messages)) {
     params.emplace(
-        script_resource->GetResponse().Url(), script_resource->SourceText(),
+        script_resource->GetResponse().CurrentRequestUrl(),
+        script_resource->SourceText(),
         script_resource->GetResourceRequest().GetFetchCredentialsMode());
   }
 

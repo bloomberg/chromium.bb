@@ -199,14 +199,14 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       is_xsl_ ? IncrementLoadEventDelayCount::Create(GetDocument()) : nullptr;
   if (is_xsl_) {
     sheet_ = XSLStyleSheet::Create(this, resource->Url(),
-                                   resource->GetResponse().Url());
+                                   resource->GetResponse().CurrentRequestUrl());
     ToXSLStyleSheet(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {
     DCHECK(is_css_);
     CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
     CSSParserContext* parser_context = CSSParserContext::Create(
-        GetDocument(), style_resource->GetResponse().Url(),
+        GetDocument(), style_resource->GetResponse().CurrentRequestUrl(),
         style_resource->GetResponse().IsOpaqueResponseFromServiceWorker(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 

@@ -58,9 +58,9 @@ constexpr char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
 class MemoryCacheCorrectnessTest : public testing::Test {
  protected:
   MockResource* ResourceFromResourceResponse(ResourceResponse response) {
-    if (response.Url().IsNull())
-      response.SetURL(KURL(kResourceURL));
-    ResourceRequest request(response.Url());
+    if (response.CurrentRequestUrl().IsNull())
+      response.SetCurrentRequestUrl(KURL(kResourceURL));
+    ResourceRequest request(response.CurrentRequestUrl());
     request.SetRequestorOrigin(GetSecurityOrigin());
     MockResource* resource = MockResource::Create(request);
     resource->SetResponse(response);

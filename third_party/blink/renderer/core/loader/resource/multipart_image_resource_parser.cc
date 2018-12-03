@@ -142,7 +142,7 @@ bool MultipartImageResourceParser::ParseHeaders() {
   // Create a ResourceResponse based on the original set of headers + the
   // replacement headers. We only replace the same few headers that gecko does.
   // See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
-  ResourceResponse response(original_response_.Url());
+  ResourceResponse response(original_response_.CurrentRequestUrl());
   response.SetWasFetchedViaServiceWorker(
       original_response_.WasFetchedViaServiceWorker());
   response.SetType(original_response_.GetType());

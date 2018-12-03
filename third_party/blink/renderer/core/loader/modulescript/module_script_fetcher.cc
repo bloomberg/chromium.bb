@@ -64,7 +64,8 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
         "HTML spec.";
     error_messages->push_back(ConsoleMessage::CreateForRequest(
         kJSMessageSource, kErrorMessageLevel, message,
-        response.Url().GetString(), nullptr, resource->Identifier()));
+        response.CurrentRequestUrl().GetString(), nullptr,
+        resource->Identifier()));
     return false;
   }
 

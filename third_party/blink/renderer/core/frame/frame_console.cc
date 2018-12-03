@@ -124,7 +124,7 @@ void FrameConsole::ReportResourceResponseReceived(
       response.HttpStatusText() + ')';
   ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
       kNetworkMessageSource, kErrorMessageLevel, message,
-      response.Url().GetString(), loader, request_identifier);
+      response.CurrentRequestUrl().GetString(), loader, request_identifier);
   AddMessage(console_message);
 }
 

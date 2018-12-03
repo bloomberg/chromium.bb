@@ -112,7 +112,7 @@ bool ImageElementBase::IsAccelerated() const {
 }
 
 const KURL& ImageElementBase::SourceURL() const {
-  return CachedImage()->GetResponse().Url();
+  return CachedImage()->GetResponse().CurrentRequestUrl();
 }
 
 bool ImageElementBase::IsOpaque() const {

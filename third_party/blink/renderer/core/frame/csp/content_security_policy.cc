@@ -307,13 +307,16 @@ void ContentSecurityPolicy::DidReceiveHeader(
 bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
     const ResourceResponse& response,
     const SecurityOrigin* parent_origin) {
-  if (response.Url().IsEmpty() || response.Url().ProtocolIsAbout() ||
-      response.Url().ProtocolIsData() || response.Url().ProtocolIs("blob") ||
-      response.Url().ProtocolIs("filesystem")) {
+  if (response.CurrentRequestUrl().IsEmpty() ||
+      response.CurrentRequestUrl().ProtocolIsAbout() ||
+      response.CurrentRequestUrl().ProtocolIsData() ||
+      response.CurrentRequestUrl().ProtocolIs("blob") ||
+      response.CurrentRequestUrl().ProtocolIs("filesystem")) {
     return true;
   }
 
-  if (parent_origin->CanAccess(SecurityOrigin::Create(response.Url()).get()))
+  if (parent_origin->CanAccess(
+          SecurityOrigin::Create(response.CurrentRequestUrl()).get()))
     return true;
 
   String header = response.HttpHeaderField(http_names::kAllowCSPFrom);

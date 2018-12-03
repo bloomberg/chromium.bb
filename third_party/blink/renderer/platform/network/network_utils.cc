@@ -90,7 +90,7 @@ scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
       SharedBuffer::Create(data_string.data(), data_string.size());
   response.SetHTTPStatusCode(200);
   response.SetHTTPStatusText("OK");
-  response.SetURL(url);
+  response.SetCurrentRequestUrl(url);
   response.SetMimeType(WebString::FromUTF8(utf8_mime_type));
   response.SetExpectedContentLength(data->size());
   response.SetTextEncodingName(WebString::FromUTF8(utf8_charset));

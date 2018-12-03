@@ -65,7 +65,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
     // Ensure redirects don't affect SecurityOrigin.
     const KURL request_url = resource->Url();
-    const KURL response_url = resource->GetResponse().Url();
+    const KURL response_url = resource->GetResponse().CurrentRequestUrl();
     if (request_url != response_url &&
         !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
             SecurityOrigin::Create(response_url).get())) {
@@ -99,7 +99,8 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().Url(), script_resource->SourceText(),
+      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
 
   // Step 13.7. "Asynchronously complete the perform the fetch steps with

@@ -22,7 +22,8 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(
-          info ? AtomicString(info->FinalResponse().Url().GetString())
+          info ? AtomicString(
+                     info->FinalResponse().CurrentRequestUrl().GetString())
                : g_empty_atom,
           time_origin,
           server_timing),

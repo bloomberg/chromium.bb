@@ -569,7 +569,7 @@ bool ThreadableLoader::RedirectReceived(
     checker_.RedirectReceived();
 
     const KURL& new_url = new_request.Url();
-    const KURL& original_url = redirect_response.Url();
+    const KURL& original_url = redirect_response.CurrentRequestUrl();
 
     if (out_of_blink_cors_)
       return client_->WillFollowRedirect(new_url, redirect_response);
@@ -763,19 +763,19 @@ void ThreadableLoader::DidDownloadToBlob(Resource* resource,
 void ThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
   base::Optional<network::CorsErrorStatus> cors_error_status =
-      cors::CheckPreflightAccess(response.Url(), response.HttpStatusCode(),
-                                 response.HttpHeaderFields(),
-                                 actual_request_.GetFetchCredentialsMode(),
-                                 *GetSecurityOrigin());
+      cors::CheckPreflightAccess(
+          response.CurrentRequestUrl(), response.HttpStatusCode(),
+          response.HttpHeaderFields(),
+          actual_request_.GetFetchCredentialsMode(), *GetSecurityOrigin());
   if (cors_error_status) {
-    HandlePreflightFailure(response.Url(), *cors_error_status);
+    HandlePreflightFailure(response.CurrentRequestUrl(), *cors_error_status);
     return;
   }
 
   base::Optional<network::mojom::CorsError> preflight_error =
       cors::CheckPreflight(response.HttpStatusCode());
   if (preflight_error) {
-    HandlePreflightFailure(response.Url(),
+    HandlePreflightFailure(response.CurrentRequestUrl(),
                            network::CorsErrorStatus(*preflight_error));
     return;
   }
@@ -784,7 +784,7 @@ void ThreadableLoader::HandlePreflightResponse(
   if (actual_request_.IsExternalRequest()) {
     error_status = cors::CheckExternalPreflight(response.HttpHeaderFields());
     if (error_status) {
-      HandlePreflightFailure(response.Url(), *error_status);
+      HandlePreflightFailure(response.CurrentRequestUrl(), *error_status);
       return;
     }
   }
@@ -796,7 +796,7 @@ void ThreadableLoader::HandlePreflightResponse(
       actual_request_.HttpHeaderFields(),
       actual_request_.GetFetchCredentialsMode());
   if (error_status)
-    HandlePreflightFailure(response.Url(), *error_status);
+    HandlePreflightFailure(response.CurrentRequestUrl(), *error_status);
 }
 
 void ThreadableLoader::ReportResponseReceived(
@@ -861,9 +861,10 @@ void ThreadableLoader::ResponseReceived(
     // https://github.com/w3c/preload/issues/100 is addressed.
     if (fetch_request_mode_ != network::mojom::FetchRequestMode::kNoCors &&
         response.GetType() == network::mojom::FetchResponseType::kOpaque) {
-      DispatchDidFail(ResourceError(
-          response.Url(), network::CorsErrorStatus(
-                              network::mojom::CorsError::kInvalidResponse)));
+      DispatchDidFail(
+          ResourceError(response.CurrentRequestUrl(),
+                        network::CorsErrorStatus(
+                            network::mojom::CorsError::kInvalidResponse)));
       return;
     }
 
@@ -887,11 +888,13 @@ void ThreadableLoader::ResponseReceived(
 
   if (cors_flag_) {
     base::Optional<network::CorsErrorStatus> access_error = cors::CheckAccess(
-        response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
-        fetch_credentials_mode_, *GetSecurityOrigin());
+        response.CurrentRequestUrl(), response.HttpStatusCode(),
+        response.HttpHeaderFields(), fetch_credentials_mode_,
+        *GetSecurityOrigin());
     if (access_error) {
       ReportResponseReceived(resource->Identifier(), response);
-      DispatchDidFail(ResourceError(response.Url(), *access_error));
+      DispatchDidFail(
+          ResourceError(response.CurrentRequestUrl(), *access_error));
       return;
     }
   }

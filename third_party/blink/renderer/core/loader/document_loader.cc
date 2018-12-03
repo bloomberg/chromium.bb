@@ -313,9 +313,10 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
     LinkLoader::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
   LinkLoader::LoadLinksFromHeader(
-      GetResponse().HttpHeaderField(http_names::kLink), GetResponse().Url(),
-      *frame_, frame_->GetDocument(), NetworkHintsInterfaceImpl(),
-      LinkLoader::kOnlyLoadResources, media_policy, viewport);
+      GetResponse().HttpHeaderField(http_names::kLink),
+      GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
+      NetworkHintsInterfaceImpl(), LinkLoader::kOnlyLoadResources, media_policy,
+      viewport);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -553,7 +554,7 @@ bool DocumentLoader::RedirectReceived(
   // origin, then block the redirect.
   const KURL& request_url = request_.Url();
   scoped_refptr<const SecurityOrigin> redirecting_origin =
-      SecurityOrigin::Create(redirect_response.Url());
+      SecurityOrigin::Create(redirect_response.CurrentRequestUrl());
   if (!redirecting_origin->CanDisplay(request_url)) {
     frame_->Console().AddMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
@@ -564,7 +565,7 @@ bool DocumentLoader::RedirectReceived(
 
   DCHECK(!GetTiming().FetchStart().is_null());
   AppendRedirect(request_url);
-  GetTiming().AddRedirect(redirect_response.Url(), request_url);
+  GetTiming().AddRedirect(redirect_response.CurrentRequestUrl(), request_url);
 
   // If a redirection happens during a back/forward navigation, don't restore
   // any state from the old HistoryItem. There is a provisional history item for
@@ -652,7 +653,7 @@ void DocumentLoader::ResponseReceived(
     GetMemoryCache()->Remove(resource);
 
   content_security_policy_ = ContentSecurityPolicy::Create();
-  content_security_policy_->SetOverrideURLForSelf(response.Url());
+  content_security_policy_->SetOverrideURLForSelf(response.CurrentRequestUrl());
 
   AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
   if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
@@ -680,7 +681,8 @@ void DocumentLoader::ResponseReceived(
       }
     }
   }
-  if (!content_security_policy_->AllowAncestors(frame_, response.Url())) {
+  if (!content_security_policy_->AllowAncestors(frame_,
+                                                response.CurrentRequestUrl())) {
     CancelLoadAfterCSPDenied(response);
     return;
   }
@@ -703,13 +705,13 @@ void DocumentLoader::ResponseReceived(
           kContentSecurityPolicyHeaderSourceHTTP);
       if (!required_csp->Subsumes(*content_security_policy_)) {
         String message = "Refused to display '" +
-                         response.Url().ElidedString() +
+                         response.CurrentRequestUrl().ElidedString() +
                          "' because it has not opted-into the following policy "
                          "required by its embedder: '" +
                          GetFrameLoader().RequiredCSP() + "'.";
         ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-            kSecurityMessageSource, kErrorMessageLevel, message, response.Url(),
-            this, MainResourceIdentifier());
+            kSecurityMessageSource, kErrorMessageLevel, message,
+            response.CurrentRequestUrl(), this, MainResourceIdentifier());
         frame_->GetDocument()->AddConsoleMessage(console_message);
         CancelLoadAfterCSPDenied(response);
         return;
@@ -1111,8 +1113,8 @@ void DocumentLoader::DidCommitNavigation(
         this, frame_->Tree().Parent()
                   ? WebFeature::kLegacySymantecCertInSubframeMainResource
                   : WebFeature::kLegacySymantecCertMainFrameResource);
-    GetLocalFrameClient().ReportLegacySymantecCert(response_.Url(),
-                                                   false /* did_fail */);
+    GetLocalFrameClient().ReportLegacySymantecCert(
+        response_.CurrentRequestUrl(), false /* did_fail */);
   }
 
   if (response_.IsLegacyTLSVersion()) {
@@ -1120,7 +1122,7 @@ void DocumentLoader::DidCommitNavigation(
                       frame_->Tree().Parent()
                           ? WebFeature::kLegacyTLSVersionInSubframeMainResource
                           : WebFeature::kLegacyTLSVersionInMainFrameResource);
-    GetLocalFrameClient().ReportLegacyTLSVersion(response_.Url());
+    GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
   }
 }
 

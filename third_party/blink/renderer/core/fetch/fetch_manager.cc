@@ -455,15 +455,15 @@ void FetchManager::Loader::DidReceiveResponse(
   DCHECK(handle);
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
-  DCHECK(response.Url() == url_list_.back());
+  DCHECK(response.CurrentRequestUrl() == url_list_.back());
   ScriptState* script_state = resolver_->GetScriptState();
   ScriptState::Scope scope(script_state);
 
   response_http_status_code_ = response.HttpStatusCode();
   FetchRequestData::Tainting tainting = fetch_request_data_->ResponseTainting();
 
-  if (response.Url().ProtocolIsData()) {
-    if (fetch_request_data_->Url() == response.Url()) {
+  if (response.CurrentRequestUrl().ProtocolIsData()) {
+    if (fetch_request_data_->Url() == response.CurrentRequestUrl()) {
       // A direct request to data.
       tainting = FetchRequestData::kBasicTainting;
     } else {
@@ -487,7 +487,7 @@ void FetchManager::Loader::DidReceiveResponse(
           return;
       }
     }
-  } else if (!SecurityOrigin::Create(response.Url())
+  } else if (!SecurityOrigin::Create(response.CurrentRequestUrl())
                   ->IsSameSchemeHostPort(fetch_request_data_->Origin().get())) {
     // Recompute the tainting if the request was redirected to a different
     // origin.
@@ -547,8 +547,9 @@ void FetchManager::Loader::DidReceiveResponse(
                                                signal_));
   }
   response_data->SetStatus(response.HttpStatusCode());
-  if (response.Url().ProtocolIsAbout() || response.Url().ProtocolIsData() ||
-      response.Url().ProtocolIs("blob")) {
+  if (response.CurrentRequestUrl().ProtocolIsAbout() ||
+      response.CurrentRequestUrl().ProtocolIsData() ||
+      response.CurrentRequestUrl().ProtocolIs("blob")) {
     response_data->SetStatusMessage("OK");
   } else {
     response_data->SetStatusMessage(response.HttpStatusText());
@@ -611,7 +612,7 @@ void FetchManager::Loader::DidReceiveResponse(
     DCHECK(!integrity_verifier_);
     integrity_verifier_ = MakeGarbageCollected<SRIVerifier>(
         std::move(handle), sri_consumer, r, this,
-        fetch_request_data_->Integrity(), response.Url(),
+        fetch_request_data_->Integrity(), response.CurrentRequestUrl(),
         r->GetResponse()->GetType(),
         resolver_->GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
