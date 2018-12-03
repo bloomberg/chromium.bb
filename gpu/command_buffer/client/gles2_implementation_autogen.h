@@ -1287,8 +1287,7 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
 
 void MaxShaderCompilerThreadsKHR(GLuint count) override;
 
-GLuint CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
-                                                const GLbyte* mailbox) override;
+GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte* mailbox) override;
 
 void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) override;
 

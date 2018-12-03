@@ -101,7 +101,7 @@ TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -136,7 +136,7 @@ TEST_F(GLES2DecoderPassthroughTest,
   Mailbox mailbox;
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // CreateAndTexStorage2DSharedImage should fail if the mailbox is invalid.
@@ -165,7 +165,7 @@ TEST_F(GLES2DecoderPassthroughTest,
   {
     CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
         *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-    cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+    cmd.Init(kNewClientId, mailbox.name);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
@@ -175,7 +175,7 @@ TEST_F(GLES2DecoderPassthroughTest,
   {
     CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
         *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-    cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+    cmd.Init(kNewClientId, mailbox.name);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   }
@@ -196,7 +196,7 @@ TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -259,7 +259,7 @@ TEST_F(GLES2DecoderPassthroughTest,
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, GL_RGBA, mailbox.name);
+  cmd.Init(kNewClientId, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 

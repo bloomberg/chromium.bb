@@ -959,7 +959,6 @@ virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                      GLsizei numViews) = 0;
 virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
 virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum internalFormat,
     const GLbyte* mailbox) = 0;
 virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
                                                   GLenum mode) = 0;

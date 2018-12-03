@@ -5484,7 +5484,6 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
                            CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
   uint32_t mailbox_size;
   if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
@@ -5494,16 +5493,10 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, mailbox_size, immediate_data_size);
-  if (!validators_->texture_internal_format.IsValid(internalFormat)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(
-        "glCreateAndTexStorage2DSharedImageINTERNAL", internalFormat,
-        "internalFormat");
-    return error::kNoError;
-  }
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalFormat, mailbox);
+  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, mailbox);
   return error::kNoError;
 }
 
