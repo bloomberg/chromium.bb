@@ -178,7 +178,9 @@ Polymer({
     const toHighlight = /** @type {!Array<string>} */
         (e.detail.filter((item) => this.displayedIds_.indexOf(item) != -1));
 
-    assert(toHighlight.length > 0);
+    if (toHighlight.length <= 0)
+      return;
+
     const leadId = toHighlight[0];
     this.dispatch(
         bookmarks.actions.selectAll(toHighlight, this.getState(), leadId));
