@@ -48,6 +48,7 @@ public class TestOfflinePageService {
     private ArrayList<String> mIncompleteOperations = new ArrayList<String>();
     // Determines how this fake service responds to requests for pages.
     private HashMap<String, PageBehavior> mPageBehaviors = new HashMap<String, PageBehavior>();
+    private StatusOuterClass.Code mDefaultGenerateStatus = StatusOuterClass.Code.OK;
 
     private static int sNextOperationIndex = 1;
     private static String newOperationName() {
@@ -74,9 +75,15 @@ public class TestOfflinePageService {
         mPageBehaviors.put(url, behavior);
     }
 
+    public void setDefaultGenerateStatus(StatusOuterClass.Code status) {
+        mDefaultGenerateStatus = status;
+    }
+
     public PageBehavior getPageBehavior(String url) {
         if (!mPageBehaviors.containsKey(url)) {
-            mPageBehaviors.put(url, new PageBehavior());
+            PageBehavior behavior = new PageBehavior();
+            behavior.generateStatus = mDefaultGenerateStatus;
+            mPageBehaviors.put(url, behavior);
         }
         return mPageBehaviors.get(url);
     }
@@ -94,9 +101,9 @@ public class TestOfflinePageService {
         // Figure out what kind of request this is, and dispatch the appropriate method.
         if (request.getMethod().equals("POST")
                 && request.getURI().startsWith("/v1:GeneratePageBundle")) {
-            GeneratePageBundleRequest bundleRequest = null;
             try {
-                bundleRequest = GeneratePageBundleRequest.parseFrom(request.getBody());
+                GeneratePageBundleRequest bundleRequest =
+                        GeneratePageBundleRequest.parseFrom(request.getBody());
                 handleGeneratePageBundle(bundleRequest, stream);
                 GeneratePageBundleCalled.notifyCalled();
                 return true;
