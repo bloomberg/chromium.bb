@@ -18,6 +18,7 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
@@ -30,13 +31,16 @@ import android.view.ViewGroup;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeWindow;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
@@ -54,17 +58,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * Helpers in this class simplify interactions with the Keyboard Accessory and the sheet below it.
  */
 public class ManualFillingTestHelper {
-    public static final Item[] TEST_CREDENTIALS = new Item[] {Item.createTopDivider(),
-            Item.createLabel("Saved passwords for this site", ""),
-            Item.createSuggestion("mpark@gmail.com", "", false, (item) -> {}, null),
-            Item.createSuggestion("TestPassword", "", true, (item) -> {}, null),
-            Item.createSuggestion("mayapark@googlemail.com", "", false, (item) -> {}, null),
-            Item.createSuggestion("SomeReallyLongPassword", "", true, (item) -> {}, null),
-            Item.createDivider(), Item.createOption("Manage Passwords...", "", (item) -> {})};
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
-    private Provider<Item[]> mSheetSuggestionsProvider =
+    private Provider<AccessorySheetData> mSheetSuggestionsProvider =
             new KeyboardAccessoryData.PropertyProvider<>();
 
     public FakeKeyboard getKeyboard() {
@@ -105,9 +102,7 @@ public class ManualFillingTestHelper {
                     mSheetSuggestionsProvider);
         });
         DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), "password");
-        sendCredentials(new Item[] {Item.createTopDivider(),
-                Item.createLabel("No Saved passwords for this site", ""), Item.createDivider(),
-                Item.createOption("Manage Passwords...", "", (item) -> {})});
+        sendCredentials(createEmptyCredentials());
     }
 
     public void clear() {
@@ -192,7 +187,7 @@ public class ManualFillingTestHelper {
     /**
      * Creates and adds a password tab to keyboard accessory and sheet.
      */
-    public void sendCredentials(Item[] testCrendentials) {
+    public void sendCredentials(AccessorySheetData testCrendentials) {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mSheetSuggestionsProvider.notifyObservers(testCrendentials); });
     }
@@ -326,5 +321,36 @@ public class ManualFillingTestHelper {
                     new KeyboardAccessoryData.Action(
                             "Marcus", AccessoryAction.AUTOFILL_SUGGESTION, result -> {})});
         });
+    }
+
+    public static AccessorySheetData createTestCredentials() {
+        AccessorySheetData testCredentials =
+                new AccessorySheetData("Saved passwords for this site");
+        testCredentials.getUserInfoList().add(createUserInfo("mpark@gmail.com", "TestPassword"));
+        testCredentials.getUserInfoList().add(
+                createUserInfo("mayapark@googlemail.com", "SomeReallyLongPassword"));
+        testCredentials.getFooterCommands().add(
+                new FooterCommand("Manage Passwords...", (item) -> {}));
+        return testCredentials;
+    }
+
+    public static AccessorySheetData createEmptyCredentials() {
+        AccessorySheetData testCredentials =
+                new AccessorySheetData("No Saved passwords for this site");
+        testCredentials.getFooterCommands().add(
+                new FooterCommand("Manage Passwords...", (item) -> {}));
+        return testCredentials;
+    }
+
+    public static UserInfo createUserInfo(String username, String password) {
+        return createUserInfo(username, password, null);
+    }
+
+    public static UserInfo createUserInfo(
+            String username, String password, @Nullable Callback<UserInfo.Field> userCallback) {
+        UserInfo info = new UserInfo(null);
+        info.addField(new UserInfo.Field(username, username, false, userCallback));
+        info.addField(new UserInfo.Field(password, "Password for " + username, true, result -> {}));
+        return info;
     }
 }

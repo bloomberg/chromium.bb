@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createUserInfo;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
@@ -37,14 +38,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo.Field;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -128,11 +130,14 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        mHelper.sendCredentials(new Item[] {Item.createLabel("Passwords", "Description_Passwords"),
-                createSuggestion("mayapark@gmail.com", (item) -> {}),
-                createPassword("SomeHiddenPassword"),
-                createSuggestion("mayaelisabethmercedesgreenepark@googlemail.com", (item) -> {}),
-                createPassword("ExtremelyLongPasswordThatUsesQuiteSomeSpaceInTheSheet")});
+
+        AccessorySheetData accessorySheetData = new AccessorySheetData("Passwords");
+        accessorySheetData.getUserInfoList().add(
+                createUserInfo("mayapark@gmail.com", "SomeHiddenPassword"));
+        accessorySheetData.getUserInfoList().add(
+                createUserInfo("mayaelisabethmercedesgreenepark@googlemail.com",
+                        "ExtremelyLongPasswordThatUsesQuiteSomeSpaceInTheSheet"));
+        mHelper.sendCredentials(accessorySheetData);
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -153,13 +158,14 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetDisplaysNoPasswordsMessageAndOptions()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        final AtomicReference<Item> clicked = new AtomicReference<>();
-        mHelper.sendCredentials(new Item[] {
-                Item.createLabel("No saved passwords for abc.com", "Description_Passwords"),
-                Item.createDivider(),
-                Item.createOption(
-                        "Suggest strong password...", "Description_Generate", clicked::set),
-                Item.createOption("Manage passwords...", "Description_Manage", (item) -> {})});
+        final AtomicReference<FooterCommand> clicked = new AtomicReference<>();
+        AccessorySheetData accessorySheetData =
+                new AccessorySheetData("No saved passwords for abc.com");
+        accessorySheetData.getFooterCommands().add(
+                new FooterCommand("Suggest strong password...", clicked::set));
+        accessorySheetData.getFooterCommands().add(
+                new FooterCommand("Manage passwords...", clicked::set));
+        mHelper.sendCredentials(accessorySheetData);
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -173,7 +179,7 @@ public class PasswordAccessoryIntegrationTest {
 
         // The callback should have triggered and set the reference to the selected Item.
         assertThat(clicked.get(), notNullValue());
-        assertThat(clicked.get().getCaption(), equalTo("Suggest strong password..."));
+        assertThat(clicked.get().getDisplayText(), equalTo("Suggest strong password..."));
     }
 
     @Test
@@ -182,18 +188,16 @@ public class PasswordAccessoryIntegrationTest {
     @FlakyTest(message = "crbug.com/855617")
     public void testPasswordSheetTriggersCallback() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
-        final AtomicReference<Item> clicked = new AtomicReference<>();
-        mHelper.sendCredentials(new Item[] {
-                Item.createLabel("Passwords", "Description_Passwords"),
-                createSuggestion("mpark@abc.com", null),
-                createPassword("ShorterPassword"),
-                createSuggestion("mayap@xyz.com", null),
-                createPassword("PWD"),
-                createSuggestion("park@googlemail.com", null),
-                createPassword("P@$$W0rt"),
-                createSuggestion("mayapark@gmail.com", clicked::set),
-                createPassword("SomeHiddenLongPassword"),
-        });
+        final AtomicReference<Field> clicked = new AtomicReference<>();
+
+        AccessorySheetData accessorySheetData = new AccessorySheetData("Passwords");
+        accessorySheetData.getUserInfoList().add(
+                createUserInfo("mpark@abc.com", "ShorterPassword"));
+        accessorySheetData.getUserInfoList().add(createUserInfo("mayap@xyz.com", "PWD"));
+        accessorySheetData.getUserInfoList().add(createUserInfo("park@googlemail.com", "P@$$W0rt"));
+        accessorySheetData.getUserInfoList().add(
+                createUserInfo("mayapark@gmail.com", "SomeHiddenLongPassword", clicked::set));
+        mHelper.sendCredentials(accessorySheetData);
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
@@ -206,7 +210,7 @@ public class PasswordAccessoryIntegrationTest {
 
         // The callback should have triggered and set the reference to the selected Item.
         assertThat(clicked.get(), notNullValue());
-        assertThat(clicked.get().getCaption(), equalTo("mayapark@gmail.com"));
+        assertThat(clicked.get().getDisplayText(), equalTo("mayapark@gmail.com"));
     }
 
     @Test
@@ -249,13 +253,5 @@ public class PasswordAccessoryIntegrationTest {
                 description.appendText("is a transformed password.");
             }
         };
-    }
-
-    private static Item createSuggestion(String caption, Callback<Item> callback) {
-        return Item.createSuggestion(caption, "Description_" + caption, false, callback, null);
-    }
-
-    private static Item createPassword(String caption) {
-        return Item.createSuggestion(caption, "Description_" + caption, true, null, null);
     }
 }

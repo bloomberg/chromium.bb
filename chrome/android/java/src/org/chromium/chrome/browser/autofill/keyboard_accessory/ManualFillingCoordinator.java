@@ -103,8 +103,9 @@ public class ManualFillingCoordinator {
         mMediator.registerActionProvider(actionProvider);
     }
 
-    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item[]> itemProvider) {
-        mMediator.registerPasswordProvider(itemProvider);
+    void registerPasswordProvider(
+            Provider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
+        mMediator.registerPasswordProvider(sheetDataProvider);
     }
 
     public void showWhenKeyboardIsVisible() {

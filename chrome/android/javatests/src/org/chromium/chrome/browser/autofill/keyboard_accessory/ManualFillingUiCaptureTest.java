@@ -9,7 +9,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.TEST_CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createTestCredentials;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
@@ -75,13 +75,13 @@ public class ManualFillingUiCaptureTest {
         mHelper.addGenerationButton();
 
         mHelper.clickPasswordField();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBar");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
@@ -103,13 +103,13 @@ public class ManualFillingUiCaptureTest {
         mHelper.loadTestPage(true);
         mHelper.addGenerationButton();
         mHelper.clickPasswordField();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarRTL");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
@@ -132,13 +132,13 @@ public class ManualFillingUiCaptureTest {
         mHelper.addGenerationButton();
         mHelper.clickPasswordField();
         mHelper.addAutofillChips();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarV2");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
@@ -161,13 +161,13 @@ public class ManualFillingUiCaptureTest {
         mHelper.addGenerationButton();
         mHelper.clickPasswordField();
         mHelper.addAutofillChips();
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessoryBarV2RTL");
 
-        mHelper.sendCredentials(TEST_CREDENTIALS);
+        mHelper.sendCredentials(createTestCredentials());
 
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
