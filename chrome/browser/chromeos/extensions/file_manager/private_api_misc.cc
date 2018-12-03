@@ -404,13 +404,13 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
-  MultiUserWindowManager* const window_manager =
-      MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* const window_manager_client =
+      MultiUserWindowManagerClient::GetInstance();
   const AccountId current_profile_id = multi_user_util::GetAccountIdFromProfile(
       Profile::FromBrowserContext(browser_context()));
   const AccountId display_profile_id =
-      window_manager && app_window
-          ? window_manager->GetUserPresentingWindow(
+      window_manager_client && app_window
+          ? window_manager_client->GetUserPresentingWindow(
                 app_window->GetNativeWindow())
           : EmptyAccountId();
 

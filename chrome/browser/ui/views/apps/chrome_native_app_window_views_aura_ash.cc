@@ -78,10 +78,10 @@ ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     TabletModeClient::Get()->AddObserver(this);
 
   if (features::IsSingleProcessMash()) {
-    // There is no MultiUserWindowManager at the login screen, but users can
-    // open the feedback app.
-    if (MultiUserWindowManager::GetInstance())
-      MultiUserWindowManager::GetInstance()->AddObserver(this);
+    // There is no MultiUserWindowManagerClient at the login screen, but users
+    // can open the feedback app.
+    if (MultiUserWindowManagerClient::GetInstance())
+      MultiUserWindowManagerClient::GetInstance()->AddObserver(this);
 
     ash_window_manager_ =
         views::MusClient::Get()
@@ -94,8 +94,10 @@ ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
 
-  if (features::IsSingleProcessMash() && MultiUserWindowManager::GetInstance())
-    MultiUserWindowManager::GetInstance()->RemoveObserver(this);
+  if (features::IsSingleProcessMash() &&
+      MultiUserWindowManagerClient::GetInstance()) {
+    MultiUserWindowManagerClient::GetInstance()->RemoveObserver(this);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

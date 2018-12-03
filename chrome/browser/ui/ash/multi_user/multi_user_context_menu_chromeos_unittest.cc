@@ -26,8 +26,7 @@ namespace ash {
 class MultiUserContextMenuChromeOSTest : public AshTestBase {
  public:
   MultiUserContextMenuChromeOSTest()
-      : multi_user_window_manager_(nullptr),
-        fake_user_manager_(new chromeos::FakeChromeUserManager),
+      : fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   void SetUp() override;
@@ -50,8 +49,8 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
   }
 
   aura::Window* window() { return window_; }
-  MultiUserWindowManagerChromeOS* multi_user_window_manager() {
-    return multi_user_window_manager_;
+  MultiUserWindowManagerClientImpl* multi_user_window_manager_client() {
+    return multi_user_window_manager_client_;
   }
 
  private:
@@ -59,7 +58,7 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
   aura::Window* window_;
 
   // The instance of the MultiUserWindowManager.
-  MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  MultiUserWindowManagerClientImpl* multi_user_window_manager_client_ = nullptr;
   // Owned by |user_manager_enabler_|.
   chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -73,17 +72,18 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   window_ = CreateTestWindowInShellWithId(0);
   window_->Show();
 
-  multi_user_window_manager_ =
-      new MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
-  multi_user_window_manager_->Init();
-  ::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
-  EXPECT_TRUE(multi_user_window_manager_);
+  multi_user_window_manager_client_ =
+      new MultiUserWindowManagerClientImpl(AccountId::FromUserEmail("A"));
+  multi_user_window_manager_client_->Init();
+  ::MultiUserWindowManagerClient::SetInstanceForTest(
+      multi_user_window_manager_client_);
+  ASSERT_TRUE(multi_user_window_manager_client_);
 }
 
 void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
-  ::MultiUserWindowManager::DeleteInstance();
+  ::MultiUserWindowManagerClient::DeleteInstance();
   AshTestBase::TearDown();
 }
 
@@ -100,8 +100,8 @@ TEST_F(MultiUserContextMenuChromeOSTest, UnownedWindow) {
 TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // Make the window owned and check that there is no menu (since only a single
   // user exists).
-  multi_user_window_manager()->SetWindowOwner(window(),
-                                              AccountId::FromUserEmail("A"));
+  multi_user_window_manager_client()->SetWindowOwner(
+      window(), AccountId::FromUserEmail("A"));
   EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 
   // After adding another user a menu should get created.

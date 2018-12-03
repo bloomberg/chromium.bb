@@ -77,7 +77,7 @@ void AssistantOptInDialog::Show(
   auto* window = chrome::ShowWebDialogInContainer(
       container_id, ProfileManager::GetActiveUserProfile(), dialog, true);
 
-  MultiUserWindowManager::GetInstance()->SetWindowOwner(
+  MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
       window,
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }

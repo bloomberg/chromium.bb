@@ -58,13 +58,13 @@ bool BrowserMatches(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // Get the profile on which the window is currently shown.
-  // MultiUserWindowManager might be NULL under test scenario.
-  MultiUserWindowManager* const window_manager =
-      MultiUserWindowManager::GetInstance();
+  // MultiUserWindowManagerClient might be NULL under test scenario.
+  MultiUserWindowManagerClient* const client =
+      MultiUserWindowManagerClient::GetInstance();
   Profile* shown_profile = nullptr;
-  if (window_manager) {
-    const AccountId& shown_account_id = window_manager->GetUserPresentingWindow(
-        browser->window()->GetNativeWindow());
+  if (client) {
+    const AccountId& shown_account_id =
+        client->GetUserPresentingWindow(browser->window()->GetNativeWindow());
     shown_profile =
         shown_account_id.is_valid()
             ? multi_user_util::GetProfileFromAccountId(shown_account_id)

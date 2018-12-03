@@ -50,11 +50,11 @@ Profile* GetFeedbackProfile(Browser* browser) {
 
 #if defined(OS_CHROMEOS)
   // Obtains the display profile ID on which the Feedback window should show.
-  MultiUserWindowManager* const window_manager =
-      MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* const window_manager_client =
+      MultiUserWindowManagerClient::GetInstance();
   const AccountId display_account_id =
-      window_manager && browser
-          ? window_manager->GetUserPresentingWindow(
+      window_manager_client && browser
+          ? window_manager_client->GetUserPresentingWindow(
                 browser->window()->GetNativeWindow())
           : EmptyAccountId();
   if (display_account_id.is_valid())

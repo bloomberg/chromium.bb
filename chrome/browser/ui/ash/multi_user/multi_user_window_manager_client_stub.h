@@ -14,11 +14,12 @@
 
 class AccountId;
 
-// This is the implementation of MultiUserWindowManager for single user mode.
-class MultiUserWindowManagerStub : public MultiUserWindowManager {
+// This is the implementation of MultiUserWindowManagerClient for single user
+// mode.
+class MultiUserWindowManagerClientStub : public MultiUserWindowManagerClient {
  public:
-  MultiUserWindowManagerStub();
-  ~MultiUserWindowManagerStub() override;
+  MultiUserWindowManagerClientStub();
+  ~MultiUserWindowManagerClientStub() override;
 
   // MultiUserWindowManager overrides:
   void SetWindowOwner(aura::Window* window,
@@ -37,7 +38,7 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
   void RemoveObserver(Observer* observer) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerStub);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerClientStub);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_STUB_H_

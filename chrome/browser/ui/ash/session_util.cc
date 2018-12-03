@@ -26,15 +26,14 @@ namespace {
 content::BrowserContext* GetBrowserContextForWindow(aura::Window* window,
                                                     bool presenting) {
   DCHECK(window);
+  auto* client = MultiUserWindowManagerClient::GetInstance();
   // Speculative fix for multi-profile crash. crbug.com/661821
-  if (!MultiUserWindowManager::GetInstance())
+  if (!client)
     return nullptr;
 
-  const AccountId& account_id =
-      presenting
-          ? MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
-                window)
-          : MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+  const AccountId& account_id = presenting
+                                    ? client->GetUserPresentingWindow(window)
+                                    : client->GetWindowOwner(window);
   return account_id.is_valid()
              ? multi_user_util::GetProfileFromAccountId(account_id)
              : nullptr;

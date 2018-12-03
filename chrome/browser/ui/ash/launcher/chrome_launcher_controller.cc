@@ -172,7 +172,7 @@ void ChromeLauncherControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
 }
 
 void ChromeLauncherControllerUserSwitchObserver::AddUser(Profile* profile) {
-  MultiUserWindowManager::GetInstance()->AddUser(profile);
+  MultiUserWindowManagerClient::GetInstance()->AddUser(profile);
   controller_->AdditionalUserAddedToSession(profile->GetOriginalProfile());
 }
 
@@ -221,7 +221,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   shelf_spinner_controller_.reset(new ShelfSpinnerController(this));
 
   // Create either the real window manager or a stub.
-  MultiUserWindowManager::CreateInstance();
+  MultiUserWindowManagerClient::CreateInstance();
 
   // On Chrome OS using multi profile we want to switch the content of the shelf
   // with a user change. Note that for unit tests the instance can be NULL.
@@ -280,7 +280,7 @@ ChromeLauncherController::~ChromeLauncherController() {
   ReleaseProfile();
 
   // Get rid of the multi user window manager instance.
-  MultiUserWindowManager::DeleteInstance();
+  MultiUserWindowManagerClient::DeleteInstance();
 
   if (instance_ == this)
     instance_ = nullptr;
@@ -511,9 +511,10 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   aura::Window* native_window = window->GetNativeWindow();
   const AccountId& current_account_id =
       multi_user_util::GetAccountIdFromProfile(profile());
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
-  if (!manager->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
-    manager->ShowWindowForUser(native_window, current_account_id);
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
+  if (!client->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
+    client->ShowWindowForUser(native_window, current_account_id);
     window->Activate();
     return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }

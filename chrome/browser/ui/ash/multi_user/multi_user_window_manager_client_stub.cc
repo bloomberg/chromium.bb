@@ -8,52 +8,54 @@
 #include "base/strings/string_util.h"
 #include "components/account_id/account_id.h"
 
-MultiUserWindowManagerStub::MultiUserWindowManagerStub() {}
+MultiUserWindowManagerClientStub::MultiUserWindowManagerClientStub() {}
 
-MultiUserWindowManagerStub::~MultiUserWindowManagerStub() {}
+MultiUserWindowManagerClientStub::~MultiUserWindowManagerClientStub() {}
 
-void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
-                                                const AccountId& account_id) {
-  NOTIMPLEMENTED();
-}
-
-const AccountId& MultiUserWindowManagerStub::GetWindowOwner(
-    aura::Window* window) const {
-  return EmptyAccountId();
-}
-
-void MultiUserWindowManagerStub::ShowWindowForUser(
+void MultiUserWindowManagerClientStub::SetWindowOwner(
     aura::Window* window,
     const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() const {
+const AccountId& MultiUserWindowManagerClientStub::GetWindowOwner(
+    aura::Window* window) const {
+  return EmptyAccountId();
+}
+
+void MultiUserWindowManagerClientStub::ShowWindowForUser(
+    aura::Window* window,
+    const AccountId& account_id) {
+  NOTIMPLEMENTED();
+}
+
+bool MultiUserWindowManagerClientStub::AreWindowsSharedAmongUsers() const {
   return false;
 }
 
-void MultiUserWindowManagerStub::GetOwnersOfVisibleWindows(
+void MultiUserWindowManagerClientStub::GetOwnersOfVisibleWindows(
     std::set<AccountId>* account_ids) const {}
 
-bool MultiUserWindowManagerStub::IsWindowOnDesktopOfUser(
+bool MultiUserWindowManagerClientStub::IsWindowOnDesktopOfUser(
     aura::Window* window,
     const AccountId& account_id) const {
   return true;
 }
 
-const AccountId& MultiUserWindowManagerStub::GetUserPresentingWindow(
+const AccountId& MultiUserWindowManagerClientStub::GetUserPresentingWindow(
     aura::Window* window) const {
   return EmptyAccountId();
 }
 
-void MultiUserWindowManagerStub::AddUser(content::BrowserContext* context) {
+void MultiUserWindowManagerClientStub::AddUser(
+    content::BrowserContext* context) {
   NOTIMPLEMENTED();
 }
 
-void MultiUserWindowManagerStub::AddObserver(Observer* observer) {
+void MultiUserWindowManagerClientStub::AddObserver(Observer* observer) {
   NOTIMPLEMENTED();
 }
 
-void MultiUserWindowManagerStub::RemoveObserver(Observer* observer) {
+void MultiUserWindowManagerClientStub::RemoveObserver(Observer* observer) {
   NOTIMPLEMENTED();
 }

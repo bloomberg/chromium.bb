@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
-#define CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
+#define CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
@@ -11,16 +11,15 @@
 
 class Browser;
 
-// This is a test implementation of a MultiUserWindowManager which allows to
-// test a visiting window on another desktop. It will install and remove itself
-// from the system upon creation / destruction.
-// The creation function gets a |browser| which is shown on |desktop_owner|'s
-// desktop.
-class TestMultiUserWindowManager : public MultiUserWindowManager {
+// This is a test implementation of a MultiUserWindowManagerClient which allows
+// to test a visiting window on another desktop. It will install and remove
+// itself from the system upon creation / destruction. The creation function
+// gets a |browser| which is shown on |desktop_owner|'s desktop.
+class TestMultiUserWindowManagerClient : public MultiUserWindowManagerClient {
  public:
-  TestMultiUserWindowManager(Browser* visiting_browser,
-                             const AccountId& desktop_owner);
-  ~TestMultiUserWindowManager() override;
+  TestMultiUserWindowManagerClient(Browser* visiting_browser,
+                                   const AccountId& desktop_owner);
+  ~TestMultiUserWindowManagerClient() override;
 
   aura::Window* created_window() { return created_window_; }
 
@@ -54,7 +53,7 @@ class TestMultiUserWindowManager : public MultiUserWindowManager {
   // The current selected active user.
   AccountId current_account_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMultiUserWindowManager);
+  DISALLOW_COPY_AND_ASSIGN(TestMultiUserWindowManagerClient);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_TEST_MULTI_USER_WINDOW_MANAGER_CLIENT_H_

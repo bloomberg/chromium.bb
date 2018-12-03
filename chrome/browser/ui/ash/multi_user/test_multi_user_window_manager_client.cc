@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager_client.h"
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -10,7 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
-TestMultiUserWindowManager::TestMultiUserWindowManager(
+TestMultiUserWindowManagerClient::TestMultiUserWindowManagerClient(
     Browser* visiting_browser,
     const AccountId& desktop_owner)
     : browser_window_(visiting_browser->window()->GetNativeWindow()),
@@ -22,27 +22,28 @@ TestMultiUserWindowManager::TestMultiUserWindowManager(
       current_account_id_(desktop_owner) {
   // Register this object with the system (which will take ownership). It will
   // be deleted by ChromeLauncherController::~ChromeLauncherController().
-  MultiUserWindowManager::SetInstanceForTest(this);
+  MultiUserWindowManagerClient::SetInstanceForTest(this);
 }
 
-TestMultiUserWindowManager::~TestMultiUserWindowManager() {
+TestMultiUserWindowManagerClient::~TestMultiUserWindowManagerClient() {
   // This object is owned by the MultiUserWindowManager since the
   // SetInstanceForTest call. As such no uninstall is required.
 }
 
-void TestMultiUserWindowManager::SetWindowOwner(aura::Window* window,
-                                                const AccountId& account_id) {
+void TestMultiUserWindowManagerClient::SetWindowOwner(
+    aura::Window* window,
+    const AccountId& account_id) {
   NOTREACHED();
 }
 
-const AccountId& TestMultiUserWindowManager::GetWindowOwner(
+const AccountId& TestMultiUserWindowManagerClient::GetWindowOwner(
     aura::Window* window) const {
   // No matter which window will get queried - all browsers belong to the
   // original browser's user.
   return browser_owner_;
 }
 
-void TestMultiUserWindowManager::ShowWindowForUser(
+void TestMultiUserWindowManagerClient::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
   // This class is only able to handle one additional window <-> user
@@ -66,20 +67,20 @@ void TestMultiUserWindowManager::ShowWindowForUser(
   current_account_id_ = account_id;
 }
 
-bool TestMultiUserWindowManager::AreWindowsSharedAmongUsers() const {
+bool TestMultiUserWindowManagerClient::AreWindowsSharedAmongUsers() const {
   return browser_owner_ != desktop_owner_;
 }
 
-void TestMultiUserWindowManager::GetOwnersOfVisibleWindows(
+void TestMultiUserWindowManagerClient::GetOwnersOfVisibleWindows(
     std::set<AccountId>* account_ids) const {}
 
-bool TestMultiUserWindowManager::IsWindowOnDesktopOfUser(
+bool TestMultiUserWindowManagerClient::IsWindowOnDesktopOfUser(
     aura::Window* window,
     const AccountId& account_id) const {
   return GetUserPresentingWindow(window) == account_id;
 }
 
-const AccountId& TestMultiUserWindowManager::GetUserPresentingWindow(
+const AccountId& TestMultiUserWindowManagerClient::GetUserPresentingWindow(
     aura::Window* window) const {
   if (window == browser_window_)
     return desktop_owner_;
@@ -89,8 +90,9 @@ const AccountId& TestMultiUserWindowManager::GetUserPresentingWindow(
   return browser_owner_;
 }
 
-void TestMultiUserWindowManager::AddUser(content::BrowserContext* profile) {}
+void TestMultiUserWindowManagerClient::AddUser(
+    content::BrowserContext* profile) {}
 
-void TestMultiUserWindowManager::AddObserver(Observer* observer) {}
+void TestMultiUserWindowManagerClient::AddObserver(Observer* observer) {}
 
-void TestMultiUserWindowManager::RemoveObserver(Observer* observer) {}
+void TestMultiUserWindowManagerClient::RemoveObserver(Observer* observer) {}

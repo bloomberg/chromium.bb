@@ -460,12 +460,12 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
 
-  MultiUserWindowManager* window_manager =
-      MultiUserWindowManager::GetInstance();
-  // MultiUserWindowManager instance might be null if no user is logged in - or
-  // in a unit test.
-  if (window_manager)
-    window_manager->RemoveObserver(this);
+  MultiUserWindowManagerClient* window_manager_client =
+      MultiUserWindowManagerClient::GetInstance();
+  // MultiUserWindowManagerClient instance might be null if no user is logged
+  // in - or in a unit test.
+  if (window_manager_client)
+    window_manager_client->RemoveObserver(this);
 
   ResetKeyboardOverscrollBehavior();
 
@@ -588,21 +588,15 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
-  // TODO(crbug.com/875111): MultiUserWindowManager support for mash.
-  if (!features::IsUsingWindowService())
-    finalize_animation_type_ = ANIMATION_ADD_USER;
-  else
-    finalize_animation_type_ = ANIMATION_NONE;
+  finalize_animation_type_ = ANIMATION_ADD_USER;
 
-  if (finalize_animation_type_ == ANIMATION_ADD_USER) {
-    // Observe the user switch animation and defer the deletion of itself only
-    // after the animation is finished.
-    MultiUserWindowManager* window_manager =
-        MultiUserWindowManager::GetInstance();
-    // MultiUserWindowManager instance might be nullptr in a unit test.
-    if (window_manager)
-      window_manager->AddObserver(this);
-  }
+  // Observe the user switch animation and defer the deletion of itself only
+  // after the animation is finished.
+  MultiUserWindowManagerClient* window_manager_client =
+      MultiUserWindowManagerClient::GetInstance();
+  // MultiUserWindowManagerClient instance might be nullptr in a unit test.
+  if (window_manager_client)
+    window_manager_client->AddObserver(this);
 
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
@@ -872,7 +866,7 @@ void LoginDisplayHostWebUI::OnWillRemoveView(views::Widget* widget,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostWebUI, MultiUserWindowManager::Observer:
+// LoginDisplayHostWebUI, MultiUserWindowManagerClient::Observer:
 void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
   ShutdownDisplayHost();
 }

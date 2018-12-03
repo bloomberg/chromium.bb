@@ -19,30 +19,20 @@ namespace aura {
 class Window;
 }
 
-// The MultiUserWindowManager manages windows from multiple users by presenting
-// only user relevant windows to the current user. The manager is automatically
-// determining the window ownership from browser and application windows and
-// puts them onto the correct "desktop".
-// Un-owned windows will be visible on all users desktop's and owned windows can
-// only be presented on one desktop. If a window should get moved to another
-// user's desktop |ShowWindowForUser| can be called.
-// Windows which are neither a browser nor an app can be associated with a user
-// through |SetWindowOwner|.
-// This class will also switch the desktop upon user change.
-// Note:
-// - There is no need to "unregister" a window from an owner. The class will
-//   clean automatically all references of that window upon destruction.
-// - User changes will be tracked via observer. No need to call.
-// - All child windows will be owned by the same owner as its parent.
+// MultiUserWindowManagerClient acts as a client of ash's
+// MultiUserWindowManager. In addition to acting as a client,
+// MultiUserWindowManagerClient forwards calls to ash::MultiUserWindowManager
+// and maintains a cache so that it can synchronously provide information about
+// Windows.
+//
+// See ash::MultiUserWindowManager for more details on the API provided here.
 //
 // WARNING: in mash this code ends up referencing windows with an aura Env
 // of MUS *and* windows with an aura Env of LOCAL. This is because Arc/Crostini
 // windows are created by Ash, and browser/app windows are created by the
 // browser. Long term this code needs to be refactored out of chrome, at which
-// time *all* windows should be created by Ash. https://crbug.com/875111
-//
-// TODO(sky): rename this (and related classes).
-class MultiUserWindowManager {
+// time *all* windows should be created by Ash.
+class MultiUserWindowManagerClient {
  public:
   // Observer to notify of any window owner changes.
   class Observer {
@@ -59,11 +49,11 @@ class MultiUserWindowManager {
     virtual ~Observer() {}
   };
 
-  // Creates an instance of the MultiUserWindowManager.
-  static MultiUserWindowManager* CreateInstance();
+  // Creates an instance of the MultiUserWindowManagerClient.
+  static MultiUserWindowManagerClient* CreateInstance();
 
   // Gets the instance of the object.
-  static MultiUserWindowManager* GetInstance();
+  static MultiUserWindowManagerClient* GetInstance();
 
   // Whether or not the window's title should show the avatar. On chromeos,
   // this is true when the owner of the window is different from the owner of
@@ -74,7 +64,7 @@ class MultiUserWindowManager {
   static void DeleteInstance();
 
   // Sets the singleton instance to |instance| and enables multi-user-mode.
-  static void SetInstanceForTest(MultiUserWindowManager* instance);
+  static void SetInstanceForTest(MultiUserWindowManagerClient* instance);
 
   // Assigns an owner to a passed window. Note that this window's parent should
   // be a direct child of the root window.
@@ -126,7 +116,7 @@ class MultiUserWindowManager {
   virtual void RemoveObserver(Observer* observer) = 0;
 
  protected:
-  virtual ~MultiUserWindowManager() {}
+  virtual ~MultiUserWindowManagerClient() {}
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_H_

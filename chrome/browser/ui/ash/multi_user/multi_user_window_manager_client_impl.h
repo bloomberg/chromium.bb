@@ -25,7 +25,7 @@ class Browser;
 
 namespace ash {
 class MultiUserWindowManager;
-class MultiUserWindowManagerChromeOSTest;
+class MultiUserWindowManagerClientImplTest;
 }  // namespace ash
 
 namespace content {
@@ -36,24 +36,17 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-// This class is responsible for notifying Ash's MultiUserWindowManager of
-// which aura::Windows are associated with which accounts. This class caches
-// similar information to that of Ash's MultiUserWindowManager so that it can
-// synchronously respond to requests for state (such as
-// IsWindowOnDesktopOfUser()).
-//
-// TODO: don't use ash::MultiUserWindowManager directly, instead use it over
-// a mojom. https://crbug.com/875111.
-class MultiUserWindowManagerChromeOS
-    : public MultiUserWindowManager,
+// Real implementation of MultiUserWindowManagerClient, see it for details.
+class MultiUserWindowManagerClientImpl
+    : public MultiUserWindowManagerClient,
       public ash::MultiUserWindowManagerDelegateClassic,
       public ash::mojom::MultiUserWindowManagerClient,
       public aura::WindowObserver,
       public content::NotificationObserver {
  public:
   // Create the manager and use |active_account_id| as the active user.
-  explicit MultiUserWindowManagerChromeOS(const AccountId& active_account_id);
-  ~MultiUserWindowManagerChromeOS() override;
+  explicit MultiUserWindowManagerClientImpl(const AccountId& active_account_id);
+  ~MultiUserWindowManagerClientImpl() override;
 
   // Initializes the manager after its creation. Should only be called once.
   void Init();
@@ -92,7 +85,7 @@ class MultiUserWindowManagerChromeOS
   const AccountId& GetCurrentUserForTest() const;
 
  private:
-  friend class ash::MultiUserWindowManagerChromeOSTest;
+  friend class ash::MultiUserWindowManagerClientImplTest;
 
   struct ClassicSupport;
 
@@ -175,7 +168,7 @@ class MultiUserWindowManagerChromeOS
   mojo::AssociatedBinding<ash::mojom::MultiUserWindowManagerClient>
       client_binding_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerClientImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CLIENT_IMPL_H_

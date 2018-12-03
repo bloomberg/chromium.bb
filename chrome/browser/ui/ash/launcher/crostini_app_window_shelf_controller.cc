@@ -124,7 +124,7 @@ ash::ShelfID CrostiniAppWindowShelfController::RemoveFromShelf(
 void CrostiniAppWindowShelfController::ActiveUserChanged(
     const std::string& user_email) {
   for (auto& w : aura_window_to_app_window_) {
-    if (MultiUserWindowManager::GetInstance()
+    if (MultiUserWindowManagerClient::GetInstance()
             ->GetWindowOwner(w.first)
             .GetUserEmail() == user_email) {
       AddToShelf(w.first, w.second.get());
@@ -218,7 +218,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   RegisterAppWindow(window, shelf_app_id);
 
   // Prevent Crostini window from showing up after user switch.
-  MultiUserWindowManager::GetInstance()->SetWindowOwner(
+  MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
       window,
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 
