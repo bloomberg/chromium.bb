@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
-#include "third_party/blink/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom-shared.h"
 
 namespace blink {
 
