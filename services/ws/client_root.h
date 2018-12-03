@@ -23,6 +23,10 @@ class ClientSurfaceEmbedder;
 class Window;
 }  // namespace aura
 
+namespace aura_extra {
+class WindowPositionInRootMonitor;
+}
+
 namespace gfx {
 class Insets;
 }
@@ -93,6 +97,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // previous bounds, which may not have changed if the scale factor changes.
   void HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds);
 
+  void NotifyClientOfNewBounds(const gfx::Rect& old_bounds);
+
+  // Callback when the position of |window_|, relative to the root, changes.
+  // This is *only* called for non-top-levels.
+  void OnPositionInRootChanged();
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -135,6 +145,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // surface. This will be pushed to the Layer once the primary surface is
   // supplied.
   std::unique_ptr<viz::SurfaceInfo> fallback_surface_info_;
+
+  // Used for non-top-levels to watch for changes in screen coordinates.
+  std::unique_ptr<aura_extra::WindowPositionInRootMonitor>
+      root_position_monitor_;
+
+  // Last bounds sent to the client.
+  gfx::Rect last_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };

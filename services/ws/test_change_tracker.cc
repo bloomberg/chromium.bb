@@ -294,6 +294,14 @@ bool ContainsChange(const std::vector<Change>& changes,
   return false;
 }
 
+std::vector<Change>::const_iterator FirstChangeOfType(
+    const std::vector<Change>& changes,
+    ChangeType type) {
+  return std::find_if(
+      changes.begin(), changes.end(),
+      [&type](const Change& change) { return type == change.type; });
+}
+
 Change::Change() = default;
 
 Change::Change(const Change& other) = default;
