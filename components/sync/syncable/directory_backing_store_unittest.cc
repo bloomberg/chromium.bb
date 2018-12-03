@@ -47,9 +47,6 @@ std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
 
 }  // namespace
 
-extern const int32_t kCurrentPageSizeKB;
-extern const int32_t kCurrentDBVersion;
-
 class MigrationTest : public testing::TestWithParam<int> {
  public:
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }

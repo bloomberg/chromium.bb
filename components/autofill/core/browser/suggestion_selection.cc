@@ -51,11 +51,11 @@ base::string16 GetInfoInOneLine(const AutofillProfile* profile,
 
 // As of November 2018, 50 profiles should be more than enough to cover at least
 // 99% of all times the dropdown is shown.
-extern const size_t kMaxSuggestedProfilesCount = 50;
+constexpr size_t kMaxSuggestedProfilesCount = 50;
 
 // As of November 2018, displaying 10 suggestions cover at least 99% of the
 // indices clicked by our users. The suggestions will also refine as they type.
-extern const size_t kMaxUniqueSuggestionsCount = 10;
+constexpr size_t kMaxUniqueSuggestionsCount = 10;
 
 std::vector<Suggestion> GetPrefixMatchedSuggestions(
     const AutofillType& type,
