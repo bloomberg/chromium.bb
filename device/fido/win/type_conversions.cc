@@ -133,18 +133,38 @@ static uint32_t ToWinTransportsMask(
   return result;
 }
 
-std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
+std::vector<WEBAUTHN_CREDENTIAL> ToWinCredentialVector(
     const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
         credentials) {
-  std::vector<WEBAUTHN_CREDENTIAL_EX> result;
   if (!credentials) {
     return {};
   }
+  std::vector<WEBAUTHN_CREDENTIAL> result;
   for (const auto& credential : *credentials) {
     if (credential.credential_type() != CredentialType::kPublicKey) {
       continue;
     }
+    result.push_back(WEBAUTHN_CREDENTIAL{
+        WEBAUTHN_CREDENTIAL_CURRENT_VERSION,
+        credential.id().size(),
+        const_cast<unsigned char*>(credential.id().data()),
+        WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY,
+    });
+  }
+  return result;
+}
 
+std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
+    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
+        credentials) {
+  if (!credentials) {
+    return {};
+  }
+  std::vector<WEBAUTHN_CREDENTIAL_EX> result;
+  for (const auto& credential : *credentials) {
+    if (credential.credential_type() != CredentialType::kPublicKey) {
+      continue;
+    }
     result.push_back(WEBAUTHN_CREDENTIAL_EX{
         WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION, credential.id().size(),
         const_cast<unsigned char*>(credential.id().data()),

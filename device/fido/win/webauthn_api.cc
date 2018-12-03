@@ -237,11 +237,15 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     }
     options.pCancellationId = &cancellation_id;
 
-    auto allow_list_credentials = ToWinCredentialExVector(allow_list);
-    auto* allow_list_ptr = allow_list_credentials.data();
-    WEBAUTHN_CREDENTIAL_LIST credential_list{allow_list_credentials.size(),
-                                             &allow_list_ptr};
-    options.pAllowCredentialList = &credential_list;
+    // As of Nov 2018, the WebAuthNAuthenticatorGetAssertion method will fail
+    // to challenge credentials via CTAP1 if the allowList is passed in the
+    // extended form in WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS (i.e.
+    // pAllowCredentialList instead of CredentialList). The older field we
+    // use here as a work-around does not allow setting transport
+    // restrictions on the credential descriptor.
+    auto credentials = ToWinCredentialVector(allow_list);
+    options.CredentialList =
+        WEBAUTHN_CREDENTIALS{credentials.size(), credentials.data()};
 
     WEBAUTHN_CLIENT_DATA client_data{
         WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
