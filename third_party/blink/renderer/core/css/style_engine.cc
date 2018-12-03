@@ -529,7 +529,8 @@ void StyleEngine::ResetAuthorStyle(TreeScope& tree_scope) {
   if (!scoped_resolver)
     return;
 
-  global_rule_set_->MarkDirty();
+  if (global_rule_set_)
+    global_rule_set_->MarkDirty();
   if (tree_scope.RootNode().IsDocumentNode()) {
     scoped_resolver->ResetAuthorStyle();
     return;
