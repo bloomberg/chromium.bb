@@ -336,7 +336,7 @@ class Browser : public TabStripModelObserver,
       content::WebContents* contents) const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
-  static void FormatTitleForDisplay(base::string16* title);
+  static base::string16 FormatTitleForDisplay(base::string16 title);
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_THEME_H_
 
+#include "components/security_state/core/security_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 // A part of the omnibox (location bar, location bar decoration, or dropdown).
@@ -52,6 +53,11 @@ enum class OmniboxPartState {
 SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxTint tint,
                         OmniboxPartState state = OmniboxPartState::NORMAL);
+
+// Returns the color of the security chip given |tint| and |security_level|.
+SkColor GetOmniboxSecurityChipColor(
+    OmniboxTint tint,
+    security_state::SecurityLevel security_level);
 
 float GetOmniboxStateAlpha(OmniboxPartState state);
 

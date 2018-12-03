@@ -709,7 +709,7 @@ void Tab::SetData(TabRendererData data) {
                 ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
                 : CoreTabHelper::GetDefaultTitle();
   } else {
-    Browser::FormatTitleForDisplay(&title);
+    title = Browser::FormatTitleForDisplay(title);
   }
   title_->SetText(title);
 

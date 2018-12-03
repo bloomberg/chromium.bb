@@ -129,6 +129,24 @@ SkColor GetOmniboxColor(OmniboxPart part,
   return gfx::kPlaceholderColor;
 }
 
+SkColor GetOmniboxSecurityChipColor(
+    OmniboxTint tint,
+    security_state::SecurityLevel security_level) {
+  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
+    return GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED, tint);
+  }
+
+  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
+  if (security_level == security_state::EV_SECURE ||
+      security_level == security_state::SECURE) {
+    state = OmniboxPartState::CHIP_SECURE;
+  } else if (security_level == security_state::DANGEROUS) {
+    state = OmniboxPartState::CHIP_DANGEROUS;
+  }
+
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint, state);
+}
+
 float GetOmniboxStateAlpha(OmniboxPartState state) {
   switch (state) {
     case OmniboxPartState::NORMAL:
