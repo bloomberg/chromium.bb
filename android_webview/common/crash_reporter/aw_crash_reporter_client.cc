@@ -4,70 +4,47 @@
 
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 
-#include <random>
+#include <stdint.h>
 
 #include "android_webview/common/aw_channel.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "base/android/build_info.h"
 #include "base/base_paths_android.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/files/file_path.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
-#include "content/public/common/content_switches.h"
 
 namespace android_webview {
 namespace crash_reporter {
 
 namespace {
 
-// TODO(gsennton) lower the following value before pushing to stable:
-const double minidump_generation_user_fraction = 1.0;
-
-// Returns whether the current process should be reporting crashes through
-// minidumps. This function should only be called once per process - the return
-// value might differ between different calls to this function.
-bool is_process_in_crash_reporting_sample() {
-  // TODO(gsennton): update this method to depend on finch when that is
-  // implemented for WebView.
-  base::Time cur_time = base::Time::Now();
-  std::minstd_rand generator(cur_time.ToInternalValue() /* seed */);
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
-  return minidump_generation_user_fraction > distribution(generator);
-}
-
 class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
  public:
-  AwCrashReporterClient()
-      : dump_fd_(kAndroidMinidumpDescriptor),
-        crash_signal_fd_(-1),
-        in_crash_reporting_sample_(is_process_in_crash_reporting_sample()) {}
-
-  // Does not use lock, can only be called immediately after creation.
-  void set_crash_signal_fd(int fd) { crash_signal_fd_ = fd; }
+  AwCrashReporterClient() {}
 
   // crash_reporter::CrashReporterClient implementation.
-  bool UseCrashKeysWhiteList() override { return true; }
-  const char* const* GetCrashKeyWhiteList() override;
-
   bool IsRunningUnattended() override { return false; }
-  bool GetCollectStatsConsent() override;
-  void GetProductNameAndVersion(const char** product_name,
-                                const char** version) override {
-    *product_name = "AndroidWebView";
-    *version = PRODUCT_VERSION;
+  bool GetCollectStatsConsent() override {
+    // TODO(jperaza): Crashpad uses GetCollectStatsConsent() to enable or
+    // disable upload of crash reports. However, Crashpad does not yet support
+    // upload on Android, so this return value currently has no effect and
+    // WebView's own uploader will determine consent before uploading. If and
+    // when Crashpad supports upload on Android, consent can be determined here,
+    // or WebView can continue uploading reports itself.
+    return false;
   }
+
   void GetProductNameAndVersion(std::string* product_name,
                                 std::string* version,
                                 std::string* channel) override {
@@ -75,20 +52,6 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
     *version = PRODUCT_VERSION;
     *channel =
         version_info::GetChannelString(android_webview::GetChannelOrStable());
-  }
-  // Microdumps are always enabled in WebView builds, conversely to what happens
-  // in the case of the other Chrome for Android builds (where they are enabled
-  // only when NO_UNWIND_TABLES == 1).
-  bool ShouldEnableBreakpadMicrodumps() override { return true; }
-
-  int GetAndroidMinidumpDescriptor() override { return dump_fd_; }
-  int GetAndroidCrashSignalFD() override { return crash_signal_fd_; }
-
-  bool DumpWithoutCrashingToFd(int fd) {
-    // TODO(tobiasjs): figure out what to do with on demand minidump on the
-    // renderer process of webview.
-    breakpad::GenerateMinidumpOnDemandForAndroid(fd);
-    return true;
   }
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override {
@@ -109,35 +72,20 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
   unsigned int GetCrashDumpPercentageForWebView() override { return 100; }
 
+  bool GetBrowserProcessType(std::string* ptype) override {
+    *ptype = base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kWebViewSandboxedRenderer)
+                 ? "browser"
+                 : "webview";
+    return true;
+  }
+
  private:
-  int dump_fd_;
-  int crash_signal_fd_;
-  bool in_crash_reporting_sample_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
 
-const char* const* AwCrashReporterClient::GetCrashKeyWhiteList() {
-  return crash_keys::kWebViewCrashKeyWhiteList;
-}
-
-bool AwCrashReporterClient::GetCollectStatsConsent() {
-#if defined(GOOGLE_CHROME_BUILD)
-  // TODO(gsennton): Enabling minidump-generation unconditionally means we
-  // will generate minidumps even if the user doesn't consent to minidump
-  // uploads. However, we will check user-consent before uploading any
-  // minidumps, if we do not have user consent we will delete the minidumps.
-  // We should investigate whether we can avoid generating minidumps
-  // altogether if we don't have user consent, see crbug.com/692485
-  return in_crash_reporting_sample_;
-#else
-  return false;
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-}
-
 base::LazyInstance<AwCrashReporterClient>::Leaky g_crash_reporter_client =
     LAZY_INSTANCE_INITIALIZER;
-
-bool g_enabled = false;
 
 #if defined(ARCH_CPU_X86_FAMILY)
 bool SafeToUseSignalHandler() {
@@ -198,11 +146,13 @@ bool SafeToUseSignalHandler() {
 
 }  // namespace
 
-void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
-  if (g_enabled) {
+void EnableCrashReporter(const std::string& process_type) {
+  static bool enabled;
+  if (enabled) {
     NOTREACHED() << "EnableCrashReporter called more than once";
     return;
   }
+  enabled = true;
 
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!SafeToUseSignalHandler()) {
@@ -212,51 +162,12 @@ void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
 #endif
 
   AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
-  if (process_type == switches::kRendererProcess && crash_signal_fd != -1) {
-    client->set_crash_signal_fd(crash_signal_fd);
-  }
   ::crash_reporter::SetCrashReporterClient(client);
-  breakpad::SanitizationInfo sanitization_info;
-  sanitization_info.should_sanitize_dumps = true;
-#if !defined(COMPONENT_BUILD)
-  sanitization_info.skip_dump_if_principal_mapping_not_referenced = true;
-  sanitization_info.address_within_principal_mapping =
-      reinterpret_cast<uintptr_t>(&EnableCrashReporter);
-#endif  // defined(COMPONENT_BUILD)
-
-  bool is_browser_process =
-      process_type.empty() ||
-      process_type == breakpad::kWebViewSingleProcessType ||
-      process_type == breakpad::kBrowserProcessType;
-  if (is_browser_process) {
-    breakpad::InitCrashReporter(process_type, sanitization_info);
-  } else {
-    breakpad::InitNonBrowserCrashReporterForAndroid(process_type,
-                                                    sanitization_info);
-  }
-  g_enabled = true;
+  ::crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 }
 
 bool GetCrashDumpLocation(base::FilePath* crash_dir) {
   return g_crash_reporter_client.Get().GetCrashDumpLocation(crash_dir);
-}
-
-void AddGpuFingerprintToMicrodumpCrashHandler(
-    const std::string& gpu_fingerprint) {
-  breakpad::AddGpuFingerprintToMicrodumpCrashHandler(gpu_fingerprint);
-}
-
-bool DumpWithoutCrashingToFd(int fd) {
-  ::crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
-  return g_crash_reporter_client.Pointer()->DumpWithoutCrashingToFd(fd);
-}
-
-bool IsCrashReporterEnabled() {
-  return breakpad::IsCrashReporterEnabled();
-}
-
-void SuppressDumpGeneration() {
-  breakpad::SuppressDumpGeneration();
 }
 
 }  // namespace crash_reporter
