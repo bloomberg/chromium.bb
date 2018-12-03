@@ -16,6 +16,7 @@ include_rules = [
     "+base/json",
     "+base/location.h",
     "+base/logging.h",
+    "+base/mac/mac_util.h",
     "+base/memory",
     "+base/observer_list.h",
     "+base/memory/shared_memory.h",
