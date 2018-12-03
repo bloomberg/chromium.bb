@@ -454,10 +454,6 @@ bool GpuChannel::HasActiveWebGLContext() const {
   return false;
 }
 
-void GpuChannel::LoseAllContexts() {
-  gpu_channel_manager_->LoseAllContexts();
-}
-
 void GpuChannel::MarkAllContextsLost() {
   for (auto& kv : stubs_)
     kv.second->MarkContextLost();

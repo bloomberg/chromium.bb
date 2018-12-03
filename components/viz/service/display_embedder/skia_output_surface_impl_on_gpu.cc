@@ -556,10 +556,8 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
   if (!gpu_service_->is_using_vulkan()) {
-    if (context_state_->context_lost ||
-        !gl_context()->MakeCurrent(gl_surface_.get())) {
+    if (!context_state_->MakeCurrent(gl_surface_.get())) {
       LOG(ERROR) << "Failed to make current.";
-      context_state_->context_lost = true;
       context_lost_callback_.Run();
       return false;
     }

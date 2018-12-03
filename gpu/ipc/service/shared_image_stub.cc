@@ -148,12 +148,9 @@ bool SharedImageStub::MakeContextCurrent() {
   DCHECK(context_state_);
   DCHECK(!context_state_->context_lost);
 
-  // |factory_| never writes to the surface, so skip unnecessary MakeCurrent to
+  // |factory_| never writes to the surface, so pass nullptr to
   // improve performance. https://crbug.com/457431
-  if (context_state_->context->IsCurrent(nullptr))
-    return true;
-
-  if (context_state_->context->MakeCurrent(context_state_->surface.get())) {
+  if (context_state_->MakeCurrent(nullptr)) {
     return true;
   } else {
     LOG(ERROR) << "SharedImageStub: MakeCurrent failed";

@@ -28,11 +28,13 @@ RasterDecoderContextState::RasterDecoderContextState(
     scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gl::GLContext> context,
     bool use_virtualized_gl_contexts,
+    base::OnceClosure context_lost_callback,
     viz::VulkanContextProvider* vulkan_context_provider)
     : share_group(std::move(share_group)),
       surface(std::move(surface)),
       context(std::move(context)),
       use_virtualized_gl_contexts(use_virtualized_gl_contexts),
+      context_lost_callback(std::move(context_lost_callback)),
       vk_context_provider(vulkan_context_provider),
 #if BUILDFLAG(ENABLE_VULKAN)
       gr_context(vk_context_provider ? vk_context_provider->GetGrContext()
@@ -151,6 +153,30 @@ void RasterDecoderContextState::PessimisticallyResetGrContext() const {
   // performance becomes an issue.
   if (gr_context && !use_vulkan_gr_context)
     gr_context->resetContext();
+}
+
+void RasterDecoderContextState::MarkContextLost() {
+  if (!context_lost) {
+    context_lost = true;
+    if (gr_context)
+      gr_context->abandonContext();
+    std::move(context_lost_callback).Run();
+  }
+}
+
+bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* current_surface) {
+  if (context_lost)
+    return false;
+
+  if (context->IsCurrent(current_surface))
+    return true;
+
+  if (!context->MakeCurrent(current_surface ? current_surface
+                                            : surface.get())) {
+    MarkContextLost();
+    return false;
+  }
+  return true;
 }
 
 }  // namespace raster

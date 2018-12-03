@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
+#include "base/bind_helpers.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -56,7 +57,7 @@ class SharedImageBackingFactoryGLTextureTestBase
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = new raster::RasterDecoderContextState(
         std::move(share_group), surface_, context_,
-        false /* use_virtualized_gl_contexts */);
+        false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);

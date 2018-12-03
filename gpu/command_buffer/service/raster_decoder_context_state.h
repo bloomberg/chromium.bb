@@ -41,6 +41,7 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
       scoped_refptr<gl::GLSurface> surface,
       scoped_refptr<gl::GLContext> context,
       bool use_virtualized_gl_contexts,
+      base::OnceClosure context_lost_callback,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr);
 
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
@@ -52,12 +53,19 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
 
   void PessimisticallyResetGrContext() const;
 
+  void MarkContextLost();
+
+  // surface == nullptr indicates that caller doesn't care what surface is
+  // current with the context.
+  bool MakeCurrent(gl::GLSurface* current_surface);
+
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
   scoped_refptr<gl::GLContext> context;
   sk_sp<GrContext> owned_gr_context;
   std::unique_ptr<ServiceTransferCache> transfer_cache;
   const bool use_virtualized_gl_contexts = false;
+  base::OnceClosure context_lost_callback;
   viz::VulkanContextProvider* vk_context_provider = nullptr;
   GrContext* gr_context = nullptr;
   const bool use_vulkan_gr_context = false;

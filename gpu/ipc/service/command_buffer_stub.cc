@@ -812,20 +812,7 @@ bool CommandBufferStub::CheckContextLost() {
     bool was_lost_by_robustness =
         decoder_context_ &&
         decoder_context_->WasContextLostByRobustnessExtension();
-
-    // Work around issues with recovery by allowing a new GPU process to launch.
-    if ((was_lost_by_robustness ||
-         context_group_->feature_info()->workarounds().exit_on_context_lost)) {
-      channel_->gpu_channel_manager()->MaybeExitOnContextLost();
-    }
-
-    // Lose all other contexts if the reset was triggered by the robustness
-    // extension instead of being synthetic.
-    if (was_lost_by_robustness &&
-        (gl::GLContext::LosesAllContextsOnContextLost() ||
-         use_virtualized_gl_context_)) {
-      channel_->LoseAllContexts();
-    }
+    channel_->gpu_channel_manager()->OnContextLost(!was_lost_by_robustness);
   }
 
   CheckCompleteWaits();
