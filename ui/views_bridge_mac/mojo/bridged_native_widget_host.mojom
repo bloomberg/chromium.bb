@@ -11,6 +11,29 @@ import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
+struct ValidateUserInterfaceItemResult {
+  // Whether or not the specified sender should be enabled.
+  bool enable;
+
+  // If true, then the item should be disabled if there exists no key equivalent
+  // for the item.
+  bool disable_if_has_no_key_equivalent;
+
+  // The new title to set for the item (unset if the title is not to be
+  // changed).
+  mojo_base.mojom.String16? new_title;
+
+  // Whether or not to change the hidden state for the item, and the new hidden
+  // state to set.
+  bool set_hidden_state;
+  bool new_hidden_state;
+
+  // Whether or not to change the toggled state for the item, and the new toggle
+  // state to set.
+  bool set_toggle_state;
+  bool new_toggle_state;
+};
+
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // in another process.
 interface BridgedNativeWidgetHost {
@@ -175,4 +198,11 @@ interface BridgedNativeWidgetHost {
   GetAccessibilityTokens(array<uint8> window_token,
                          array<uint8> view_token) =>
       (int64 host_pid, array<uint8> element_token);
+
+  // Return the result for -[NSUserInterfaceValidations
+  // validateUserInterfaceItem] for a given command, along with any state for
+  // that item that should be updated.
+  [Sync]
+  ValidateUserInterfaceItem(int32 command) =>
+      (ValidateUserInterfaceItemResult result);
 };

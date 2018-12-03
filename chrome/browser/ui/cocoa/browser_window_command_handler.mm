@@ -6,22 +6,17 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 namespace {
 
@@ -39,69 +34,6 @@ void SetToggleState(bool toggled, id item) {
     if (old_state != new_state)
       [buttonItem setState:new_state];
   }
-}
-
-// Update a toggle state for an item if modified. The item may be an NSMenuItem
-// or NSButton. Called by -validateUserInterfaceItem:.
-void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
-  if (!base::mac::ObjCCast<NSMenuItem>(item) &&
-      !base::mac::ObjCCast<NSButton>(item))
-    return;
-
-  Browser* browser = chrome::FindBrowserWithWindow(window);
-  DCHECK(browser);
-
-  // On Windows this logic happens in bookmark_bar_view.cc. This simply updates
-  // the menu item; it does not display the bookmark bar itself.
-  if (tag == IDC_SHOW_BOOKMARK_BAR) {
-    PrefService* prefs = browser->profile()->GetPrefs();
-    SetToggleState(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar), item);
-    return;
-  }
-
-  if (tag == IDC_TOGGLE_FULLSCREEN_TOOLBAR) {
-    PrefService* prefs = browser->profile()->GetPrefs();
-    SetToggleState(prefs->GetBoolean(prefs::kShowFullscreenToolbar), item);
-    return;
-  }
-
-  if (tag == IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS) {
-    PrefService* prefs = browser->profile()->GetPrefs();
-    SetToggleState(prefs->GetBoolean(prefs::kAllowJavascriptAppleEvents), item);
-    return;
-  }
-
-  if (tag == IDC_WINDOW_MUTE_SITE) {
-    TabStripModel* model = browser->tab_strip_model();
-    bool will_mute =
-        base::FeatureList::IsEnabled(features::kSoundContentSetting)
-            ? model->WillContextMenuMuteSites(model->active_index())
-            : model->WillContextMenuMute(model->active_index());
-    // Menu items may be validated during browser startup, before the
-    // TabStripModel has been populated.
-    SetToggleState(!model->empty() && !will_mute, item);
-    return;
-  }
-
-  if (tag == IDC_WINDOW_PIN_TAB) {
-    TabStripModel* model = browser->tab_strip_model();
-    SetToggleState(
-        !model->empty() && !model->WillContextMenuPin(model->active_index()),
-        item);
-    return;
-  }
-}
-
-NSString* GetTitleForViewsFullscreenMenuItem(Browser* browser) {
-  return l10n_util::GetNSString(browser->window()->IsFullscreen()
-                                    ? IDS_EXIT_FULLSCREEN_MAC
-                                    : IDS_ENTER_FULLSCREEN_MAC);
-}
-
-// Get the text for the "Enter/Exit Fullscreen" menu item.
-// TODO(jackhou): Remove the dependency on BrowserWindowController(Private).
-NSString* GetTitleForFullscreenMenuItem(Browser* browser) {
-  return GetTitleForViewsFullscreenMenuItem(browser);
 }
 
 // Identify the actual Browser to which the command should be dispatched. It
@@ -138,74 +70,28 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     return YES;
   }
 
-  Browser* browser = chrome::FindBrowserWithWindow(window);
-  DCHECK(browser);
-  NSInteger tag = [item tag];
-  if (!chrome::SupportsCommand(browser, tag))
+  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+  DCHECK(bridge);
+
+  views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+  if (!bridge->host()->ValidateUserInterfaceItem([item tag], &result))
     return NO;
 
-  // Generate return value (enabled state).
-  BOOL enable = chrome::IsCommandEnabled(browser, tag);
-  switch (tag) {
-    case IDC_CLOSE_TAB:
-      // Disable "close tab" if the receiving window is not tabbed.
-      // We simply check whether the item has a keyboard shortcut set here;
-      // app_controller_mac.mm actually determines whether the item should
-      // be enabled.
-      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item))
-        enable &= !![[menuItem keyEquivalent] length];
-      break;
-    case IDC_FULLSCREEN: {
-      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item))
-        [menuItem setTitle:GetTitleForFullscreenMenuItem(browser)];
-      break;
-    }
-    case IDC_BOOKMARK_PAGE: {
-      // Extensions have the ability to hide the bookmark page menu item.
-      // This only affects the bookmark page menu item under the main menu.
-      // The bookmark page menu item under the app menu has its visibility
-      // controlled by AppMenuModel.
-      bool shouldHide =
-          chrome::ShouldRemoveBookmarkThisPageUI(browser->profile());
-      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-      [menuItem setHidden:shouldHide];
-      break;
-    }
-    case IDC_BOOKMARK_ALL_TABS: {
-      // Extensions have the ability to hide the bookmark all tabs menu
-      // item.  This only affects the bookmark page menu item under the main
-      // menu.  The bookmark page menu item under the app menu has its
-      // visibility controlled by AppMenuModel.
-      bool shouldHide =
-          chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile());
-      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-      [menuItem setHidden:shouldHide];
-      break;
-    }
-    case IDC_SHOW_AS_TAB: {
-      // Hide this menu option if the window is tabbed or is the devtools
-      // window.
-      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-      [menuItem setHidden:browser->is_type_tabbed() || browser->is_devtools()];
-      break;
-    }
-    case IDC_ROUTE_MEDIA: {
-      // Hide this menu option if Media Router is disabled.
-      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-      [menuItem
-          setHidden:!media_router::MediaRouterEnabled(browser->profile())];
-      break;
-    }
-    default:
-      break;
+  if (result->set_toggle_state)
+    SetToggleState(result->new_toggle_state, item);
+
+  if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
+    if (result->disable_if_has_no_key_equivalent)
+      result->enable &= !![[menuItem keyEquivalent] length];
+
+    if (result->set_hidden_state)
+      [menuItem setHidden:result->new_hidden_state];
+
+    if (result->new_title)
+      [menuItem setTitle:base::SysUTF16ToNSString(*result->new_title)];
   }
 
-  // If the item is toggleable, find its toggle state and
-  // try to update it.  This is a little awkward, but the alternative is
-  // to check after a commandDispatch, which seems worse.
-  UpdateToggleStateWithTag(tag, item, window);
-
-  return enable;
+  return result->enable;
 }
 
 - (void)commandDispatch:(id)sender window:(NSWindow*)window {

@@ -66,8 +66,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Retrieve a BridgedNativeWidgetImpl* from its id.
+  // Retrieve a BridgedNativeWidgetImpl* from its id or window.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
+  static BridgedNativeWidgetImpl* GetFromNativeWindow(gfx::NativeWindow window);
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(

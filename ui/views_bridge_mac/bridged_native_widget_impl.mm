@@ -245,6 +245,17 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
 }
 
 // static
+BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromNativeWindow(
+    gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return GetFromId([widget_window bridgedNativeWidgetId]);
+  }
+  return nullptr;
+}
+
+// static
 base::scoped_nsobject<NativeWidgetMacNSWindow>
 BridgedNativeWidgetImpl::CreateNSWindow(
     const views_bridge_mac::mojom::CreateWindowParams* params) {

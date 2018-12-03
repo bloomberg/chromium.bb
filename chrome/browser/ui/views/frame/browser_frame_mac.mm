@@ -8,6 +8,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
@@ -16,10 +18,16 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 #import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
@@ -134,6 +142,113 @@ void BrowserFrameMac::OnFocusWindowToolbar() {
 
 void BrowserFrameMac::OnWindowFullscreenStateChange() {
   browser_view_->FullscreenStateChanged();
+}
+
+void BrowserFrameMac::ValidateUserInterfaceItem(
+    int32_t tag,
+    views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {
+  Browser* browser = browser_view_->browser();
+  if (!chrome::SupportsCommand(browser, tag)) {
+    result->enable = false;
+    return;
+  }
+
+  // Generate return value (enabled state).
+  result->enable = chrome::IsCommandEnabled(browser, tag);
+  switch (tag) {
+    case IDC_CLOSE_TAB:
+      // Disable "close tab" if the receiving window is not tabbed.
+      // We simply check whether the item has a keyboard shortcut set here;
+      // app_controller_mac.mm actually determines whether the item should
+      // be enabled.
+      result->disable_if_has_no_key_equivalent = true;
+      break;
+    case IDC_FULLSCREEN: {
+      result->new_title.emplace(l10n_util::GetStringUTF16(
+          browser->window()->IsFullscreen() ? IDS_EXIT_FULLSCREEN_MAC
+                                            : IDS_ENTER_FULLSCREEN_MAC));
+      break;
+    }
+    case IDC_BOOKMARK_PAGE: {
+      // Extensions have the ability to hide the bookmark page menu item.
+      // This only affects the bookmark page menu item under the main menu.
+      // The bookmark page menu item under the app menu has its visibility
+      // controlled by AppMenuModel.
+      result->new_hidden_state =
+          chrome::ShouldRemoveBookmarkThisPageUI(browser->profile());
+      break;
+    }
+    case IDC_BOOKMARK_ALL_TABS: {
+      // Extensions have the ability to hide the bookmark all tabs menu
+      // item.  This only affects the bookmark page menu item under the main
+      // menu.  The bookmark page menu item under the app menu has its
+      // visibility controlled by AppMenuModel.
+      result->new_hidden_state =
+          chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile());
+      break;
+    }
+    case IDC_SHOW_AS_TAB: {
+      // Hide this menu option if the window is tabbed or is the devtools
+      // window.
+      result->new_hidden_state =
+          browser->is_type_tabbed() || browser->is_devtools();
+      break;
+    }
+    case IDC_ROUTE_MEDIA: {
+      // Hide this menu option if Media Router is disabled.
+      result->new_hidden_state =
+          !media_router::MediaRouterEnabled(browser->profile());
+      break;
+    }
+    default:
+      break;
+  }
+
+  // If the item is toggleable, find its toggle state and
+  // try to update it.  This is a little awkward, but the alternative is
+  // to check after a commandDispatch, which seems worse.
+  // On Windows this logic happens in bookmark_bar_view.cc. This simply updates
+  // the menu item; it does not display the bookmark bar itself.
+  result->set_toggle_state = true;
+  switch (tag) {
+    default:
+      result->set_toggle_state = false;
+      break;
+    case IDC_SHOW_BOOKMARK_BAR: {
+      PrefService* prefs = browser->profile()->GetPrefs();
+      result->new_toggle_state =
+          prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
+      break;
+    }
+    case IDC_TOGGLE_FULLSCREEN_TOOLBAR: {
+      PrefService* prefs = browser->profile()->GetPrefs();
+      result->new_toggle_state =
+          prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+      break;
+    }
+    case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {
+      PrefService* prefs = browser->profile()->GetPrefs();
+      result->new_toggle_state =
+          prefs->GetBoolean(prefs::kAllowJavascriptAppleEvents);
+      break;
+    }
+    case IDC_WINDOW_MUTE_SITE: {
+      TabStripModel* model = browser->tab_strip_model();
+      bool will_mute =
+          base::FeatureList::IsEnabled(features::kSoundContentSetting)
+              ? model->WillContextMenuMuteSites(model->active_index())
+              : model->WillContextMenuMute(model->active_index());
+      // Menu items may be validated during browser startup, before the
+      // TabStripModel has been populated.
+      result->new_toggle_state = !model->empty() && !will_mute;
+      break;
+    }
+    case IDC_WINDOW_PIN_TAB:
+      TabStripModel* model = browser->tab_strip_model();
+      result->new_toggle_state =
+          !model->empty() && !model->WillContextMenuPin(model->active_index());
+      break;
+  }
 }
 
 void BrowserFrameMac::InitNativeWidget(
