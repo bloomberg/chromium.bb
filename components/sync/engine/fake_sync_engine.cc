@@ -103,4 +103,6 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
   }
 }
 
+void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
 }  // namespace syncer

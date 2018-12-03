@@ -40,23 +40,6 @@
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-namespace {
-
-syncer::ModelTypeSet GetInvalidationsEnabledTypes(
-    const syncer::ModelTypeSet& sync_enabled_types) {
-  syncer::ModelTypeSet invalidation_enabled_types(sync_enabled_types);
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
-    invalidation_enabled_types.Remove(syncer::SESSIONS);
-    invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
-    invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
-  }
-#endif
-  return invalidation_enabled_types;
-}
-
-}  // namespace
-
 namespace syncer {
 
 SyncBackendHostImpl::SyncBackendHostImpl(
@@ -176,6 +159,7 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = nullptr;
   }
+  last_enabled_types_.Clear();
   invalidation_handler_registered_ = false;
 
   model_type_connector_.reset();
@@ -310,9 +294,21 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet succeeded_configuration_types,
     const ModelTypeSet failed_configuration_types,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
+  last_enabled_types_ = enabled_types;
   if (invalidator_) {
-    ModelTypeSet invalidation_enabled_types =
-        GetInvalidationsEnabledTypes(enabled_types);
+    ModelTypeSet invalidation_enabled_types(enabled_types);
+#if defined(OS_ANDROID)
+    // TODO(melandory): On Android, we should call
+    // SetInvalidationsForSessionsEnabled(falls) on start-up when feature is
+    // enabled. Once it's dome remove checking of the feature from here.
+    if (base::FeatureList::IsEnabled(
+            invalidation::switches::kFCMInvalidations) &&
+        !sessions_invalidation_enabled_) {
+      invalidation_enabled_types.Remove(syncer::SESSIONS);
+      invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
+      invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
+    }
+#endif
     bool success = invalidator_->UpdateRegisteredInvalidationIds(
         this, ModelTypeSetToObjectIdSet(invalidation_enabled_types));
     DCHECK(success);
@@ -462,6 +458,22 @@ void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch,
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoOnCookieJarChanged,
                                 core_, account_mismatch, empty_jar, callback));
+}
+
+void SyncBackendHostImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
+  sessions_invalidation_enabled_ = enabled;
+  // |last_enabled_types_| contains all datatypes, for which user
+  // has enabled Sync. So by construction, it cointains also noisy datatypes
+  // if nessesary.
+  ModelTypeSet enabled_for_invalidation(last_enabled_types_);
+  if (!enabled) {
+    enabled_for_invalidation.Remove(syncer::SESSIONS);
+    enabled_for_invalidation.Remove(syncer::FAVICON_IMAGES);
+    enabled_for_invalidation.Remove(syncer::FAVICON_TRACKING);
+  }
+  bool success = invalidator_->UpdateRegisteredInvalidationIds(
+      this, ModelTypeSetToObjectIdSet(enabled_for_invalidation));
+  DCHECK(success);
 }
 
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(

@@ -93,6 +93,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
                           const base::Closure& callback) override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;
@@ -222,6 +223,8 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_ = false;
+  ModelTypeSet last_enabled_types_;
+  bool sessions_invalidation_enabled_ = false;
 
   // Checks that we're on the same thread this was constructed on (UI thread).
   SEQUENCE_CHECKER(sequence_checker_);

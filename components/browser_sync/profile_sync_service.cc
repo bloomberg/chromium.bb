@@ -1967,6 +1967,12 @@ bool ProfileSyncService::IsAuthenticatedAccountPrimary() const {
   return auth_manager_->GetActiveAccountInfo().is_primary;
 }
 
+void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (engine_initialized_)
+    engine_->SetInvalidationsForSessionsEnabled(enabled);
+}
+
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_js_controller_.AsWeakPtr();
