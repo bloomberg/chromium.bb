@@ -131,8 +131,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 //
 // Remove these as we update our sites.
 
-#define SK_LEGACY_PLATFORM_MATRIX_PROCS
-
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
 // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
