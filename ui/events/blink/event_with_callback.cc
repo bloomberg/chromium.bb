@@ -59,11 +59,7 @@ void EventWithCallback::CoalesceWith(EventWithCallback* other,
   event_->SetTimeStamp(time_stamp);
 
   // When coalescing two input events, we keep the oldest LatencyInfo
-  // since it will represent the longest latency. If it's a GestureScrollUpdate
-  // event, also update the old event's last timestamp and scroll delta using
-  // the newer event's latency info.
-  if (event_->GetType() == WebInputEvent::kGestureScrollUpdate)
-    latency_.CoalesceScrollUpdateWith(other->latency_);
+  // since it will represent the longest latency.
   other->latency_ = latency_;
   other->latency_.set_coalesced();
 
