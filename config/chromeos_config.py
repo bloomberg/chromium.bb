@@ -3774,6 +3774,10 @@ def BranchScheduleConfig():
   branch_builds = [
       # Add non release branch schedules here, if needed.
       # <branch>, <build_config>, <display_label>, <schedule>, <triggers>
+
+      # WIP(b/111954990). All live branches will be included here eventually.
+      ('release-R72-11316.B', 'master-lakitu-release',
+       config_lib.DISPLAY_LABEL_RELEASE, '0 6 * * *', None),
   ]
 
   # The three active release branches.
