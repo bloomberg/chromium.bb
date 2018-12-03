@@ -60,12 +60,11 @@ issues]].
 - de-de-g0.utb -> de-g0.utb
 - de-de-g1.ctb -> de-g1.ctb
 - de-de-g2.ctb -> de-g2.ctb
-*** Removed
 - de-ch-g0.utb -> de-g0.utb
 - de-ch-g1.ctb -> de-g1.ctb
 - de-ch-g2.ctb -> de-g2.ctb
-- de.tbl -> de-g2.ctb
-- de_CH.tbl -> de-g2.ctb
+
+*** Removed
 - ar-fa.utb
 
 * Noteworthy changes in release 3.7.0 (2018-09-03)
