@@ -979,11 +979,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "http/tests/navigation/cross-origin-fragment-navigation-is-async.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "http/tests/printing/cross-site-frame-scrolled.html",
     "args": ["--disable-site-isolation-trials"]
   },
