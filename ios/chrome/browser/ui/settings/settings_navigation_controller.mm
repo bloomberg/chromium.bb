@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
@@ -242,8 +242,8 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
 newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
                      delegate:
                          (id<SettingsNavigationControllerDelegate>)delegate {
-  AutofillProfileCollectionViewController* controller =
-      [[AutofillProfileCollectionViewController alloc]
+  AutofillProfileTableViewController* controller =
+      [[AutofillProfileTableViewController alloc]
           initWithBrowserState:browserState];
   controller.dispatcher = [delegate dispatcherForSettings];
 
@@ -561,8 +561,8 @@ initWithRootViewController:(UIViewController*)rootViewController
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
-  AutofillProfileCollectionViewController* controller =
-      [[AutofillProfileCollectionViewController alloc]
+  AutofillProfileTableViewController* controller =
+      [[AutofillProfileTableViewController alloc]
           initWithBrowserState:mainBrowserState_];
   controller.dispatcher = [delegate_ dispatcherForSettings];
   [self pushViewController:controller animated:YES];
