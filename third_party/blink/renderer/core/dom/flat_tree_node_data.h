@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FLAT_TREE_NODE_DATA_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class Node;
 class HTMLSlotElement;
 
 class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
@@ -39,6 +39,7 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
 
   friend class FlatTreeTraversal;
   friend class HTMLSlotElement;
+  friend HTMLSlotElement* Node::AssignedSlot() const;
 
   WeakMember<HTMLSlotElement> assigned_slot_;
   WeakMember<Node> previous_in_assigned_nodes_;

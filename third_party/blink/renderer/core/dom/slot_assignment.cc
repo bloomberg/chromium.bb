@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 
 namespace blink {
 
@@ -151,6 +152,12 @@ void SlotAssignment::DidRemoveSlotInternal(
     if (FindHostChildBySlotName(slot_name)) {
       // |slot| lost assigned nodes
       if (slot_mutation_type == SlotMutationType::kRemoved) {
+        if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
+          // |slot|'s previously assigned nodes' flat tree node data became
+          // dirty. Call SetNeedsAssignmentRecalc() to clear their flat tree
+          // node data surely in recalc timing.
+          SetNeedsAssignmentRecalc();
+        }
         slot.DidSlotChangeAfterRemovedFromShadowTree();
       } else {
         slot.DidSlotChangeAfterRenaming();
@@ -224,6 +231,9 @@ void SlotAssignment::SetNeedsAssignmentRecalc() {
 void SlotAssignment::RecalcAssignment() {
   if (!needs_assignment_recalc_)
     return;
+  NestingLevelIncrementer slot_assignment_recalc_depth(
+      owner_->GetDocument().SlotAssignmentRecalcDepth());
+
 #if DCHECK_IS_ON()
   DCHECK(!owner_->GetDocument().IsSlotAssignmentRecalcForbidden());
 #endif
