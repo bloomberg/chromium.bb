@@ -30,3 +30,18 @@ static_library("common") {
     "//ui/gfx/ipc/skia",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "printer_capabilities_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//content/test:test_support",
+    "//printing:test_support",
+    "//testing/gtest",
+  ]
+}
