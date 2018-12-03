@@ -228,9 +228,11 @@ static int ReadFrameAndDiscardEmpty(AVFormatContext* context,
   do {
     result = av_read_frame(context, packet);
     drop_packet = (!packet->data || !packet->size) && result >= 0;
-    DLOG_IF(WARNING, drop_packet)
-        << "Dropping empty packet, size: " << packet->size
-        << ", data: " << static_cast<void*>(packet->data);
+    if (drop_packet) {
+      av_packet_unref(packet);
+      DLOG(WARNING) << "Dropping empty packet, size: " << packet->size
+                    << ", data: " << static_cast<void*>(packet->data);
+    }
   } while (drop_packet);
 
   return result;
