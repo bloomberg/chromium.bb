@@ -73,7 +73,11 @@ void BluetoothSystem::AdapterRemoved(const dbus::ObjectPath& object_path) {
 void BluetoothSystem::AdapterPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  DCHECK(active_adapter_);
+  // AdapterPropertyChanged is called for each property in the adapter before
+  // AdapterAdded is called. Immediately return in this case.
+  if (!active_adapter_)
+    return;
+
   if (active_adapter_.value() != object_path)
     return;
 
