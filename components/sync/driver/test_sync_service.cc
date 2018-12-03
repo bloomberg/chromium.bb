@@ -249,6 +249,8 @@ base::WeakPtr<JsController> TestSyncService::GetJsController() {
 void TestSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
+void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
 bool TestSyncService::IsPassphraseRequired() const {
   return false;
 }

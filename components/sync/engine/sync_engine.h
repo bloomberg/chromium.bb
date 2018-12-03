@@ -188,6 +188,9 @@ class SyncEngine : public ModelTypeConfigurer {
                                   bool empty_jar,
                                   const base::Closure& callback) = 0;
 
+  // Enables/Disables invalidations for session sync related datatypes.
+  virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
 };

@@ -58,6 +58,7 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(DisableDirectoryTypeDebugInfoForwarding, void());
   MOCK_METHOD1(ClearServerData, void(const base::Closure&));
   MOCK_METHOD3(OnCookieJarChanged, void(bool, bool, const base::Closure&));
+  MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool));
 };
 
 }  // namespace syncer

@@ -932,6 +932,38 @@ TEST_F(SyncEngineTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
+TEST_F(SyncEngineTest,
+       EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Making sure that the noisy types we're interested in are in the
+  // |enabled_types_|.
+  enabled_types_.Put(SESSIONS);
+  enabled_types_.Put(FAVICON_IMAGES);
+  enabled_types_.Put(FAVICON_TRACKING);
+
+  InitializeBackend(true);
+  ConfigureDataTypes();
+
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+  backend_->SetInvalidationsForSessionsEnabled(true);
+
+  ModelTypeSet enabled_types(enabled_types_);
+  enabled_types.Remove(SESSIONS);
+  enabled_types.Remove(FAVICON_IMAGES);
+  enabled_types.Remove(FAVICON_TRACKING);
+
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types)));
+  backend_->SetInvalidationsForSessionsEnabled(false);
+
+  // At shutdown, we clear the registered invalidation ids.
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+}
+
 }  // namespace
 
 }  // namespace syncer
