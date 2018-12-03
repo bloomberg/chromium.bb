@@ -1,7 +1,7 @@
 {
   "name": "chrome.virtualKeyboard test kiosk app in the kiosk session.",
   "version": "0.1",
-  "description": "Tests chrome.virtualKeyboard in kiosk apps running in the kiosk session. Extension ID: fmmbbdiapbcicajbpkpkdbcgidgppada",
+  "description": "Tests chrome.virtualKeyboard in kiosk apps running in the kiosk session. Extension ID: bbkdjgcbpfjanhcdljmpddplpeehopdo",
   "app": {
     "background": {
       "scripts": ["background.js"]

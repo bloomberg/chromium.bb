@@ -57,14 +57,14 @@ namespace {
 // This is a simple test app that creates an app window and immediately closes
 // it again. Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/ggbflgnkafappblpkiflbgpmkfdpnhhe
-constexpr char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
+//       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
+constexpr char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 
 // This is a simple test that only sends an extension message when app launch is
 // requested. Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/mogpelihofihkjnkkfkcchbkchggmcld
-constexpr char kTestNonKioskEnabledApp[] = "mogpelihofihkjnkkfkcchbkchggmcld";
+//       detail/gbcgichpbeeimejckkpgnaighpndpped
+constexpr char kTestNonKioskEnabledApp[] = "gbcgichpbeeimejckkpgnaighpndpped";
 
 // Primary kiosk app that runs tests for chrome.management API.
 // The tests are run on the kiosk app launch event.
@@ -73,22 +73,22 @@ constexpr char kTestNonKioskEnabledApp[] = "mogpelihofihkjnkkfkcchbkchggmcld";
 // in its context as well.
 // The app's CRX is located under:
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
-//       faiboenfkkoaedoehhkjmenkhidadgje.crx
+//       adinpkdaebaiabdlinlbjmenialdhibc.crx
 // Source from which the CRX is generated is under path:
 //   chrome/test/data/chromeos/app_mode/management_api/primary_app/
 constexpr char kTestManagementApiKioskApp[] =
-    "faiboenfkkoaedoehhkjmenkhidadgje";
+    "adinpkdaebaiabdlinlbjmenialdhibc";
 
 // Secondary kiosk app that runs tests for chrome.management API.
 // The app is loaded alongside |kTestManagementApiKioskApp|. The tests are run
 // in the response to a message sent from |kTestManagementApiKioskApp|.
 // The app's CRX is located under:
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
-//       lfaidgolgikbpapkmdhoppddflhaocnf.crx
+//       kajpgkhinciaiihghpdamekpjpldgpfi.crx
 // Source from which the CRX is generated is under path:
 //   chrome/test/data/chromeos/app_mode/management_api/secondary_app/
 constexpr char kTestManagementApiSecondaryApp[] =
-    "lfaidgolgikbpapkmdhoppddflhaocnf";
+    "kajpgkhinciaiihghpdamekpjpldgpfi";
 
 constexpr char kTestAccountId[] = "enterprise-kiosk-app@localhost";
 

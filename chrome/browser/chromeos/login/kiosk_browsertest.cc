@@ -94,85 +94,85 @@ namespace {
 // This is a simple test app that creates an app window and immediately closes
 // it again. Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/ggbflgnkafappblpkiflbgpmkfdpnhhe
-const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
+//       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
+const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 
 // This app creates a window and declares usage of the identity API in its
 // manifest, so we can test device robot token minting via the identity API.
 // Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/ibjkkfdnfcaoapcpheeijckmpcfkifob
-const char kTestEnterpriseKioskApp[] = "ibjkkfdnfcaoapcpheeijckmpcfkifob";
+//       detail/gcpjojfkologpegommokeppihdbcnahn
+const char kTestEnterpriseKioskApp[] = "gcpjojfkologpegommokeppihdbcnahn";
 
 // An offline enable test app. Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/ajoggoflpgplnnjkjamcmbepjdjdnpdp
+//       detail/iiigpodgfihagabpagjehoocpakbnclp
 // An app profile with version 1.0.0 installed is in
 //   chrome/test/data/chromeos/app_mode/offline_enabled_app_profile
 // The version 2.0.0 crx is in
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
-const char kTestOfflineEnabledKioskApp[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
+const char kTestOfflineEnabledKioskApp[] = "iiigpodgfihagabpagjehoocpakbnclp";
 
 // An app to test local fs data persistence across app update. V1 app writes
 // data into local fs. V2 app reads and verifies the data.
 // Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/bmbpicmpniaclbbpdkfglgipkkebnbjf
-const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
+//       detail/abbjjkefakmllanciinhgjgjamdmlbdg
+const char kTestLocalFsKioskApp[] = "abbjjkefakmllanciinhgjgjamdmlbdg";
 
 // An app to test local access to file systems via the
 // chrome.fileSystem.requestFileSystem API.
 // Webstore data json is in
 //     chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//         detail/aaedpojejpghjkedenggihopfhfijcko
-const char kTestGetVolumeListKioskApp[] = "aaedpojejpghjkedenggihopfhfijcko";
+//         detail/enelnimkndkcejhjnpaofdlbbfmdnagi
+const char kTestGetVolumeListKioskApp[] = "enelnimkndkcejhjnpaofdlbbfmdnagi";
 
 // An app to test Kiosk virtual keyboard API chrome.virtualKeyboard.* .
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/virtual_keyboard/src/
-const char kTestVirtualKeyboardKioskApp[] = "fmmbbdiapbcicajbpkpkdbcgidgppada";
+const char kTestVirtualKeyboardKioskApp[] = "bbkdjgcbpfjanhcdljmpddplpeehopdo";
 
 // Testing apps for testing kiosk multi-app feature. All the crx files are in
 //    chrome/test/data/chromeos/app_mode/webstore/downloads.
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/primary_app
-const char kTestPrimaryKioskApp[] = "dpejijbnadgcgmabkmcoajkgongfgnii";
+const char kTestPrimaryKioskApp[] = "fclmjfpgiaifbnbnlpmdjhicolkapihc";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_1
-const char kTestSecondaryApp1[] = "emnbflhfbllbehnpjmjddklbkeeoaaeg";
+const char kTestSecondaryApp1[] = "elbhpkeieolijdlflcplbbabceggjknh";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_2
-const char kTestSecondaryApp2[] = "blmjgfbajihimkjmepbhgmjbopjchlda";
+const char kTestSecondaryApp2[] = "coamgmmgmjeeaodkbpdajekljacgfhkc";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app_3
-const char kTestSecondaryApp3[] = "jkofhenkpndpdflehcjpcekgecjkpggg";
+const char kTestSecondaryApp3[] = "miccbahcahimnejpdoaafjeolookhoem";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
 //         secondary_extensions_1
-const char kTestSecondaryExtension[] = "gdmgkkoghcihimdfoabkefdkccllcfea";
+const char kTestSecondaryExtension[] = "pegeblegnlhnpgghhjblhchdllfijodp";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
 //         shared_module_primary_app
-const char kTestSharedModulePrimaryApp[] = "ofmeihgcmabfalhhgooajcijiaoekhkg";
+const char kTestSharedModulePrimaryApp[] = "kidkeddeanfhailinhfokehpolmfdppa";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/secondary_app
-const char kTestSecondaryApp[] = "bbmaiojbgkkmfaglfhaplfomobgojhke";
+const char kTestSecondaryApp[] = "ffceghmcpipkneddgikbgoagnheejdbf";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/shared_module
-const char kTestSharedModuleId[] = "biebhpdepndljbnkadldcbjkiedldnmn";
+const char kTestSharedModuleId[] = "hpanhkopkhnkpcmnedlnjmkfafmlamak";
 
 // Source files are in
 //     chrome/test/data/chromeos/app_mode/multi_app_kiosk/src/
 //         secondary_extension
-const char kTestSecondaryExt[] = "kcoobopfcjmbfeppibolpaolbgbmkcjd";
+const char kTestSecondaryExt[] = "meaknlbicgahoejcchpnkenkmbekcddf";
 
 // Fake usb stick mount path.
 const char kFakeUsbMountPathUpdatePass[] =
@@ -1698,7 +1698,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppHasUpdate) {
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   fake_cws()->SetUpdateCrx(test_app_id(),
-                           "ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
+                           "iiigpodgfihagabpagjehoocpakbnclp.crx", "2.0.0");
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();

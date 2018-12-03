@@ -50,14 +50,14 @@ namespace {
 // data into local fs. V2 app reads and verifies the data.
 // Webstore data json is in
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
-//       detail/bmbpicmpniaclbbpdkfglgipkkebnbjf
+//       detail/abbjjkefakmllanciinhgjgjamdmlbdg
 // The version 1.0.0 installed is in
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
-//       bmbpicmpniaclbbpdkfglgipkkebnbjf.crx
+//       abbjjkefakmllanciinhgjgjamdmlbdg.crx
 // The version 2.0.0 crx is in
 //   chrome/test/data/chromeos/app_mode/webstore/downloads/
-//       bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx
-const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
+//       abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx
+const char kTestLocalFsKioskApp[] = "abbjjkefakmllanciinhgjgjamdmlbdg";
 const char kTestLocalFsKioskAppName[] = "Kiosk App With Local Data";
 
 // Helper KioskAppManager::GetConsumerKioskAutoLaunchStatusCallback
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromProfile) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
-  const char kAppId[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
+  const char kAppId[] = "iiigpodgfihagabpagjehoocpakbnclp";
   const char kAppName[] = "Test Kiosk App";
 
   SetExistingApp(kAppId, kAppName, "red16x16.png", "");
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
   base::FilePath data_dir =
       test_dir.AppendASCII("chromeos/app_mode/webstore/downloads/");
   base::FilePath crx_file = data_dir.AppendASCII(
-      "ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_required_platform_version_added."
+      "iiigpodgfihagabpagjehoocpakbnclp_v2_required_platform_version_added."
       "crx");
   crx_file = CopyFileToTempDir(crx_file);
 
@@ -722,8 +722,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
   // Update to version 2.
   fake_cws()->SetUpdateCrx(
       kTestLocalFsKioskApp,
-      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
-      "2.0.0");
+      "abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx", "2.0.0");
   AppDataLoadWaiter waiter(manager(), 1);
   UpdateAppData();
   waiter.Wait();
@@ -745,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   base::FilePath v2_file_path = test_data_dir.Append(FILE_PATH_LITERAL(
       "chromeos/app_mode/webstore/downloads/"
-      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx"));
+      "abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx"));
   {
     base::ScopedAllowBlockingForTesting allow_io;
     EXPECT_TRUE(base::PathExists(v2_file_path));
@@ -771,8 +770,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
   // Update to version 2.
   fake_cws()->SetUpdateCrx(
       kTestLocalFsKioskApp,
-      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
-      "2.0.0");
+      "abbjjkefakmllanciinhgjgjamdmlbdg_v2_read_and_verify_data.crx", "2.0.0");
   AppDataLoadWaiter waiter(manager(), 1);
   UpdateAppData();
   waiter.Wait();

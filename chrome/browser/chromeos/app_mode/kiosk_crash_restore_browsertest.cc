@@ -37,7 +37,7 @@ namespace chromeos {
 
 namespace {
 
-const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
+const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
 
 }  // namespace
 
