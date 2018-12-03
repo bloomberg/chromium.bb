@@ -19,28 +19,26 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/cache_test_util.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 
 namespace {
 
-bool DeletionCondition(const std::set<GURL>& erase_urls,
-                       const disk_cache::Entry* entry) {
-  return !!erase_urls.count(GURL(entry->GetKey()));
+bool KeyIsEven(const disk_cache::Entry* entry) {
+  int key_as_int = 0;
+  base::StringToInt(entry->GetKey().c_str(), &key_as_int);
+  return (key_as_int % 2) == 0;
 }
 
-bool HasHttpExampleOrigin(const GURL& url) {
-  return url.host() == "example.com";
+bool HasHttpsExampleOrigin(const GURL& url) {
+  return url.GetOrigin() == "https://example.com/";
 }
 
 }  // namespace
@@ -48,11 +46,6 @@ bool HasHttpExampleOrigin(const GURL& url) {
 class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      return;
-
     cache_util_ = std::make_unique<CacheTestUtil>(
         content::BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
@@ -67,18 +60,6 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 
   void TearDownOnMainThread() override { cache_util_.reset(); }
 
-  void CreateCacheEntry(const std::set<GURL>& urls) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      for (auto& url : urls) {
-        ASSERT_EQ(net::OK, LoadBasicRequest(
-                               storage_partition()->GetNetworkContext(), url));
-      }
-    } else {
-      for (auto& url : urls)
-        cache_util_->CreateCacheEntries({url.spec()});
-    }
-  }
-
   void DeleteEntries(
       const base::Callback<bool(const disk_cache::Entry*)>& condition) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -88,23 +69,12 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
     helper->DeleteAndDestroySelfWhenFinished(done_callback_);
   }
 
-  bool TestCacheEntry(const GURL& url) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
-                              0 /* process_id */, 0 /* render_frame_id */,
-                              net::LOAD_ONLY_FROM_CACHE |
-                                  net::LOAD_SKIP_CACHE_VALIDATION) == net::OK;
-    } else {
-      return base::ContainsValue(cache_util_->GetEntryKeys(), url.spec());
-    }
-  }
-
-  void CompareRemainingKeys(const std::set<GURL>& expected_urls,
-                            const std::set<GURL>& erase_urls) {
-    for (auto& url : expected_urls)
-      EXPECT_TRUE(TestCacheEntry(url));
-    for (auto& url : erase_urls)
-      EXPECT_FALSE(TestCacheEntry(url));
+  void CompareRemainingKeys(std::set<std::string> expected_set) {
+    std::vector<std::string> remaining_keys = cache_util_->GetEntryKeys();
+    std::sort(remaining_keys.begin(), remaining_keys.end());
+    std::vector<std::string> expected;
+    expected.assign(expected_set.begin(), expected_set.end());
+    EXPECT_EQ(expected, remaining_keys);
   }
 
   void DoneCallback(int value) {
@@ -120,15 +90,7 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 
   CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
 
-  StoragePartition* storage_partition() {
-    return BrowserContext::GetDefaultStoragePartition(browser_context());
-  }
-
  private:
-  BrowserContext* browser_context() {
-    return shell()->web_contents()->GetBrowserContext();
-  }
-
   base::Callback<void(int)> done_callback_;
   std::unique_ptr<CacheTestUtil> cache_util_;
   std::unique_ptr<base::WaitableEvent> waitable_event_;
@@ -137,45 +99,22 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 // Tests that ConditionalCacheDeletionHelper only deletes those cache entries
 // that match the condition.
 IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
-  std::set<GURL> urls = {
-      embedded_test_server()->GetURL("foo.com", "/title1.html"),
-      embedded_test_server()->GetURL("bar.com", "/title1.html"),
-      embedded_test_server()->GetURL("baz.com", "/title1.html"),
-      embedded_test_server()->GetURL("qux.com", "/title1.html")};
+  // Create 5 entries.
+  std::set<std::string> keys = {"123", "47", "56", "81", "42"};
 
-  CreateCacheEntry(urls);
+  GetCacheTestUtil()->CreateCacheEntries(keys);
 
-  std::set<GURL> erase_urls = {
-      embedded_test_server()->GetURL("bar.com", "/title1.html"),
-      embedded_test_server()->GetURL("baz.com", "/title1.html"),
-  };
+  // Delete the entries whose keys are even numbers.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
+                     base::Unretained(this), base::Bind(&KeyIsEven)));
+  WaitForTasksOnIOThread();
 
-  for (auto& url : erase_urls)
-    urls.erase(url);
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::ClearDataFilterPtr filter =
-        network::mojom::ClearDataFilter::New();
-    filter->type = network::mojom::ClearDataFilter::Type::DELETE_MATCHES;
-    for (auto& url : erase_urls)
-      filter->origins.push_back(url::Origin::Create(url));
-
-    base::RunLoop run_loop;
-    storage_partition()->GetNetworkContext()->ClearHttpCache(
-        base::Time(), base::Time::Max(), std::move(filter),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-            base::Unretained(this),
-            base::Bind(&DeletionCondition, erase_urls)));
-    WaitForTasksOnIOThread();
-  }
-
-  CompareRemainingKeys(urls, erase_urls);
+  // Expect that the keys with values 56 and 42 were deleted.
+  keys.erase("56");
+  keys.erase("42");
+  CompareRemainingKeys(keys);
 }
 
 // Tests that ConditionalCacheDeletionHelper correctly constructs a condition
@@ -195,12 +134,14 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 #endif
 IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
                        MAYBE_TimeAndURL) {
+
   // Create some entries.
-  std::set<GURL> urls = {
-      embedded_test_server()->GetURL("foo.com", "/title1.html"),
-      embedded_test_server()->GetURL("example.com", "/title1.html"),
-      embedded_test_server()->GetURL("bar.com", "/title1.html")};
-  CreateCacheEntry(urls);
+  std::set<std::string> keys;
+  keys.insert("https://google.com/index.html");
+  keys.insert("https://example.com/foo/bar/icon.png");
+  keys.insert("http://chrome.com");
+
+  GetCacheTestUtil()->CreateCacheEntries(keys);
 
   // Wait some milliseconds for the cache to write the entries.
   // This assures that future entries will have timestamps strictly greater than
@@ -209,53 +150,32 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   base::Time now = base::Time::Now();
 
   // Create a few more entries with a later timestamp.
-  std::set<GURL> newer_urls = {
-      embedded_test_server()->GetURL("foo.com", "/simple_page.html"),
-      embedded_test_server()->GetURL("example.com", "/title2.html"),
-      embedded_test_server()->GetURL("example.com", "/title3.html"),
-      embedded_test_server()->GetURL("example2.com", "/simple_page.html")};
-  CreateCacheEntry(newer_urls);
+  std::set<std::string> newer_keys;
+  newer_keys.insert("https://google.com/");
+  newer_keys.insert("https://example.com/foo/bar/icon2.png");
+  newer_keys.insert("https://example.com/foo/bar/icon3.png");
+  newer_keys.insert("http://example.com/foo/bar/icon4.png");
 
-  // Create a condition for entries with the "http://example.com" origin
+  GetCacheTestUtil()->CreateCacheEntries(newer_keys);
+
+  // Create a condition for entries with the "https://example.com" origin
   // created after waiting.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::ClearDataFilterPtr filter =
-        network::mojom::ClearDataFilter::New();
-    filter->type = network::mojom::ClearDataFilter::Type::DELETE_MATCHES;
-    filter->origins.push_back(url::Origin::Create(
-        embedded_test_server()->GetURL("example.com", "/")));
+  base::Callback<bool(const disk_cache::Entry*)> condition =
+      ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
+          base::Bind(&HasHttpsExampleOrigin), now, base::Time::Max());
 
-    base::RunLoop run_loop;
-    storage_partition()->GetNetworkContext()->ClearHttpCache(
-        now, base::Time::Max(), std::move(filter), run_loop.QuitClosure());
-    run_loop.Run();
-  } else {
-    base::Callback<bool(const disk_cache::Entry*)> condition =
-        ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
-            base::Bind(&HasHttpExampleOrigin), now, base::Time::Max());
+  // Delete the entries.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
+                     base::Unretained(this), std::move(condition)));
+  WaitForTasksOnIOThread();
 
-    // Delete the entries.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-            base::Unretained(this), std::move(condition)));
-    WaitForTasksOnIOThread();
-  }
-
-  // Expect that only "title2.html" and "title3.html" were deleted.
-  std::set<GURL> erase_urls = {
-      embedded_test_server()->GetURL("example.com", "/title2.html"),
-      embedded_test_server()->GetURL("example.com", "/title3.html"),
-  };
-
-  for (auto& url : newer_urls)
-    urls.insert(url);
-
-  for (auto& url : erase_urls)
-    urls.erase(url);
-
-  CompareRemainingKeys(urls, erase_urls);
+  // Expect that only "icon2.png" and "icon3.png" were deleted.
+  keys.insert(newer_keys.begin(), newer_keys.end());
+  keys.erase("https://example.com/foo/bar/icon2.png");
+  keys.erase("https://example.com/foo/bar/icon3.png");
+  CompareRemainingKeys(keys);
 }
 
 }  // namespace content
