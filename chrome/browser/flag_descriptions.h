@@ -1125,6 +1125,9 @@ extern const char kSyncUSSAutofillWalletDataDescription[];
 extern const char kSysInternalsName[];
 extern const char kSysInternalsDescription[];
 
+extern const char kTabHoverCardsName[];
+extern const char kTabHoverCardsDescription[];
+
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 

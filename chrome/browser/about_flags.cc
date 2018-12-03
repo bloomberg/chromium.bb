@@ -3584,6 +3584,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAutoFetchOnNetErrorPage)},
 #endif  // defined(OS_ANDROID)
 
+    {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
+     flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabHoverCards)},
+
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
      flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},
