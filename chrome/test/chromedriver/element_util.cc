@@ -273,6 +273,14 @@ Status FindElement(int interval_ms,
   std::string strategy;
   if (!params.GetString("using", &strategy))
     return Status(kInvalidArgument, "'using' must be a string");
+  if (session->w3c_compliant &&
+      strategy != "css selector" &&
+      strategy != "link text" &&
+      strategy != "partial link text" &&
+      strategy != "tag name" &&
+      strategy != "xpath")
+    return Status(kInvalidArgument, "invalid locator");
+
   std::string target;
   if (!params.GetString("value", &target))
     return Status(kInvalidArgument, "'value' must be a string");
