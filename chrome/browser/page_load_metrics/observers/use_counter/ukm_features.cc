@@ -76,6 +76,10 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kSignedExchangeInnerResponseInMainFrame,
           WebFeature::kSignedExchangeInnerResponseInSubFrame,
           WebFeature::kWebShareShare,
+          WebFeature::kHTMLAnchorElementDownloadInSandboxWithUserGesture,
+          WebFeature::kHTMLAnchorElementDownloadInSandboxWithoutUserGesture,
+          WebFeature::kNavigationDownloadInSandboxWithUserGesture,
+          WebFeature::kNavigationDownloadInSandboxWithoutUserGesture,
       }));
   return opt_in_features->count(feature);
 }
