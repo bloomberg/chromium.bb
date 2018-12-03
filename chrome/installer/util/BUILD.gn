@@ -224,6 +224,8 @@ action("generate_strings") {
     "$target_gen_dir/installer_util_strings.rc",
   ]
 
+  depfile = "$target_gen_dir/installer_util_strings.d"
+
   args = [
     "-b",
     "$branding_path_component",
@@ -233,6 +235,8 @@ action("generate_strings") {
     "installer_util_strings",
     "-o",
     rebase_path(target_gen_dir, root_build_dir),
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
   ]
 }
 
