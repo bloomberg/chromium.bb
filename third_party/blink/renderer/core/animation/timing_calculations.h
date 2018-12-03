@@ -50,18 +50,31 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
 }
 
-static inline AnimationEffect::Phase CalculatePhase(double active_duration,
-                                                    double local_time,
-                                                    const Timing& specified) {
+// https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
+static inline AnimationEffect::Phase CalculatePhase(
+    double active_duration,
+    double local_time,
+    AnimationEffect::AnimationDirection direction,
+    const Timing& specified) {
   DCHECK_GE(active_duration, 0);
   if (IsNull(local_time))
     return AnimationEffect::kPhaseNone;
-  double end_time =
-      specified.start_delay + active_duration + specified.end_delay;
-  if (local_time < std::min(specified.start_delay, end_time))
+  double end_time = std::max(
+      specified.start_delay + active_duration + specified.end_delay, 0.0);
+  double before_active_boundary_time =
+      std::max(std::min(specified.start_delay, end_time), 0.0);
+  if (local_time < before_active_boundary_time ||
+      (local_time == before_active_boundary_time &&
+       direction == AnimationEffect::AnimationDirection::kBackwards)) {
     return AnimationEffect::kPhaseBefore;
-  if (local_time >= std::min(specified.start_delay + active_duration, end_time))
+  }
+  double active_after_boundary_time = std::max(
+      std::min(specified.start_delay + active_duration, end_time), 0.0);
+  if (local_time > active_after_boundary_time ||
+      (local_time == active_after_boundary_time &&
+       direction == AnimationEffect::AnimationDirection::kForwards)) {
     return AnimationEffect::kPhaseAfter;
+  }
   return AnimationEffect::kPhaseActive;
 }
 
@@ -89,13 +102,12 @@ static inline double CalculateActiveTime(double active_duration,
                                          AnimationEffect::Phase phase,
                                          const Timing& specified) {
   DCHECK_GE(active_duration, 0);
-  DCHECK_EQ(phase, CalculatePhase(active_duration, local_time, specified));
 
   switch (phase) {
     case AnimationEffect::kPhaseBefore:
       if (fill_mode == Timing::FillMode::BACKWARDS ||
           fill_mode == Timing::FillMode::BOTH)
-        return 0;
+        return std::max(local_time - specified.start_delay, 0.0);
       return NullValue();
     case AnimationEffect::kPhaseActive:
       if (IsActiveInParentPhase(parent_phase, fill_mode))
@@ -103,9 +115,10 @@ static inline double CalculateActiveTime(double active_duration,
       return NullValue();
     case AnimationEffect::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
-          fill_mode == Timing::FillMode::BOTH)
-        return std::max(0.0, std::min(active_duration,
-                                      active_duration + specified.end_delay));
+          fill_mode == Timing::FillMode::BOTH) {
+        return std::max(
+            0.0, std::min(active_duration, local_time - specified.start_delay));
+      }
       return NullValue();
     case AnimationEffect::kPhaseNone:
       DCHECK(IsNull(local_time));
