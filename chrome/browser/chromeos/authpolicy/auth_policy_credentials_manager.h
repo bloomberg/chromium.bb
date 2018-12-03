@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTH_POLICY_CREDENTIALS_MANAGER_H_
 
 #include <set>
+#include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
