@@ -269,7 +269,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
 // by calculuating the 16x4 Horizontal DCT. This is to be used to
 // decide the superresolution parameters.
 void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
-  uint64_t freq_energy[8] = { 0 };
+  uint64_t freq_energy[16] = { 0 };
   const YV12_BUFFER_CONFIG *buf = cpi->source;
   const int bd = cpi->td.mb.e_mbd.bd;
   const int width = buf->y_crop_width;
@@ -283,14 +283,13 @@ void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
       for (int j = 0; j < width - 16; j += 16) {
         av1_fwd_txfm2d_16x4(src16 + i * buf->y_stride + j, coeff, buf->y_stride,
                             H_DCT, bd);
-        for (int k = 8; k < 16; ++k) {
+        for (int k = 1; k < 16; ++k) {
           const uint64_t this_energy =
               ((int64_t)coeff[k] * coeff[k]) +
               ((int64_t)coeff[k + 16] * coeff[k + 16]) +
               ((int64_t)coeff[k + 32] * coeff[k + 32]) +
               ((int64_t)coeff[k + 48] * coeff[k + 48]);
-          freq_energy[k - 8] +=
-              ROUND_POWER_OF_TWO(this_energy, 2 + 2 * (bd - 8));
+          freq_energy[k] += ROUND_POWER_OF_TWO(this_energy, 2 + 2 * (bd - 8));
         }
         n++;
       }
@@ -305,24 +304,24 @@ void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
             src16[ii * 16 + jj] =
                 buf->y_buffer[(i + ii) * buf->y_stride + (j + jj)];
         av1_fwd_txfm2d_16x4(src16, coeff, 16, H_DCT, bd);
-        for (int k = 8; k < 16; ++k) {
+        for (int k = 1; k < 16; ++k) {
           const uint64_t this_energy =
               ((int64_t)coeff[k] * coeff[k]) +
               ((int64_t)coeff[k + 16] * coeff[k + 16]) +
               ((int64_t)coeff[k + 32] * coeff[k + 32]) +
               ((int64_t)coeff[k + 48] * coeff[k + 48]);
-          freq_energy[k - 8] += ROUND_POWER_OF_TWO(this_energy, 2);
+          freq_energy[k] += ROUND_POWER_OF_TWO(this_energy, 2);
         }
         n++;
       }
     }
   }
   if (n) {
-    for (int k = 0; k < 8; ++k) energy[k] = (double)freq_energy[k] / n;
+    for (int k = 1; k < 16; ++k) energy[k] = (double)freq_energy[k] / n;
     // Convert to cumulative energy
-    for (int k = 6; k >= 0; --k) energy[k] += energy[k + 1];
+    for (int k = 14; k > 0; --k) energy[k] += energy[k + 1];
   } else {
-    for (int k = 0; k < 8; ++k) energy[k] = 1e+20;
+    for (int k = 1; k < 16; ++k) energy[k] = 1e+20;
   }
 }
 
@@ -4164,23 +4163,32 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
 }
 
 #define ENERGY_BY_Q2_THRESH 0.01
+#define ENERGY_BY_AC_THRESH 0.2
 
 static uint8_t get_superres_denom_from_qindex_energy(int qindex, double *energy,
-                                                     double thresh) {
+                                                     double threshq,
+                                                     double threshp) {
   const double q = av1_convert_qindex_to_q(qindex, AOM_BITS_8);
-  const double threshq2 = thresh * q * q;
+  const double tq = threshq * q * q;
+  const double tp = threshp * energy[1];
+  const double thresh = AOMMIN(tq, tp);
   int k;
-  for (k = 8; k > 0; --k) {
-    if (energy[k - 1] > threshq2) break;
+  for (k = 16; k > 8; --k) {
+    if (energy[k - 1] > thresh) break;
   }
-  return 2 * SCALE_NUMERATOR - k;
+  return 3 * SCALE_NUMERATOR - k;
 }
 
 static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex) {
-  double energy[8];
+  double energy[16];
   analyze_hor_freq(cpi, energy);
-  return get_superres_denom_from_qindex_energy(qindex, energy,
-                                               ENERGY_BY_Q2_THRESH);
+  /*
+  printf("\nenergy = [");
+  for (int k = 1; k < 16; ++k) printf("%f, ", energy[k]);
+  printf("]\n");
+  */
+  return get_superres_denom_from_qindex_energy(
+      qindex, energy, ENERGY_BY_Q2_THRESH, ENERGY_BY_AC_THRESH);
 }
 
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
