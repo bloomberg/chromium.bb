@@ -1073,6 +1073,7 @@ source_set("views_unittests_sources") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/native_theme",
+    "//ui/native_theme:test_support",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",

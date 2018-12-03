@@ -41,6 +41,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -4787,41 +4788,6 @@ class ViewThatAddsViewInOnNativeThemeChanged : public View {
   DISALLOW_COPY_AND_ASSIGN(ViewThatAddsViewInOnNativeThemeChanged);
 };
 
-// See comment above test for details.
-class TestNativeTheme : public ui::NativeTheme {
- public:
-  TestNativeTheme() {}
-  ~TestNativeTheme() override {}
-
-  // ui::NativeTheme:
-  SkColor GetSystemColor(ColorId color_id) const override {
-    return SK_ColorRED;
-  }
-  gfx::Size GetPartSize(Part part,
-                        State state,
-                        const ExtraParams& extra) const override {
-    return gfx::Size();
-  }
-  void Paint(cc::PaintCanvas* canvas,
-             Part part,
-             State state,
-             const gfx::Rect& rect,
-             const ExtraParams& extra) const override {}
-
-  bool SupportsNinePatch(Part part) const override { return false; }
-  gfx::Size GetNinePatchCanvasSize(Part part) const override {
-    return gfx::Size();
-  }
-  gfx::Rect GetNinePatchAperture(Part part) const override {
-    return gfx::Rect();
-  }
-  bool UsesHighContrastColors() const override { return false; }
-  bool SystemDarkModeEnabled() const override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);
-};
-
 // Creates and adds a new child view to |parent| that has a layer.
 void AddViewWithChildLayer(View* parent) {
   View* child = new View;
@@ -4838,7 +4804,7 @@ void AddViewWithChildLayer(View* parent) {
 // before the layer hierarchy was updated. OnNativeThemeChanged() should be
 // called after the layer hierarchy matches the view hierarchy.
 TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
-  TestNativeTheme theme;
+  ui::TestNativeTheme theme;
   WidgetWithCustomTheme widget(&theme);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
