@@ -2,7 +2,7 @@
 
 rolldeps() {
   STEP="roll-deps" &&
-  REVIEWERS=$(grep -E -v "^$|#" third_party/harfbuzz-ng/OWNERS | paste -s -d,) &&
+  REVIEWERS=$(grep -E -v "^$|#" third_party/harfbuzz-ng/OWNERS | paste -s -d, -) &&
   roll-dep -r "${REVIEWERS}" --roll-to origin/upstream/master "$@" src/third_party/harfbuzz-ng/src/
 }
 
@@ -25,8 +25,8 @@ previousrev() {
 check_added_deleted_files() {
   STEP="Check for added or deleted files since last HarfBuzz revision" &&
   previousrev &&
-  ADDED_FILES=$(git -C third_party/harfbuzz-ng/src/ diff --diff-filter=A --name-only ${PREVIOUS_HARFBUZZ_REV} -- src/ | paste -s -d,) &&
-  DELETED_FILES=$(git -C third_party/harfbuzz-ng/src/ diff --diff-filter=D --name-only ${PREVIOUS_HARFBUZZ_REV} -- src/ | paste -s -d,) &&
+  ADDED_FILES=$(git -C third_party/harfbuzz-ng/src/ diff --diff-filter=A --name-only ${PREVIOUS_HARFBUZZ_REV} -- src/ | paste -s -d, -) &&
+  DELETED_FILES=$(git -C third_party/harfbuzz-ng/src/ diff --diff-filter=D --name-only ${PREVIOUS_HARFBUZZ_REV} -- src/ | paste -s -d, -) &&
   if [ -n "$ADDED_FILES" ]; then echo "Added files detected: " $ADDED_FILES; fi &&
   if [ -n "$DELETED_FILES" ]; then echo "Deleted files detected" $DELETED_FILES; fi &&
   if [ -n "$ADDED_FILES" ] || [ -n "$DELETED_FILES" ]; then echo -e "\nPlease update src/third_party/harfbuzz-ng/BUILD.gn before continuing."; fi
