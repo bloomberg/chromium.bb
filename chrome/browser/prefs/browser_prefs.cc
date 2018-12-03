@@ -293,6 +293,7 @@
 #endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
+#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
@@ -750,6 +751,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
   ArcAppListPrefs::RegisterProfilePrefs(registry);
+  chromeos::ApkWebAppService::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)

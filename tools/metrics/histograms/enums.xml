@@ -53160,6 +53160,9 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Developer API prompt via an Android Custom Tab"/>
   <int value="6" label="Via a debug source"/>
   <int value="7" label="Extensions management API (not reported)"/>
+  <int value="8" label="Ambient badge in an Android Custom Tab"/>
+  <int value="9" label="Ambient badge in a browser tab"/>
+  <int value="10" label="Via ARC on Chrome OS"/>
 </enum>
 
 <enum name="WebAudioAutoplayStatus">

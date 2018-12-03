@@ -116,6 +116,10 @@ class FakeAppInstance : public mojom::AppInstance {
       const std::string& icon_resource_id,
       mojom::ScaleFactor scale_factor,
       RequestShortcutIconDeprecatedCallback callback) override {}
+  void RequestPackageIcon(const std::string& package_name,
+                          int dimension,
+                          bool normalize,
+                          RequestPackageIconCallback callback) override {}
   void RemoveCachedIcon(const std::string& icon_resource_id) override;
   void CanHandleResolutionDeprecated(
       const std::string& package_name,
