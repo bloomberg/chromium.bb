@@ -6,6 +6,19 @@
 
 ### Physical Device Setup
 
+#### Root Access
+
+Running tests requires being able to run "adb root", which requires using a
+userdebug build on your device.
+
+To use a userdebug build, see
+[Running Builds](https://source.android.com/setup/build/running.html). Googlers
+can refer to [this page](https://goto.google.com/flashdevice).
+
+If you can't run "adb root", you will get an error when trying to install the
+test APKs like "adb: error: failed to copy" and "remote secure_mkdirs failed:
+Operation not permitted".
+
 #### ADB Debugging
 
 The adb executable exists within the Android SDK:
