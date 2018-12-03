@@ -190,6 +190,46 @@
 
       next();
     },
+
+    async function testArrowUpToFirstVisibleMessageShouldSelectLastObject(next) {
+      await clearAndLog(`console.log(obj1);console.log("after");`, 2);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+
+      TestRunner.addResult(`Setting focus in prompt:`);
+      prompt.focus();
+      shiftPress('Tab');
+      dumpFocus(true);
+
+      press('ArrowUp');
+      dumpFocus(true);
+
+      next();
+    },
+
+    async function testFocusLastChildInBigObjectShouldScrollIntoView(next) {
+      await TestRunner.evaluateInPagePromise(`
+        var bigObj = Object.create(null);
+          for (var i = 0; i < 100; i++)
+            bigObj['a' + i] = i;
+      `);
+      await clearAndLog(`console.log(bigObj);`, 1);
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+
+      TestRunner.addResult(`Setting focus in prompt:`);
+      prompt.focus();
+      shiftPress('Tab');
+      press('ArrowRight');
+      await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
+      press('Tab');
+
+      dumpFocus(true);
+      shiftPress('Tab');
+
+      dumpFocus(true);
+      dumpScrollInfo();
+
+      next();
+    },
   ]);
 
 
@@ -217,6 +257,13 @@
   function shiftPress(key) {
     TestRunner.addResult(`\nShift+${key}:`);
     eventSender.keyDown(key, ['shiftKey']);
+  }
+
+  function dumpScrollInfo() {
+    viewport.refresh();
+    let infoText =
+        'Is at bottom: ' + viewport.element.isScrolledToBottom() + ', should stick: ' + viewport.stickToBottom();
+    TestRunner.addResult(infoText);
   }
 
   function dumpFocus(activeElement, messageIndex = 0, skipObjectCheck) {
