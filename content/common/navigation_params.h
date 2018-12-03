@@ -106,7 +106,12 @@ enum class NavigationDownloadPolicy {
   // and without a user gesture.
   kAllowOpenerCrossOriginNoGesture = 6,
 
-  kMaxValue = kAllowOpenerCrossOriginNoGesture
+  // Download should be prevented when the navigation occurs in an iframe with
+  // |kSandboxDownloads| flag set, and the runtime-enabled-feature
+  // |BlockingDownloadsInSandbox| is enabled.
+  kDisallowSandbox = 7,
+
+  kMaxValue = kDisallowSandbox
 };
 
 // Returns whether the given |policy| should allow for a download. This function

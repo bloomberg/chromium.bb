@@ -34687,6 +34687,7 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Allowed (no gesture)"/>
   <int value="5" label="Allowed (x-origin)"/>
   <int value="6" label="Allowed (no gesture and x-origin)"/>
+  <int value="7" label="Disallowed (sandbox)"/>
 </enum>
 
 <enum name="NavigationInterceptResult">

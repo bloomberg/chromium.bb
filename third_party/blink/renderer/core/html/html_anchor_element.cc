@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/network_hints.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -404,6 +405,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
+      if (RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled())
+        return;
       UseCounter::Count(
           GetDocument(),
           UserGestureIndicator::ProcessingUserGesture()
