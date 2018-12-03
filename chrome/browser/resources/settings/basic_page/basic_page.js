@@ -23,6 +23,8 @@ Polymer({
 
     showCrostini: Boolean,
 
+    allowCrostini_: Boolean,
+
     showMultidevice: Boolean,
 
     havePlayStoreApp: Boolean,
@@ -108,6 +110,9 @@ Polymer({
   /** @override */
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
+
+    this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
+        loadTimeData.getBoolean('allowCrostini');
 
     this.addWebUIListener('change-password-visibility', visibility => {
       this.showChangePassword = visibility;

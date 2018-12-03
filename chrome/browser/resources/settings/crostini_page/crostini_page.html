@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -29,9 +29,10 @@
                 inner-h-t-m-l="[[i18nAdvanced('crostiniSubtext')]]">
             </div>
           </div>
-          <cr-policy-pref-indicator pref="[[prefs.crostini.enabled]]"
-              icon-aria-label="$i18n{crostiniPageTitle}">
-          </cr-policy-pref-indicator>
+          <template is="dom-if" if="[[!allowCrostini]]" restamp>
+            <cr-policy-indicator indicator-type="userPolicy">
+            </cr-policy-indicator>
+          </template>
           <template is="dom-if" if="[[prefs.crostini.enabled.value]]">
             <paper-icon-button-light class="subpage-arrow">
               <button aria-label="$i18n{crostiniPageTitle}"
@@ -41,7 +42,9 @@
           </template>
           <template is="dom-if" if="[[!prefs.crostini.enabled.value]]">
             <div class="separator"></div>
-            <paper-button id="enable" on-click="onEnableTap_"
+            <paper-button id="enable"
+                disabled="[[!allowCrostini]]"
+                on-click="onEnableTap_"
                 aria-label="$i18n{crostiniPageTitle}"
                 aria-describedby="secondaryText">
               $i18n{crostiniEnable}
