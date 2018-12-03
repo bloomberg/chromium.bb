@@ -72,6 +72,10 @@ input {
   width: calc(100% - 16px);
 }
 
+html[dir=rtl] input {
+  text-align: right;
+}
+
 input::placeholder {
   color: rgba(32, 33, 36, 0.38);
 }
@@ -93,6 +97,10 @@ input:focus + .underline {
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
   width: 100%;
+}
+
+#url-field {
+  direction: ltr;
 }
 
 .field-title.focused {
