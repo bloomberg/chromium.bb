@@ -166,7 +166,7 @@ Polymer({
         if (settings.routes.ACCOUNTS) {
           map.set(
               settings.routes.ACCOUNTS.path,
-              '#manage-other-people-subpage-trigger .subpage-arrow button');
+              '#manage-other-people-subpage-trigger');
         }
         if (settings.routes.ACCOUNT_MANAGER) {
           map.set(
@@ -420,17 +420,12 @@ Polymer({
   onAccountManagerTap_: function(e) {
     settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
   },
-  // </if>
 
   /** @private */
   onManageOtherPeople_: function() {
-    // <if expr="not chromeos">
-    this.syncBrowserProxy_.manageOtherPeople();
-    // </if>
-    // <if expr="chromeos">
     settings.navigateTo(settings.routes.ACCOUNTS);
-    // </if>
   },
+  // </if>
 
   // <if expr="not chromeos">
   /**

@@ -178,7 +178,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandlePauseSync(const base::ListValue* args);
 #endif
   void HandleGetSyncStatus(const base::ListValue* args);
-  void HandleManageOtherPeople(const base::ListValue* args);
 
 #if !defined(OS_CHROMEOS)
   // Displays the GAIA login form.
