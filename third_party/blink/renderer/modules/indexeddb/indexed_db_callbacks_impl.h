@@ -49,9 +49,9 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
                      int64_t old_version,
                      mojom::IDBDataLoss data_loss,
                      const String& data_loss_message,
-                     const WebIDBMetadata& metadata) override;
+                     const IDBDatabaseMetadata& metadata) override;
   void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
-                       const WebIDBMetadata& metadata) override;
+                       const IDBDatabaseMetadata& metadata) override;
   void SuccessCursor(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
                      WebIDBKey key,
                      WebIDBKey primary_key,

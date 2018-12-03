@@ -51,7 +51,6 @@ using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
-using blink::WebIDBMetadata;
 using blink::WebIDBNameAndVersion;
 using blink::WebIDBValue;
 using blink::WebVector;
@@ -125,7 +124,7 @@ void WebIDBCallbacksImpl::OnSuccess(WebIDBCursor* cursor,
 }
 
 void WebIDBCallbacksImpl::OnSuccess(WebIDBDatabase* backend,
-                                    const WebIDBMetadata& metadata) {
+                                    const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(backend);
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,
@@ -214,7 +213,7 @@ void WebIDBCallbacksImpl::OnBlocked(long long old_version) {
 
 void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
                                           WebIDBDatabase* database,
-                                          const WebIDBMetadata& metadata,
+                                          const IDBDatabaseMetadata& metadata,
                                           mojom::IDBDataLoss data_loss,
                                           WebString data_loss_message) {
   std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(database);

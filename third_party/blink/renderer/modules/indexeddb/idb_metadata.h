@@ -30,7 +30,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_METADATA_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -58,6 +57,8 @@ class IDBIndexMetadata : public RefCounted<IDBIndexMetadata> {
                    bool unique,
                    bool multi_entry);
 
+  static scoped_refptr<IDBIndexMetadata> Create();
+
   String name;
   int64_t id;
   IDBKeyPath key_path;
@@ -78,6 +79,8 @@ class MODULES_EXPORT IDBObjectStoreMetadata
                          const IDBKeyPath&,
                          bool auto_increment,
                          int64_t max_index_id);
+
+  static scoped_refptr<IDBObjectStoreMetadata> Create();
 
   // Creates a deep copy of the object metadata, which includes copies of index
   // metadata items.
@@ -102,8 +105,6 @@ struct MODULES_EXPORT IDBDatabaseMetadata {
                       int64_t id,
                       int64_t version,
                       int64_t max_object_store_id);
-
-  explicit IDBDatabaseMetadata(const WebIDBMetadata&);
 
   // Overwrites the database metadata, but does not change the object store and
   // index metadata.

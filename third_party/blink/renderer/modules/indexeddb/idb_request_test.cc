@@ -243,7 +243,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
   const int64_t kTransactionId = 1234;
   const int64_t kVersion = 1;
   const int64_t kOldVersion = 0;
-  const WebIDBMetadata metadata;
+  const IDBDatabaseMetadata metadata;
   Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::Create();
 
   {

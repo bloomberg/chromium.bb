@@ -26,16 +26,16 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
     return false;
   out->version = data.version();
   out->max_object_store_id = data.max_object_store_id();
-  ArrayDataView<blink::mojom::IDBObjectStoreMetadataDataView> object_stores;
+  MapDataView<int64_t, blink::mojom::IDBObjectStoreMetadataDataView>
+      object_stores;
   data.GetObjectStoresDataView(&object_stores);
   for (size_t i = 0; i < object_stores.size(); ++i) {
-    blink::mojom::IDBObjectStoreMetadataDataView object_store;
-    object_stores.GetDataView(i, &object_store);
-    DCHECK(!base::ContainsKey(out->object_stores, object_store.id()));
-    if (!StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
-                      blink::IndexedDBObjectStoreMetadata>::
-            Read(object_store, &out->object_stores[object_store.id()]))
+    const int64_t key = object_stores.keys()[i];
+    blink::IndexedDBObjectStoreMetadata object_store;
+    if (!object_stores.values().Read(i, &object_store))
       return false;
+    DCHECK_EQ(out->object_stores.count(key), 0UL);
+    out->object_stores[key] = object_store;
   }
   return true;
 }
@@ -231,17 +231,15 @@ bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
     return false;
   out->auto_increment = data.auto_increment();
   out->max_index_id = data.max_index_id();
-  ArrayDataView<blink::mojom::IDBIndexMetadataDataView> indexes;
+  MapDataView<int64_t, blink::mojom::IDBIndexMetadataDataView> indexes;
   data.GetIndexesDataView(&indexes);
   for (size_t i = 0; i < indexes.size(); ++i) {
-    blink::mojom::IDBIndexMetadataDataView index;
-    indexes.GetDataView(i, &index);
-    DCHECK(!base::ContainsKey(out->indexes, index.id()));
-    if (!StructTraits<
-            blink::mojom::IDBIndexMetadataDataView,
-            blink::IndexedDBIndexMetadata>::Read(index,
-                                                 &out->indexes[index.id()]))
+    const int64_t key = indexes.keys()[i];
+    blink::IndexedDBIndexMetadata index;
+    if (!indexes.values().Read(i, &index))
       return false;
+    DCHECK_EQ(out->indexes.count(key), 0UL);
+    out->indexes[key] = index;
   }
   return true;
 }

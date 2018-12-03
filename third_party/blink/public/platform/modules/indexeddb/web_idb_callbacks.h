@@ -33,11 +33,11 @@
 
 namespace blink {
 
+struct IDBDatabaseMetadata;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 class WebIDBKey;
-struct WebIDBMetadata;
 struct WebIDBNameAndVersion;
 class WebIDBValue;
 
@@ -53,7 +53,7 @@ class WebIDBCallbacks {
                          WebIDBKey,
                          WebIDBKey primary_key,
                          WebIDBValue) = 0;
-  virtual void OnSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
+  virtual void OnSuccess(WebIDBDatabase*, const IDBDatabaseMetadata&) = 0;
   virtual void OnSuccess(WebIDBKey) = 0;
   virtual void OnSuccess(WebIDBValue) = 0;
   virtual void OnSuccess(WebVector<WebIDBValue>) = 0;
@@ -63,7 +63,7 @@ class WebIDBCallbacks {
   virtual void OnBlocked(long long old_version) = 0;
   virtual void OnUpgradeNeeded(long long old_version,
                                WebIDBDatabase*,
-                               const WebIDBMetadata&,
+                               const IDBDatabaseMetadata&,
                                mojom::IDBDataLoss data_loss,
                                WebString data_loss_message) = 0;
   virtual void Detach() = 0;

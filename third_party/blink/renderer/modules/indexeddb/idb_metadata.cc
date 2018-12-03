@@ -4,9 +4,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-
 namespace blink {
 
 constexpr int64_t IDBIndexMetadata::kInvalidId;
@@ -26,6 +23,11 @@ IDBIndexMetadata::IDBIndexMetadata(const String& name,
       unique(unique),
       multi_entry(multi_entry) {}
 
+// static
+scoped_refptr<IDBIndexMetadata> IDBIndexMetadata::Create() {
+  return base::AdoptRef(new IDBIndexMetadata());
+}
+
 IDBObjectStoreMetadata::IDBObjectStoreMetadata() = default;
 
 IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
@@ -38,6 +40,11 @@ IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
       key_path(key_path),
       auto_increment(auto_increment),
       max_index_id(max_index_id) {}
+
+// static
+scoped_refptr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::Create() {
+  return base::AdoptRef(new IDBObjectStoreMetadata());
+}
 
 scoped_refptr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy()
     const {
@@ -67,39 +74,11 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const String& name,
       version(version),
       max_object_store_id(max_object_store_id) {}
 
-IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
-    : name(web_metadata.name),
-      id(web_metadata.id),
-      version(web_metadata.version),
-      max_object_store_id(web_metadata.max_object_store_id) {
-  for (size_t i = 0; i < web_metadata.object_stores.size(); ++i) {
-    const WebIDBMetadata::ObjectStore& web_object_store =
-        web_metadata.object_stores[i];
-    scoped_refptr<IDBObjectStoreMetadata> object_store =
-        base::AdoptRef(new IDBObjectStoreMetadata(
-            web_object_store.name, web_object_store.id,
-            IDBKeyPath(web_object_store.key_path),
-            web_object_store.auto_increment, web_object_store.max_index_id));
-
-    for (size_t j = 0; j < web_object_store.indexes.size(); ++j) {
-      const WebIDBMetadata::Index& web_index = web_object_store.indexes[j];
-      scoped_refptr<IDBIndexMetadata> index =
-          base::AdoptRef(new IDBIndexMetadata(
-              web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
-              web_index.unique, web_index.multi_entry));
-      object_store->indexes.Set(web_index.id, std::move(index));
-    }
-    object_stores.Set(web_object_store.id, std::move(object_store));
-  }
-}
-
 void IDBDatabaseMetadata::CopyFrom(const IDBDatabaseMetadata& metadata) {
   name = metadata.name;
   id = metadata.id;
   version = metadata.version;
   max_object_store_id = metadata.max_object_store_id;
 }
-
-STATIC_ASSERT_ENUM(WebIDBMetadata::kNoVersion, IDBDatabaseMetadata::kNoVersion);
 
 }  // namespace blink

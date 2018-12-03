@@ -120,7 +120,7 @@ struct IDBObjectStoreMetadata {
   IDBKeyPath key_path;
   bool auto_increment;
   int64 max_index_id;
-  array<IDBIndexMetadata> indexes;
+  map<int64, IDBIndexMetadata> indexes;
 };
 
 struct IDBDatabaseMetadata {
@@ -128,7 +128,7 @@ struct IDBDatabaseMetadata {
   mojo_base.mojom.String16 name;
   int64 version;
   int64 max_object_store_id;
-  array<IDBObjectStoreMetadata> object_stores;
+  map<int64, IDBObjectStoreMetadata> object_stores;
 };
 
 struct IDBNameAndVersion {
