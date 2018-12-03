@@ -839,8 +839,8 @@ Status ProcessInputActionSequence(
   (*action_sequence_result)->SetString("id", id);
 
   bool found = false;
-  for (size_t i = 0; i < session->active_input_sources->GetSize(); i++) {
-    session->active_input_sources->GetDictionary(i, &source);
+  for (size_t i = 0; i < session->active_input_sources.GetSize(); i++) {
+    session->active_input_sources.GetDictionary(i, &source);
     DCHECK(source);
 
     std::string source_id;
@@ -876,7 +876,7 @@ Status ProcessInputActionSequence(
       tmp_source->SetString("pointerType", pointer_type);
     }
 
-    session->active_input_sources->Append(std::move(tmp_source));
+    session->active_input_sources.Append(std::move(tmp_source));
 
     base::DictionaryValue tmp_state;
     tmp_state.SetString("id", id);
@@ -903,7 +903,7 @@ Status ProcessInputActionSequence(
       tmp_state.SetInteger("x", x);
       tmp_state.SetInteger("y", y);
     }
-    session->input_state_table->SetDictionary(
+    session->input_state_table.SetDictionary(
         id, std::make_unique<base::DictionaryValue>(std::move(tmp_state)));
   }
 
@@ -1177,6 +1177,19 @@ Status ExecutePerformActions(Session* session,
       }
     }
   }
+  return Status(kOk);
+}
+
+Status ExecuteReleaseActions(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
+  // TODO(https://crbug.com/chromedriver/1897): Process "input cancel list".
+
+  session->input_state_table.Clear();
+  session->active_input_sources.Clear();
+
   return Status(kOk);
 }
 

@@ -457,6 +457,9 @@ class ChromeDriver(object):
     """
     self.ExecuteCommand(Command.PERFORM_ACTIONS, actions)
 
+  def ReleaseActions(self):
+    self.ExecuteCommand(Command.RELEASE_ACTIONS)
+
   def GetCookies(self):
     return self.ExecuteCommand(Command.GET_COOKIES)
 

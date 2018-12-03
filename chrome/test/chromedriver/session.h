@@ -78,10 +78,10 @@ struct Session {
   int sticky_modifiers;
   // List of input sources for each active input. Everytime a new input source
   // is added, there must be a corresponding entry made in input_state_table.
-  std::unique_ptr<base::ListValue> active_input_sources;
+  base::ListValue active_input_sources;
   // Map between input id and input source state for the corresponding input
   // source. One entry for each item in active_input_sources
-  std::unique_ptr<base::DictionaryValue> input_state_table;
+  base::DictionaryValue input_state_table;
   // List of |FrameInfo|s for each frame to the current target frame from the
   // first frame element in the root document. If target frame is window.top,
   // this list will be empty.
