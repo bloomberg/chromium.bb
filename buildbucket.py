@@ -20,6 +20,7 @@ import json
 import urlparse
 import os
 import sys
+import time
 
 from third_party import httplib2
 
@@ -76,6 +77,13 @@ def main(argv):
       'from another command.'
     ),
   )
+  retry_parser = subparsers.add_parser('retry')
+  retry_parser.add_argument(
+    '--id',
+    help='The ID of the build to retry.',
+    required=True,
+  )
+
   args = parser.parse_args()
 
   body = None
@@ -117,6 +125,9 @@ def main(argv):
     })
     method = 'PUT'
     url = BUILDBUCKET_API_URL
+  elif args.command == 'retry':
+    method = 'PUT'
+    url = '%s/%s/retry' % (BUILDBUCKET_API_URL, args.id)
 
   authenticator = auth.get_authenticator_for_host(
     BUILDBUCKET_URL,
@@ -124,6 +135,12 @@ def main(argv):
   )
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
+
+  if args.verbose:
+    print 'Request URL:', url
+    print 'Request method:', method
+    print 'Request body:', body
+
   response, content = http.request(
     url,
     method,
@@ -132,10 +149,14 @@ def main(argv):
   )
 
   if args.verbose:
-    print content
+    print 'Response:', response
+    print 'Content:', content
 
-  build_url = json.loads(content).get('build', {}).get('url')
-  if build_url:
+  try:
+    build_url = json.loads(content)['build']['url']
+  except (ValueError, TypeError, KeyError):
+    pass
+  else:
     print 'Build triggered on: %s' % build_url
 
   return response.status != 200
