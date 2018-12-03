@@ -31,7 +31,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       gl::GLSurfaceFormat share_group_surface_format,
       const GpuFeatureInfo& gpu_feature_info,
       const GpuPreferences& gpu_preferences);
-  ~GpuInProcessThreadService() override;
 
   // CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
@@ -43,6 +42,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   void ScheduleDelayedWork(base::OnceClosure task) override;
 
  private:
+  ~GpuInProcessThreadService() override;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Scheduler* scheduler_;
 

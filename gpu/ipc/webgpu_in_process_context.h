@@ -40,7 +40,7 @@ class WebGPUInProcessContext {
   // pairs. |gpu_channel_manager| should be non-null when used in the GPU
   // process.
   ContextResult Initialize(
-      CommandBufferTaskExecutor* task_executor,
+      scoped_refptr<CommandBufferTaskExecutor> task_executor,
       const ContextCreationAttribs& attribs,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,

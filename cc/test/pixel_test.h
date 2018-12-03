@@ -86,7 +86,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
 
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
