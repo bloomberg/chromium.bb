@@ -162,36 +162,44 @@ class ScopedGLErrorSuppressor {
 class ScopedTextureBinder {
  public:
   ScopedTextureBinder(gles2::ContextState* state,
+                      GLenum target,
+                      GLuint texture,
+                      GrContext* gr_context,
+                      bool state_is_dirty)
+      : state_(state), target_(target), state_is_dirty_(state_is_dirty) {
+    auto* api = state->api();
+    api->glActiveTextureFn(GL_TEXTURE0);
+    api->glBindTextureFn(target_, texture);
+    if (gr_context)
+      gr_context->resetContext(kTextureBinding_GrGLBackendState);
+  }
+
+  ScopedTextureBinder(gles2::ContextState* state,
                       gles2::TextureManager* texture_manager,
                       gles2::TextureRef* texture_ref,
                       GLenum target,
                       GrContext* gr_context,
                       bool state_is_dirty)
-      : state_(state),
-        target_(target),
-        gr_context_(gr_context),
-        state_is_dirty_(state_is_dirty) {
-    auto* api = state->api();
-    api->glActiveTextureFn(GL_TEXTURE0);
-    gles2::Texture* texture = texture_ref->texture();
-    if (texture->target() == 0)
+      : ScopedTextureBinder(state,
+                            target,
+                            texture_ref->texture()->service_id(),
+                            gr_context,
+                            state_is_dirty) {
+    auto* texture = texture_ref->texture();
+    if (!texture->target())
       texture_manager->SetTarget(texture_ref, target);
     DCHECK_EQ(texture->target(), target_)
         << "Texture bound to more than 1 target.";
-    api->glBindTextureFn(target_, texture_ref->service_id());
   }
 
   ~ScopedTextureBinder() {
     if (!state_is_dirty_)
       state_->api()->glBindTextureFn(target_, 0);
-    if (gr_context_)
-      gr_context_->resetContext(kTextureBinding_GrGLBackendState);
   }
 
  private:
   gles2::ContextState* state_;
   GLenum target_;
-  GrContext* gr_context_;
   const bool state_is_dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTextureBinder);
@@ -202,14 +210,29 @@ class ScopedTextureBinder {
 // scope.
 class ScopedPixelUnpackState {
  public:
-  explicit ScopedPixelUnpackState(gles2::ContextState* state) : state_(state) {
-    DCHECK(state_);
-    state_->PushTextureUnpackState();
+  explicit ScopedPixelUnpackState(gles2::ContextState* state,
+                                  GrContext* gr_context,
+                                  const gles2::FeatureInfo* feature_info) {
+    DCHECK(state);
+    auto* api = state->api();
+    api->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, 4);
+    if (feature_info->gl_version_info().is_es3 ||
+        feature_info->gl_version_info().is_desktop_core_profile ||
+        feature_info->feature_flags().ext_pixel_buffer_object)
+      api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    if (feature_info->gl_version_info().is_es3 ||
+        feature_info->gl_version_info().is_desktop_core_profile ||
+        feature_info->feature_flags().ext_unpack_subimage)
+      api->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+    if (gr_context) {
+      gr_context->resetContext(kMisc_GrGLBackendState |
+                               kPixelStore_GrGLBackendState);
+    }
   }
-  ~ScopedPixelUnpackState() { state_->RestoreUnpackState(); }
+  ~ScopedPixelUnpackState() = default;
 
  private:
-  gles2::ContextState* state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelUnpackState);
 };
 
@@ -231,84 +254,13 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
   }
 }
 
-// Commands that do not require that GL state matches ContextState. Some
-// are completely indifferent to GL state. Others require that GL state
-// matches GrContext state tracking.
-bool PermitsInconsistentContextState(CommandId command) {
-  // Note that state restoration is expensive. If you're adding any new
-  // command which is frequently used between multiple RasterCHROMIUMs for
-  // tiled rasterization, make sure to add it to the whitelist below for
-  // commands which don't need consistent GL state.
-  switch (command) {
-    case kBeginQueryEXT:
-    case kBeginRasterCHROMIUMImmediate:
-    case kCreateAndConsumeTextureINTERNALImmediate:
-    case kCreateTransferCacheEntryINTERNAL:
-    case kDeleteQueriesEXTImmediate:
-    case kDeleteTexturesImmediate:
-    case kDeleteTransferCacheEntryINTERNAL:
-    case kEndQueryEXT:
-    case kEndRasterCHROMIUM:
-    case kFinish:
-    case kFlush:
-    case kGenQueriesEXTImmediate:
-    case kGetError:
-    case kInsertFenceSyncCHROMIUM:
-    case kRasterCHROMIUM:
-    case kSetActiveURLCHROMIUM:
-    case kUnlockTransferCacheEntryINTERNAL:
-    case kWaitSyncTokenCHROMIUM:
-    case kTraceBeginCHROMIUM:
-    case kTraceEndCHROMIUM:
-    case kDeletePaintCacheTextBlobsINTERNALImmediate:
-    case kDeletePaintCachePathsINTERNALImmediate:
-    case kClearPaintCacheINTERNAL:
-      return true;
-    case kLoseContextCHROMIUM:
-    case kCopySubTexture:
-      return false;
-    case kNumCommands:
-    case kOneBeforeStartPoint:
-      NOTREACHED();
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 }  // namespace
 
 // RasterDecoderImpl uses two separate state trackers (gpu::gles2::ContextState
 // and GrContext) that cache the current GL driver state. Each class sees a
 // fraction of the GL calls issued and can easily become inconsistent with GL
 // state. We guard against that by resetting. But resetting is expensive, so we
-// avoid it as much as possible. The argument for correctness is as follows:
-//
-// - GLES2Decoder: The GL state matches the ContextState before and after a
-//   command is executed here. The interesting case is making a GLES2Decoder
-//   current. If using a virtual context, we will restore state appropriately
-//   when the GLES2Decoder is made current because of the call to
-//   RasterDecoderImpl::GetContextState.
-//
-// - RasterDecoder: There are two cases to consider
-//
-//   Case 1: Making a RasterDecoder current. If we are using virtual contexts,
-//     we will restore to |state_| and GrContext::resetContext because of
-//     RasterDecoderImpl::{GetContextState,RestoreState}. If not, we will
-//     restore to the previous GL state (either |state_| or GrContext consistent
-//     with previous GL state).
-//
-//   Case 2a: Executing a PermitsInconsistentContextState command: Either the
-//     command doesn't inspect/modify GL state (InsertSyncPoint,
-//     CreateAndConsumeTexture) or it requires and maintains that GrContext
-//     state tracking matches GL context state (e.g. *RasterCHROMIUM --- see
-//     raster_decoder_context_state_->PessimisticallyResetGrContext).
-//
-//   Case 2b: Executing a command that is not whitelisted: We force GL state to
-//     match |state_| as necessary (see |need_context_state_reset|) in
-//     DoCommandsImpl with RestoreState(nullptr). This will call
-//     GrContext::resetContext.
+// avoid it as much as possible.
 class RasterDecoderImpl final : public RasterDecoder,
                                 public gles2::ErrorStateClient,
                                 public ServiceFontManager::Client {
@@ -1348,11 +1300,6 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
           continue;
         }
       }
-      if (!PermitsInconsistentContextState(command)) {
-        if (raster_decoder_context_state_->need_context_state_reset) {
-          RestoreState(nullptr);
-        }
-      }
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
@@ -1482,9 +1429,10 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
 
   uint32_t size;
   uint32_t padded_row_size;
+  constexpr GLint unpack_alignment = 4;
   if (!gles2::GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
-                                               state_.unpack_alignment, &size,
-                                               nullptr, &padded_row_size)) {
+                                               unpack_alignment, &size, nullptr,
+                                               &padded_row_size)) {
     return false;
   }
 
@@ -1501,23 +1449,29 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
     DCHECK_GT(padded_row_size, 0U);
     tile_height = kMaxZeroSize / padded_row_size;
     if (!gles2::GLES2Util::ComputeImageDataSizes(width, tile_height, 1, format,
-                                                 type, state_.unpack_alignment,
-                                                 &size, nullptr, nullptr)) {
+                                                 type, unpack_alignment, &size,
+                                                 nullptr, nullptr)) {
       return false;
     }
   } else {
     tile_height = height;
   }
 
-  api()->glBindTextureFn(texture->target(), texture->service_id());
   {
+    const bool state_is_dirty =
+        raster_decoder_context_state_->need_context_state_reset;
+    ScopedTextureBinder binder(&state_, texture->target(),
+                               texture->service_id(), gr_context(),
+                               state_is_dirty);
+    base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
+    if (raster_decoder_context_state_->need_context_state_reset) {
+      pixel_unpack_state.emplace(&state_, gr_context(), group_->feature_info());
+    }
     // Add extra scope to destroy zero and the object it owns right
     // after its usage.
     // Assumes the size has already been checked.
     std::unique_ptr<char[]> zero(new char[size]);
     memset(zero.get(), 0, size);
-
-    ScopedPixelUnpackState reset_restore(&state_);
     GLint y = 0;
     while (y < height) {
       GLint h = y + tile_height > height ? height - y : tile_height;
@@ -1529,12 +1483,6 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
     }
   }
   DCHECK(glGetError() == GL_NO_ERROR);
-
-  if (gr_context()) {
-    gr_context()->resetContext(kPixelStore_GrGLBackendState |
-                               kTextureBinding_GrGLBackendState);
-  }
-
   return true;
 }
 
@@ -1544,48 +1492,8 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
                                                     unsigned format,
                                                     int width,
                                                     int height) {
-  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
-  // This code path can only be called if the texture was originally
-  // allocated via TexStorage2D. Note that TexStorage2D is exposed
-  // internally for ES 2.0 contexts, but compressed texture support is
-  // not part of that exposure.
-  DCHECK(feature_info_->IsWebGL2OrES3Context());
-
-  GLsizei bytes_required = 0;
-  std::string error_str;
-  if (!GetCompressedTexSizeInBytes("ClearCompressedTextureLevel", width, height,
-                                   1, format, &bytes_required,
-                                   state_.GetErrorState())) {
-    return false;
-  }
-
-  TRACE_EVENT1("gpu", "RasterDecoderImpl::ClearCompressedTextureLevel",
-               "bytes_required", bytes_required);
-
-  api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
-  {
-    // Add extra scope to destroy zero and the object it owns right
-    // after its usage.
-    std::unique_ptr<char[]> zero(new char[bytes_required]);
-    memset(zero.get(), 0, bytes_required);
-    api()->glBindTextureFn(texture->target(), texture->service_id());
-    api()->glCompressedTexSubImage2DFn(target, level, 0, 0, width, height,
-                                       format, bytes_required, zero.get());
-  }
-  gles2::TextureRef* bound_texture =
-      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
-  api()->glBindTextureFn(texture->target(),
-                         bound_texture ? bound_texture->service_id() : 0);
-  gles2::Buffer* bound_buffer =
-      buffer_manager()->GetBufferInfoForTarget(&state_, GL_PIXEL_UNPACK_BUFFER);
-  if (bound_buffer) {
-    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
-  }
-
-  if (gr_context()) {
-    gr_context()->resetContext(kTextureBinding_GrGLBackendState);
-  }
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 int RasterDecoderImpl::DecoderIdForTest() {
@@ -1996,6 +1904,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
   ScopedTextureBinder binder(
       &state_, texture_manager(), dest_texture_ref, dest_target, gr_context(),
       raster_decoder_context_state_->need_context_state_reset);
+  base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
 
   int source_width = 0;
   int source_height = 0;
@@ -2025,6 +1934,14 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                          "source texture bad dimensions");
       return;
+    }
+
+    if (image->GetType() == gl::GLImage::Type::MEMORY &&
+        raster_decoder_context_state_->need_context_state_reset) {
+      // If the image is in shared memory, we may need upload the pixel data
+      // with SubTexImage2D, so we need reset pixel unpack state if gl context
+      // state has been touched by skia.
+      pixel_unpack_state.emplace(&state_, gr_context(), group_->feature_info());
     }
   } else {
     if (!source_texture->GetLevelSize(source_target, 0 /* level */,
