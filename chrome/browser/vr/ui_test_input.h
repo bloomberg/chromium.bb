@@ -78,6 +78,8 @@ enum class VrControllerTestAction : int {
   kMove,
   kAppDown,
   kAppUp,
+  kTouchDown,
+  kTouchUp,
 };
 
 // These are used to specify what type of keyboard input should be performed

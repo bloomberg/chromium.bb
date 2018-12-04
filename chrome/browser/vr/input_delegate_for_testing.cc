@@ -81,13 +81,8 @@ void InputDelegateForTesting::QueueControllerActionForTesting(
       break;
     case VrControllerTestAction::kMove:
       // Use whatever the last button state is.
-      if (!IsQueueEmpty()) {
-        controller_model.touchpad_button_state =
-            controller_model_queue_.back().touchpad_button_state;
-      } else {
-        controller_model.touchpad_button_state =
-            cached_controller_model_.touchpad_button_state;
-      }
+      controller_model.touchpad_button_state =
+          GetMostRecentModel().touchpad_button_state;
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kAppDown:
@@ -96,6 +91,22 @@ void InputDelegateForTesting::QueueControllerActionForTesting(
       break;
     case VrControllerTestAction::kAppUp:
       controller_model.app_button_state = ControllerModel::ButtonState::kUp;
+      controller_model_queue_.push(controller_model);
+      break;
+    case VrControllerTestAction::kTouchDown:
+      // Use whatever the most recent direction is and interpret the provided
+      // point as the point on the touchpad.
+      controller_model.laser_direction = GetMostRecentModel().laser_direction;
+      SetOriginAndTransform(&controller_model);
+      controller_model.touching_touchpad = true;
+      controller_model.touchpad_touch_position = controller_input.position;
+      controller_model_queue_.push(controller_model);
+      break;
+    case VrControllerTestAction::kTouchUp:
+      controller_model.laser_direction = GetMostRecentModel().laser_direction;
+      SetOriginAndTransform(&controller_model);
+      controller_model.touching_touchpad = false;
+      controller_model.touchpad_touch_position = controller_input.position;
       controller_model_queue_.push(controller_model);
       break;
     default:
@@ -146,5 +157,11 @@ InputDelegateForTesting::GetInputSourceState() {
 void InputDelegateForTesting::OnResume() {}
 
 void InputDelegateForTesting::OnPause() {}
+
+ControllerModel InputDelegateForTesting::GetMostRecentModel() {
+  if (!IsQueueEmpty())
+    return controller_model_queue_.back();
+  return cached_controller_model_;
+}
 
 }  // namespace vr
