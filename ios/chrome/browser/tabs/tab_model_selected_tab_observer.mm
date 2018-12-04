@@ -44,12 +44,9 @@
     }
   }
 
-  if (newWebState) {
-    Tab* newTab = LegacyTabHelper::GetTabForWebState(newWebState);
-
+  if (newWebState && !newWebState->IsLoading()) {
     // Persist the session state.
-    if (newTab.loadFinished)
-      [_tabModel saveSessionImmediately:NO];
+    [_tabModel saveSessionImmediately:NO];
   }
 }
 

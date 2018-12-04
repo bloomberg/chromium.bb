@@ -4113,7 +4113,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
           [self.tabModel indexOfTab:oldTab], std::move(newWebState));
       _insertedTabWasPrerenderedTab = NO;
 
-      if ([newTab loadFinished]) {
+      if (!newTab.webState->IsLoading()) {
         // If the page has finished loading, take a snapshot.  If the page is
         // still loading, do nothing, as the tab helper will automatically take
         // a snapshot once the load completes.
