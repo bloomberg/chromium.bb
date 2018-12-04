@@ -282,6 +282,10 @@ public class BookmarkTest {
         BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
         final BookmarkDelegate delegate = adapter.getDelegateForTesting();
 
+        // Open the default folder where these bookmarks were created.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> delegate.openFolder(mBookmarkModel.getDefaultFolder()));
+
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         Assert.assertEquals(
                 "Wrong number of items before starting search.", 3, adapter.getItemCount());
