@@ -118,6 +118,12 @@ class AssistantOptInFlowScreenHandler
   // Counter for the number of loading timeout happens.
   int loading_timeout_counter_ = 0;
 
+  // Whether the screen has been initialized.
+  bool initialized_ = false;
+
+  // Whether there is a pending voice match enrollment request.
+  bool voice_enrollment_pending = false;
+
   mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
   assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr_;
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;

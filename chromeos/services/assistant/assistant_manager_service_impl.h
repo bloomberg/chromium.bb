@@ -187,6 +187,9 @@ class AssistantManagerServiceImpl
   // Update device id, type and locale
   void UpdateDeviceSettings();
 
+  // Sync speaker id enrollment status.
+  void SyncSpeakerIdEnrollmentStatus();
+
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
       const std::string& settings);
@@ -196,6 +199,8 @@ class AssistantManagerServiceImpl
   void HandleSpeakerIdEnrollmentUpdate(
       const assistant_client::SpeakerIdEnrollmentUpdate& update);
   void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
+  void HandleSpeakerIdEnrollmentStatusSync(
+      const assistant_client::SpeakerIdEnrollmentUpdate& update);
 
   void HandleOpenAndroidAppResponse(const action::InteractionInfo& interaction,
                                     bool app_opened);
@@ -272,6 +277,9 @@ class AssistantManagerServiceImpl
   Service* service_;  // unowned.
 
   bool spoken_feedback_enabled_ = false;
+
+  // Whether the speaker id enrollment has complete for the user.
+  bool speaker_id_enrollment_done_ = false;
 
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
