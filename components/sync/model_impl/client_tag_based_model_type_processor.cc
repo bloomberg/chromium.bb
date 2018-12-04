@@ -1248,6 +1248,11 @@ bool ClientTagBasedModelTypeProcessor::HasLocalChangesForTest() const {
   return HasLocalChanges();
 }
 
+bool ClientTagBasedModelTypeProcessor::IsTrackingEntityForTest(
+    const std::string& storage_key) const {
+  return storage_key_to_tag_hash_.count(storage_key) != 0;
+}
+
 bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
   return model_ready_to_sync_;
 }

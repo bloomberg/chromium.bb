@@ -94,10 +94,13 @@ class SessionStore {
                SyncedSessionTracker* session_tracker);
     ~WriteBatch();
 
-    // Most mutations below return a storage key.
+    // Most mutations below return storage keys.
     std::string PutAndUpdateTracker(const sync_pb::SessionSpecifics& specifics,
                                     base::Time modification_time);
-    void DeleteForeignEntityAndUpdateTracker(const std::string& storage_key);
+    // Returns all deleted storage keys, which may be more than one if
+    // |storage_key| refers to a header entity.
+    std::vector<std::string> DeleteForeignEntityAndUpdateTracker(
+        const std::string& storage_key);
     // The functions below do not update SyncedSessionTracker and hence it is
     // the caller's responsibility to do so *before* calling these functions.
     std::string PutWithoutUpdatingTracker(

@@ -101,6 +101,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   bool HasLocalChangesForTest() const;
 
+  bool IsTrackingEntityForTest(const std::string& storage_key) const;
+
   bool IsModelReadyToSyncForTest() const;
 
  private:

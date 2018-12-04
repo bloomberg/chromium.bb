@@ -497,6 +497,140 @@ TEST_F(SessionStoreTest, ShouldWriteAndRestoreForeignData) {
                            /*urls=*/_)))));
 }
 
+TEST_F(SessionStoreTest, ShouldDeleteForeignData) {
+  const std::string kForeignSessionTag = "SomeForeignTag";
+  const int kWindowId = 5;
+  const int kTabId1 = 7;
+  const int kTabId2 = 8;
+  const int kTabNodeId1 = 1;
+  const int kTabNodeId2 = 2;
+
+  EXPECT_CALL(mock_restored_foreign_tab_callback_, Run(_, _)).Times(0);
+
+  const std::string local_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+
+  // Local session is automatically created.
+  ASSERT_THAT(BatchToEntityDataMap(session_store()->GetAllSessionData()),
+              ElementsAre(Pair(local_header_storage_key, _)));
+  ASSERT_THAT(ReadAllPersistedDataFrom(underlying_store_.get()), IsEmpty());
+
+  // Populate with foreign data: one header entity and two tabs.
+  SessionSpecifics header;
+  header.set_session_tag(kForeignSessionTag);
+  header.mutable_header()->add_window()->set_window_id(kWindowId);
+  header.mutable_header()->mutable_window(0)->add_tab(kTabId1);
+  header.mutable_header()->mutable_window(0)->add_tab(kTabId2);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(header));
+
+  SessionSpecifics tab1;
+  tab1.set_session_tag(kForeignSessionTag);
+  tab1.set_tab_node_id(kTabNodeId1);
+  tab1.mutable_tab()->set_window_id(kWindowId);
+  tab1.mutable_tab()->set_tab_id(kTabId1);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(tab1));
+
+  SessionSpecifics tab2;
+  tab2.set_session_tag(kForeignSessionTag);
+  tab2.set_tab_node_id(kTabNodeId2);
+  tab2.mutable_tab()->set_window_id(kWindowId);
+  tab2.mutable_tab()->set_tab_id(kTabId2);
+  ASSERT_TRUE(SessionStore::AreValidSpecifics(tab2));
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId1);
+  const std::string tab_storage_key2 =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kTabNodeId2);
+
+  // Write data and update the tracker.
+  {
+    std::unique_ptr<SessionStore::WriteBatch> batch =
+        session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
+    ASSERT_THAT(batch, NotNull());
+    batch->PutAndUpdateTracker(header, base::Time::Now());
+    batch->PutAndUpdateTracker(tab1, base::Time::Now());
+    batch->PutAndUpdateTracker(tab2, base::Time::Now());
+
+    sync_pb::EntityMetadata header_metadata;
+    header_metadata.set_server_id("someserverid1");
+    batch->GetMetadataChangeList()->UpdateMetadata(header_storage_key,
+                                                   header_metadata);
+
+    sync_pb::EntityMetadata tab1_metadata;
+    tab1_metadata.set_server_id("someserverid2");
+    batch->GetMetadataChangeList()->UpdateMetadata(tab_storage_key1,
+                                                   tab1_metadata);
+
+    sync_pb::EntityMetadata tab2_metadata;
+    tab2_metadata.set_server_id("someserverid3");
+    batch->GetMetadataChangeList()->UpdateMetadata(tab_storage_key2,
+                                                   tab2_metadata);
+    SessionStore::WriteBatch::Commit(std::move(batch));
+  }
+
+  // Verify the underlying storage contains the data.
+  ASSERT_THAT(
+      ReadAllPersistedDataFrom(underlying_store_.get()),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               MatchesHeader(kForeignSessionTag, {kWindowId},
+                             {kTabId1, kTabId2})),
+          Pair(tab_storage_key1,
+               MatchesTab(kForeignSessionTag, kWindowId, kTabId1, kTabNodeId1,
+                          /*urls=*/_)),
+          Pair(tab_storage_key2,
+               MatchesTab(kForeignSessionTag, kWindowId, kTabId2, kTabNodeId2,
+                          /*urls=*/_))));
+
+  // Verify tracker exposes the foreign tabs.
+  ASSERT_THAT(session_store()->tracker()->LookupAllForeignSessions(
+                  SyncedSessionTracker::RAW),
+              ElementsAre(MatchesSyncedSession(
+                  kForeignSessionTag,
+                  {{kWindowId, std::vector<int>{kTabId1, kTabId2}}})));
+
+  // Mimic receiving a tab deletion for |tab1|, which should only affect that
+  // entity.
+  {
+    std::unique_ptr<SessionStore::WriteBatch> batch =
+        session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
+
+    EXPECT_THAT(batch->DeleteForeignEntityAndUpdateTracker(tab_storage_key1),
+                ElementsAre(tab_storage_key1));
+
+    SessionStore::WriteBatch::Commit(std::move(batch));
+  }
+
+  EXPECT_THAT(
+      ReadAllPersistedDataFrom(underlying_store_.get()),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               MatchesHeader(kForeignSessionTag, {kWindowId},
+                             {kTabId1, kTabId2})),
+          Pair(tab_storage_key2,
+               MatchesTab(kForeignSessionTag, kWindowId, kTabId2, kTabNodeId2,
+                          /*urls=*/_))));
+
+  // Mimic receiving a header deletion (which should delete all remaining
+  // entities for that session).
+  {
+    std::unique_ptr<SessionStore::WriteBatch> batch =
+        session_store()->CreateWriteBatch(/*error_handler=*/base::DoNothing());
+
+    EXPECT_THAT(batch->DeleteForeignEntityAndUpdateTracker(header_storage_key),
+                ElementsAre(header_storage_key, tab_storage_key2));
+
+    SessionStore::WriteBatch::Commit(std::move(batch));
+  }
+
+  EXPECT_THAT(session_store()->tracker()->LookupAllForeignSessions(
+                  SyncedSessionTracker::RAW),
+              IsEmpty());
+  EXPECT_THAT(ReadAllPersistedDataFrom(underlying_store_.get()), IsEmpty());
+}
+
 TEST_F(SessionStoreTest, ShouldReturnForeignUnmappedTabs) {
   const std::string kForeignSessionTag = "SomeForeignTag";
   const int kWindowId = 5;
