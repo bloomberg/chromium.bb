@@ -1091,12 +1091,6 @@ void BrowserProcessImpl::ResourceDispatcherHostCreated() {
   ApplyAllowCrossOriginAuthPromptPolicy();
 }
 
-std::string BrowserProcessImpl::actual_locale() {
-  return chrome_feature_list_creator_
-             ? chrome_feature_list_creator_->actual_locale()
-             : std::string();
-}
-
 void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
   if (is_keeping_alive)
     Pin();

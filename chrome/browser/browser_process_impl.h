@@ -201,9 +201,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // The locale used by the application.
-  std::string actual_locale();
-
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 

@@ -406,6 +406,14 @@ void MaybePostSettingsResetPrompt() {
   }
 }
 
+// This error message is not localized because we failed to load the
+// localization data files.
+const char kMissingLocaleDataTitle[] = "Missing File Error";
+
+// TODO(http://crbug.com/338969): This should be used on Linux Aura as well.
+const char kMissingLocaleDataMessage[] =
+    "Unable to find locale data files. Please reinstall.";
+
 }  // namespace
 
 int DoUninstallTasks(bool chrome_still_running) {
@@ -507,9 +515,8 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
-  ui::MessageBox(NULL,
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+  ui::MessageBox(NULL, base::ASCIIToUTF16(kMissingLocaleDataMessage),
+                 base::ASCIIToUTF16(kMissingLocaleDataTitle),
                  MB_OK | MB_ICONERROR | MB_TOPMOST);
 }
 
