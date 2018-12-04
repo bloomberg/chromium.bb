@@ -36,6 +36,9 @@ class UsbChooserContext : public ChooserContextBase,
     virtual void OnDeviceManagerConnectionError();
   };
 
+  static std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
+      const device::mojom::UsbDeviceInfo& device_info);
+
   // These methods from ChooserContextBase are overridden in order to expose
   // ephemeral devices through the public interface.
   std::vector<std::unique_ptr<base::DictionaryValue>> GetGrantedObjects(

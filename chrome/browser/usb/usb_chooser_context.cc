@@ -65,27 +65,6 @@ std::pair<int, int> GetDeviceIds(const base::DictionaryValue& object) {
   return std::make_pair(vendor_id, product_id);
 }
 
-std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
-    const device::mojom::UsbDeviceInfo& device_info) {
-  auto device_dict = std::make_unique<base::DictionaryValue>();
-  device_dict->SetKey(kDeviceNameKey,
-                      device_info.product_name
-                          ? base::Value(*device_info.product_name)
-                          : base::Value(""));
-  device_dict->SetKey(kVendorIdKey, base::Value(device_info.vendor_id));
-  device_dict->SetKey(kProductIdKey, base::Value(device_info.product_id));
-
-  // CanStorePersistentEntry checks if |device_info.serial_number| is not empty.
-  if (CanStorePersistentEntry(device_info)) {
-    device_dict->SetKey(kSerialNumberKey,
-                        base::Value(*device_info.serial_number));
-  } else {
-    device_dict->SetKey(kGuidKey, base::Value(device_info.guid));
-  }
-
-  return device_dict;
-}
-
 base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
 // This is currently using the UI strings used for the chooser prompt. This is
 // fine for now since the policy allowed devices are not being displayed in
@@ -148,6 +127,28 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
       weak_factory_(this) {
   usb_policy_allowed_devices_.reset(
       new UsbPolicyAllowedDevices(profile->GetPrefs()));
+}
+
+// static
+std::unique_ptr<base::DictionaryValue> UsbChooserContext::DeviceInfoToDictValue(
+    const device::mojom::UsbDeviceInfo& device_info) {
+  auto device_dict = std::make_unique<base::DictionaryValue>();
+  device_dict->SetKey(kDeviceNameKey,
+                      device_info.product_name
+                          ? base::Value(*device_info.product_name)
+                          : base::Value(""));
+  device_dict->SetKey(kVendorIdKey, base::Value(device_info.vendor_id));
+  device_dict->SetKey(kProductIdKey, base::Value(device_info.product_id));
+
+  // CanStorePersistentEntry checks if |device_info.serial_number| is not empty.
+  if (CanStorePersistentEntry(device_info)) {
+    device_dict->SetKey(kSerialNumberKey,
+                        base::Value(*device_info.serial_number));
+  } else {
+    device_dict->SetKey(kGuidKey, base::Value(device_info.guid));
+  }
+
+  return device_dict;
 }
 
 void UsbChooserContext::InitDeviceList(
