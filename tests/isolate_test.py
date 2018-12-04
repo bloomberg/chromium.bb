@@ -277,6 +277,26 @@ class IsolateTest(IsolateBase):
         False)
     self.assertEqual(expected, complete_state.saved_state.to_isolated())
 
+  if sys.platform == 'darwin':
+    def test_expand_directories_and_symlinks_path_case(self):
+      # Ensures that the resulting path case is fixed on case insensitive file
+      # system. A superset of test_expand_symlinks_path_case.
+      # Create *all* the paths with the wrong path case.
+      basedir = os.path.join(self.cwd, 'baseDir')
+      os.mkdir(basedir.lower())
+      subdir = os.path.join(basedir, 'subDir')
+      os.mkdir(subdir.lower())
+      open(os.path.join(subdir, 'Foo.txt'), 'w').close()
+      os.symlink('subDir', os.path.join(basedir, 'linkdir'))
+      actual = isolate._expand_directories_and_symlinks(
+          self.cwd, [u'baseDir/'], lambda _: None, True, False)
+      expected = [
+        u'basedir/linkdir',
+        u'basedir/subdir/Foo.txt',
+        u'basedir/subdir/Foo.txt',
+      ]
+      self.assertEqual(expected, sorted(actual))
+
 
 class IsolateLoad(IsolateBase):
   def setUp(self):

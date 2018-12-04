@@ -55,25 +55,6 @@ class SymlinkTest(unittest.TestCase):
       result = isolated_format._expand_symlinks(self.cwd, u'link/File.txt')
       self.assertEqual((u'Dest/file.txt', [u'link']), result)
 
-    def test_expand_directories_and_symlinks_path_case(self):
-      # Ensures that the resulting path case is fixed on case insensitive file
-      # system. A superset of test_expand_symlinks_path_case.
-      # Create *all* the paths with the wrong path case.
-      basedir = os.path.join(self.cwd, u'baseDir')
-      fs.mkdir(basedir.lower())
-      subdir = os.path.join(basedir, u'subDir')
-      fs.mkdir(subdir.lower())
-      fs.open(os.path.join(subdir, u'Foo.txt'), 'w').close()
-      fs.symlink(u'subDir', os.path.join(basedir, u'linkdir'))
-      actual = isolated_format.expand_directories_and_symlinks(
-          self.cwd, [u'baseDir/'], lambda _: None, True, False)
-      expected = [
-        u'basedir/linkdir',
-        u'basedir/subdir/Foo.txt',
-        u'basedir/subdir/Foo.txt',
-      ]
-      self.assertEqual(expected, sorted(actual))
-
     def test_file_to_metadata_path_case_simple(self):
       # Ensure the symlink dest is saved in the right path case.
       subdir = os.path.join(self.cwd, u'subdir')

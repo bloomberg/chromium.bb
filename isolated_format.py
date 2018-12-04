@@ -293,27 +293,6 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     yield relfile
 
 
-def expand_directories_and_symlinks(
-    indir, infiles, blacklist, follow_symlinks, ignore_broken_items):
-  """Expands the directories and the symlinks, applies the blacklist and
-  verifies files exist.
-
-  Files are specified in os native path separator.
-
-  Yields:
-    Relative file path of each file inside every directory specified.
-  """
-  for relfile in infiles:
-    try:
-      for i in expand_directory_and_symlink(
-          indir, relfile, blacklist, follow_symlinks):
-        yield i
-    except MappingError as e:
-      if not ignore_broken_items:
-        raise
-      logging.info('warning: %s', e)
-
-
 @tools.profile
 def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
   """Processes an input file, a dependency, and return meta data about it.
