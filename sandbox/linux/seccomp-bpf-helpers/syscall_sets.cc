@@ -538,6 +538,7 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
     case __NR_pselect6:
     case __NR_read:
     case __NR_readv:
+    case __NR_pread64:
 #if defined(__arm__) || defined(__mips32__)
     case __NR_recv:
 #endif
@@ -564,7 +565,6 @@ bool SyscallSets::IsAllowedGeneralIo(int sysno) {
     case __NR_writev:
       return true;
     case __NR_ioctl:  // Can be very powerful.
-    case __NR_pread64:
     case __NR_preadv:
     case __NR_pwrite64:
     case __NR_pwritev:
