@@ -89,6 +89,9 @@ class CORE_EXPORT ScriptPromise final {
 
   void Clear() { promise_.Clear(); }
 
+  // Marks this promise as handled to avoid reporting unhandled rejections.
+  void MarkAsHandled();
+
   bool operator==(const ScriptPromise& value) const {
     return promise_ == value.promise_;
   }

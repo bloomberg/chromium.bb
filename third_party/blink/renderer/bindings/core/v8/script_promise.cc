@@ -335,6 +335,12 @@ v8::Local<v8::Promise> ScriptPromise::RejectRaw(ScriptState* script_state,
   return promise;
 }
 
+void ScriptPromise::MarkAsHandled() {
+  if (promise_.IsEmpty())
+    return;
+  promise_.V8Value().As<v8::Promise>()->MarkAsHandled();
+}
+
 ScriptPromise ScriptPromise::All(ScriptState* script_state,
                                  const Vector<ScriptPromise>& promises) {
   return PromiseAllHandler::All(script_state, promises);
