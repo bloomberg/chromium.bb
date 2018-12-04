@@ -1575,12 +1575,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableTouchAdjustment)},
 #if defined(OS_CHROMEOS)
-    {"network-portal-notification",
-     flag_descriptions::kNetworkPortalNotificationName,
-     flag_descriptions::kNetworkPortalNotificationDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kEnableNetworkPortalNotification,
-         chromeos::switches::kDisableNetworkPortalNotification)},
     {"enable-captive-portal-random-url",
      flag_descriptions::kEnableCaptivePortalRandomUrl,
      flag_descriptions::kEnableCaptivePortalRandomUrlDescription, kOsCrOS,

@@ -53,11 +53,6 @@ namespace {
 
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 
-bool IsPortalNotificationEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNetworkPortalNotification);
-}
-
 Profile* GetProfileForPrimaryUser() {
   const user_manager::User* primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
@@ -258,9 +253,6 @@ void NetworkPortalNotificationController::DefaultNetworkChanged(
 void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  if (!IsPortalNotificationEnabled())
-    return;
-
   if (!network ||
       state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
     last_network_guid_.clear();

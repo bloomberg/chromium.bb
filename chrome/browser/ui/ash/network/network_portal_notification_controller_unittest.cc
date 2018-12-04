@@ -39,8 +39,6 @@ class NetworkPortalNotificationControllerTest
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(switches::kEnableNetworkPortalNotification);
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
