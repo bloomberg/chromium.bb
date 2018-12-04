@@ -4160,6 +4160,8 @@ crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/Shar
 crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/constructors/SharedWorker/unresolvable-url.html [ Failure ]
 crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
+crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
+
 # Off-the-main-thread classic worker script fetch.
 # This fails because running a worker on an opaque origin is blocked.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]

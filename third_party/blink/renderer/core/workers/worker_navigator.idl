@@ -36,5 +36,5 @@
 WorkerNavigator implements NavigatorConcurrentHardware;
 WorkerNavigator implements NavigatorDeviceMemory;
 WorkerNavigator implements NavigatorID;
-// TODO(foolip): WorkerNavigator implements NavigatorLanguage;
+WorkerNavigator implements NavigatorLanguage;
 WorkerNavigator implements NavigatorOnLine;

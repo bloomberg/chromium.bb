@@ -66,8 +66,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   String platform() const override;
   String userAgent() const override;
 
-  // NavigatorLanguage
-  Vector<String> languages() override;
+  String GetAcceptLanguages() override;
 
   void Trace(blink::Visitor*) override;
 };

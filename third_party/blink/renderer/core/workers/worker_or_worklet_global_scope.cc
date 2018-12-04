@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -108,7 +109,7 @@ void WorkerOrWorkletGlobalScope::InitializeWebFetchContextIfNeeded() {
     return;
 
   DCHECK(!subresource_filter_);
-  web_worker_fetch_context_->InitializeOnWorkerThread();
+  web_worker_fetch_context_->InitializeOnWorkerThread(navigator());
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
       web_worker_fetch_context_->TakeSubresourceFilter();
   if (web_filter) {

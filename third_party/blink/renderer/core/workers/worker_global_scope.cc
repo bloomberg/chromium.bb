@@ -123,7 +123,7 @@ WorkerLocation* WorkerGlobalScope::location() const {
 
 WorkerNavigator* WorkerGlobalScope::navigator() const {
   if (!navigator_)
-    navigator_ = WorkerNavigator::Create(user_agent_);
+    navigator_ = WorkerNavigator::Create(user_agent_, GetExecutionContext());
   return navigator_.Get();
 }
 

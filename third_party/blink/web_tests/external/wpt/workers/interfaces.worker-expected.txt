@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 161 tests; 151 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 161 tests; 157 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object
 PASS EventTarget interface object length
 PASS EventTarget interface object name
@@ -21,7 +21,7 @@ PASS WorkerGlobalScope interface: attribute location
 PASS WorkerGlobalScope interface: attribute navigator
 PASS WorkerGlobalScope interface: operation importScripts(USVString)
 PASS WorkerGlobalScope interface: attribute onerror
-FAIL WorkerGlobalScope interface: attribute onlanguagechange assert_true: The prototype object must have a property "onlanguagechange" expected true got false
+PASS WorkerGlobalScope interface: attribute onlanguagechange
 FAIL WorkerGlobalScope interface: attribute onoffline assert_true: The prototype object must have a property "onoffline" expected true got false
 FAIL WorkerGlobalScope interface: attribute ononline assert_true: The prototype object must have a property "ononline" expected true got false
 PASS WorkerGlobalScope interface: attribute onrejectionhandled
@@ -72,7 +72,7 @@ PASS WorkerGlobalScope interface: self must inherit property "navigator" with th
 PASS WorkerGlobalScope interface: self must inherit property "importScripts(USVString)" with the proper type
 PASS WorkerGlobalScope interface: calling importScripts(USVString) on self with too few arguments must throw TypeError
 PASS WorkerGlobalScope interface: self must inherit property "onerror" with the proper type
-FAIL WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type assert_inherits: property "onlanguagechange" not found in prototype chain
+PASS WorkerGlobalScope interface: self must inherit property "onlanguagechange" with the proper type
 FAIL WorkerGlobalScope interface: self must inherit property "onoffline" with the proper type assert_inherits: property "onoffline" not found in prototype chain
 FAIL WorkerGlobalScope interface: self must inherit property "ononline" with the proper type assert_inherits: property "ononline" not found in prototype chain
 PASS WorkerGlobalScope interface: self must inherit property "onrejectionhandled" with the proper type
@@ -115,8 +115,8 @@ PASS WorkerNavigator interface: member productSub
 PASS WorkerNavigator interface: attribute userAgent
 PASS WorkerNavigator interface: member vendor
 PASS WorkerNavigator interface: member vendorSub
-FAIL WorkerNavigator interface: attribute language assert_true: The prototype object must have a property "language" expected true got false
-FAIL WorkerNavigator interface: attribute languages assert_true: The prototype object must have a property "languages" expected true got false
+PASS WorkerNavigator interface: attribute language
+PASS WorkerNavigator interface: attribute languages
 PASS WorkerNavigator interface: attribute onLine
 PASS WorkerNavigator interface: attribute hardwareConcurrency
 PASS WorkerNavigator must be primary interface of self.navigator
@@ -130,8 +130,8 @@ PASS WorkerNavigator interface: self.navigator must not have property "productSu
 PASS WorkerNavigator interface: self.navigator must inherit property "userAgent" with the proper type
 PASS WorkerNavigator interface: self.navigator must not have property "vendor"
 PASS WorkerNavigator interface: self.navigator must not have property "vendorSub"
-FAIL WorkerNavigator interface: self.navigator must inherit property "language" with the proper type assert_inherits: property "language" not found in prototype chain
-FAIL WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type assert_inherits: property "languages" not found in prototype chain
+PASS WorkerNavigator interface: self.navigator must inherit property "language" with the proper type
+PASS WorkerNavigator interface: self.navigator must inherit property "languages" with the proper type
 PASS WorkerNavigator interface: self.navigator must inherit property "onLine" with the proper type
 PASS WorkerNavigator interface: self.navigator must inherit property "hardwareConcurrency" with the proper type
 PASS WorkerLocation interface: existence and properties of interface object

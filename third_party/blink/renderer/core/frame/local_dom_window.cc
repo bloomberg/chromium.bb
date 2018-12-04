@@ -282,7 +282,7 @@ void LocalDOMWindow::ClearDocument() {
 
 void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
-    navigator_->SetLanguagesChanged();
+    navigator_->SetLanguagesDirty();
 
   DispatchEvent(*Event::Create(event_type_names::kLanguagechange));
 }

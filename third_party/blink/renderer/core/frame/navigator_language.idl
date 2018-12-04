@@ -9,5 +9,5 @@
     Exposed=(Window,Worker)
 ] interface NavigatorLanguage {
     readonly attribute DOMString language;
-    [CachedAttribute=hasLanguagesChanged] readonly attribute FrozenArray<DOMString> languages;
+    [CachedAttribute=IsLanguagesDirty] readonly attribute FrozenArray<DOMString> languages;
 };

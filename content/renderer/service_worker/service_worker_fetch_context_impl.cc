@@ -49,7 +49,8 @@ void ServiceWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
   terminate_sync_load_event_ = terminate_sync_load_event;
 }
 
-void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
+void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
+    blink::AcceptLanguagesWatcher* watcher) {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
@@ -67,6 +68,8 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
             network::SharedURLLoaderFactory::Create(
                 std::move(script_loader_factory_info_)));
   }
+
+  accept_languages_watcher_ = watcher;
 }
 
 blink::WebURLLoaderFactory*
@@ -135,7 +138,14 @@ ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
 
 void ServiceWorkerFetchContextImpl::NotifyUpdate(
     const RendererPreferences& new_prefs) {
+  DCHECK(accept_languages_watcher_);
+  if (renderer_preferences_.accept_languages != new_prefs.accept_languages)
+    accept_languages_watcher_->NotifyUpdate();
   renderer_preferences_ = new_prefs;
+}
+
+blink::WebString ServiceWorkerFetchContextImpl::GetAcceptLanguages() const {
+  return blink::WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
 
 }  // namespace content

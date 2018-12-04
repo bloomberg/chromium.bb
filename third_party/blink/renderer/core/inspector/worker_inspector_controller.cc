@@ -110,7 +110,7 @@ void WorkerInspectorController::AttachSession(DevToolsSession* session,
   session->Append(MakeGarbageCollected<InspectorLogAgent>(
       thread_->GetConsoleMessageStorage(), nullptr, session->V8Session()));
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
-    DCHECK(scope->EnsureFetcher());
+    scope->EnsureFetcher();
     session->Append(MakeGarbageCollected<InspectorNetworkAgent>(
         inspected_frames_.Get(), scope, session->V8Session()));
     session->Append(MakeGarbageCollected<InspectorEmulationAgent>(nullptr));
