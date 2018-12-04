@@ -18,7 +18,6 @@
 #include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -221,7 +220,8 @@ class FormDataImporterTestBase {
   // The temporary directory should be deleted at the end to ensure that
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;

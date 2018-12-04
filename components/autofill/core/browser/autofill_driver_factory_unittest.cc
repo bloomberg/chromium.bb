@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,7 +98,8 @@ class AutofillDriverFactoryTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;  // For TestAutofillDriver.
+  // For TestAutofillDriver.
+  base::test::ScopedTaskEnvironment task_environment_;
 
   MockAutofillClient client_;
 

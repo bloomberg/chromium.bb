@@ -4,9 +4,9 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/content/common/test_autofill_types.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
@@ -268,7 +268,7 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   mojo::BindingSet<TypeTraitsTest> bindings_;
 };

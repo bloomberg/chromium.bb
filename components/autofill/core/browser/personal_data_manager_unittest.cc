@@ -18,7 +18,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -424,7 +424,8 @@ class PersonalDataManagerTestBase {
   // The temporary directory should be deleted at the end to ensure that
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   identity::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;

@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -115,7 +115,7 @@ class FullCardRequestTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockPersonalDataManager personal_data_;
   MockResultDelegate result_delegate_;
   MockUIDelegate ui_delegate_;

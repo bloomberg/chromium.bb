@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -142,7 +142,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
     last_error_ = error;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   syncer::StartCallbackMock start_callback_;
   syncer::SyncApiComponentFactoryMock profile_sync_factory_;
