@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_pool.h"
@@ -23,11 +24,7 @@ AudioRendererMixerInput::AudioRendererMixerInput(
     : mixer_pool_(mixer_pool),
       owner_id_(owner_id),
       device_id_(device_id),
-      latency_(latency),
-      error_cb_(base::BindRepeating(&AudioRendererMixerInput::OnRenderError,
-                                    // Unretained is safe here because Stop()
-                                    // must always be called before destruction.
-                                    base::Unretained(this))) {
+      latency_(latency) {
   DCHECK(mixer_pool_);
 }
 
@@ -73,7 +70,7 @@ void AudioRendererMixerInput::Start() {
                                  std::move(sink_));
 
   // Note: OnRenderError() may be called immediately after this call returns.
-  mixer_->AddErrorCallback(error_cb_);
+  mixer_->AddErrorCallback(this);
 }
 
 void AudioRendererMixerInput::Stop() {
@@ -82,10 +79,7 @@ void AudioRendererMixerInput::Stop() {
   Pause();
 
   if (mixer_) {
-    // TODO(dalecurtis): This is required so that |callback_| isn't called after
-    // Stop() by an error event since it may outlive this ref-counted object. We
-    // should instead have sane ownership semantics: http://crbug.com/151051
-    mixer_->RemoveErrorCallback(error_cb_);
+    mixer_->RemoveErrorCallback(this);
     mixer_pool_->ReturnMixer(mixer_);
     mixer_ = nullptr;
   }
@@ -122,10 +116,11 @@ OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
 
 void AudioRendererMixerInput::GetOutputDeviceInfoAsync(
     OutputDeviceInfoCB info_cb) {
-  // If we device information and for a current sink or mixer, just return it
-  // immediately.
+  // If we have device information for a current sink or mixer, just return it
+  // immediately. Per the AudioRendererSink API contract, this must be posted.
   if (device_info_.has_value() && (sink_ || mixer_)) {
-    std::move(info_cb).Run(*device_info_);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(info_cb), *device_info_));
     return;
   }
 
@@ -134,9 +129,12 @@ void AudioRendererMixerInput::GetOutputDeviceInfoAsync(
   // has changed (which may occur due to browser side device changes).
   device_info_.reset();
 
-  // If we don't have a sink yet start the process of getting one. Retain a ref
-  // to this sink to ensure it is not destructed while this occurs.
+  // If we don't have a sink yet start the process of getting one.
   sink_ = mixer_pool_->GetSink(owner_id_, device_id_);
+
+  // Retain a ref to this sink to ensure it is not destructed while this occurs.
+  // The callback is guaranteed to execute on this thread, so there are no
+  // threading issues.
   sink_->GetOutputDeviceInfoAsync(
       base::BindOnce(&AudioRendererMixerInput::OnDeviceInfoReceived,
                      base::RetainedRef(this), std::move(info_cb)));
@@ -160,9 +158,12 @@ void AudioRendererMixerInput::SwitchOutputDevice(
 
   // Request a new sink using the new device id. This process may fail, so to
   // avoid interrupting working audio, don't set any class variables until we
-  // know it's a success. Retain a ref to this sink to ensure it is not
-  // destructed while this occurs.
+  // know it's a success.
   auto new_sink = mixer_pool_->GetSink(owner_id_, device_id);
+
+  // Retain a ref to this sink to ensure it is not destructed while this occurs.
+  // The callback is guaranteed to execute on this thread, so there are no
+  // threading issues.
   new_sink->GetOutputDeviceInfoAsync(
       base::BindOnce(&AudioRendererMixerInput::OnDeviceSwitchReady,
                      base::RetainedRef(this), std::move(callback), new_sink));

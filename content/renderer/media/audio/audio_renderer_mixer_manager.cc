@@ -211,7 +211,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       GetMixerOutputParams(input_params, sink_info.output_params(), latency);
   media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
       mixer_output_params, std::move(sink),
-      base::BindRepeating(LogMixerUmaHistogram, latency));
+      base::BindRepeating(&LogMixerUmaHistogram, latency));
   mixers_[key] = {mixer, 1};
   DVLOG(1) << __func__ << " mixer: " << mixer << " latency: " << latency
            << "\n input: " << input_params.AsHumanReadableString()

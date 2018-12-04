@@ -60,16 +60,13 @@ class CONTENT_EXPORT AudioRendererMixerManager
       media::AudioLatency::LatencyType latency);
 
   // AudioRendererMixerPool implementation.
-
   media::AudioRendererMixer* GetMixer(
       int source_render_frame_id,
       const media::AudioParameters& input_params,
       media::AudioLatency::LatencyType latency,
       const media::OutputDeviceInfo& sink_info,
       scoped_refptr<media::AudioRendererSink> sink) final;
-
   void ReturnMixer(media::AudioRendererMixer* mixer) final;
-
   scoped_refptr<media::AudioRendererSink> GetSink(
       int source_render_frame_id,
       const std::string& device_id) final;
