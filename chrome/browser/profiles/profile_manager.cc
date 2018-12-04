@@ -99,6 +99,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1678,12 +1679,18 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       // in.
       if (signin_util::IsForceSigninEnabled() && was_authenticated_status &&
           !entry->IsAuthenticated()) {
+        auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
+
+        // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+        DCHECK(account_mutator);
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
-                &identity::IdentityManager::ClearPrimaryAccount,
-                base::Unretained(identity_manager),
-                identity::IdentityManager::ClearAccountTokensAction::kRemoveAll,
+                base::IgnoreResult(
+                    &identity::PrimaryAccountMutator::ClearPrimaryAccount),
+                base::Unretained(account_mutator),
+                identity::PrimaryAccountMutator::ClearAccountsAction::
+                    kRemoveAll,
                 signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
                 signin_metrics::SignoutDelete::IGNORE_METRIC));
       }

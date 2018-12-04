@@ -72,6 +72,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -674,12 +675,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           browser_sync::ProfileSyncService::SyncEvent(
               browser_sync::ProfileSyncService::STOP_FROM_OPTIONS);
         }
-        IdentityManagerFactory::GetForProfile(browser_->profile())
-            ->ClearPrimaryAccount(
-                identity::IdentityManager::ClearAccountTokensAction::kDefault,
-                signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                signin_metrics::SignoutDelete::IGNORE_METRIC);
-        ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+
+        // GetPrimaryAccountMutator() might return nullptr on some platforms.
+        if (auto* account_mutator =
+                IdentityManagerFactory::GetForProfile(browser_->profile())
+                    ->GetPrimaryAccountMutator()) {
+          account_mutator->ClearPrimaryAccount(
+              identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+              signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+              signin_metrics::SignoutDelete::IGNORE_METRIC);
+          ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
+        }
         break;
       case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
         NOTREACHED();

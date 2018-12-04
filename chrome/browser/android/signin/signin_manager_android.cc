@@ -49,6 +49,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 using base::android::JavaParamRef;
 using bookmarks::BookmarkModel;
@@ -219,8 +220,13 @@ void SigninManagerAndroid::OnSignInCompleted(
 void SigninManagerAndroid::SignOut(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jint signoutReason) {
-  IdentityManagerFactory::GetForProfile(profile_)->ClearPrimaryAccount(
-      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+  auto* account_mutator = IdentityManagerFactory::GetForProfile(profile_)
+                              ->GetPrimaryAccountMutator();
+
+  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+  DCHECK(account_mutator);
+  account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       static_cast<signin_metrics::ProfileSignout>(signoutReason),
       // Always use IGNORE_METRIC for the profile deletion argument. Chrome
       // Android has just a single-profile which is never deleted upon

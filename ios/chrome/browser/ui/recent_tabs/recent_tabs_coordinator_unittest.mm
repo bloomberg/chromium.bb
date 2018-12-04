@@ -24,6 +24,7 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
@@ -135,8 +136,13 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     if (signedIn) {
       identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
     } else if (identity_test_env_.identity_manager()->HasPrimaryAccount()) {
-      identity_test_env_.identity_manager()->ClearPrimaryAccount(
-          identity::IdentityManager::ClearAccountTokensAction::kDefault,
+      auto* account_mutator =
+          identity_test_env_.identity_manager()->GetPrimaryAccountMutator();
+
+      // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+      DCHECK(account_mutator);
+      account_mutator->ClearPrimaryAccount(
+          identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
     }

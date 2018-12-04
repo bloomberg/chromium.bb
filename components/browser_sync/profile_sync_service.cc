@@ -59,6 +59,7 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using syncer::DataTypeController;
@@ -1111,8 +1112,12 @@ void ProfileSyncService::OnActionableError(
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
       if (!IsLocalSyncEnabled()) {
-        identity_manager_->ClearPrimaryAccount(
-            identity::IdentityManager::ClearAccountTokensAction::kDefault,
+        auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
+
+        // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+        DCHECK(account_mutator);
+        account_mutator->ClearPrimaryAccount(
+            identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
             signin_metrics::SERVER_FORCED_DISABLE,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
