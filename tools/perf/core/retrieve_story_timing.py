@@ -83,7 +83,28 @@ ORDER BY
 """
 
 
+_BQ_SETUP_INSTRUCTION = """
+** NOTE: this script is only for Googlers to use. **
+
+bq script isn't found on your machine. To run this script, you need to be able
+to run bigquery in your terminal.
+If this is the first time you run the script, do the following steps:
+
+1) Follow the steps at https://cloud.google.com/sdk/docs/ to download and
+   unpack google-cloud-sdk in your home directory.
+2) Run `gcloud auth login`
+3) Run `gcloud config set project test-results-hrd`
+   3a) If 'test-results-hrd' does not show up, contact chops-data@
+       to be added as a user of the table
+4) Run this script!
+"""
+
+
 def _run_query(query):
+  try:
+    subprocess.check_call(['which', 'bq'])
+  except subprocess.CalledProcessError:
+    raise RuntimeError(_BQ_SETUP_INSTRUCTION)
   args = ["bq", "query", "--format=json", "--max_rows=100000", query]
 
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -139,18 +160,6 @@ _FETCH_BENCHMARK_RUNTIME = 'fetch-benchmark-runtime'
 _FETCH_STORY_RUNTIME = 'fetch-story-runtime'
 
 def main(args):
-  """
-    To run this script, you need to be able to run bigquery in your terminal.
-    If this is the first time you run the script, do the following steps:
-
-    1) Follow the steps at https://cloud.google.com/sdk/docs/ to download and
-       unpack google-cloud-sdk in your home directory.
-    2) Run `glcoud auth login`
-    3) Run `gcloud config set project test-results-hrd`
-       3a) If 'test-results-hrd' does not show up, contact seanmccullough@
-           to be added as a user of the table
-    4) Run this script!
-  """
   parser = argparse.ArgumentParser(
       description='Retrieve story timing from bigquery.')
   parser.add_argument('action',
