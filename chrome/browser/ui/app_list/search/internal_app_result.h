@@ -32,6 +32,9 @@ class AppContextMenu;
 
 class InternalAppResult : public AppResult {
  public:
+  static void RecordShowHistogram(const std::string& app_id);
+  static void RecordOpenHistogram(const std::string& app_id);
+
   InternalAppResult(Profile* profile,
                     const std::string& app_id,
                     AppListControllerDelegate* controller,

@@ -29,8 +29,6 @@ class AppServiceAppItem : public ChromeAppListItem {
 
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
-  apps::mojom::AppType app_type_;
-
   base::WeakPtrFactory<AppServiceAppItem> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppItem);

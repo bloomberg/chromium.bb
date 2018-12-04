@@ -41,7 +41,10 @@ class ExtensionApps : public apps::mojom::Publisher,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 LoadIconCallback callback) override;
-  void Launch(const std::string& app_id, int32_t event_flags) override;
+  void Launch(const std::string& app_id,
+              int32_t event_flags,
+              apps::mojom::LaunchSource launch_source,
+              int64_t display_id) override;
 
   // extensions::ExtensionRegistryObserver overrides.
   // TODO(crbug.com/826982): implement.

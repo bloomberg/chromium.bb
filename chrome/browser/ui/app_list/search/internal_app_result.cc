@@ -23,19 +23,20 @@
 
 namespace app_list {
 
-namespace {
+// TODO(crbug.com/826982): move UMA_HISTOGRAM_ENUMERATION code to
+// built_in_chromeos_apps.cc when the AppService feature is enabled by default.
 
-void RecordShowHistogram(InternalAppName name) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppListSearchResultInternalApp.Show", name);
+// static
+void InternalAppResult::RecordShowHistogram(const std::string& app_id) {
+  InternalAppName name = GetInternalAppNameByAppId(app_id);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show", name);
 }
 
-void RecordOpenHistogram(InternalAppName name) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppListSearchResultInternalApp.Open", name);
+// static
+void InternalAppResult::RecordOpenHistogram(const std::string& app_id) {
+  InternalAppName name = GetInternalAppNameByAppId(app_id);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Open", name);
 }
-
-}  // namespace
 
 InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
@@ -60,7 +61,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
   }
 
-  RecordShowHistogram(GetInternalAppNameByAppId(app_id));
+  RecordShowHistogram(app_id);
 }
 
 InternalAppResult::~InternalAppResult() = default;
@@ -74,7 +75,7 @@ void InternalAppResult::Open(int event_flags) {
   if (display_type() != DisplayType::kRecommendation)
     RecordHistogram(APP_SEARCH_RESULT);
 
-  RecordOpenHistogram(GetInternalAppNameByAppId(id()));
+  RecordOpenHistogram(id());
 
   if (id() == kInternalAppIdContinueReading &&
       url_for_continuous_reading_.is_valid()) {

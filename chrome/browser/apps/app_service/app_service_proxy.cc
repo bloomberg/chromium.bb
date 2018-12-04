@@ -69,9 +69,14 @@ void AppServiceProxy::LoadIcon(
   }
 }
 
-void AppServiceProxy::Launch(const std::string& app_id, int32_t event_flags) {
-  cache_.ForOneApp(app_id, [this, event_flags](const apps::AppUpdate& update) {
-    app_service_->Launch(update.AppType(), update.AppId(), event_flags);
+void AppServiceProxy::Launch(const std::string& app_id,
+                             int32_t event_flags,
+                             apps::mojom::LaunchSource launch_source,
+                             int64_t display_id) {
+  cache_.ForOneApp(app_id, [this, event_flags, launch_source,
+                            display_id](const apps::AppUpdate& update) {
+    app_service_->Launch(update.AppType(), update.AppId(), event_flags,
+                         launch_source, display_id);
   });
 }
 

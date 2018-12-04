@@ -17,7 +17,6 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "ui/display/types/display_constants.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
 // uninstalled. ExtensionApps should implement extensions::InstallObserver and
@@ -36,6 +35,22 @@
 // to plumb this all the way through the Mojo methods, as AFAICT it's only used
 // for populating the context menu, which is done on the app publisher side
 // (i.e. in this C++ file) and not at all on the app subscriber side.
+
+namespace {
+
+ash::ShelfLaunchSource ConvertLaunchSource(
+    apps::mojom::LaunchSource launch_source) {
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+      return ash::LAUNCH_FROM_UNKNOWN;
+    case apps::mojom::LaunchSource::kFromAppList:
+      return ash::LAUNCH_FROM_APP_LIST;
+    case apps::mojom::LaunchSource::kFromAppListSearch:
+      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
+  }
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -91,7 +106,10 @@ void ExtensionApps::LoadIcon(const std::string& app_id,
   std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
-void ExtensionApps::Launch(const std::string& app_id, int32_t event_flags) {
+void ExtensionApps::Launch(const std::string& app_id,
+                           int32_t event_flags,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id) {
   if (!profile_) {
     return;
   }
@@ -104,26 +122,20 @@ void ExtensionApps::Launch(const std::string& app_id, int32_t event_flags) {
     return;
   }
 
-  // TODO(crbug.com/826982): add an arg to the Publisher.Launch Mojo method so
-  // that we can discriminate, here, between launching via the app list main
-  // view, launching via the app list search box, or launching via some other
-  // mechanism, such as the shelf.
-  //
-  // See also the UMA histogram mechanism in app_service_app_item.cc.
-  ash::ShelfLaunchSource launch_source = ash::LAUNCH_FROM_APP_LIST;
-
-  // TODO(crbug.com/826982): similarly, thread a display_id arg through the
-  // Publisher.Launch Mojo method.
-  int64_t display_id = display::kInvalidDisplayId;
-
-  if (launch_source == ash::LAUNCH_FROM_APP_LIST) {
-    extensions::RecordAppListMainLaunch(extension);
-  } else {
-    // TODO, as per above.
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+      break;
+    case apps::mojom::LaunchSource::kFromAppList:
+      extensions::RecordAppListMainLaunch(extension);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListSearch:
+      extensions::RecordAppListSearchLaunch(extension);
+      break;
   }
 
   ChromeLauncherController::instance()->LaunchApp(
-      ash::ShelfID(app_id), launch_source, event_flags, display_id);
+      ash::ShelfID(app_id), ConvertLaunchSource(launch_source), event_flags,
+      display_id);
 }
 
 apps::mojom::AppPtr ExtensionApps::Convert(
