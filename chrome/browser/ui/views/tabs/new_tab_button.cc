@@ -290,9 +290,13 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 }
 
 void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
+  const SkColor background_color =
+      tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
+
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(tab_strip_->GetTabForegroundColor(TAB_INACTIVE));
+  flags.setColor(
+      tab_strip_->GetTabForegroundColor(TAB_INACTIVE, background_color));
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);

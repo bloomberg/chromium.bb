@@ -1266,13 +1266,13 @@ SkColor TabStrip::GetTabBackgroundColor(
   return color_utils::GetResultingPaintColor(background, frame);
 }
 
-SkColor TabStrip::GetTabForegroundColor(TabState tab_state) const {
+SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
+                                        SkColor background_color) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     return SK_ColorBLACK;
 
   const bool is_active_frame = ShouldPaintAsActiveFrame();
-  const SkColor background_color = GetTabBackgroundColor(tab_state);
 
   // This color varies based on the tab and frame active states.
   SkColor default_color;
@@ -1297,7 +1297,7 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state) const {
     }
   }
 
-  if (!ShouldPaintAsActiveFrame()) {
+  if (!is_active_frame) {
     // For inactive frames, we draw text at 75%.
     constexpr SkAlpha inactive_alpha = 0.75 * SK_AlphaOPAQUE;
     default_color = color_utils::AlphaBlend(default_color, background_color,
@@ -2305,7 +2305,8 @@ void TabStrip::UpdateContrastRatioValues() {
   // The contrast ratio for the separator between inactive tabs.
   // In the default color scheme, this corresponds to a separator opacity of
   // 0.46.
-  const SkColor text_color = GetTabForegroundColor(TAB_INACTIVE);
+  const SkColor text_color =
+      GetTabForegroundColor(TAB_INACTIVE, inactive_tab_bg_color);
   constexpr float kTabSeparatorRatio = 1.84f;
   const SkAlpha separator_alpha = color_utils::GetBlendValueWithMinimumContrast(
       inactive_tab_bg_color, text_color, inactive_tab_bg_color,
