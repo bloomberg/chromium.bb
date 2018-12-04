@@ -32,6 +32,8 @@ void BASE_EXPORT RunStringCallbackAndroid(const JavaRef<jobject>& callback,
 void BASE_EXPORT RunByteArrayCallbackAndroid(const JavaRef<jobject>& callback,
                                              const std::vector<uint8_t>& arg);
 
+void BASE_EXPORT RunRunnableAndroid(const JavaRef<jobject>& runnable);
+
 }  // namespace android
 }  // namespace base
 

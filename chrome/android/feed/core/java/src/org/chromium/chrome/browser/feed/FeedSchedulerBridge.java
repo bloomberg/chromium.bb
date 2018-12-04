@@ -12,7 +12,6 @@ import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
 import com.google.android.libraries.feed.host.scheduler.SchedulerApi;
 import com.google.search.now.wire.feed.FeedQueryProto.FeedQuery.RequestReason;
 
-import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -114,8 +113,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
     @Override
     public void onFixedTimer(Runnable onCompletion) {
         assert mNativeBridge != 0;
-        // Convert to single argument Callback to make invoking from native more convenient.
-        nativeOnFixedTimer(mNativeBridge, (Void ignored) -> onCompletion.run());
+        nativeOnFixedTimer(mNativeBridge, onCompletion);
     }
 
     @Override
@@ -159,8 +157,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private native void nativeOnRequestError(
             long nativeFeedSchedulerBridge, int networkResponseCode);
     private native void nativeOnForegrounded(long nativeFeedSchedulerBridge);
-    private native void nativeOnFixedTimer(
-            long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
+    private native void nativeOnFixedTimer(long nativeFeedSchedulerBridge, Runnable onCompletion);
     private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
     private native void nativeOnArticlesCleared(
             long nativeFeedSchedulerBridge, boolean suppressRefreshes);
