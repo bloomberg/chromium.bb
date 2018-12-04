@@ -107,10 +107,9 @@ liblouis.lou_charToDots.argtypes = (
     c_char_p, POINTER(c_char), POINTER(c_char), 
          c_int, c_int)
 
-logcallback = _functype(None, c_int, c_char_p)
+LogCallback = _functype(None, c_int, c_char_p)
 
 liblouis.lou_registerLogCallback.restype = None
-liblouis.lou_registerLogCallback.argtypes = (logcallback,)
 
 liblouis.lou_setLogLevel.restype = None
 liblouis.lou_setLogLevel.argtypes = (c_int,)
@@ -390,10 +389,10 @@ def charToDots(tableList, inbuf, mode=0):
         raise RuntimeError("Can't convert char to dots: tables %s, inbuf %s, mode %d"%(tableList, inbuf, mode))
     return outbuf.raw[:length.value * wideCharBytes].decode(conversionEncoding)
 
-def registerLogCallback(logcallback):
+def registerLogCallback(logCallback):
     """Register logging callbacks.
     Set to C{None} for default callback.
-    @param logcallback: The callback to use.
+    @param logCallback: The callback to use.
         The callback must take two arguments:
         @param level: The log level on which a message is logged.
         @type level: int
@@ -403,13 +402,15 @@ def registerLogCallback(logcallback):
 
         Example callback:
 
-        @louis.logcallback
+        @louis.LogCallback
         def incomingLouisLog(level, message):
             print("Message %s logged at level %d" % (message.decode("ASCII"), level))
 
-    @type logcallback: L{logcallback}
+    @type logCallback: L{LogCallback}
     """
-    return liblouis.lou_registerLogCallback(logcallback)
+    if logCallback is not None and not isinstance(logCallback, LogCallback):
+        raise TypeError("logCallback should be of type {} or NoneType".format(LogCallback.__name__))
+    return liblouis.lou_registerLogCallback(logCallback)
 
 def setLogLevel(level):
 	"""Set the level for logging callback to be called at.
