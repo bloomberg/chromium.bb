@@ -7,7 +7,7 @@ cr.define('ntp', function() {
 
   // We can't pass the currently dragging tile via dataTransfer because of
   // http://crbug.com/31037
-  var currentlyDraggingTile = null;
+  let currentlyDraggingTile = null;
   function getCurrentlyDraggingTile() {
     return currentlyDraggingTile;
   }
@@ -39,7 +39,7 @@ cr.define('ntp', function() {
    * @extends {HTMLDivElement}
    */
   function Tile(contents) {
-    var tile = cr.doc.createElement('div');
+    const tile = cr.doc.createElement('div');
     tile.__proto__ = Tile.prototype;
     tile.initialize(contents);
 
@@ -126,8 +126,9 @@ cr.define('ntp', function() {
 
       this.classList.add('dragging');
       // offsetLeft is mirrored in RTL. Un-mirror it.
-      var offsetLeft = isRTL() ? this.parentNode.clientWidth - this.offsetLeft :
-                                 this.offsetLeft;
+      const offsetLeft = isRTL() ?
+          this.parentNode.clientWidth - this.offsetLeft :
+          this.offsetLeft;
       this.dragOffsetX = e.x - offsetLeft - this.parentNode.offsetLeft;
       this.dragOffsetY = e.y - this.offsetTop -
           // Unlike offsetTop, this value takes scroll position into account.
@@ -164,7 +165,7 @@ cr.define('ntp', function() {
       setCurrentlyDraggingTile(null);
 
       // tilePage will be null if we've already been removed.
-      var tilePage = this.tilePage;
+      const tilePage = this.tilePage;
       if (tilePage)
         tilePage.positionTile_(this.index);
 
@@ -180,9 +181,9 @@ cr.define('ntp', function() {
           this.dragClone.hidden = false;
           // The tile's contents may have moved following the respositioning;
           // adjust for that.
-          var contentDiffX =
+          const contentDiffX =
               this.dragClone.firstChild.offsetLeft - this.firstChild.offsetLeft;
-          var contentDiffY =
+          const contentDiffY =
               this.dragClone.firstChild.offsetTop - this.firstChild.offsetTop;
           this.dragClone.style.left =
               toCssPx(this.gridX + this.parentNode.offsetLeft - contentDiffX);
@@ -222,11 +223,11 @@ cr.define('ntp', function() {
       // style updates for the contents of this tile.
       this.clearDoppleganger();
 
-      var clone = this.cloneNode(true);
+      const clone = this.cloneNode(true);
       clone.classList.remove('real');
       clone.classList.add('doppleganger');
-      var clonelets = clone.querySelectorAll('.real');
-      for (var i = 0; i < clonelets.length; i++) {
+      const clonelets = clone.querySelectorAll('.real');
+      for (let i = 0; i < clonelets.length; i++) {
         clonelets[i].classList.remove('real');
       }
 
@@ -267,7 +268,7 @@ cr.define('ntp', function() {
     finalizeDrag_: function() {
       assert(this.classList.contains('dragging'));
 
-      var clone = this.dragClone;
+      const clone = this.dragClone;
       this.dragClone = null;
 
       clone.parentNode.removeChild(clone);
@@ -334,9 +335,10 @@ cr.define('ntp', function() {
    * @return {Object} A mapping of pixel values.
    */
   function tileValuesForGrid(width, numRowTiles, tileSpacingFraction) {
-    var tileWidth = width / tileWidthFraction(numRowTiles, tileSpacingFraction);
-    var offsetX = tileWidth * (1 + tileSpacingFraction);
-    var interTileSpacing = offsetX - tileWidth;
+    const tileWidth =
+        width / tileWidthFraction(numRowTiles, tileSpacingFraction);
+    const offsetX = tileWidth * (1 + tileSpacingFraction);
+    const interTileSpacing = offsetX - tileWidth;
 
     return {
       tileWidth: tileWidth,
@@ -348,7 +350,7 @@ cr.define('ntp', function() {
   // The smallest amount of horizontal blank space to display on the sides when
   // displaying a wide arrangement. There is an additional 26px of margin from
   // the tile page padding.
-  var MIN_WIDE_MARGIN = 18;
+  const MIN_WIDE_MARGIN = 18;
 
   /**
    * Creates a new TilePage object. This object contains tiles and controls
@@ -360,7 +362,7 @@ cr.define('ntp', function() {
    * @implements {cr.ui.DragWrapperDelegate}
    */
   function TilePage(gridValues) {
-    var el = cr.doc.createElement('div');
+    const el = cr.doc.createElement('div');
     el.gridValues_ = gridValues;
     el.__proto__ = TilePage.prototype;
     el.initialize();
@@ -559,7 +561,7 @@ cr.define('ntp', function() {
       // this.tileElements_ or at the end (meaning append).
       assert(index >= 0 && index <= this.tileElements_.length);
 
-      var wrapperDiv = new Tile(tileElement);
+      const wrapperDiv = new Tile(tileElement);
       // If is out of the bounds of the tile element list, .insertBefore() will
       // act just like appendChild().
       this.tileGrid_.insertBefore(wrapperDiv, this.tileElements_[index]);
@@ -582,7 +584,7 @@ cr.define('ntp', function() {
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
     fireAddedEvent: function(tile, index, wasAnimated) {
-      var e = document.createEvent('Event');
+      const e = document.createEvent('Event');
       e.initEvent('tilePage:tile_added', true, true);
       e.addedIndex = index;
       e.addedTile = tile;
@@ -600,7 +602,7 @@ cr.define('ntp', function() {
       if (opt_animate)
         this.classList.add('animating-tile-page');
 
-      var index = tile.index;
+      const index = tile.index;
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();
       this.cleanupDrag();
@@ -618,7 +620,7 @@ cr.define('ntp', function() {
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
     fireRemovedEvent: function(tile, oldIndex, wasAnimated) {
-      var e = document.createEvent('Event');
+      const e = document.createEvent('Event');
       e.initEvent('tilePage:tile_removed', true, true);
       e.removedIndex = oldIndex;
       e.removedTile = tile;
@@ -675,7 +677,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleMouseDown_: function(e) {
-      var focusable =
+      const focusable =
           findAncestorByClass(/** @type {Element} */ (e.target), 'focusable');
       if (focusable) {
         this.focusElementIndex_ =
@@ -695,29 +697,30 @@ cr.define('ntp', function() {
         return;
 
       // Wrap the given index to |this.focusableElements_|.
-      var wrap = function(idx) {
+      const wrap = function(idx) {
         return (idx + this.focusableElements_.length) %
             this.focusableElements_.length;
       }.bind(this);
 
+      let direction;
       switch (e.key) {
         case 'ArrowRight':
         case 'ArrowLeft':
-          var direction = e.key == 'ArrowRight' ? 1 : -1;
+          direction = e.key == 'ArrowRight' ? 1 : -1;
           this.focusElementIndex_ = wrap(this.focusElementIndex_ + direction);
           break;
         case 'ArrowUp':
         case 'ArrowDown':
           // Look through all focusable elements. Find the first one that is
           // in the same column.
-          var direction = e.key == 'ArrowUp' ? -1 : 1;
-          var currentIndex = Array.prototype.indexOf.call(
+          direction = e.key == 'ArrowUp' ? -1 : 1;
+          const currentIndex = Array.prototype.indexOf.call(
               this.focusableElements_, this.currentFocusElement_);
-          var newFocusIdx = wrap(currentIndex + direction);
-          var tile = this.currentFocusElement_.parentNode;
+          let newFocusIdx = wrap(currentIndex + direction);
+          const tile = this.currentFocusElement_.parentNode;
           for (;; newFocusIdx = wrap(newFocusIdx + direction)) {
-            var newTile = this.focusableElements_[newFocusIdx].parentNode;
-            var rowTiles = this.layoutValues_.numRowTiles;
+            const newTile = this.focusableElements_[newFocusIdx].parentNode;
+            const rowTiles = this.layoutValues_.numRowTiles;
             if ((newTile.index - tile.index) % rowTiles == 0)
               break;
           }
@@ -751,8 +754,8 @@ cr.define('ntp', function() {
           Math.min(this.focusableElements_.length - 1, this.focusElementIndex_);
       this.focusElementIndex_ = Math.max(0, this.focusElementIndex_);
 
-      var newFocusElement = this.focusableElements_[this.focusElementIndex_];
-      var lastFocusElement = this.currentFocusElement_;
+      const newFocusElement = this.focusableElements_[this.focusElementIndex_];
+      const lastFocusElement = this.currentFocusElement_;
       if (lastFocusElement && lastFocusElement != newFocusElement)
         lastFocusElement.tabIndex = -1;
 
@@ -787,24 +790,24 @@ cr.define('ntp', function() {
      * @private
      */
     calculateLayoutValues_: function() {
-      var grid = this.gridValues_;
-      var availableSpace = this.tileGrid_.clientWidth - 2 * MIN_WIDE_MARGIN;
-      var wide = availableSpace >= grid.minWideWidth;
-      var numRowTiles = wide ? grid.maxColCount : grid.minColCount;
+      const grid = this.gridValues_;
+      const availableSpace = this.tileGrid_.clientWidth - 2 * MIN_WIDE_MARGIN;
+      const wide = availableSpace >= grid.minWideWidth;
+      const numRowTiles = wide ? grid.maxColCount : grid.minColCount;
 
-      var effectiveGridWidth = wide ?
+      const effectiveGridWidth = wide ?
           Math.min(
               Math.max(availableSpace, grid.minWideWidth), grid.maxWideWidth) :
           grid.narrowWidth;
-      var realTileValues = tileValuesForGrid(
+      const realTileValues = tileValuesForGrid(
           effectiveGridWidth, numRowTiles, grid.tileSpacingFraction);
 
       // leftMargin centers the grid within the avaiable space.
-      var minMargin = wide ? MIN_WIDE_MARGIN : 0;
-      var leftMargin = Math.max(
+      const minMargin = wide ? MIN_WIDE_MARGIN : 0;
+      const leftMargin = Math.max(
           minMargin, (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
 
-      var rowHeight = this.heightForWidth(realTileValues.tileWidth) +
+      const rowHeight = this.heightForWidth(realTileValues.tileWidth) +
           realTileValues.interTileSpacing;
 
       this.layoutValues_ = {
@@ -839,7 +842,7 @@ cr.define('ntp', function() {
       if (this.layoutValues_.wide)
         return 0;
 
-      var grid = this.gridValues_;
+      const grid = this.gridValues_;
       return (grid.minWideWidth - MIN_WIDE_MARGIN - grid.narrowWidth) / 2;
     },
 
@@ -852,40 +855,40 @@ cr.define('ntp', function() {
      * @private
      */
     positionTile_: function(index, opt_indexOffset) {
-      var grid = this.gridValues_;
-      var layout = this.layoutValues_;
+      const grid = this.gridValues_;
+      const layout = this.layoutValues_;
 
-      var indexOffset = opt_indexOffset || 0;
+      const indexOffset = opt_indexOffset || 0;
       // Add the offset _after_ the modulus division. We might want to show the
       // tile off the side of the grid.
-      var col = index % layout.numRowTiles + indexOffset;
-      var row = Math.floor(index / layout.numRowTiles);
+      const col = index % layout.numRowTiles + indexOffset;
+      const row = Math.floor(index / layout.numRowTiles);
       // Calculate the final on-screen position for the tile.
-      var realX = col * layout.colWidth + layout.leftMargin;
-      var realY = row * layout.rowHeight;
+      const realX = col * layout.colWidth + layout.leftMargin;
+      const realY = row * layout.rowHeight;
 
       // Calculate the portion of the tile's position that should be animated.
-      var animatedTileValues =
+      const animatedTileValues =
           layout.wide ? grid.wideTileValues : grid.narrowTileValues;
       // Animate the difference between three-wide and six-wide.
-      var animatedLeftMargin = this.getAnimatedLeftMargin_();
-      var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
-      var animatedY = row *
+      const animatedLeftMargin = this.getAnimatedLeftMargin_();
+      const animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
+      const animatedY = row *
           (this.heightForWidth(animatedTileValues.tileWidth) +
            animatedTileValues.interTileSpacing);
 
-      var tile = this.tileElements_[index];
+      const tile = this.tileElements_[index];
       tile.setGridPosition(animatedX, animatedY);
       tile.firstChild.setBounds(
           layout.tileWidth, realX - animatedX, realY - animatedY);
 
       // This code calculates whether the tile needs to show a clone of itself
       // wrapped around the other side of the tile grid.
-      var offTheRight = col == layout.numRowTiles ||
+      const offTheRight = col == layout.numRowTiles ||
           (col == layout.numRowTiles - 1 && tile.hasDoppleganger());
-      var offTheLeft = col == -1 || (col == 0 && tile.hasDoppleganger());
+      const offTheLeft = col == -1 || (col == 0 && tile.hasDoppleganger());
       if (this.isCurrentDragTarget && (offTheRight || offTheLeft)) {
-        var sign = offTheRight ? 1 : -1;
+        const sign = offTheRight ? 1 : -1;
         tile.showDoppleganger(
             -layout.numRowTiles * layout.colWidth * sign,
             layout.rowHeight * sign);
@@ -912,11 +915,11 @@ cr.define('ntp', function() {
      * @private
      */
     getWouldBeIndexForPoint_: function(x, y) {
-      var grid = this.gridValues_;
-      var layout = this.layoutValues_;
+      const grid = this.gridValues_;
+      const layout = this.layoutValues_;
 
-      var gridClientRect = this.tileGrid_.getBoundingClientRect();
-      var col = Math.floor(
+      const gridClientRect = this.tileGrid_.getBoundingClientRect();
+      let col = Math.floor(
           (x - gridClientRect.left - layout.leftMargin) / layout.colWidth);
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
@@ -924,7 +927,7 @@ cr.define('ntp', function() {
       if (isRTL())
         col = layout.numRowTiles - 1 - col;
 
-      var row = Math.floor((y - gridClientRect.top) / layout.rowHeight);
+      const row = Math.floor((y - gridClientRect.top) / layout.rowHeight);
       return row * layout.numRowTiles + col;
     },
 
@@ -960,16 +963,16 @@ cr.define('ntp', function() {
         return;
       }
 
-      var leftMargin = this.layoutValues_.leftMargin;
+      const leftMargin = this.layoutValues_.leftMargin;
       // The fade distance is the space between tiles.
-      var fadeDistance =
+      let fadeDistance =
           (this.gridValues_.tileSpacingFraction * this.layoutValues_.tileWidth);
       fadeDistance = Math.min(leftMargin, fadeDistance);
       // On Skia we don't use any fade because it works very poorly. See
       // http://crbug.com/99373
       if (!cr.isMac)
         fadeDistance = 1;
-      var gradient = '-webkit-linear-gradient(left,' +
+      const gradient = '-webkit-linear-gradient(left,' +
           'transparent, ' +
           'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
           'black ' + leftMargin + 'px, ' +
@@ -981,15 +984,15 @@ cr.define('ntp', function() {
     },
 
     updateTopMargin_: function() {
-      var layout = this.layoutValues_;
+      const layout = this.layoutValues_;
 
       // The top margin is set so that the vertical midpoint of the grid will
       // be 1/3 down the page.
-      var numTiles = this.tileCount +
+      const numTiles = this.tileCount +
           (this.isCurrentDragTarget && !this.withinPageDrag_ ? 1 : 0);
-      var numRows = Math.max(1, Math.ceil(numTiles / layout.numRowTiles));
-      var usedHeight = layout.rowHeight * numRows;
-      var newMargin = document.documentElement.clientHeight / 3 -
+      const numRows = Math.max(1, Math.ceil(numTiles / layout.numRowTiles));
+      const usedHeight = layout.rowHeight * numRows;
+      let newMargin = document.documentElement.clientHeight / 3 -
           usedHeight / 3 - this.contentPadding;
       // The 'height' style attribute of topMargin is non-zero to work around
       // webkit's collapsing margin behavior, so we have to factor that into
@@ -1100,10 +1103,10 @@ cr.define('ntp', function() {
     doUpdateScrollbars_: function() {
       this.scrollbarUpdate_ = 0;
 
-      var content = this.content_;
+      const content = this.content_;
 
       // Adjust scroll-height to account for possible header-bar.
-      var adjustedScrollHeight = content.scrollHeight - content.offsetTop;
+      const adjustedScrollHeight = content.scrollHeight - content.offsetTop;
 
       if (adjustedScrollHeight <= content.clientHeight) {
         this.scrollbar_.hidden = true;
@@ -1112,9 +1115,9 @@ cr.define('ntp', function() {
         this.scrollbar_.hidden = false;
       }
 
-      var thumbTop = content.offsetTop +
+      const thumbTop = content.offsetTop +
           content.scrollTop / adjustedScrollHeight * content.clientHeight;
-      var thumbHeight =
+      const thumbHeight =
           content.clientHeight / adjustedScrollHeight * this.clientHeight;
 
       this.scrollbar_.style.top = thumbTop + 'px';
@@ -1167,7 +1170,7 @@ cr.define('ntp', function() {
       e.preventDefault();
 
       this.setDropEffect(e.dataTransfer);
-      var newDragIndex = this.getWouldBeIndexForPoint_(e.pageX, e.pageY);
+      let newDragIndex = this.getWouldBeIndexForPoint_(e.pageX, e.pageY);
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
         newDragIndex = this.dragItemIndex_;
       this.updateDropIndicator_(newDragIndex);
@@ -1178,17 +1181,17 @@ cr.define('ntp', function() {
       e.stopPropagation();
       e.preventDefault();
 
-      var index = this.currentDropIndex_;
+      const index = this.currentDropIndex_;
       // Only change data if this was not a 'null drag'.
       if (!((index == this.dragItemIndex_) && this.withinPageDrag_)) {
-        var adjustedIndex =
+        const adjustedIndex =
             this.currentDropIndex_ + (index > this.dragItemIndex_ ? 1 : 0);
         if (this.withinPageDrag_) {
           this.tileGrid_.insertBefore(
               currentlyDraggingTile, this.tileElements_[adjustedIndex]);
           this.tileMoved(currentlyDraggingTile, this.dragItemIndex_);
         } else {
-          var originalPage =
+          const originalPage =
               currentlyDraggingTile ? currentlyDraggingTile.tilePage : null;
           this.addDragData(e.dataTransfer, adjustedIndex);
           if (originalPage)
@@ -1210,7 +1213,7 @@ cr.define('ntp', function() {
      * from outside the page, e.g. when dropping on a nav dot.
      */
     appendDraggingTile: function() {
-      var originalPage = currentlyDraggingTile.tilePage;
+      const originalPage = currentlyDraggingTile.tilePage;
       if (originalPage == this)
         return;
 
@@ -1234,7 +1237,7 @@ cr.define('ntp', function() {
      * @private
      */
     repositionTiles_: function(opt_ignoreNode) {
-      for (var i = 0; i < this.tileElements_.length; i++) {
+      for (let i = 0; i < this.tileElements_.length; i++) {
         if (!opt_ignoreNode || opt_ignoreNode !== this.tileElements_[i])
           this.positionTile_(i);
       }
@@ -1246,21 +1249,20 @@ cr.define('ntp', function() {
      * @private
      */
     updateDropIndicator_: function(newDragIndex) {
-      var oldDragIndex = this.currentDropIndex_;
+      const oldDragIndex = this.currentDropIndex_;
       if (newDragIndex == oldDragIndex)
         return;
 
-      var repositionStart = Math.min(newDragIndex, oldDragIndex);
-      var repositionEnd = Math.max(newDragIndex, oldDragIndex);
+      const repositionStart = Math.min(newDragIndex, oldDragIndex);
+      const repositionEnd = Math.max(newDragIndex, oldDragIndex);
 
-      for (var i = repositionStart; i <= repositionEnd; i++) {
+      for (let i = repositionStart; i <= repositionEnd; i++) {
         if (i == this.dragItemIndex_)
           continue;
-        else if (i > this.dragItemIndex_)
-          var adjustment = i <= newDragIndex ? -1 : 0;
-        else
-          var adjustment = i >= newDragIndex ? 1 : 0;
 
+        const adjustment = i > this.dragItemIndex_ ?
+            i <= newDragIndex ? -1 : 0 :
+            i >= newDragIndex ? 1 : 0;
         this.positionTile_(i, adjustment);
       }
       this.currentDropIndex_ = newDragIndex;

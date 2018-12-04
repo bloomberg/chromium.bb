@@ -22,7 +22,7 @@ cr.define('ntp', function() {
    * @implements {cr.ui.DragWrapperDelegate}
    */
   function NavDot(page, title, titleIsEditable, animate) {
-    var dot = cr.doc.createElement('li');
+    const dot = cr.doc.createElement('li');
     dot.__proto__ = NavDot.prototype;
     dot.initialize(page, title, titleIsEditable, animate);
 
@@ -38,7 +38,7 @@ cr.define('ntp', function() {
 
       this.page_ = page;
 
-      var selectionBar = this.ownerDocument.createElement('div');
+      const selectionBar = this.ownerDocument.createElement('div');
       selectionBar.className = 'selection-bar';
       this.appendChild(selectionBar);
 
@@ -66,7 +66,7 @@ cr.define('ntp', function() {
 
       if (animate) {
         this.classList.add('small');
-        var self = this;
+        const self = this;
         window.setTimeout(function() {
           self.classList.remove('small');
         }, 0);
@@ -192,7 +192,7 @@ cr.define('ntp', function() {
 
     /** @override */
     doDragEnter: function(e) {
-      var self = this;
+      const self = this;
       function navPageClearTimeout() {
         self.switchToPage();
         self.dragNavTimeout = null;
@@ -216,7 +216,7 @@ cr.define('ntp', function() {
     /** @override */
     doDrop: function(e) {
       e.stopPropagation();
-      var tile = ntp.getCurrentlyDraggingTile();
+      const tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.tilePage != this.page_)
         this.page_.appendDraggingTile();
       // TODO(estade): handle non-tile drags.

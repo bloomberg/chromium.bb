@@ -34,7 +34,7 @@ cr.define('ntp', function() {
      * @return {boolean} True if we are interested in the drag data for |e|.
      */
     shouldAcceptDrag: function(e) {
-      var tile = ntp.getCurrentlyDraggingTile();
+      const tile = ntp.getCurrentlyDraggingTile();
       if (!tile)
         return false;
 
@@ -58,7 +58,7 @@ cr.define('ntp', function() {
     doDrop: function(e) {
       e.preventDefault();
 
-      var tile = ntp.getCurrentlyDraggingTile();
+      const tile = ntp.getCurrentlyDraggingTile();
       tile.firstChild.removeFromChrome();
       tile.landedOnTrash = true;
     },

@@ -28,7 +28,7 @@ Polymer({
     // TODO(pmonette): Remove these checks when they are no longer needed.
     const VARIANT_KEY = 'variant';
     const VARIANT_TYPE_MAP = {'defaultonly': false, 'combined': true};
-    var params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(location.search);
     if (params.has(VARIANT_KEY) && params.get(VARIANT_KEY) in VARIANT_TYPE_MAP)
       this.isCombined = VARIANT_TYPE_MAP[params.get(VARIANT_KEY)];
     else
@@ -42,7 +42,7 @@ Polymer({
     // The accelerated flow can be overridden with a query parameter.
     const FLOWTYPE_KEY = 'flowtype';
     const FLOW_TYPE_MAP = {'regular': false, 'accelerated': true};
-    var params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(location.search);
     if (params.has(FLOWTYPE_KEY)) {
       if (params.get(FLOWTYPE_KEY) in FLOW_TYPE_MAP) {
         this.isAccelerated = FLOW_TYPE_MAP[params.get(FLOWTYPE_KEY)];
@@ -73,9 +73,9 @@ Polymer({
   onToggle: function() {
     if (!this.isCombined)
       return;
-    var sections = this.shadowRoot.querySelectorAll('.section.expandable');
+    const sections = this.shadowRoot.querySelectorAll('.section.expandable');
     sections.forEach(function(section) {
-      var isExpanded = section.classList.toggle('expanded');
+      const isExpanded = section.classList.toggle('expanded');
       section.querySelector('[role~="button"]')
           .setAttribute('aria-expanded', isExpanded);
     });
