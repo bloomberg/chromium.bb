@@ -108,7 +108,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                            RenderWidgetHostViewBase* owner);
   void RemoveFrameSinkIdOwner(const viz::FrameSinkId& id);
 
-  bool is_registered(const viz::FrameSinkId& id) {
+  bool is_registered(const viz::FrameSinkId& id) const {
     return owner_map_.find(id) != owner_map_.end();
   }
 
