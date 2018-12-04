@@ -81,9 +81,6 @@ class NetworkPortalDetectorImplTest
       : test_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
-    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
-
     FakeChromeUserManager* user_manager = new FakeChromeUserManager();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager));

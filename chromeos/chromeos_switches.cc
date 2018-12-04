@@ -237,10 +237,6 @@ const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 
-// Disables notifications about captive portals in session.
-const char kDisableNetworkPortalNotification[] =
-    "disable-network-portal-notification";
-
 // Disables the new Korean IME in chrome://settings/languages.
 const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 
@@ -329,10 +325,6 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
-
-// Enables notifications about captive portals in session.
-const char kEnableNetworkPortalNotification[] =
-    "enable-network-portal-notification";
 
 // Enables offline demo mode. Demo mode still requires ARC++.
 const char kEnableOfflineDemoMode[] = "enable-offline-demo-mode";

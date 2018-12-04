@@ -2470,11 +2470,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "network-portal-notification",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "network-service",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
