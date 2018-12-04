@@ -3450,6 +3450,11 @@ be describing additional metrics about the same event.
       start to the time the parser started, for main frame documents.
     </summary>
   </metric>
+  <metric name="WasCached">
+    <summary>
+      Set to 1 if the main resource was served from cache.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageLoadCapping" singular="True">

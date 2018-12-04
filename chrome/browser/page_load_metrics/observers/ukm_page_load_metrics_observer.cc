@@ -72,6 +72,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     http_response_code_ = response_headers->response_code();
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
+  was_cached_ = navigation_handle->WasResponseCached();
   return CONTINUE_OBSERVING;
 }
 
@@ -296,6 +297,9 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   // info.page_end_reason fits in a uint32_t, so we can safely cast to int64_t.
   builder.SetNavigation_PageEndReason(
       static_cast<int64_t>(info.page_end_reason));
+  if (info.did_commit && was_cached_) {
+    builder.SetWasCached(1);
+  }
   builder.Record(ukm::UkmRecorder::Get());
 }
 
