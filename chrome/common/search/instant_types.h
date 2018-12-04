@@ -132,9 +132,6 @@ struct InstantMostVisitedItem {
   // is used as the title.
   base::string16 title;
 
-  // The external URL of the thumbnail associated with this page.
-  GURL thumbnail;
-
   // The external URL of the favicon associated with this page.
   GURL favicon;
 

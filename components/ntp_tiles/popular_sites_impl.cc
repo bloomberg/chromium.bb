@@ -126,8 +126,6 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
       continue;
     std::string favicon_url;
     item->GetString("favicon_url", &favicon_url);
-    std::string thumbnail_url;
-    item->GetString("thumbnail_url", &thumbnail_url);
     std::string large_icon_url;
     item->GetString("large_icon_url", &large_icon_url);
 
@@ -142,7 +140,7 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
     }
 
     sites.emplace_back(title, GURL(url), GURL(favicon_url),
-                       GURL(large_icon_url), GURL(thumbnail_url), title_source);
+                       GURL(large_icon_url), title_source);
     item->GetInteger("default_icon_resource",
                      &sites.back().default_icon_resource);
     item->GetBoolean("baked_in", &sites.back().baked_in);
@@ -252,13 +250,11 @@ PopularSites::Site::Site(const base::string16& title,
                          const GURL& url,
                          const GURL& favicon_url,
                          const GURL& large_icon_url,
-                         const GURL& thumbnail_url,
                          TileTitleSource title_source)
     : title(title),
       url(url),
       favicon_url(favicon_url),
       large_icon_url(large_icon_url),
-      thumbnail_url(thumbnail_url),
       title_source(title_source),
       baked_in(false),
       default_icon_resource(-1) {}

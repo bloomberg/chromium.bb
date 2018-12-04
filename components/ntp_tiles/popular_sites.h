@@ -31,7 +31,6 @@ class PopularSites {
          const GURL& url,
          const GURL& favicon_url,
          const GURL& large_icon_url,
-         const GURL& thumbnail_url,
          TileTitleSource title_source);
     Site(const Site& other);
     ~Site();
@@ -40,7 +39,6 @@ class PopularSites {
     GURL url;
     GURL favicon_url;
     GURL large_icon_url;
-    GURL thumbnail_url;
 
     TileTitleSource title_source;
     bool baked_in;

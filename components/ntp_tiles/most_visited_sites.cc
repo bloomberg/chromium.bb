@@ -522,7 +522,6 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     // The title is an aggregation of multiple history entries of one site.
     tile.title_source = TileTitleSource::INFERRED;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
-    tile.thumbnail_url = GURL(suggestion_pb.thumbnail());
     tile.favicon_url = GURL(suggestion_pb.favicon_url());
     tile.data_generation_time = profile_timestamp;
 
