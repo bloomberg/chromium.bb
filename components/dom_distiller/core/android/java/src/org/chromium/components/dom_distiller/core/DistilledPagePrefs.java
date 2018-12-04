@@ -5,8 +5,8 @@
 package org.chromium.components.dom_distiller.core;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeCall;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public final class DistilledPagePrefs {
         private final long mNativeDistilledPagePrefsObserverAndroidPtr;
 
         public DistilledPagePrefsObserverWrapper(Observer observer) {
-            mNativeDistilledPagePrefsObserverAndroidPtr = nativeInitObserverAndroid();
+            mNativeDistilledPagePrefsObserverAndroidPtr = nativeInitObserverAndroid(this);
             mDistilledPagePrefsObserver = observer;
         }
 
@@ -58,20 +58,20 @@ public final class DistilledPagePrefs {
         }
 
         public void destroy() {
-            nativeDestroyObserverAndroid(mNativeDistilledPagePrefsObserverAndroidPtr);
+            nativeDestroyObserverAndroid(this, mNativeDistilledPagePrefsObserverAndroidPtr);
         }
 
         public long getNativePtr() {
             return mNativeDistilledPagePrefsObserverAndroidPtr;
         }
-
-        @NativeCall("DistilledPagePrefsObserverWrapper")
-        private native long nativeInitObserverAndroid();
-
-        @NativeCall("DistilledPagePrefsObserverWrapper")
-        private native void nativeDestroyObserverAndroid(
-                long nativeDistilledPagePrefsObserverAndroid);
     }
+
+    static private native long nativeInitObserverAndroid(
+            @JCaller DistilledPagePrefsObserverWrapper caller);
+
+    static private native void nativeDestroyObserverAndroid(
+            @JCaller DistilledPagePrefsObserverWrapper caller,
+            long nativeDistilledPagePrefsObserverAndroid);
 
     DistilledPagePrefs(long distilledPagePrefsPtr) {
         mDistilledPagePrefsAndroid = nativeInit(distilledPagePrefsPtr);

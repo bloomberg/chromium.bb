@@ -122,7 +122,7 @@ void DistilledPagePrefsObserverAndroid::OnChangeFontScaling(
                                                              scaling);
 }
 
-jlong JNI_DistilledPagePrefsObserverWrapper_InitObserverAndroid(
+jlong JNI_DistilledPagePrefs_InitObserverAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DistilledPagePrefsObserverAndroid* observer_android =

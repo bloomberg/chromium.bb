@@ -112,10 +112,6 @@ static ScopedJavaLocalRef<jobjectArray> JNI_SampleForTests_GetNonPODDatatype(
   return ScopedJavaLocalRef<jobjectArray>();
 }
 
-static jint JNI_InnerClass_GetInnerIntFunction(JNIEnv*) {
-  return 0;
-}
-
 } // namespace android
 } // namespace base
 
