@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class RespondWithObserver;
 class RequestInit;
 class ScriptPromise;
@@ -50,6 +51,7 @@ class ServiceWorker;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
+class StringOrTrustedScriptURL;
 class WaitUntilObserver;
 struct GlobalScopeCreationParams;
 struct WebServiceWorkerObjectInfo;
@@ -153,7 +155,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const AddEventListenerOptionsResolved*) override;
 
  private:
-  void importScripts(const Vector<String>& urls, ExceptionState&) override;
+  void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
+                     ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       const Vector<char>* meta_data) override;

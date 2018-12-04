@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/css/font_face_set_worker.h"
@@ -51,6 +52,8 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -137,10 +140,33 @@ String WorkerGlobalScope::origin() const {
   return GetSecurityOrigin()->ToString();
 }
 
+void WorkerGlobalScope::importScripts(
+    const HeapVector<StringOrTrustedScriptURL>& urls,
+    ExceptionState& exception_state) {
+  Vector<String> string_urls;
+  for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
+    DCHECK(stringOrUrl.IsString() ||
+           RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+    if (!stringOrUrl.IsTrustedScriptURL() &&
+        GetSecurityContext().RequireTrustedTypes()) {
+      exception_state.ThrowTypeError(
+          "This worker requires `TrustedScriptURL` assignment.");
+      return;
+    }
+
+    String string_url = stringOrUrl.IsString()
+                            ? stringOrUrl.GetAsString()
+                            : stringOrUrl.GetAsTrustedScriptURL()->toString();
+    string_urls.push_back(string_url);
+  }
+  importScriptsFromStrings(string_urls, exception_state);
+}
+
 // Implementation of the "importScripts()" algorithm:
 // https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-importscripts
-void WorkerGlobalScope::importScripts(const Vector<String>& urls,
-                                      ExceptionState& exception_state) {
+void WorkerGlobalScope::importScriptsFromStrings(
+    const Vector<String>& urls,
+    ExceptionState& exception_state) {
   DCHECK(GetContentSecurityPolicy());
   DCHECK(GetExecutionContext());
 
@@ -639,6 +665,13 @@ bool WorkerGlobalScope::IsScriptFetchedOnMainThread() {
   return true;
 }
 
+TrustedTypePolicyFactory* WorkerGlobalScope::trustedTypes() {
+  if (!trusted_types_) {
+    trusted_types_ = TrustedTypePolicyFactory::Create(this);
+  }
+  return trusted_types_.Get();
+}
+
 void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);
@@ -646,6 +679,7 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
   visitor->Trace(animation_frame_provider_);
+  visitor->Trace(trusted_types_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }

@@ -1146,6 +1146,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
+[Worker] interface TrustedTypePolicyFactory
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
@@ -3467,6 +3470,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute console
 [Worker]     attribute globalThis
 [Worker]     attribute internals
+[Worker]     getter TrustedTypes
 [Worker]     getter name
 [Worker]     getter onconnect
 [Worker]     method close

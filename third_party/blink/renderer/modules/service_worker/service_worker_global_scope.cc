@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -384,12 +386,17 @@ void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerGlobalScope::Trace(visitor);
 }
 
-void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
-                                             ExceptionState& exception_state) {
+void ServiceWorkerGlobalScope::importScripts(
+    const HeapVector<StringOrTrustedScriptURL>& urls,
+    ExceptionState& exception_state) {
   InstalledScriptsManager* installed_scripts_manager =
       GetThread()->GetInstalledScriptsManager();
-  for (auto& url : urls) {
-    KURL completed_url = CompleteURL(url);
+  for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
+    String string_url = stringOrUrl.IsString()
+                            ? stringOrUrl.GetAsString()
+                            : stringOrUrl.GetAsTrustedScriptURL()->toString();
+
+    KURL completed_url = CompleteURL(string_url);
     // Bust the MemoryCache to ensure script requests reach the browser-side
     // and get added to and retrieved from the ServiceWorker's script cache.
     // FIXME: Revisit in light of the solution to crbug/388375.

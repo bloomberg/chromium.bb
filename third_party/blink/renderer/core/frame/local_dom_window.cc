@@ -289,7 +289,7 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
   if (!trusted_types_)
-    trusted_types_ = TrustedTypePolicyFactory::Create(GetFrame());
+    trusted_types_ = TrustedTypePolicyFactory::Create(GetExecutionContext());
   return trusted_types_.Get();
 }
 
