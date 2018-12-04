@@ -2236,8 +2236,8 @@
   },
   {
     "name": "force-show-update-menu-badge",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "force-tablet-mode",
@@ -2261,8 +2261,8 @@
   },
   {
     "name": "force-update-menu-type",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "gdi-text-printing",
@@ -2931,8 +2931,8 @@
   },
   {
     "name": "set-market-url-for-testing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "shared-array-buffer",
@@ -3223,8 +3223,8 @@
   },
   {
     "name": "update-menu-item-custom-summary",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
+    "expiry_milestone": -1
   },
   {
     "name": "use-angle",
