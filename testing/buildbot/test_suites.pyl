@@ -1906,6 +1906,13 @@
           '--enable-features=Mash',
         ],
       },
+      'single_process_mash_fyi_unit_tests': {
+        'test': 'unit_tests',
+        'args': [
+          '--enable-features=SingleProcessMash',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.fyi.unit_tests.filter',
+        ],
+      },
       'mash_fyi_interactive_ui_tests': {
         'test': 'interactive_ui_tests',
         'args': [
