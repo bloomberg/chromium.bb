@@ -564,21 +564,21 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyPlayback) {
 
   if (AudioLatency::IsResamplingPassthroughSupported(params.latency_tag())) {
     // Expecting input sample rate
-    EXPECT_EQ(32000, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(32000, mixer->get_output_params_for_testing().sample_rate());
     // Round up 20 ms (640) to the power of 2.
-    EXPECT_EQ(1024, mixer->GetOutputParamsForTesting().frames_per_buffer());
+    EXPECT_EQ(1024, mixer->get_output_params_for_testing().frames_per_buffer());
   } else {
     // Expecting hardware sample rate
-    EXPECT_EQ(44100, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(44100, mixer->get_output_params_for_testing().sample_rate());
 
 // 20 ms at 44100 is 882 frames per buffer.
 #if defined(OS_WIN)
     // Round up 882 to the nearest multiple of the output buffer size (128).
     // which is 7 * 128 = 896
-    EXPECT_EQ(896, mixer->GetOutputParamsForTesting().frames_per_buffer());
+    EXPECT_EQ(896, mixer->get_output_params_for_testing().frames_per_buffer());
 #else
     // Round up 882 to the power of 2.
-    EXPECT_EQ(1024, mixer->GetOutputParamsForTesting().frames_per_buffer());
+    EXPECT_EQ(1024, mixer->get_output_params_for_testing().frames_per_buffer());
 #endif  // defined(OS_WIN)
   }
 
@@ -606,14 +606,14 @@ TEST_F(AudioRendererMixerManagerTest,
   // 20 ms at 44100 is 882 frames per buffer.
   if (AudioLatency::IsResamplingPassthroughSupported(params.latency_tag())) {
     // Expecting input sample rate
-    EXPECT_EQ(32000, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(32000, mixer->get_output_params_for_testing().sample_rate());
   } else {
     // Expecting hardware sample rate
-    EXPECT_EQ(44100, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(44100, mixer->get_output_params_for_testing().sample_rate());
   }
 
   // Prefer device buffer size (2048) if is larger than 20 ms buffer size.
-  EXPECT_EQ(2048, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(2048, mixer->get_output_params_for_testing().frames_per_buffer());
 
   ReturnMixer(mixer);
 }
@@ -635,15 +635,15 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyPlaybackFakeAudio) {
                kDefaultDeviceId, SinkUseState::kNewSink);
 
   // Expecting input sample rate
-  EXPECT_EQ(32000, mixer->GetOutputParamsForTesting().sample_rate());
+  EXPECT_EQ(32000, mixer->get_output_params_for_testing().sample_rate());
 
 // 20 ms at 32000 is 640 frames per buffer.
 #if defined(OS_WIN)
   // Use 20 ms buffer.
-  EXPECT_EQ(640, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(640, mixer->get_output_params_for_testing().frames_per_buffer());
 #else
   // Ignore device buffer size, round up 640 to the power of 2.
-  EXPECT_EQ(1024, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(1024, mixer->get_output_params_for_testing().frames_per_buffer());
 #endif  // defined(OS_WIN)
 
   ReturnMixer(mixer);
@@ -675,19 +675,19 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
           : 44100;
 
   EXPECT_EQ(output_sample_rate,
-            mixer->GetOutputParamsForTesting().sample_rate());
+            mixer->get_output_params_for_testing().sample_rate());
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
   // Use 10 ms buffer (441 frames per buffer).
   EXPECT_EQ(output_sample_rate / 100,
-            mixer->GetOutputParamsForTesting().frames_per_buffer());
+            mixer->get_output_params_for_testing().frames_per_buffer());
 #elif defined(OS_ANDROID)
   // If hardware buffer size (128) is less than 20 ms (882), use 20 ms buffer
   // (otherwise, use hardware buffer).
-  EXPECT_EQ(882, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(882, mixer->get_output_params_for_testing().frames_per_buffer());
 #else
   // Use hardware buffer size (128).
-  EXPECT_EQ(128, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(128, mixer->get_output_params_for_testing().frames_per_buffer());
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   ReturnMixer(mixer);
@@ -709,11 +709,11 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtcFakeAudio) {
                kDefaultDeviceId, SinkUseState::kNewSink);
 
   // Expecting input sample rate.
-  EXPECT_EQ(32000, mixer->GetOutputParamsForTesting().sample_rate());
+  EXPECT_EQ(32000, mixer->get_output_params_for_testing().sample_rate());
 
   // 10 ms at 32000 is 320 frames per buffer. Expect it on all the platforms for
   // fake audio output.
-  EXPECT_EQ(320, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(320, mixer->get_output_params_for_testing().frames_per_buffer());
 
   ReturnMixer(mixer);
 }
@@ -741,14 +741,14 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyInteractive) {
 
   if (AudioLatency::IsResamplingPassthroughSupported(params.latency_tag())) {
     // Expecting input sample rate.
-    EXPECT_EQ(32000, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(32000, mixer->get_output_params_for_testing().sample_rate());
   } else {
     // Expecting hardware sample rate.
-    EXPECT_EQ(44100, mixer->GetOutputParamsForTesting().sample_rate());
+    EXPECT_EQ(44100, mixer->get_output_params_for_testing().sample_rate());
   }
 
   // Expect hardware buffer size.
-  EXPECT_EQ(128, mixer->GetOutputParamsForTesting().frames_per_buffer());
+  EXPECT_EQ(128, mixer->get_output_params_for_testing().frames_per_buffer());
 
   ReturnMixer(mixer);
 }
@@ -772,13 +772,13 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsBitstreamFormat) {
 
   // Output parameters should be the same as input properties for bitstream
   // formats.
-  EXPECT_EQ(params.format(), mixer->GetOutputParamsForTesting().format());
+  EXPECT_EQ(params.format(), mixer->get_output_params_for_testing().format());
   EXPECT_EQ(params.channel_layout(),
-            mixer->GetOutputParamsForTesting().channel_layout());
+            mixer->get_output_params_for_testing().channel_layout());
   EXPECT_EQ(params.sample_rate(),
-            mixer->GetOutputParamsForTesting().sample_rate());
+            mixer->get_output_params_for_testing().sample_rate());
   EXPECT_EQ(params.frames_per_buffer(),
-            mixer->GetOutputParamsForTesting().frames_per_buffer());
+            mixer->get_output_params_for_testing().frames_per_buffer());
 
   ReturnMixer(mixer);
 }

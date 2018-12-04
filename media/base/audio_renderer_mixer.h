@@ -11,6 +11,8 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -20,6 +22,7 @@
 #include "media/base/loopback_audio_converter.h"
 
 namespace media {
+class AudioRendererMixerInput;
 
 // Mixes a set of AudioConverter::InputCallbacks into a single output stream
 // which is funneled into a single shared AudioRendererSink; saving a bundle
@@ -27,11 +30,11 @@ namespace media {
 class MEDIA_EXPORT AudioRendererMixer
     : public AudioRendererSink::RenderCallback {
  public:
-  typedef base::Callback<void(int)> UmaLogCallback;
+  using UmaLogCallback = base::RepeatingCallback<void(int)>;
 
   AudioRendererMixer(const AudioParameters& output_params,
                      scoped_refptr<AudioRendererSink> sink,
-                     const UmaLogCallback& log_callback);
+                     UmaLogCallback log_callback);
   ~AudioRendererMixer() override;
 
   // Add or remove a mixer input from mixing; called by AudioRendererMixerInput.
@@ -41,26 +44,20 @@ class MEDIA_EXPORT AudioRendererMixer
                         AudioConverter::InputCallback* input);
 
   // Since errors may occur even when no inputs are playing, an error callback
-  // must be registered separately from adding a mixer input.  The same callback
-  // must be given to both the functions.
-  void AddErrorCallback(const base::Closure& error_cb);
-  void RemoveErrorCallback(const base::Closure& error_cb);
-
-  void SetPauseDelayForTesting(base::TimeDelta delay);
-
-  void GetOutputDeviceInfoAsync(AudioRendererSink::OutputDeviceInfoCB info_cb);
+  // must be registered separately from adding a mixer input.
+  void AddErrorCallback(AudioRendererMixerInput* input);
+  void RemoveErrorCallback(AudioRendererMixerInput* input);
 
   // Returns true if called on rendering thread, otherwise false.
   bool CurrentThreadIsRenderingThread();
 
-  const AudioParameters& GetOutputParamsForTesting() { return output_params_; };
+  void SetPauseDelayForTesting(base::TimeDelta delay);
+  const AudioParameters& get_output_params_for_testing() const {
+    return output_params_;
+  }
 
  private:
   class UMAMaxValueTracker;
-
-  // Maps input sample rate to the dedicated converter.
-  using AudioConvertersMap =
-      std::map<int, std::unique_ptr<LoopbackAudioConverter>>;
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(base::TimeDelta delay,
@@ -69,7 +66,7 @@ class MEDIA_EXPORT AudioRendererMixer
              AudioBus* audio_bus) override;
   void OnRenderError() override;
 
-  bool is_master_sample_rate(int sample_rate) {
+  bool is_master_sample_rate(int sample_rate) const {
     return sample_rate == output_params_.sample_rate();
   }
 
@@ -83,11 +80,14 @@ class MEDIA_EXPORT AudioRendererMixer
   base::Lock lock_;
 
   // List of error callbacks used by this mixer.
-  typedef std::list<base::Closure> ErrorCallbackList;
-  ErrorCallbackList error_callbacks_ GUARDED_BY(lock_);
+  base::flat_set<AudioRendererMixerInput*> error_callbacks_ GUARDED_BY(lock_);
+
+  // Maps input sample rate to the dedicated converter.
+  using AudioConvertersMap =
+      base::flat_map<int, std::unique_ptr<LoopbackAudioConverter>>;
 
   // Each of these converters mixes inputs with a given sample rate and
-  // resamples them to the output sample rate. Inputs not reqiuring resampling
+  // resamples them to the output sample rate. Inputs not requiring resampling
   // go directly to |master_converter_|.
   AudioConvertersMap converters_ GUARDED_BY(lock_);
 
