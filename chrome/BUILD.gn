@@ -43,6 +43,13 @@ if (is_android) {
   import("//third_party/icu/config.gni")
 }
 
+declare_args() {
+  # Indicates whether keystone registration framework should be enabled (see
+  # action("keystone_registration_framework") below).  There are some tests
+  # where we'd like for it to be disabled. (https://crbug.com/909080)
+  enable_keystone_registration_framework = true
+}
+
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (enable_resource_whitelist_generation) {
@@ -1112,7 +1119,7 @@ if (is_win) {
     }
   }
 
-  if (is_chrome_branded) {
+  if (is_chrome_branded && enable_keystone_registration_framework) {
     action("keystone_registration_framework") {
       script = "//chrome/tools/build/mac/copy_keystone_framework.py"
 
