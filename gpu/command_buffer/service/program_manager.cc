@@ -399,6 +399,7 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       valid_(false),
       link_status_(false),
       uniforms_cleared_(false),
+      draw_id_uniform_location_(-1),
       transform_feedback_buffer_mode_(GL_NONE),
       effective_transform_feedback_buffer_mode_(GL_NONE),
       fragment_output_type_mask_(0u),
@@ -426,6 +427,7 @@ void Program::Reset() {
   attrib_location_to_index_map_.clear();
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
+  draw_id_uniform_location_ = -1;
   ClearVertexInputMasks();
 }
 
@@ -560,6 +562,15 @@ void Program::UpdateTransformFeedbackInfo() {
     transform_feedback_data_size_per_vertex_[0] =
         total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
   }
+}
+
+void Program::UpdateDrawIDUniformLocation() {
+  DCHECK(IsValid());
+  GLint fake_location = GetUniformFakeLocation("gl_DrawID");
+  draw_id_uniform_location_ = -1;
+  GLint array_index;
+  GetUniformInfoByFakeLocation(fake_location, &draw_id_uniform_location_,
+                               &array_index);
 }
 
 std::string Program::ProcessLogInfo(const std::string& log) {
@@ -2718,6 +2729,11 @@ void ProgramManager::UnuseProgram(
 void ProgramManager::ClearUniforms(Program* program) {
   DCHECK(program);
   program->ClearUniforms(&zero_);
+}
+
+void ProgramManager::UpdateDrawIDUniformLocation(Program* program) {
+  DCHECK(program);
+  program->UpdateDrawIDUniformLocation();
 }
 
 int32_t ProgramManager::MakeFakeLocation(int32_t index, int32_t element) {

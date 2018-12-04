@@ -1545,6 +1545,19 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_KHR_robust_buffer_access_behavior");
     feature_flags_.khr_robust_buffer_access_behavior = true;
   }
+
+  if (!is_passthrough_cmd_decoder_ ||
+      gfx::HasExtension(extensions, "GL_ANGLE_multi_draw")) {
+    feature_flags_.webgl_multi_draw = true;
+    AddExtensionString("GL_WEBGL_multi_draw");
+
+    if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
+        feature_flags_.angle_instanced_arrays || gl_version_info_->is_es3 ||
+        gl_version_info_->is_desktop_core_profile) {
+      feature_flags_.webgl_multi_draw_instanced = true;
+      AddExtensionString("GL_WEBGL_multi_draw_instanced");
+    }
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

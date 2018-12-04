@@ -102,11 +102,13 @@ void TransformFeedback::DoResumeTransformFeedback() {
 bool TransformFeedback::GetVerticesNeededForDraw(GLenum mode,
                                                  GLsizei count,
                                                  GLsizei primcount,
+                                                 GLsizei pending_vertices_drawn,
                                                  GLsizei* vertices_out) const {
   // Transform feedback only outputs complete primitives, so we need to round
   // down to the nearest complete primitive before multiplying by the number of
   // instances.
-  base::CheckedNumeric<GLsizei> checked_vertices = vertices_drawn_;
+  base::CheckedNumeric<GLsizei> checked_vertices =
+      vertices_drawn_ + pending_vertices_drawn;
   base::CheckedNumeric<GLsizei> checked_count = count;
   base::CheckedNumeric<GLsizei> checked_primcount = primcount;
   switch (mode) {
@@ -131,14 +133,9 @@ bool TransformFeedback::GetVerticesNeededForDraw(GLenum mode,
   return checked_vertices.IsValid();
 }
 
-void TransformFeedback::OnVerticesDrawn(GLenum mode,
-                                        GLsizei count,
-                                        GLsizei primcount) {
+void TransformFeedback::OnVerticesDrawn(GLsizei vertices_drawn) {
   if (active_ && !paused_) {
-    GLsizei vertices = 0;
-    bool valid = GetVerticesNeededForDraw(mode, count, primcount, &vertices);
-    DCHECK(valid);
-    vertices_drawn_ = vertices;
+    vertices_drawn_ = vertices_drawn;
   }
 }
 

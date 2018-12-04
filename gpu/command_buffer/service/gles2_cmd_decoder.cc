@@ -123,6 +123,9 @@ const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
 const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
 const char kEXTDrawBuffersExtension[] = "GL_EXT_draw_buffers";
 const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
+const char kWEBGLMultiDrawExtension[] = "GL_WEBGL_multi_draw";
+const char kWEBGLMultiDrawInstancedExtension[] =
+    "GL_WEBGL_multi_draw_instanced";
 
 gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   switch (plane_transform) {
@@ -1880,6 +1883,34 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
 
+  // Wrapper for glMultiDrawArraysWEBGL
+  void DoMultiDrawArraysWEBGL(GLenum mode,
+                              const GLint* firsts,
+                              const GLsizei* counts,
+                              GLsizei drawcount);
+
+  // Wrapper for glMultiDrawArraysInstancedWEBGL
+  void DoMultiDrawArraysInstancedWEBGL(GLenum mode,
+                                       const GLint* firsts,
+                                       const GLsizei* counts,
+                                       const GLsizei* instance_counts,
+                                       GLsizei drawcount);
+
+  // Wrapper for glMultiDrawElementsWEBGL
+  void DoMultiDrawElementsWEBGL(GLenum mode,
+                                const GLsizei* counts,
+                                GLenum type,
+                                const GLsizei* offsets,
+                                GLsizei drawcount);
+
+  // Wrapper for glMultiDrawElementsInstancedWEBGL
+  void DoMultiDrawElementsInstancedWEBGL(GLenum mode,
+                                         const GLsizei* counts,
+                                         GLenum type,
+                                         const GLsizei* offsets,
+                                         const GLsizei* instance_counts,
+                                         GLsizei drawcount);
+
   // Wrapper for glOverlayPromotionHintCHROMIUIM
   void DoOverlayPromotionHintCHROMIUM(GLuint client_id,
                                       GLboolean promotion_hint,
@@ -2133,19 +2164,49 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLuint max_vertex_accessed, bool* simulated, GLsizei primcount);
   void RestoreStateForSimulatedFixedAttribs();
 
-  // Handle DrawArrays and DrawElements for both instanced and non-instanced
-  // cases (primcount is always 1 for non-instanced).
-  error::Error DoDrawArrays(
-      const char* function_name,
-      bool instanced, GLenum mode, GLint first, GLsizei count,
-      GLsizei primcount);
-  error::Error DoDrawElements(const char* function_name,
+  bool CheckMultiDrawArraysVertices(const char* function_name,
+                                    bool instanced,
+                                    const GLint* firsts,
+                                    const GLsizei* counts,
+                                    const GLsizei* primcounts,
+                                    GLsizei drawcount,
+                                    GLuint* total_max_vertex_accessed,
+                                    GLsizei* total_max_primcount);
+  bool CheckMultiDrawElementsVertices(const char* function_name,
+                                      bool instanced,
+                                      const GLsizei* counts,
+                                      GLenum type,
+                                      const int32_t* offsets,
+                                      const GLsizei* primcounts,
+                                      GLsizei drawcount,
+                                      Buffer* element_array_buffer,
+                                      GLuint* total_max_vertex_accessed,
+                                      GLsizei* total_max_primcount);
+  bool CheckTransformFeedback(const char* function_name,
                               bool instanced,
                               GLenum mode,
-                              GLsizei count,
-                              GLenum type,
-                              int32_t offset,
-                              GLsizei primcount);
+                              const GLsizei* counts,
+                              const GLsizei* primcounts,
+                              GLsizei drawcount,
+                              GLsizei* transform_feedback_vertices);
+
+  // Handle MultiDrawArrays and MultiDrawElements for both instanced and
+  // non-instanced cases (primcount is always 1 for non-instanced).
+  error::Error DoMultiDrawArrays(const char* function_name,
+                                 bool instanced,
+                                 GLenum mode,
+                                 const GLint* firsts,
+                                 const GLsizei* counts,
+                                 const GLsizei* primcounts,
+                                 GLsizei drawcount);
+  error::Error DoMultiDrawElements(const char* function_name,
+                                   bool instanced,
+                                   GLenum mode,
+                                   const GLsizei* counts,
+                                   GLenum type,
+                                   const int32_t* offsets,
+                                   const GLsizei* primcounts,
+                                   GLsizei drawcount);
 
   GLenum GetBindTargetForSamplerType(GLenum type) {
     switch (type) {
@@ -2612,6 +2673,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool frag_depth_explicitly_enabled_;
   bool draw_buffers_explicitly_enabled_;
   bool shader_texture_lod_explicitly_enabled_;
+  bool multi_draw_explicitly_enabled_;
+  bool multi_draw_instanced_explicitly_enabled_;
 
   bool compile_shader_always_succeeds_;
 
@@ -3384,6 +3447,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
       shader_texture_lod_explicitly_enabled_(false),
+      multi_draw_explicitly_enabled_(false),
+      multi_draw_instanced_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
       should_use_native_gmb_for_backbuffer_(false),
@@ -4312,6 +4377,13 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       NOTREACHED();
       shader_spec = SH_GLES2_SPEC;
       break;
+  }
+
+  if (shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) {
+    resources.ANGLE_multi_draw =
+        (multi_draw_explicitly_enabled_ && features().webgl_multi_draw) ||
+        (multi_draw_instanced_explicitly_enabled_ &&
+         features().webgl_multi_draw_instanced);
   }
 
   if (((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
@@ -9322,11 +9394,51 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
       if (workarounds().clear_uniforms_before_first_program_use)
         program_manager()->ClearUniforms(program);
     }
+    if (features().webgl_multi_draw || features().webgl_multi_draw_instanced)
+      program_manager()->UpdateDrawIDUniformLocation(program);
   }
 
   // LinkProgram can be very slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
+}
+
+void GLES2DecoderImpl::DoMultiDrawArraysWEBGL(GLenum mode,
+                                              const GLint* firsts,
+                                              const GLsizei* counts,
+                                              GLsizei drawcount) {
+  DoMultiDrawArrays("glMultiDrawArraysWEBGL", false, mode, firsts, counts,
+                    nullptr, drawcount);
+}
+
+void GLES2DecoderImpl::DoMultiDrawArraysInstancedWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DoMultiDrawArrays("glMultiDrawArraysInstancedWEBGL", true, mode, firsts,
+                    counts, instance_counts, drawcount);
+}
+
+void GLES2DecoderImpl::DoMultiDrawElementsWEBGL(GLenum mode,
+                                                const GLsizei* counts,
+                                                GLenum type,
+                                                const GLsizei* offsets,
+                                                GLsizei drawcount) {
+  DoMultiDrawElements("glMultiDrawElementsWEBGL", false, mode, counts, type,
+                      offsets, nullptr, drawcount);
+}
+
+void GLES2DecoderImpl::DoMultiDrawElementsInstancedWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DoMultiDrawElements("glMultiDrawElementsInstancedWEBGL", true, mode, counts,
+                      type, offsets, instance_counts, drawcount);
 }
 
 void GLES2DecoderImpl::DoOverlayPromotionHintCHROMIUM(GLuint client_id,
@@ -10773,38 +10885,138 @@ bool GLES2DecoderImpl::AttribsTypeMatch() {
   return true;
 }
 
-error::Error GLES2DecoderImpl::DoDrawArrays(
+bool GLES2DecoderImpl::CheckMultiDrawArraysVertices(
     const char* function_name,
     bool instanced,
-    GLenum mode,
-    GLint first,
-    GLsizei count,
-    GLsizei primcount) {
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* primcounts,
+    GLsizei drawcount,
+    GLuint* total_max_vertex_accessed,
+    GLsizei* total_max_primcount) {
+  DCHECK_GE(drawcount, 0);
+  for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
+    GLint first = firsts[draw_id];
+    GLsizei count = counts[draw_id];
+    GLsizei primcount = instanced ? primcounts[draw_id] : 1;
+    // We have to check this here because the prototype for glDrawArrays
+    // is GLint not GLsizei.
+    if (first < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "first < 0");
+      return false;
+    }
+    if (count < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "count < 0");
+      return false;
+    }
+    if (primcount < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
+      return false;
+    }
+    if (count == 0 || primcount == 0) {
+      LOCAL_RENDER_WARNING("Render count or primcount is 0.");
+      continue;
+    }
+
+    base::CheckedNumeric<GLuint> checked_max_vertex = first;
+    checked_max_vertex += count - 1;
+    // first and count-1 are both a non-negative int, so their sum fits an
+    // unsigned int.
+    GLuint max_vertex_accessed = 0;
+    if (!checked_max_vertex.AssignIfValid(&max_vertex_accessed)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
+                         "first + count overflow");
+      return false;
+    }
+    if (!IsDrawValid(function_name, max_vertex_accessed, instanced,
+                     primcount)) {
+      return false;
+    }
+    *total_max_vertex_accessed =
+        std::max(*total_max_vertex_accessed, max_vertex_accessed);
+    *total_max_primcount = std::max(*total_max_primcount, primcount);
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::CheckTransformFeedback(const char* function_name,
+                                              bool instanced,
+                                              GLenum mode,
+                                              const GLsizei* counts,
+                                              const GLsizei* primcounts,
+                                              GLsizei drawcount,
+                                              GLsizei* vertices_drawn) {
+  DCHECK(state_.bound_transform_feedback.get());
+  if (state_.bound_transform_feedback->active() &&
+      !state_.bound_transform_feedback->paused()) {
+    if (mode != state_.bound_transform_feedback->primitive_mode()) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, function_name,
+          "mode differs from active transformfeedback's primitiveMode");
+      return false;
+    }
+    for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
+      GLsizei count = counts[draw_id];
+      GLsizei primcount = instanced ? primcounts[draw_id] : 1;
+
+      bool valid = state_.bound_transform_feedback->GetVerticesNeededForDraw(
+          mode, count, primcount, *vertices_drawn, vertices_drawn);
+      if (!valid) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                           "integer overflow calculating number of vertices "
+                           "for transform feedback");
+        return false;
+      }
+    }
+
+    if (!buffer_manager()->RequestBuffersAccess(
+            state_.GetErrorState(), state_.bound_transform_feedback.get(),
+            state_.current_program->GetTransformFeedbackVaryingSizes(),
+            *vertices_drawn, function_name, "transformfeedback buffers")) {
+      return false;
+    }
+  }
+  return true;
+}
+
+error::Error GLES2DecoderImpl::DoMultiDrawArrays(const char* function_name,
+                                                 bool instanced,
+                                                 GLenum mode,
+                                                 const GLint* firsts,
+                                                 const GLsizei* counts,
+                                                 const GLsizei* primcounts,
+                                                 GLsizei drawcount) {
   error::Error error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
     return error;
+
   if (!validators_->draw_mode.IsValid(mode)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, mode, "mode");
     return error::kNoError;
   }
-  if (count < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "count < 0");
-    return error::kNoError;
-  }
-  if (primcount < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
-    return error::kNoError;
-  }
-  if (!CheckBoundDrawFramebufferValid(function_name)) {
-    return error::kNoError;
-  }
-  // We have to check this here because the prototype for glDrawArrays
-  // is GLint not GLsizei.
-  if (first < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "first < 0");
+
+  if (drawcount < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "drawcount < 0");
     return error::kNoError;
   }
 
+  if (!CheckBoundDrawFramebufferValid(function_name)) {
+    return error::kNoError;
+  }
+
+  GLuint total_max_vertex_accessed = 0;
+  GLsizei total_max_primcount = 0;
+  if (!CheckMultiDrawArraysVertices(
+          function_name, instanced, firsts, counts, primcounts, drawcount,
+          &total_max_vertex_accessed, &total_max_primcount)) {
+    return error::kNoError;
+  }
+
+  if (total_max_primcount == 0) {
+    return error::kNoError;
+  }
+
+  GLsizei transform_feedback_vertices = 0;
   if (feature_info_->IsWebGL2OrES3Context()) {
     if (!AttribsTypeMatch()) {
       LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
@@ -10812,29 +11024,10 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
       return error::kNoError;
     }
 
-    DCHECK(state_.bound_transform_feedback.get());
-    if (state_.bound_transform_feedback->active() &&
-        !state_.bound_transform_feedback->paused()) {
-      if (mode != state_.bound_transform_feedback->primitive_mode()) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-            "mode differs from active transformfeedback's primitiveMode");
-        return error::kNoError;
-      }
-      GLsizei vertices = 0;
-      bool valid = state_.bound_transform_feedback->GetVerticesNeededForDraw(
-          mode, count, primcount, &vertices);
-      if (!valid) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                           "integer overflow calculating number of vertices "
-                           "for transform feedback");
-        return error::kNoError;
-      }
-      if (!buffer_manager()->RequestBuffersAccess(
-              state_.GetErrorState(), state_.bound_transform_feedback.get(),
-              state_.current_program->GetTransformFeedbackVaryingSizes(),
-              vertices, function_name, "transformfeedback buffers")) {
-        return error::kNoError;
-      }
+    if (!CheckTransformFeedback(function_name, instanced, mode, counts,
+                                primcounts, drawcount,
+                                &transform_feedback_vertices)) {
+      return error::kNoError;
     }
 
     if (!ValidateUniformBlockBackings(function_name)) {
@@ -10842,63 +11035,61 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     }
   }
 
-  if (count == 0 || primcount == 0) {
-    LOCAL_RENDER_WARNING("Render count or primcount is 0.");
+  if (!ClearUnclearedTextures()) {
+    // TODO(enga): Can this be GL_OUT_OF_MEMORY?
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
     return error::kNoError;
   }
 
-  base::CheckedNumeric<GLuint> checked_max_vertex = first;
-  checked_max_vertex += count - 1;
-  // first and count-1 are both a non-negative int, so their sum fits an
-  // unsigned int.
-  if (!checked_max_vertex.IsValid()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
-                       "first + count overflow");
+  bool simulated_attrib_0 = false;
+  if (!SimulateAttrib0(function_name, total_max_vertex_accessed,
+                       &simulated_attrib_0)) {
     return error::kNoError;
   }
-  GLuint max_vertex_accessed = checked_max_vertex.ValueOrDefault(0);
-  if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
-    if (!ClearUnclearedTextures()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
+  bool simulated_fixed_attribs = false;
+  if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
+                           &simulated_fixed_attribs, total_max_primcount)) {
+    bool textures_set = !PrepareTexturesForRender();
+    ApplyDirtyState();
+    if (!ValidateAndAdjustDrawBuffers(function_name)) {
       return error::kNoError;
     }
-    bool simulated_attrib_0 = false;
-    if (!SimulateAttrib0(
-        function_name, max_vertex_accessed, &simulated_attrib_0)) {
-      return error::kNoError;
-    }
-    bool simulated_fixed_attribs = false;
-    if (SimulateFixedAttribs(
-        function_name, max_vertex_accessed, &simulated_fixed_attribs,
-        primcount)) {
-      bool textures_set = !PrepareTexturesForRender();
-      ApplyDirtyState();
-      if (!ValidateAndAdjustDrawBuffers(function_name)) {
-        return error::kNoError;
+
+    GLint draw_id_location = state_.current_program->draw_id_uniform_location();
+    for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
+      GLint first = firsts[draw_id];
+      GLsizei count = counts[draw_id];
+      GLsizei primcount = instanced ? primcounts[draw_id] : 1;
+      if (count == 0 || primcount == 0) {
+        continue;
+      }
+      if (draw_id_location >= 0) {
+        api()->glUniform1iFn(draw_id_location, draw_id);
       }
       if (!instanced) {
         api()->glDrawArraysFn(mode, first, count);
       } else {
         api()->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
       }
-      if (state_.bound_transform_feedback.get()) {
-        state_.bound_transform_feedback->OnVerticesDrawn(mode, count,
-                                                         primcount);
-      }
-      if (textures_set) {
-        RestoreStateForTextures();
-      }
-      if (simulated_fixed_attribs) {
-        RestoreStateForSimulatedFixedAttribs();
-      }
     }
-    if (simulated_attrib_0) {
-      // We don't have to restore attrib 0 generic data at the end of this
-      // function even if it is simulated. This is because we will simulate
-      // it in each draw call, and attrib 0 generic data queries use cached
-      // values instead of passing down to the underlying driver.
-      RestoreStateForAttrib(0, false);
+    if (state_.bound_transform_feedback.get()) {
+      state_.bound_transform_feedback->OnVerticesDrawn(
+          transform_feedback_vertices);
     }
+
+    if (textures_set) {
+      RestoreStateForTextures();
+    }
+    if (simulated_fixed_attribs) {
+      RestoreStateForSimulatedFixedAttribs();
+    }
+  }
+  if (simulated_attrib_0) {
+    // We don't have to restore attrib 0 generic data at the end of this
+    // function even if it is simulated. This is because we will simulate
+    // it in each draw call, and attrib 0 generic data queries use cached
+    // values instead of passing down to the underlying driver.
+    RestoreStateForAttrib(0, false);
   }
   return error::kNoError;
 }
@@ -10907,12 +11098,10 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(uint32_t immediate_data_size,
                                                 const volatile void* cmd_data) {
   const volatile cmds::DrawArrays& c =
       *static_cast<const volatile cmds::DrawArrays*>(cmd_data);
-  return DoDrawArrays("glDrawArrays",
-                      false,
-                      static_cast<GLenum>(c.mode),
-                      static_cast<GLint>(c.first),
-                      static_cast<GLsizei>(c.count),
-                      1);
+  GLint first = static_cast<GLint>(c.first);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  return DoMultiDrawArrays("glDrawArrays", false, static_cast<GLenum>(c.mode),
+                           &first, &count, nullptr, 1);
 }
 
 error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
@@ -10924,46 +11113,93 @@ error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
   if (!features().angle_instanced_arrays)
     return error::kUnknownCommand;
 
-  return DoDrawArrays("glDrawArraysInstancedANGLE", true,
-                      static_cast<GLenum>(c.mode), static_cast<GLint>(c.first),
-                      static_cast<GLsizei>(c.count),
-                      static_cast<GLsizei>(c.primcount));
+  GLint first = static_cast<GLint>(c.first);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  GLsizei primcount = static_cast<GLsizei>(c.primcount);
+  return DoMultiDrawArrays("glDrawArraysInstancedANGLE", true,
+                           static_cast<GLenum>(c.mode), &first, &count,
+                           &primcount, 1);
 }
 
-error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
-                                              bool instanced,
-                                              GLenum mode,
-                                              GLsizei count,
-                                              GLenum type,
-                                              int32_t offset,
-                                              GLsizei primcount) {
+bool GLES2DecoderImpl::CheckMultiDrawElementsVertices(
+    const char* function_name,
+    bool instanced,
+    const GLsizei* counts,
+    GLenum type,
+    const int32_t* offsets,
+    const GLsizei* primcounts,
+    GLsizei drawcount,
+    Buffer* element_array_buffer,
+    GLuint* total_max_vertex_accessed,
+    GLsizei* total_max_primcount) {
+  DCHECK_GE(drawcount, 0);
+  for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
+    GLsizei count = counts[draw_id];
+    GLsizei offset = offsets[draw_id];
+    GLsizei primcount = instanced ? primcounts[draw_id] : 1;
+
+    if (count < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "count < 0");
+      return false;
+    }
+    if (offset < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "offset < 0");
+      return false;
+    }
+    if (primcount < 0) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
+      return false;
+    }
+    if (count == 0 || primcount == 0) {
+      continue;
+    }
+
+    GLuint max_vertex_accessed;
+    if (!element_array_buffer->GetMaxValueForRange(
+            offset, count, type,
+            state_.enable_flags.primitive_restart_fixed_index,
+            &max_vertex_accessed)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "range out of bounds for buffer");
+      return false;
+    }
+
+    if (!IsDrawValid(function_name, max_vertex_accessed, instanced,
+                     primcount)) {
+      return false;
+    }
+
+    *total_max_vertex_accessed =
+        std::max(*total_max_vertex_accessed, max_vertex_accessed);
+    *total_max_primcount = std::max(*total_max_primcount, primcount);
+  }
+  return true;
+}
+
+error::Error GLES2DecoderImpl::DoMultiDrawElements(const char* function_name,
+                                                   bool instanced,
+                                                   GLenum mode,
+                                                   const GLsizei* counts,
+                                                   GLenum type,
+                                                   const int32_t* offsets,
+                                                   const GLsizei* primcounts,
+                                                   GLsizei drawcount) {
   error::Error error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
     return error;
 
-  if (count < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "count < 0");
-    return error::kNoError;
-  }
-  if (offset < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "offset < 0");
-    return error::kNoError;
-  }
   if (!validators_->draw_mode.IsValid(mode)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, mode, "mode");
     return error::kNoError;
   }
+
   if (!validators_->index_type.IsValid(type)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, type, "type");
     return error::kNoError;
   }
-  if (primcount < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
-    return error::kNoError;
-  }
-  Buffer* element_array_buffer = buffer_manager()->RequestBufferAccess(
-      &state_, GL_ELEMENT_ARRAY_BUFFER, function_name);
-  if (!element_array_buffer) {
+
+  if (drawcount < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "drawcount < 0");
     return error::kNoError;
   }
 
@@ -10971,11 +11207,30 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     return error::kNoError;
   }
 
+  Buffer* element_array_buffer = buffer_manager()->RequestBufferAccess(
+      &state_, GL_ELEMENT_ARRAY_BUFFER, function_name);
+  if (!element_array_buffer) {
+    return error::kNoError;
+  }
+
+  GLuint total_max_vertex_accessed = 0;
+  GLsizei total_max_primcount = 0;
+  if (!CheckMultiDrawElementsVertices(
+          function_name, instanced, counts, type, offsets, primcounts,
+          drawcount, element_array_buffer, &total_max_vertex_accessed,
+          &total_max_primcount)) {
+    return error::kNoError;
+  }
+
+  if (total_max_primcount == 0) {
+    return error::kNoError;
+  }
+
   if (state_.bound_transform_feedback.get() &&
       state_.bound_transform_feedback->active() &&
       !state_.bound_transform_feedback->paused()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-        "transformfeedback is active and not paused");
+                       "transformfeedback is active and not paused");
     return error::kNoError;
   }
 
@@ -10990,53 +11245,51 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     }
   }
 
-  if (count == 0 || primcount == 0) {
+  if (!ClearUnclearedTextures()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
     return error::kNoError;
   }
 
-  GLuint max_vertex_accessed;
-  if (!element_array_buffer->GetMaxValueForRange(
-          offset, count, type,
-          state_.enable_flags.primitive_restart_fixed_index,
-          &max_vertex_accessed)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, function_name, "range out of bounds for buffer");
+  bool simulated_attrib_0 = false;
+  if (!SimulateAttrib0(function_name, total_max_vertex_accessed,
+                       &simulated_attrib_0)) {
     return error::kNoError;
   }
+  bool simulated_fixed_attribs = false;
+  if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
+                           &simulated_fixed_attribs, total_max_primcount)) {
+    bool textures_set = !PrepareTexturesForRender();
+    ApplyDirtyState();
+    // TODO(gman): Refactor to hide these details in BufferManager or
+    // VertexAttribManager.
+    bool used_client_side_array = false;
+    if (element_array_buffer->IsClientSideArray()) {
+      used_client_side_array = true;
+      api()->glBindBufferFn(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    if (!ValidateAndAdjustDrawBuffers(function_name)) {
+      return error::kNoError;
+    }
+    if (state_.enable_flags.primitive_restart_fixed_index &&
+        feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
+      api()->glEnableFn(GL_PRIMITIVE_RESTART);
+      buffer_manager()->SetPrimitiveRestartFixedIndexIfNecessary(type);
+    }
 
-  if (IsDrawValid(function_name, max_vertex_accessed, instanced, primcount)) {
-    if (!ClearUnclearedTextures()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "out of memory");
-      return error::kNoError;
-    }
-    bool simulated_attrib_0 = false;
-    if (!SimulateAttrib0(
-        function_name, max_vertex_accessed, &simulated_attrib_0)) {
-      return error::kNoError;
-    }
-    bool simulated_fixed_attribs = false;
-    if (SimulateFixedAttribs(
-        function_name, max_vertex_accessed, &simulated_fixed_attribs,
-        primcount)) {
-      bool textures_set = !PrepareTexturesForRender();
-      ApplyDirtyState();
-      // TODO(gman): Refactor to hide these details in BufferManager or
-      // VertexAttribManager.
+    GLint draw_id_location = state_.current_program->draw_id_uniform_location();
+    for (GLsizei draw_id = 0; draw_id < drawcount; ++draw_id) {
+      GLsizei count = counts[draw_id];
+      GLsizei offset = offsets[draw_id];
+      GLsizei primcount = instanced ? primcounts[draw_id] : 1;
+      if (count == 0 || primcount == 0) {
+        continue;
+      }
       const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
-      bool used_client_side_array = false;
-      if (element_array_buffer->IsClientSideArray()) {
-        used_client_side_array = true;
-        api()->glBindBufferFn(GL_ELEMENT_ARRAY_BUFFER, 0);
+      if (used_client_side_array) {
         indices = element_array_buffer->GetRange(offset, 0);
       }
-      if (!ValidateAndAdjustDrawBuffers(function_name)) {
-        return error::kNoError;
-      }
-      if (state_.enable_flags.primitive_restart_fixed_index &&
-          feature_info_->feature_flags().
-              emulate_primitive_restart_fixed_index) {
-        api()->glEnableFn(GL_PRIMITIVE_RESTART);
-        buffer_manager()->SetPrimitiveRestartFixedIndexIfNecessary(type);
+      if (draw_id_location >= 0) {
+        api()->glUniform1iFn(draw_id_location, draw_id);
       }
       if (!instanced) {
         api()->glDrawElementsFn(mode, count, type, indices);
@@ -11044,29 +11297,28 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
         api()->glDrawElementsInstancedANGLEFn(mode, count, type, indices,
                                               primcount);
       }
-      if (state_.enable_flags.primitive_restart_fixed_index &&
-          feature_info_->feature_flags().
-              emulate_primitive_restart_fixed_index) {
-        api()->glDisableFn(GL_PRIMITIVE_RESTART);
-      }
-      if (used_client_side_array) {
-        api()->glBindBufferFn(GL_ELEMENT_ARRAY_BUFFER,
-                              element_array_buffer->service_id());
-      }
-      if (textures_set) {
-        RestoreStateForTextures();
-      }
-      if (simulated_fixed_attribs) {
-        RestoreStateForSimulatedFixedAttribs();
-      }
     }
-    if (simulated_attrib_0) {
-      // We don't have to restore attrib 0 generic data at the end of this
-      // function even if it is simulated. This is because we will simulate
-      // it in each draw call, and attrib 0 generic data queries use cached
-      // values instead of passing down to the underlying driver.
-      RestoreStateForAttrib(0, false);
+    if (state_.enable_flags.primitive_restart_fixed_index &&
+        feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
+      api()->glDisableFn(GL_PRIMITIVE_RESTART);
     }
+    if (used_client_side_array) {
+      api()->glBindBufferFn(GL_ELEMENT_ARRAY_BUFFER,
+                            element_array_buffer->service_id());
+    }
+    if (textures_set) {
+      RestoreStateForTextures();
+    }
+    if (simulated_fixed_attribs) {
+      RestoreStateForSimulatedFixedAttribs();
+    }
+  }
+  if (simulated_attrib_0) {
+    // We don't have to restore attrib 0 generic data at the end of this
+    // function even if it is simulated. This is because we will simulate
+    // it in each draw call, and attrib 0 generic data queries use cached
+    // values instead of passing down to the underlying driver.
+    RestoreStateForAttrib(0, false);
   }
   return error::kNoError;
 }
@@ -11076,10 +11328,11 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::DrawElements& c =
       *static_cast<const volatile gles2::cmds::DrawElements*>(cmd_data);
-  return DoDrawElements("glDrawElements", false, static_cast<GLenum>(c.mode),
-                        static_cast<GLsizei>(c.count),
-                        static_cast<GLenum>(c.type),
-                        static_cast<int32_t>(c.index_offset), 1);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  int32_t offset = static_cast<int32_t>(c.index_offset);
+  return DoMultiDrawElements("glDrawArrays", false, static_cast<GLenum>(c.mode),
+                             &count, static_cast<GLenum>(c.type), &offset,
+                             nullptr, 1);
 }
 
 error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
@@ -11091,10 +11344,12 @@ error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
   if (!features().angle_instanced_arrays)
     return error::kUnknownCommand;
 
-  return DoDrawElements(
-      "glDrawElementsInstancedANGLE", true, static_cast<GLenum>(c.mode),
-      static_cast<GLsizei>(c.count), static_cast<GLenum>(c.type),
-      static_cast<int32_t>(c.index_offset), static_cast<GLsizei>(c.primcount));
+  GLsizei count = static_cast<GLsizei>(c.count);
+  int32_t offset = static_cast<int32_t>(c.index_offset);
+  GLsizei primcount = static_cast<GLsizei>(c.primcount);
+  return DoMultiDrawElements(
+      "glDrawElementsInstancedANGLE", true, static_cast<GLenum>(c.mode), &count,
+      static_cast<GLenum>(c.type), &offset, &primcount, 1);
 }
 
 GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
@@ -13116,6 +13371,10 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
           extension_set.erase(kEXTDrawBuffersExtension);
         if (!shader_texture_lod_explicitly_enabled_)
           extension_set.erase(kEXTShaderTextureLodExtension);
+        if (!multi_draw_explicitly_enabled_)
+          extension_set.erase(kWEBGLMultiDrawExtension);
+        if (!multi_draw_instanced_explicitly_enabled_)
+          extension_set.erase(kWEBGLMultiDrawInstancedExtension);
       }
       if (supports_post_sub_buffer_)
         extension_set.insert("GL_CHROMIUM_post_sub_buffer");
@@ -15934,6 +16193,8 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_frag_depth = false;
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
+  bool desire_multi_draw = false;
+  bool desire_multi_draw_instanced = false;
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
@@ -15944,14 +16205,24 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     desire_shader_texture_lod =
         feature_str.find("GL_EXT_shader_texture_lod ") != std::string::npos;
   }
+  if (feature_info_->IsWebGLContext()) {
+    desire_multi_draw =
+        feature_str.find("GL_WEBGL_multi_draw ") != std::string::npos;
+    desire_multi_draw_instanced =
+        feature_str.find("GL_WEBGL_multi_draw_instanced ") != std::string::npos;
+  }
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_frag_depth != frag_depth_explicitly_enabled_ ||
       desire_draw_buffers != draw_buffers_explicitly_enabled_ ||
-      desire_shader_texture_lod != shader_texture_lod_explicitly_enabled_) {
+      desire_shader_texture_lod != shader_texture_lod_explicitly_enabled_ ||
+      desire_multi_draw != multi_draw_explicitly_enabled_ ||
+      desire_multi_draw_instanced != multi_draw_instanced_explicitly_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
     draw_buffers_explicitly_enabled_ |= desire_draw_buffers;
     shader_texture_lod_explicitly_enabled_ |= desire_shader_texture_lod;
+    multi_draw_explicitly_enabled_ |= desire_multi_draw;
+    multi_draw_instanced_explicitly_enabled_ |= desire_multi_draw_instanced;
     DestroyShaderTranslator();
   }
 
