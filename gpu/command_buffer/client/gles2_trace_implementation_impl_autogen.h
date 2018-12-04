@@ -1065,6 +1065,48 @@ void GLES2TraceImplementation::OrderingBarrierCHROMIUM() {
   gl_->OrderingBarrierCHROMIUM();
 }
 
+void GLES2TraceImplementation::MultiDrawArraysWEBGL(GLenum mode,
+                                                    const GLint* firsts,
+                                                    const GLsizei* counts,
+                                                    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MultiDrawArraysWEBGL");
+  gl_->MultiDrawArraysWEBGL(mode, firsts, counts, drawcount);
+}
+
+void GLES2TraceImplementation::MultiDrawArraysInstancedWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::MultiDrawArraysInstancedWEBGL");
+  gl_->MultiDrawArraysInstancedWEBGL(mode, firsts, counts, instance_counts,
+                                     drawcount);
+}
+
+void GLES2TraceImplementation::MultiDrawElementsWEBGL(GLenum mode,
+                                                      const GLsizei* counts,
+                                                      GLenum type,
+                                                      const GLsizei* offsets,
+                                                      GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MultiDrawElementsWEBGL");
+  gl_->MultiDrawElementsWEBGL(mode, counts, type, offsets, drawcount);
+}
+
+void GLES2TraceImplementation::MultiDrawElementsInstancedWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::MultiDrawElementsInstancedWEBGL");
+  gl_->MultiDrawElementsInstancedWEBGL(mode, counts, type, offsets,
+                                       instance_counts, drawcount);
+}
+
 void GLES2TraceImplementation::StencilFunc(GLenum func,
                                            GLint ref,
                                            GLuint mask) {

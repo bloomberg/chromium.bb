@@ -382,6 +382,26 @@ virtual void ShaderSource(GLuint shader,
 virtual void ShallowFinishCHROMIUM() = 0;
 virtual void ShallowFlushCHROMIUM() = 0;
 virtual void OrderingBarrierCHROMIUM() = 0;
+virtual void MultiDrawArraysWEBGL(GLenum mode,
+                                  const GLint* firsts,
+                                  const GLsizei* counts,
+                                  GLsizei drawcount) = 0;
+virtual void MultiDrawArraysInstancedWEBGL(GLenum mode,
+                                           const GLint* firsts,
+                                           const GLsizei* counts,
+                                           const GLsizei* instance_counts,
+                                           GLsizei drawcount) = 0;
+virtual void MultiDrawElementsWEBGL(GLenum mode,
+                                    const GLsizei* counts,
+                                    GLenum type,
+                                    const GLsizei* offsets,
+                                    GLsizei drawcount) = 0;
+virtual void MultiDrawElementsInstancedWEBGL(GLenum mode,
+                                             const GLsizei* counts,
+                                             GLenum type,
+                                             const GLsizei* offsets,
+                                             const GLsizei* instance_counts,
+                                             GLsizei drawcount) = 0;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) = 0;
 virtual void StencilFuncSeparate(GLenum face,
                                  GLenum func,

@@ -11352,6 +11352,193 @@ error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
       static_cast<GLenum>(c.type), &offset, &primcount, 1);
 }
 
+error::Error GLES2DecoderImpl::HandleMultiDrawArraysWEBGL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawArraysWEBGL& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawArraysWEBGL*>(cmd_data);
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t firsts_size, counts_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLint)).AssignIfValid(&firsts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLint* firsts = GetSharedMemoryAs<const GLint*>(
+      c.firsts_shm_id, c.firsts_shm_offset, firsts_size);
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  if (firsts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  // Copy these arrays out of shared memory because it is possible
+  // for the shared memory to be modified after validation but
+  // before drawing.
+  std::vector<GLint> firsts_copy(firsts, firsts + drawcount);
+  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
+  DoMultiDrawArraysWEBGL(mode, firsts_copy.data(), counts_copy.data(),
+                         drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMultiDrawArraysInstancedWEBGL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawArraysInstancedWEBGL& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawArraysInstancedWEBGL*>(
+          cmd_data);
+  if (!features().webgl_multi_draw_instanced) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t firsts_size, counts_size, instance_counts_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLint)).AssignIfValid(&firsts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&instance_counts_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLint* firsts = GetSharedMemoryAs<const GLint*>(
+      c.firsts_shm_id, c.firsts_shm_offset, firsts_size);
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  const GLsizei* instance_counts = GetSharedMemoryAs<const GLsizei*>(
+      c.instance_counts_shm_id, c.instance_counts_shm_offset,
+      instance_counts_size);
+  if (firsts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (instance_counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  // Copy these arrays out of shared memory because it is possible
+  // for the shared memory to be modified after validation but
+  // before drawing.
+  std::vector<GLint> firsts_copy(firsts, firsts + drawcount);
+  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
+  std::vector<GLsizei> instance_counts_copy(instance_counts,
+                                            instance_counts + drawcount);
+  DoMultiDrawArraysInstancedWEBGL(mode, firsts_copy.data(), counts_copy.data(),
+                                  instance_counts_copy.data(), drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMultiDrawElementsWEBGL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawElementsWEBGL& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawElementsWEBGL*>(
+          cmd_data);
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLenum type = static_cast<GLenum>(c.type);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t counts_size, offsets_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&offsets_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  const GLsizei* offsets = GetSharedMemoryAs<const GLsizei*>(
+      c.offsets_shm_id, c.offsets_shm_offset, offsets_size);
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (offsets == nullptr) {
+    return error::kOutOfBounds;
+  }
+  // Copy these arrays out of shared memory because it is possible
+  // for the shared memory to be modified after validation but
+  // before drawing.
+  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
+  std::vector<GLsizei> offsets_copy(offsets, offsets + drawcount);
+  DoMultiDrawElementsWEBGL(mode, counts_copy.data(), type, offsets_copy.data(),
+                           drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMultiDrawElementsInstancedWEBGL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawElementsInstancedWEBGL& c = *static_cast<
+      const volatile gles2::cmds::MultiDrawElementsInstancedWEBGL*>(cmd_data);
+  if (!features().webgl_multi_draw_instanced) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLenum type = static_cast<GLenum>(c.type);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t counts_size, offsets_size, instance_counts_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&offsets_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&instance_counts_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  const GLsizei* offsets = GetSharedMemoryAs<const GLsizei*>(
+      c.offsets_shm_id, c.offsets_shm_offset, offsets_size);
+  const GLsizei* instance_counts = GetSharedMemoryAs<const GLsizei*>(
+      c.instance_counts_shm_id, c.instance_counts_shm_offset,
+      instance_counts_size);
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (offsets == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (instance_counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  // Copy these arrays out of shared memory because it is possible
+  // for the shared memory to be modified after validation but
+  // before drawing.
+  std::vector<GLsizei> counts_copy(counts, counts + drawcount);
+  std::vector<GLsizei> offsets_copy(offsets, offsets + drawcount);
+  std::vector<GLsizei> instance_counts_copy(instance_counts,
+                                            instance_counts + drawcount);
+  DoMultiDrawElementsInstancedWEBGL(mode, counts_copy.data(), type,
+                                    offsets_copy.data(),
+                                    instance_counts_copy.data(), drawcount);
+  return error::kNoError;
+}
+
 GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GLuint max_vertex_accessed = 0;

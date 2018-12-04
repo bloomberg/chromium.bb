@@ -430,6 +430,26 @@ error::Error DoLineWidth(GLfloat width);
 error::Error DoLinkProgram(GLuint program);
 error::Error DoMemoryBarrierEXT(GLbitfield barriers);
 error::Error DoMemoryBarrierByRegion(GLbitfield barriers);
+error::Error DoMultiDrawArraysWEBGL(GLenum mode,
+                                    const GLint* firsts,
+                                    const GLsizei* counts,
+                                    GLsizei drawcount);
+error::Error DoMultiDrawArraysInstancedWEBGL(GLenum mode,
+                                             const GLint* firsts,
+                                             const GLsizei* counts,
+                                             const GLsizei* instanceCounts,
+                                             GLsizei drawcount);
+error::Error DoMultiDrawElementsWEBGL(GLenum mode,
+                                      const GLsizei* counts,
+                                      GLenum type,
+                                      const GLvoid* const* indices,
+                                      GLsizei drawcount);
+error::Error DoMultiDrawElementsInstancedWEBGL(GLenum mode,
+                                               const GLsizei* counts,
+                                               GLenum type,
+                                               const GLvoid* const* indices,
+                                               const GLsizei* instanceCounts,
+                                               GLsizei drawcount);
 error::Error DoPauseTransformFeedback();
 error::Error DoPixelStorei(GLenum pname, GLint param);
 error::Error DoPolygonOffset(GLfloat factor, GLfloat units);

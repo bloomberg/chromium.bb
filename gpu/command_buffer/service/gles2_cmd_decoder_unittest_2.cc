@@ -836,12 +836,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<
-    cmds::UniformMatrix2x3fvImmediate, 0>(bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT2x3);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::TexParameterf, 0>(
     bool /* valid */) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);

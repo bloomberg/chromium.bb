@@ -7493,6 +7493,328 @@ static_assert(offsetof(ShaderSourceBucket, shader) == 4,
 static_assert(offsetof(ShaderSourceBucket, str_bucket_id) == 8,
               "offset of ShaderSourceBucket str_bucket_id should be 8");
 
+struct MultiDrawArraysWEBGL {
+  typedef MultiDrawArraysWEBGL ValueType;
+  static const CommandId kCmdId = kMultiDrawArraysWEBGL;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode,
+            uint32_t _firsts_shm_id,
+            uint32_t _firsts_shm_offset,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLsizei _drawcount) {
+    SetHeader();
+    mode = _mode;
+    firsts_shm_id = _firsts_shm_id;
+    firsts_shm_offset = _firsts_shm_offset;
+    counts_shm_id = _counts_shm_id;
+    counts_shm_offset = _counts_shm_offset;
+    drawcount = _drawcount;
+  }
+
+  void* Set(void* cmd,
+            GLenum _mode,
+            uint32_t _firsts_shm_id,
+            uint32_t _firsts_shm_offset,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLsizei _drawcount) {
+    static_cast<ValueType*>(cmd)->Init(_mode, _firsts_shm_id,
+                                       _firsts_shm_offset, _counts_shm_id,
+                                       _counts_shm_offset, _drawcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t firsts_shm_id;
+  uint32_t firsts_shm_offset;
+  uint32_t counts_shm_id;
+  uint32_t counts_shm_offset;
+  int32_t drawcount;
+};
+
+static_assert(sizeof(MultiDrawArraysWEBGL) == 28,
+              "size of MultiDrawArraysWEBGL should be 28");
+static_assert(offsetof(MultiDrawArraysWEBGL, header) == 0,
+              "offset of MultiDrawArraysWEBGL header should be 0");
+static_assert(offsetof(MultiDrawArraysWEBGL, mode) == 4,
+              "offset of MultiDrawArraysWEBGL mode should be 4");
+static_assert(offsetof(MultiDrawArraysWEBGL, firsts_shm_id) == 8,
+              "offset of MultiDrawArraysWEBGL firsts_shm_id should be 8");
+static_assert(offsetof(MultiDrawArraysWEBGL, firsts_shm_offset) == 12,
+              "offset of MultiDrawArraysWEBGL firsts_shm_offset should be 12");
+static_assert(offsetof(MultiDrawArraysWEBGL, counts_shm_id) == 16,
+              "offset of MultiDrawArraysWEBGL counts_shm_id should be 16");
+static_assert(offsetof(MultiDrawArraysWEBGL, counts_shm_offset) == 20,
+              "offset of MultiDrawArraysWEBGL counts_shm_offset should be 20");
+static_assert(offsetof(MultiDrawArraysWEBGL, drawcount) == 24,
+              "offset of MultiDrawArraysWEBGL drawcount should be 24");
+
+struct MultiDrawArraysInstancedWEBGL {
+  typedef MultiDrawArraysInstancedWEBGL ValueType;
+  static const CommandId kCmdId = kMultiDrawArraysInstancedWEBGL;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode,
+            uint32_t _firsts_shm_id,
+            uint32_t _firsts_shm_offset,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            uint32_t _instance_counts_shm_id,
+            uint32_t _instance_counts_shm_offset,
+            GLsizei _drawcount) {
+    SetHeader();
+    mode = _mode;
+    firsts_shm_id = _firsts_shm_id;
+    firsts_shm_offset = _firsts_shm_offset;
+    counts_shm_id = _counts_shm_id;
+    counts_shm_offset = _counts_shm_offset;
+    instance_counts_shm_id = _instance_counts_shm_id;
+    instance_counts_shm_offset = _instance_counts_shm_offset;
+    drawcount = _drawcount;
+  }
+
+  void* Set(void* cmd,
+            GLenum _mode,
+            uint32_t _firsts_shm_id,
+            uint32_t _firsts_shm_offset,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            uint32_t _instance_counts_shm_id,
+            uint32_t _instance_counts_shm_offset,
+            GLsizei _drawcount) {
+    static_cast<ValueType*>(cmd)->Init(
+        _mode, _firsts_shm_id, _firsts_shm_offset, _counts_shm_id,
+        _counts_shm_offset, _instance_counts_shm_id,
+        _instance_counts_shm_offset, _drawcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t firsts_shm_id;
+  uint32_t firsts_shm_offset;
+  uint32_t counts_shm_id;
+  uint32_t counts_shm_offset;
+  uint32_t instance_counts_shm_id;
+  uint32_t instance_counts_shm_offset;
+  int32_t drawcount;
+};
+
+static_assert(sizeof(MultiDrawArraysInstancedWEBGL) == 36,
+              "size of MultiDrawArraysInstancedWEBGL should be 36");
+static_assert(offsetof(MultiDrawArraysInstancedWEBGL, header) == 0,
+              "offset of MultiDrawArraysInstancedWEBGL header should be 0");
+static_assert(offsetof(MultiDrawArraysInstancedWEBGL, mode) == 4,
+              "offset of MultiDrawArraysInstancedWEBGL mode should be 4");
+static_assert(
+    offsetof(MultiDrawArraysInstancedWEBGL, firsts_shm_id) == 8,
+    "offset of MultiDrawArraysInstancedWEBGL firsts_shm_id should be 8");
+static_assert(
+    offsetof(MultiDrawArraysInstancedWEBGL, firsts_shm_offset) == 12,
+    "offset of MultiDrawArraysInstancedWEBGL firsts_shm_offset should be 12");
+static_assert(
+    offsetof(MultiDrawArraysInstancedWEBGL, counts_shm_id) == 16,
+    "offset of MultiDrawArraysInstancedWEBGL counts_shm_id should be 16");
+static_assert(
+    offsetof(MultiDrawArraysInstancedWEBGL, counts_shm_offset) == 20,
+    "offset of MultiDrawArraysInstancedWEBGL counts_shm_offset should be 20");
+static_assert(offsetof(MultiDrawArraysInstancedWEBGL, instance_counts_shm_id) ==
+                  24,
+              "offset of MultiDrawArraysInstancedWEBGL instance_counts_shm_id "
+              "should be 24");
+static_assert(offsetof(MultiDrawArraysInstancedWEBGL,
+                       instance_counts_shm_offset) == 28,
+              "offset of MultiDrawArraysInstancedWEBGL "
+              "instance_counts_shm_offset should be 28");
+static_assert(offsetof(MultiDrawArraysInstancedWEBGL, drawcount) == 32,
+              "offset of MultiDrawArraysInstancedWEBGL drawcount should be 32");
+
+struct MultiDrawElementsWEBGL {
+  typedef MultiDrawElementsWEBGL ValueType;
+  static const CommandId kCmdId = kMultiDrawElementsWEBGL;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLenum _type,
+            uint32_t _offsets_shm_id,
+            uint32_t _offsets_shm_offset,
+            GLsizei _drawcount) {
+    SetHeader();
+    mode = _mode;
+    counts_shm_id = _counts_shm_id;
+    counts_shm_offset = _counts_shm_offset;
+    type = _type;
+    offsets_shm_id = _offsets_shm_id;
+    offsets_shm_offset = _offsets_shm_offset;
+    drawcount = _drawcount;
+  }
+
+  void* Set(void* cmd,
+            GLenum _mode,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLenum _type,
+            uint32_t _offsets_shm_id,
+            uint32_t _offsets_shm_offset,
+            GLsizei _drawcount) {
+    static_cast<ValueType*>(cmd)->Init(
+        _mode, _counts_shm_id, _counts_shm_offset, _type, _offsets_shm_id,
+        _offsets_shm_offset, _drawcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t counts_shm_id;
+  uint32_t counts_shm_offset;
+  uint32_t type;
+  uint32_t offsets_shm_id;
+  uint32_t offsets_shm_offset;
+  int32_t drawcount;
+};
+
+static_assert(sizeof(MultiDrawElementsWEBGL) == 32,
+              "size of MultiDrawElementsWEBGL should be 32");
+static_assert(offsetof(MultiDrawElementsWEBGL, header) == 0,
+              "offset of MultiDrawElementsWEBGL header should be 0");
+static_assert(offsetof(MultiDrawElementsWEBGL, mode) == 4,
+              "offset of MultiDrawElementsWEBGL mode should be 4");
+static_assert(offsetof(MultiDrawElementsWEBGL, counts_shm_id) == 8,
+              "offset of MultiDrawElementsWEBGL counts_shm_id should be 8");
+static_assert(
+    offsetof(MultiDrawElementsWEBGL, counts_shm_offset) == 12,
+    "offset of MultiDrawElementsWEBGL counts_shm_offset should be 12");
+static_assert(offsetof(MultiDrawElementsWEBGL, type) == 16,
+              "offset of MultiDrawElementsWEBGL type should be 16");
+static_assert(offsetof(MultiDrawElementsWEBGL, offsets_shm_id) == 20,
+              "offset of MultiDrawElementsWEBGL offsets_shm_id should be 20");
+static_assert(
+    offsetof(MultiDrawElementsWEBGL, offsets_shm_offset) == 24,
+    "offset of MultiDrawElementsWEBGL offsets_shm_offset should be 24");
+static_assert(offsetof(MultiDrawElementsWEBGL, drawcount) == 28,
+              "offset of MultiDrawElementsWEBGL drawcount should be 28");
+
+struct MultiDrawElementsInstancedWEBGL {
+  typedef MultiDrawElementsInstancedWEBGL ValueType;
+  static const CommandId kCmdId = kMultiDrawElementsInstancedWEBGL;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _mode,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLenum _type,
+            uint32_t _offsets_shm_id,
+            uint32_t _offsets_shm_offset,
+            uint32_t _instance_counts_shm_id,
+            uint32_t _instance_counts_shm_offset,
+            GLsizei _drawcount) {
+    SetHeader();
+    mode = _mode;
+    counts_shm_id = _counts_shm_id;
+    counts_shm_offset = _counts_shm_offset;
+    type = _type;
+    offsets_shm_id = _offsets_shm_id;
+    offsets_shm_offset = _offsets_shm_offset;
+    instance_counts_shm_id = _instance_counts_shm_id;
+    instance_counts_shm_offset = _instance_counts_shm_offset;
+    drawcount = _drawcount;
+  }
+
+  void* Set(void* cmd,
+            GLenum _mode,
+            uint32_t _counts_shm_id,
+            uint32_t _counts_shm_offset,
+            GLenum _type,
+            uint32_t _offsets_shm_id,
+            uint32_t _offsets_shm_offset,
+            uint32_t _instance_counts_shm_id,
+            uint32_t _instance_counts_shm_offset,
+            GLsizei _drawcount) {
+    static_cast<ValueType*>(cmd)->Init(
+        _mode, _counts_shm_id, _counts_shm_offset, _type, _offsets_shm_id,
+        _offsets_shm_offset, _instance_counts_shm_id,
+        _instance_counts_shm_offset, _drawcount);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  uint32_t counts_shm_id;
+  uint32_t counts_shm_offset;
+  uint32_t type;
+  uint32_t offsets_shm_id;
+  uint32_t offsets_shm_offset;
+  uint32_t instance_counts_shm_id;
+  uint32_t instance_counts_shm_offset;
+  int32_t drawcount;
+};
+
+static_assert(sizeof(MultiDrawElementsInstancedWEBGL) == 40,
+              "size of MultiDrawElementsInstancedWEBGL should be 40");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL, header) == 0,
+              "offset of MultiDrawElementsInstancedWEBGL header should be 0");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL, mode) == 4,
+              "offset of MultiDrawElementsInstancedWEBGL mode should be 4");
+static_assert(
+    offsetof(MultiDrawElementsInstancedWEBGL, counts_shm_id) == 8,
+    "offset of MultiDrawElementsInstancedWEBGL counts_shm_id should be 8");
+static_assert(
+    offsetof(MultiDrawElementsInstancedWEBGL, counts_shm_offset) == 12,
+    "offset of MultiDrawElementsInstancedWEBGL counts_shm_offset should be 12");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL, type) == 16,
+              "offset of MultiDrawElementsInstancedWEBGL type should be 16");
+static_assert(
+    offsetof(MultiDrawElementsInstancedWEBGL, offsets_shm_id) == 20,
+    "offset of MultiDrawElementsInstancedWEBGL offsets_shm_id should be 20");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL, offsets_shm_offset) ==
+                  24,
+              "offset of MultiDrawElementsInstancedWEBGL offsets_shm_offset "
+              "should be 24");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL,
+                       instance_counts_shm_id) == 28,
+              "offset of MultiDrawElementsInstancedWEBGL "
+              "instance_counts_shm_id should be 28");
+static_assert(offsetof(MultiDrawElementsInstancedWEBGL,
+                       instance_counts_shm_offset) == 32,
+              "offset of MultiDrawElementsInstancedWEBGL "
+              "instance_counts_shm_offset should be 32");
+static_assert(
+    offsetof(MultiDrawElementsInstancedWEBGL, drawcount) == 36,
+    "offset of MultiDrawElementsInstancedWEBGL drawcount should be 36");
+
 struct StencilFunc {
   typedef StencilFunc ValueType;
   static const CommandId kCmdId = kStencilFunc;

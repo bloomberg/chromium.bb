@@ -493,6 +493,28 @@ void GLES2InterfaceStub::ShaderSource(GLuint /* shader */,
 void GLES2InterfaceStub::ShallowFinishCHROMIUM() {}
 void GLES2InterfaceStub::ShallowFlushCHROMIUM() {}
 void GLES2InterfaceStub::OrderingBarrierCHROMIUM() {}
+void GLES2InterfaceStub::MultiDrawArraysWEBGL(GLenum /* mode */,
+                                              const GLint* /* firsts */,
+                                              const GLsizei* /* counts */,
+                                              GLsizei /* drawcount */) {}
+void GLES2InterfaceStub::MultiDrawArraysInstancedWEBGL(
+    GLenum /* mode */,
+    const GLint* /* firsts */,
+    const GLsizei* /* counts */,
+    const GLsizei* /* instance_counts */,
+    GLsizei /* drawcount */) {}
+void GLES2InterfaceStub::MultiDrawElementsWEBGL(GLenum /* mode */,
+                                                const GLsizei* /* counts */,
+                                                GLenum /* type */,
+                                                const GLsizei* /* offsets */,
+                                                GLsizei /* drawcount */) {}
+void GLES2InterfaceStub::MultiDrawElementsInstancedWEBGL(
+    GLenum /* mode */,
+    const GLsizei* /* counts */,
+    GLenum /* type */,
+    const GLsizei* /* offsets */,
+    const GLsizei* /* instance_counts */,
+    GLsizei /* drawcount */) {}
 void GLES2InterfaceStub::StencilFunc(GLenum /* func */,
                                      GLint /* ref */,
                                      GLuint /* mask */) {}

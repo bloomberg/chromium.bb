@@ -2165,6 +2165,48 @@ error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierByRegion(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawArraysWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    GLsizei drawcount) {
+  api()->glMultiDrawArraysANGLEFn(mode, firsts, counts, drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawArraysInstancedWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  api()->glMultiDrawArraysInstancedANGLEFn(mode, firsts, counts, instanceCounts,
+                                           drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawElementsWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    GLsizei drawcount) {
+  api()->glMultiDrawElementsANGLEFn(mode, counts, type, indices, drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoMultiDrawElementsInstancedWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  api()->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
+                                             instanceCounts, drawcount);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoPauseTransformFeedback() {
   api()->glPauseTransformFeedbackFn();
   return error::kNoError;

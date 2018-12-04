@@ -740,6 +740,39 @@ void GL_APIENTRY GLES2ShallowFlushCHROMIUM() {
 void GL_APIENTRY GLES2OrderingBarrierCHROMIUM() {
   gles2::GetGLContext()->OrderingBarrierCHROMIUM();
 }
+void GL_APIENTRY GLES2MultiDrawArraysWEBGL(GLenum mode,
+                                           const GLint* firsts,
+                                           const GLsizei* counts,
+                                           GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawArraysWEBGL(mode, firsts, counts, drawcount);
+}
+void GL_APIENTRY
+GLES2MultiDrawArraysInstancedWEBGL(GLenum mode,
+                                   const GLint* firsts,
+                                   const GLsizei* counts,
+                                   const GLsizei* instance_counts,
+                                   GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawArraysInstancedWEBGL(
+      mode, firsts, counts, instance_counts, drawcount);
+}
+void GL_APIENTRY GLES2MultiDrawElementsWEBGL(GLenum mode,
+                                             const GLsizei* counts,
+                                             GLenum type,
+                                             const GLsizei* offsets,
+                                             GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawElementsWEBGL(mode, counts, type, offsets,
+                                                drawcount);
+}
+void GL_APIENTRY
+GLES2MultiDrawElementsInstancedWEBGL(GLenum mode,
+                                     const GLsizei* counts,
+                                     GLenum type,
+                                     const GLsizei* offsets,
+                                     const GLsizei* instance_counts,
+                                     GLsizei drawcount) {
+  gles2::GetGLContext()->MultiDrawElementsInstancedWEBGL(
+      mode, counts, type, offsets, instance_counts, drawcount);
+}
 void GL_APIENTRY GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::GetGLContext()->StencilFunc(func, ref, mask);
 }
@@ -2475,6 +2508,23 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glOrderingBarrierCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glOrderingBarrierCHROMIUM),
+    },
+    {
+        "glMultiDrawArraysWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(glMultiDrawArraysWEBGL),
+    },
+    {
+        "glMultiDrawArraysInstancedWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(glMultiDrawArraysInstancedWEBGL),
+    },
+    {
+        "glMultiDrawElementsWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(glMultiDrawElementsWEBGL),
+    },
+    {
+        "glMultiDrawElementsInstancedWEBGL",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glMultiDrawElementsInstancedWEBGL),
     },
     {
         "glStencilFunc",

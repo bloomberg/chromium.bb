@@ -470,6 +470,30 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       GLenum target, GLintptr offset, GLsizeiptr size, const void* data,
       ScopedTransferBufferPtr* buffer);
 
+  void MultiDrawArraysWEBGLHelper(GLenum mode,
+                                  const GLint* firsts,
+                                  const GLsizei* counts,
+                                  GLsizei drawcount);
+
+  void MultiDrawArraysInstancedWEBGLHelper(GLenum mode,
+                                           const GLint* firsts,
+                                           const GLsizei* counts,
+                                           const GLsizei* instanceCounts,
+                                           GLsizei drawcount);
+
+  void MultiDrawElementsWEBGLHelper(GLenum mode,
+                                    const GLsizei* counts,
+                                    GLenum type,
+                                    const GLsizei* offsets,
+                                    GLsizei drawcount);
+
+  void MultiDrawElementsInstancedWEBGLHelper(GLenum mode,
+                                             const GLsizei* counts,
+                                             GLenum type,
+                                             const GLsizei* offsets,
+                                             const GLsizei* instanceCounts,
+                                             GLsizei drawcount);
+
   GLuint CreateImageCHROMIUMHelper(ClientBuffer buffer,
                                    GLsizei width,
                                    GLsizei height,
