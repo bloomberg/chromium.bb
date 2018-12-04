@@ -19,11 +19,13 @@ class WebServiceWorkerResponsePrivate
   WebServiceWorkerResponsePrivate()
       : status(0),
         response_type(network::mojom::FetchResponseType::kDefault),
+        response_source(network::mojom::FetchResponseSource::kUnspecified),
         error(mojom::ServiceWorkerResponseError::kUnknown) {}
   WebVector<WebURL> url_list;
   unsigned short status;
   WebString status_text;
   network::mojom::FetchResponseType response_type;
+  network::mojom::FetchResponseSource response_source;
   HTTPHeaderMap headers;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   mojom::ServiceWorkerResponseError error;
@@ -76,6 +78,16 @@ void WebServiceWorkerResponse::SetResponseType(
 network::mojom::FetchResponseType WebServiceWorkerResponse::ResponseType()
     const {
   return private_->response_type;
+}
+
+void WebServiceWorkerResponse::SetResponseSource(
+    network::mojom::FetchResponseSource response_source) {
+  private_->response_source = response_source;
+}
+
+network::mojom::FetchResponseSource WebServiceWorkerResponse::ResponseSource()
+    const {
+  return private_->response_source;
 }
 
 void WebServiceWorkerResponse::SetHeader(const WebString& key,
