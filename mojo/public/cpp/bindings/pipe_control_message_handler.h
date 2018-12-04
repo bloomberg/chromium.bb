@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -17,7 +17,7 @@ namespace mojo {
 class PipeControlMessageHandlerDelegate;
 
 // Handler for messages defined in pipe_control_messages.mojom.
-class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageHandler
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) PipeControlMessageHandler
     : public MessageReceiver {
  public:
   explicit PipeControlMessageHandler(

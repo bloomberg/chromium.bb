@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -18,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
@@ -30,7 +30,7 @@ class MessageReceiver;
 
 // Base class used to factor out code in AssociatedBinding<T> expansions, in
 // particular for Bind().
-class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedBindingBase {
  public:
   AssociatedBindingBase();
   virtual ~AssociatedBindingBase();

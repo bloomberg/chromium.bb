@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,7 +21,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
@@ -37,7 +37,7 @@ class InterfaceEndpointController;
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
 // It should only be accessed and destructed on the creating sequence.
-class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
     : public MessageReceiverWithResponder {
  public:
   // |receiver| is okay to be null. If it is not null, it must outlive this

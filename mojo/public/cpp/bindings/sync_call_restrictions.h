@@ -5,9 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_SYNC_CALL_RESTRICTIONS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_SYNC_CALL_RESTRICTIONS_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON))
 #define ENABLE_SYNC_CALL_RESTRICTIONS 1
@@ -53,7 +53,7 @@ class ScopedAllowSyncCallForTesting;
 // disregard that (which should be very very rare), you can override it by
 // constructing a ScopedAllowSyncCall object which allows making sync calls on
 // the current sequence during its lifetime.
-class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
  public:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   // Checks whether the current sequence is allowed to make sync calls, and
