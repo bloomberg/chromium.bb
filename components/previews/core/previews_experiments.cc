@@ -34,6 +34,14 @@ const char kVersion[] = "version";
 const char kEffectiveConnectionTypeThreshold[] =
     "max_allowed_effective_connection_type";
 
+// The session maximum threshold of EffectiveConnectionType above which previews
+// will not be served. This is maximum limit on top of any per-preview-type
+// threshold or per-page-pattern slow page trigger threshold. It is intended
+// to be Finch configured on a session basis to limit slow page triggering to
+// be a proportion of all eligible page loads.
+// See net/nqe/effective_connection_type.h for mapping from string to value.
+const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
+
 // Inflation parameters for estimating NoScript data savings.
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
@@ -239,6 +247,12 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
   }
   NOTREACHED();
   return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+}
+
+net::EffectiveConnectionType GetSessionMaxECTThreshold() {
+  return GetParamValueAsECTByFeature(features::kSlowPageTriggering,
+                                     kSessionMaxECTTrigger,
+                                     net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
 bool ArePreviewsAllowed() {

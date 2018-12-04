@@ -122,10 +122,16 @@ std::string LitePageRedirectPreviewExperiment();
 // Page Redirect preview is enabled.
 bool IsInLitePageRedirectControl();
 
-// The threshold of EffectiveConnectionType above which preview |type| will be
+// The default EffectiveConnectionType threshold where preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type);
+
+// The maximum EffectiveConnectionType threshold where this client session is
+// allowed to trigger previews (for slow page triggered previews). This may be
+// Finch configured on a session basis to limit the proportion of previews
+// triggered at faster connections.
+net::EffectiveConnectionType GetSessionMaxECTThreshold();
 
 // Whether any previews are allowed. Acts as a kill-switch or holdback check.
 bool ArePreviewsAllowed();
