@@ -98,10 +98,9 @@ bool IsPinEnabled(PrefService* pref_service) {
   if (enable_for_testing_)
     return true;
 
-  // TODO(jdufault): Disable PIN for supervised users until we allow the owner
-  // to set the PIN. See crbug.com/632797.
+  // PIN is disabled for legacy supervised user, but allowed to child user.
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
-  if (user && user->IsSupervised())
+  if (user && user->GetType() == user_manager::UserType::USER_TYPE_SUPERVISED)
     return false;
 
   // Enable quick unlock only if the switch is present.
