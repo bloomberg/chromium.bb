@@ -66,6 +66,7 @@ js_type_check("closure_compile_module") {
 js_type_check("test_support_type_check") {
   testonly = true
   deps = [
+    ":mock_crostini",
     ":mock_drive_sync_handler",
     ":mock_file_operation_manager",
     ":mock_media_scanner",
