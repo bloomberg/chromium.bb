@@ -193,22 +193,6 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
 
 }  // namespace
 
-// Defines a UKM that is part of a hierarchical ukm, recorded in
-// microseconds equal to the duration of the current lexical scope after
-// declaration of the macro. Example usage:
-//
-// void LocalFrameView::DoExpensiveThing() {
-//   SCOPED_UMA_AND_UKM_TIMER(kUkmEnumName);
-//   // Do computation of expensive thing
-//
-// }
-//
-// |ukm_enum| should be an entry in LocalFrameUkmAggregator's enum of
-// metric names (which in turn corresponds to names in from ukm.xml).
-#define SCOPED_UMA_AND_UKM_TIMER(ukm_enum) \
-  auto scoped_ukm_hierarchical_timer =     \
-      EnsureUkmAggregator().GetScopedTimer(static_cast<size_t>(ukm_enum));
-
 // The maximum number of updatePlugins iterations that should be done before
 // returning.
 static const unsigned kMaxUpdatePluginsIterations = 2;
@@ -2397,7 +2381,8 @@ bool LocalFrameView::UpdateLifecyclePhases(
   if (target_state == DocumentLifecycle::kPaintClean) {
     TRACE_EVENT0("blink,benchmark",
                  "LocalFrameView::UpdateViewportIntersectionsForSubtree");
-    SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kIntersectionObservation);
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kIntersectionObservation);
     UpdateViewportIntersectionsForSubtree();
   }
 
@@ -2454,7 +2439,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::RunStyleAndLayoutLifecyclePhases");
   {
-    SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kStyleAndLayout);
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kStyleAndLayout);
     UpdateStyleAndLayoutIfNeededRecursive();
   }
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
@@ -2521,7 +2507,8 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
   DCHECK(layout_view);
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kCompositing);
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kCompositing);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
   } else {
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -2565,7 +2552,8 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   });
 
   {
-    SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kPrePaint);
+    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                             LocalFrameUkmAggregator::kPrePaint);
 
     PrePaintTreeWalk().WalkTree(*this);
   }
@@ -2791,7 +2779,8 @@ static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
 }
 
 void LocalFrameView::PaintTree() {
-  SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kPaint);
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kPaint);
 
   DCHECK(GetFrame().IsLocalRoot());
 
@@ -2932,7 +2921,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
 
-  SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kCompositingCommit);
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kCompositingCommit);
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,

@@ -690,6 +690,9 @@ class CORE_EXPORT LocalFrameView final
     return *paint_timing_detector_;
   }
 
+  // Return the UKM aggregator for this frame, creating it if necessary.
+  LocalFrameUkmAggregator& EnsureUkmAggregator();
+
  protected:
   void NotifyFrameRectsChangedIfNeeded();
 
@@ -831,8 +834,6 @@ class CORE_EXPORT LocalFrameView final
   PaintController* GetPaintController() { return paint_controller_.get(); }
 
   void LayoutFromRootObject(LayoutObject& root);
-
-  LocalFrameUkmAggregator& EnsureUkmAggregator();
 
   LayoutSize size_;
 
