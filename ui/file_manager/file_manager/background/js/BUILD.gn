@@ -163,7 +163,7 @@ js_library("mock_crostini") {
 js_unittest("crostini_unittest") {
   deps = [
     ":mock_crostini",
-    "../../common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }
@@ -398,7 +398,7 @@ js_library("mock_volume_manager") {
     ":volume_info_list_impl",
     ":volume_manager_factory",
     ":volume_manager_impl",
-    "../../common/js:mock_entry",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
   ]
 }
 
