@@ -332,10 +332,7 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
   }
 
   // 9. Set _promise_.[[PromiseIsHandled]] to *true*.
-  DCHECK(!promise.IsEmpty());
-  v8::Local<v8::Object> promise_as_object = promise.V8Value().As<v8::Object>();
-  DCHECK(promise_as_object->IsPromise());
-  promise_as_object.As<v8::Promise>()->MarkAsHandled();
+  promise.MarkAsHandled();
 
   // 10. Return _readable_.
   return ScriptValue(script_state, readable);
