@@ -17,7 +17,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -206,8 +205,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     base::TimeTicks local_response_start;
     base::TimeTicks remote_request_start;
     net::LoadTimingInfo load_timing_info;
-    linked_ptr<base::SharedMemory> buffer;
-    int buffer_size;
     net::HostPortPair host_port_pair;
     bool network_accessed = false;
     std::string mime_type;
