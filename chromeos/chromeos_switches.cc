@@ -556,7 +556,7 @@ const char kTetherStub[] = "tether-stub";
 // without that connection preventing scans and thereby blocking the testing of
 // cases with no preexisting connection. Should be used only for testing.
 const char kTetherHostScansIgnoreWiredConnections[] =
-    "tether-host-scans-ignore-wired-connecitons";
+    "tether-host-scans-ignore-wired-connections";
 
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
