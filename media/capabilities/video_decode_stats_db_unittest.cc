@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 
 #include "base/bind.h"
@@ -9,9 +10,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/video_decode_stats.pb.h"
@@ -54,6 +59,14 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     stats_db_ = base::WrapUnique(new VideoDecodeStatsDBImpl(
         std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
         base::FilePath(FILE_PATH_LITERAL("/fake/path"))));
+  }
+
+  int GetMaxFramesPerBuffer() {
+    return VideoDecodeStatsDBImpl::GetMaxFramesPerBuffer();
+  }
+
+  int GetMaxDaysToKeepStats() {
+    return VideoDecodeStatsDBImpl::GetMaxDaysToKeepStats();
   }
 
   void SetDBClock(base::Clock* clock) {
@@ -169,6 +182,128 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndClear) {
   VerifyEmptyStats(kStatsKeyVp9);
 }
 
+TEST_F(VideoDecodeStatsDBImplTest, ConfigureMaxFramesPerBuffer) {
+  // Setup field trial to use a tiny window of 1 decoded frame.
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+
+  int previous_max_frames_per_buffer = GetMaxFramesPerBuffer();
+  int new_max_frames_per_buffer = 1;
+
+  ASSERT_LT(new_max_frames_per_buffer, previous_max_frames_per_buffer);
+
+  // Override field trial.
+  std::map<std::string, std::string> params;
+  params[VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName] =
+      std::to_string(new_max_frames_per_buffer);
+
+  const std::string kTrialName = "TrialName";
+  const std::string kGroupName = "GroupName";
+
+  field_trial_list.reset();
+  field_trial_list.reset(new base::FieldTrialList(nullptr));
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+  base::FieldTrial* field_trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      media::kMediaCapabilitiesWithParameters.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  std::map<std::string, std::string> actual_params;
+  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
+      media::kMediaCapabilitiesWithParameters, &actual_params));
+  EXPECT_EQ(params, actual_params);
+
+  EXPECT_EQ(new_max_frames_per_buffer, GetMaxFramesPerBuffer());
+
+  // Now verify the configured window is used by writing a frame and then
+  // writing another.
+
+  InitializeDB();
+
+  // Append single frame which was, sadly, dropped and not efficient.
+  DecodeStatsEntry entry(1, 1, 0);
+  AppendStats(kStatsKeyVp9, entry);
+  VerifyReadStats(kStatsKeyVp9, entry);
+
+  // Appending another frame which is *not* dropped and *is* efficient.
+  // Verify that only this last entry is still in the buffer (no aggregation).
+  DecodeStatsEntry second_entry(1, 0, 1);
+  AppendStats(kStatsKeyVp9, second_entry);
+  VerifyReadStats(kStatsKeyVp9, second_entry);
+}
+
+TEST_F(VideoDecodeStatsDBImplTest, ConfigureExpireDays) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+
+  int previous_max_days_to_keep_stats = GetMaxDaysToKeepStats();
+  int new_max_days_to_keep_stats = 4;
+
+  ASSERT_LT(new_max_days_to_keep_stats, previous_max_days_to_keep_stats);
+
+  // Override field trial.
+  std::map<std::string, std::string> params;
+  params[VideoDecodeStatsDBImpl::kMaxDaysToKeepStatsParamName] =
+      std::to_string(new_max_days_to_keep_stats);
+
+  const std::string kTrialName = "TrialName";
+  const std::string kGroupName = "GroupName";
+
+  field_trial_list.reset();
+  field_trial_list.reset(new base::FieldTrialList(nullptr));
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+  base::FieldTrial* field_trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      media::kMediaCapabilitiesWithParameters.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  std::map<std::string, std::string> actual_params;
+  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
+      media::kMediaCapabilitiesWithParameters, &actual_params));
+  EXPECT_EQ(params, actual_params);
+
+  EXPECT_EQ(new_max_days_to_keep_stats, GetMaxDaysToKeepStats());
+
+  InitializeDB();
+
+  // Inject a test clock and initialize with the current time.
+  base::SimpleTestClock clock;
+  SetDBClock(&clock);
+  clock.SetNow(base::Time::Now());
+
+  // Append and verify read-back.
+  AppendStats(kStatsKeyVp9, DecodeStatsEntry(200, 20, 2));
+  VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(200, 20, 2));
+
+  // Advance time half way through grace period. Verify stats not expired.
+  clock.Advance(base::TimeDelta::FromDays(new_max_days_to_keep_stats / 2));
+  VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(200, 20, 2));
+
+  // Advance time 1 day beyond grace period, verify stats are expired.
+  clock.Advance(
+      base::TimeDelta::FromDays((new_max_days_to_keep_stats / 2) + 1));
+  VerifyEmptyStats(kStatsKeyVp9);
+
+  // Advance the clock 100 extra days. Verify stats still expired.
+  clock.Advance(base::TimeDelta::FromDays(100));
+  VerifyEmptyStats(kStatsKeyVp9);
+}
+
 TEST_F(VideoDecodeStatsDBImplTest, FailedWrite) {
   InitializeDB();
 
@@ -189,7 +324,7 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
 
   // Setup DB entry that half fills the buffer with 10% of frames dropped and
   // 50% of frames power efficient.
-  const int kNumFramesEntryA = VideoDecodeStatsDBImpl::kMaxFramesPerBuffer / 2;
+  const int kNumFramesEntryA = GetMaxFramesPerBuffer() / 2;
   DecodeStatsEntry entryA(kNumFramesEntryA, std::round(0.1 * kNumFramesEntryA),
                           std::round(0.5 * kNumFramesEntryA));
   const double kDropRateA =
@@ -207,11 +342,9 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   AppendStats(kStatsKeyVp9, entryA);
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(
-          VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-          std::round(kDropRateA * VideoDecodeStatsDBImpl::kMaxFramesPerBuffer),
-          std::round(kEfficientRateA *
-                     VideoDecodeStatsDBImpl::kMaxFramesPerBuffer)));
+      DecodeStatsEntry(GetMaxFramesPerBuffer(),
+                       std::round(kDropRateA * GetMaxFramesPerBuffer()),
+                       std::round(kEfficientRateA * GetMaxFramesPerBuffer())));
 
   // This row in the DB is now "full" (appended frames >= kMaxFramesPerBuffer)!
   //
@@ -236,17 +369,14 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   AppendStats(kStatsKeyVp9, entryA);
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(
-          VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-          std::round(kDropRateA * VideoDecodeStatsDBImpl::kMaxFramesPerBuffer),
-          std::round(kEfficientRateA *
-                     VideoDecodeStatsDBImpl::kMaxFramesPerBuffer)));
+      DecodeStatsEntry(GetMaxFramesPerBuffer(),
+                       std::round(kDropRateA * GetMaxFramesPerBuffer()),
+                       std::round(kEfficientRateA * GetMaxFramesPerBuffer())));
 
   // Append entryB that will fill just 10% of the buffer. The new entry has
   // different rates of dropped and power efficient frames to help verify that
   // it is given proper weight as it mixes with existing data in the buffer.
-  const int kNumFramesEntryB =
-      std::round(.1 * VideoDecodeStatsDBImpl::kMaxFramesPerBuffer);
+  const int kNumFramesEntryB = std::round(.1 * GetMaxFramesPerBuffer());
   DecodeStatsEntry entryB(kNumFramesEntryB, std::round(0.25 * kNumFramesEntryB),
                           std::round(1 * kNumFramesEntryB));
   const double kDropRateB =
@@ -261,11 +391,10 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   double mixed_effiency_rate = .1 * kEfficientRateB + .9 * kEfficientRateA;
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_drop_rate),
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_effiency_rate)));
+      DecodeStatsEntry(
+          GetMaxFramesPerBuffer(),
+          std::round(GetMaxFramesPerBuffer() * mixed_drop_rate),
+          std::round(GetMaxFramesPerBuffer() * mixed_effiency_rate)));
 
   // After appending entryB again, verify aggregate ratios behave according to
   // the formula above (appending repeated entryB brings ratios closer to those
@@ -275,11 +404,10 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   mixed_effiency_rate = .1 * kEfficientRateB + .9 * mixed_effiency_rate;
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_drop_rate),
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_effiency_rate)));
+      DecodeStatsEntry(
+          GetMaxFramesPerBuffer(),
+          std::round(GetMaxFramesPerBuffer() * mixed_drop_rate),
+          std::round(GetMaxFramesPerBuffer() * mixed_effiency_rate)));
 
   // Appending entry*A* again, verify aggregate ratios behave according to
   // the formula above (ratio's move back in direction of those in entryA).
@@ -290,15 +418,14 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   mixed_effiency_rate = .5 * kEfficientRateA + .5 * mixed_effiency_rate;
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_drop_rate),
-                       std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                                  mixed_effiency_rate)));
+      DecodeStatsEntry(
+          GetMaxFramesPerBuffer(),
+          std::round(GetMaxFramesPerBuffer() * mixed_drop_rate),
+          std::round(GetMaxFramesPerBuffer() * mixed_effiency_rate)));
 
   // Now append entryC with a frame count of 2x the buffer max. Verify entryC
   // gets 100% of the weight, erasing the mixed stats from earlier appends.
-  const int kNumFramesEntryC = 2 * VideoDecodeStatsDBImpl::kMaxFramesPerBuffer;
+  const int kNumFramesEntryC = 2 * GetMaxFramesPerBuffer();
   DecodeStatsEntry entryC(kNumFramesEntryC, std::round(0.3 * kNumFramesEntryC),
                           std::round(0.25 * kNumFramesEntryC));
   const double kDropRateC =
@@ -309,11 +436,9 @@ TEST_F(VideoDecodeStatsDBImplTest, FillBufferInMixedIncrements) {
   AppendStats(kStatsKeyVp9, entryC);
   VerifyReadStats(
       kStatsKeyVp9,
-      DecodeStatsEntry(
-          VideoDecodeStatsDBImpl::kMaxFramesPerBuffer,
-          std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer * kDropRateC),
-          std::round(VideoDecodeStatsDBImpl::kMaxFramesPerBuffer *
-                     kEfficientRateC)));
+      DecodeStatsEntry(GetMaxFramesPerBuffer(),
+                       std::round(GetMaxFramesPerBuffer() * kDropRateC),
+                       std::round(GetMaxFramesPerBuffer() * kEfficientRateC)));
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, NoWriteDateReadAndExpire) {
@@ -339,15 +464,13 @@ TEST_F(VideoDecodeStatsDBImplTest, NoWriteDateReadAndExpire) {
   // Set "now" to be in the middle of the grace period. Verify stats are still
   // readable (not expired).
   clock.SetNow(kDefaultWriteTime +
-               base::TimeDelta::FromDays(
-                   VideoDecodeStatsDBImpl::kMaxDaysToKeepStats / 2));
+               base::TimeDelta::FromDays(GetMaxDaysToKeepStats() / 2));
   VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(100, 10, 1));
 
   // Set the clock 1 day beyond the expiry date. Verify stats are no longer
   // readable due to expiration.
   clock.SetNow(kDefaultWriteTime +
-               base::TimeDelta::FromDays(
-                   VideoDecodeStatsDBImpl::kMaxDaysToKeepStats + 1));
+               base::TimeDelta::FromDays(GetMaxDaysToKeepStats() + 1));
   VerifyEmptyStats(kStatsKeyVp9);
 
   // Write some stats to the entry. Verify we get back exactly what's written
@@ -384,15 +507,13 @@ TEST_F(VideoDecodeStatsDBImplTest, NoWriteDateAppendReadAndExpire) {
   // Set "now" to be in the middle of the grace period. Verify stats are still
   // readable (not expired).
   clock.SetNow(kDefaultWriteTime +
-               base::TimeDelta::FromDays(
-                   VideoDecodeStatsDBImpl::kMaxDaysToKeepStats / 2));
+               base::TimeDelta::FromDays(GetMaxDaysToKeepStats() / 2));
   VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(300, 30, 3));
 
   // Set the clock 1 day beyond the expiry date. Verify stats are no longer
   // readable due to expiration.
   clock.SetNow(kDefaultWriteTime +
-               base::TimeDelta::FromDays(
-                   VideoDecodeStatsDBImpl::kMaxDaysToKeepStats + 1));
+               base::TimeDelta::FromDays(GetMaxDaysToKeepStats() + 1));
   VerifyEmptyStats(kStatsKeyVp9);
 }
 
@@ -409,13 +530,11 @@ TEST_F(VideoDecodeStatsDBImplTest, AppendAndExpire) {
   VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(200, 20, 2));
 
   // Advance time half way through grace period. Verify stats not expired.
-  clock.Advance(base::TimeDelta::FromDays(
-      VideoDecodeStatsDBImpl::kMaxDaysToKeepStats / 2));
+  clock.Advance(base::TimeDelta::FromDays(GetMaxDaysToKeepStats() / 2));
   VerifyReadStats(kStatsKeyVp9, DecodeStatsEntry(200, 20, 2));
 
   // Advance time 1 day beyond grace period, verify stats are expired.
-  clock.Advance(base::TimeDelta::FromDays(
-      (VideoDecodeStatsDBImpl::kMaxDaysToKeepStats / 2) + 1));
+  clock.Advance(base::TimeDelta::FromDays((GetMaxDaysToKeepStats() / 2) + 1));
   VerifyEmptyStats(kStatsKeyVp9);
 
   // Advance the clock 100 days. Verify stats still expired.
