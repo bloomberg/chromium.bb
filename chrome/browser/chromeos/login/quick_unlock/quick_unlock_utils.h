@@ -45,6 +45,9 @@ bool IsFingerprintEnabled(Profile* profile);
 // Forcibly enable all quick-unlock modes for testing.
 void EnableForTesting();
 
+// Returns true if EnableForTesting() was previously called.
+bool IsEnabledForTesting();
+
 // Forcibly disable PIN for testing purposes.
 void DisablePinByPolicyForTesting(bool disable);
 
