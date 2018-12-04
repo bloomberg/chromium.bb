@@ -49,8 +49,9 @@ struct DeleteURLDataSource {
 // pointers and should never be deleted on the IO thread, since their calls
 // are handled almost always on the UI thread and there's a possibility of a
 // data race.  The |DeleteDataSource| trait above is used to enforce this.
-class URLDataSourceImpl : public base::RefCountedThreadSafe<
-    URLDataSourceImpl, DeleteURLDataSource> {
+class CONTENT_EXPORT URLDataSourceImpl
+    : public base::RefCountedThreadSafe<URLDataSourceImpl,
+                                        DeleteURLDataSource> {
  public:
   // See |source_name_| below for docs on that parameter.
   URLDataSourceImpl(const std::string& source_name,

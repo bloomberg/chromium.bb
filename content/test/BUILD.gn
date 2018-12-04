@@ -173,6 +173,8 @@ jumbo_static_library("test_support") {
     "../public/test/test_web_contents_factory.h",
     "../public/test/test_web_ui.cc",
     "../public/test/test_web_ui.h",
+    "../public/test/test_web_ui_data_source.cc",
+    "../public/test/test_web_ui_data_source.h",
     "../public/test/text_input_test_utils.cc",
     "../public/test/text_input_test_utils.h",
     "../public/test/text_input_test_utils_mac.mm",

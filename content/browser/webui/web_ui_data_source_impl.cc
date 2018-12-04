@@ -302,6 +302,10 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 
+const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
+  return &localized_strings_;
+}
+
 bool WebUIDataSourceImpl::IsGzipped(const std::string& path) const {
   return use_gzip_ && excluded_paths_.count(CleanUpPath(path)) == 0;
 }
