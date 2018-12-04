@@ -24,11 +24,6 @@ INSTANTIATE_TEST_CASE_P(All, ElementInnerTest, testing::Bool());
 TEST_P(ElementInnerTest, ListItemWithLeadingWhiteSpace) {
   SetBodyContent("<li id=target> abc</li>");
   Element& target = *GetDocument().getElementById("target");
-  if (!LayoutNGEnabled()) {
-    // TODO(crbug.com/908339) Actual result should be "abc", no leading space.
-    EXPECT_EQ(" abc", target.innerText());
-    return;
-  }
   EXPECT_EQ("abc", target.innerText());
 }
 
