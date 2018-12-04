@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/digital_asset_links/digital_asset_links_handler.h"
 
+#include <string>
+#include <vector>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -149,18 +152,40 @@ void DigitalAssetLinksHandler::OnJSONParseSucceeded(
     std::unique_ptr<base::Value> statement_list) {
   if (!statement_list->is_list()) {
     std::move(callback_).Run(RelationshipCheckResult::FAILURE);
+    LOG(WARNING) << "Statement List is not a list.";
     return;
   }
 
+  // We only output individual statement failures if none match.
+  std::vector<std::string> failures;
+
   for (const auto& statement : statement_list->GetList()) {
-    if (statement.is_dict() &&
-        StatementHasMatchingRelationship(statement, relationship) &&
-        StatementHasMatchingPackage(statement, package) &&
-        StatementHasMatchingFingerprint(statement, fingerprint)) {
-      std::move(callback_).Run(RelationshipCheckResult::SUCCESS);
-      return;
+    if (!statement.is_dict()) {
+      failures.push_back("Statement is not a dictionary.");
+      continue;
     }
+
+    if (!StatementHasMatchingRelationship(statement, relationship)) {
+      failures.push_back("Statement failure matching relationship.");
+      continue;
+    }
+
+    if (!StatementHasMatchingPackage(statement, package)) {
+      failures.push_back("Statement failure matching package.");
+      continue;
+    }
+
+    if (!StatementHasMatchingFingerprint(statement, fingerprint)) {
+      failures.push_back("Statement failure matching fingerprint.");
+      continue;
+    }
+
+    std::move(callback_).Run(RelationshipCheckResult::SUCCESS);
+    return;
   }
+
+  for (const auto& failure_reason : failures)
+    LOG(WARNING) << failure_reason;
 
   std::move(callback_).Run(RelationshipCheckResult::FAILURE);
 }
