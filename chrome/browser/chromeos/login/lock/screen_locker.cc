@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -265,6 +266,10 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
+  CHECK(!base::ContainsKey(users_with_disabled_auth_,
+                           user_context.GetAccountId()))
+      << "Authentication is disabled for this user.";
+
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
     if (user_context.GetAccountId().is_valid())
@@ -327,10 +332,38 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   SaveSyncPasswordHash(user_context);
 }
 
+void ScreenLocker::SetAuthEnabledForUser(
+    const AccountId& account_id,
+    bool is_enabled,
+    base::Optional<base::Time> auth_reenabled_time) {
+  const user_manager::User* user = FindUnlockUser(account_id);
+  CHECK(user) << "Invalid user - cannot disable authentication.";
+
+  if (is_enabled) {
+    users_with_disabled_auth_.erase(account_id);
+  } else {
+    users_with_disabled_auth_.insert(account_id);
+  }
+  LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
+      account_id, is_enabled, auth_reenabled_time);
+}
+
 void ScreenLocker::Authenticate(const UserContext& user_context,
                                 AuthenticateCallback callback) {
   LOG_ASSERT(IsUserLoggedIn(user_context.GetAccountId()))
       << "Invalid user trying to unlock.";
+
+  // Do not attempt authentication if it is disabled for the user.
+  if (base::ContainsKey(users_with_disabled_auth_,
+                        user_context.GetAccountId())) {
+    VLOG(1) << "Authentication disabled for user.";
+    if (auth_status_consumer_)
+      auth_status_consumer_->OnAuthFailure(
+          AuthFailure(AuthFailure::AUTH_DISABLED));
+    if (callback)
+      std::move(callback).Run(false);
+    return;
+  }
 
   DCHECK(!on_auth_complete_);
   on_auth_complete_ = std::move(callback);
@@ -678,7 +711,9 @@ void ScreenLocker::OnAuthScanDone(
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(active_user);
   if (!quick_unlock_storage ||
-      !quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
+      !quick_unlock_storage->IsFingerprintAuthenticationAvailable() ||
+      base::ContainsKey(users_with_disabled_auth_,
+                        active_user->GetAccountId())) {
     return;
   }
 

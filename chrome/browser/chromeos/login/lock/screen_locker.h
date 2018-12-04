@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "ash/public/interfaces/login_user_info.mojom.h"
@@ -13,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -109,6 +111,13 @@ class ScreenLocker : public AuthStatusConsumer,
   // Called when an account password (not PIN/quick unlock) has been used to
   // unlock the device.
   void OnPasswordAuthSuccess(const UserContext& user_context);
+
+  // Enables or disables authentication for the user with |account_id|. Notifies
+  // lock screen UI. |auth_reenabled_time| is used to display informaton in the
+  // UI.
+  void SetAuthEnabledForUser(const AccountId& account_id,
+                             bool is_enabled,
+                             base::Optional<base::Time> auth_reenabled_time);
 
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context,
@@ -233,6 +242,10 @@ class ScreenLocker : public AuthStatusConsumer,
 
   // Users that can unlock the device.
   user_manager::UserList users_;
+
+  // Set of users that have authentication disabled on lock screen. Has to be
+  // subset of |users_|.
+  std::set<AccountId> users_with_disabled_auth_;
 
   // Used to authenticate the user to unlock.
   scoped_refptr<Authenticator> authenticator_;

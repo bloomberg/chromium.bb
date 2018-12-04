@@ -13,16 +13,21 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/biod/fake_biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
@@ -33,6 +38,8 @@
 
 namespace chromeos {
 namespace {
+
+constexpr char kFingerprint[] = "pinky";
 
 // An object that wait for lock state and fullscreen state.
 class Waiter : public content::NotificationObserver {
@@ -112,10 +119,43 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+
+    fake_biod_client_ = new FakeBiodClient();
+    DBusThreadManager::GetSetterForTesting()->SetBiodClient(
+        base::WrapUnique(fake_biod_client_));
+  }
+
+  void EnrollFingerprint() {
+    quick_unlock::EnableForTesting();
+
+    fake_biod_client_->StartEnrollSession(
+        "user", std::string(),
+        base::BindRepeating(&ScreenLockerTest::OnStartSession,
+                            base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+
+    fake_biod_client_->SendEnrollScanDone(
+        kFingerprint, biod::SCAN_RESULT_SUCCESS, true /* is_complete */,
+        -1 /* percent_complete */);
+    base::RunLoop().RunUntilIdle();
+
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetInteger(
+        prefs::kQuickUnlockFingerprintRecord, 1);
+  }
+
+  void AuthenticateWithFingerprint() {
+    fake_biod_client_->SendAuthScanDone(kFingerprint,
+                                        biod::SCAN_RESULT_SUCCESS);
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
+  void OnStartSession(const dbus::ObjectPath& path) {}
+
   FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
+  // Ownership is passed on to DBusThreadManager.
+  FakeBiodClient* fake_biod_client_ = nullptr;
+
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
@@ -259,6 +299,82 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   ScreenLocker::Hide();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tester->IsLocked());
+  EXPECT_EQ(
+      1, session_manager_client()->notify_lock_screen_dismissed_call_count());
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
+  // Show lock screen and wait until it is shown.
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
+  LockScreen(tester.get());
+
+  // Inject fake authentication credentials.
+  const std::string kPassword = "pass";
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           user_manager::StubAccountId());
+  user_context.SetKey(Key(kPassword));
+  tester->InjectStubUserContext(user_context);
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Disable authentication for user.
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), false /*is_enabled*/,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+
+  // Try to authenticate with password.
+  tester->EnterPassword(user_manager::StubAccountId(), kPassword);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Re-enable authentication for user.
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
+
+  // Try to authenticate with password.
+  tester->EnterPassword(user_manager::StubAccountId(), kPassword);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager::SessionManager::Get()->session_state());
+  EXPECT_EQ(
+      1, session_manager_client()->notify_lock_screen_dismissed_call_count());
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
+  EnrollFingerprint();
+
+  // Show lock screen and wait until it is shown.
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
+  LockScreen(tester.get());
+
+  // Inject fake authentication credentials.
+  const std::string kPassword = "pass";
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           user_manager::StubAccountId());
+  user_context.SetKey(Key(kPassword));
+  tester->InjectStubUserContext(user_context);
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Disable authentication for user.
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), false /*is_enabled*/,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+
+  // Try to authenticate with fingerprint.
+  AuthenticateWithFingerprint();
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Re-enable authentication for user.
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
+      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
+
+  // Try to authenticate with fingerprint.
+  AuthenticateWithFingerprint();
+  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager::SessionManager::Get()->session_state());
   EXPECT_EQ(
       1, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
