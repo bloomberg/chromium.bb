@@ -282,14 +282,14 @@ PrinterSemanticCapsAndDefaults::Paper DefaultPaper(
   return ParsePaper(ippGetString(attr, 0, nullptr));
 }
 
-std::vector<PrinterSemanticCapsAndDefaults::Paper> SupportedPapers(
+PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
     const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> papers =
       printer.GetSupportedOptionValueStrings(kIppMedia);
-  std::vector<PrinterSemanticCapsAndDefaults::Paper> parsed_papers;
-  for (base::StringPiece paper : papers) {
+  PrinterSemanticCapsAndDefaults::Papers parsed_papers;
+  parsed_papers.reserve(papers.size());
+  for (base::StringPiece paper : papers)
     parsed_papers.push_back(ParsePaper(paper));
-  }
 
   return parsed_papers;
 }
