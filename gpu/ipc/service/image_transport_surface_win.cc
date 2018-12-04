@@ -37,7 +37,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     if (DirectCompositionSurfaceWin::IsDirectCompositionSupported()) {
       surface = base::MakeRefCounted<DirectCompositionSurfaceWin>(
           std::move(vsync_provider), delegate, surface_handle);
-      if (!surface->Initialize())
+      if (!surface->Initialize(gl::GLSurfaceFormat()))
         return nullptr;
     } else {
       surface = gl::InitializeGLSurface(
