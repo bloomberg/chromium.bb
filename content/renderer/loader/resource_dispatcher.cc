@@ -476,8 +476,6 @@ void ResourceDispatcher::OnRequestComplete(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->buffer.reset();
-  request_info->buffer_size = 0;
   request_info->net_error = status.error_code;
 
   auto resource_load_info = mojom::ResourceLoadInfo::New();
@@ -655,7 +653,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       response_method(method),
       response_referrer(referrer),
       local_request_start(base::TimeTicks::Now()),
-      buffer_size(0),
       navigation_response_override(
           std::move(navigation_response_override_params)) {}
 

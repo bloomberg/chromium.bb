@@ -275,8 +275,8 @@ int PresentationServiceImpl::RegisterReconnectPresentationCallback(
     return kInvalidRequestId;
 
   int request_id = GetNextRequestId();
-  pending_reconnect_presentation_cbs_[request_id].reset(
-      new NewPresentationCallbackWrapper(std::move(*callback)));
+  pending_reconnect_presentation_cbs_[request_id] =
+      std::make_unique<NewPresentationCallbackWrapper>(std::move(*callback));
   DCHECK_NE(kInvalidRequestId, request_id);
   return request_id;
 }
