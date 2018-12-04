@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -100,6 +101,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   _personalDataManager->RemoveObserver(_observer.get());
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
 }
 
 #pragma mark - CollectionViewController
