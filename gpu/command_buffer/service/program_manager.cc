@@ -1881,7 +1881,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
         continue;
       attrib = shader->GetAttribInfo(*mapped_name);
       if (attrib) {
-        if (attrib->staticUse)
+        if (shader->shader_version() >= 300 || attrib->staticUse)
           break;
         else
           attrib = nullptr;
