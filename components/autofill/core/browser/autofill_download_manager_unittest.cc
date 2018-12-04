@@ -14,7 +14,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -187,7 +186,7 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
     ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {}
   };
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::list<ResponseData> responses_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;

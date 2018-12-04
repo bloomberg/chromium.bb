@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -60,7 +60,7 @@ class MockAutofillManager : public AutofillManager {
 class AutofillAssistantTest : public testing::Test {
  protected:
   AutofillAssistantTest()
-      : message_loop_(), autofill_client_(), autofill_driver_(), pdm_() {}
+      : task_environment_(), autofill_client_(), autofill_driver_(), pdm_() {}
 
   void SetUp() {
     payments::TestPaymentsClient* payments_client =
@@ -133,7 +133,7 @@ class AutofillAssistantTest : public testing::Test {
     return form_structure;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
   TestPersonalDataManager pdm_;

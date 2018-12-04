@@ -4,9 +4,9 @@
 
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,7 +94,7 @@ class TestLogger : public RendererSavePasswordProgressLogger {
 }  // namespace
 
 TEST(RendererSavePasswordProgressLoggerTest, SendLog) {
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment task_environment;
   FakeContentPasswordManagerDriver fake_driver;
   mojom::PasswordManagerDriverPtr driver_ptr =
       fake_driver.CreateInterfacePtrAndBind();
