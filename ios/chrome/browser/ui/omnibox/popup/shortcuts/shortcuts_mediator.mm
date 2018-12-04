@@ -105,26 +105,26 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
   web::NavigationManager::WebLoadParams params(item.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   ChromeLoadParams chromeParams(params);
-  [self.dispatcher loadURLWithParams:chromeParams];
   [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher loadURLWithParams:chromeParams];
 }
 
 - (void)openBookmarks {
-  [self.dispatcher showBookmarksManager];
   [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher showBookmarksManager];
 }
 
 - (void)openReadingList {
-  [self.dispatcher showReadingList];
   [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher showReadingList];
 }
 - (void)openRecentTabs {
-  [self.dispatcher showRecentTabs];
   [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher showRecentTabs];
 }
 - (void)openHistory {
-  [self.dispatcher showHistory];
   [self.dispatcher cancelOmniboxEdit];
+  [self.dispatcher showHistory];
 }
 
 #pragma mark - MostVisitedSitesObserving
