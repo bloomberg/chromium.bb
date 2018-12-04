@@ -434,36 +434,6 @@ void ResourceResponse::SetDecodedBodyLength(int64_t value) {
   decoded_body_length_ = value;
 }
 
-bool ResourceResponse::Compare(const ResourceResponse& a,
-                               const ResourceResponse& b) {
-  if (a.IsNull() != b.IsNull())
-    return false;
-  if (a.CurrentRequestUrl() != b.CurrentRequestUrl())
-    return false;
-  if (a.MimeType() != b.MimeType())
-    return false;
-  if (a.ExpectedContentLength() != b.ExpectedContentLength())
-    return false;
-  if (a.TextEncodingName() != b.TextEncodingName())
-    return false;
-  if (a.HttpStatusCode() != b.HttpStatusCode())
-    return false;
-  if (a.HttpStatusText() != b.HttpStatusText())
-    return false;
-  if (a.HttpHeaderFields() != b.HttpHeaderFields())
-    return false;
-  if (a.GetResourceLoadTiming() && b.GetResourceLoadTiming() &&
-      *a.GetResourceLoadTiming() == *b.GetResourceLoadTiming())
-    return true;
-  if (a.GetResourceLoadTiming() != b.GetResourceLoadTiming())
-    return false;
-  if (a.EncodedBodyLength() != b.EncodedBodyLength())
-    return false;
-  if (a.DecodedBodyLength() != b.DecodedBodyLength())
-    return false;
-  return true;
-}
-
 STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,
                    ResourceResponse::kHTTPVersionUnknown);
 STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_0_9,
