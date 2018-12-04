@@ -68,6 +68,7 @@ const char* const kKnownSettings[] = {
     kAttestationForContentProtectionEnabled,
     kCastReceiverName,
     kDeviceAttestationEnabled,
+    kDeviceAutoUpdateTimeRestrictions,
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceHostnameTemplate,
@@ -91,6 +92,7 @@ const char* const kKnownSettings[] = {
     kLoginAuthenticationBehavior,
     kLoginVideoCaptureAllowedUrls,
     kMinimumRequiredChromeVersion,
+    kPluginVmAllowed,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -106,6 +108,7 @@ const char* const kKnownSettings[] = {
     kReportOsUpdateStatus,
     kReportRunningKioskApp,
     kReportUploadFrequency,
+    kSamlLoginAuthenticationType,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
     kStartUpFlags,
@@ -119,8 +122,6 @@ const char* const kKnownSettings[] = {
     kUpdateDisabled,
     kVariationsRestrictParameter,
     kVirtualMachinesAllowed,
-    kSamlLoginAuthenticationType,
-    kDeviceAutoUpdateTimeRestrictions,
 };
 
 // Re-use the DecodeJsonStringAndNormalize from device_policy_decoder_chromeos.h
@@ -689,6 +690,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           kDeviceUnaffiliatedCrostiniAllowed,
           std::make_unique<base::Value>(
               container.device_unaffiliated_crostini_allowed()));
+    }
+  }
+
+  if (policy.has_plugin_vm_allowed()) {
+    const em::PluginVmAllowedProto& container(policy.plugin_vm_allowed());
+    if (container.has_plugin_vm_allowed()) {
+      new_values_cache->SetValue(
+          kPluginVmAllowed,
+          std::make_unique<base::Value>(container.plugin_vm_allowed()));
     }
   }
 }

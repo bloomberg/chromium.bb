@@ -349,4 +349,8 @@ const char kDeviceAutoUpdateTimeRestrictions[] =
 const char kDeviceUnaffiliatedCrostiniAllowed[] =
     "cros.device.unaffiliated_crostini_allowed";
 
+// A boolean pref that indicates whether PluginVm is allowed to run on this
+// device.
+const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
+
 }  // namespace chromeos

@@ -156,6 +156,8 @@ CHROMEOS_EXPORT extern const char kDeviceAutoUpdateTimeRestrictions[];
 
 CHROMEOS_EXPORT extern const char kDeviceUnaffiliatedCrostiniAllowed[];
 
+CHROMEOS_EXPORT extern const char kPluginVmAllowed[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
