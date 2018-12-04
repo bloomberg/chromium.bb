@@ -214,18 +214,6 @@ TEST_F(NetworkErrorLoggingServiceTest, NoReportingService) {
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 }
 
-TEST_F(NetworkErrorLoggingServiceTest, OriginInsecure) {
-  const GURL kInsecureUrl("http://insecure.com/");
-  const url::Origin kInsecureOrigin = url::Origin::Create(kInsecureUrl);
-
-  service()->OnHeader(kInsecureOrigin, kServerIP_, kHeader_);
-
-  service()->OnRequest(
-      MakeRequestDetails(kInsecureUrl, ERR_CONNECTION_REFUSED));
-
-  EXPECT_TRUE(reports().empty());
-}
-
 TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
