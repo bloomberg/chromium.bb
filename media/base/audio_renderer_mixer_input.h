@@ -115,9 +115,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // Source of audio data which is provided to the mixer.
   AudioRendererSink::RenderCallback* callback_ = nullptr;
 
-  // Error callback for handing to AudioRendererMixer.
-  const base::Closure error_cb_;
-
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };
 
