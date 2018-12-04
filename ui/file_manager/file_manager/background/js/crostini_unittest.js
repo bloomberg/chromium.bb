@@ -48,7 +48,7 @@ function setUp() {
       /** @type {!VolumeManagerCommon.RootType<string>} */ ('testroot');
 
   // Create and initialize Crostini.
-  crostini = new CrostiniImpl();
+  crostini = createCrostiniForTest();
   crostini.init(volumeManager);
 }
 
