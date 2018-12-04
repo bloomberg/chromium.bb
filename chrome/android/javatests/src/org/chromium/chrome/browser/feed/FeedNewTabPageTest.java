@@ -67,8 +67,8 @@ import java.util.List;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class FeedNewTabPageTest {
-    private static final int SIGNIN_PROMO_POSITION = 1;
-    private static final int ARTICLE_SECTION_HEADER_POSITION = 2;
+    private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
+    private static final int SIGNIN_PROMO_POSITION = 2;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();

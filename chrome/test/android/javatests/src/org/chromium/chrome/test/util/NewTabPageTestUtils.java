@@ -4,16 +4,23 @@
 
 package org.chromium.chrome.test.util;
 
+import static org.junit.Assert.assertFalse;
+
+import android.accounts.Account;
 import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
 import org.chromium.chrome.browser.suggestions.TileTitleSource;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -82,5 +89,17 @@ public class NewTabPageTestUtils {
                 "", TileTitleSource.TITLE_TAG, TileSource.TOP_SITES, TileSectionType.PERSONALIZED,
                 new Date()));
         return siteSuggestions;
+    }
+
+    /** Initializes {@link AccountManagerFacade} and add one dummy . */
+    public static void setUpTestAccount() {
+        FakeAccountManagerDelegate fakeAccountManager = new FakeAccountManagerDelegate(
+                FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(fakeAccountManager);
+        Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
+        fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
+        assertFalse(AccountManagerFacade.get().isUpdatePending());
+        assertFalse(ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
     }
 }

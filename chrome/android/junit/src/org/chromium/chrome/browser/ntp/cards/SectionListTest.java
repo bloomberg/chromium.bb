@@ -113,12 +113,15 @@ public class SectionListTest {
 
         doNothing().when(mPrefServiceBridge).setBoolean(anyInt(), anyBoolean());
         PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
+
+        SignInPromo.setDisablePromoForTests(true);
     }
 
     @After
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
         PrefServiceBridge.setInstanceForTesting(null);
+        SignInPromo.setDisablePromoForTests(false);
     }
 
     @Test

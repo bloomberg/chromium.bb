@@ -427,12 +427,11 @@ public class FeedNewTabPage extends NewTabPage {
 
     /** Update header views in the Stream. */
     void updateHeaderViews(boolean isPromoVisible) {
-        mStream.setHeaderViews(isPromoVisible
-                        ? Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
-                                  new SignInPromoHeader(),
-                                  new NonDismissibleHeader(mSectionHeaderView))
-                        : Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
-                                  new NonDismissibleHeader(mSectionHeaderView)));
+        mStream.setHeaderViews(
+                isPromoVisible ? Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                        new NonDismissibleHeader(mSectionHeaderView), new SignInPromoHeader())
+                               : Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                                       new NonDismissibleHeader(mSectionHeaderView)));
     }
 
     @VisibleForTesting

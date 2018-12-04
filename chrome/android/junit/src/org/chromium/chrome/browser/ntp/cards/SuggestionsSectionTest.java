@@ -45,6 +45,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -56,12 +57,14 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
@@ -80,7 +83,7 @@ import java.util.TreeSet;
  * Unit tests for {@link SuggestionsSection}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class SuggestionsSectionTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -103,13 +106,11 @@ public class SuggestionsSectionTest {
     private SuggestionsUiDelegate mUiDelegate;
     @Mock
     private PrefServiceBridge mPrefServiceBridge;
+    @Mock
+    private SigninManager mSigninManager;
 
     private FakeSuggestionsSource mSuggestionsSource;
     private FakeOfflinePageBridge mBridge;
-
-    public SuggestionsSectionTest() {
-        // The ChromeHome.Processor rule needs an available context when it is applied.
-    }
 
     @Before
     public void setUp() {
@@ -130,12 +131,19 @@ public class SuggestionsSectionTest {
 
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<>());
+
+        // Set up a test account and initialize to the signed in state.
+        NewTabPageTestUtils.setUpTestAccount();
+        SigninManager.setInstanceForTesting(mSigninManager);
+        when(mSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mSigninManager.isSignInAllowed()).thenReturn(true);
     }
 
     @After
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         PrefServiceBridge.setInstanceForTesting(null);
+        SigninManager.setInstanceForTesting(null);
     }
 
     @Test
@@ -348,10 +356,11 @@ public class SuggestionsSectionTest {
 
         // Simulate toggling the header to the expanded state.
         section.getHeaderItemForTesting().toggleHeader();
-        assertEquals(3, section.getItemCount());
+        assertEquals(4, section.getItemCount());
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
-        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
-        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
+        assertEquals(ItemViewType.PROMO, section.getItemViewType(1));
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(2));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(3));
 
         // Simulate toggling the header to the collapsed state.
         section.getHeaderItemForTesting().toggleHeader();
@@ -378,12 +387,13 @@ public class SuggestionsSectionTest {
                 /* keepSectionSize = */ true, /* reportPrefetchedSuggestionsCount = */ false);
 
         Mockito.<ListObserver>reset(mObserver);
-        assertEquals(5, section.getItemCount());
+        assertEquals(6, section.getItemCount());
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
-        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
+        assertEquals(ItemViewType.PROMO, section.getItemViewType(1));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(2));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(3));
-        assertEquals(ItemViewType.ACTION, section.getItemViewType(4));
+        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(4));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(5));
 
         // Simulate toggling the header to the collapsed state.
         section.getHeaderItemForTesting().toggleHeader();
@@ -392,12 +402,13 @@ public class SuggestionsSectionTest {
 
         // Simulate toggling the header to the expanded state.
         section.getHeaderItemForTesting().toggleHeader();
-        assertEquals(5, section.getItemCount());
+        assertEquals(6, section.getItemCount());
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
-        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
+        assertEquals(ItemViewType.PROMO, section.getItemViewType(1));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(2));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(3));
-        assertEquals(ItemViewType.ACTION, section.getItemViewType(4));
+        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(4));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(5));
     }
 
     @Test

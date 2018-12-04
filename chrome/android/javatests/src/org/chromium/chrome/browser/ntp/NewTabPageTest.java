@@ -111,6 +111,9 @@ import java.util.concurrent.TimeUnit;
 @Features.DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
 @RetryOnFailure
 public class NewTabPageTest {
+    private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
+    private static final int SIGNIN_PROMO_POSITION = 2;
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
@@ -229,7 +232,8 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_SignInPromo(boolean interestFeedEnabled) throws Exception {
         // Scroll to the sign in promo in case it is not visible.
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(1));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         mRenderTestRule.render(mNtp.getSignInPromoViewForTesting(), "sign_in_promo");
     }
 
@@ -239,14 +243,16 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRender_ArticleSectionHeader(boolean interestFeedEnabled) throws Exception {
         // Scroll to the article section header in case it is not visible.
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
         waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         View view = mNtp.getSectionHeaderViewForTesting();
         // Check header is expanded.
         mRenderTestRule.render(view, "expandable_header_expanded");
 
         // Toggle header on the current tab.
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
         waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
         onView(withId(R.id.header_title)).perform(click());
         // Check header is collapsed.
