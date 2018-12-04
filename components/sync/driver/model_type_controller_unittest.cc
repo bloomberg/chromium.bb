@@ -10,10 +10,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/commit_queue.h"
@@ -213,7 +213,7 @@ class ModelTypeControllerTest : public testing::Test {
   DataTypeController* controller() { return &controller_; }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   NiceMock<MockDelegate> mock_delegate_;
   TestModelTypeConfigurer configurer_;
   TestModelTypeProcessor processor_;
@@ -477,7 +477,7 @@ TEST_F(ModelTypeControllerTest, StopWhileErrorInFlight) {
 // Tests that StorageOption is honored when the controller has been constructed
 // with two delegates.
 TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
   NiceMock<MockDelegate> delegate_on_disk;
   NiceMock<MockDelegate> delegate_in_memory;
 

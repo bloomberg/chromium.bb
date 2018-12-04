@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/storage_option.h"
 #include "components/sync/base/time.h"
@@ -363,7 +363,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   // This sets SequencedTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
-  base::MessageLoop sync_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   // The current mock queue, which is owned by |type_processor()|.
   MockModelTypeWorker* worker_;

@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -90,7 +90,7 @@ class UserEventServiceImplTest : public testing::Test {
   MockModelTypeChangeProcessor* mock_processor() { return &mock_processor_; }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   syncer::TestSyncService sync_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;

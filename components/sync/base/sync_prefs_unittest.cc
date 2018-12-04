@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
@@ -30,7 +30,7 @@ class SyncPrefsTest : public testing::Test {
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
 };

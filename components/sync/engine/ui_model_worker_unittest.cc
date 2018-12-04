@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -56,8 +56,8 @@ class SyncUIModelWorkerTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<base::MessageLoop> ui_loop_ =
-      std::make_unique<base::MessageLoop>();
+  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_ =
+      std::make_unique<base::test::ScopedTaskEnvironment>();
   base::Thread sync_thread_;
   scoped_refptr<UIModelWorker> worker_;
 };
@@ -97,7 +97,7 @@ TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterUIMessageLoopDestruction) {
 
   // The sync thread shouldn't wait for the WorkCallback to run on the UI thread
   // after the UI MessageLoop is gone.
-  ui_loop_.reset();
+  task_environment_.reset();
   sync_thread_.Stop();
 }
 

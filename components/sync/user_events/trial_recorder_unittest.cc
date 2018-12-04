@@ -8,9 +8,10 @@
 #include <set>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/user_events/fake_user_event_service.h"
@@ -74,7 +75,7 @@ class TrialRecorderTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   FakeUserEventService service_;
   std::unique_ptr<TrialRecorder> recorder_;

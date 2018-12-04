@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -311,7 +311,7 @@ class SyncSchedulerImplTest : public testing::Test {
     return test_user_share_.user_share()->directory.get();
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<MockConnectionManager> connection_;

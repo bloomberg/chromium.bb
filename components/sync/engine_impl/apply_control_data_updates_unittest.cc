@@ -13,8 +13,8 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_util.h"
@@ -57,7 +57,8 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
   std::unique_ptr<TestEntryFactory> entry_factory_;
 
  private:
-  base::MessageLoop loop_;  // Needed for directory init.
+  // Needed for directory init.
+  base::test::ScopedTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplyControlDataUpdatesTest);

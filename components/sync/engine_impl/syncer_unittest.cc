@@ -19,9 +19,9 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -526,7 +526,7 @@ class SyncerTest : public testing::Test,
     ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.

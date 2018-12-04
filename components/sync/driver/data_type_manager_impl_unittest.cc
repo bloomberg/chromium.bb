@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/storage_option.h"
 #include "components/sync/driver/configure_context.h"
@@ -333,7 +333,8 @@ class SyncDataTypeManagerImplTest : public testing::Test {
     return configurer_.last_params();
   }
 
-  base::MessageLoopForUI ui_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   DataTypeController::TypeMap controllers_;
   TestSyncClient sync_client_;
   FakeModelTypeConfigurer configurer_;

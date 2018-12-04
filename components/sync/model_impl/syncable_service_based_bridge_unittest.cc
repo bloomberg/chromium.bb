@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"
@@ -219,7 +219,7 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   const std::string kClientTagHash =
       GenerateSyncableHash(kModelType, kClientTag);
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   testing::NiceMock<MockSyncableService> syncable_service_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   base::MockCallback<ModelErrorHandler> mock_error_handler_;
@@ -695,7 +695,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldDropIfCommitted) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   std::map<std::string, sync_pb::PersistedEntityData> in_memory_store;
@@ -730,7 +730,7 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
      ShouldNotDropIfUnsynced) {
   const std::string kClientTagHash = "clienttaghash1";
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
   std::unique_ptr<ModelTypeStore> store =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest();
   std::map<std::string, sync_pb::PersistedEntityData> in_memory_store;
