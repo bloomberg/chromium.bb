@@ -433,18 +433,18 @@
   },
   {
     "name": "contextual-suggestions-button",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
+    "expiry_milestone": 74
   },
   {
     "name": "contextual-suggestions-iph-reverse-scroll",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
+    "expiry_milestone": 74
   },
   {
     "name": "contextual-suggestions-opt-out",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextual_suggestions/OWNERS" ],
+    "expiry_milestone": 74
   },
   {
     "name": "create-app-windows-in-app",
@@ -2346,8 +2346,8 @@
   },
   {
     "name": "interest-feed-content-suggestions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//chrome/android/feed/OWNERS" ],
+    "expiry_milestone": 74
   },
   {
     "name": "just-in-time-service-worker-payment-app",
