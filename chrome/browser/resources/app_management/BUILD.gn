@@ -2,19 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../optimize_webui.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("../optimize_webui.gni")
 
 js_type_check("closure_compile") {
   deps = [
     ":app",
     ":browser_proxy",
+    ":main_view",
   ]
 }
 
 js_library("app") {
   deps = [
     ":browser_proxy",
+    ":main_view",
   ]
 }
 
@@ -32,4 +34,8 @@ js_library("externs") {
     "$root_gen_dir/chrome/browser/ui/webui/app_management/app_management.mojom-lite.externs.js",
     "$externs_path/mojo.js",
   ]
+}
+
+js_library("main_view") {
+  deps = []
 }

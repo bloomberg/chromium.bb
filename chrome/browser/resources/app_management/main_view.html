@@ -1,0 +1,17 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+
+<dom-module id="app-management-main-view">
+  <template>
+    <style>
+    cr-toolbar {
+      color: rgba(0, 0, 0, 0.54);
+    }
+    </style>
+    <cr-toolbar page-name="Apps"
+        search-prompt="Search Settings">
+    </cr-toolbar>
+  </template>
+  <script src="chrome://apps/main_view.js"></script>
+</dom-module>

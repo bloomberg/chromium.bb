@@ -33,8 +33,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_JS);
-  source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
+  source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
+  source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
 
+  source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
   source->SetJsonPath("strings.js");
 
   return source;
