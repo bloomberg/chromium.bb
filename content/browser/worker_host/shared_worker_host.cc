@@ -382,10 +382,11 @@ void SharedWorkerHost::AdvanceTo(Phase phase) {
   phase_ = phase;
 }
 
-SharedWorkerHost::ClientInfo::ClientInfo(mojom::SharedWorkerClientPtr client,
-                                         int connection_request_id,
-                                         int process_id,
-                                         int frame_id)
+SharedWorkerHost::ClientInfo::ClientInfo(
+    blink::mojom::SharedWorkerClientPtr client,
+    int connection_request_id,
+    int process_id,
+    int frame_id)
     : client(std::move(client)),
       connection_request_id(connection_request_id),
       process_id(process_id),
@@ -483,7 +484,7 @@ base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
+void SharedWorkerHost::AddClient(blink::mojom::SharedWorkerClientPtr client,
                                  int process_id,
                                  int frame_id,
                                  const blink::MessagePortChannel& port) {

@@ -114,7 +114,7 @@ void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));
 
-  mojom::SharedWorkerClientPtr client_proxy;
+  blink::mojom::SharedWorkerClientPtr client_proxy;
   client->Bind(mojo::MakeRequest(&client_proxy));
 
   connector->Connect(std::move(info), std::move(client_proxy),

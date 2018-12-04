@@ -31,7 +31,7 @@ SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int process_id,
 
 void SharedWorkerConnectorImpl::Connect(
     mojom::SharedWorkerInfoPtr info,
-    mojom::SharedWorkerClientPtr client,
+    blink::mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
     blink::mojom::BlobURLTokenPtr blob_url_token) {

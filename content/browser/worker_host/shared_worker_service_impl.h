@@ -59,7 +59,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int process_id,
       int frame_id,
       mojom::SharedWorkerInfoPtr info,
-      mojom::SharedWorkerClientPtr client,
+      blink::mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
@@ -75,7 +75,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   void CreateWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
-      mojom::SharedWorkerClientPtr client,
+      blink::mojom::SharedWorkerClientPtr client,
       int process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
@@ -83,7 +83,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void DidCreateScriptLoader(
       std::unique_ptr<SharedWorkerInstance> instance,
       base::WeakPtr<SharedWorkerHost> host,
-      mojom::SharedWorkerClientPtr client,
+      blink::mojom::SharedWorkerClientPtr client,
       int process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
@@ -98,7 +98,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void StartWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
       base::WeakPtr<SharedWorkerHost> host,
-      mojom::SharedWorkerClientPtr client,
+      blink::mojom::SharedWorkerClientPtr client,
       int process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,

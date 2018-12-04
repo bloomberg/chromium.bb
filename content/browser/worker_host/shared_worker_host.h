@@ -18,13 +18,13 @@
 #include "base/unguessable_token.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
-#include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/web/devtools_agent.mojom.h"
 
@@ -106,7 +106,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();
 
-  void AddClient(mojom::SharedWorkerClientPtr client,
+  void AddClient(blink::mojom::SharedWorkerClientPtr client,
                  int process_id,
                  int frame_id,
                  const blink::MessagePortChannel& port);
@@ -137,12 +137,12 @@ class CONTENT_EXPORT SharedWorkerHost
   class ScopedDevToolsHandle;
 
   struct ClientInfo {
-    ClientInfo(mojom::SharedWorkerClientPtr client,
+    ClientInfo(blink::mojom::SharedWorkerClientPtr client,
                int connection_request_id,
                int process_id,
                int frame_id);
     ~ClientInfo();
-    mojom::SharedWorkerClientPtr client;
+    blink::mojom::SharedWorkerClientPtr client;
     const int connection_request_id;
     const int process_id;
     const int frame_id;

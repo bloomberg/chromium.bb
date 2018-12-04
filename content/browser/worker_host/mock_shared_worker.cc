@@ -131,7 +131,8 @@ MockSharedWorkerClient::MockSharedWorkerClient() : binding_(this) {}
 
 MockSharedWorkerClient::~MockSharedWorkerClient() = default;
 
-void MockSharedWorkerClient::Bind(mojom::SharedWorkerClientRequest request) {
+void MockSharedWorkerClient::Bind(
+    blink::mojom::SharedWorkerClientRequest request) {
   binding_.Bind(std::move(request));
 }
 
