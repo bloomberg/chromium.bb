@@ -430,8 +430,9 @@ def _WriteChromePolicyAccessHeader(f, protobuf_type):
 
 SchemaNodeKey = namedtuple('SchemaNodeKey',
                            'schema_type extra is_sensitive_value')
-SchemaNode = namedtuple('SchemaNode',
-                        'schema_type extra is_sensitive_value comments')
+SchemaNode = namedtuple(
+    'SchemaNode',
+    'schema_type extra is_sensitive_value has_sensitive_children comments')
 PropertyNode = namedtuple('PropertyNode', 'key schema')
 PropertiesNode = namedtuple(
     'PropertiesNode',
@@ -446,6 +447,8 @@ SIMPLE_SCHEMA_NAME_MAP = {
     'number': 'Type::DOUBLE',
     'string': 'Type::STRING',
 }
+
+INVALID_INDEX = -1
 
 
 class SchemaNodesGenerator:
@@ -488,7 +491,8 @@ class SchemaNodesGenerator:
     # Create new schema node.
     index = len(self.schema_nodes)
     comments = {comment} if comment else set()
-    schema_node = SchemaNode(schema_type, extra, is_sensitive_value, comments)
+    schema_node = SchemaNode(schema_type, extra, is_sensitive_value, False,
+                             comments)
     self.schema_nodes.append(schema_node)
     self.key_index_map[key_node] = index
     return index
@@ -501,7 +505,7 @@ class SchemaNodesGenerator:
     return self.ranges[r]
 
   def GetSimpleType(self, name, is_sensitive_value):
-    return self.AppendSchema(SIMPLE_SCHEMA_NAME_MAP[name], -1,
+    return self.AppendSchema(SIMPLE_SCHEMA_NAME_MAP[name], INVALID_INDEX,
                              is_sensitive_value, 'simple type: ' + name)
 
   def SchemaHaveRestriction(self, schema):
@@ -622,13 +626,14 @@ class SchemaNodesGenerator:
       # invalidating all child schema indices.
       index = len(self.schema_nodes)
       self.schema_nodes.append(
-          SchemaNode('Type::DICTIONARY', -1, is_sensitive_value, {name}))
+          SchemaNode('Type::DICTIONARY', INVALID_INDEX, is_sensitive_value,
+                     False, {name}))
 
       if 'additionalProperties' in schema:
         additionalProperties = self.GenerateAndCollectID(
             schema['additionalProperties'], 'additionalProperties of ' + name)
       else:
-        additionalProperties = -1
+        additionalProperties = INVALID_INDEX
 
       # Properties must be sorted by name, for the binary search lookup.
       # Note that |properties| must be evaluated immediately, so that all the
@@ -701,17 +706,19 @@ class SchemaNodesGenerator:
 
     |f| an open file to write to."""
     f.write('const internal::SchemaNode kSchemas[] = {\n'
-            '//  Type                          Extra\n')
+            '//  Type' + ' ' * 27 +
+            'Extra  IsSensitiveValue HasSensitiveChildren\n')
     for schema_node in self.schema_nodes:
-      comment = ('\n' + ' ' * 51 + '// ').join(schema_node.comments)
-      f.write('  { base::Value::%-18s %3d, %-5s },  // %s\n' %
-              (schema_node.schema_type + ',', schema_node.extra,
-               str(schema_node.is_sensitive_value).lower(), comment))
+      comment = ('\n' + ' ' * 69 + '// ').join(schema_node.comments)
+      f.write('  { base::Value::%-19s %4s %-16s %-5s },  // %s\n' %
+              (schema_node.schema_type + ',', str(schema_node.extra) + ',',
+               str(schema_node.is_sensitive_value).lower() + ',',
+               str(schema_node.has_sensitive_children).lower(), comment))
     f.write('};\n\n')
 
     if self.property_nodes:
       f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
-              '//  Property                                          #Schema\n')
+              '//  Property' + ' ' * 61 + 'Schema\n')
       for property_node in self.property_nodes:
         f.write('  { %-64s %6d },\n' % (property_node.key + ',',
                                         property_node.schema))
@@ -792,6 +799,48 @@ class SchemaNodesGenerator:
         partial(self.ResolveID, 1, PropertyNode), self.property_nodes)
     self.properties_nodes = map(
         partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes)
+
+  def FindSensitiveChildren(self):
+    """Wrapper function, which calls FindSensitiveChildrenRecursive().
+    """
+    if self.schema_nodes:
+      self.FindSensitiveChildrenRecursive(0, set())
+
+  def FindSensitiveChildrenRecursive(self, index, handled_schema_nodes):
+    """Recursively compute |has_sensitive_children| for the schema node at
+    |index| and all its child elements. A schema has sensitive children if any
+    of its children has |is_sensitive_value|==True or has sensitive children
+    itself.
+    """
+    node = self.schema_nodes[index]
+    if index in handled_schema_nodes:
+      return node.has_sensitive_children or node.is_sensitive_value
+
+    handled_schema_nodes.add(index)
+    has_sensitive_children = False
+    if node.schema_type == 'Type::DICTIONARY':
+      properties_node = self.properties_nodes[node.extra]
+      # Iterate through properties and patternProperties.
+      for property_index in range(properties_node.begin,
+                                  properties_node.pattern_end - 1):
+        sub_index = self.property_nodes[property_index].schema
+        has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+            sub_index, handled_schema_nodes)
+      # AdditionalProperties
+      if properties_node.additional != INVALID_INDEX:
+        sub_index = properties_node.additional
+        has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+            sub_index, handled_schema_nodes)
+    elif node.schema_type == 'Type::LIST':
+      sub_index = node.extra
+      has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+          sub_index, handled_schema_nodes)
+
+    if has_sensitive_children:
+      self.schema_nodes[index] = self.schema_nodes[index]._replace(
+          has_sensitive_children=True)
+
+    return has_sensitive_children or node.is_sensitive_value
 
 
 def _GenerateDefaultValue(value):
@@ -880,9 +929,10 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
         schema_generator.GenerateAndCollectID(chrome_validation_schema,
                                               'validation_schema root node')
   else:
-    schema_generator.validation_schema_root_index = -1
+    schema_generator.validation_schema_root_index = INVALID_INDEX
 
   schema_generator.ResolveReferences()
+  schema_generator.FindSensitiveChildren()
   schema_generator.Write(f)
 
   f.write('\n' 'namespace {\n')

@@ -615,6 +615,14 @@ class Schema::InternalStorage
                                 const ReferenceList& reference_list,
                                 std::string* error);
 
+  // Sets |has_sensitive_children| for all |SchemaNode|s in |schema_nodes_|.
+  void FindSensitiveChildren();
+
+  // Returns true iff the node at |index| has sensitive child elements or
+  // contains a sensitive value itself.
+  bool FindSensitiveChildrenRecursive(int index,
+                                      std::set<int>* handled_schema_nodes);
+
   // Cache for CompileRegex(), will memorize return value of every call to
   // CompileRegex() and return results directly next time.
   mutable std::map<std::string, std::unique_ptr<re2::RE2>> regex_cache_;
@@ -704,6 +712,8 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
 
   if (!ResolveReferences(id_map, reference_list, error))
     return nullptr;
+
+  storage->FindSensitiveChildren();
 
   SchemaData* data = &storage->schema_data_;
   data->schema_nodes = storage->schema_nodes_.data();
@@ -1113,6 +1123,47 @@ bool Schema::InternalStorage::ResolveReferences(
   return true;
 }
 
+void Schema::InternalStorage::FindSensitiveChildren() {
+  if (schema_nodes_.empty())
+    return;
+
+  std::set<int> handled_schema_nodes;
+  FindSensitiveChildrenRecursive(0, &handled_schema_nodes);
+}
+
+bool Schema::InternalStorage::FindSensitiveChildrenRecursive(
+    int index,
+    std::set<int>* handled_schema_nodes) {
+  DCHECK(static_cast<unsigned long>(index) < schema_nodes_.size());
+  SchemaNode& schema_node = schema_nodes_[index];
+  if (handled_schema_nodes->find(index) != handled_schema_nodes->end())
+    return schema_node.has_sensitive_children || schema_node.is_sensitive_value;
+
+  handled_schema_nodes->insert(index);
+  bool has_sensitive_children = false;
+  if (schema_node.type == base::Value::Type::DICTIONARY) {
+    const PropertiesNode& properties_node =
+        properties_nodes_[schema_node.extra];
+    // Iterate through properties and patternProperties.
+    for (int i = properties_node.begin; i < properties_node.pattern_end; ++i) {
+      int sub_index = property_nodes_[i].schema;
+      has_sensitive_children |=
+          FindSensitiveChildrenRecursive(sub_index, handled_schema_nodes);
+    }
+    if (properties_node.additional != kInvalid) {
+      has_sensitive_children |= FindSensitiveChildrenRecursive(
+          properties_node.additional, handled_schema_nodes);
+    }
+  } else if (schema_node.type == base::Value::Type::LIST) {
+    int sub_index = schema_node.extra;
+    has_sensitive_children |=
+        FindSensitiveChildrenRecursive(sub_index, handled_schema_nodes);
+  }
+  schema_node.has_sensitive_children = has_sensitive_children;
+
+  return schema_node.has_sensitive_children || schema_node.is_sensitive_value;
+}
+
 Schema::Iterator::Iterator(const scoped_refptr<const InternalStorage>& storage,
                            const PropertiesNode* node)
     : storage_(storage),
@@ -1377,7 +1428,7 @@ void Schema::MaskSensitiveValues(base::Value* value) const {
   if (!valid())
     return;
 
-  MaskSensitiveValuesRecurse(value);
+  MaskSensitiveValuesRecursive(value);
 }
 
 // static
@@ -1570,10 +1621,13 @@ bool Schema::ValidateStringRestriction(int index, const char* str) const {
   }
 }
 
-void Schema::MaskSensitiveValuesRecurse(base::Value* value) const {
-  if (IsSensitiveValue())
+void Schema::MaskSensitiveValuesRecursive(base::Value* value) const {
+  if (IsSensitiveValue()) {
     *value = base::Value(kSensitiveValueMask);
-
+    return;
+  }
+  if (!HasSensitiveChildren())
+    return;
   if (value->type() != type())
     return;
 
@@ -1582,11 +1636,11 @@ void Schema::MaskSensitiveValuesRecurse(base::Value* value) const {
       auto& sub_value = dict_item.second;
       SchemaList schema_list = GetMatchingProperties(dict_item.first);
       for (const auto& schema_item : schema_list)
-        schema_item.MaskSensitiveValuesRecurse(&sub_value);
+        schema_item.MaskSensitiveValuesRecursive(&sub_value);
     }
   } else if (value->is_list()) {
     for (auto& list_elem : value->GetList())
-      GetItems().MaskSensitiveValuesRecurse(&list_elem);
+      GetItems().MaskSensitiveValuesRecursive(&list_elem);
   }
 }
 
@@ -1610,6 +1664,19 @@ bool Schema::IsSensitiveValue() const {
   if (!schema_node)
     return false;
   return schema_node->is_sensitive_value;
+}
+
+bool Schema::HasSensitiveChildren() const {
+  CHECK(valid());
+
+  // This is safe because |node_| is guaranteed to have been returned from
+  // |storage_| and |storage_->root_node()| always returns to the |SchemaNode|
+  // with index 0.
+  int index = node_ - storage_->root_node();
+  const SchemaNode* schema_node = storage_->schema(index);
+  if (!schema_node)
+    return false;
+  return schema_node->has_sensitive_children;
 }
 
 }  // namespace policy

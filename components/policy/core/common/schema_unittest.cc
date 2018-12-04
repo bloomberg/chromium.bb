@@ -1229,7 +1229,7 @@ TEST(SchemaTest, ItemsReference) {
   ASSERT_EQ(base::Value::Type::BOOLEAN, items.type());
 }
 
-TEST(SchemaTest, SchemaNodeMetadataSensitiveValues) {
+TEST(SchemaTest, SchemaNodeSensitiveValues) {
   std::string error;
 
   const std::string kNormalBooleanSchema = "normal_boolean";
@@ -1281,41 +1281,49 @@ TEST(SchemaTest, SchemaNodeMetadataSensitiveValues) {
   ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::Type::DICTIONARY, schema.type());
   EXPECT_FALSE(schema.IsSensitiveValue());
+  EXPECT_TRUE(schema.HasSensitiveChildren());
 
   Schema normal_boolean = schema.GetKnownProperty(kNormalBooleanSchema);
   ASSERT_TRUE(normal_boolean.valid());
   EXPECT_EQ(base::Value::Type::BOOLEAN, normal_boolean.type());
   EXPECT_FALSE(normal_boolean.IsSensitiveValue());
+  EXPECT_FALSE(normal_boolean.HasSensitiveChildren());
 
   Schema sensitive_boolean = schema.GetKnownProperty(kSensitiveBooleanSchema);
   ASSERT_TRUE(sensitive_boolean.valid());
   EXPECT_EQ(base::Value::Type::BOOLEAN, sensitive_boolean.type());
   EXPECT_TRUE(sensitive_boolean.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_boolean.HasSensitiveChildren());
 
   Schema sensitive_string = schema.GetKnownProperty(kSensitiveStringSchema);
   ASSERT_TRUE(sensitive_string.valid());
   EXPECT_EQ(base::Value::Type::STRING, sensitive_string.type());
   EXPECT_TRUE(sensitive_string.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_string.HasSensitiveChildren());
 
   Schema sensitive_object = schema.GetKnownProperty(kSensitiveObjectSchema);
   ASSERT_TRUE(sensitive_object.valid());
   EXPECT_EQ(base::Value::Type::DICTIONARY, sensitive_object.type());
   EXPECT_TRUE(sensitive_object.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_object.HasSensitiveChildren());
 
   Schema sensitive_array = schema.GetKnownProperty(kSensitiveArraySchema);
   ASSERT_TRUE(sensitive_array.valid());
   EXPECT_EQ(base::Value::Type::LIST, sensitive_array.type());
   EXPECT_TRUE(sensitive_array.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_array.HasSensitiveChildren());
 
   Schema sensitive_integer = schema.GetKnownProperty(kSensitiveIntegerSchema);
   ASSERT_TRUE(sensitive_integer.valid());
   EXPECT_EQ(base::Value::Type::INTEGER, sensitive_integer.type());
   EXPECT_TRUE(sensitive_integer.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_integer.HasSensitiveChildren());
 
   Schema sensitive_number = schema.GetKnownProperty(kSensitiveNumberSchema);
   ASSERT_TRUE(sensitive_number.valid());
   EXPECT_EQ(base::Value::Type::DOUBLE, sensitive_number.type());
   EXPECT_TRUE(sensitive_number.IsSensitiveValue());
+  EXPECT_FALSE(sensitive_number.HasSensitiveChildren());
 
   // Run |MaskSensitiveValues| on the top-level schema
   base::DictionaryValue object;
