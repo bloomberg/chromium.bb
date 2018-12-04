@@ -79,6 +79,9 @@ function DirectoryModel(
 
   /** @private {string} */
   this.lastSearchQuery_ = '';
+
+  /** @private {FilesAppDirEntry} */
+  this.myFilesEntry_ = null;
 }
 
 /**
@@ -947,6 +950,14 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
 };
 
 /**
+ * Sets the current MyFilesEntry.
+ * @param {FilesAppDirEntry} myFilesEntry
+ */
+DirectoryModel.prototype.setMyFiles = function(myFilesEntry) {
+  this.myFilesEntry_ = myFilesEntry;
+};
+
+/**
  * Changes the current directory to the directory represented by
  * a DirectoryEntry or a fake entry.
  *
@@ -967,6 +978,16 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
   // Increment the sequence value.
   this.changeDirectorySequence_++;
   this.clearSearch_();
+
+  // When switching to MyFiles volume, we should use a FilesAppEntry if
+  // available because it returns UI-only entries too, like Linux files and Play
+  // files.
+  const locationInfo = this.volumeManager_.getLocationInfo(dirEntry);
+  if (util.isMyFilesVolumeEnabled() && locationInfo && this.myFilesEntry_ &&
+      locationInfo.rootType === VolumeManagerCommon.RootType.DOWNLOADS &&
+      locationInfo.isRootEntry) {
+    dirEntry = this.myFilesEntry_;
+  }
 
   // If there is on-going scan, cancel it.
   if (this.currentDirContents_.isScanning())
@@ -1134,10 +1155,11 @@ DirectoryModel.prototype.selectIndex = function(index) {
  * @private
  */
 DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
-  // When the volume where we are is unmounted, fallback to the default volume's
-  // root. If current directory path is empty, stop the fallback
-  // since the current directory is initializing now.
-  if (this.hasCurrentDirEntryBeenUnmounted_(event.removed)) {
+  // Fallback to the default volume's root if the current volume is unmounted,
+  // or if there is no current root, which means that nothing is currently
+  // selected.
+  if (this.hasCurrentDirEntryBeenUnmounted_(event.removed) ||
+      !this.getCurrentRootType()) {
     this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
       if (displayRoot)
         this.changeDirectoryEntry(displayRoot);

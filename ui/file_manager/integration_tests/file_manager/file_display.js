@@ -451,8 +451,21 @@ testcase.fileDisplayWithoutDriveThenDisable = async function() {
   // Wait for Files app to finish loading.
   await remoteCall.waitFor('isFileManagerLoaded', appId, true);
 
-  // Ensure Downloads has loaded.
-  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+  // We should navigate to Downloads or MyFiles.
+  // TODO(crbug.com/880130): Remove this conditional.
+  let defaultFolder = '/My files/Downloads';
+  let expectedRows = [ENTRIES.newlyAdded.getExpectedRow()];
+  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
+    defaultFolder = '/My files';
+    expectedRows = [
+      ['Downloads', '--', 'Folder'],
+      ['Linux files', '--', 'Folder'],
+    ];
+  }
+
+  // Ensure MyFiles or Downloads has loaded.
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
 
   // Navigate to Drive.
   await remoteCall.callRemoteTestUtil(
@@ -465,11 +478,11 @@ testcase.fileDisplayWithoutDriveThenDisable = async function() {
   await sendTestMessage({name: 'setDriveEnabled', enabled: false});
 
   // The current directory should change to the default (Downloads).
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(
-      appId, '/My files/Downloads');
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
 
   // Ensure Downloads has loaded.
-  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
 
   // Re-enabled Drive.
   await sendTestMessage({name: 'setDriveEnabled', enabled: true});
@@ -532,10 +545,23 @@ testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async function() {
   // Unmount drive.
   await sendTestMessage({name: 'unmountDrive'});
 
-  // We should navigate to Downloads.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(
-      appId, '/My files/Downloads');
+  // We should navigate to Downloads or MyFiles.
+  // TODO(crbug.com/880130): Remove this conditional.
+  let defaultFolder = '/My files/Downloads';
+  let expectedRows = [ENTRIES.newlyAdded.getExpectedRow()];
+  if (RootPath.DOWNLOADS_PATH === '/Downloads') {
+    defaultFolder = '/My files';
+    expectedRows = [
+      ['Play files', '--', 'Folder'],
+      ['Downloads', '--', 'Folder'],
+      ['Linux files', '--', 'Folder'],
+    ];
+  }
+
+  // Ensure MyFiles or Downloads has loaded.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, defaultFolder);
 
   // Which should contain a file.
-  await remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()]);
+  await remoteCall.waitForFiles(
+      appId, expectedRows, {ignoreLastModifiedTime: true});
 };

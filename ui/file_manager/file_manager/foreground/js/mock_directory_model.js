@@ -17,6 +17,9 @@ function MockDirectoryModel() {
    * @private {MockDirectoryEntry}
    */
   this.currentEntry_ = null;
+
+  /** @private {FilesAppDirEntry} */
+  this.myFiles_ = null;
 }
 
 /**
@@ -54,6 +57,14 @@ MockDirectoryModel.prototype.navigateToMockEntry = function(entry) {
     this.dispatchEvent(event);
     resolve();
   }.bind(this));
+};
+
+/**
+ * @param {FilesAppDirEntry} myFilesEntry
+ * @override
+ */
+MockDirectoryModel.prototype.setMyFiles = function(myFilesEntry) {
+  this.myFiles_ = myFilesEntry;
 };
 
 /**
