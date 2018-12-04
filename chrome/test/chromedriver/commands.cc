@@ -30,24 +30,32 @@
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
+#include "chrome/test/chromedriver/version.h"
 
 void ExecuteGetStatus(
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback) {
+  // W3C defined data:
+  // ChromeDriver doesn't have a preset limit on number of active sessions,
+  // so we are always ready.
+  base::DictionaryValue info;
+  info.SetBoolean("ready", true);
+  info.SetString("message", "ChromeDriver ready for new sessions.");
+
+  // ChromeDriver specific data:
   base::DictionaryValue build;
-  build.SetString("version", "alpha");
+  build.SetString("version", kChromeDriverVersion);
+  info.SetKey("build", std::move(build));
 
   base::DictionaryValue os;
   os.SetString("name", base::SysInfo::OperatingSystemName());
   os.SetString("version", base::SysInfo::OperatingSystemVersion());
   os.SetString("arch", base::SysInfo::OperatingSystemArchitecture());
-
-  base::DictionaryValue info;
-  info.SetKey("build", std::move(build));
   info.SetKey("os", std::move(os));
+
   callback.Run(Status(kOk), base::Value::ToUniquePtrValue(std::move(info)),
-               std::string(), false);
+               std::string(), kW3CDefault);
 }
 
 void ExecuteCreateSession(
