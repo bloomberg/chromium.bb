@@ -34,7 +34,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -162,7 +161,6 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
         IdentityManagerFactory::GetForProfile(profile)));
   }
 
-  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
   std::unique_ptr<TiclInvalidationService> service =
       std::make_unique<TiclInvalidationService>(
           GetUserAgent(), identity_provider.get(),
