@@ -33,8 +33,10 @@ class AX_EXPORT AXNode final {
     // See AXTree.
     virtual AXNode* GetFromId(int32_t id) const = 0;
 
-    virtual int32_t GetPosInSet(const AXNode& item) = 0;
-    virtual int32_t GetSetSize(const AXNode& node) = 0;
+    virtual int32_t GetPosInSet(const int32_t node_id,
+                                const AXNode* ordered_set) = 0;
+    virtual int32_t GetSetSize(const int32_t node_id,
+                               const AXNode* ordered_set) = 0;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -189,8 +191,7 @@ class AX_EXPORT AXNode final {
   // PosInSet and SetSize public methods
   int32_t GetPosInSet();
   int32_t GetSetSize();
-  // Finds and returns a pointer to ordered set containing node.
-  AXNode* GetOrderedSet() const;
+
   // Helpers for GetPosInSet and GetSetSize.
   // Returns true if the role of ordered set matches the role of item.
   // Returns false otherwise.
@@ -271,6 +272,8 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
+  // Finds and returns a pointer to ordered set containing node.
+  AXNode* GetOrderedSet() const;
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;

@@ -520,19 +520,31 @@ int32_t AXNode::GetPosInSet() {
   if (!IsItemLike(data().role))
     return 0;
 
+  const AXNode* ordered_set = GetOrderedSet();
+  if (!ordered_set)
+    return 0;
+
   // See AXTree::GetPosInSet
-  return tree_->GetPosInSet(*this);
+  return tree_->GetPosInSet(id(), ordered_set);
 }
 
-// Uses AXTree's cache to calculate node's pos_in_set.
+// Uses AXTree's cache to calculate node's set_size.
 int32_t AXNode::GetSetSize() {
   // Only allow this to be called on nodes that can hold set_size values, which
   // are defined in the ARIA spec.
   if (!(IsItemLike(data().role) || IsSetLike(data().role)))
     return 0;
 
+  // If node is item-like, find its outerlying ordered set. Otherwise,
+  // this node is the ordered set.
+  const AXNode* ordered_set = this;
+  if (IsItemLike(data().role))
+    ordered_set = GetOrderedSet();
+  if (!ordered_set)
+    return 0;
+
   // See AXTree::GetSetSize
-  return tree_->GetSetSize(*this);
+  return tree_->GetSetSize(id(), ordered_set);
 }
 
 // Returns true if the role of ordered set matches the role of item.
