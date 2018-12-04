@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.content.browser;
 
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.Locale;
  * Callbacks from Android may happen on a different thread, so we always
  * use ThreadUtils.runOnUiThread when calling back to C++.
  */
+@JNINamespace("content")
 class TtsPlatformImpl {
     private static class TtsVoice {
         private TtsVoice(String name, String language) {
@@ -39,8 +41,8 @@ class TtsPlatformImpl {
     }
 
     private static class PendingUtterance {
-        private PendingUtterance(TtsPlatformImpl impl, int utteranceId, String text,
-                String lang, float rate, float pitch, float volume) {
+        private PendingUtterance(TtsPlatformImpl impl, int utteranceId, String text, String lang,
+                float rate, float pitch, float volume) {
             mImpl = impl;
             mUtteranceId = utteranceId;
             mText = text;
@@ -155,11 +157,11 @@ class TtsPlatformImpl {
      * @return true on success.
      */
     @CalledByNative
-    private boolean speak(int utteranceId, String text, String lang,
-                          float rate, float pitch, float volume) {
+    private boolean speak(
+            int utteranceId, String text, String lang, float rate, float pitch, float volume) {
         if (!mInitialized) {
-            mPendingUtterance = new PendingUtterance(this, utteranceId, text, lang, rate,
-                    pitch, volume);
+            mPendingUtterance =
+                    new PendingUtterance(this, utteranceId, text, lang, rate, pitch, volume);
             return true;
         }
         if (mPendingUtterance != null) mPendingUtterance = null;
@@ -202,8 +204,7 @@ class TtsPlatformImpl {
     protected void sendErrorEventOnUiThread(final String utteranceId) {
         ThreadUtils.runOnUiThread(() -> {
             if (mNativeTtsPlatformImplAndroid != 0) {
-                nativeOnErrorEvent(mNativeTtsPlatformImplAndroid,
-                        Integer.parseInt(utteranceId));
+                nativeOnErrorEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
             }
         });
     }
@@ -214,8 +215,7 @@ class TtsPlatformImpl {
     protected void sendStartEventOnUiThread(final String utteranceId) {
         ThreadUtils.runOnUiThread(() -> {
             if (mNativeTtsPlatformImplAndroid != 0) {
-                nativeOnStartEvent(mNativeTtsPlatformImplAndroid,
-                        Integer.parseInt(utteranceId));
+                nativeOnStartEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
             }
         });
     }
@@ -309,8 +309,7 @@ class TtsPlatformImpl {
 
                 TraceEvent.end("TtsPlatformImpl:initialize");
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);
