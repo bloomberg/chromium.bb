@@ -778,7 +778,7 @@ def CreateArgumentParser():
       '--verify', action='store_true',
       help='If true, the script only verifies the current orderfile')
   parser.add_argument('--target-arch', action='store', dest='arch',
-                      default=cygprofile_utils.DetectArchitecture(),
+                      default='arm',
                       choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                       help='The target architecture for which to build')
   parser.add_argument('--output-json', action='store', dest='json_file',
