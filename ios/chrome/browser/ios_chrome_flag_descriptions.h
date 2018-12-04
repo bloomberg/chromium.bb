@@ -283,10 +283,6 @@ extern const char kUnifiedConsentDescription[];
 extern const char kUseMultiloginEndpointName[];
 extern const char kUseMultiloginEndpointDescription[];
 
-// Title and description for the flag to force the consent bump.
-extern const char kForceUnifiedConsentBumpName[];
-extern const char kForceUnifiedConsentBumpDescription[];
-
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];

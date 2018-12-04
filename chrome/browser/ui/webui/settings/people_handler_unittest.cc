@@ -1038,7 +1038,7 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   std::tie(dice_enabled, unified_consent_enabled) = GetParam();
   unified_consent::ScopedUnifiedConsent unified_consent(
       unified_consent_enabled
-          ? unified_consent::UnifiedConsentFeatureState::kEnabledWithBump
+          ? unified_consent::UnifiedConsentFeatureState::kEnabled
           : unified_consent::UnifiedConsentFeatureState::kDisabled);
   ScopedAccountConsistency dice(
       dice_enabled ? signin::AccountConsistencyMethod::kDice

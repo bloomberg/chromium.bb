@@ -1106,12 +1106,6 @@ const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
      arraysize(kWebXrRenderPathChoiceSharedBuffer), nullptr}};
 #endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
 
-const FeatureEntry::FeatureParam kUnifiedConsentShowBump[] = {
-    {unified_consent::kUnifiedConsentShowBumpParameter, "true"}};
-const FeatureEntry::FeatureVariation kUnifiedConsentVariations[] = {
-    {"(with consent bump)", kUnifiedConsentShowBump,
-     arraysize(kUnifiedConsentShowBump), nullptr}};
-
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
     {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure}};
@@ -3710,14 +3704,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(unified_consent::kUnifiedConsent,
-                                    kUnifiedConsentVariations,
-                                    "UnifiedConsent")},
-
-    {"force-unified-consent-bump",
-     flag_descriptions::kForceUnifiedConsentBumpName,
-     flag_descriptions::kForceUnifiedConsentBumpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(unified_consent::kForceUnifiedConsentBump)},
+     FEATURE_VALUE_TYPE(unified_consent::kUnifiedConsent)},
 
     {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
      flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,

@@ -13,26 +13,15 @@ namespace unified_consent {
 TEST(UnifiedConsentFeatureTest, FeatureState) {
   // Unified consent is disabled by default.
   EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-  EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
 
   {
     ScopedUnifiedConsent scoped_disabled(UnifiedConsentFeatureState::kDisabled);
     EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
   }
 
   {
-    ScopedUnifiedConsent scoped_no_bump(
-        UnifiedConsentFeatureState::kEnabledNoBump);
+    ScopedUnifiedConsent scoped_enabled(UnifiedConsentFeatureState::kEnabled);
     EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
-  }
-
-  {
-    ScopedUnifiedConsent scoped_bump(
-        UnifiedConsentFeatureState::kEnabledWithBump);
-    EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_TRUE(IsUnifiedConsentFeatureWithBumpEnabled());
   }
 }
 

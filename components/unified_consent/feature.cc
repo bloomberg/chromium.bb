@@ -4,39 +4,14 @@
 
 #include "components/unified_consent/feature.h"
 
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
-#include "components/sync/driver/sync_driver_switches.h"
-
 namespace unified_consent {
 
-// base::Feature definitions.
+// base::Feature definition.
 const base::Feature kUnifiedConsent{"UnifiedConsent",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-const char kUnifiedConsentShowBumpParameter[] = "show_consent_bump";
-const base::Feature kForceUnifiedConsentBump{"ForceUnifiedConsentBump",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-namespace {
-UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
-  if (!base::FeatureList::IsEnabled(kUnifiedConsent))
-    return UnifiedConsentFeatureState::kDisabled;
-
-  std::string show_bump = base::GetFieldTrialParamValueByFeature(
-      kUnifiedConsent, kUnifiedConsentShowBumpParameter);
-  return show_bump.empty() ? UnifiedConsentFeatureState::kEnabledNoBump
-                           : UnifiedConsentFeatureState::kEnabledWithBump;
-}
-}  // namespace
 
 bool IsUnifiedConsentFeatureEnabled() {
-  return GetUnifiedConsentFeatureState() !=
-         UnifiedConsentFeatureState::kDisabled;
-}
-
-bool IsUnifiedConsentFeatureWithBumpEnabled() {
-  return GetUnifiedConsentFeatureState() ==
-         UnifiedConsentFeatureState::kEnabledWithBump;
+  return base::FeatureList::IsEnabled(kUnifiedConsent);
 }
 
 }  // namespace unified_consent

@@ -10,9 +10,6 @@
 
 namespace {
 
-// Histogram name for the consent bump action.
-const char kConsentBumpActionMetricName[] = "UnifiedConsent.ConsentBump.Action";
-
 // Histogram recorded at startup to log which Google services are enabled.
 const char kSyncAndGoogleServicesSettingsHistogram[] =
     "UnifiedConsent.SyncAndGoogleServicesSettings";
@@ -22,17 +19,6 @@ const char kSyncAndGoogleServicesSettingsHistogram[] =
 namespace unified_consent {
 
 namespace metrics {
-
-void RecordConsentBumpMetric(UnifiedConsentBumpAction action) {
-  UMA_HISTOGRAM_ENUMERATION(
-      kConsentBumpActionMetricName, action,
-      UnifiedConsentBumpAction::kUnifiedConsentBumpActionMoreOptionsMax);
-}
-
-void RecordConsentBumpEligibility(bool eligible) {
-  UMA_HISTOGRAM_BOOLEAN("UnifiedConsent.ConsentBump.EligibleAtStartup",
-                        eligible);
-}
 
 void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
                              PrefService* pref_service) {

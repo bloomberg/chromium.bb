@@ -107,7 +107,7 @@ class ChromeSigninViewControllerTest
       : unified_consent_enabled_(GetParam()),
         scoped_unified_consent_(
             unified_consent_enabled_
-                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                ? unified_consent::UnifiedConsentFeatureState::kEnabled
                 : unified_consent::UnifiedConsentFeatureState::kDisabled) {}
 
  protected:

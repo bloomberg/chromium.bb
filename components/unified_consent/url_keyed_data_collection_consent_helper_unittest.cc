@@ -67,7 +67,7 @@ class UrlKeyedDataCollectionConsentHelperTest
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        AnonymizedDataCollection_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
           NewAnonymizedDataCollectionConsentHelper(&pref_service_,
@@ -124,7 +124,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizedDataCollection_UnifiedConsentEnabled) {
   ScopedUnifiedConsent scoped_unified_consent(
-      UnifiedConsentFeatureState::kEnabledNoBump);
+      UnifiedConsentFeatureState::kEnabled);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
           NewPersonalizedDataCollectionConsentHelper(&sync_service_);
@@ -170,7 +170,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
   }
   {
     ScopedUnifiedConsent scoped_unified_consent(
-        UnifiedConsentFeatureState::kEnabledNoBump);
+        UnifiedConsentFeatureState::kEnabled);
     std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
         UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(

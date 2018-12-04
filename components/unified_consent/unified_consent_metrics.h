@@ -11,43 +11,6 @@ namespace unified_consent {
 
 namespace metrics {
 
-// Histogram enum: UnifiedConsentBumpAction.
-enum class UnifiedConsentBumpAction : int {
-  kUnifiedConsentBumpActionDefaultOptIn = 0,
-  kUnifiedConsentBumpActionMoreOptionsOptIn,
-  kUnifiedConsentBumpActionMoreOptionsReviewSettings,
-  kUnifiedConsentBumpActionMoreOptionsNoChanges,
-  kUnifiedConsentBumpActionMoreOptionsMax,
-};
-
-// Used in histograms. Do not change existing values, append new values at the
-// end.
-enum class ConsentBumpSuppressReason {
-  // There is no suppress reason. The consent bump was shown.
-  kNone,
-  // The user wasn't signed in during the migration.
-  kNotSignedIn,
-  // The user wasn't syncing everything during the migration.
-  kSyncEverythingOff,
-  // The user didn't have all on-by-default privacy settings enabled during
-  // migration.
-  kPrivacySettingOff,
-  kSettingsOptIn,
-  // The user was eligible for seeing the consent bump, but then signed out.
-  kUserSignedOut,
-  kSyncPaused,
-  // The user was eligible for seeing the consent bump, but turned an individual
-  // sync data type off.
-  kUserTurnedSyncDatatypeOff,
-  // The user was eligible for seeing the consent bump, but turned an
-  // on-by-default privacy setting off.
-  kUserTurnedPrivacySettingOff,
-  // The user has a custom passphrase tied to their sync account.
-  kCustomPassphrase,
-
-  kMaxValue = kCustomPassphrase
-};
-
 // Google services that can be toggled in user settings.
 // Used in histograms. Do not change existing values, append new values at the
 // end.
@@ -62,13 +25,6 @@ enum class SettingsHistogramValue {
 
   kMaxValue = kAllServicesWereEnabled
 };
-
-// Records histogram action for the unified consent bump.
-void RecordConsentBumpMetric(UnifiedConsentBumpAction action);
-
-// Records whether the user is eligible for the consent bump. This method should
-// be called at startup.
-void RecordConsentBumpEligibility(bool eligible);
 
 // Records settings entries in the kSyncAndGoogleServicesSettingsHistogram.
 // kNone is recorded when none of the settings is enabled.

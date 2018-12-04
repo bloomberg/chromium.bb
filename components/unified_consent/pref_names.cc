@@ -13,11 +13,6 @@ namespace prefs {
 const char kAllUnifiedConsentServicesWereEnabled[] =
     "unified_consent.all_services_were_enabled";
 
-// Boolean indicating whether all criteria is met for the consent bump to be
-// shown.
-const char kShouldShowUnifiedConsentBump[] =
-    "unified_consent.consent_bump.should_show";
-
 // Integer indicating the migration state of unified consent, defined in
 // unified_consent::MigrationState.
 const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";

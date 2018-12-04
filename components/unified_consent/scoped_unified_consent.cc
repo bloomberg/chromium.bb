@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "components/unified_consent/feature.h"
 
 namespace unified_consent {
 
@@ -19,16 +20,9 @@ ScopedUnifiedConsent::ScopedUnifiedConsent(UnifiedConsentFeatureState state) {
     case UnifiedConsentFeatureState::kDisabled:
       unified_consent_feature_list_.InitAndDisableFeature(kUnifiedConsent);
       break;
-    case UnifiedConsentFeatureState::kEnabledNoBump:
+    case UnifiedConsentFeatureState::kEnabled:
       unified_consent_feature_list_.InitAndEnableFeature(kUnifiedConsent);
       break;
-    case UnifiedConsentFeatureState::kEnabledWithBump: {
-      std::map<std::string, std::string> feature_params;
-      feature_params[kUnifiedConsentShowBumpParameter] = "true";
-      unified_consent_feature_list_.InitAndEnableFeatureWithParameters(
-          kUnifiedConsent, feature_params);
-      break;
-    }
   }
 }
 
