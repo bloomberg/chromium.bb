@@ -50,14 +50,28 @@ public class TabCountProvider {
     }
 
     /**
-     * @param observer The observer that will have events broadcast to.
+     * @param observer The observer to add.
      */
     public void addObserver(TabCountObserver observer) {
         mTabCountObservers.addObserver(observer);
     }
 
     /**
-     * @param observer The observer that will be removed.
+     * Adds an observer and triggers the {@link TabCountObserver#onTabCountChanged(int, boolean)}
+     * for the added observer.
+     * @param observer The observer to add.
+     */
+    public void addObserverAndTrigger(TabCountObserver observer) {
+        addObserver(observer);
+
+        if (mTabModelSelector != null) {
+            observer.onTabCountChanged(mTabModelSelector.getCurrentModel().getCount(),
+                    mTabModelSelector.isIncognitoSelected());
+        }
+    }
+
+    /**
+     * @param observer The observer to remove.
      */
     public void removeObserver(TabCountObserver observer) {
         mTabCountObservers.removeObserver(observer);

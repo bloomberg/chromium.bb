@@ -67,7 +67,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
-import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
+import org.chromium.chrome.browser.toolbar.top.ToggleTabStackButton;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -692,13 +692,10 @@ public class TabsTest {
         public void run() {
             // This is equivalent to clickById(R.id.tab_switcher_button) but does not rely on the
             // event pipeline.
-            View button = mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
+            ToggleTabStackButton button =
+                    mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
             Assert.assertNotNull("Could not find view R.id.tab_switcher_button", button);
-            View toolbar = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
-            Assert.assertNotNull("Could not find view R.id.toolbar", toolbar);
-            Assert.assertTrue(
-                    "R.id.toolbar is not a ToolbarPhone", toolbar instanceof ToolbarPhone);
-            ((ToolbarPhone) toolbar).onClick(button);
+            button.onClick(button);
         }
     }
 

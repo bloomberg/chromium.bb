@@ -62,7 +62,7 @@
             android:paddingEnd="@dimen/location_bar_lateral_padding"
             android:paddingStart="2dp" />
 
-        <ImageButton
+        <org.chromium.chrome.browser.toolbar.top.ToggleTabStackButton
             android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"
             android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default"

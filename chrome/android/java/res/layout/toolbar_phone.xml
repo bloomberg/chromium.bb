@@ -59,7 +59,8 @@
             android:paddingStart="8dp"
             android:visibility="gone" />
 
-        <ImageButton android:id="@+id/tab_switcher_button"
+        <org.chromium.chrome.browser.toolbar.top.ToggleTabStackButton
+            android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"
             android:paddingStart="8dp"
             android:layout_gravity="top"

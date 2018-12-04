@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
-import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -59,10 +58,9 @@ public class ToolbarTablet extends ToolbarLayout
     private ImageButton mBookmarkButton;
     private ImageButton mSaveOfflineButton;
     private ImageButton mSecurityButton;
-    private ImageButton mAccessibilitySwitcherButton;
+    private ToggleTabStackButton mAccessibilitySwitcherButton;
 
     private OnClickListener mBookmarkListener;
-    private OnClickListener mTabSwitcherListener;
 
     private boolean mIsInTabSwitcherMode;
 
@@ -71,9 +69,6 @@ public class ToolbarTablet extends ToolbarLayout
     private ImageButton[] mToolbarButtons;
 
     private NavigationPopup mNavigationPopup;
-
-    private TabSwitcherDrawable mTabSwitcherButtonDrawable;
-    private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
     private Boolean mUseLightColorAssets;
     private LocationBarTablet mLocationBar;
@@ -118,13 +113,7 @@ public class ToolbarTablet extends ToolbarLayout
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
 
-        mTabSwitcherButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
-        mTabSwitcherButtonDrawableLight =
-                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
-
-        mAccessibilitySwitcherButton = (ImageButton) findViewById(R.id.tab_switcher_button);
-        mAccessibilitySwitcherButton.setImageDrawable(mTabSwitcherButtonDrawable);
+        mAccessibilitySwitcherButton = findViewById(R.id.tab_switcher_button);
         updateSwitcherButtonVisibility(mShowTabStack);
 
         mBookmarkButton = findViewById(R.id.bookmark_button);
@@ -244,7 +233,6 @@ public class ToolbarTablet extends ToolbarLayout
             }
         });
 
-        mAccessibilitySwitcherButton.setOnClickListener(this);
         mBookmarkButton.setOnClickListener(this);
         mBookmarkButton.setOnLongClickListener(this);
 
@@ -324,11 +312,6 @@ public class ToolbarTablet extends ToolbarLayout
                 mBookmarkListener.onClick(mBookmarkButton);
                 RecordUserAction.record("MobileToolbarToggleBookmark");
             }
-        } else if (mAccessibilitySwitcherButton == v) {
-            if (mTabSwitcherListener != null) {
-                cancelAppMenuUpdateBadgeAnimation();
-                mTabSwitcherListener.onClick(mAccessibilitySwitcherButton);
-            }
         } else if (mSaveOfflineButton == v) {
             DownloadUtils.downloadOfflinePage(getContext(), getToolbarDataProvider().getTab());
             RecordUserAction.record("MobileToolbarDownloadPage");
@@ -391,8 +374,7 @@ public class ToolbarTablet extends ToolbarLayout
             } else {
                 mLocationBar.getContainerView().getBackground().setAlpha(255);
             }
-            mAccessibilitySwitcherButton.setImageDrawable(
-                    incognito ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
+            mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
             mLocationBar.updateVisualsForState();
             if (mShowMenuBadge) {
                 setAppMenuUpdateBadgeDrawable(incognito);
@@ -497,6 +479,8 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
+        if (inTabSwitcherMode) cancelAppMenuUpdateBadgeAnimation();
+
         if (mShowTabStack && inTabSwitcherMode) {
             mIsInTabSwitcherMode = true;
             mBackButton.setEnabled(false);
@@ -522,13 +506,12 @@ public class ToolbarTablet extends ToolbarLayout
         mAccessibilitySwitcherButton.setContentDescription(getResources().getQuantityString(
                 R.plurals.accessibility_toolbar_btn_tabswitcher_toggle, numberOfTabs,
                 numberOfTabs));
-        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
-        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito);
     }
 
     @Override
     void setTabCountProvider(TabCountProvider tabCountProvider) {
         tabCountProvider.addObserver(this);
+        mAccessibilitySwitcherButton.setTabCountProvider(tabCountProvider);
     }
 
     @Override
@@ -544,7 +527,7 @@ public class ToolbarTablet extends ToolbarLayout
 
     @Override
     void setOnTabSwitcherClickHandler(OnClickListener listener) {
-        mTabSwitcherListener = listener;
+        mAccessibilitySwitcherButton.setOnTabSwitcherClickHandler(listener);
     }
 
     @Override
