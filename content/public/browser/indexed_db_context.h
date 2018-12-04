@@ -20,6 +20,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 struct StorageUsageInfo;
@@ -35,7 +39,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual std::vector<StorageUsageInfo> GetAllOriginsInfo() = 0;
 
   // Deletes all indexed db files for the given origin.
-  virtual void DeleteForOrigin(const GURL& origin_url) = 0;
+  virtual void DeleteForOrigin(const url::Origin& origin) = 0;
 
   // Copies the indexed db files from this context to another. The
   // indexed db directory in the destination context needs to be empty.

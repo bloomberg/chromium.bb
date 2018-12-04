@@ -305,11 +305,6 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
   return file_info.last_modified;
 }
 
-// TODO(jsbell): Update callers to use url::Origin overload and remove.
-void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
-  DeleteForOrigin(Origin::Create(origin_url));
-}
-
 void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   ForceClose(origin, FORCE_CLOSE_DELETE_ORIGIN);
