@@ -9,11 +9,10 @@
 #include <algorithm>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,26 +29,21 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
-#include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -71,7 +65,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -111,7 +104,7 @@ class TextureMetadata {
         buffer_usage_(buffer_usage),
         format_(format),
         target_(CalcTarget(use_buffer, buffer_usage, format, caps)) {}
-  TextureMetadata(const TextureMetadata& tmd) = default;
+  TextureMetadata(const TextureMetadata& other) = default;
 
   bool use_buffer() const { return use_buffer_; }
   gfx::BufferUsage buffer_usage() const { return buffer_usage_; }
@@ -131,10 +124,10 @@ class TextureMetadata {
     }
   }
 
-  const bool use_buffer_;
-  const gfx::BufferUsage buffer_usage_;
-  const viz::ResourceFormat format_;
-  const GLenum target_;
+  bool use_buffer_;
+  gfx::BufferUsage buffer_usage_;
+  viz::ResourceFormat format_;
+  GLenum target_;
 };
 
 // This class prevents any GL errors that occur when it is in scope from
@@ -405,7 +398,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
 
  private:
-  std::unordered_map<GLuint, TextureMetadata> texture_metadata_;
+  base::flat_map<GLuint, TextureMetadata> texture_metadata_;
   TextureMetadata* GetTextureMetadata(GLuint client_id) {
     auto it = texture_metadata_.find(client_id);
     DCHECK(it != texture_metadata_.end()) << "Undefined texture id";
@@ -627,10 +620,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   gles2::GLES2Util util_;
 
-  // States related to each manager.
-  gles2::DecoderTextureState texture_state_;
-  gles2::DecoderFramebufferState framebuffer_state_;
-
   // An optional behaviour to lose the context and group when OOM.
   bool lose_context_when_out_of_memory_ = false;
 
@@ -750,7 +739,6 @@ RasterDecoderImpl::RasterDecoderImpl(
              this,
              &logger_,
              false /* track_texture_and_sampler_units */),
-      texture_state_(group_->feature_info()->workarounds()),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -812,12 +800,6 @@ ContextResult RasterDecoderImpl::Initialize(
     return result;
   }
   CHECK_GL_ERROR();
-
-  // Support for CHROMIUM_texture_storage_image depends on the underlying
-  // ImageFactory's ability to create anonymous images.
-  gpu::ImageFactory* image_factory = group_->image_factory();
-  if (image_factory && image_factory->SupportsCreateAnonymousImage())
-    feature_info_->EnableCHROMIUMTextureStorageImage();
 
   state_.InitGenericAttribs(group_->max_vertex_attribs());
 
@@ -1033,9 +1015,7 @@ void RasterDecoderImpl::RestoreBufferBinding(unsigned int target) {
   } else if (target == GL_PIXEL_UNPACK_BUFFER) {
     state_.UpdateUnpackParameters();
   }
-  gles2::Buffer* bound_buffer =
-      buffer_manager()->GetBufferInfoForTarget(&state_, target);
-  api()->glBindBufferFn(target, bound_buffer ? bound_buffer->service_id() : 0);
+  api()->glBindBufferFn(target, 0);
 }
 
 void RasterDecoderImpl::RestoreBufferBindings() const {
@@ -1707,9 +1687,9 @@ void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     return;
   }
 
-  texture_metadata_.emplace(std::make_pair(
+  texture_metadata_.emplace(
       client_id, TextureMetadata(use_buffer, buffer_usage, resource_format,
-                                 GetCapabilities())));
+                                 GetCapabilities()));
 
   gles2::Texture* texture = gles2::Texture::CheckedCast(
       group_->mailbox_manager()->ConsumeTexture(mailbox));
