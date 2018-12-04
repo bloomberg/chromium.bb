@@ -50,8 +50,6 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
 
   bool IsOpaque() const override;
 
-  const KURL& SourceURL() const override;
-
   ImageResourceContent* CachedImage() const;
 
   // Returns the decoding mode that should be used when painting this element,
