@@ -81,32 +81,6 @@ bool IdentityManager::HasPrimaryAccount() const {
   return signin_manager_->IsAuthenticated();
 }
 
-#if !defined(OS_CHROMEOS)
-void IdentityManager::ClearPrimaryAccount(
-    ClearAccountTokensAction token_action,
-    signin_metrics::ProfileSignout signout_source_metric,
-    signin_metrics::SignoutDelete signout_delete_metric) {
-  SigninManager* signin_manager =
-      SigninManager::FromSigninManagerBase(signin_manager_);
-
-  switch (token_action) {
-    case IdentityManager::ClearAccountTokensAction::kDefault:
-      signin_manager->SignOut(signout_source_metric, signout_delete_metric);
-      break;
-    case IdentityManager::ClearAccountTokensAction::kKeepAll:
-      signin_manager->SignOutAndKeepAllAccounts(signout_source_metric,
-                                                signout_delete_metric);
-      break;
-    case IdentityManager::ClearAccountTokensAction::kRemoveAll:
-      signin_manager->SignOutAndRemoveAllAccounts(signout_source_metric,
-                                                  signout_delete_metric);
-      break;
-  }
-
-  // NOTE: IdentityManager::Observers are notified in GoogleSignedOut().
-}
-#endif  // defined(OS_CHROMEOS)
-
 std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   std::vector<std::string> account_ids_with_tokens =
       token_service_->GetAccounts();
