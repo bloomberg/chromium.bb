@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/background/tests/test.mojom.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 
@@ -17,11 +18,13 @@ namespace service_manager {
 class TestClient : public Service,
                    public mojom::TestService {
  public:
-  TestClient() {
+  TestClient(mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface(base::Bind(&TestClient::BindTestServiceRequest,
                                       base::Unretained(this)));
   }
-  ~TestClient() override {}
+
+  ~TestClient() override = default;
 
  private:
   // Service:
@@ -38,8 +41,9 @@ class TestClient : public Service,
     bindings_.AddBinding(this, std::move(request));
   }
 
-  void Quit() override { context()->CreateQuitClosure().Run(); }
+  void Quit() override { service_binding_.RequestClose(); }
 
+  ServiceBinding service_binding_;
   BinderRegistry registry_;
   mojo::BindingSet<mojom::TestService> bindings_;
 
@@ -48,7 +52,7 @@ class TestClient : public Service,
 
 }  // namespace service_manager
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new service_manager::TestClient);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  service_manager::TestClient(std::move(request)).RunUntilTermination();
 }

@@ -64,7 +64,7 @@ executable("service_manager_unittest_target") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
+    "//services/service_manager/public/cpp/standalone_service:main_cpp",
   ]
 }
 
@@ -100,7 +100,7 @@ service_manifest("regular_manifest") {
 
 service("service_manager_unittest_embedder") {
   testonly = true
-
+  use_cpp_main = true
   sources = [
     "embedder.cc",
   ]
@@ -110,7 +110,6 @@ service("service_manager_unittest_embedder") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",

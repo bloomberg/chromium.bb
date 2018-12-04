@@ -50,6 +50,7 @@ component("embedder") {
     ":embedder_result_codes",
     "//base",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
   ]
 
   if (!is_ios) {

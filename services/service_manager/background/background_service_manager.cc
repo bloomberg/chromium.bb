@@ -19,7 +19,6 @@
 #include "services/catalog/store.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/standalone/context.h"
 

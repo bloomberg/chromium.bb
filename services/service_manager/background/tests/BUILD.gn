@@ -37,6 +37,7 @@ mojom("test_service_interfaces") {
 }
 
 service("background_service_manager_test_service") {
+  use_cpp_main = true
   sources = [
     "test_service.cc",
   ]

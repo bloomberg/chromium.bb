@@ -111,6 +111,7 @@ service_manifest("lifecycle_unittest_app_manifest") {
 
 service("lifecycle_unittest_parent") {
   testonly = true
+  use_cpp_main = true
   sources = [
     "parent.cc",
   ]

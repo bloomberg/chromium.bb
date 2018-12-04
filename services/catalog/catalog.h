@@ -12,24 +12,21 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/token.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
 class Value;
-}
-
-namespace service_manager {
-class ServiceContext;
 }
 
 namespace catalog {
@@ -39,17 +36,16 @@ class ManifestProvider;
 
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
 // can be passed to the service manager, potentially in a different process.
-class COMPONENT_EXPORT(CATALOG) Catalog {
+class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
  public:
   // Constructs a catalog over a static manifest. This catalog never performs
   // file I/O. Note that either |static_manifest| or |service_manifest_provider|
   // may be null. If both are null, no service names will be resolved.
   explicit Catalog(std::unique_ptr<base::Value> static_manifest,
                    ManifestProvider* service_manifest_provider = nullptr);
+  ~Catalog() override;
 
-  ~Catalog();
-
-  service_manager::mojom::ServicePtr TakeService();
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Allows an embedder to override the default static manifest contents for
   // Catalog instances which are constructed with a null static manifest.
@@ -77,8 +73,16 @@ class COMPONENT_EXPORT(CATALOG) Catalog {
       filesystem::mojom::DirectoryRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  service_manager::mojom::ServicePtr service_;
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  service_manager::ServiceBinding service_binding_{this};
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_;
+
   ManifestProvider* service_manifest_provider_;
   EntryCache system_cache_;
   std::map<base::Token, std::unique_ptr<Instance>> instances_;
@@ -89,8 +93,6 @@ class COMPONENT_EXPORT(CATALOG) Catalog {
   // manager while doing file io.
   scoped_refptr<base::SequencedTaskRunner> directory_task_runner_;
   scoped_refptr<DirectoryThreadState> directory_thread_state_;
-
-  base::WeakPtrFactory<Catalog> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Catalog);
 };

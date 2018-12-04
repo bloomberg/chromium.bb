@@ -18,7 +18,6 @@
 namespace service_manager {
 
 class ServiceBinding;
-class ServiceContext;
 
 // TODO: Rename ServiceContextRef everywhere.
 using ServiceKeepaliveRef = ServiceContextRef;
@@ -54,17 +53,6 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
 
   ServiceKeepalive(ServiceBinding* binding,
                    base::Optional<base::TimeDelta> idle_timeout);
-
-  // Creates a keepalive which allows the service to be idle for |idle_timeout|
-  // before requesting termination. If |idle_timeout| is not given, the
-  // ServiceKeepalive will never request termination, i.e. the service will
-  // stay alive indefinitely. Both |context| and |timeout_observer| are not
-  // owned and must outlive the ServiceKeepalive instance.
-  //
-  // DEPRECATED: Please consider switching from ServiceContext to ServiceBinding
-  // and using the constructor above.
-  ServiceKeepalive(ServiceContext* context,
-                   base::Optional<base::TimeDelta> idle_timeout);
   ~ServiceKeepalive();
 
   std::unique_ptr<ServiceKeepaliveRef> CreateRef();
@@ -78,8 +66,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT ServiceKeepalive {
   void OnRefCountZero();
   void OnTimerExpired();
 
-  ServiceBinding* const binding_ = nullptr;
-  ServiceContext* const context_ = nullptr;
+  ServiceBinding* const binding_;
   const base::Optional<base::TimeDelta> idle_timeout_;
   base::Optional<base::OneShotTimer> idle_timer_;
   base::ObserverList<Observer> observers_;
