@@ -183,4 +183,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_ATTR_DEPRECATED          SK_NOTHING_ARG1
 #define GR_GL_CUSTOM_SETUP_HEADER   "GrGLConfig_chrome.h"
 
+#define SK_USE_LEGACY_CONIC_CURVATURE_SLOP  // temporary for crbug.com/843966
+
 #endif
