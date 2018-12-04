@@ -169,6 +169,11 @@ BluetoothAdapterClient* BluezDBusManager::GetAlternateBluetoothAdapterClient() {
   return client_bundle_->alternate_bluetooth_adapter_client();
 }
 
+BluetoothDeviceClient* BluezDBusManager::GetAlternateBluetoothDeviceClient() {
+  DCHECK(object_manager_support_known_);
+  return client_bundle_->alternate_bluetooth_device_client();
+}
+
 void BluezDBusManager::OnObjectManagerSupported(dbus::Response* response) {
   VLOG(1) << "Bluetooth supported. Initializing clients.";
   object_manager_supported_ = true;
@@ -228,6 +233,8 @@ void BluezDBusManager::InitializeClients() {
     return;
 
   client_bundle_->alternate_bluetooth_adapter_client()->Init(
+      alternate_bus_, bluetooth_service_name);
+  client_bundle_->alternate_bluetooth_device_client()->Init(
       alternate_bus_, bluetooth_service_name);
 }
 
@@ -399,6 +406,12 @@ void BluezDBusManagerSetter::SetAlternateBluetoothAdapterClient(
     std::unique_ptr<BluetoothAdapterClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->alternate_bluetooth_adapter_client_ = std::move(client);
+}
+
+void BluezDBusManagerSetter::SetAlternateBluetoothDeviceClient(
+    std::unique_ptr<BluetoothDeviceClient> client) {
+  bluez::BluezDBusManager::Get()
+      ->client_bundle_->alternate_bluetooth_device_client_ = std::move(client);
 }
 
 }  // namespace bluez
