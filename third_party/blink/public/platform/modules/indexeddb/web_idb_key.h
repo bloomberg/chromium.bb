@@ -75,7 +75,7 @@ class WebIDBKeyView {
 
   explicit WebIDBKeyView(const IDBKey* idb_key) noexcept : private_(idb_key) {}
 
-  BLINK_EXPORT WebIDBKeyType KeyType() const;
+  BLINK_EXPORT mojom::IDBKeyType KeyType() const;
 
   BLINK_EXPORT bool IsValid() const;
 

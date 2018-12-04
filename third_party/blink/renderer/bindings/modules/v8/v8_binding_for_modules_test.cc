@@ -118,7 +118,7 @@ void CheckKeyPathStringValue(v8::Isolate* isolate,
   std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
-  ASSERT_EQ(IDBKey::kStringType, idb_key->GetType());
+  ASSERT_EQ(mojom::IDBKeyType::String, idb_key->GetType());
   ASSERT_TRUE(expected == idb_key->GetString());
 }
 
@@ -129,7 +129,7 @@ void CheckKeyPathNumberValue(v8::Isolate* isolate,
   std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
-  ASSERT_EQ(IDBKey::kNumberType, idb_key->GetType());
+  ASSERT_EQ(mojom::IDBKeyType::Number, idb_key->GetType());
   ASSERT_TRUE(expected == idb_key->Number());
 }
 

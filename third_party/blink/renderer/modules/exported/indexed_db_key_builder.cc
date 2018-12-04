@@ -46,9 +46,9 @@ std::vector<base::string16> CopyArray(const WebVector<WebString>& array) {
 // static
 IndexedDBKey IndexedDBKeyBuilder::Build(WebIDBKeyView key) {
   switch (key.KeyType()) {
-    case kWebIDBKeyTypeArray:
+    case mojom::IDBKeyType::Array:
       return IndexedDBKey(CopyKeyArray(key.ArrayView()));
-    case kWebIDBKeyTypeBinary: {
+    case mojom::IDBKeyType::Binary: {
       const WebData data = key.Binary();
       std::string key_string;
       key_string.reserve(data.size());
@@ -61,16 +61,16 @@ IndexedDBKey IndexedDBKeyBuilder::Build(WebIDBKeyView key) {
       });
       return IndexedDBKey(std::move(key_string));
     }
-    case kWebIDBKeyTypeString:
+    case mojom::IDBKeyType::String:
       return IndexedDBKey(key.String().Utf16());
-    case kWebIDBKeyTypeDate:
-      return IndexedDBKey(key.Date(), kWebIDBKeyTypeDate);
-    case kWebIDBKeyTypeNumber:
-      return IndexedDBKey(key.Number(), kWebIDBKeyTypeNumber);
-    case kWebIDBKeyTypeNull:
-    case kWebIDBKeyTypeInvalid:
+    case mojom::IDBKeyType::Date:
+      return IndexedDBKey(key.Date(), blink::mojom::IDBKeyType::Date);
+    case mojom::IDBKeyType::Number:
+      return IndexedDBKey(key.Number(), blink::mojom::IDBKeyType::Number);
+    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::Invalid:
       return IndexedDBKey(key.KeyType());
-    case kWebIDBKeyTypeMin:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return IndexedDBKey();
   }
@@ -79,7 +79,7 @@ IndexedDBKey IndexedDBKeyBuilder::Build(WebIDBKeyView key) {
 // static
 WebIDBKey WebIDBKeyBuilder::Build(const WebIDBKeyView& key) {
   switch (key.KeyType()) {
-    case kWebIDBKeyTypeArray: {
+    case mojom::IDBKeyType::Array: {
       const WebIDBKeyArrayView& array = key.ArrayView();
       WebVector<WebIDBKey> web_idb_keys;
       const size_t array_size = array.size();
@@ -88,21 +88,21 @@ WebIDBKey WebIDBKeyBuilder::Build(const WebIDBKeyView& key) {
         web_idb_keys.emplace_back(Build(array[i]));
       return WebIDBKey::CreateArray(std::move(web_idb_keys));
     }
-    case kWebIDBKeyTypeBinary: {
+    case mojom::IDBKeyType::Binary: {
       const WebData data = key.Binary();
       return WebIDBKey::CreateBinary(data);
     }
-    case kWebIDBKeyTypeString:
+    case mojom::IDBKeyType::String:
       return WebIDBKey::CreateString(key.String());
-    case kWebIDBKeyTypeDate:
+    case mojom::IDBKeyType::Date:
       return WebIDBKey::CreateDate(key.Date());
-    case kWebIDBKeyTypeNumber:
+    case mojom::IDBKeyType::Number:
       return WebIDBKey::CreateNumber(key.Number());
-    case kWebIDBKeyTypeInvalid:
+    case mojom::IDBKeyType::Invalid:
       return WebIDBKey::CreateInvalid();
-    case kWebIDBKeyTypeNull:
+    case mojom::IDBKeyType::Null:
       return WebIDBKey::CreateNull();
-    case kWebIDBKeyTypeMin:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return WebIDBKey::CreateInvalid();
   }
@@ -111,7 +111,7 @@ WebIDBKey WebIDBKeyBuilder::Build(const WebIDBKeyView& key) {
 // static
 WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
   switch (key.type()) {
-    case kWebIDBKeyTypeArray: {
+    case mojom::IDBKeyType::Array: {
       const IndexedDBKey::KeyArray& array = key.array();
       WebVector<WebIDBKey> web_idb_keys;
       web_idb_keys.reserve(array.size());
@@ -119,22 +119,22 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
         web_idb_keys.emplace_back(Build(array_element));
       return WebIDBKey::CreateArray(std::move(web_idb_keys));
     }
-    case kWebIDBKeyTypeBinary: {
+    case blink::mojom::IDBKeyType::Binary: {
       const std::string& str = key.binary();
       const WebData& data = WebData(str.c_str(), str.length());
       return WebIDBKey::CreateBinary(data);
     }
-    case kWebIDBKeyTypeString:
+    case mojom::IDBKeyType::String:
       return WebIDBKey::CreateString(WebString::FromUTF16(key.string()));
-    case kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       return WebIDBKey::CreateDate(key.date());
-    case kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       return WebIDBKey::CreateNumber(key.number());
-    case kWebIDBKeyTypeInvalid:
+    case mojom::IDBKeyType::Invalid:
       return WebIDBKey::CreateInvalid();
-    case kWebIDBKeyTypeNull:
+    case mojom::IDBKeyType::Null:
       return WebIDBKey::CreateNull();
-    case kWebIDBKeyTypeMin:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return WebIDBKey::CreateInvalid();
   }

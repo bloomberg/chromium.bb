@@ -283,7 +283,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     value1_ = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
     value2_ = IndexedDBValue("value2", std::vector<IndexedDBBlobInfo>());
 
-    key1_ = IndexedDBKey(99, blink::kWebIDBKeyTypeNumber);
+    key1_ = IndexedDBKey(99, blink::mojom::IDBKeyType::Number);
     key2_ = IndexedDBKey(ASCIIToUTF16("key2"));
   }
 

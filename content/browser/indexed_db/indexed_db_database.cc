@@ -51,7 +51,6 @@ using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
 using blink::IndexedDBKeyRange;
 using blink::IndexedDBObjectStoreMetadata;
-using blink::kWebIDBKeyTypeNumber;
 using leveldb::Status;
 
 namespace content {
@@ -1220,7 +1219,8 @@ static std::unique_ptr<IndexedDBKey> GenerateKey(
   if (current_number < 0 || current_number > max_generator_value)
     return std::make_unique<IndexedDBKey>();
 
-  return std::make_unique<IndexedDBKey>(current_number, kWebIDBKeyTypeNumber);
+  return std::make_unique<IndexedDBKey>(current_number,
+                                        blink::mojom::IDBKeyType::Number);
 }
 
 // Called at the end of a "put" operation. The key is a number that was either
@@ -1233,7 +1233,7 @@ static Status UpdateKeyGenerator(IndexedDBBackingStore* backing_store,
                                  int64_t object_store_id,
                                  const IndexedDBKey& key,
                                  bool check_current) {
-  DCHECK_EQ(kWebIDBKeyTypeNumber, key.type());
+  DCHECK_EQ(blink::mojom::IDBKeyType::Number, key.type());
   // Maximum integer uniquely representable as ECMAScript number.
   const double max_generator_value = 9007199254740992.0;
   int64_t value = base::saturated_cast<int64_t>(
@@ -1379,7 +1379,7 @@ Status IndexedDBDatabase::PutOperation(
 
   if (object_store.auto_increment &&
       params->put_mode != blink::mojom::IDBPutMode::CursorUpdate &&
-      key->type() == kWebIDBKeyTypeNumber) {
+      key->type() == blink::mojom::IDBKeyType::Number) {
     IDB_TRACE1("IndexedDBDatabase::PutOperation.AutoIncrement", "txn.id",
                transaction->id());
     s = UpdateKeyGenerator(backing_store_.get(), transaction, id(),

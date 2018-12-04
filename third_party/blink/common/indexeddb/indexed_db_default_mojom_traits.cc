@@ -69,23 +69,23 @@ blink::mojom::IDBKeyDataDataView::Tag
 UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::GetTag(
     const blink::IndexedDBKey& key) {
   switch (key.type()) {
-    case blink::kWebIDBKeyTypeArray:
+    case blink::mojom::IDBKeyType::Array:
       return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
-    case blink::kWebIDBKeyTypeBinary:
+    case blink::mojom::IDBKeyType::Binary:
       return blink::mojom::IDBKeyDataDataView::Tag::BINARY;
-    case blink::kWebIDBKeyTypeString:
+    case blink::mojom::IDBKeyType::String:
       return blink::mojom::IDBKeyDataDataView::Tag::STRING;
-    case blink::kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       return blink::mojom::IDBKeyDataDataView::Tag::DATE;
-    case blink::kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
-    case blink::kWebIDBKeyTypeInvalid:
+    case blink::mojom::IDBKeyType::Invalid:
       return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
-    case blink::kWebIDBKeyTypeNull:
+    case blink::mojom::IDBKeyType::Null:
       return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
 
     // Not used, fall through to NOTREACHED.
-    case blink::kWebIDBKeyTypeMin:;
+    case blink::mojom::IDBKeyType::Min:;
   }
   NOTREACHED();
   return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
@@ -118,16 +118,17 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::Read(
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
-      *out = blink::IndexedDBKey(data.date(), blink::kWebIDBKeyTypeDate);
+      *out = blink::IndexedDBKey(data.date(), blink::mojom::IDBKeyType::Date);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
-      *out = blink::IndexedDBKey(data.number(), blink::kWebIDBKeyTypeNumber);
+      *out =
+          blink::IndexedDBKey(data.number(), blink::mojom::IDBKeyType::Number);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
-      *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
+      *out = blink::IndexedDBKey(blink::mojom::IDBKeyType::Invalid);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
-      *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
+      *out = blink::IndexedDBKey(blink::mojom::IDBKeyType::Null);
       return true;
   }
 

@@ -110,10 +110,10 @@ struct MODULES_EXPORT
     return key.View().Number();
   }
   static bool other_invalid(const blink::WebIDBKey& key) {
-    return key.View().KeyType() == blink::kWebIDBKeyTypeInvalid;
+    return key.View().KeyType() == blink::mojom::IDBKeyType::Invalid;
   }
   static bool other_null(const blink::WebIDBKey& key) {
-    return key.View().KeyType() == blink::kWebIDBKeyTypeNull;
+    return key.View().KeyType() == blink::mojom::IDBKeyType::Null;
   }
 };
 

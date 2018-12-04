@@ -45,36 +45,37 @@ size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
 
 }  // namespace
 
-IDBKey::IDBKey() : type_(kInvalidType), size_estimate_(kIDBKeyOverheadSize) {}
+IDBKey::IDBKey()
+    : type_(mojom::IDBKeyType::Invalid), size_estimate_(kIDBKeyOverheadSize) {}
 
-IDBKey::IDBKey(Type type, double number)
+IDBKey::IDBKey(mojom::IDBKeyType type, double number)
     : type_(type),
       number_(number),
       size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {}
 
 IDBKey::IDBKey(const String& value)
-    : type_(kStringType),
+    : type_(mojom::IDBKeyType::String),
       string_(value),
       size_estimate_(kIDBKeyOverheadSize + (string_.length() * sizeof(UChar))) {
 }
 
 IDBKey::IDBKey(scoped_refptr<SharedBuffer> value)
-    : type_(kBinaryType),
+    : type_(mojom::IDBKeyType::Binary),
       binary_(std::move(value)),
       size_estimate_(kIDBKeyOverheadSize + binary_.get()->size()) {}
 
 IDBKey::IDBKey(KeyArray key_array)
-    : type_(kArrayType),
+    : type_(mojom::IDBKeyType::Array),
       array_(std::move(key_array)),
       size_estimate_(kIDBKeyOverheadSize + CalculateIDBKeyArraySize(array_)) {}
 
 IDBKey::~IDBKey() = default;
 
 bool IDBKey::IsValid() const {
-  if (type_ == kInvalidType)
+  if (type_ == mojom::IDBKeyType::Invalid)
     return false;
 
-  if (type_ == kArrayType) {
+  if (type_ == mojom::IDBKeyType::Array) {
     for (const auto& element : array_) {
       if (!element->IsValid())
         return false;
@@ -100,26 +101,29 @@ int IDBKey::Compare(const IDBKey* other) const {
     return type_ > other->type_ ? -1 : 1;
 
   switch (type_) {
-    case kArrayType:
+    case mojom::IDBKeyType::Array:
       for (wtf_size_t i = 0; i < array_.size() && i < other->array_.size();
            ++i) {
         if (int result = array_[i]->Compare(other->array_[i].get()))
           return result;
       }
       return CompareNumbers(array_.size(), other->array_.size());
-    case kBinaryType:
+    case mojom::IDBKeyType::Binary:
       if (int result =
               memcmp(binary_->Data(), other->binary_->Data(),
                      std::min(binary_->size(), other->binary_->size())))
         return result < 0 ? -1 : 1;
       return CompareNumbers(binary_->size(), other->binary_->size());
-    case kStringType:
+    case mojom::IDBKeyType::String:
       return CodePointCompare(string_, other->string_);
-    case kDateType:
-    case kNumberType:
+    case mojom::IDBKeyType::Date:
+    case mojom::IDBKeyType::Number:
       return CompareNumbers(number_, other->number_);
-    case kInvalidType:
-    case kTypeEnumMax:
+
+    // These values cannot be compared to each other.
+    case mojom::IDBKeyType::Invalid:
+    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return 0;
   }
@@ -143,7 +147,7 @@ bool IDBKey::IsEqual(const IDBKey* other) const {
 // static
 WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
     std::unique_ptr<IDBKey> array_key) {
-  DCHECK_EQ(array_key->type_, kArrayType);
+  DCHECK_EQ(array_key->type_, mojom::IDBKeyType::Array);
   WebVector<WebIDBKey> result;
   result.reserve(array_key->array_.size());
   for (std::unique_ptr<IDBKey>& key : array_key->array_) {
@@ -163,12 +167,5 @@ WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
 
   return result;
 }
-
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeInvalid, IDBKey::kInvalidType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeArray, IDBKey::kArrayType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeBinary, IDBKey::kBinaryType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeString, IDBKey::kStringType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeDate, IDBKey::kDateType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeNumber, IDBKey::kNumberType);
 
 }  // namespace blink

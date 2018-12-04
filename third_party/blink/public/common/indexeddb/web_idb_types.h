@@ -32,17 +32,6 @@ namespace blink {
 
 // TODO(cmp): Deprecate these in favor of the blink.mojom.IDB* enum types.
 
-enum WebIDBKeyType {
-  kWebIDBKeyTypeInvalid = 0,
-  kWebIDBKeyTypeArray,
-  kWebIDBKeyTypeBinary,
-  kWebIDBKeyTypeString,
-  kWebIDBKeyTypeDate,
-  kWebIDBKeyTypeNumber,
-  kWebIDBKeyTypeNull,
-  kWebIDBKeyTypeMin,
-};
-
 enum WebIDBKeyPathType {
   kWebIDBKeyPathTypeNull = 0,
   kWebIDBKeyPathTypeString,

@@ -69,8 +69,8 @@ void WebIDBCursorImpl::CursorContinue(WebIDBKeyView key,
                                       WebIDBCallbacks* callbacks_ptr) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.KeyType() == kWebIDBKeyTypeNull &&
-      primary_key.KeyType() == kWebIDBKeyTypeNull) {
+  if (key.KeyType() == mojom::IDBKeyType::Null &&
+      primary_key.KeyType() == mojom::IDBKeyType::Null) {
     // No key(s), so this would qualify for a prefetch.
     ++continue_count_;
 

@@ -40,10 +40,10 @@ WebIDBKeyView WebIDBKeyArrayView::operator[](size_t index) const {
   return WebIDBKeyView(private_->Array()[SafeCast<wtf_size_t>(index)].get());
 }
 
-WebIDBKeyType WebIDBKeyView::KeyType() const {
+mojom::IDBKeyType WebIDBKeyView::KeyType() const {
   if (!private_)
-    return kWebIDBKeyTypeNull;
-  return static_cast<WebIDBKeyType>(private_->GetType());
+    return blink::mojom::IDBKeyType::Null;
+  return static_cast<mojom::IDBKeyType>(private_->GetType());
 }
 
 bool WebIDBKeyView::IsValid() const {
@@ -89,7 +89,7 @@ WebIDBKey WebIDBKey::CreateArray(WebVector<WebIDBKey> array) {
   IDBKey::KeyArray keys;
   keys.ReserveCapacity(SafeCast<wtf_size_t>(array.size()));
   for (WebIDBKey& key : array) {
-    DCHECK(key.View().KeyType() != kWebIDBKeyTypeNull);
+    DCHECK(key.View().KeyType() != mojom::IDBKeyType::Null);
     keys.emplace_back(key.ReleaseIdbKey());
   }
   return WebIDBKey(IDBKey::CreateArray(std::move(keys)));

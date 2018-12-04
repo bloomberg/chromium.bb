@@ -32,6 +32,20 @@ enum IDBDataLoss {
   Total,
 };
 
+// In order of the least to the highest precedent in terms of sort order.
+// These values are written to logs. New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum IDBKeyType {
+  Invalid,
+  Array,
+  Binary,
+  String,
+  Date,
+  Number,
+  Null,
+  Min,
+};
+
 union IDBKeyData {
   array<IDBKey> key_array;
   array<uint8> binary;

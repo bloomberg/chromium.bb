@@ -19,15 +19,6 @@
 using base::StringPiece;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
-using blink::WebIDBKeyType;
-using blink::kWebIDBKeyTypeArray;
-using blink::kWebIDBKeyTypeBinary;
-using blink::kWebIDBKeyTypeDate;
-using blink::kWebIDBKeyTypeInvalid;
-using blink::kWebIDBKeyTypeMin;
-using blink::kWebIDBKeyTypeNull;
-using blink::kWebIDBKeyTypeNumber;
-using blink::kWebIDBKeyTypeString;
 using blink::WebIDBKeyPathType;
 using blink::kWebIDBKeyPathTypeArray;
 using blink::kWebIDBKeyPathTypeNull;
@@ -173,7 +164,7 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
   size_t previous_size = into->size();
   DCHECK(value.IsValid());
   switch (value.type()) {
-    case kWebIDBKeyTypeArray: {
+    case blink::mojom::IDBKeyType::Array: {
       EncodeByte(kIndexedDBKeyArrayTypeByte, into);
       size_t length = value.array().size();
       EncodeVarInt(length, into);
@@ -182,29 +173,29 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       DCHECK_GT(into->size(), previous_size);
       return;
     }
-    case kWebIDBKeyTypeBinary:
+    case blink::mojom::IDBKeyType::Binary:
       EncodeByte(kIndexedDBKeyBinaryTypeByte, into);
       EncodeBinary(value.binary(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case kWebIDBKeyTypeString:
+    case blink::mojom::IDBKeyType::String:
       EncodeByte(kIndexedDBKeyStringTypeByte, into);
       EncodeStringWithLength(value.string(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       EncodeByte(kIndexedDBKeyDateTypeByte, into);
       EncodeDouble(value.date(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       EncodeByte(kIndexedDBKeyNumberTypeByte, into);
       EncodeDouble(value.number(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case kWebIDBKeyTypeNull:
-    case kWebIDBKeyTypeInvalid:
-    case kWebIDBKeyTypeMin:
+    case blink::mojom::IDBKeyType::Null:
+    case blink::mojom::IDBKeyType::Invalid:
+    case blink::mojom::IDBKeyType::Min:
     default:
       NOTREACHED();
       EncodeByte(kIndexedDBKeyNullTypeByte, into);
@@ -412,14 +403,16 @@ bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeDate);
+      *value =
+          std::make_unique<IndexedDBKey>(d, blink::mojom::IDBKeyType::Date);
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeNumber);
+      *value =
+          std::make_unique<IndexedDBKey>(d, blink::mojom::IDBKeyType::Number);
       return true;
     }
   }
@@ -567,26 +560,26 @@ bool ExtractEncodedIDBKey(StringPiece* slice, std::string* result) {
   return true;
 }
 
-static WebIDBKeyType KeyTypeByteToKeyType(unsigned char type) {
+static blink::mojom::IDBKeyType KeyTypeByteToKeyType(unsigned char type) {
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      return kWebIDBKeyTypeInvalid;
+      return blink::mojom::IDBKeyType::Invalid;
     case kIndexedDBKeyArrayTypeByte:
-      return kWebIDBKeyTypeArray;
+      return blink::mojom::IDBKeyType::Array;
     case kIndexedDBKeyBinaryTypeByte:
-      return kWebIDBKeyTypeBinary;
+      return blink::mojom::IDBKeyType::Binary;
     case kIndexedDBKeyStringTypeByte:
-      return kWebIDBKeyTypeString;
+      return blink::mojom::IDBKeyType::String;
     case kIndexedDBKeyDateTypeByte:
-      return kWebIDBKeyTypeDate;
+      return blink::mojom::IDBKeyType::Date;
     case kIndexedDBKeyNumberTypeByte:
-      return kWebIDBKeyTypeNumber;
+      return blink::mojom::IDBKeyType::Number;
     case kIndexedDBKeyMinKeyTypeByte:
-      return kWebIDBKeyTypeMin;
+      return blink::mojom::IDBKeyType::Min;
   }
 
   NOTREACHED();
-  return kWebIDBKeyTypeInvalid;
+  return blink::mojom::IDBKeyType::Invalid;
 }
 
 int CompareEncodedStringsWithLength(StringPiece* slice1,
@@ -679,7 +672,10 @@ static inline int CompareSizes(size_t a, size_t b) {
   return 0;
 }
 
-static int CompareTypes(WebIDBKeyType a, WebIDBKeyType b) { return b - a; }
+static int CompareTypes(blink::mojom::IDBKeyType a,
+                        blink::mojom::IDBKeyType b) {
+  return static_cast<int32_t>(b) - static_cast<int32_t>(a);
+}
 
 int CompareEncodedIDBKeys(StringPiece* slice_a,
                           StringPiece* slice_b,
