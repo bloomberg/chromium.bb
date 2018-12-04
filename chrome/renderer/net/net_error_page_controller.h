@@ -57,6 +57,10 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // preferences.
     virtual void UpdateEasterEggHighScore(int high_score) = 0;
 
+    // Clear any high score for the easer egg game saved in the user's synced
+    // preferences.
+    virtual void ResetEasterEggHighScore() = 0;
+
    protected:
     Delegate();
     virtual ~Delegate();
@@ -90,6 +94,7 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   // Track easter egg plays and high scores.
   bool TrackEasterEgg();
   bool UpdateEasterEggHighScore(int high_score);
+  bool ResetEasterEggHighScore();
 
   // Execute a "Diagnose Errors" button click.
   bool DiagnoseErrorsButtonClick();

@@ -505,6 +505,10 @@ void NetErrorHelper::UpdateEasterEggHighScore(int high_score) {
   GetRemoteNetworkEasterEgg()->UpdateHighScore(high_score);
 }
 
+void NetErrorHelper::ResetEasterEggHighScore() {
+  GetRemoteNetworkEasterEgg()->ResetHighScore();
+}
+
 void NetErrorHelper::FetchNavigationCorrections(
     const GURL& navigation_correction_url,
     const std::string& navigation_correction_request_body) {

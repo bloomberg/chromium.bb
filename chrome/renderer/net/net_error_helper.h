@@ -73,6 +73,7 @@ class NetErrorHelper
   void CancelSavePage() override;
   void ListVisibilityChanged(bool is_visible) override;
   void UpdateEasterEggHighScore(int high_score) override;
+  void ResetEasterEggHighScore() override;
 
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
