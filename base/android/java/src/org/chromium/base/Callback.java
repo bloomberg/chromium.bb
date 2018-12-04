@@ -39,5 +39,10 @@ public interface Callback<T> {
         static void onIntResultFromNative(Callback callback, int result) {
             callback.onResult(Integer.valueOf(result));
         }
+
+        @CalledByNative("Helper")
+        static void runRunnable(Runnable runnable) {
+            runnable.run();
+        }
     }
 }

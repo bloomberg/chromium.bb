@@ -87,10 +87,10 @@ void FeedSchedulerBridge::OnForegrounded(JNIEnv* env,
 void FeedSchedulerBridge::OnFixedTimer(
     JNIEnv* env,
     const JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jobject>& j_callback) {
+    const base::android::JavaRef<jobject>& j_runnable) {
   base::OnceClosure callback = base::BindOnce(
       &FeedSchedulerBridge::FixedTimerHandlingDone, weak_factory_.GetWeakPtr(),
-      ScopedJavaGlobalRef<jobject>(j_callback));
+      ScopedJavaGlobalRef<jobject>(j_runnable));
   scheduler_host_->OnFixedTimer(std::move(callback));
 }
 
@@ -124,8 +124,8 @@ void FeedSchedulerBridge::CancelWakeUp() {
 }
 
 void FeedSchedulerBridge::FixedTimerHandlingDone(
-    ScopedJavaGlobalRef<jobject> j_callback) {
-  base::android::RunObjectCallbackAndroid(j_callback, nullptr);
+    ScopedJavaGlobalRef<jobject> j_runnable) {
+  base::android::RunRunnableAndroid(j_runnable);
 }
 
 }  // namespace feed
