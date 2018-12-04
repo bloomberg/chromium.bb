@@ -555,15 +555,18 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item;
 // Loads a blank page directly into WKWebView as a placeholder for a Native View
 // or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
-// The completion handler is called in the |webView:didFinishNavigation|
-// callback of the placeholder navigation. See "Handling App-specific URLs"
+// If |originalContext| is provided, reuse it for the placeholder navigation
+// instead of creating a new one. See "Handling App-specific URLs"
 // section of go/bling-navigation-experiment for details.
-- (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
-    (const GURL&)originalURL;
+- (web::NavigationContextImpl*)
+    loadPlaceholderInWebViewForURL:(const GURL&)originalURL
+                        forContext:(std::unique_ptr<web::NavigationContextImpl>)
+                                       originalContext;
 // Executes the command specified by the ErrorRetryStateMachine.
 - (void)handleErrorRetryCommand:(web::ErrorRetryCommand)command
                  navigationItem:(web::NavigationItemImpl*)item
-              navigationContext:(web::NavigationContextImpl*)context;
+              navigationContext:(web::NavigationContextImpl*)context
+             originalNavigation:(WKNavigation*)originalNavigation;
 // Loads the error page.
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context;
@@ -1762,15 +1765,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // failures that happen after commit.
   [self didStartLoading];
   self.navigationManagerImpl->CommitPendingItem();
+  web::NavigationItem* lastCommittedItem =
+      self.navigationManagerImpl->GetLastCommittedItem();
+  [self setDocumentURL:lastCommittedItem->GetURL() context:context];
 
   // If |context| is a placeholder navigation, this is the second part of the
   // error page load for a provisional load failure. Rewrite the context URL to
-  // actual URL so the navigation event is broadcasted.
+  // actual URL and trigger the deferred |OnNavigationFinished| callback.
   if (context->IsPlaceholderNavigation()) {
     context->SetUrl(item->GetURL());
     context->SetPlaceholderNavigation(false);
+    context->SetHasCommitted(true);
+    _webStateImpl->OnNavigationFinished(context);
   }
 
+  [self loadCompleteWithSuccess:NO forContext:context];
   _webStateImpl->SetIsLoading(false);
   _webStateImpl->OnPageLoaded(currentURL, NO);
 }
@@ -1790,7 +1799,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // until the placeholder navigation finishes.
     [self presentNativeContentForNavigationItem:self.currentNavItem];
     web::NavigationContextImpl* context = [self
-        loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()];
+        loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()
+                            forContext:nullptr];
     context->SetIsNativeContentPresented(true);
   }
 }
@@ -1848,8 +1858,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didFinishWithURL:targetURL loadSuccess:YES context:context.get()];
 }
 
-- (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
-    (const GURL&)originalURL {
+- (web::NavigationContextImpl*)
+    loadPlaceholderInWebViewForURL:(const GURL&)originalURL
+                        forContext:(std::unique_ptr<web::NavigationContextImpl>)
+                                       originalContext {
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
   [self ensureWebViewCreated];
 
@@ -1858,11 +1870,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
   WKNavigation* navigation = [_webView loadRequest:request];
   [_navigationStates setState:web::WKNavigationState::REQUESTED
                 forNavigation:navigation];
-  std::unique_ptr<web::NavigationContextImpl> navigationContext =
-      [self registerLoadRequestForURL:originalURL
-               sameDocumentNavigation:NO
-                       hasUserGesture:NO
-                placeholderNavigation:YES];
+  std::unique_ptr<web::NavigationContextImpl> navigationContext;
+  if (originalContext) {
+    navigationContext = std::move(originalContext);
+    navigationContext->SetPlaceholderNavigation(YES);
+  } else {
+    navigationContext = [self registerLoadRequestForURL:originalURL
+                                 sameDocumentNavigation:NO
+                                         hasUserGesture:NO
+                                  placeholderNavigation:YES];
+  }
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
   return [_navigationStates contextForNavigation:navigation];
@@ -1870,17 +1887,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)handleErrorRetryCommand:(web::ErrorRetryCommand)command
                  navigationItem:(web::NavigationItemImpl*)item
-              navigationContext:(web::NavigationContextImpl*)context {
+              navigationContext:(web::NavigationContextImpl*)context
+             originalNavigation:(WKNavigation*)originalNavigation {
   if (command == web::ErrorRetryCommand::kDoNothing)
     return;
 
   DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
   switch (command) {
     case web::ErrorRetryCommand::kLoadPlaceholder: {
-      web::NavigationContextImpl* placeholderNavigationContext =
-          [self loadPlaceholderInWebViewForURL:item->GetURL()];
-      placeholderNavigationContext->SetError(context->GetError());
-      placeholderNavigationContext->SetIsPost(context->IsPost());
+      // This case only happens when a new request failed in provisional
+      // navigation. Disassociate the navigation context from the original
+      // request and resuse it for the placeholder navigation.
+      std::unique_ptr<web::NavigationContextImpl> originalContext =
+          [_navigationStates removeNavigation:originalNavigation];
+      [self loadPlaceholderInWebViewForURL:item->GetURL()
+                                forContext:std::move(originalContext)];
     } break;
 
     case web::ErrorRetryCommand::kLoadErrorView:
@@ -1969,7 +1990,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self loadCurrentURLInNativeView];
   } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
              isCurrentURLAppSpecific && _webStateImpl->HasWebUI()) {
-    [self loadPlaceholderInWebViewForURL:currentURL];
+    [self loadPlaceholderInWebViewForURL:currentURL forContext:nullptr];
   } else {
     [self loadCurrentURLInWebView];
   }
@@ -3111,19 +3132,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     [self handleErrorRetryCommand:command
                    navigationItem:item
-                navigationContext:navigationContext];
+                navigationContext:navigationContext
+               originalNavigation:navigation];
   }
 
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    self.navigationManagerImpl->CommitPendingItem();
-    web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
-    [self setDocumentURL:lastCommittedItem->GetURL() context:navigationContext];
-  }
-
-  if (provisionalLoad) {
-    _webStateImpl->OnNavigationFinished(navigationContext);
-  }
-  [self loadCompleteWithSuccess:NO forContext:navigationContext];
+  // Don't commit the pending item or call OnNavigationFinished until the
+  // placeholder navigation finishes loading.
 }
 
 - (void)handleCancelledError:(NSError*)error
@@ -5052,7 +5066,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         item->error_retry_state_machine().DidFinishNavigation(webViewURL);
     [self handleErrorRetryCommand:command
                    navigationItem:item
-                navigationContext:context];
+                navigationContext:context
+               originalNavigation:navigation];
   }
 
   [_navigationStates setState:web::WKNavigationState::FINISHED
