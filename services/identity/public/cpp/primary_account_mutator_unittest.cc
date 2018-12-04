@@ -4,10 +4,12 @@
 
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
+#include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/platform_test.h"
 
 namespace {
@@ -18,21 +20,215 @@ const char kRefreshToken[] = "refresh_token";
 const char kPassword[] = "password";
 }  // namespace
 
+class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
+ public:
+  explicit TestIdentityManagerObserver(
+      identity::IdentityManager* identity_manager)
+      : identity_manager_(identity_manager) {
+    identity_manager_->AddObserver(this);
+  }
+  ~TestIdentityManagerObserver() override {
+    identity_manager_->RemoveObserver(this);
+  }
+
+  void set_on_primary_account_cleared_callback(base::OnceClosure callback) {
+    on_primary_account_cleared_callback_ = std::move(callback);
+  }
+
+  void set_on_primary_account_signin_failed_callback(
+      base::OnceClosure callback) {
+    on_primary_account_signin_failed_callback_ = std::move(callback);
+  }
+
+  // This method uses a RepeatingCallback to simplify verification of multiple
+  // removed tokens.
+  void set_on_refresh_token_removed_callback(
+      base::RepeatingCallback<void(const std::string&)> callback) {
+    on_refresh_token_removed_callback_ = std::move(callback);
+  }
+
+  const GoogleServiceAuthError& error_from_signin_failed_callback() const {
+    return google_signin_failed_error_;
+  }
+
+ private:
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override {
+    primary_account_from_cleared_callback_ = previous_primary_account_info;
+    if (on_primary_account_cleared_callback_)
+      std::move(on_primary_account_cleared_callback_).Run();
+  }
+
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override {
+    google_signin_failed_error_ = error;
+    if (on_primary_account_signin_failed_callback_)
+      std::move(on_primary_account_signin_failed_callback_).Run();
+  }
+
+  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+    account_from_refresh_token_removed_callback_ = account_id;
+    if (on_refresh_token_removed_callback_)
+      on_refresh_token_removed_callback_.Run(account_id);
+  }
+
+  identity::IdentityManager* identity_manager_;
+  base::OnceClosure on_primary_account_cleared_callback_;
+  base::OnceClosure on_primary_account_signin_failed_callback_;
+  base::RepeatingCallback<void(const std::string&)>
+      on_refresh_token_removed_callback_;
+  AccountInfo primary_account_from_cleared_callback_;
+  std::string account_from_refresh_token_removed_callback_;
+  GoogleServiceAuthError google_signin_failed_error_;
+};
+
 class PrimaryAccountMutatorTest : public PlatformTest {
  public:
-  identity::IdentityTestEnvironment* environment() { return &environment_; }
+  PrimaryAccountMutatorTest() {
+    RecreateIdentityTestEnvironment(
+        signin::AccountConsistencyMethod::kDisabled);
+  }
+
+  identity::IdentityTestEnvironment* environment() {
+    return environment_.get();
+  }
 
   identity::IdentityManager* identity_manager() {
     return environment()->identity_manager();
+  }
+
+  TestIdentityManagerObserver* identity_manager_observer() {
+    return identity_manager_observer_.get();
   }
 
   identity::PrimaryAccountMutator* primary_account_mutator() {
     return identity_manager()->GetPrimaryAccountMutator();
   }
 
+  // Recreates the IdentityTestEnvironment with given |account_consistency| and
+  // optionally seeds with an authenticated account depending on
+  // |singin_manager_setup|. This process destroys any existing
+  // IdentityTestEnvironment and its dependencies, then remakes them.
+  void RecreateIdentityTestEnvironment(
+      signin::AccountConsistencyMethod account_consistency) {
+    identity_manager_observer_.reset();
+
+    environment_ = std::make_unique<identity::IdentityTestEnvironment>(
+        false, nullptr, account_consistency);
+    identity_manager_observer_ =
+        std::make_unique<TestIdentityManagerObserver>(identity_manager());
+  }
+
+  // See RunClearPrimaryAccountTest().
+  enum class AuthExpectation { kAuthNormal, kAuthError };
+  enum class RemoveAccountExpectation { kKeepAll, kRemovePrimary, kRemoveAll };
+
+  // Helper for testing of ClearPrimaryAccount(). This method requires lots
+  // of tests due to having different behaviors based on its arguments. But the
+  // setup and execution of these test is all the boiler plate you see here:
+  // 1) Ensure you have 2 accounts, both with refresh tokens
+  // 2) Clear the primary account
+  // 3) Assert clearing succeeds and refresh tokens are optionally removed based
+  //    on arguments.
+  //
+  // Optionally, it's possible to specify whether a normal auth process will
+  // take place, or whether an auth error should happen, useful for some tests.
+  void RunClearPrimaryAccountTest(
+      identity::PrimaryAccountMutator::ClearAccountsAction account_action,
+      RemoveAccountExpectation account_expectation,
+      AuthExpectation auth_expection = AuthExpectation::kAuthNormal) {
+    // With the exception of ClearPrimaryAccount_AuthInProgress, every other
+    // ClearPrimaryAccount_* test requires a primary account to be signed in.
+    EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+    AccountInfo account_info =
+        environment()->MakeAccountAvailable(kPrimaryAccountEmail);
+    EXPECT_TRUE(
+        primary_account_mutator()->SetPrimaryAccount(account_info.account_id));
+    EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+    EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+
+    EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
+              account_info.account_id);
+    EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo().email,
+              kPrimaryAccountEmail);
+
+    if (auth_expection == AuthExpectation::kAuthError) {
+      // Set primary account to have authentication error.
+      SetRefreshTokenForPrimaryAccount(identity_manager());
+      identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+          identity_manager(), account_info.account_id,
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+    }
+
+    // Additionally, ClearPrimaryAccount_* tests also need a secondary account.
+    AccountInfo secondary_account_info =
+        MakeAccountAvailable(identity_manager(), kAnotherAccountEmail);
+    EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+        secondary_account_info.account_id));
+
+    // Track Observer token removal notifications.
+    base::flat_set<std::string> observed_removals;
+    identity_manager_observer()->set_on_refresh_token_removed_callback(
+        base::BindRepeating(
+            [](base::flat_set<std::string>* observed_removals,
+               const std::string& removed_account) {
+              observed_removals->insert(removed_account);
+            },
+            &observed_removals));
+
+    // Grab this before clearing for token checks below.
+    auto former_primary_account = identity_manager()->GetPrimaryAccountInfo();
+
+    base::RunLoop run_loop;
+    identity_manager_observer()->set_on_primary_account_cleared_callback(
+        run_loop.QuitClosure());
+    primary_account_mutator()->ClearPrimaryAccount(
+        account_action, signin_metrics::SIGNOUT_TEST,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+    run_loop.Run();
+
+    EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+    // NOTE: IdentityManager _may_ still possess this token (see switch below),
+    // but it is no longer considered part of the primary account.
+    EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+
+    switch (account_expectation) {
+      case RemoveAccountExpectation::kKeepAll:
+        EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+            former_primary_account.account_id));
+        EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+            secondary_account_info.account_id));
+        EXPECT_TRUE(observed_removals.empty());
+        break;
+      case RemoveAccountExpectation::kRemovePrimary:
+        EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+            former_primary_account.account_id));
+        EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+            secondary_account_info.account_id));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      former_primary_account.account_id));
+        EXPECT_FALSE(base::ContainsKey(observed_removals,
+                                       secondary_account_info.account_id));
+        break;
+      case RemoveAccountExpectation::kRemoveAll:
+        EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+            former_primary_account.account_id));
+        EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+            secondary_account_info.account_id));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      former_primary_account.account_id));
+        EXPECT_TRUE(base::ContainsKey(observed_removals,
+                                      secondary_account_info.account_id));
+        break;
+    }
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  identity::IdentityTestEnvironment environment_;
+  std::unique_ptr<identity::IdentityTestEnvironment> environment_;
+  std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
 };
 
 // Checks that the method to control whether setting the primary account is
@@ -193,7 +389,6 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
   // The underlying SigninManager in IdentityTestEnvironment (FakeSigninManager)
   // will be created with signin::AccountConsistencyMethod::kDisabled, which
   // should result in ClearPrimaryAccount() removing all the tokens.
-  // Other possible combinations are covered by IdentityManagerTests unit tests.
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
       primary_account_info.account_id));
@@ -269,6 +464,143 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_RemoveAll) {
       primary_account_info.account_id));
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
       other_account_info.account_id));
+}
+
+// Test that ClearPrimaryAccount(...) with ClearAccountTokensAction::kDefault
+// and AccountConsistencyMethod::kDisabled (notably != kDice) removes all
+// tokens.
+TEST_F(PrimaryAccountMutatorTest,
+       ClearPrimaryAccount_Default_DisabledConsistency) {
+  if (!primary_account_mutator())
+    return;
+
+  // Tests default to kDisabled, so this is just being explicit.
+  RecreateIdentityTestEnvironment(signin::AccountConsistencyMethod::kDisabled);
+
+  RunClearPrimaryAccountTest(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      RemoveAccountExpectation::kRemoveAll);
+}
+
+// Test that ClearPrimaryAccount(...) with ClearAccountTokensAction::kDefault
+// and AccountConsistencyMethod::kMirror (notably != kDice) removes all
+// tokens.
+TEST_F(PrimaryAccountMutatorTest,
+       ClearPrimaryAccount_Default_MirrorConsistency) {
+  if (!primary_account_mutator())
+    return;
+
+  RecreateIdentityTestEnvironment(signin::AccountConsistencyMethod::kMirror);
+
+  RunClearPrimaryAccountTest(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      RemoveAccountExpectation::kRemoveAll);
+}
+
+// Test that ClearPrimaryAccount(...) with ClearAccountTokensAction::kDefault
+// and AccountConsistencyMethod::kDice keeps all accounts when the the primary
+// account does not have an authentication error (see *_AuthError test).
+TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default_DiceConsistency) {
+  if (!primary_account_mutator())
+    return;
+
+  RecreateIdentityTestEnvironment(signin::AccountConsistencyMethod::kDice);
+
+  RunClearPrimaryAccountTest(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      RemoveAccountExpectation::kKeepAll);
+}
+
+// Test that ClearPrimaryAccount(...) with ClearAccountTokensAction::kDefault
+// and AccountConsistencyMethod::kDice removes *only* the primary account
+// due to it authentication error.
+TEST_F(PrimaryAccountMutatorTest,
+       ClearPrimaryAccount_Default_DiceConsistency_AuthError) {
+  if (!primary_account_mutator())
+    return;
+
+  RecreateIdentityTestEnvironment(signin::AccountConsistencyMethod::kDice);
+
+  RunClearPrimaryAccountTest(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      RemoveAccountExpectation::kRemovePrimary, AuthExpectation::kAuthError);
+}
+
+// Test that ClearPrimaryAccount(...) with authentication in progress notifies
+// Observers that sign-in is canceled and does not remove any tokens.
+TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_AuthInProgress) {
+  if (!primary_account_mutator())
+    return;
+
+  AccountInfo account_info =
+      environment()->MakeAccountAvailable(kPrimaryAccountEmail);
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
+
+  // Account available in the tracker service but still not authenticated means
+  // there's neither a primary account nor an authentication process ongoing.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(
+      primary_account_mutator()->LegacyIsPrimaryAccountAuthInProgress());
+
+  // Add a secondary account to verify that its refresh token survives the
+  // call to ClearPrimaryAccount(...) below.
+  AccountInfo secondary_account_info =
+      MakeAccountAvailable(identity_manager(), kAnotherAccountEmail);
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      secondary_account_info.account_id));
+
+  // Start a signin process for the account we just made available and check
+  // that it's reported to be in progress before the process is completed.
+  base::RunLoop run_loop;
+  std::string signed_account_refresh_token;
+  primary_account_mutator()->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
+      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      base::BindOnce(
+          [](std::string* out_refresh_token, const std::string& refresh_token) {
+            *out_refresh_token = refresh_token;
+          },
+          base::Unretained(&signed_account_refresh_token)));
+
+  EXPECT_TRUE(
+      primary_account_mutator()->LegacyIsPrimaryAccountAuthInProgress());
+
+  AccountInfo auth_in_progress_account_info =
+      primary_account_mutator()->LegacyPrimaryAccountForAuthInProgress();
+
+  // Make sure we exit the nested RunLoop.
+  identity_manager_observer()->set_on_primary_account_signin_failed_callback(
+      run_loop.QuitClosure());
+
+  // Observer should not be notified of any token removals.
+  identity_manager_observer()->set_on_refresh_token_removed_callback(
+      base::BindRepeating([](const std::string&) { EXPECT_TRUE(false); }));
+
+  // No primary account to "clear", so no callback.
+  identity_manager_observer()->set_on_primary_account_cleared_callback(
+      base::BindOnce([] { EXPECT_TRUE(false); }));
+
+  EXPECT_TRUE(primary_account_mutator()->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+      signin_metrics::SIGNOUT_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC));
+  run_loop.Run();
+
+  // Verify in-progress authentication was canceled.
+  EXPECT_EQ(
+      identity_manager_observer()->error_from_signin_failed_callback().state(),
+      GoogleServiceAuthError::State::REQUEST_CANCELED);
+  EXPECT_FALSE(
+      primary_account_mutator()->LegacyIsPrimaryAccountAuthInProgress());
+
+  // We didn't have a primary account to start with, we shouldn't have one now
+  // either.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+
+  // Secondary account token still exists.
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      secondary_account_info.account_id));
 }
 
 // Checks that checking whether an authentication process is in progress reports
