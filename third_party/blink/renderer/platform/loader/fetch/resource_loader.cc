@@ -905,6 +905,11 @@ void ResourceLoader::DidReceiveResponse(
       request_context, resource_,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
+  // When streaming, unpause virtual time early to prevent deadlocking
+  // against stream consumer in case stream has backpressure enabled.
+  if (handle)
+    resource_->VirtualTimePauser().UnpauseVirtualTime();
+
   resource_->ResponseReceived(response_to_pass, std::move(handle));
 
   // Send the cached code after we notify that the response is received.
