@@ -42,7 +42,10 @@ void OnGetStatus(const Status& status,
   ASSERT_EQ(kOk, status.code());
   base::DictionaryValue* dict;
   ASSERT_TRUE(value->GetAsDictionary(&dict));
+  bool ready;
+  ASSERT_TRUE(dict->GetBoolean("ready", &ready) && ready);
   base::Value* unused;
+  ASSERT_TRUE(dict->Get("message", &unused));
   ASSERT_TRUE(dict->Get("os.name", &unused));
   ASSERT_TRUE(dict->Get("os.version", &unused));
   ASSERT_TRUE(dict->Get("os.arch", &unused));
