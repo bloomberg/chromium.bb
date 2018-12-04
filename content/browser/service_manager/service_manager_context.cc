@@ -387,9 +387,8 @@ using InProcessServiceFactory =
 void LaunchInProcessServiceOnSequence(
     const InProcessServiceFactory& factory,
     service_manager::mojom::ServiceRequest request) {
-  auto* raw_service_impl = factory.Run(std::move(request)).release();
-  raw_service_impl->set_termination_closure(base::BindOnce(
-      [](service_manager::Service* impl) { delete impl; }, raw_service_impl));
+  service_manager::Service::RunAsyncUntilTermination(
+      factory.Run(std::move(request)));
 }
 
 void LaunchInProcessService(
@@ -432,18 +431,28 @@ void CreateInProcessAudioService(
 }
 
 #if defined(OS_LINUX)
-void CreateFontService(service_manager::mojom::ServiceRequest request) {
-  // The font service owns itself here, deleting on self-termination.
-  auto service =
-      std::make_unique<font_service::FontServiceApp>(std::move(request));
-  auto* raw_service = service.get();
-  raw_service->set_termination_closure(base::BindOnce(
-      [](std::unique_ptr<font_service::FontServiceApp> service) {
-        // Nothing to do but let |service| go out of scope.
-      },
-      std::move(service)));
+std::unique_ptr<service_manager::Service> CreateFontService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<font_service::FontServiceApp>(std::move(request));
 }
 #endif  // defined(OS_LINUX)
+
+std::unique_ptr<service_manager::Service> CreateResourceCoordinatorService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<resource_coordinator::ResourceCoordinatorService>(
+      std::move(request));
+}
+
+std::unique_ptr<service_manager::Service> CreateTracingService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<tracing::TracingService>(std::move(request));
+}
+
+std::unique_ptr<service_manager::Service> CreateMediaSessionService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<media_session::MediaSessionService>(
+      std::move(request));
+}
 
 }  // namespace
 
@@ -631,28 +640,28 @@ ServiceManagerContext::ServiceManagerContext(
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  packaged_services_connection_->AddServiceRequestHandler(
+  RegisterInProcessService(
+      packaged_services_connection_.get(),
       resource_coordinator::mojom::kServiceName,
-      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunAsyncUntilTermination(
-            std::make_unique<resource_coordinator::ResourceCoordinatorService>(
-                std::move(request)));
-      }));
+      service_manager_thread_task_runner_,
+      base::BindRepeating(&CreateResourceCoordinatorService));
+
+  RegisterInProcessService(packaged_services_connection_.get(),
+                           tracing::mojom::kServiceName,
+                           service_manager_thread_task_runner_,
+                           base::BindRepeating(&CreateTracingService));
+
+  RegisterInProcessService(packaged_services_connection_.get(),
+                           metrics::mojom::kMetricsServiceName,
+                           service_manager_thread_task_runner_,
+                           base::BindRepeating(&metrics::CreateMetricsService));
 
   if (media_session::IsMediaSessionEnabled()) {
-    service_manager::EmbeddedServiceInfo media_session_info;
-    media_session_info.factory =
-        base::BindRepeating(&media_session::MediaSessionService::Create);
-    packaged_services_connection_->AddEmbeddedService(
-        media_session::mojom::kServiceName, media_session_info);
+    RegisterInProcessService(packaged_services_connection_.get(),
+                             media_session::mojom::kServiceName,
+                             base::SequencedTaskRunnerHandle::Get(),
+                             base::BindRepeating(&CreateMediaSessionService));
   }
-
-  packaged_services_connection_->AddServiceRequestHandler(
-      tracing::mojom::kServiceName,
-      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunAsyncUntilTermination(
-            std::make_unique<tracing::TracingService>(std::move(request)));
-      }));
 
   if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     RegisterInProcessService(
@@ -668,12 +677,14 @@ ServiceManagerContext::ServiceManagerContext(
         base::BindRepeating(&CreateVideoCaptureService));
   }
 
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::BindRepeating(&metrics::CreateMetricsService);
-    packaged_services_connection_->AddEmbeddedService(
-        metrics::mojom::kMetricsServiceName, info);
-  }
+#if defined(OS_LINUX)
+  RegisterInProcessService(
+      packaged_services_connection_.get(), font_service::mojom::kServiceName,
+      base::CreateSequencedTaskRunnerWithTraits(
+          base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
+                            base::TaskPriority::USER_BLOCKING})),
+      base::BindRepeating(&CreateFontService));
+#endif
 
   GetContentClient()->browser()->RegisterIOThreadServiceHandlers(
       packaged_services_connection_.get());
@@ -690,30 +701,14 @@ ServiceManagerContext::ServiceManagerContext(
   out_of_process_services[data_decoder::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
 
-#if defined(OS_LINUX)
-  packaged_services_connection_->AddServiceRequestHandler(
-      font_service::mojom::kServiceName,
-      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        auto task_runner =
-            base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits(
-                {base::MayBlock(), base::WithBaseSyncPrimitives(),
-                 base::TaskPriority::USER_BLOCKING}));
-        task_runner->PostTask(FROM_HERE, base::BindOnce(&CreateFontService,
-                                                        std::move(request)));
-      }));
-#endif
-
   bool network_service_enabled =
       base::FeatureList::IsEnabled(network::features::kNetworkService);
   if (network_service_enabled) {
     if (IsInProcessNetworkService()) {
-      packaged_services_connection_->AddServiceRequestHandler(
-          mojom::kNetworkServiceName,
-          base::BindRepeating(
-              [](service_manager::mojom::ServiceRequest request) {
-                service_manager::Service::RunAsyncUntilTermination(
-                    CreateNetworkService(std::move(request)));
-              }));
+      RegisterInProcessService(packaged_services_connection_.get(),
+                               mojom::kNetworkServiceName,
+                               service_manager_thread_task_runner_,
+                               base::BindRepeating(&CreateNetworkService));
     } else {
       out_of_process_services[mojom::kNetworkServiceName] =
           base::BindRepeating(&base::ASCIIToUTF16, "Network Service");

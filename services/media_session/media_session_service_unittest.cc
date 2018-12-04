@@ -16,23 +16,14 @@ class MediaSessionTest : public testing::Test {
   MediaSessionTest() = default;
   ~MediaSessionTest() override = default;
 
- protected:
-  void SetUp() override {
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            MediaSessionService::Create());
-    connector_ = connector_factory_->CreateConnector();
-  }
-
-  std::unique_ptr<service_manager::Connector> connector_;
-
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionTest);
 };
 
-TEST_F(MediaSessionTest, InstantiateService) {}
+TEST_F(MediaSessionTest, InstantiateService) {
+  MediaSessionService service(nullptr);
+}
 
 }  // namespace media_session

@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
 
@@ -27,7 +29,8 @@ class NavigableContentsImpl;
 class Service : public service_manager::Service {
  public:
   // |delegate| is not owned and must outlive |this|.
-  explicit Service(ServiceDelegate* delegate);
+  explicit Service(ServiceDelegate* delegate,
+                   service_manager::mojom::ServiceRequest request);
   ~Service() override;
 
   ServiceDelegate* delegate() const { return delegate_; }
@@ -54,6 +57,7 @@ class Service : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle pipe) override;
 
   ServiceDelegate* const delegate_;
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry binders_;
 
   std::map<NavigableContentsFactoryImpl*,

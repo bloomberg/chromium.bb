@@ -26,18 +26,13 @@ class MediaControllerTest : public testing::Test {
   MediaControllerTest() = default;
 
   void SetUp() override {
-    // Create an instance of the MediaSessionService.
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            MediaSessionService::Create());
-    connector_ = connector_factory_->CreateConnector();
-
-    // Bind |audio_focus_ptr_| to AudioFocusManager.
-    connector_->BindInterface("test", mojo::MakeRequest(&audio_focus_ptr_));
-
-    // Bind |media_controller_ptr_| to MediaController.
-    connector_->BindInterface("test",
-                              mojo::MakeRequest(&media_controller_ptr_));
+    // Create an instance of the MediaSessionService and bind some interfaces.
+    service_ = std::make_unique<MediaSessionService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
+    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                                            &audio_focus_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &media_controller_ptr_);
   }
 
   void TearDown() override {
@@ -54,8 +49,8 @@ class MediaControllerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MediaSessionService> service_;
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::MediaControllerPtr media_controller_ptr_;
 

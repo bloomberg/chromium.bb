@@ -10,6 +10,7 @@
 #include "services/metrics/ukm_recorder_interface.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace metrics {
 
@@ -20,12 +21,13 @@ namespace {
 // appropriate delegates for UkmRecorder::Get().
 class MetricsMojoService : public service_manager::Service {
  public:
-  MetricsMojoService() {
+  explicit MetricsMojoService(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface(
         base::Bind(&UkmRecorderInterface::Create, ukm::UkmRecorder::Get()));
   }
 
-  ~MetricsMojoService() final {}
+  ~MetricsMojoService() final = default;
 
  private:
   // service_manager::Service:.
@@ -35,6 +37,7 @@ class MetricsMojoService : public service_manager::Service {
     registry_.BindInterface(interface_name, std::move(handle));
   }
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsMojoService);
@@ -42,8 +45,9 @@ class MetricsMojoService : public service_manager::Service {
 
 }  // namespace
 
-std::unique_ptr<service_manager::Service> CreateMetricsService() {
-  return std::make_unique<MetricsMojoService>();
+std::unique_ptr<service_manager::Service> CreateMetricsService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<MetricsMojoService>(std::move(request));
 }
 
 }  // namespace metrics

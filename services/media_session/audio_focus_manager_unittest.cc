@@ -22,6 +22,7 @@
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,17 +51,12 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     ASSERT_EQ(GetParam(), IsAudioFocusEnforcementEnabled());
 
     // Create an instance of the MediaSessionService.
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            MediaSessionService::Create());
-    connector_ = connector_factory_->CreateConnector();
-
-    // Bind |audio_focus_ptr_| to AudioFocusManager.
-    connector_->BindInterface("test", mojo::MakeRequest(&audio_focus_ptr_));
-
-    // Bind |audio_focus_debug_ptr_| to AudioFocusManagerDebug.
-    connector_->BindInterface("test",
-                              mojo::MakeRequest(&audio_focus_debug_ptr_));
+    service_ = std::make_unique<MediaSessionService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
+    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                                            &audio_focus_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &audio_focus_debug_ptr_);
   }
 
   void TearDown() override {
@@ -168,7 +164,8 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
 
   mojom::AudioFocusManagerPtr CreateAudioFocusManagerPtr() {
     mojom::AudioFocusManagerPtr ptr;
-    connector_->BindInterface("test", mojo::MakeRequest(&ptr));
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, mojo::MakeRequest(&ptr));
     return ptr;
   }
 
@@ -233,8 +230,8 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   base::test::ScopedTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MediaSessionService> service_;
 
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;

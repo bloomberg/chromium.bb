@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace metrics {
 
@@ -15,7 +16,8 @@ namespace metrics {
 // process. In order to capture any UKM data, the current process should have a
 // UkmService object created and configured, so this should currently only be
 // called in the browser process.
-std::unique_ptr<service_manager::Service> CreateMetricsService();
+std::unique_ptr<service_manager::Service> CreateMetricsService(
+    service_manager::mojom::ServiceRequest request);
 
 }  // namespace metrics
 

@@ -37,7 +37,6 @@
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_LINUX)
 #include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
@@ -224,8 +223,7 @@ void NaClListener::Listen() {
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
   mojo::ScopedMessagePipeHandle channel_handle;
-  std::unique_ptr<service_manager::ServiceContext> service_context =
-      CreateNaClServiceContext(io_thread_.task_runner(), &channel_handle);
+  auto service = CreateNaClService(io_thread_.task_runner(), &channel_handle);
   channel_->Init(channel_handle.release(), IPC::Channel::MODE_CLIENT, true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();

@@ -18,8 +18,7 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 #if defined(OS_POSIX)
 #include "base/files/scoped_file.h"
@@ -57,47 +56,42 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager(
 
 class NaClService : public service_manager::Service {
  public:
-  NaClService(IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
-              std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support);
-  ~NaClService() override;
+  NaClService(service_manager::mojom::ServiceRequest request,
+              IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
+              std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support)
+      : service_binding_(this, std::move(request)),
+        ipc_channel_bootstrap_(std::move(bootstrap)),
+        ipc_support_(std::move(ipc_support)) {}
 
-  // Service overrides.
+  ~NaClService() override = default;
+
+  // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    if (source_info.identity.name() == content::mojom::kBrowserServiceName &&
+        interface_name == IPC::mojom::ChannelBootstrap::Name_ && !connected_) {
+      connected_ = true;
+      mojo::FuseInterface(
+          IPC::mojom::ChannelBootstrapRequest(std::move(interface_pipe)),
+          std::move(ipc_channel_bootstrap_));
+    } else {
+      DVLOG(1) << "Ignoring request for unknown interface " << interface_name;
+    }
+  }
 
  private:
+  service_manager::ServiceBinding service_binding_;
   IPC::mojom::ChannelBootstrapPtrInfo ipc_channel_bootstrap_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
   bool connected_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClService);
 };
-
-NaClService::NaClService(
-    IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
-    std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support)
-    : ipc_channel_bootstrap_(std::move(bootstrap)),
-      ipc_support_(std::move(ipc_support)) {}
-
-NaClService::~NaClService() = default;
-
-void NaClService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (source_info.identity.name() == content::mojom::kBrowserServiceName &&
-      interface_name == IPC::mojom::ChannelBootstrap::Name_ && !connected_) {
-    connected_ = true;
-    mojo::FuseInterface(
-        IPC::mojom::ChannelBootstrapRequest(std::move(interface_pipe)),
-        std::move(ipc_channel_bootstrap_));
-  } else {
-    DVLOG(1) << "Ignoring request for unknown interface " << interface_name;
-  }
-}
 
 }  // namespace
 
-std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
+std::unique_ptr<service_manager::Service> CreateNaClService(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojo::ScopedMessagePipeHandle* ipc_channel) {
   auto ipc_support = std::make_unique<mojo::core::ScopedIPCSupport>(
@@ -106,9 +100,7 @@ std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
   auto invitation = EstablishMojoConnection();
   IPC::mojom::ChannelBootstrapPtr bootstrap;
   *ipc_channel = mojo::MakeRequest(&bootstrap).PassMessagePipe();
-  auto context = std::make_unique<service_manager::ServiceContext>(
-      std::make_unique<NaClService>(bootstrap.PassInterface(),
-                                    std::move(ipc_support)),
-      ConnectToServiceManager(&invitation));
-  return context;
+  return std::make_unique<NaClService>(ConnectToServiceManager(&invitation),
+                                       bootstrap.PassInterface(),
+                                       std::move(ipc_support));
 }
