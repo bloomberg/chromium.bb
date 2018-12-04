@@ -1366,7 +1366,6 @@ class SiteConfig(dict):
       AssertionError if the given config is not a master config or it does
         not have a manifest_version.
     """
-    assert master_config.manifest_version
     assert master_config.master
     assert master_config.slave_configs is not None
 

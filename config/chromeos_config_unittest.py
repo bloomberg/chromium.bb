@@ -406,16 +406,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.master:
         # Any builder with slaves must set both of these.
         self.assertTrue(config.master)
-        self.assertTrue(config.manifest_version)
         self.assertIsNotNone(config.slave_configs)
 
         # If a builder lists slave config names, ensure they are all valid, and
         # have an assigned waterfall.
         for slave_name in config.slave_configs:
           self.assertIn(slave_name, self.site_config)
-          self.assertTrue(
-              self.site_config[slave_name].active_waterfall,
-              '"%s" is not in an active waterfall' % slave_name)
       else:
         self.assertIsNone(config.slave_configs)
 
@@ -495,7 +491,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
       overlays = config['overlays']
       push_overlays = config['push_overlays']
       if (overlays and push_overlays and config['uprev'] and config['master']
-          and not config['branch'] and not config['debug']):
+          and not config['branch'] and not config['workspace_branch']
+          and not config['debug']):
         other_master = masters.get(push_overlays)
         err_msg = 'Found two masters for push_overlays=%s: %s and %s'
         self.assertFalse(
@@ -675,9 +672,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       error = 'Unified config for %s has invalid values' % build_name
       # Unified masters must be internal and must rev both overlays.
-      if config['master']:
-        self.assertTrue(
-            config['internal'] and config['manifest_version'], error)
+      if config['master'] and config['manifest_version']:
+        self.assertTrue(config['internal'], error)
       elif not config['master'] and config['manifest_version']:
         # Unified slaves can rev either public or both depending on whether
         # they are internal or not.
@@ -706,45 +702,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.assertNotIn(
               build_name, [x.name for x in configs],
               'Master paladin %s cannot be a slave of itself.' % build_name)
-
-  def testMasterBuildTypes(self):
-    """Test that all masters are of a whitelisted unique build type."""
-    # Note: This is a whitelist of build type that are allowed to have a
-    # master config. Do not add entries to this list without consulting with the
-    # chrome-infra team.
-    # TODO(akeshet): Remove this whitelist requirement once buildbot master
-    # logic is fully chromite-driven.
-    BUILD_TYPE_WHITELIST = (
-        constants.CANARY_TYPE,
-        constants.PFQ_TYPE,
-        constants.PALADIN_TYPE,
-        constants.POSTSUBMIT_TYPE,
-        constants.TOOLCHAIN_TYPE,
-        constants.CHROME_PFQ_TYPE,
-        constants.ANDROID_PFQ_TYPE,
-        constants.FULL_TYPE,
-        constants.INCREMENTAL_TYPE,
-    )
-
-    found_types = set()
-    for _, config in self.site_config.iteritems():
-      if config_lib.isTryjobConfig(config):
-        continue
-
-      if config.master:
-        self.assertTrue(config.build_type in BUILD_TYPE_WHITELIST,
-                        'Config %s has build_type %s, which is not an allowed '
-                        'type for a master build. Please consult with '
-                        'chrome-infra before adding this config.' %
-                        (config.name, config.build_type))
-        # We have multiple masters for Android PFQ.
-        # We also have multiple masters for canary: "master-release" for boards
-        # except lakitu and "lakitu-master-release" for lakitu boards.
-        self.assertTrue(config.build_type not in found_types or
-                        config.build_type in ('pfq', 'android', 'canary'),
-                        'Duplicate master configs of build type %s' %
-                        config.build_type)
-        found_types.add(config.build_type)
 
   def _getSlaveConfigsForMaster(self, master_config_name):
     """Helper to fetch the configs for all slaves of a given master."""

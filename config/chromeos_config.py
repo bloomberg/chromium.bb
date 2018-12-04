@@ -3013,11 +3013,29 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
         **schedule
     )
 
-  site_config.Add(
-      'prototype-factorybranch',
-      site_config.templates.factorybranch,
-      boards=['nami'],
+  spec_master = site_config.Add(
+      'prototype-buildspec',
+      display_label=config_lib.DISPLAY_LABEL_FACTORY,
+      master=True,
+      boards=[],
+      build_type=constants.GENERIC_TYPE,
+      uprev=True,
+      overlays=constants.BOTH_OVERLAYS,
+      push_overlays=constants.BOTH_OVERLAYS,
+      builder_class_name='workspace_builders.BuildSpecBuilder',
+      build_timeout=6*60 * 60,
+      description='Buildspec creator.',
+      doc='https://goto.google.com/tot-for-firmware-branches',
       workspace_branch='factory-nami-10715.B',
+  )
+
+  spec_master.AddSlave(
+      site_config.Add(
+          'prototype-factorybranch',
+          site_config.templates.factorybranch,
+          boards=['nami'],
+          workspace_branch='factory-nami-10715.B',
+      )
   )
 
 
