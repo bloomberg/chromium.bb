@@ -353,11 +353,11 @@ TEST_P(WebStateTest, RestoreLargeSession) {
                     navigation_manager->CanGoForward();
     if (!restored) {
       EXPECT_FALSE(navigation_manager->CanGoForward());
+      EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
+      EXPECT_TRUE(navigation_manager->GetForwardItems().empty());
       DCHECK_EQ(0.0, web_state_ptr->GetLoadingProgress());
       // TODO(crbug.com/877671): Ensure that the following API work correctly:
       //  - WebState::GetLastCommittedURL
-      //  - NavigationManager::GetBackwardItems
-      //  - NavigationManager::GetForwardItems
       //  - NavigationManager::GetLastCommittedItem
       //  - NavigationManager::GetPendingItem
       //  - NavigationManager::GetLastCommittedItemIndex

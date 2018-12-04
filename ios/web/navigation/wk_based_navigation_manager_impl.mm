@@ -428,6 +428,9 @@ void WKBasedNavigationManagerImpl::GoForward() {
 NavigationItemList WKBasedNavigationManagerImpl::GetBackwardItems() const {
   NavigationItemList items;
 
+  if (is_restore_session_in_progress_)
+    return items;
+
   // If the current navigation item is a transient item (e.g. SSL
   // interstitial), the last committed item should also be considered part of
   // the backward history.
@@ -445,6 +448,10 @@ NavigationItemList WKBasedNavigationManagerImpl::GetBackwardItems() const {
 
 NavigationItemList WKBasedNavigationManagerImpl::GetForwardItems() const {
   NavigationItemList items;
+
+  if (is_restore_session_in_progress_)
+    return items;
+
   for (int index = web_view_cache_.GetCurrentItemIndex() + 1;
        index < GetItemCount(); index++) {
     items.push_back(GetItemAtIndex(index));
