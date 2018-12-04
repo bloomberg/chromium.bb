@@ -22,6 +22,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
@@ -84,7 +85,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // blink::WebWorkerFetchContext implementation:
   scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
-  void InitializeOnWorkerThread() override;
+  void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
@@ -130,6 +131,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   using RewriteURLFunction = blink::WebURL (*)(const std::string&, bool);
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
+
+  blink::WebString GetAcceptLanguages() const override;
 
  private:
   class Factory;
@@ -239,6 +242,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       websocket_handshake_throttle_provider_;
 
   std::unique_ptr<service_manager::Connector> service_manager_connection_;
+
+  blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 };
 
 }  // namespace content

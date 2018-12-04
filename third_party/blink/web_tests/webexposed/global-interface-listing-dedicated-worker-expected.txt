@@ -3476,6 +3476,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter location
 [Worker]     getter navigator
 [Worker]     getter onerror
+[Worker]     getter onlanguagechange
 [Worker]     getter onrejectionhandled
 [Worker]     getter onunhandledrejection
 [Worker]     getter origin
@@ -3495,6 +3496,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method setInterval
 [Worker]     method setTimeout
 [Worker]     setter onerror
+[Worker]     setter onlanguagechange
 [Worker]     setter onrejectionhandled
 [Worker]     setter onunhandledrejection
 [Worker]     setter origin
@@ -3520,6 +3522,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter connection
 [Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency
+[Worker]     getter language
+[Worker]     getter languages
 [Worker]     getter locks
 [Worker]     getter onLine
 [Worker]     getter permissions

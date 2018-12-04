@@ -43,7 +43,7 @@ class ServiceWorkerFetchContextImpl final
 
   // blink::WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
-  void InitializeOnWorkerThread() override;
+  void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
@@ -54,6 +54,7 @@ class ServiceWorkerFetchContextImpl final
   blink::WebURL SiteForCookies() const override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
+  blink::WebString GetAcceptLanguages() const override;
 
  private:
   ~ServiceWorkerFetchContextImpl() override;
@@ -90,6 +91,8 @@ class ServiceWorkerFetchContextImpl final
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
+
+  blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 };
 
 }  // namespace content

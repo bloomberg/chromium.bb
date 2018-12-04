@@ -9,6 +9,18 @@
   // Accept Language
   await dp.Emulation.setUserAgentOverride({userAgent: '', acceptLanguage: 'ko, en, zh-CN, zh-HK, en-US, en-GB'});
   testRunner.log('navigator.language == ' + await session.evaluate('navigator.language'));
+
+  // Worker Accept Language
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: false});
+  await session.evaluate(`var w = new Worker('${testRunner.url('resources/worker.js')}')`);
+  let event = await dp.Target.onceAttachedToTarget();
+  const worker = new WorkerProtocol(dp, event.params.sessionId);
+  await worker.dp.Emulation.setUserAgentOverride({userAgent: '', acceptLanguage: 'ko, en, zh-CN, zh-HK, en-US, en-GB'});
+  testRunner.log('workerNavigator.language == ' + await session.evaluateAsync(`
+      w.postMessage('ping!');
+      new Promise(resolve => w.onmessage = e => resolve(e.data.language))`));
+  await dp.Target.onceDetachedFromTarget();
+
   await printHeader('Accept-Language');
 
   // Do not override explicit Accept-Language header.

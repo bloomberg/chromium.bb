@@ -3446,6 +3446,7 @@ interface WorkerGlobalScope : EventTarget
     getter location
     getter navigator
     getter onerror
+    getter onlanguagechange
     getter onrejectionhandled
     getter onunhandledrejection
     getter origin
@@ -3465,6 +3466,7 @@ interface WorkerGlobalScope : EventTarget
     method setInterval
     method setTimeout
     setter onerror
+    setter onlanguagechange
     setter onrejectionhandled
     setter onunhandledrejection
     setter origin
@@ -3490,6 +3492,8 @@ interface WorkerNavigator
     getter connection
     getter deviceMemory
     getter hardwareConcurrency
+    getter language
+    getter languages
     getter locks
     getter onLine
     getter permissions

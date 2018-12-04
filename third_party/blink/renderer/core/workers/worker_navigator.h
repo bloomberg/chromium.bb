@@ -26,10 +26,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_NAVIGATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_NAVIGATOR_H_
 
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
 #include "third_party/blink/renderer/core/frame/navigator_device_memory.h"
 #include "third_party/blink/renderer/core/frame/navigator_id.h"
+#include "third_party/blink/renderer/core/frame/navigator_language.h"
 #include "third_party/blink/renderer/core/frame/navigator_on_line.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -40,23 +43,33 @@ namespace blink {
 
 class CORE_EXPORT WorkerNavigator final
     : public ScriptWrappable,
+      public AcceptLanguagesWatcher,
       public NavigatorConcurrentHardware,
       public NavigatorDeviceMemory,
       public NavigatorID,
+      public NavigatorLanguage,
       public NavigatorOnLine,
       public Supplementable<WorkerNavigator> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 
  public:
-  static WorkerNavigator* Create(const String& user_agent) {
-    return MakeGarbageCollected<WorkerNavigator>(user_agent);
+  static WorkerNavigator* Create(const String& user_agent,
+                                 ExecutionContext* context) {
+    return MakeGarbageCollected<WorkerNavigator>(user_agent, context);
   }
 
-  explicit WorkerNavigator(const String&);
+  explicit WorkerNavigator(const String&, ExecutionContext* context);
   ~WorkerNavigator() override;
 
+  // NavigatorID override
   String userAgent() const override;
+
+  // NavigatorLanguage override
+  String GetAcceptLanguages() override;
+
+  // AcceptLanguagesWatcher override
+  void NotifyUpdate() override;
 
   void Trace(blink::Visitor*) override;
 

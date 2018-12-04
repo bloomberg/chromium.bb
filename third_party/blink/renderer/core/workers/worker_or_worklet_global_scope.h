@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -90,6 +91,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // May return nullptr if this global scope is not threaded (i.e.,
   // WorkletGlobalScope for the main thread) or after Dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
+
+  // Returns nullptr if this global scope is a WorkletGlobalScope
+  virtual WorkerNavigator* navigator() const { return nullptr; }
 
   ResourceFetcher* Fetcher() const override;
   ResourceFetcher* EnsureFetcher();
