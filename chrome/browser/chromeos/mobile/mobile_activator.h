@@ -241,12 +241,6 @@ class MobileActivator
                            std::string error_description);
   // Resets network devices after cellular activation process.
   void CompleteActivation();
-  // Disables SSL certificate revocation checking mechanism. In the case
-  // where captive portal connection is the only one present, such revocation
-  // checks could prevent payment portal page from loading.
-  void DisableCertRevocationChecking();
-  // Reenables SSL certificate revocation checking mechanism.
-  void ReEnableCertRevocationChecking();
   // Return error message for a given code.
   std::string GetErrorMessage(const std::string& code) const;
 
