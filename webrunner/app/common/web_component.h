@@ -95,8 +95,11 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // Objects used for binding and exporting the ViewProvider service.
   std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
   std::unique_ptr<
-      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>
+      base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>
       view_provider_binding_;
+  std::unique_ptr<
+      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>
+      legacy_view_provider_binding_;
 
   // Termination reason and exit-code to be reported via the
   // sys::ComponentController::OnTerminated event.

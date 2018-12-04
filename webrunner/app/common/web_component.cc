@@ -67,6 +67,9 @@ WebComponent::WebComponent(
   service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
       std::move(startup_info.launch_info.directory_request));
   view_provider_binding_ = std::make_unique<
+      base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
+      service_directory_.get(), this);
+  legacy_view_provider_binding_ = std::make_unique<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>(
       service_directory_.get(), this);
 }
