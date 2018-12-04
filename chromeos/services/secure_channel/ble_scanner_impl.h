@@ -69,10 +69,10 @@ class BleScannerImpl : public BleScanner,
   void HandleScanFilterChange() override;
 
   // device::BluetoothAdapter::Observer:
-  void DeviceAdded(device::BluetoothAdapter* adapter,
-                   device::BluetoothDevice* bluetooth_device) override;
-  void DeviceChanged(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* bluetooth_device) override;
+  void DeviceAdvertisementReceived(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   int16_t rssi,
+                                   const std::vector<uint8_t>& eir) override;
 
   void UpdateDiscoveryStatus();
   bool IsDiscoverySessionActive();
