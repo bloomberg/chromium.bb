@@ -349,10 +349,7 @@ public final class DownloadInfo {
                 @ResumeMode
                 int resumeMode = DownloadUtils.getResumeMode(
                         downloadInfo.getUrl(), downloadInfo.getFailState());
-                if (resumeMode == ResumeMode.INVALID) {
-                    // These are dead end states and no further user actions are needed.
-                    offlineItem.state = OfflineItemState.FAILED;
-                } else if (resumeMode == ResumeMode.USER_RESTART) {
+                if (resumeMode == ResumeMode.INVALID || resumeMode == ResumeMode.USER_RESTART) {
                     // Fail but can restart from the beginning. The UI should let the user to retry.
                     offlineItem.state = OfflineItemState.INTERRUPTED;
                 }

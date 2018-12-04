@@ -55,12 +55,10 @@ public abstract class InProgressViewHolder extends ListItemViewHolder {
                 case OfflineItemState.PENDING:
                     properties.get(ListProperties.CALLBACK_PAUSE).onResult(offlineItem);
                     break;
-                case OfflineItemState.PAUSED:
-                    properties.get(ListProperties.CALLBACK_RESUME).onResult(offlineItem);
-                    break;
+                case OfflineItemState.PAUSED: // Intentional fallthrough.
+                case OfflineItemState.FAILED: // Intentional fallthrough.
                 case OfflineItemState.INTERRUPTED: // Intentional fallthrough.
                 case OfflineItemState.CANCELLED: // Intentional fallthrough.
-                case OfflineItemState.FAILED:
                     properties.get(ListProperties.CALLBACK_RESUME).onResult(offlineItem);
                     break;
                 case OfflineItemState.COMPLETE: // Intentional fallthrough.

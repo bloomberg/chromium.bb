@@ -124,7 +124,7 @@ public class DownloadGlue implements DownloadObserver {
                 item.id, item.isOffTheRecord);
     }
 
-    /** @see OfflineContentProvider#resumeDownload(ContentId) */
+    /** @see OfflineContentProvider#resumeDownload(ContentId, boolean) */
     public void resumeDownload(OfflineItem item, boolean hasUserGesture) {
         DownloadInfo.Builder builder = DownloadInfo.builderFromOfflineItem(item, null);
 
@@ -134,8 +134,13 @@ public class DownloadGlue implements DownloadObserver {
 
         DownloadItem downloadItem =
                 new DownloadItem(false /* useAndroidDownloadManager */, builder.build());
-        DownloadManagerService.getDownloadManagerService().resumeDownload(
-                item.id, downloadItem, hasUserGesture);
+
+        if (item.isResumable) {
+            DownloadManagerService.getDownloadManagerService().resumeDownload(
+                    item.id, downloadItem, hasUserGesture);
+        } else {
+            DownloadManagerService.getDownloadManagerService().retryDownload(item.id, downloadItem);
+        }
     }
 
     /** @see OfflineContentProvider#getItemById(ContentId, Callback) */

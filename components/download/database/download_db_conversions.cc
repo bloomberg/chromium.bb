@@ -65,6 +65,8 @@ DownloadSource DownloadDBConversions::DownloadSourceFromProto(
       return DownloadSource::OFFLINE_PAGE;
     case download_pb::DownloadSource::CONTEXT_MENU:
       return DownloadSource::CONTEXT_MENU;
+    case download_pb::DownloadSource::RETRY:
+      return DownloadSource::RETRY;
   }
   NOTREACHED();
   return DownloadSource::UNKNOWN;
@@ -94,6 +96,8 @@ download_pb::DownloadSource DownloadDBConversions::DownloadSourceToProto(
       return download_pb::DownloadSource::OFFLINE_PAGE;
     case DownloadSource::CONTEXT_MENU:
       return download_pb::DownloadSource::CONTEXT_MENU;
+    case DownloadSource::RETRY:
+      return download_pb::DownloadSource::RETRY;
   }
   NOTREACHED();
   return download_pb::DownloadSource::UNKNOWN;

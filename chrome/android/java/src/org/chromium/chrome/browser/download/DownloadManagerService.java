@@ -1001,6 +1001,16 @@ public class DownloadManagerService
     }
 
     /**
+     * Called to retry a download. May resume the current download or start a new one.
+     * @param id The {@link ContentId} of the download to retry.
+     * @param item The current download that needs to retry.
+     */
+    public void retryDownload(ContentId id, DownloadItem item) {
+        nativeRetryDownload(getNativeDownloadManagerService(), item.getId(),
+                item.getDownloadInfo().isOffTheRecord());
+    }
+
+    /**
      * Called to cancel a download.
      * @param id The {@link ContentId} of the download to cancel.
      * @param isOffTheRecord Whether the download is off the record.
@@ -1884,6 +1894,8 @@ public class DownloadManagerService
     private native void nativeOpenDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord, int source);
     private native void nativeResumeDownload(
+            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
+    private native void nativeRetryDownload(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativeCancelDownload(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
