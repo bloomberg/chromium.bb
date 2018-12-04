@@ -83,7 +83,7 @@ class MostVisitedSitesSupervisor {
   virtual bool IsChildProfile() = 0;
 };
 
-// Tracks the list of most visited sites and their thumbnails.
+// Tracks the list of most visited sites.
 class MostVisitedSites : public history::TopSitesObserver,
                          public MostVisitedSitesSupervisor::Observer {
  public:

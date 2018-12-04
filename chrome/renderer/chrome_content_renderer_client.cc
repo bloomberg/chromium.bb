@@ -1327,14 +1327,8 @@ void ChromeContentRendererClient::WillSendRequest(
   if (search_box) {
     // Note: this GURL copy could be avoided if host() were added to WebURL.
     GURL gurl(url);
-    SearchBox::ImageSourceType type = SearchBox::NONE;
     if (gurl.host_piece() == chrome::kChromeUIFaviconHost)
-      type = SearchBox::FAVICON;
-    else if (gurl.host_piece() == chrome::kChromeUIThumbnailHost)
-      type = SearchBox::THUMB;
-
-    if (type != SearchBox::NONE)
-      search_box->GenerateImageURLFromTransientURL(url, type, new_url);
+      search_box->GenerateImageURLFromTransientURL(url, new_url);
   }
 #endif  // !defined(OS_ANDROID)
 }

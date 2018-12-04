@@ -100,19 +100,6 @@ void Dispatch(blink::WebLocalFrame* frame, const blink::WebString& script) {
   frame->ExecuteScript(blink::WebScriptSource(script));
 }
 
-std::string GenerateThumbnailURL(int render_view_id,
-                                 InstantRestrictedID most_visited_item_id) {
-  return base::StringPrintf("chrome-search://thumb/%d/%d", render_view_id,
-                            most_visited_item_id);
-}
-
-std::string GenerateThumb2URL(const GURL& page_url,
-                              const GURL& fallback_thumb_url) {
-  return base::StringPrintf("chrome-search://thumb2/%s?fb=%s",
-                            page_url.spec().c_str(),
-                            fallback_thumb_url.spec().c_str());
-}
-
 // Populates a Javascript MostVisitedItem object for returning from
 // newTabPage.mostVisited. This does not include private data such as "url" or
 // "title".
@@ -162,18 +149,9 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
   if (title.empty())
     title = mv_item.url.spec();
 
-  // If the suggestion already has a suggested thumbnail, we create a thumbnail
-  // URL with both the local thumbnail and the proposed one as a fallback.
-  // Otherwise, we just pass on the generated one.
-  std::string thumbnail_url =
-      mv_item.thumbnail.is_valid()
-          ? GenerateThumb2URL(mv_item.url, mv_item.thumbnail)
-          : GenerateThumbnailURL(render_view_id, restricted_id);
-
   gin::DataObjectBuilder builder(isolate);
   builder.Set("renderViewId", render_view_id)
       .Set("rid", restricted_id)
-      .Set("thumbnailUrl", thumbnail_url)
       .Set("tileTitleSource", static_cast<int>(mv_item.title_source))
       .Set("tileSource", static_cast<int>(mv_item.source))
       .Set("title", title)

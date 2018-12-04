@@ -29,9 +29,6 @@ struct NTPTile {
   // is also available from another, higher-priority source.
   base::FilePath whitelist_icon_path;
 
-  // Only valid for source == SUGGESTIONS_SERVICE (empty otherwise).
-  // May point to a local chrome:// URL or to a remote one. May be empty.
-  GURL thumbnail_url;
   // This won't be empty, but might 404 etc.
   GURL favicon_url;
 
