@@ -3107,6 +3107,10 @@ void WebMediaPlayerImpl::OnBecameVisible() {
   UpdatePlayState();
 }
 
+bool WebMediaPlayerImpl::IsOpaque() const {
+  return opaque_;
+}
+
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.

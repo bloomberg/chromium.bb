@@ -407,6 +407,8 @@ class WebMediaPlayer {
 
   virtual bool DidLazyLoad() const { return false; }
   virtual void OnBecameVisible() {}
+
+  virtual bool IsOpaque() const { return false; }
 };
 
 }  // namespace blink
