@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/debug/alias.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -20,7 +21,6 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_constants.h"
-#include "url/url_export.h"
 
 class GURL;
 
@@ -117,7 +117,7 @@ class OriginDataView;
 //     if (this.IsSameOriginWith(that)) {
 //       // Amazingness goes here.
 //     }
-class URL_EXPORT Origin {
+class COMPONENT_EXPORT(URL) Origin {
  public:
   // Creates an opaque Origin with a nonce that is different from all previously
   // existing origins.
@@ -264,8 +264,8 @@ class URL_EXPORT Origin {
   friend struct ipc_fuzzer::FuzzTraits<Origin>;
   friend struct mojo::StructTraits<url::mojom::OriginDataView, url::Origin>;
   friend IPC::ParamTraits<url::Origin>;
-  friend URL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                             const Origin& origin);
+  friend COMPONENT_EXPORT(URL) std::ostream& operator<<(std::ostream& out,
+                                                        const Origin& origin);
 
   // Origin::Nonce is a wrapper around base::UnguessableToken that generates
   // the random value only when the value is first accessed. The lazy generation
@@ -274,7 +274,7 @@ class URL_EXPORT Origin {
   //
   // TODO(nick): Should this optimization move into UnguessableToken, once it no
   // longer treats the Null case specially?
-  class URL_EXPORT Nonce {
+  class COMPONENT_EXPORT(URL) Nonce {
    public:
     // Creates a nonce to hold a newly-generated UnguessableToken. The actual
     // token value will be generated lazily.
@@ -315,8 +315,8 @@ class URL_EXPORT Origin {
 
   // This needs to be friended within Origin as well, since Nonce is a private
   // nested class of Origin.
-  friend URL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                             const Nonce& nonce);
+  friend COMPONENT_EXPORT(URL) std::ostream& operator<<(std::ostream& out,
+                                                        const Nonce& nonce);
 
   // Creates an origin without sanity checking that the host is canonicalized.
   // This should only be used when converting between already normalized types,
@@ -366,11 +366,12 @@ class URL_EXPORT Origin {
 };
 
 // Pretty-printers for logging. These expose the internal state of the nonce.
-URL_EXPORT std::ostream& operator<<(std::ostream& out, const Origin& origin);
-URL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                    const Origin::Nonce& origin);
+COMPONENT_EXPORT(URL)
+std::ostream& operator<<(std::ostream& out, const Origin& origin);
+COMPONENT_EXPORT(URL)
+std::ostream& operator<<(std::ostream& out, const Origin::Nonce& origin);
 
-URL_EXPORT bool IsSameOriginWith(const GURL& a, const GURL& b);
+COMPONENT_EXPORT(URL) bool IsSameOriginWith(const GURL& a, const GURL& b);
 
 // DEBUG_ALIAS_FOR_ORIGIN(var_name, origin) copies |origin| into a new
 // stack-allocated variable named |<var_name>|.  This helps ensure that the

@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/debug/alias.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -18,7 +19,6 @@
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
 #include "url/url_constants.h"
-#include "url/url_export.h"
 
 // Represents a URL. GURL is Google's URL parsing library.
 //
@@ -43,7 +43,7 @@
 // path that contains a literal '#'. Using string concatenation will generate a
 // URL with a truncated path and a reference fragment, while ReplaceComponents
 // will know to escape this and produce the desired result.
-class URL_EXPORT GURL {
+class COMPONENT_EXPORT(URL) GURL {
  public:
   typedef url::StringPieceReplacements<std::string> Replacements;
   typedef url::StringPieceReplacements<base::string16> ReplacementsW;
@@ -472,18 +472,23 @@ class URL_EXPORT GURL {
 };
 
 // Stream operator so GURL can be used in assertion statements.
-URL_EXPORT std::ostream& operator<<(std::ostream& out, const GURL& url);
+COMPONENT_EXPORT(URL)
+std::ostream& operator<<(std::ostream& out, const GURL& url);
 
-URL_EXPORT bool operator==(const GURL& x, const GURL& y);
-URL_EXPORT bool operator!=(const GURL& x, const GURL& y);
+COMPONENT_EXPORT(URL) bool operator==(const GURL& x, const GURL& y);
+COMPONENT_EXPORT(URL) bool operator!=(const GURL& x, const GURL& y);
 
 // Equality operator for comparing raw spec_. This should be used in place of
 // url == GURL(spec) where |spec| is known (i.e. constants). This is to prevent
 // needlessly re-parsing |spec| into a temporary GURL.
-URL_EXPORT bool operator==(const GURL& x, const base::StringPiece& spec);
-URL_EXPORT bool operator==(const base::StringPiece& spec, const GURL& x);
-URL_EXPORT bool operator!=(const GURL& x, const base::StringPiece& spec);
-URL_EXPORT bool operator!=(const base::StringPiece& spec, const GURL& x);
+COMPONENT_EXPORT(URL)
+bool operator==(const GURL& x, const base::StringPiece& spec);
+COMPONENT_EXPORT(URL)
+bool operator==(const base::StringPiece& spec, const GURL& x);
+COMPONENT_EXPORT(URL)
+bool operator!=(const GURL& x, const base::StringPiece& spec);
+COMPONENT_EXPORT(URL)
+bool operator!=(const base::StringPiece& spec, const GURL& x);
 
 // DEBUG_ALIAS_FOR_GURL(var_name, url) copies |url| into a new stack-allocated
 // variable named |<var_name>|.  This helps ensure that the value of |url| gets

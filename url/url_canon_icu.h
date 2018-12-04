@@ -8,8 +8,8 @@
 // ICU integration functions.
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "url/url_canon.h"
-#include "url/url_export.h"
 
 typedef struct UConverter UConverter;
 
@@ -17,7 +17,7 @@ namespace url {
 
 // An implementation of CharsetConverter that implementations can use to
 // interface the canonicalizer with ICU's conversion routines.
-class URL_EXPORT ICUCharsetConverter : public CharsetConverter {
+class COMPONENT_EXPORT(URL) ICUCharsetConverter : public CharsetConverter {
  public:
   // Constructs a converter using an already-existing ICU character set
   // converter. This converter is NOT owned by this object; the lifetime must
