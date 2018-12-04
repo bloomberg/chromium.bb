@@ -50,6 +50,7 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
   void NormalizeProxySettings(base::DictionaryValue* proxy);
   void NormalizeVPN(base::DictionaryValue* vpn);
   void NormalizeWiFi(base::DictionaryValue* wifi);
+  void NormalizeStaticIPConfigForNetwork(base::DictionaryValue* network);
 
   const bool remove_recommended_fields_;
 
