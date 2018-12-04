@@ -111,7 +111,6 @@ service_manifest("lifecycle_unittest_app_manifest") {
 
 service("lifecycle_unittest_parent") {
   testonly = true
-  use_cpp_main = true
   sources = [
     "parent.cc",
   ]
@@ -130,7 +129,7 @@ service_manifest("lifecycle_unittest_parent_manifest") {
 executable("lifecycle_unittest_exe") {
   testonly = true
   sources = [
-    "lifecycle_exe.cc",
+    "app.cc",
   ]
   deps = [
     ":app_client",

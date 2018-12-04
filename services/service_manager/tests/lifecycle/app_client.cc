@@ -11,10 +11,8 @@
 namespace service_manager {
 namespace test {
 
-AppClient::AppClient(service_manager::mojom::ServiceRequest request,
-                     base::OnceClosure quit_closure)
-    : service_binding_(this, std::move(request)),
-      quit_closure_(std::move(quit_closure)) {
+AppClient::AppClient(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   bindings_.set_connection_error_handler(base::BindRepeating(
       &AppClient::LifecycleControlBindingLost, base::Unretained(this)));
 
@@ -22,7 +20,7 @@ AppClient::AppClient(service_manager::mojom::ServiceRequest request,
       base::BindRepeating(&AppClient::Create, base::Unretained(this)));
 }
 
-AppClient::~AppClient() {}
+AppClient::~AppClient() = default;
 
 void AppClient::OnBindInterface(const BindSourceInfo& source_info,
                                 const std::string& interface_name,
@@ -33,9 +31,7 @@ void AppClient::OnBindInterface(const BindSourceInfo& source_info,
 void AppClient::OnDisconnected() {
   DCHECK(service_binding_.is_bound());
   service_binding_.Close();
-
-  if (quit_closure_)
-    std::move(quit_closure_).Run();
+  Terminate();
 }
 
 void AppClient::Create(mojom::LifecycleControlRequest request) {
@@ -49,8 +45,8 @@ void AppClient::Ping(PingCallback callback) {
 void AppClient::GracefulQuit() {
   if (service_binding_.is_bound())
     service_binding_.RequestClose();
-  else if (quit_closure_)
-    std::move(quit_closure_).Run();
+  else
+    Terminate();
 }
 
 void AppClient::Crash() {
@@ -66,8 +62,8 @@ void AppClient::CloseServiceManagerConnection() {
 }
 
 void AppClient::LifecycleControlBindingLost() {
-  if (!service_binding_.is_bound() && bindings_.empty() && quit_closure_)
-    std::move(quit_closure_).Run();
+  if (!service_binding_.is_bound() && bindings_.empty())
+    Terminate();
 }
 
 }  // namespace test

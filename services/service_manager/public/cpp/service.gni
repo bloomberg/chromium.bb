@@ -40,13 +40,6 @@ template("service") {
       deps = []
     }
 
-    if (defined(use_cpp_main) && use_cpp_main) {
-      deps += [
-        "//services/service_manager/public/cpp/standalone_service:main_cpp",
-      ]
-    } else {
-      deps +=
-          [ "//services/service_manager/public/cpp/standalone_service:main" ]
-    }
+    deps += [ "//services/service_manager/public/cpp/standalone_service:main" ]
   }
 }

@@ -10,7 +10,6 @@ import("//tools/grit/repack.gni")
 
 service("window_type_launcher") {
   testonly = true
-  use_cpp_main = true
   sources = [
     "window_type_launcher.cc",
     "window_type_launcher.h",

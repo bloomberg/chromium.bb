@@ -8,8 +8,8 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 // Service executables linking against the
-// "//services/service_manager/public/cpp/standalone_service:main_cpp" target
-// must implement this function as their entry point.
+// "//services/service_manager/public/cpp/standalone_service:main" target must
+// implement this function as their entry point.
 void ServiceMain(service_manager::mojom::ServiceRequest request);
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_SERVICE_MAIN_H_

@@ -52,7 +52,6 @@ service_manifest("shutdown_service_manifest") {
 
 service("shutdown_service") {
   testonly = true
-  use_cpp_main = true
   sources = [
     "shutdown_service_app.cc",
   ]
@@ -71,7 +70,6 @@ service_manifest("shutdown_client_manifest") {
 
 service("shutdown_client") {
   testonly = true
-  use_cpp_main = true
   sources = [
     "shutdown_client_app.cc",
   ]

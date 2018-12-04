@@ -33,7 +33,6 @@ source_set("lib") {
 
 service("session") {
   output_name = "mash_session"
-  use_cpp_main = true
   sources = [
     "main.cc",
   ]

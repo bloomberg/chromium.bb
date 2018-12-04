@@ -27,7 +27,6 @@ source_set("lib") {
 }
 
 service("task_viewer") {
-  use_cpp_main = true
   sources = [
     "main.cc",
   ]
