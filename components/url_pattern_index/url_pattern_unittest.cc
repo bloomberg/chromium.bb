@@ -63,6 +63,9 @@ TEST(UrlPatternTest, MatchesUrl) {
       {{"ex.com", kSubdomain, kAnchorNone}, "http://hex.hex.com", false},
 
       // Note: "example.com" will be normalized into "example.com/".
+      {{"example.com^", kSubdomain, kAnchorNone},
+       "http://www.example.com",
+       true},
       {{"http://*mpl", kBoundary, kAnchorNone}, "http://example.com", true},
       {{"mpl*com/", kAnchorNone, kBoundary}, "http://example.com", true},
       {{"example^com"}, "http://example.com", false},
