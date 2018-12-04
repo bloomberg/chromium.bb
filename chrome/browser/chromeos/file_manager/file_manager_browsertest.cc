@@ -469,16 +469,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("closeQuickView"),
                       TestCase("cantOpenQuickViewWithMultipleFiles")));
 
-// TODO(https://crbug.com/911661) Flaky time outs on Linux Chromium OS ASan
-// LSan bot.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_FilesAppBrowserTest DISABLED_FilesAppBrowserTest
-#else
-#define MAYBE_FilesAppBrowserTest FilesAppBrowserTest
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
-    MAYBE_FilesAppBrowserTest,
+    FilesAppBrowserTest,
     ::testing::Values(
         TestCase("dirCopyWithContextMenu"),
         TestCase("dirCopyWithContextMenu").InGuestMode(),

@@ -1077,15 +1077,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
             auto_enrollment_controller()->state());
 }
 
-// TODO(https://crbug.com/911661) Flaky time outs on Linux Chromium OS ASan
-// LSan bot.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ControlFlowDeviceDisabled DISABLED_ControlFlowDeviceDisabled
-#else
-#define MAYBE_ControlFlowDeviceDisabled ControlFlowDeviceDisabled
-#endif
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
-                       MAYBE_ControlFlowDeviceDisabled) {
+                       ControlFlowDeviceDisabled) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
