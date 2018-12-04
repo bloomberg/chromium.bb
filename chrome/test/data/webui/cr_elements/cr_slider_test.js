@@ -364,4 +364,29 @@ suite('cr-slider', function() {
           assertNoTransition();
         });
   });
+
+  test('getRatio()', () => {
+    crSlider.min = 1;
+    crSlider.max = 11;
+    crSlider.value = 1;
+    assertEquals(0, crSlider.getRatio());
+    crSlider.value = 11;
+    assertEquals(1, crSlider.getRatio());
+    crSlider.value = 6;
+    assertEquals(.5, crSlider.getRatio());
+  });
+
+  test('cr-slider-value-changed-from-ui event when mouse clicked', () => {
+    const wait =
+        test_util.eventToPromise('cr-slider-value-changed-from-ui', crSlider);
+    pointerDown(0);
+    return wait;
+  });
+
+  test('cr-slider-value-changed-from-ui event when key pressed', () => {
+    const wait =
+        test_util.eventToPromise('cr-slider-value-changed-from-ui', crSlider);
+    pressArrowRight();
+    return wait;
+  });
 });

@@ -34,6 +34,13 @@ cr_slider.SliderTick;
     return Math.min(max, Math.max(min, value));
   }
 
+  /**
+   * The following are the events emitted from cr-slider.
+   *
+   * cr-slider-value-changed-from-ui: fired when updating slider via the UI.
+   * dragging-changed: fired on pointer down and on pointer up.
+   * value-changed: fired anytime |value| is changed, manually or via the UI.
+   */
   Polymer({
     is: 'cr-slider',
 
@@ -231,7 +238,7 @@ cr_slider.SliderTick;
      * @private
      */
     getMarkerClass_: function(index) {
-      const currentStep = (this.markerCount - 1) * this.getRatio_();
+      const currentStep = (this.markerCount - 1) * this.getRatio();
       return index < currentStep ? 'active-marker' : 'inactive-marker';
     },
 
@@ -241,9 +248,8 @@ cr_slider.SliderTick;
      * This is a helper function used to calculate the bar width, knob location
      * and label location.
      * @return {number}
-     * @private
      */
-    getRatio_: function() {
+    getRatio: function() {
       return (this.immediateValue_ - this.min) / (this.max - this.min);
     },
 
@@ -315,14 +321,15 @@ cr_slider.SliderTick;
       } else if (event.key == 'End') {
         this.immediateValue_ = this.max;
       } else if (this.deltaKeyMap_.has(event.key)) {
-        const newValue = this.value + this.deltaKeyMap_.get(event.key);
-        this.immediateValue_ = clamp(this.min, this.max, newValue);
+        const value = this.value + this.deltaKeyMap_.get(event.key);
+        this.immediateValue_ = clamp(this.min, this.max, value);
       } else {
         handled = false;
       }
 
       if (handled) {
         this.value = this.immediateValue_;
+        this.fire('cr-slider-value-changed-from-ui');
         event.preventDefault();
         event.stopPropagation();
         setTimeout(() => {
@@ -407,7 +414,7 @@ cr_slider.SliderTick;
 
     /** @private */
     updateKnobAndBar_: function() {
-      const percent = `${this.getRatio_() * 100}%`;
+      const percent = `${this.getRatio() * 100}%`;
       this.$.bar.style.width = percent;
       this.$.knob.style.marginInlineStart = percent;
     },
@@ -434,7 +441,7 @@ cr_slider.SliderTick;
         const labelWidth = label.offsetWidth;
         // The left and right margin are 16px.
         const margin = 16;
-        const knobLocation = parentWidth * this.getRatio_() + margin;
+        const knobLocation = parentWidth * this.getRatio() + margin;
         const offsetStart = knobLocation - (labelWidth / 2);
         // The label should be centered over the knob. Clamping the offset to a
         // min and max value prevents the label from being cutoff.
@@ -467,6 +474,7 @@ cr_slider.SliderTick;
         ratio = 1 - ratio;
       this.immediateValue_ = ratio * (this.max - this.min) + this.min;
       this.ensureValidValue_();
+      this.fire('cr-slider-value-changed-from-ui');
     },
 
     _createRipple: function() {
