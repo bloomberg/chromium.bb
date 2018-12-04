@@ -39,7 +39,6 @@
 // web::NavigationContextImpl for this navigation.
 - (web::NavigationContextImpl*)context;
 - (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context;
-- (std::unique_ptr<web::NavigationContextImpl>)releaseContext;
 
 @end
 
@@ -81,10 +80,6 @@
 
 - (web::NavigationContextImpl*)context {
   return _context.get();
-}
-
-- (std::unique_ptr<web::NavigationContextImpl>)releaseContext {
-  return std::move(_context);
 }
 
 @end
@@ -152,14 +147,10 @@
   return record ? record.state : web::WKNavigationState::NONE;
 }
 
-- (std::unique_ptr<web::NavigationContextImpl>)removeNavigation:
-    (WKNavigation*)navigation {
+- (void)removeNavigation:(WKNavigation*)navigation {
   id key = [self keyForNavigation:navigation];
-  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
-  DCHECK(record);
-  std::unique_ptr<web::NavigationContextImpl> context = [record releaseContext];
+  DCHECK([_records objectForKey:key]);
   [_records removeObjectForKey:key];
-  return context;
 }
 
 - (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context
