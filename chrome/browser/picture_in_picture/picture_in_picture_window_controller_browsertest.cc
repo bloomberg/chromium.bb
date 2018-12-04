@@ -822,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
 }
 

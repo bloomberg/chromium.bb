@@ -404,9 +404,9 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 #endif
 
   GetControlsScrimLayer()->SetVisible(
-      (playback_state_ == kNoVideo) ? false : is_visible);
+      (playback_state_ == kEndOfVideo) ? false : is_visible);
   GetControlsParentLayer()->SetVisible(
-      (playback_state_ == kNoVideo) ? false : is_visible);
+      (playback_state_ == kEndOfVideo) ? false : is_visible);
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
@@ -623,19 +623,16 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
     case kPlaying:
       play_pause_controls_view_->SetToggled(true);
       controls_parent_view_->SetVisible(true);
-      video_view_->SetVisible(true);
       GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
       break;
     case kPaused:
       play_pause_controls_view_->SetToggled(false);
       controls_parent_view_->SetVisible(true);
-      video_view_->SetVisible(true);
       GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
       break;
-    case kNoVideo:
+    case kEndOfVideo:
       controls_scrim_view_->SetVisible(false);
       controls_parent_view_->SetVisible(false);
-      video_view_->SetVisible(false);
       GetControlsParentLayer()->SetVisible(false);
       break;
   }
