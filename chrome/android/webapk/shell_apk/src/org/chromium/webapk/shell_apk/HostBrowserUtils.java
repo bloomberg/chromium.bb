@@ -85,7 +85,7 @@ public class HostBrowserUtils {
         sHostPackage = computeHostBrowserPackageNameInternal(context);
         if (!TextUtils.equals(sHostPackage, hostInPreferences)) {
             if (!TextUtils.isEmpty(hostInPreferences)) {
-                deleteSharedPref(context);
+                WebApkSharedPreferences.clear(context);
                 deleteInternalStorage(context);
             }
             writeHostBrowserToSharedPref(context, sHostPackage);
@@ -205,13 +205,6 @@ public class HostBrowserUtils {
         if (resolveInfo == null || resolveInfo.activityInfo == null) return null;
 
         return resolveInfo.activityInfo.packageName;
-    }
-
-    /** Deletes the SharedPreferences for the given context. */
-    private static void deleteSharedPref(Context context) {
-        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
-        editor.clear();
-        editor.apply();
     }
 
     /** Deletes the internal storage for the given context. */
