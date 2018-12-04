@@ -149,6 +149,7 @@ class CORE_EXPORT ContentSecurityPolicy
 
   void BindToExecutionContext(ExecutionContext*);
   void SetupSelf(const SecurityOrigin&);
+  void SetupSelf(const ContentSecurityPolicy&);
   void CopyStateFrom(const ContentSecurityPolicy*);
   void CopyPluginTypesFrom(const ContentSecurityPolicy*);
 

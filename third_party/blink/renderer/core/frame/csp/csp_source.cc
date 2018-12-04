@@ -30,6 +30,15 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
       host_wildcard_(host_wildcard),
       port_wildcard_(port_wildcard) {}
 
+CSPSource::CSPSource(ContentSecurityPolicy* policy, const CSPSource& other)
+    : CSPSource(policy,
+                other.scheme_,
+                other.host_,
+                other.port_,
+                other.path_,
+                other.host_wildcard_,
+                other.port_wildcard_) {}
+
 bool CSPSource::Matches(const KURL& url,
                         ResourceRequest::RedirectStatus redirect_status) const {
   SchemeMatchingResult schemes_match = SchemeMatches(url.Protocol());
