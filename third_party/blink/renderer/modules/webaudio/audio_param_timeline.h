@@ -279,7 +279,7 @@ class AudioParamTimeline {
     const double control_rate;
 
     // Parameters needed for processing the current event.
-    const size_t fill_to_frame;
+    const unsigned fill_to_frame;
     const size_t fill_to_end_frame;
 
     // Value and time for the current event

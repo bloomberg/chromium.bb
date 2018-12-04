@@ -969,9 +969,9 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
       fill_to_end_frame = static_cast<size_t>(ceil(time2 * sample_rate));
 
     DCHECK_GE(fill_to_end_frame, start_frame);
-    size_t fill_to_frame = fill_to_end_frame - start_frame;
-    fill_to_frame =
-        std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+    unsigned fill_to_frame =
+        static_cast<unsigned>(fill_to_end_frame - start_frame);
+    fill_to_frame = std::min(fill_to_frame, number_of_values);
 
     const AutomationState current_state = {
         number_of_values,
@@ -1089,15 +1089,15 @@ std::tuple<size_t, unsigned> AudioParamTimeline::HandleFirstEvent(
   if (first_event_time > start_frame / sample_rate) {
     // |fillToFrame| is an exclusive upper bound, so use ceil() to compute the
     // bound from the firstEventTime.
-    size_t fill_to_frame = end_frame;
+    size_t fill_to_end_frame = end_frame;
     double first_event_frame = ceil(first_event_time * sample_rate);
     if (end_frame > first_event_frame)
-      fill_to_frame = static_cast<size_t>(first_event_frame);
-    DCHECK_GE(fill_to_frame, start_frame);
+      fill_to_end_frame = first_event_frame;
+    DCHECK_GE(fill_to_end_frame, start_frame);
 
-    fill_to_frame -= start_frame;
-    fill_to_frame =
-        std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+    unsigned fill_to_frame =
+        static_cast<unsigned>(fill_to_end_frame - start_frame);
+    fill_to_frame = std::min(fill_to_frame, number_of_values);
     write_index =
         FillWithDefault(values, default_value, fill_to_frame, write_index);
 
@@ -1703,10 +1703,10 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetValueCurve(
   // has not yet started. In this case, |fillToFrame| is clipped to
   // |time1|+|duration| above, but |startFrame| will keep increasing
   // (because the current time is increasing).
-  fill_to_frame =
-      (fill_to_end_frame < start_frame) ? 0 : fill_to_end_frame - start_frame;
-  fill_to_frame =
-      std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+  fill_to_frame = (fill_to_end_frame < start_frame)
+                      ? 0
+                      : static_cast<unsigned>(fill_to_end_frame - start_frame);
+  fill_to_frame = std::min(fill_to_frame, number_of_values);
 
   // Index into the curve data using a floating-point value.
   // We're scaling the number of curve points by the duration (see
