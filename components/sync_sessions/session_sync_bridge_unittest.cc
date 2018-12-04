@@ -323,6 +323,8 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return real_processor_.get();
   }
 
+  syncer::ModelTypeStore* underlying_store() { return store_.get(); }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   const syncer::DeviceInfo local_device_info_;
@@ -1139,6 +1141,17 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
                          kForeignTabNodeId, "http://baz.com/");
   StartSyncing({foreign_header, foreign_tab});
 
+  sync_pb::ModelTypeState state;
+  state.set_initial_sync_done(true);
+
+  // Mimic receiving a commit ack for the local header entity, to later be able
+  // to verify HasLocalChangesForTest() without interferences from the local
+  // session.
+  ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
+  real_processor()->OnCommitCompleted(
+      state, {CreateSuccessResponse(kLocalSessionTag)});
+  ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
+
   const sessions::SessionTab* foreign_session_tab = nullptr;
   ASSERT_TRUE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
       kForeignSessionTag, SessionID::FromSerializedValue(kForeignTabId),
@@ -1152,11 +1165,13 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
                   kForeignSessionTag,
                   {{kForeignWindowId, std::vector<int>{kForeignTabId}}})));
   ASSERT_TRUE(real_processor()->IsTrackingMetadata());
+  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag)));
+  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId)));
+  ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   // Mimic receiving a remote deletion of the foreign session.
-  sync_pb::ModelTypeState state;
-  state.set_initial_sync_done(true);
-
   EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
   real_processor()->OnUpdateReceived(
       state, {CreateTombstone(SessionStore::GetClientTag(foreign_header))});
@@ -1168,6 +1183,51 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
 
   EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
       &foreign_sessions));
+
+  EXPECT_FALSE(real_processor()->HasLocalChangesForTest());
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string tab_storage_key =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId);
+
+  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(header_storage_key));
+  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(tab_storage_key));
+
+  // Verify that both entities have been deleted from storage.
+  {
+    base::RunLoop loop;
+    underlying_store()->ReadData(
+        {header_storage_key, tab_storage_key},
+        base::BindLambdaForTesting(
+            [&](const base::Optional<syncer::ModelError>& error,
+                std::unique_ptr<syncer::ModelTypeStore::RecordList>
+                    data_records,
+                std::unique_ptr<syncer::ModelTypeStore::IdList>
+                    missing_id_list) {
+              EXPECT_THAT(data_records, Pointee(IsEmpty()));
+              EXPECT_THAT(
+                  missing_id_list,
+                  Pointee(ElementsAre(header_storage_key, tab_storage_key)));
+              loop.Quit();
+            }));
+    loop.Run();
+  }
+
+  // Verify that the sync metadata for both entities have been deleted too.
+  {
+    base::RunLoop loop;
+    underlying_store()->ReadAllMetadata(base::BindLambdaForTesting(
+        [&](const base::Optional<syncer::ModelError>& error,
+            std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+          syncer::EntityMetadataMap entity_metadata_map =
+              metadata_batch->TakeAllMetadata();
+          EXPECT_EQ(0U, entity_metadata_map.count(header_storage_key));
+          EXPECT_EQ(0U, entity_metadata_map.count(tab_storage_key));
+          loop.Quit();
+        }));
+    loop.Run();
+  }
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {

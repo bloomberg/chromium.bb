@@ -211,7 +211,16 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
                         << "local navigation event.";
           syncing_->local_data_out_of_sync = true;
         } else {
-          batch->DeleteForeignEntityAndUpdateTracker(change.storage_key());
+          // Deleting an entity (if it's a header entity) may cascade other
+          // deletions, so let's assume that whoever initiated remote deletions
+          // must have taken care of deleting them all. We don't have to commit
+          // these deletions, simply delete all local sync metadata (untrack).
+          for (const std::string& deleted_storage_key :
+               batch->DeleteForeignEntityAndUpdateTracker(
+                   change.storage_key())) {
+            change_processor()->UntrackEntityForStorageKey(deleted_storage_key);
+            metadata_change_list->ClearMetadata(deleted_storage_key);
+          }
         }
         break;
       case syncer::EntityChange::ACTION_ADD:
@@ -429,21 +438,14 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
     return;
   }
 
-  // Delete tabs.
-  for (int tab_node_id :
-       syncing_->store->tracker()->LookupTabNodeIds(session_tag)) {
-    const std::string tab_storage_key =
-        SessionStore::GetTabStorageKey(session_tag, tab_node_id);
-    batch->DeleteForeignEntityAndUpdateTracker(tab_storage_key);
-    change_processor()->Delete(tab_storage_key, batch->GetMetadataChangeList());
-  }
-
-  // Delete header.
+  // Deleting the header entity cascades the deletions of tabs as well.
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKey(session_tag);
-  batch->DeleteForeignEntityAndUpdateTracker(header_storage_key);
-  change_processor()->Delete(header_storage_key,
-                             batch->GetMetadataChangeList());
+  for (const std::string& deleted_storage_key :
+       batch->DeleteForeignEntityAndUpdateTracker(header_storage_key)) {
+    change_processor()->Delete(deleted_storage_key,
+                               batch->GetMetadataChangeList());
+  }
 
   notify_foreign_session_updated_cb_.Run();
 }
