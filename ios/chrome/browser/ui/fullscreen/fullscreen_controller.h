@@ -51,6 +51,11 @@ class FullscreenController : public KeyedService {
   virtual void IncrementDisabledCounter() = 0;
   virtual void DecrementDisabledCounter() = 0;
 
+  // FullscreenController isn't notified when the trait collection of the
+  // browser is changed. This method is here to notify it.
+  virtual void BrowserTraitCollectionChangedBegin() = 0;
+  virtual void BrowserTraitCollectionChangedEnd() = 0;
+
   // Returns the current fullscreen progress value.  This is a float between 0.0
   // and 1.0, where 0.0 denotes that the toolbar should be completely hidden and
   // 1.0 denotes that the toolbar should be completely visible.

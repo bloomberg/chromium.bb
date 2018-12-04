@@ -50,6 +50,14 @@ void FullscreenMediator::ExitFullscreen() {
   AnimateWithStyle(FullscreenAnimatorStyle::EXIT_FULLSCREEN);
 }
 
+void FullscreenMediator::StopFrameChangeCompensation() {
+  resizer_.compensateFrameChangeByOffset = NO;
+}
+
+void FullscreenMediator::StartFrameChangeCompensation() {
+  resizer_.compensateFrameChangeByOffset = YES;
+}
+
 void FullscreenMediator::Disconnect() {
   for (auto& observer : observers_) {
     observer.FullscreenControllerWillShutDown(controller_);

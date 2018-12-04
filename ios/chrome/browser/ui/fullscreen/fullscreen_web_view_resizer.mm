@@ -21,13 +21,10 @@
 // The fullscreen model, used to get the information about the state of
 // fullscreen.
 @property(nonatomic, assign) FullscreenModel* model;
-// Whether the content offset should be matching the frame changes.
-@property(nonatomic, assign) BOOL compensateFrameChangeByOffset;
 @end
 
 @implementation FullscreenWebViewResizer
 
-@synthesize compensateFrameChangeByOffset = _compensateFrameChangeByOffset;
 @synthesize model = _model;
 @synthesize webState = _webState;
 
