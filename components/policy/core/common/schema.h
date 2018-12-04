@@ -228,9 +228,13 @@ class POLICY_EXPORT Schema {
   // |chrome_schema| is the root schema that has all policies as children.
   Schema GetValidationSchema() const;
 
-  // If this returns true, the schema metadata says that the value described by
-  // this schema should not be displayed on the UI.
+  // If this returns true, the value described by this schema should not be
+  // displayed on the UI.
   bool IsSensitiveValue() const;
+
+  // If this returns true, the schema contains child elements that contain
+  // sensitive values.
+  bool HasSensitiveChildren() const;
 
  private:
   // Builds a schema pointing to the inner structure of |storage|,
@@ -241,7 +245,7 @@ class POLICY_EXPORT Schema {
   bool ValidateIntegerRestriction(int index, int value) const;
   bool ValidateStringRestriction(int index, const char* str) const;
 
-  void MaskSensitiveValuesRecurse(base::Value* value) const;
+  void MaskSensitiveValuesRecursive(base::Value* value) const;
 
   scoped_refptr<const InternalStorage> storage_;
   const internal::SchemaNode* node_;

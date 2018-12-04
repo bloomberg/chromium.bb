@@ -39,6 +39,9 @@ struct POLICY_EXPORT SchemaNode {
   // True if this value is sensitive and should be masked before displaying it
   // to the user.
   bool is_sensitive_value;
+
+  // True if any of its children has |is_sensitive_value|==true.
+  bool has_sensitive_children;
 };
 
 // Represents an entry of a map policy.
