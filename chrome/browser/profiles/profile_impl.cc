@@ -418,17 +418,17 @@ void ProfileImpl::RegisterProfilePrefs(
 
 #if BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(
-      prefs::kOobeMarketingOptInScreenFinished, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(
+      prefs::kOobeMarketingOptInScreenFinished, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
 #endif  // !defined(OS_ANDROID)
