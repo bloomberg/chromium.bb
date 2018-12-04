@@ -74,7 +74,7 @@ bool IsNormalUserLoggedIn() {
   return chromeos::LoginState::Get()->IsUserAuthenticated();
 }
 
-// Returns a random TimeDelta between zero and |max|.
+// Returns a random TimeDelta uniformly selected between zero and |max|.
 base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
   return base::TimeDelta::FromMicroseconds(
       base::RandGenerator(max.InMicroseconds()));
@@ -378,27 +378,26 @@ void PerfProvider::SetCollectionParamsFromVariationParams(
     const std::map<std::string, std::string>& params) {
   int64_t value;
   if (GetInt64Param(params, "ProfileCollectionDurationSec", &value)) {
-    collection_params_.set_collection_duration(
-        base::TimeDelta::FromSeconds(value));
+    collection_params_.collection_duration =
+        base::TimeDelta::FromSeconds(value);
   }
   if (GetInt64Param(params, "PeriodicProfilingIntervalMs", &value)) {
-    collection_params_.set_periodic_interval(
-        base::TimeDelta::FromMilliseconds(value));
+    collection_params_.periodic_interval =
+        base::TimeDelta::FromMilliseconds(value);
   }
   if (GetInt64Param(params, "ResumeFromSuspend::SamplingFactor", &value)) {
-    collection_params_.mutable_resume_from_suspend()
-        ->set_sampling_factor(value);
+    collection_params_.resume_from_suspend.sampling_factor = value;
   }
   if (GetInt64Param(params, "ResumeFromSuspend::MaxDelaySec", &value)) {
-    collection_params_.mutable_resume_from_suspend()->set_max_collection_delay(
-        base::TimeDelta::FromSeconds(value));
+    collection_params_.resume_from_suspend.max_collection_delay =
+        base::TimeDelta::FromSeconds(value);
   }
   if (GetInt64Param(params, "RestoreSession::SamplingFactor", &value)) {
-    collection_params_.mutable_restore_session()->set_sampling_factor(value);
+    collection_params_.restore_session.sampling_factor = value;
   }
   if (GetInt64Param(params, "RestoreSession::MaxDelaySec", &value)) {
-    collection_params_.mutable_restore_session()->set_max_collection_delay(
-        base::TimeDelta::FromSeconds(value));
+    collection_params_.restore_session.max_collection_delay =
+        base::TimeDelta::FromSeconds(value);
   }
 
   const std::string best_cpu_specifier =
@@ -546,9 +545,9 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
 
   // Collect a profile only 1/|sampling_factor| of the time, to avoid
   // collecting too much data. (0 means disable the trigger)
-  const auto& resume_params = collection_params_.resume_from_suspend();
-  if (resume_params.sampling_factor() == 0 ||
-      base::RandGenerator(resume_params.sampling_factor()) != 0)
+  const auto& resume_params = collection_params_.resume_from_suspend;
+  if (resume_params.sampling_factor == 0 ||
+      base::RandGenerator(resume_params.sampling_factor) != 0)
     return;
 
   // Override any existing profiling.
@@ -556,8 +555,8 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
     timer_.Stop();
 
   // Randomly pick a delay before doing the collection.
-  base::TimeDelta collection_delay = RandomTimeDelta(
-      resume_params.max_collection_delay());
+  base::TimeDelta collection_delay =
+      RandomTimeDelta(resume_params.max_collection_delay);
   timer_.Start(FROM_HERE, collection_delay,
                base::BindOnce(&PerfProvider::CollectPerfDataAfterResume,
                               weak_factory_.GetWeakPtr(), sleep_duration,
@@ -572,9 +571,9 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
   // Collect a profile only 1/|sampling_factor| of the time, to
   // avoid collecting too much data and potentially causing UI latency.
   // (0 means disable the trigger)
-  const auto& restore_params = collection_params_.restore_session();
-  if (restore_params.sampling_factor() == 0 ||
-      base::RandGenerator(restore_params.sampling_factor()) != 0) {
+  const auto& restore_params = collection_params_.restore_session;
+  if (restore_params.sampling_factor == 0 ||
+      base::RandGenerator(restore_params.sampling_factor) != 0) {
     return;
   }
 
@@ -594,8 +593,8 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
     timer_.Stop();
 
   // Randomly pick a delay before doing the collection.
-  base::TimeDelta collection_delay = RandomTimeDelta(
-      restore_params.max_collection_delay());
+  base::TimeDelta collection_delay =
+      RandomTimeDelta(restore_params.max_collection_delay);
   timer_.Start(FROM_HERE, collection_delay,
                base::BindOnce(&PerfProvider::CollectPerfDataAfterSessionRestore,
                               weak_factory_.GetWeakPtr(), collection_delay,
@@ -622,17 +621,17 @@ void PerfProvider::ScheduleIntervalCollection() {
   const base::TimeTicks now = base::TimeTicks::Now();
 
   base::TimeTicks interval_end =
-      next_profiling_interval_start_ + collection_params_.periodic_interval();
+      next_profiling_interval_start_ + collection_params_.periodic_interval;
   if (now > interval_end) {
     // We somehow missed at least one window. Start over.
     next_profiling_interval_start_ = now;
-    interval_end = now + collection_params_.periodic_interval();
+    interval_end = now + collection_params_.periodic_interval;
   }
 
   // Pick a random time in the current interval.
   base::TimeTicks scheduled_time =
       next_profiling_interval_start_ +
-      RandomTimeDelta(collection_params_.periodic_interval());
+      RandomTimeDelta(collection_params_.periodic_interval);
   // If the scheduled time has already passed in the time it took to make the
   // above calculations, trigger the collection event immediately.
   if (scheduled_time < now)
@@ -688,7 +687,7 @@ void PerfProvider::CollectIfNecessary(
   PerfSubcommand subcommand = GetPerfSubcommandType(command);
 
   perf_output_call_ = std::make_unique<PerfOutputCall>(
-      collection_params_.collection_duration(), command,
+      collection_params_.collection_duration, command,
       base::BindOnce(&PerfProvider::ParseOutputProtoIfValid,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(&incognito_observer),
