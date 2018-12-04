@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -721,6 +722,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   options->SetString("title", title.empty() ? params.title : title);
   options->SetString("headerTemplate", params.header_template);
   options->SetString("footerTemplate", params.footer_template);
+  options->SetBoolean("isRtl", base::i18n::IsRTL());
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 
