@@ -462,6 +462,14 @@ void LoginScreenController::SetPublicSessionKeyboardLayouts(
   }
 }
 
+void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
+    bool is_full_management_disclosure_needed) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionShowFullManagementDisclosure(
+        is_full_management_disclosure_needed);
+  }
+}
+
 void LoginScreenController::SetKioskApps(
     std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())

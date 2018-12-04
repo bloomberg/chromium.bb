@@ -68,6 +68,10 @@ void LoginDataDispatcher::Observer::OnPublicSessionKeyboardLayoutsChanged(
     const std::string& locale,
     const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {}
 
+void LoginDataDispatcher::Observer::
+    OnPublicSessionShowFullManagementDisclosureChanged(
+        bool show_full_management_disclosure) {}
+
 void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {}
 
@@ -187,6 +191,14 @@ void LoginDataDispatcher::SetPublicSessionKeyboardLayouts(
   for (auto& observer : observers_) {
     observer.OnPublicSessionKeyboardLayoutsChanged(account_id, locale,
                                                    keyboard_layouts);
+  }
+}
+
+void LoginDataDispatcher::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  for (auto& observer : observers_) {
+    observer.OnPublicSessionShowFullManagementDisclosureChanged(
+        show_full_management_disclosure);
   }
 }
 

@@ -176,6 +176,8 @@ class ASH_EXPORT LockContentsView
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
+  void OnPublicSessionShowFullManagementDisclosureChanged(
+      bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
 

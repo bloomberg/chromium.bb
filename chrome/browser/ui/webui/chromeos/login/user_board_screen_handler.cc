@@ -58,6 +58,11 @@ void UserBoardScreenHandler::SetPublicSessionLocales(
                    multiple_recommended_locales);
 }
 
+void UserBoardScreenHandler::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  // This method is only called from browser_tests and shouldn't do anything.
+}
+
 void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message,
                                                bool is_warning) {
   CallJSWithPrefix("login.AccountPickerScreen.showBannerMessage", message,

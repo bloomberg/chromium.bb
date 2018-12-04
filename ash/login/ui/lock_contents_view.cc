@@ -945,6 +945,12 @@ void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
   user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
+void LockContentsView::OnPublicSessionShowFullManagementDisclosureChanged(
+    bool show_full_management_disclosure) {
+  expanded_view_->SetShowFullManagementDisclosure(
+      show_full_management_disclosure);
+}
+
 void LockContentsView::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {
   // If the current big user is public account user, or the base is not paired,
