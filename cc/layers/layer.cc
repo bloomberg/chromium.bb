@@ -124,9 +124,12 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   bool property_tree_indices_invalid = false;
   if (layer_tree_host_) {
+    bool should_register_element =
+        inputs_.element_id &&
+        (!layer_tree_host_->IsUsingLayerLists() || inputs_.scrollable);
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
-    if (inputs_.element_id) {
+    if (should_register_element) {
       layer_tree_host_->UnregisterElement(inputs_.element_id,
                                           ElementListType::ACTIVE);
     }
@@ -134,9 +137,12 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
       property_tree_indices_invalid = true;
   }
   if (host) {
+    bool should_register_element =
+        inputs_.element_id &&
+        (!host->IsUsingLayerLists() || inputs_.scrollable);
     host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
-    if (inputs_.element_id)
+    if (should_register_element)
       host->RegisterElement(inputs_.element_id, ElementListType::ACTIVE, this);
     if (!host->IsUsingLayerLists())
       property_tree_indices_invalid = true;
@@ -912,6 +918,12 @@ void Layer::SetScrollable(const gfx::Size& bounds) {
   if (!layer_tree_host_)
     return;
 
+  if (layer_tree_host_->IsUsingLayerLists() && !was_scrollable &&
+      inputs_.element_id) {
+    layer_tree_host_->RegisterElement(inputs_.element_id,
+                                      ElementListType::ACTIVE, this);
+  }
+
   if (!layer_tree_host_->IsUsingLayerLists()) {
     auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
     auto* scroll_node = scroll_tree.Node(scroll_tree_index_);
@@ -1509,14 +1521,17 @@ void Layer::SetElementId(ElementId id) {
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Layer::SetElementId",
                "element", id.AsValue().release());
-  if (inputs_.element_id && layer_tree_host()) {
+  bool should_register_element =
+      layer_tree_host() &&
+      (!layer_tree_host()->IsUsingLayerLists() || inputs_.scrollable);
+  if (should_register_element && inputs_.element_id) {
     layer_tree_host_->UnregisterElement(inputs_.element_id,
                                         ElementListType::ACTIVE);
   }
 
   inputs_.element_id = id;
 
-  if (inputs_.element_id && layer_tree_host()) {
+  if (should_register_element && inputs_.element_id) {
     layer_tree_host_->RegisterElement(inputs_.element_id,
                                       ElementListType::ACTIVE, this);
   }

@@ -518,6 +518,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 
+  // Returns the layer with the given |element_id|. In layer-list mode, only
+  // scrollable layers are registered in this map.
   Layer* LayerByElementId(ElementId element_id) const;
   void RegisterElement(ElementId element_id,
                        ElementListType list_type,
@@ -806,6 +808,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Layer id to Layer map.
   std::unordered_map<int, Layer*> layer_id_map_;
 
+  // In layer-list mode, this map is only used for scrollable layers.
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
 
   // The set of registered element ids when using layer list mode. In non-layer-
