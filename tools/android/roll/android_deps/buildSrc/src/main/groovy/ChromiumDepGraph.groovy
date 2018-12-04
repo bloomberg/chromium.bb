@@ -24,6 +24,10 @@ class ChromiumDepGraph {
     // It is provided here from manual lookups. Note that licenseUrl must provide textual content
     // rather than be an html page.
     final def FALLBACK_PROPERTIES = [
+        'com_google_errorprone_error_prone_annotations': new DependencyDescription(
+            url: "https://errorprone.info/",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
         'com_google_googlejavaformat_google_java_format': new DependencyDescription(
             url: "https://github.com/google/google-java-format",
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
@@ -164,7 +168,7 @@ class ChromiumDepGraph {
             // This avoids using html in a LICENSE file.
             dep.licenseUrl = ""
             dep.licensePath = "licenses/GNU_v2_with_Classpath_Exception_1991.txt"
-        } else if (dep.licenseName?.isEmpty()) {
+        } else {
             def fallbackProperties = FALLBACK_PROPERTIES.get(dep.id)
             if (fallbackProperties != null) {
                 project.logger.debug("Using fallback properties for ${dep.id}")
