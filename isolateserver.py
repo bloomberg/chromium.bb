@@ -320,6 +320,26 @@ def _create_symlinks(base_directory, files):
       raise
 
 
+class _ThreadFile(object):
+  """Multithreaded fake file. Used by TarBundle."""
+  def __init__(self):
+    self._data = threading_utils.TaskChannel()
+    self._offset = 0
+
+  def __iter__(self):
+    return self._data
+
+  def tell(self):
+    return self._offset
+
+  def write(self, b):
+    self._data.send_result(b)
+    self._offset += len(b)
+
+  def close(self):
+    self._data.send_done()
+
+
 class FileItem(isolate_storage.Item):
   """A file to push to Storage.
 
@@ -358,6 +378,114 @@ class FileItem(isolate_storage.Item):
 
   def content(self):
     return file_read(self.path)
+
+
+class TarBundle(isolate_storage.Item):
+  """Tarfile to push to Storage.
+
+  Its digest is the digest of all the files it contains. It is generated on the
+  fly.
+  """
+
+  def __init__(self, root, algo):
+    # 2 trailing 512 bytes headers.
+    super(TarBundle, self).__init__(size=1024)
+    self._items = []
+    self._meta = None
+    self._algo = algo
+    self._root_len = len(root) + 1
+    # Same value as for Go.
+    # https://chromium.googlesource.com/infra/luci/luci-go.git/+/master/client/archiver/tar_archiver.go
+    # https://chromium.googlesource.com/infra/luci/luci-go.git/+/master/client/archiver/upload_tracker.go
+    self._archive_max_size = int(10e6)
+
+  @property
+  def digest(self):
+    if not self._digest:
+      self._prepare()
+    return self._digest
+
+  @property
+  def size(self):
+    if self._size is None:
+      self._prepare()
+    return self._size
+
+  def try_add(self, item):
+    """Try to add this file to the bundle.
+
+    It is extremely naive but this should be just enough for
+    https://crbug.com/825418.
+
+    Future improvements should be in the Go code, and the Swarming bot should be
+    migrated to use the Go code instead.
+    """
+    if not item.size:
+      return False
+    # pylint: disable=unreachable
+    rounded = (item.size + 512) & ~511
+    if rounded + self._size > self._archive_max_size:
+      return False
+    # https://crbug.com/825418
+    return False
+    self._size += rounded
+    self._items.append(item)
+    return True
+
+  def yield_item_path_meta(self):
+    """Returns a tuple(Item, filepath, meta_dict).
+
+    If the bundle contains less than 5 items, the items are yielded.
+    """
+    if len(self._items) < 5:
+      # The tarball is too small, yield individual items, if any.
+      for item in self._items:
+        yield item, item.path[self._root_len:], item.meta
+    else:
+      # This ensures self._meta is set.
+      p = self.digest + '.tar'
+      # Yield itself as a tarball.
+      yield self, p, self._meta
+
+  def content(self):
+    """Generates the tarfile content on the fly."""
+    obj = _ThreadFile()
+    def _tar_thread():
+      try:
+        t = tarfile.open(
+            fileobj=obj, mode='w', format=tarfile.PAX_FORMAT, encoding='utf-8')
+        for item in self._items:
+          logging.info(' tarring %s', item.path)
+          t.add(item.path)
+        t.close()
+      except Exception:
+        logging.exception('Internal failure')
+      finally:
+        obj.close()
+
+    t = threading.Thread(target=_tar_thread)
+    t.start()
+    try:
+      for data in obj:
+        yield data
+    finally:
+      t.join()
+
+  def _prepare(self):
+    h = self._algo()
+    total = 0
+    for chunk in self.content():
+      h.update(chunk)
+      total += len(chunk)
+    # pylint: disable=attribute-defined-outside-init
+    # This is not true, they are defined in Item.__init__().
+    self._digest = h.hexdigest()
+    self._size = total
+    self._meta = {
+      'h': self.digest,
+      's': self.size,
+      't': u'tar',
+    }
 
 
 class BufferItem(isolate_storage.Item):
@@ -1245,6 +1373,7 @@ def _directory_to_metadata(root, algo, blacklist):
   """
   # Current tar file bundle, if any.
   root = file_path.get_native_path_case(root)
+  bundle = TarBundle(root, algo)
   for relpath, issymlink in isolated_format.expand_directory_and_symlink(
       root,
       u'.' + os.path.sep,
@@ -1253,15 +1382,28 @@ def _directory_to_metadata(root, algo, blacklist):
 
     filepath = os.path.join(root, relpath)
     if issymlink:
+      # TODO(maruel): Do not call this.
       meta = isolated_format.file_to_metadata(filepath, 0, False)
       yield None, relpath, meta
       continue
 
     prio = relpath.endswith('.isolated')
+    if bundle.try_add(FileItem(path=filepath, algo=algo, high_priority=prio)):
+      # The file was added to the current pending tarball and won't be archived
+      # individually.
+      continue
+
+    # Flush and reset the bundle.
+    for i, p, m in bundle.yield_item_path_meta():
+      yield i, p, m
+    bundle = TarBundle(root, algo)
 
     # Yield the file individually.
     item = FileItem(path=filepath, algo=algo, size=None, high_priority=prio)
     yield item, relpath, item.meta
+
+  for i, p, m in bundle.yield_item_path_meta():
+    yield i, p, m
 
 
 def _print_upload_stats(items, missing):

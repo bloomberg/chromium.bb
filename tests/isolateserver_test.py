@@ -526,6 +526,22 @@ class StorageTest(TestCase):
     # The isolated file is pure in-memory.
     self.assertIsInstance(hot[2], isolateserver.BufferItem)
 
+  def test_archive_files_to_storage_tar(self):
+    # Create 5 files, which is the minimum to create a tarball.
+    for i in xrange(5):
+      with open(os.path.join(self.tempdir, unicode(i)), 'wb') as f:
+        f.write('fooo%d' % i)
+    server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
+    storage_api = MockedStorageApi(server_ref, {})
+    storage = isolateserver.Storage(storage_api)
+    results, cold, hot = isolateserver.archive_files_to_storage(
+        storage, [self.tempdir], None)
+    self.assertEqual([self.tempdir], results.keys())
+    self.assertEqual([], cold)
+    # 5 files, the isolated file.
+    self.assertEqual(6, len(hot))
+
+
 class IsolateServerStorageApiTest(TestCase):
   @staticmethod
   def mock_fetch_request(server_ref, item, data=None, offset=0):
