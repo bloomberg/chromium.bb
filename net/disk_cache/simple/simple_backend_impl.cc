@@ -259,7 +259,10 @@ SimpleBackendImpl::SimpleBackendImpl(
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
-  index_->WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN);
+  // Write the index out if there is a pending write from a
+  // previous operation.
+  if (index_->HasPendingWrite())
+    index_->WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN);
 }
 
 void SimpleBackendImpl::SetWorkerPoolForTesting(
