@@ -20932,6 +20932,7 @@ Called by update_net_error_codes.py.-->
   <int value="2646" label="CSSSelectorNotWithInvalidList"/>
   <int value="2647" label="CSSSelectorNotWithPartiallyValidList"/>
   <int value="2648" label="V8IDBFactory_Databases_Method"/>
+  <int value="2649" label="OpenerNavigationDownloadCrossOriginNoGesture"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

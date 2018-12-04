@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -16,11 +17,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
@@ -33,6 +37,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -53,6 +58,10 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void StartServerWithExpiredCert() {
@@ -367,11 +376,6 @@ class CtrlClickShouldEndUpInSameProcessTest : public CtrlClickProcessTest {
     CtrlClickProcessTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
     content::RenderProcessHost::SetMaxRendererProcessCount(1);
-  }
-
-  void SetUpOnMainThread() override {
-    CtrlClickProcessTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
@@ -756,7 +760,6 @@ class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
     https_server_.StartAcceptingConnections();
     ChromeNavigationBrowserTest::SetUpOnMainThread();
   }
@@ -967,6 +970,60 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_EQ(embedded_test_server()->GetURL("/title1.html"),
             main_contents->GetLastCommittedURL());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// TODO(http://crbug.com/632514): This test currently expects opener downloads
+// go through and UMA is logged, but when the linked bug is resolved the
+// download should be disallowed.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       OpenerNavigation_DownloadPolicy) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
+                                               false);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // Open a popup.
+  bool opened = false;
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  const char* kScriptFormat =
+      "window.domAutomationController.send(!!window.open('%s'));";
+  GURL popup_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  content::TestNavigationObserver popup_waiter(nullptr, 1);
+  popup_waiter.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      opener, base::StringPrintf(kScriptFormat, popup_url.spec().c_str()),
+      &opened));
+  EXPECT_TRUE(opened);
+  popup_waiter.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Using the popup, navigate its opener to a download.
+  base::HistogramTester histograms;
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(popup, opener);
+  content::DownloadTestObserverInProgress observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      1 /* wait_count */);
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      popup,
+      "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
+  observer.WaitForFinished();
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOriginNoGesture,
+      1);
+
+  // Delete any pending download.
+  std::vector<download::DownloadItem*> download_items;
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(browser()->profile());
+  manager->GetAllDownloads(&download_items);
+  for (auto* item : download_items) {
+    if (!item->IsDone())
+      item->Cancel(true);
+  }
 }
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature
