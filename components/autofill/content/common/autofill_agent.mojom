@@ -117,5 +117,11 @@ interface PasswordGenerationAgent {
 
   // Sent when Autofill manager gets the query response from the Autofill server
   // and there are fields classified for password generation in the response.
+  // TODO(https://crbug.com/866444): Remove this when PasswordGenerationAgent
+  // refactoring is finished.
   FoundFormsEligibleForGeneration(array<PasswordFormGenerationData> forms);
+
+  // Tells the renderer that a password can be generated on the fields
+  // identified by |form|.
+  FoundFormEligibleForGeneration(NewPasswordFormGenerationData form);
 };

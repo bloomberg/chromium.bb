@@ -200,9 +200,19 @@ struct PasswordForm {
   // element corresponding to the new password. Optional, and not persisted.
   base::string16 new_password_element;
 
+  // The renderer id of the new password input element. It is set during the new
+  // form parsing and not persisted.
+  uint32_t new_password_element_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
+
   // The confirmation password element. Optional, only set on form parsing, and
   // not persisted.
   base::string16 confirmation_password_element;
+
+  // The renderer id of the confirmation password input element. It is set
+  // during the new form parsing and not persisted.
+  uint32_t confirmation_password_element_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
 
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
@@ -308,6 +318,11 @@ struct PasswordForm {
 
   // True iff this is Gaia form which should be skipped on saving.
   bool is_gaia_with_skip_save_password_form;
+
+  // True iff the new password field was found with server hints or autocomplete
+  // attributes. Only set on form parsing for filling, and not persisted. Used
+  // as signal for password generation eligibility.
+  bool is_new_password_reliable = false;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.

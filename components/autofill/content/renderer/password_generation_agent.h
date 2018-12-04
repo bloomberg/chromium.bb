@@ -55,6 +55,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FoundFormsEligibleForGeneration(
       const std::vector<PasswordFormGenerationData>& forms) override;
+  void FoundFormEligibleForGeneration(
+      const NewPasswordFormGenerationData& form) override;
   // Sets |generation_element_| to the focused password field and shows a
   // generation popup at this field.
   void UserTriggeredGeneratePassword() override;

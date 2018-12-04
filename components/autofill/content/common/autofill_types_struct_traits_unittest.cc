@@ -244,6 +244,12 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     std::move(callback).Run(s);
   }
 
+  void PassNewPasswordFormGenerationData(
+      const NewPasswordFormGenerationData& s,
+      PassNewPasswordFormGenerationDataCallback callback) override {
+    std::move(callback).Run(s);
+  }
+
   void PassPasswordGenerationUIData(
       const password_generation::PasswordGenerationUIData& s,
       PassPasswordGenerationUIDataCallback callback) override {
@@ -307,6 +313,16 @@ void ExpectPasswordFormGenerationData(
     const base::Closure& closure,
     const PasswordFormGenerationData& passed) {
   CheckEqualPasswordFormGenerationData(expected, passed);
+  closure.Run();
+}
+
+void ExpectNewPasswordFormGenerationData(
+    const NewPasswordFormGenerationData& expected,
+    const base::Closure& closure,
+    const NewPasswordFormGenerationData& passed) {
+  EXPECT_EQ(expected.new_password_renderer_id, passed.new_password_renderer_id);
+  EXPECT_EQ(expected.confirmation_password_renderer_id,
+            passed.confirmation_password_renderer_id);
   closure.Run();
 }
 
@@ -430,6 +446,19 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
   proxy->PassPasswordFormGenerationData(
       input,
       base::Bind(&ExpectPasswordFormGenerationData, input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, NewPasswordFormGenerationData) {
+  NewPasswordFormGenerationData input = {
+      .new_password_renderer_id = 1234u,
+      .confirmation_password_renderer_id = 5789u};
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassNewPasswordFormGenerationData(
+      input, base::BindOnce(&ExpectNewPasswordFormGenerationData, input,
+                            loop.QuitClosure()));
   loop.Run();
 }
 

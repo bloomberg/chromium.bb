@@ -91,6 +91,7 @@ struct FormParsingTestCase {
   // If the result should be marked as only useful for fallbacks.
   bool fallback_only = false;
   SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
+  base::Optional<bool> is_new_password_reliable;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -345,6 +346,12 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
                   parsed_form->username_may_use_prefilled_placeholder);
         EXPECT_EQ(test_case.submission_event, parsed_form->submission_event);
+        if (test_case.is_new_password_reliable &&
+            mode == FormDataParser::Mode::kFilling) {
+          EXPECT_EQ(*test_case.is_new_password_reliable,
+                    parsed_form->is_new_password_reliable);
+        }
+
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
         CheckAllValuesUnique(parsed_form->other_possible_usernames);
@@ -431,6 +438,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                .form_control_type = "password",
                .value = "pw"},
           },
+          .is_new_password_reliable = false,
       },
       {
           "2 password fields, current and new password",
@@ -442,6 +450,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                .form_control_type = "password",
                .value = "pw2"},
           },
+          .is_new_password_reliable = false,
       },
       {
           "3 password fields, current, new, confirm password",
@@ -456,6 +465,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                .form_control_type = "password",
                .value = "pw2"},
           },
+          .is_new_password_reliable = false,
       },
       {
           .description_for_logging = "3 password fields with different values",
@@ -718,6 +728,7 @@ TEST(FormParserTest, TestAutocomplete) {
               },
           // 4 distinct password values in 5 password fields
           .number_of_all_possible_passwords = 4,
+          .is_new_password_reliable = true,
       },
       {
           .description_for_logging =
@@ -942,6 +953,7 @@ TEST(FormParserTest, ReadonlyFields) {
                .form_control_type = "password",
                .is_readonly = true},
           },
+          .is_new_password_reliable = true,
       },
       {
           .description_for_logging = "And passwords already filled by user or "
@@ -1044,6 +1056,7 @@ TEST(FormParserTest, ServerHints) {
                    .form_control_type = "password"},
               },
           .number_of_all_possible_passwords = 4,
+          .is_new_password_reliable = true,
       },
       {
           "password prediction for a non-password field is ignored",
@@ -1359,6 +1372,7 @@ TEST(FormParserTest, ComplementingResults) {
                .prediction = {.type = autofill::NEW_PASSWORD},
                .form_control_type = "password"},
           },
+          .is_new_password_reliable = true,
       },
       {
           "No password from server still means that serve hints are ignored.",
@@ -1527,6 +1541,7 @@ TEST(FormParserTest, NoEmptyValues) {
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
                .value = ""},
           },
+          .is_new_password_reliable = true,
       },
       {
           "Autocomplete attributes overridden for non-empty values.",
@@ -1545,6 +1560,7 @@ TEST(FormParserTest, NoEmptyValues) {
                .form_control_type = "password",
                .autocomplete_attribute = "new-password"},
           },
+          .is_new_password_reliable = true,
       },
       {
           "Structure heuristics overridden for non-empty values.",
@@ -1584,9 +1600,10 @@ TEST(FormParserTest, MultipleUsernames) {
                .form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
           },
+          .is_new_password_reliable = true,
       },
       {
-          "No current passwod -> ignore additional usernames.",
+          "No current password -> ignore additional usernames.",
           {
               {.role = ElementRole::USERNAME,
                .form_control_type = "text",
@@ -1614,7 +1631,7 @@ TEST(FormParserTest, MultipleUsernames) {
           },
       },
       {
-          "No new passwod -> ignore additional usernames.",
+          "No new password -> ignore additional usernames.",
           {
               {.role = ElementRole::USERNAME,
                .form_control_type = "text",
@@ -1642,6 +1659,7 @@ TEST(FormParserTest, MultipleUsernames) {
                .form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
           },
+          .is_new_password_reliable = true,
       },
       {
           "Two usernames in sign-up, sign-in order.",

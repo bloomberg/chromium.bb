@@ -37,6 +37,15 @@ struct PasswordFormGenerationData {
   base::Optional<FieldSignature> confirmation_field_signature;
 };
 
+// Structure used for sending information from browser to renderer about on
+// which fields password should be generated.
+// TODO(https://crbug.com/866444): Remove old PasswordFormGenerationData and
+// rename to PasswordFormGenerationData when the old parser is gone.
+struct NewPasswordFormGenerationData {
+  uint32_t new_password_renderer_id;
+  uint32_t confirmation_password_renderer_id;
+};
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_PASSWORD_FORM_GENERATION_DATA_H_

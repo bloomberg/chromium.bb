@@ -456,6 +456,23 @@ struct StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
 };
 
 template <>
+struct StructTraits<autofill::mojom::NewPasswordFormGenerationDataDataView,
+                    autofill::NewPasswordFormGenerationData> {
+  static uint32_t new_password_renderer_id(
+      const autofill::NewPasswordFormGenerationData& r) {
+    return r.new_password_renderer_id;
+  }
+
+  static uint32_t confirmation_password_renderer_id(
+      const autofill::NewPasswordFormGenerationData& r) {
+    return r.confirmation_password_renderer_id;
+  }
+
+  static bool Read(autofill::mojom::NewPasswordFormGenerationDataDataView data,
+                   autofill::NewPasswordFormGenerationData* out);
+};
+
+template <>
 struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
                     autofill::password_generation::PasswordGenerationUIData> {
   static const gfx::RectF& bounds(

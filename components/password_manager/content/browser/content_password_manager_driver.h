@@ -52,6 +52,8 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
       const autofill::PasswordForm& form) override;
   void FormsEligibleForGenerationFound(
       const std::vector<autofill::PasswordFormGenerationData>& forms) override;
+  void FormEligibleForGenerationFound(
+      const autofill::NewPasswordFormGenerationData& form) override;
   void AutofillDataReceived(
       const std::map<autofill::FormData,
                      autofill::PasswordFormFieldPredictionMap>& predictions)

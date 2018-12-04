@@ -719,6 +719,17 @@ bool StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
 }
 
 // static
+bool StructTraits<autofill::mojom::NewPasswordFormGenerationDataDataView,
+                  autofill::NewPasswordFormGenerationData>::
+    Read(autofill::mojom::NewPasswordFormGenerationDataDataView data,
+         autofill::NewPasswordFormGenerationData* out) {
+  out->new_password_renderer_id = data.new_password_renderer_id();
+  out->confirmation_password_renderer_id =
+      data.confirmation_password_renderer_id();
+  return true;
+}
+
+// static
 bool StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
                   autofill::password_generation::PasswordGenerationUIData>::
     Read(autofill::mojom::PasswordGenerationUIDataDataView data,
