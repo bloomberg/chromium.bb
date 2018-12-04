@@ -40,9 +40,6 @@ class PreviewsHints {
   static std::unique_ptr<PreviewsHints> CreateFromHintsComponent(
       const optimization_guide::HintsComponentInfo& info);
 
-  static std::unique_ptr<PreviewsHints> CreateForTesting(
-      std::unique_ptr<HostFilter> lite_page_redirect_blacklist);
-
   // Returns the matching PageHint for |document_url| if found in |hint|.
   // TODO(dougarnett): Consider moving to some hint_util file.
   static const optimization_guide::proto::PageHint* FindPageHint(

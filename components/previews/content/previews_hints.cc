@@ -481,15 +481,6 @@ void PreviewsHints::ParseOptimizationFilters(
 }
 
 // static
-std::unique_ptr<PreviewsHints> PreviewsHints::CreateForTesting(
-    std::unique_ptr<HostFilter> lite_page_redirect_blacklist) {
-  std::unique_ptr<PreviewsHints> previews_hints(new PreviewsHints());
-  previews_hints->lite_page_redirect_blacklist_ =
-      std::move(lite_page_redirect_blacklist);
-  return previews_hints;
-}
-
-// static
 const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
     const GURL& document_url,
     const optimization_guide::proto::Hint& hint) {
