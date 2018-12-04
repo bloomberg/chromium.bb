@@ -112,7 +112,12 @@ Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
-crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
+
+# mask-with-added-filters.html should be newly-passing with BGPT but currently
+# has minor pixel differences and should be rebaselined.
+# crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
+Bug(none) compositing/masks/mask-with-added-filters.html [ Failure ]
+
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 crbug.com/400829 media/video-object-fit.html [ Pass ]
@@ -126,10 +131,6 @@ crbug.com/907175 external/wpt/svg/rendering/order/clip-path-filter-order.svg [ P
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
-# Backdrop filters are experimental (behind a flag) and do not really work with
-# or without BlinkGenPropertyTrees. These tests are marked as failing because
-# the expectations differ, but these do not block BlinkGenPropertyTrees.
-crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 
 # These scrolling tests should pass.
@@ -155,6 +156,10 @@ crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scroll
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
+
+crbug.com/911664 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/911664 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/911664 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 
 crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 
@@ -218,10 +223,10 @@ Bug(none) fast/borders/border-radius-mask-canvas.html [ Failure ]
 Bug(none) fast/borders/border-radius-mask-video.html [ Failure ]
 Bug(none) fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
 Bug(none) fast/clip/overflow-border-radius-composited.html [ Failure ]
-Bug(none) fast/filesystem/writable-files/FileSystemDirectoryHandle-getDirectory.html [ Failure ]
 Bug(none) transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
 Bug(none) transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 Bug(none) transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-z-order-interleave.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
+Bug(none) paint/invalidation/scroll/overflow-scroll-composited-non-stacking-child.html [ Failure ]
