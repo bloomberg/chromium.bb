@@ -29,13 +29,19 @@ class BuildSpecBuilder(generic_builders.Builder):
 
   def RunStages(self):
     """Run the stages."""
-    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
-                   build_root=self._run.options.workspace)
 
-    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
-                   build_root=self._run.options.workspace)
+    if not self._run.options.force_version:
+      # If we were not given a specific buildspec to build, create one.
+      self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
+                     build_root=self._run.options.workspace)
 
-    # TODO(dgarrett): Schedule slaves based on version defined.
+      self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
+                     build_root=self._run.options.workspace)
+
+    if self._run.config.slave_configs:
+      # If there are child builds to schedule, schedule them.
+      self._RunStage(workspace_stages.WorkspaceScheduleChildrenStage,
+                     build_root=self._run.options.workspace)
 
 
 class FirmwareBranchBuilder(BuildSpecBuilder):

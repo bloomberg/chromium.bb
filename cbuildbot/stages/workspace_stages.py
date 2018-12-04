@@ -32,6 +32,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
+from chromite.lib import request_build
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
@@ -237,6 +238,33 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
       msg = 'Defined: %s' % build_spec_path
 
     logging.PrintBuildbotStepText(msg)
+
+
+class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
+  """Schedule child builds for this buildspec."""
+
+  def PerformStage(self):
+    """Schedule child builds for this buildspec."""
+    build_id, _ = self._run.GetCIDBHandle()
+    master_buildbucket_id = self._run.options.buildbucket_id
+    version_info = self.GetWorkspaceVersionInfo()
+
+    extra_args = [
+        '--buildbot',
+        '--version', version_info.VersionString(),
+    ]
+
+    if self._run.options.debug:
+      extra_args.append('--debug')
+
+    for child_name in self._run.config.slave_configs:
+      child = request_build.RequestBuild(
+          build_config=child_name,
+          master_cidb_id=build_id,
+          master_buildbucket_id=master_buildbucket_id,
+          extra_args=extra_args,
+      )
+      child.Submit(dryrun=self._run.options.debug)
 
 
 class WorkspaceInitSDKStage(WorkspaceStageBase):
