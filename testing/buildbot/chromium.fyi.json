@@ -2209,7 +2209,7 @@
             }
           ],
           "hard_timeout": 900,
-          "shards": 15
+          "shards": 12
         }
       }
     ]
@@ -2238,7 +2238,7 @@
             }
           ],
           "hard_timeout": 900,
-          "shards": 15
+          "shards": 12
         }
       }
     ]
@@ -2268,7 +2268,7 @@
           ],
           "hard_timeout": 900,
           "priority_adjustment": 30,
-          "shards": 15
+          "shards": 12
         }
       }
     ]
@@ -4300,7 +4300,8 @@
         "name": "webkit_layout_tests",
         "results_handler": "layout tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 12
         }
       }
     ]

@@ -1381,25 +1381,16 @@
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
           '--additional-driver-flag=--enable-slimming-paint-v175',
         ],
-        'swarming': {
-          'shards': 15,
-        },
       },
       'WebKit Linux root_layer_scrolls Dummy Builder': {
         'args': [
           '--additional-driver-flag=--root-layer-scrolls',
         ],
-        'swarming': {
-          'shards': 15,
-        },
       },
       'WebKit Linux slimming_paint_v2 Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-slimming-paint-v2',
         ],
-        'swarming': {
-          'shards': 15,
-        },
       },
       # chromium.linux
       'Linux Tests': {
