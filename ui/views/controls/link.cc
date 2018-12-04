@@ -50,8 +50,12 @@ Link::FocusStyle Link::GetFocusStyle() const {
 }
 
 void Link::PaintFocusRing(gfx::Canvas* canvas) const {
-  if (GetFocusStyle() == FocusStyle::RING)
-    canvas->DrawFocusRect(GetFocusRingBounds());
+  if (GetFocusStyle() == FocusStyle::RING) {
+    gfx::Rect focus_ring_bounds = GetTextBounds();
+    focus_ring_bounds.Inset(gfx::Insets(-kFocusBorderPadding));
+    focus_ring_bounds.Intersect(GetLocalBounds());
+    canvas->DrawFocusRect(focus_ring_bounds);
+  }
 }
 
 gfx::Insets Link::GetInsets() const {

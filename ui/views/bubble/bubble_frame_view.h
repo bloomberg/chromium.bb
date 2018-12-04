@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_FRAME_VIEW_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -56,7 +58,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // View:
   const char* GetClassName() const override;
-  gfx::Insets GetInsets() const override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
