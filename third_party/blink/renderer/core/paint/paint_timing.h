@@ -57,7 +57,6 @@ class CORE_EXPORT PaintTiming final
 
   void SetFirstMeaningfulPaintCandidate(TimeTicks timestamp);
   void SetFirstMeaningfulPaint(
-      TimeTicks stamp,
       TimeTicks swap_stamp,
       FirstMeaningfulPaintDetector::HadUserInput had_input);
   void NotifyPaint(bool is_first_paint, bool text_painted, bool image_painted);
@@ -146,10 +145,6 @@ class CORE_EXPORT PaintTiming final
     return first_contentful_paint_;
   }
 
-  TimeTicks FirstMeaningfulPaintRendered() const {
-    return first_meaningful_paint_;
-  }
-
   // TODO(crbug/738235): Non first_*_swap_ variables are only being tracked to
   // compute deltas for reporting histograms and should be removed once we
   // confirm the deltas and discrepancies look reasonable.
@@ -161,7 +156,6 @@ class CORE_EXPORT PaintTiming final
   TimeTicks first_image_paint_swap_;
   TimeTicks first_contentful_paint_;
   TimeTicks first_contentful_paint_swap_;
-  TimeTicks first_meaningful_paint_;
   TimeTicks first_meaningful_paint_swap_;
   TimeTicks first_meaningful_paint_candidate_;
 

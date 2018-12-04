@@ -61,7 +61,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   int ActiveConnections();
   void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
-  void SetFirstMeaningfulPaint(TimeTicks stamp, TimeTicks swap_stamp);
+  void SetFirstMeaningfulPaint(TimeTicks swap_stamp);
 
   bool next_paint_is_meaningful_ = false;
   HadUserInput had_user_input_ = kNoUserInput;

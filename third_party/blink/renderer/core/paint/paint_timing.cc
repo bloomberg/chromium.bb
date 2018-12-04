@@ -98,12 +98,9 @@ void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
 }
 
 void PaintTiming::SetFirstMeaningfulPaint(
-    TimeTicks stamp,
     TimeTicks swap_stamp,
     FirstMeaningfulPaintDetector::HadUserInput had_input) {
-  DCHECK(first_meaningful_paint_.is_null());
   DCHECK(first_meaningful_paint_swap_.is_null());
-  DCHECK(!stamp.is_null());
   DCHECK(!swap_stamp.is_null());
 
   TRACE_EVENT_MARK_WITH_TIMESTAMP2(
@@ -119,7 +116,6 @@ void PaintTiming::SetFirstMeaningfulPaint(
   // Notify FMP for UMA only if there's no user input before FMP, so that layout
   // changes caused by user interactions wouldn't be considered as FMP.
   if (had_input == FirstMeaningfulPaintDetector::kNoUserInput) {
-    first_meaningful_paint_ = stamp;
     first_meaningful_paint_swap_ = swap_stamp;
     NotifyPaintTimingChanged();
   }
