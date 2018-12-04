@@ -145,7 +145,7 @@ public class ToolbarPhone
 
     protected ViewGroup mToolbarButtonsContainer;
     private IncognitoToggleTabLayout mIncognitoToggleTabLayout;
-    protected ImageView mToggleTabStackButton;
+    protected ToggleTabStackButton mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
     protected @Nullable ImageButton mHomeButton;
     private TextView mUrlBar;
@@ -192,7 +192,6 @@ public class ToolbarPhone
     @ViewDebug.ExportedProperty(category = "chrome")
     private Rect mClipRect;
 
-    private OnClickListener mTabSwitcherListener;
     private OnClickListener mNewTabListener;
 
     @ViewDebug.ExportedProperty(category = "chrome")
@@ -231,8 +230,6 @@ public class ToolbarPhone
     private Drawable mActiveLocationBarBackground;
 
     protected boolean mForceDrawLocationBarBackground;
-    private TabSwitcherDrawable mTabSwitcherButtonDrawable;
-    protected TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
     private final int mLightModeDefaultColor;
     private final int mDarkModeDefaultColor;
@@ -455,8 +452,8 @@ public class ToolbarPhone
     }
 
     private void inflateTabSwitchingResources() {
-        mToggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
-        mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
+        mNewTabButton = findViewById(R.id.new_tab_button);
+        mToggleTabStackButton = findViewById(R.id.tab_switcher_button);
         if (FeatureUtilities.isBottomToolbarEnabled()) {
             UiUtils.removeViewFromParent(mToggleTabStackButton);
             UiUtils.removeViewFromParent(mNewTabButton);
@@ -464,18 +461,11 @@ public class ToolbarPhone
             mNewTabButton = null;
         } else {
             mToggleTabStackButton.setClickable(false);
-            mTabSwitcherButtonDrawable =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
-            mTabSwitcherButtonDrawableLight =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
-            mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
             mTabSwitcherModeViews.add(mNewTabButton);
         }
     }
 
     private void enableTabSwitchingResources() {
-        mToggleTabStackButton.setOnClickListener(this);
-        mToggleTabStackButton.setOnLongClickListener(this);
         mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
             public View getNextFocusForward() {
@@ -569,9 +559,7 @@ public class ToolbarPhone
         // Don't allow clicks while the omnibox is being focused.
         if (mLocationBar != null && mLocationBar.hasFocus()) return;
 
-        if (mToggleTabStackButton == v) {
-            handleToggleTabStack();
-        } else if (mNewTabButton == v) {
+        if (mNewTabButton == v) {
             v.setEnabled(false);
 
             if (mNewTabListener != null) {
@@ -587,31 +575,18 @@ public class ToolbarPhone
         }
     }
 
-    private void handleToggleTabStack() {
-        // The button is clickable before the native library is loaded
-        // and the listener is setup.
-        if (mToggleTabStackButton != null && mToggleTabStackButton.isClickable()
-                && mTabSwitcherListener != null) {
-            cancelAppMenuUpdateBadgeAnimation();
-            mTabSwitcherListener.onClick(mToggleTabStackButton);
-        }
-    }
-
     @Override
     public boolean onLongClick(View v) {
-        CharSequence description = null;
-        if (v == mToggleTabStackButton) {
-            description = getResources().getString(R.string.open_tabs);
-        } else if (v == mNewTabButton) {
-            description = getResources().getString(isIncognito()
+        if (v == mNewTabButton) {
+            CharSequence description = getResources().getString(isIncognito()
                             ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                              ? R.string.button_new_private_tab
-                                              : R.string.button_new_incognito_tab)
+                                            ? R.string.button_new_private_tab
+                                            : R.string.button_new_incognito_tab)
                             : R.string.button_new_tab);
+            return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
         } else {
             return false;
         }
-        return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
     }
 
     @Override
@@ -1844,6 +1819,8 @@ public class ToolbarPhone
      */
     public void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, boolean animate) {
+        if (inTabSwitcherMode) cancelAppMenuUpdateBadgeAnimation();
+
         // If setting tab switcher mode to true and the browser is already animating or in the tab
         // switcher skip.
         if (inTabSwitcherMode
@@ -1946,7 +1923,7 @@ public class ToolbarPhone
 
     @Override
     public void setOnTabSwitcherClickHandler(OnClickListener listener) {
-        mTabSwitcherListener = listener;
+        mToggleTabStackButton.setOnTabSwitcherClickHandler(listener);
     }
 
     @Override
@@ -2148,6 +2125,7 @@ public class ToolbarPhone
     public void onUrlFocusChange(final boolean hasFocus) {
         super.onUrlFocusChange(hasFocus);
 
+        mToggleTabStackButton.setClickable(!hasFocus);
         triggerUrlFocusAnimation(hasFocus);
     }
 
@@ -2204,6 +2182,7 @@ public class ToolbarPhone
     public void setTabCountProvider(TabCountProvider tabCountProvider) {
         mTabCountProvider = tabCountProvider;
         mTabCountProvider.addObserver(this);
+        mToggleTabStackButton.setTabCountProvider(tabCountProvider);
     }
 
     @Override
@@ -2211,13 +2190,6 @@ public class ToolbarPhone
         if (mHomeButton != null) mHomeButton.setEnabled(true);
 
         if (mToggleTabStackButton == null) return;
-
-        mToggleTabStackButton.setEnabled(numberOfTabs >= 1);
-        mToggleTabStackButton.setContentDescription(getResources().getQuantityString(
-                R.plurals.accessibility_toolbar_btn_tabswitcher_toggle, numberOfTabs,
-                numberOfTabs));
-        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito);
-        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
 
         boolean useTabStackDrawableLight =
                 isIncognito || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
@@ -2536,9 +2508,7 @@ public class ToolbarPhone
         }
 
         if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
-                            ? mTabSwitcherButtonDrawableLight
-                            : mTabSwitcherButtonDrawable);
+            mToggleTabStackButton.setUseLightDrawables(mUseLightToolbarDrawables);
             if (mTabSwitcherAnimationTabStackDrawable != null) {
                 mTabSwitcherAnimationTabStackDrawable.setTint(
                         mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
