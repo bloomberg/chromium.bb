@@ -88,6 +88,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
       case browsing_data::BrowsingDataType::COOKIES:
         remove_mask |= BrowsingDataRemover::DATA_TYPE_COOKIES;
         remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
+        remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
         break;
       case browsing_data::BrowsingDataType::PASSWORDS:
         remove_mask |= ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
@@ -104,7 +105,8 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
         break;
       case browsing_data::BrowsingDataType::MEDIA_LICENSES:
-        remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+        // Media licenses are deleted as part of cookies.
+        NOTREACHED();
         break;
       case browsing_data::BrowsingDataType::DOWNLOADS:
       case browsing_data::BrowsingDataType::HOSTED_APPS_DATA:

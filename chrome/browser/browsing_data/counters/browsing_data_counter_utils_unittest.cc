@@ -26,10 +26,6 @@
 #include "chrome/browser/browsing_data/counters/hosted_apps_counter.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
-#endif
-
 namespace browsing_data_counter_utils {
 
 class BrowsingDataCounterUtilsTest : public testing::Test {
@@ -130,50 +126,6 @@ TEST_F(BrowsingDataCounterUtilsTest, HostedAppsCounterResult) {
         GetChromeCounterTextFromResult(&result, GetProfile());
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
-}
-#endif
-
-#if defined(OS_ANDROID)
-// Tests the output for "Cookies, media licenses and site data" on the basic
-// tab with and without media licenses.
-TEST_F(BrowsingDataCounterUtilsTest, DeleteCookiesBasicWithMediaLicenses) {
-  const std::string protected_content("protected content");
-  const std::string host1("abc.com");
-  const std::string host2("xyz.com");
-  const GURL domain1("http://" + host1);
-  const GURL domain2("http://" + host2);
-
-  // This test assumes that the strings are served exactly as defined,
-  // i.e. that the locale is set to the default "en".
-  ASSERT_EQ("en", TestingBrowserProcess::GetGlobal()->GetApplicationLocale());
-
-  std::unique_ptr<MediaLicensesCounter> counter =
-      MediaLicensesCounter::Create(GetProfile());
-  counter->Init(GetProfile()->GetPrefs(),
-                browsing_data::ClearBrowsingDataTab::BASIC,
-                browsing_data::BrowsingDataCounter::Callback());
-
-  MediaLicensesCounter::MediaLicenseResult result_without_domains(counter.get(),
-                                                                  {});
-  MediaLicensesCounter::MediaLicenseResult result_with_domains(
-      counter.get(), {domain1, domain2});
-
-  // If no Media Licenses are found, there should be no mention of
-  // |protected_content| and no domains shown.
-  std::string output = base::UTF16ToASCII(
-      GetChromeCounterTextFromResult(&result_without_domains, GetProfile()));
-  EXPECT_TRUE(output.find(protected_content) == std::string::npos) << output;
-  EXPECT_TRUE(output.find(host1) == std::string::npos) << output;
-  EXPECT_TRUE(output.find(host2) == std::string::npos) << output;
-
-  // If two Media Licenses are found, |protected_content| should be mentioned
-  // and one of the 2 domains should be in the message.
-  output = base::UTF16ToASCII(
-      GetChromeCounterTextFromResult(&result_with_domains, GetProfile()));
-  EXPECT_TRUE(output.find(protected_content) != std::string::npos) << output;
-  EXPECT_TRUE((output.find(host1) != std::string::npos) ||
-              (output.find(host2) != std::string::npos))
-      << output;
 }
 #endif
 
