@@ -11,8 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -146,7 +146,7 @@ class PolicyServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockConfigurationPolicyProvider provider0_;
   MockConfigurationPolicyProvider provider1_;
   MockConfigurationPolicyProvider provider2_;
