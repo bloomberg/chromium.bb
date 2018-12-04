@@ -2132,6 +2132,7 @@ DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
  */
 DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {
   this.selectByEntry(event.newDirEntry);
+  this.updateSubDirectories(false /* recursive */, () => {});
 };
 
 /**

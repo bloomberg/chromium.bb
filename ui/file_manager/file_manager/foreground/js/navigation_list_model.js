@@ -147,11 +147,12 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
+ * @param {!DirectoryModel} directoryModel
  * @constructor
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
-    volumeManager, shortcutListModel, recentModelItem) {
+    volumeManager, shortcutListModel, recentModelItem, directoryModel) {
   cr.EventTarget.call(this);
 
   /**
@@ -171,6 +172,12 @@ function NavigationListModel(
    * @const
    */
   this.recentModelItem_ = recentModelItem;
+
+  /**
+   * @private {!DirectoryModel}
+   * @const
+   */
+  this.directoryModel_ = directoryModel;
 
   /**
    * Root folder for crostini Linux files.
@@ -543,6 +550,7 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     myFilesEntry = this.myFilesModel_.entry;
     myFilesModel = this.myFilesModel_;
   }
+  this.directoryModel_.setMyFiles(myFilesEntry);
   this.navigationItems_.push(myFilesModel);
 
   // Add Downloads to My Files.

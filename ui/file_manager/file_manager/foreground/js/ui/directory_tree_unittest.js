@@ -473,12 +473,8 @@ function testUpdateSubElementsFromListSections() {
   };
 
   const treeModel = new NavigationListModel(
-      volumeManager,
-      new MockFolderShortcutDataModel([]),
-      null, /* recentItem */
-      null, /* addNewServicesItem */
-      false /* opt_disableMyFilesNavigation */
-  );
+      volumeManager, new MockFolderShortcutDataModel([]), null /* recentItem */,
+      new MockDirectoryModel());
 
   const myFilesItem = treeModel.item(0);
   const driveItem = treeModel.item(1);

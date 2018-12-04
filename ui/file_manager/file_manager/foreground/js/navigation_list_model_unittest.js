@@ -67,8 +67,8 @@ function testModel() {
       new FakeEntry(
           'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
 
-  var model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
   model.linuxFilesItem = crostiniFakeItem;
 
   assertEquals(4, model.length);
@@ -101,8 +101,8 @@ function testNoRecentOrLinuxFiles() {
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
 
-  var model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
 
   assertEquals(3, model.length);
   assertEquals(
@@ -124,8 +124,8 @@ function testAddAndRemoveShortcuts() {
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
 
-  var model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
 
   assertEquals(3, model.length);
 
@@ -186,8 +186,8 @@ function testAddAndRemoveVolumes() {
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
 
-  var model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  var model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
 
   assertEquals(3, model.length);
 
@@ -317,8 +317,8 @@ function testOrderAndNestItems() {
   // 15.  provided:"zip" - mounted as provided: $zipVolumeId
 
   // Constructor already calls orderAndNestItems_.
-  const model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  const model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
@@ -428,8 +428,8 @@ function testMyFilesVolumeEnabled(callback) {
   //  2. Drive  - added by default by MockVolumeManager.
 
   // Constructor already calls orderAndNestItems_.
-  const model =
-      new NavigationListModel(volumeManager, shortcutListModel, recentItem);
+  const model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
   model.linuxFilesItem = crostiniFakeItem;
 
   assertEquals(2, model.length);

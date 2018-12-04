@@ -1197,7 +1197,8 @@ FileManager.prototype = /** @struct */ {
                     str('RECENT_ROOT_LABEL'),
                     VolumeManagerCommon.RootType.RECENT,
                     this.getSourceRestriction_())) :
-            null);
+            null,
+        assert(this.directoryModel_));
 
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);

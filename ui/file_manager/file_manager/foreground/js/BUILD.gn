@@ -541,6 +541,7 @@ js_library("navigation_list_model") {
 
 js_unittest("navigation_list_model_unittest") {
   deps = [
+    ":mock_directory_model",
     ":mock_folder_shortcut_data_model",
     ":navigation_list_model",
     "//ui/file_manager/base/js:mock_chrome",
