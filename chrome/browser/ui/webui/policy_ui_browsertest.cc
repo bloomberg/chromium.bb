@@ -542,14 +542,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   VerifyPolicies(expected_policies);
 }
 
-// TODO(https://crbug.com/911661) Flaky time outs on Linux Chromium OS ASan
-// LSan bot.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ExtensionLoadAndSendPolicy DISABLED_ExtensionLoadAndSendPolicy
-#else
-#define MAYBE_ExtensionLoadAndSendPolicy ExtensionLoadAndSendPolicy
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyUITest, MAYBE_ExtensionLoadAndSendPolicy) {
+IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir_;
