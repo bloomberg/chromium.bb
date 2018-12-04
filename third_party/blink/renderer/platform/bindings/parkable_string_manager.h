@@ -35,6 +35,7 @@ class PLATFORM_EXPORT ParkableStringManager {
 
   void SetRendererBackgrounded(bool backgrounded);
   bool IsRendererBackgrounded() const;
+  void PurgeMemory();
   // Number of parked and unparked strings. Public for testing.
   size_t Size() const;
 
@@ -48,7 +49,6 @@ class PLATFORM_EXPORT ParkableStringManager {
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;
-  friend class OnPurgeMemoryListener;
 
   scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
   void Remove(ParkableStringImpl*, StringImpl*);
@@ -56,6 +56,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   void OnParked(ParkableStringImpl*, StringImpl*);
   void OnUnparked(ParkableStringImpl*, StringImpl*);
 
+  void ParkAll(ParkableStringImpl::ParkingMode mode);
   void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
   void DropStringsWithCompressedDataAndRecordStatistics();
   void ResetForTesting();
