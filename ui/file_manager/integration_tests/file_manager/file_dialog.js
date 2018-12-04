@@ -80,19 +80,57 @@ async function setUpFileEntrySet(volume) {
  */
 async function openFileDialogClickOkButton(
     volume, name, expectedUrl = undefined) {
-  const type = {type: 'openFile'};
-
   const okButton = '.button-panel button.ok:enabled';
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
   const result = await openAndWaitForClosingDialog(
-      type, volume, entrySet, closer, !!expectedUrl);
+      {type: 'openFile'}, volume, entrySet, closer, !!expectedUrl);
   if (expectedUrl) {
     chrome.test.assertEq(expectedUrl, result);
   } else {
     chrome.test.assertEq(name, result.name);
   }
+}
+
+/**
+ * Adds the basic file entry sets then opens the save file dialog on the volume.
+ * Once file |name| is shown, select it and click the Ok button, again clicking
+ * Ok in the confirmation dialog.
+ *
+ * @param {!string} volume Volume name for openAndWaitForClosingDialog.
+ * @param {!string} name File name to select in the dialog.
+ * @return {!Promise} Promise to be fulfilled on success.
+ */
+async function saveFileDialogClickOkButton(volume, name) {
+  const caller = getCaller();
+
+  let closer = async (appId) => {
+    const okButton = '.button-panel button.ok:enabled';
+
+    await remoteCall.callRemoteTestUtil('selectFile', appId, [name]);
+    await repeatUntil(async () => {
+      const element =
+          await remoteCall.waitForElement(appId, '#filename-input-textbox');
+      if (element.value !== name) {
+        return pending(caller, 'Text field not updated');
+      }
+    });
+
+    await remoteCall.waitForElement(appId, okButton);
+    const event = [okButton, 'click'];
+    await remoteCall.callRemoteTestUtil('fakeEvent', appId, event);
+
+    const confirmOkButton = '.files-confirm-dialog .cr-dialog-ok';
+    await remoteCall.waitForElement(appId, confirmOkButton);
+    await remoteCall.callRemoteTestUtil(
+        'fakeEvent', appId, [confirmOkButton, 'click']);
+  };
+
+  const entrySet = await setUpFileEntrySet(volume);
+  const result = await openAndWaitForClosingDialog(
+      {type: 'saveFile'}, volume, entrySet, closer, false);
+  chrome.test.assertEq(name, result.name);
 }
 
 /**
@@ -178,6 +216,13 @@ testcase.openFileDialogDownloads = function() {
 };
 
 /**
+ * Tests opening save file dialog on Downloads and closing it with Ok button.
+ */
+testcase.saveFileDialogDownloads = function() {
+  return saveFileDialogClickOkButton('downloads', TEST_LOCAL_FILE);
+};
+
+/**
  * Tests opening file dialog on Downloads and closing it with Cancel button.
  */
 testcase.openFileDialogCancelDownloads = function() {
@@ -211,6 +256,13 @@ testcase.openFileDialogDrive = function() {
 };
 
 /**
+ * Tests save file dialog on Drive and closing it with Ok button.
+ */
+testcase.saveFileDialogDrive = function() {
+  return saveFileDialogClickOkButton('drive', TEST_DRIVE_FILE);
+};
+
+/**
  * Tests opening file dialog on Drive and closing it with Ok button.
  */
 testcase.openFileDialogDriveOffline = function() {
@@ -223,6 +275,13 @@ testcase.openFileDialogDriveOffline = function() {
  */
 testcase.openFileDialogDriveOfflinePinned = function() {
   return openFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE);
+};
+
+/**
+ * Tests save file dialog on Drive and closing it with Ok button.
+ */
+testcase.saveFileDialogDriveOfflinePinned = function() {
+  return saveFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE);
 };
 
 /**

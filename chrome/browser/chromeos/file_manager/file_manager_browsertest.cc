@@ -707,6 +707,18 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .WithBrowser()
             .InIncognito()
             .EnableMyFilesVolume(),
+        TestCase("saveFileDialogDownloads").WithBrowser(),
+        TestCase("saveFileDialogDownloads").WithBrowser().EnableMyFilesVolume(),
+        TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("saveFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .EnableMyFilesVolume(),
+        TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
+        TestCase("saveFileDialogDownloads")
+            .WithBrowser()
+            .InIncognito()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
         TestCase("openFileDialogCancelDownloads")
             .WithBrowser()
@@ -729,6 +741,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .WithBrowser()
             .InIncognito()
             .EnableDriveFs(),
+        TestCase("saveFileDialogDrive").WithBrowser(),
+        TestCase("saveFileDialogDrive").WithBrowser().EnableMyFilesVolume(),
+        TestCase("saveFileDialogDrive").WithBrowser().InIncognito(),
         TestCase("openFileDialogDriveHostedDoc").WithBrowser(),
         TestCase("openFileDialogCancelDrive").WithBrowser().DisableDriveFs(),
         TestCase("openFileDialogCancelDrive").WithBrowser().EnableDriveFs(),
@@ -741,7 +756,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("openFileDialogDriveOfflinePinned")
             .WithBrowser()
             .Offline()
-            .EnableDriveFs()));
+            .EnableDriveFs(),
+        TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
