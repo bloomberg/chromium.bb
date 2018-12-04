@@ -76,12 +76,13 @@ void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
                                                       bool active) {
   if (active) {
     container_view_->RequestFocus();
-  } else {
-    // When the Assistant widget is deactivated we should hide Assistant UI.
-    // We already handle press events happening outside of the UI container but
-    // this will also handle the case where we are deactivated without a press
-    // event occurring. This happens, for example, when launching Chrome OS
-    // feedback using keyboard shortcuts.
+  } else if (model_.ui_mode() != AssistantUiMode::kMiniUi) {
+    // When the Assistant widget is deactivated we should hide Assistant UI. We
+    // don't do this when in mini UI mode since Assistant in that state should
+    // not be obstructing much content. Note that we already handle press events
+    // happening outside of the UI container but this will also handle the case
+    // where we are deactivated without a press event occurring. This happens,
+    // for example, when launching Chrome OS feedback using keyboard shortcuts.
     HideUi(AssistantExitPoint::kUnspecified);
   }
 }
@@ -439,6 +440,13 @@ void AssistantUiController::OnDisplayMetricsChanged(
 void AssistantUiController::OnEvent(const ui::Event& event) {
   DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
          event.type() == ui::ET_TOUCH_PRESSED);
+
+  // We're going to perform some checks below to see if the user has pressed
+  // outside of the Assistant or virtual keyboard bounds to hide UI for the
+  // user's convenience. When Assistant is in mini UI state, we shouldn't be
+  // obstructing much content so we can remain visible and quit early.
+  if (model_.ui_mode() == AssistantUiMode::kMiniUi)
+    return;
 
   const ui::LocatedEvent* located_event = event.AsLocatedEvent();
   const gfx::Point screen_location =
