@@ -531,7 +531,7 @@
     },
     {
       name: "FormAssociatedCustomElements",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "FormDataEvent",
