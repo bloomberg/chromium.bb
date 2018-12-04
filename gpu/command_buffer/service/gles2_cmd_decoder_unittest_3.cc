@@ -65,6 +65,12 @@ void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix4fvImmediate, 0>(
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix2x3fvImmediate, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT2x3);
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix2x4fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT2x4);

@@ -528,6 +528,30 @@ void ShallowFlushCHROMIUM() override;
 
 void OrderingBarrierCHROMIUM() override;
 
+void MultiDrawArraysWEBGL(GLenum mode,
+                          const GLint* firsts,
+                          const GLsizei* counts,
+                          GLsizei drawcount) override;
+
+void MultiDrawArraysInstancedWEBGL(GLenum mode,
+                                   const GLint* firsts,
+                                   const GLsizei* counts,
+                                   const GLsizei* instance_counts,
+                                   GLsizei drawcount) override;
+
+void MultiDrawElementsWEBGL(GLenum mode,
+                            const GLsizei* counts,
+                            GLenum type,
+                            const GLsizei* offsets,
+                            GLsizei drawcount) override;
+
+void MultiDrawElementsInstancedWEBGL(GLenum mode,
+                                     const GLsizei* counts,
+                                     GLenum type,
+                                     const GLsizei* offsets,
+                                     const GLsizei* instance_counts,
+                                     GLsizei drawcount) override;
+
 void StencilFunc(GLenum func, GLint ref, GLuint mask) override;
 
 void StencilFuncSeparate(GLenum face,

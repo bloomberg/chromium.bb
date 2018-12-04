@@ -2857,6 +2857,80 @@ _FUNCTION_INFO = {
     'trace_level': 2,
     'es31': True
   },
+  'MultiDrawArraysWEBGL': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t firsts_shm_id, uint32_t firsts_shm_offset, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'firsts': 'drawcount * sizeof(GLint)',
+      'counts': 'drawcount * sizeof(GLsizei)', },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'trace_level': 2,
+  },
+  'MultiDrawArraysInstancedWEBGL': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t firsts_shm_id, uint32_t firsts_shm_offset, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'uint32_t instance_counts_shm_id, '
+                'uint32_t instance_counts_shm_offset, GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw_instanced',
+    'extension_flag': 'webgl_multi_draw_instanced',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'firsts': 'drawcount * sizeof(GLint)',
+      'counts': 'drawcount * sizeof(GLsizei)',
+      'instance_counts': 'drawcount * sizeof(GLsizei)', },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'trace_level': 2,
+  },
+  'MultiDrawElementsWEBGL': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'GLenumIndexType type, '
+                'uint32_t offsets_shm_id, uint32_t offsets_shm_offset, '
+                'GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'webgl_multi_draw',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'counts': 'drawcount * sizeof(GLsizei)',
+      'offsets': 'drawcount * sizeof(GLsizei)', },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'trace_level': 2,
+  },
+  'MultiDrawElementsInstancedWEBGL': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'GLenumIndexType type, '
+                'uint32_t offsets_shm_id, uint32_t offsets_shm_offset, '
+                'uint32_t instance_counts_shm_id, '
+                'uint32_t instance_counts_shm_offset, GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw_instanced',
+    'extension_flag': 'webgl_multi_draw_instanced',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'counts': 'drawcount * sizeof(GLsizei)',
+      'offsets': 'drawcount * sizeof(GLsizei)',
+      'instance_counts': 'drawcount * sizeof(GLsizei)', },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'trace_level': 2,
+  },
   'OverlayPromotionHintCHROMIUM': {
     'decoder_func': 'DoOverlayPromotionHintCHROMIUM',
     'extension': "CHROMIUM_uniform_stream_texture_matrix",

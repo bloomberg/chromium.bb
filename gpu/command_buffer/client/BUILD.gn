@@ -85,6 +85,7 @@ jumbo_source_set("client_sources") {
     "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",
+    "transfer_buffer_cmd_copy_helpers.h",
   ]
 
   configs += [ "//gpu:gpu_implementation" ]

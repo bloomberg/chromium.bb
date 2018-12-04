@@ -40,6 +40,7 @@
 #include "gpu/command_buffer/client/readback_buffer_shadow_tracker.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/client/transfer_buffer_cmd_copy_helpers.h"
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -2136,22 +2137,16 @@ void GLES2Implementation::BufferSubDataHelperImpl(
   DCHECK(buffer);
   DCHECK_GT(size, 0);
 
-  const int8_t* source = static_cast<const int8_t*>(data);
-  while (size) {
-    if (!buffer->valid() || buffer->size() == 0) {
-      buffer->Reset(size);
-      if (!buffer->valid()) {
-        return;
-      }
-    }
-    memcpy(buffer->address(), source, buffer->size());
-    helper_->BufferSubData(target, offset, buffer->size(), buffer->shm_id(),
-                           buffer->offset());
+  auto DoBufferSubData = [&](const std::array<uint32_t, 1>&,
+                             uint32_t copy_offset, uint32_t) {
+    helper_->BufferSubData(target, offset + copy_offset, buffer->size(),
+                           buffer->shm_id(), buffer->offset());
     InvalidateReadbackBufferShadowDataCHROMIUM(GetBoundBufferHelper(target));
-    offset += buffer->size();
-    source += buffer->size();
-    size -= buffer->size();
-    buffer->Release();
+  };
+
+  if (!TransferArraysAndExecute(size, buffer, DoBufferSubData,
+                                static_cast<const int8_t*>(data))) {
+    SetGLError(GL_OUT_OF_MEMORY, "glBufferSubData", "out of memory");
   }
 }
 
@@ -2165,6 +2160,230 @@ void GLES2Implementation::BufferSubData(GLenum target,
                      << offset << ", " << size << ", "
                      << static_cast<const void*>(data) << ")");
   BufferSubDataHelper(target, offset, size, data);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawArraysWEBGLHelper(GLenum mode,
+                                                     const GLint* firsts,
+                                                     const GLsizei* counts,
+                                                     GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(drawcount, firsts, counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
+  // this helper
+  auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawArraysWEBGL(mode, buffer.shm_id(),
+                                  buffer.offset() + offsets[0], buffer.shm_id(),
+                                  buffer.offset() + offsets[1], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts,
+                                counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysWEBGL", "out of memory");
+  }
+}
+
+void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size =
+      ComputeCombinedCopySize(drawcount, firsts, counts, instance_counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
+  // this helper
+  auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawArraysInstancedWEBGL(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
+        buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts, counts,
+                                instance_counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysInstancedWEBGL",
+               "out of memory");
+  }
+}
+
+void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
+                                                       const GLsizei* counts,
+                                                       GLenum type,
+                                                       const GLsizei* offsets,
+                                                       GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(drawcount, counts, offsets);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
+  // this helper
+  auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawElementsWEBGL(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
+        buffer.shm_id(), buffer.offset() + offsets[1], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
+                                offsets)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsWEBGL", "out of memory");
+  }
+}
+
+void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size =
+      ComputeCombinedCopySize(drawcount, counts, offsets, instance_counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+  // TODO(crbug.com/890539): Increment a base gl_DrawID for multiple calls to
+  // this helper
+  auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawElementsInstancedWEBGL(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
+        buffer.shm_id(), buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
+                                offsets, instance_counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsInstancedWEBGL",
+               "out of memory");
+  }
+}
+
+void GLES2Implementation::MultiDrawArraysWEBGL(GLenum mode,
+                                               const GLint* firsts,
+                                               const GLsizei* counts,
+                                               GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawArraysWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << firsts
+                     << ", " << counts << ", " << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawArraysWEBGL", "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawArraysWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawArraysWEBGLHelper(mode, firsts, counts, drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawArraysInstancedWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawArraysInstancedWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << firsts
+                     << ", " << counts << ", " << instance_counts << ", "
+                     << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawArraysWEBGLInstanced",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawArraysWEBGLInstanced",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawArraysInstancedWEBGLHelper(mode, firsts, counts, instance_counts,
+                                      drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawElementsWEBGL(GLenum mode,
+                                                 const GLsizei* counts,
+                                                 GLenum type,
+                                                 const GLsizei* offsets,
+                                                 GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawElementsWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << counts
+                     << ", " << GLES2Util::GetStringIndexType(type) << ", "
+                     << offsets << ", " << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawElementsWEBGL", "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsWEBGL",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawElementsWEBGLHelper(mode, counts, type, offsets, drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawElementsInstancedWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawElementsInstancedWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << counts
+                     << ", " << GLES2Util::GetStringIndexType(type) << ", "
+                     << offsets << ", " << instance_counts << ", " << drawcount
+                     << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawElementsInstancedWEBGL",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsInstancedWEBGL",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsInstancedWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawElementsInstancedWEBGLHelper(mode, counts, type, offsets,
+                                        instance_counts, drawcount);
   CheckGLError();
 }
 

@@ -2298,6 +2298,90 @@ TEST_F(GLES2FormatTest, ShaderSourceBucket) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, MultiDrawArraysWEBGL) {
+  cmds::MultiDrawArraysWEBGL& cmd = *GetBufferAs<cmds::MultiDrawArraysWEBGL>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15), static_cast<GLsizei>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawArraysWEBGL::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.firsts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.firsts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MultiDrawArraysInstancedWEBGL) {
+  cmds::MultiDrawArraysInstancedWEBGL& cmd =
+      *GetBufferAs<cmds::MultiDrawArraysInstancedWEBGL>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16),
+              static_cast<uint32_t>(17), static_cast<GLsizei>(18));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawArraysInstancedWEBGL::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.firsts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.firsts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.instance_counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(17), cmd.instance_counts_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(18), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MultiDrawElementsWEBGL) {
+  cmds::MultiDrawElementsWEBGL& cmd =
+      *GetBufferAs<cmds::MultiDrawElementsWEBGL>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<uint32_t>(12), static_cast<uint32_t>(13),
+                           static_cast<GLenum>(14), static_cast<uint32_t>(15),
+                           static_cast<uint32_t>(16), static_cast<GLsizei>(17));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::MultiDrawElementsWEBGL::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<GLenum>(14), cmd.type);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.offsets_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.offsets_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(17), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, MultiDrawElementsInstancedWEBGL) {
+  cmds::MultiDrawElementsInstancedWEBGL& cmd =
+      *GetBufferAs<cmds::MultiDrawElementsInstancedWEBGL>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<uint32_t>(12), static_cast<uint32_t>(13),
+                           static_cast<GLenum>(14), static_cast<uint32_t>(15),
+                           static_cast<uint32_t>(16), static_cast<uint32_t>(17),
+                           static_cast<uint32_t>(18), static_cast<GLsizei>(19));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::MultiDrawElementsInstancedWEBGL::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<GLenum>(14), cmd.type);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.offsets_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.offsets_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(17), cmd.instance_counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(18), cmd.instance_counts_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(19), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, StencilFunc) {
   cmds::StencilFunc& cmd = *GetBufferAs<cmds::StencilFunc>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),

@@ -1506,6 +1506,70 @@ void ShaderSourceBucket(GLuint shader, uint32_t str_bucket_id) {
   }
 }
 
+void MultiDrawArraysWEBGL(GLenum mode,
+                          uint32_t firsts_shm_id,
+                          uint32_t firsts_shm_offset,
+                          uint32_t counts_shm_id,
+                          uint32_t counts_shm_offset,
+                          GLsizei drawcount) {
+  gles2::cmds::MultiDrawArraysWEBGL* c =
+      GetCmdSpace<gles2::cmds::MultiDrawArraysWEBGL>();
+  if (c) {
+    c->Init(mode, firsts_shm_id, firsts_shm_offset, counts_shm_id,
+            counts_shm_offset, drawcount);
+  }
+}
+
+void MultiDrawArraysInstancedWEBGL(GLenum mode,
+                                   uint32_t firsts_shm_id,
+                                   uint32_t firsts_shm_offset,
+                                   uint32_t counts_shm_id,
+                                   uint32_t counts_shm_offset,
+                                   uint32_t instance_counts_shm_id,
+                                   uint32_t instance_counts_shm_offset,
+                                   GLsizei drawcount) {
+  gles2::cmds::MultiDrawArraysInstancedWEBGL* c =
+      GetCmdSpace<gles2::cmds::MultiDrawArraysInstancedWEBGL>();
+  if (c) {
+    c->Init(mode, firsts_shm_id, firsts_shm_offset, counts_shm_id,
+            counts_shm_offset, instance_counts_shm_id,
+            instance_counts_shm_offset, drawcount);
+  }
+}
+
+void MultiDrawElementsWEBGL(GLenum mode,
+                            uint32_t counts_shm_id,
+                            uint32_t counts_shm_offset,
+                            GLenum type,
+                            uint32_t offsets_shm_id,
+                            uint32_t offsets_shm_offset,
+                            GLsizei drawcount) {
+  gles2::cmds::MultiDrawElementsWEBGL* c =
+      GetCmdSpace<gles2::cmds::MultiDrawElementsWEBGL>();
+  if (c) {
+    c->Init(mode, counts_shm_id, counts_shm_offset, type, offsets_shm_id,
+            offsets_shm_offset, drawcount);
+  }
+}
+
+void MultiDrawElementsInstancedWEBGL(GLenum mode,
+                                     uint32_t counts_shm_id,
+                                     uint32_t counts_shm_offset,
+                                     GLenum type,
+                                     uint32_t offsets_shm_id,
+                                     uint32_t offsets_shm_offset,
+                                     uint32_t instance_counts_shm_id,
+                                     uint32_t instance_counts_shm_offset,
+                                     GLsizei drawcount) {
+  gles2::cmds::MultiDrawElementsInstancedWEBGL* c =
+      GetCmdSpace<gles2::cmds::MultiDrawElementsInstancedWEBGL>();
+  if (c) {
+    c->Init(mode, counts_shm_id, counts_shm_offset, type, offsets_shm_id,
+            offsets_shm_offset, instance_counts_shm_id,
+            instance_counts_shm_offset, drawcount);
+  }
+}
+
 void StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::cmds::StencilFunc* c = GetCmdSpace<gles2::cmds::StencilFunc>();
   if (c) {
