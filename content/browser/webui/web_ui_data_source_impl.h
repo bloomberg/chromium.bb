@@ -50,6 +50,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
   void UseGzip(const std::vector<std::string>& excluded_paths) override;
+  std::string GetSource() const override;
 
   // URLDataSourceImpl:
   const ui::TemplateReplacements* GetReplacements() const override;
@@ -80,7 +81,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
 
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
-  std::string GetSource() const;
   std::string GetMimeType(const std::string& path) const;
   void StartDataRequest(
       const std::string& path,

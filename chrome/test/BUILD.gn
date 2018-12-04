@@ -3244,6 +3244,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_bar_unittest.h",
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/webui/browsing_history_handler_unittest.cc",
+      "../browser/ui/webui/dark_mode_handler_unittest.cc",
       "../browser/ui/webui/help/version_updater_chromeos_unittest.cc",
       "../browser/ui/webui/md_downloads/downloads_list_tracker_unittest.cc",
       "../browser/ui/webui/md_downloads/md_downloads_dom_handler_unittest.cc",
@@ -3310,6 +3311,7 @@ test("unit_tests") {
       "//components/signin/core/browser:signin_buildflags",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
+      "//ui/native_theme:test_support",
     ]
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]

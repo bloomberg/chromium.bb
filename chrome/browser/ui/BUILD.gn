@@ -1074,6 +1074,8 @@ jumbo_split_static_library("ui") {
       "webui/chrome_web_contents_handler.h",
       "webui/constrained_web_dialog_delegate_base.cc",
       "webui/constrained_web_dialog_delegate_base.h",
+      "webui/dark_mode_handler.cc",
+      "webui/dark_mode_handler.h",
       "webui/devtools_ui.cc",
       "webui/devtools_ui.h",
       "webui/extensions/extensions_internals_source.cc",
