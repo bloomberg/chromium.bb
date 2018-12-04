@@ -118,6 +118,10 @@ int PreviewServerLoadshedMaxSeconds();
 // The experimental config to send to the previews server.
 std::string LitePageRedirectPreviewExperiment();
 
+// Returns true if we should only report metrics and not trigger when the Lite
+// Page Redirect preview is enabled.
+bool IsInLitePageRedirectControl();
+
 // The threshold of EffectiveConnectionType above which preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(

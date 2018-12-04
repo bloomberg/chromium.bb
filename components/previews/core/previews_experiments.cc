@@ -206,6 +206,11 @@ std::string LitePageRedirectPreviewExperiment() {
                                           "lite_page_preview_experiment");
 }
 
+bool IsInLitePageRedirectControl() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "control_group", false);
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {
