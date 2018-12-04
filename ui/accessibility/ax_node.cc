@@ -585,13 +585,19 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 // Is not required for set's role to match node's role.
 AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
+
   // Continue walking up while parent is invalid, ignored, or is a generic
   // container.
-  while ((result && result->data().HasState(ax::mojom::State::kIgnored)) ||
-         result->data().role == ax::mojom::Role::kGenericContainer ||
-         result->data().role == ax::mojom::Role::kIgnored) {
+  while (result && (result->data().HasState(ax::mojom::State::kIgnored) ||
+                    result->data().role == ax::mojom::Role::kGenericContainer ||
+                    result->data().role == ax::mojom::Role::kIgnored)) {
     result = result->parent();
   }
+
+  // If the parent of this node isn't a valid ordered set, return nullptr
+  if (result && !IsSetLike(result->data().role))
+    return nullptr;
+
   return result;
 }
 
