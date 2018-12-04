@@ -189,6 +189,8 @@ void FakeBiodClient::CancelEnrollSession(VoidDBusMethodCallback callback) {
 }
 
 void FakeBiodClient::EndAuthSession(VoidDBusMethodCallback callback) {
+  DCHECK_EQ(current_session_, FingerprintSession::AUTH);
+
   current_session_ = FingerprintSession::NONE;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
