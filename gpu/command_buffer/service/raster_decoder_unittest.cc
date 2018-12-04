@@ -138,6 +138,7 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
 }
 
 TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
+  raster_decoder_context_state_->need_context_state_reset = true;
   // Create uninitialized source texture.
   GLuint source_texture_id = kNewClientId;
   CreateFakeTexture(source_texture_id, kNewServiceId,
@@ -310,13 +311,6 @@ TEST_F(RasterDecoderOOPTest, StateRestoreAcrossDecoders) {
   decoder2->SetUpForRasterCHROMIUMForTest();
   EXPECT_FALSE(error::IsError(ExecuteCmd(decoder2.get(), end_raster_cmd)));
   EXPECT_TRUE(context_state_->need_context_state_reset);
-
-  // Now process a command which requires consistent state.
-  LoseContextCHROMIUM lose_context_cmd;
-  lose_context_cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB,
-                        GL_INNOCENT_CONTEXT_RESET_ARB);
-  EXPECT_FALSE(error::IsError(ExecuteCmd(decoder2.get(), lose_context_cmd)));
-  EXPECT_FALSE(context_state_->need_context_state_reset);
 
   decoder1->Destroy(true);
   context_state_->context->MakeCurrent(context_state_->surface.get());

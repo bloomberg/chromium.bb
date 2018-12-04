@@ -253,14 +253,13 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
-  scoped_refptr<raster::RasterDecoderContextState> context_state =
-      new raster::RasterDecoderContextState(
-          new gl::GLShareGroup(), surface_, context_,
-          feature_info->workarounds().use_virtualized_gl_contexts,
-          base::DoNothing());
+  raster_decoder_context_state_ = new raster::RasterDecoderContextState(
+      new gl::GLShareGroup(), surface_, context_,
+      feature_info->workarounds().use_virtualized_gl_contexts,
+      base::DoNothing());
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),
-                                       std::move(context_state)));
+                                       raster_decoder_context_state_));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
@@ -400,7 +399,8 @@ void RasterDecoderTestBase::SetScopedTextureBinderExpectations(GLenum target) {
       .Times(Between(1, 2))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(target, Ne(0U))).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(target, 0)).Times(1).RetiresOnSaturation();
+  if (!raster_decoder_context_state_->need_context_state_reset)
+    EXPECT_CALL(*gl_, BindTexture(target, 0)).Times(1).RetiresOnSaturation();
 }
 
 void RasterDecoderTestBase::SetupClearTextureExpectations(
@@ -420,7 +420,7 @@ void RasterDecoderTestBase::SetupClearTextureExpectations(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, _))
-      .Times(2)
+      .Times(1)
       .RetiresOnSaturation();
   if (bound_pixel_unpack_buffer) {
     EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_UNPACK_BUFFER, _))

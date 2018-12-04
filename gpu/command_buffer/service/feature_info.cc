@@ -1493,7 +1493,10 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.ext_robustness =
       gfx::HasExtension(extensions, "GL_EXT_robustness");
   feature_flags_.ext_pixel_buffer_object =
+      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+  feature_flags_.ext_unpack_subimage =
+      gfx::HasExtension(extensions, "GL_EXT_unpack_subimage");
   feature_flags_.oes_rgb8_rgba8 =
       gfx::HasExtension(extensions, "GL_OES_rgb8_rgba8");
   feature_flags_.angle_robust_resource_initialization =
