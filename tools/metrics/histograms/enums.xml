@@ -34750,6 +34750,8 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="A URL was prefetched"/>
   <int value="5"
       label="An origin was preconnected to when tab was foregrounded"/>
+  <int value="6"
+      label="An origin was preconnected to when app was foregrounded"/>
 </enum>
 
 <enum name="NavigationScheme">
