@@ -21,6 +21,18 @@ message App {
     repeated Entry values = 1;
   }
 
+  // A repeated "localestring". Entries with a locale should set the |locale|
+  // field to the value inside the [], e.g for the key "Name[fr]", |locale|
+  // should be "fr"; for the default entry, |locale| should be empty. The
+  // browser is responsible for mapping this to something it can use.
+  message LocaleStrings {
+    message Entry {
+      string locale = 1;
+      repeated string value = 2;
+    }
+    repeated Entry values = 1;
+  }
+
   string desktop_file_id = 1;
 
   // These fields map directly to keys from the Desktop Entry spec.
@@ -30,6 +42,7 @@ message App {
   bool no_display = 5;
   string startup_wm_class = 6;
   bool startup_notify = 7;
+  LocaleStrings keywords = 9;
 
   // If set, the package_id of the installed package that owns this .desktop
   // file. If not set, the .desktop file is not owned by an installed package.
