@@ -113,6 +113,9 @@ VolumeManagerCommon.RootType = {
 
   // Root directory of a Computer.
   COMPUTER: 'computer',
+
+  // Root directory of an external media folder under computers grand root.
+  EXTERNAL_MEDIA: 'external_media',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -146,6 +149,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.MY_FILES,
   VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
   VolumeManagerCommon.RootType.COMPUTER,
+  VolumeManagerCommon.RootType.EXTERNAL_MEDIA,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -282,6 +286,7 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
     case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:
     case VolumeManagerCommon.RootType.COMPUTER:
     case VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT:
+    case VolumeManagerCommon.RootType.EXTERNAL_MEDIA:
       return VolumeManagerCommon.VolumeType.DRIVE;
     case VolumeManagerCommon.RootType.MTP:
       return VolumeManagerCommon.VolumeType.MTP;
