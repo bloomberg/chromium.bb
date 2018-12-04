@@ -14,6 +14,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1339,7 +1340,35 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTrialOverrideTest, Test) {
       policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://bar.com/"))));
 }
 
-// Ensure that --disable-site-isolation-trials does not override the flag.
+// Ensure that --disable-site-isolation-trials and/or
+// --disable-site-isolation-for-enterprise-policy do not override the flag.
+class IsolatedOriginPolicyOverrideTest : public IsolatedOriginFieldTrialTest {
+ public:
+  IsolatedOriginPolicyOverrideTest() {}
+
+  ~IsolatedOriginPolicyOverrideTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginPolicyOverrideTest);
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedOriginPolicyOverrideTest, Test) {
+  if (AreAllSitesIsolatedForTesting())
+    return;
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_FALSE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("https://field.trial.com/"))));
+  EXPECT_FALSE(
+      policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://bar.com/"))));
+}
+
+// Ensure that --disable-site-isolation-trials and/or
+// DisableSiteIsolationForPolicy do not override the flag.
 class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
  public:
   IsolatedOriginNoFlagOverrideTest() {}
@@ -1349,6 +1378,7 @@ class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
   }
 
  private:

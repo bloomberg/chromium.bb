@@ -490,7 +490,7 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   }
 
   if (disable_site_isolation) {
-    user_flags->AppendSwitch(::switches::kDisableSiteIsolation);
+    user_flags->AppendSwitch(::switches::kDisableSiteIsolationForPolicy);
   }
 
   if (use_policy_sentinels) {

@@ -794,6 +794,11 @@ const char kSitePerProcess[]                = "site-per-process";
 // backcompatibility of chrome://flags.
 const char kDisableSiteIsolation[] = "disable-site-isolation-trials";
 
+// Just like kDisableSiteIsolation, but doesn't show the "stability and security
+// will suffer" butter bar warning.
+const char kDisableSiteIsolationForPolicy[] =
+    "disable-site-isolation-for-policy";
+
 // Specifies if the browser should start in fullscreen mode, like if the user
 // had pressed F11 right after startup.
 const char kStartFullscreen[] = "start-fullscreen";

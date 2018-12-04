@@ -220,6 +220,7 @@ extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];
 CONTENT_EXPORT extern const char kDisableSiteIsolation[];
+CONTENT_EXPORT extern const char kDisableSiteIsolationForPolicy[];
 CONTENT_EXPORT extern const char kStartFullscreen[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 extern const char kSkiaFontCacheLimitMb[];

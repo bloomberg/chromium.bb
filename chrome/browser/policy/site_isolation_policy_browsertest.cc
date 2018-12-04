@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -138,13 +139,15 @@ class WebDriverSitePerProcessPolicyBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebDriverSitePerProcessPolicyBrowserTest);
 };
 
-// Ensure that --disable-site-isolation-trials does not override policies.
+// Ensure that --disable-site-isolation-trials and/or
+// --disable-site-isolation-for-enterprise-policy do not override policies.
 class NoOverrideSitePerProcessPolicyBrowserTest
     : public SitePerProcessPolicyBrowserTestEnabled {
  protected:
   NoOverrideSitePerProcessPolicyBrowserTest() {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
   }
 
  private:
@@ -208,8 +211,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
   // Skip this test if all sites are isolated.
   if (content::AreAllSitesIsolatedForTesting())
     return;
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+
+  // Policy should inject kDisableSiteIsolationForPolicy rather than
+  // kDisableSiteIsolation switch.
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSiteIsolation));
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSiteIsolationForPolicy));
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", false},
       {"http://example.org/pumpkins.html", false},
@@ -220,6 +231,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
 IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest, NoPolicyNoTrialsFlags) {
   // The switch to disable Site Isolation should be missing by default (i.e.
   // without an explicit enterprise policy).
-  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSiteIsolation));
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSiteIsolationForPolicy));
+  EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
 }

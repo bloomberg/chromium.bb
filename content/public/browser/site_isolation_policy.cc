@@ -35,6 +35,11 @@ bool IsSiteIsolationDisabled() {
     return true;
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolationForPolicy)) {
+    return true;
+  }
+
   return GetContentClient() &&
          GetContentClient()->browser()->ShouldDisableSiteIsolation();
 }
