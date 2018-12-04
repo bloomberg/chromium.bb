@@ -206,7 +206,7 @@ def chromium_save_isolated(isolated, data, path_variables, algo):
         isolated_format.hash_file(slavepath, algo))
     files.append(os.path.basename(slavepath))
 
-  files.extend(isolated_format.save_isolated(isolated, data))
+  isolated_format.save_isolated(isolated, data)
   return files
 
 

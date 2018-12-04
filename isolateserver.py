@@ -279,7 +279,7 @@ def zip_decompress(
     raise IOError('Not all data was decompressed')
 
 
-def get_zip_compression_level(filename):
+def _get_zip_compression_level(filename):
   """Given a filename calculates the ideal zip compression level to use."""
   file_ext = os.path.splitext(filename)[1].lower()
   # TODO(csharp): Profile to find what compression level works best.
@@ -302,7 +302,7 @@ def create_directories(base_directory, files):
         fs.mkdir(abs_d)
 
 
-def create_symlinks(base_directory, files):
+def _create_symlinks(base_directory, files):
   """Creates any symlinks needed by the given set of files."""
   for filepath, properties in files:
     if 'l' not in properties:
@@ -333,7 +333,7 @@ class FileItem(isolate_storage.Item):
         size if size is not None else fs.stat(path).st_size,
         high_priority)
     self.path = path
-    self.compression_level = get_zip_compression_level(path)
+    self.compression_level = _get_zip_compression_level(path)
 
   def content(self):
     return file_read(self.path)
@@ -1120,7 +1120,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
     # Create file system hierarchy.
     file_path.ensure_tree(outdir)
     create_directories(outdir, bundle.files)
-    create_symlinks(outdir, bundle.files.iteritems())
+    _create_symlinks(outdir, bundle.files.iteritems())
 
     # Ensure working directory exists.
     cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))

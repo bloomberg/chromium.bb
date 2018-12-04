@@ -877,7 +877,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
       with cache.getfileobj(i.digest) as f:
         actual.append(f.read())
 
-    self.assertEqual([i.buffer for i in items], actual)
+    self.assertEqual([''.join(i.content()) for i in items], actual)
 
   def test_push_and_fetch(self):
     self.run_push_and_fetch_test('default')
@@ -1203,8 +1203,8 @@ def get_storage(server_ref):
 
     @staticmethod
     def upload_items(items):
-      # Always returns the second item as not present.
-      return [list(items)[1]]
+      # Always returns the last item as not present.
+      return [list(items)[-1]]
   return StorageFake()
 
 
