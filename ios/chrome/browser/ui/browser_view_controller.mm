@@ -1726,6 +1726,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->BrowserTraitCollectionChangedBegin();
+
   // TODO(crbug.com/527092): - traitCollectionDidChange: is not always forwarded
   // because in some cases the presented view controller isn't a child of the
   // BVC in the view controller hierarchy (some intervening object isn't a
@@ -1769,6 +1773,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   }
 
   [self setNeedsStatusBarAppearanceUpdate];
+
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->BrowserTraitCollectionChangedEnd();
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

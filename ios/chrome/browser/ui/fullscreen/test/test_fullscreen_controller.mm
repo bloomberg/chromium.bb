@@ -57,6 +57,10 @@ void TestFullscreenController::DecrementDisabledCounter() {
     model_->DecrementDisabledCounter();
 }
 
+void TestFullscreenController::BrowserTraitCollectionChangedBegin() {}
+
+void TestFullscreenController::BrowserTraitCollectionChangedEnd() {}
+
 CGFloat TestFullscreenController::GetProgress() const {
   return model_ ? model_->progress() : 0.0;
 }

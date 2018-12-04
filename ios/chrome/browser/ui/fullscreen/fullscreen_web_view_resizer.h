@@ -27,6 +27,10 @@ class WebState;
 // WebState currently displayed.
 @property(nonatomic, assign) web::WebState* webState;
 
+// Whether the content offset should be matching the frame changes. Default is
+// YES.
+@property(nonatomic, assign) BOOL compensateFrameChangeByOffset;
+
 // Updates the WebState view, based on the current state of the webState and the
 // model.
 - (void)updateForCurrentState;
