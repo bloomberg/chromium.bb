@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 
-class MOJO_CPP_BINDINGS_EXPORT FilterChain : public MessageReceiver {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) FilterChain : public MessageReceiver {
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.

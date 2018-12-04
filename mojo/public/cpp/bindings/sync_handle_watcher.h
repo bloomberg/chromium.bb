@@ -5,10 +5,10 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_WATCHER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_WATCHER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/sync_handle_registry.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -26,7 +26,7 @@ namespace mojo {
 // associated endpoints on different sequence.
 //
 // This class is not thread safe.
-class MOJO_CPP_BINDINGS_EXPORT SyncHandleWatcher {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncHandleWatcher {
  public:
   // Note: |handle| must outlive this object.
   SyncHandleWatcher(const Handle& handle,

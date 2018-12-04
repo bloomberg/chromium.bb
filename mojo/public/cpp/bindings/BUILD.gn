@@ -117,7 +117,6 @@ component("bindings") {
     "associated_interface_request.h",
     "binding.h",
     "binding_set.h",
-    "bindings_export.h",
     "callback_helpers.h",
     "connection_error_callback.h",
     "connector.h",
@@ -204,7 +203,7 @@ component("bindings") {
     "//ipc:native_handle_type_converters",
   ]
 
-  defines = [ "MOJO_CPP_BINDINGS_IMPLEMENTATION" ]
+  defines = [ "IS_MOJO_CPP_BINDINGS_IMPL" ]
 }
 
 source_set("struct_traits") {
