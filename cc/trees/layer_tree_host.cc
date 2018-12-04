@@ -1565,16 +1565,24 @@ Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
 void LayerTreeHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type,
                                     Layer* layer) {
+  // When using layer lists only scrollable layers should be registered.
+  DCHECK(!IsUsingLayerLists() || layer->inputs_.scrollable);
   element_layers_map_[element_id] = layer;
-  elements_in_property_trees_.insert(element_id);
-  mutator_host_->RegisterElement(element_id, list_type);
+
+  // Animation ElementIds are unregistered by |SetActiveRegisteredElementIds|
+  // when using layer lists.
+  if (!IsUsingLayerLists())
+    mutator_host_->RegisterElement(element_id, list_type);
 }
 
 void LayerTreeHost::UnregisterElement(ElementId element_id,
                                       ElementListType list_type) {
-  mutator_host_->UnregisterElement(element_id, list_type);
+  // Animation ElementIds are unregistered by |SetActiveRegisteredElementIds|
+  // when using layer lists.
+  if (!IsUsingLayerLists())
+    mutator_host_->UnregisterElement(element_id, list_type);
+
   element_layers_map_.erase(element_id);
-  elements_in_property_trees_.erase(element_id);
 }
 
 void LayerTreeHost::SetActiveRegisteredElementIds(const ElementIdSet& ids) {
@@ -1584,8 +1592,10 @@ void LayerTreeHost::SetActiveRegisteredElementIds(const ElementIdSet& ids) {
   for (auto id_iter = elements_in_property_trees_.begin();
        id_iter != elements_in_property_trees_.end();) {
     const auto& id = *(id_iter++);
-    if (!ids.count(id))
-      UnregisterElement(id, ElementListType::ACTIVE);
+    if (!ids.count(id)) {
+      mutator_host_->UnregisterElement(id, ElementListType::ACTIVE);
+      elements_in_property_trees_.erase(id);
+    }
   }
 
   // Register new ids that were not already registered.
