@@ -31,11 +31,11 @@ class SVGDefsElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGDefsElement);
 
+  explicit SVGDefsElement(Document&);
+
   bool SupportsFocus() const override { return false; }
 
  private:
-  explicit SVGDefsElement(Document&);
-
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 

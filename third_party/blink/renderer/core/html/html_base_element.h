@@ -36,6 +36,8 @@ class HTMLBaseElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLBaseElement);
 
+  explicit HTMLBaseElement(Document&);
+
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
@@ -44,8 +46,6 @@ class HTMLBaseElement final : public HTMLElement {
   void setHref(const USVStringOrTrustedURL&, ExceptionState&);
 
  private:
-  explicit HTMLBaseElement(Document&);
-
   bool IsURLAttribute(const Attribute&) const override;
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;

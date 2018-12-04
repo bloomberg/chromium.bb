@@ -34,10 +34,9 @@ class HTMLLegendElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLLegendElement);
 
-  HTMLFormElement* form() const;
-
- private:
   explicit HTMLLegendElement(Document&);
+
+  HTMLFormElement* form() const;
 };
 
 }  // namespace blink

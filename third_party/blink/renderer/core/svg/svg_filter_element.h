@@ -45,6 +45,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   DECLARE_NODE_FACTORY(SVGFilterElement);
   void Trace(blink::Visitor*) override;
 
+  explicit SVGFilterElement(Document&);
   ~SVGFilterElement() override;
 
   SVGAnimatedLength* x() const { return x_.Get(); }
@@ -69,8 +70,6 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   LocalSVGResource* AssociatedResource() const;
 
  private:
-  explicit SVGFilterElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

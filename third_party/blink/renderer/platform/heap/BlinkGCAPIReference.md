@@ -155,8 +155,8 @@ class B : public GarbageCollected<B>, public P {
 
 void someFunction()
 {
-    new A; // OK, A can be instantiated.
-    // new R; // BAD, R has pure virtual functions.
+    MakeGarbageCollected<A>(); // OK, A can be instantiated.
+    // MakeGarbageCollected<R>(); // BAD, R has pure virtual functions.
 }
 ```
 
@@ -254,7 +254,7 @@ On-stack references to on-heap objects must be raw pointers.
 ```c++
 void someFunction()
 {
-    SomeGarbageCollectedClass* object = new SomeGarbageCollectedClass; // OK, retained by a pointer.
+    SomeGarbageCollectedClass* object = MakeGarbageCollected<SomeGarbageCollectedClass>(); // OK, retained by a pointer.
     ...
 }
 // OK to leave the object behind. The Blink GC system will free it up when it becomes unused.

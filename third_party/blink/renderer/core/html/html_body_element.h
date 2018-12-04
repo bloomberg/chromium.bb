@@ -37,6 +37,8 @@ class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
 
  public:
   DECLARE_NODE_FACTORY(HTMLBodyElement);
+
+  explicit HTMLBodyElement(Document&);
   ~HTMLBodyElement() override;
 
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur, kBlur);
@@ -48,8 +50,6 @@ class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange);
 
  private:
-  explicit HTMLBodyElement(Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

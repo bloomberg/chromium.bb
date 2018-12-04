@@ -43,7 +43,10 @@ class CORE_EXPORT HTMLIFrameElement final
  public:
   DECLARE_NODE_FACTORY(HTMLIFrameElement);
   void Trace(blink::Visitor*) override;
+
+  explicit HTMLIFrameElement(Document&);
   ~HTMLIFrameElement() override;
+
   DOMTokenList* sandbox() const;
   // Support JS introspection of frame policy (e.g. feature policy)
   Policy* policy();
@@ -59,8 +62,6 @@ class CORE_EXPORT HTMLIFrameElement final
   }
 
  private:
-  explicit HTMLIFrameElement(Document&);
-
   void SetCollapsed(bool) override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

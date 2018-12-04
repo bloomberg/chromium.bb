@@ -33,7 +33,6 @@ class HTMLDirectoryElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLDirectoryElement);
 
- private:
   explicit HTMLDirectoryElement(Document&);
 };
 

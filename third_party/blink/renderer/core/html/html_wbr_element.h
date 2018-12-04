@@ -41,9 +41,9 @@ class HTMLWBRElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLWBRElement);
 
- private:
   explicit HTMLWBRElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 

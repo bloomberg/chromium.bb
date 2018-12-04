@@ -32,13 +32,14 @@ class SVGFEComponentTransferElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGFEComponentTransferElement);
+
+  explicit SVGFEComponentTransferElement(Document&);
+
   SVGAnimatedString* in1() { return in1_.Get(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEComponentTransferElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 

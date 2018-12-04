@@ -89,6 +89,8 @@ class SliderContainerElement final : public HTMLDivElement {
     kNoMove,
   };
 
+  explicit SliderContainerElement(Document&);
+
   DECLARE_NODE_FACTORY(SliderContainerElement);
   HTMLInputElement* HostInput() const;
   void DefaultEventHandler(Event&) override;
@@ -98,7 +100,6 @@ class SliderContainerElement final : public HTMLDivElement {
   void RemoveAllEventListeners() override;
 
  private:
-  explicit SliderContainerElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   const AtomicString& ShadowPseudoId() const override;

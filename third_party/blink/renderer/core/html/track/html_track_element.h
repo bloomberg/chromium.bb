@@ -44,6 +44,8 @@ class HTMLTrackElement final : public HTMLElement,
  public:
   DECLARE_NODE_FACTORY(HTMLTrackElement);
 
+  explicit HTMLTrackElement(Document&);
+
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
@@ -59,7 +61,6 @@ class HTMLTrackElement final : public HTMLElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLTrackElement(Document&);
   ~HTMLTrackElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

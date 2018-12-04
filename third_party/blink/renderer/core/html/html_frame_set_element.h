@@ -37,6 +37,8 @@ class HTMLFrameSetElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLFrameSetElement);
 
+  explicit HTMLFrameSetElement(Document&);
+
   bool HasFrameBorder() const { return frameborder_; }
   bool NoResize() const { return noresize_; }
 
@@ -64,8 +66,6 @@ class HTMLFrameSetElement final : public HTMLElement {
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange);
 
  private:
-  explicit HTMLFrameSetElement(Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

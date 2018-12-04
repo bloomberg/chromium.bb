@@ -31,11 +31,11 @@ class SVGTitleElement final : public SVGElement {
  public:
   DECLARE_NODE_FACTORY(SVGTitleElement);
 
+  explicit SVGTitleElement(Document&);
+
   void SetText(const String&);
 
  private:
-  explicit SVGTitleElement(Document&);
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;

@@ -34,9 +34,9 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
  public:
   DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
 
- private:
   explicit SVGAnimateTransformElement(Document&);
 
+ private:
   bool HasValidTarget() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

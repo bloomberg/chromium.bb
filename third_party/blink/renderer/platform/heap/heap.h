@@ -533,9 +533,7 @@ class GarbageCollected {
  public:
   using GarbageCollectedType = T;
 
-  void* operator new(size_t size) {
-    return AllocateObject(size, IsEagerlyFinalizedType<T>::value);
-  }
+  void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
 
   static void* AllocateObject(size_t size, bool eagerly_sweep) {
     if (IsGarbageCollectedMixin<T>::value) {

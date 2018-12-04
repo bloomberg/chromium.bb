@@ -44,6 +44,8 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
  public:
   DECLARE_NODE_FACTORY(HTMLTemplateElement);
+
+  explicit HTMLTemplateElement(Document&);
   ~HTMLTemplateElement() override;
 
   bool HasNonInBodyInsertionMode() const override { return true; }
@@ -56,8 +58,6 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
   void DidMoveToNewDocument(Document& old_document) override;
-
-  explicit HTMLTemplateElement(Document&);
 
   mutable TraceWrapperMember<TemplateContentDocumentFragment> content_;
 };

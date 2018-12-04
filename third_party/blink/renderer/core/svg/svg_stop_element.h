@@ -35,6 +35,8 @@ class SVGStopElement final : public SVGElement {
  public:
   DECLARE_NODE_FACTORY(SVGStopElement);
 
+  explicit SVGStopElement(Document&);
+
   Color StopColorIncludingOpacity() const;
 
   SVGAnimatedNumber* offset() const { return offset_.Get(); }
@@ -45,8 +47,6 @@ class SVGStopElement final : public SVGElement {
   void DidRecalcStyle(StyleRecalcChange) override;
 
  private:
-  explicit SVGStopElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
   // Stop elements don't have associated layout objects

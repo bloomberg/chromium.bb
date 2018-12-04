@@ -64,9 +64,16 @@ class MockScrollableAreaForAnimatorTest
       bool scroll_animator_enabled,
       const ScrollOffset& min_offset,
       const ScrollOffset& max_offset) {
-    return new MockScrollableAreaForAnimatorTest(scroll_animator_enabled,
-                                                 min_offset, max_offset);
+    return MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
+        scroll_animator_enabled, min_offset, max_offset);
   }
+
+  explicit MockScrollableAreaForAnimatorTest(bool scroll_animator_enabled,
+                                             const ScrollOffset& min_offset,
+                                             const ScrollOffset& max_offset)
+      : scroll_animator_enabled_(scroll_animator_enabled),
+        min_offset_(min_offset),
+        max_offset_(max_offset) {}
 
   MOCK_CONST_METHOD0(VisualRectForScrollbarParts, LayoutRect());
   MOCK_CONST_METHOD0(IsActive, bool());
@@ -140,13 +147,6 @@ class MockScrollableAreaForAnimatorTest
   }
 
  private:
-  explicit MockScrollableAreaForAnimatorTest(bool scroll_animator_enabled,
-                                             const ScrollOffset& min_offset,
-                                             const ScrollOffset& max_offset)
-      : scroll_animator_enabled_(scroll_animator_enabled),
-        min_offset_(min_offset),
-        max_offset_(max_offset) {}
-
   bool scroll_animator_enabled_;
   ScrollOffset min_offset_;
   ScrollOffset max_offset_;

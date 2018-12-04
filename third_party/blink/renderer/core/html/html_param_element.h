@@ -33,14 +33,14 @@ class HTMLParamElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLParamElement);
 
+  explicit HTMLParamElement(Document&);
+
   const AtomicString& GetName() const;
   const AtomicString& Value() const;
 
   static bool IsURLParameter(const String&);
 
  private:
-  explicit HTMLParamElement(Document&);
-
   bool IsURLAttribute(const Attribute&) const override;
 };
 

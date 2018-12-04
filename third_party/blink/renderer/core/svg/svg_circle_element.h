@@ -33,6 +33,8 @@ class SVGCircleElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGCircleElement);
 
+  explicit SVGCircleElement(Document&);
+
   Path AsPath() const override;
 
   SVGAnimatedLength* cx() const { return cx_.Get(); }
@@ -42,8 +44,6 @@ class SVGCircleElement final : public SVGGeometryElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGCircleElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
   void CollectStyleForPresentationAttribute(

@@ -31,9 +31,9 @@ class SVGSwitchElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGSwitchElement);
 
- private:
   explicit SVGSwitchElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 

@@ -33,9 +33,9 @@ class HTMLUListElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLUListElement);
 
- private:
   explicit HTMLUListElement(Document&);
 
+ private:
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

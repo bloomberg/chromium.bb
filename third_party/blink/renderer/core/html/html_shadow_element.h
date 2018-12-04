@@ -41,10 +41,9 @@ class HTMLShadowElement final : public V0InsertionPoint {
 
  public:
   DECLARE_NODE_FACTORY(HTMLShadowElement);
-  ~HTMLShadowElement() override;
 
- private:
   explicit HTMLShadowElement(Document&);
+  ~HTMLShadowElement() override;
 };
 
 }  // namespace blink

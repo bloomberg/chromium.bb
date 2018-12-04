@@ -58,6 +58,8 @@ class SVGTextPathElement final : public SVGTextContentElement,
 
   DECLARE_NODE_FACTORY(SVGTextPathElement);
 
+  explicit SVGTextPathElement(Document&);
+
   SVGAnimatedLength* startOffset() const { return start_offset_.Get(); }
   SVGAnimatedEnumeration<SVGTextPathMethodType>* method() {
     return method_.Get();
@@ -69,8 +71,6 @@ class SVGTextPathElement final : public SVGTextContentElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGTextPathElement(Document&);
-
   ~SVGTextPathElement() override;
 
   void ClearResourceReferences();

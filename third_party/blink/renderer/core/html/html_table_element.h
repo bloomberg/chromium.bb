@@ -43,6 +43,8 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLTableElement);
 
+  explicit HTMLTableElement(Document&);
+
   HTMLTableCaptionElement* caption() const;
   void setCaption(HTMLTableCaptionElement*, ExceptionState&);
 
@@ -76,7 +78,6 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLTableElement(Document&);
   ~HTMLTableElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

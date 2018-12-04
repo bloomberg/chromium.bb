@@ -33,6 +33,8 @@ class HTMLOListElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLOListElement);
 
+  explicit HTMLOListElement(Document&);
+
   int StartConsideringItemCount() const {
     return has_explicit_start_ ? start_ : (is_reversed_ ? ItemCount() : 1);
   }
@@ -44,8 +46,6 @@ class HTMLOListElement final : public HTMLElement {
   void ItemCountChanged() { should_recalculate_item_count_ = true; }
 
  private:
-  explicit HTMLOListElement(Document&);
-
   void UpdateItemValues();
 
   unsigned ItemCount() const {

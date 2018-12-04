@@ -36,6 +36,8 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
  public:
   DECLARE_NODE_FACTORY(SVGMaskElement);
 
+  explicit SVGMaskElement(Document&);
+
   SVGAnimatedLength* x() const { return x_.Get(); }
   SVGAnimatedLength* y() const { return y_.Get(); }
   SVGAnimatedLength* width() const { return width_.Get(); }
@@ -50,8 +52,6 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGMaskElement(Document&);
-
   bool IsValid() const override { return SVGTests::IsValid(); }
 
   void CollectStyleForPresentationAttribute(

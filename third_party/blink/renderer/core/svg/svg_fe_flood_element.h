@@ -31,9 +31,9 @@ class SVGFEFloodElement final : public SVGFilterPrimitiveStandardAttributes {
  public:
   DECLARE_NODE_FACTORY(SVGFEFloodElement);
 
- private:
   explicit SVGFEFloodElement(Document&);
 
+ private:
   bool SetFilterEffectAttribute(FilterEffect*,
                                 const QualifiedName& attr_name) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;

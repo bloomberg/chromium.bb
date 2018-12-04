@@ -51,6 +51,8 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
     kModeLuminosity = 16,
   };
 
+  explicit SVGFEBlendElement(Document&);
+
   DECLARE_NODE_FACTORY(SVGFEBlendElement);
   SVGAnimatedString* in1() { return in1_.Get(); }
   SVGAnimatedString* in2() { return in2_.Get(); }
@@ -59,8 +61,6 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEBlendElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*,
                                 const QualifiedName& attr_name) override;
   void SvgAttributeChanged(const QualifiedName&) override;

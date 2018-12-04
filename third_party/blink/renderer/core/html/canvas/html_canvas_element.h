@@ -102,6 +102,8 @@ class CORE_EXPORT HTMLCanvasElement final
   using Node::GetExecutionContext;
 
   DECLARE_NODE_FACTORY(HTMLCanvasElement);
+
+  explicit HTMLCanvasElement(Document&);
   ~HTMLCanvasElement() override;
 
   // Attributes and functions exposed to script
@@ -303,7 +305,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidMoveToNewDocument(Document& old_document) override;
 
  private:
-  explicit HTMLCanvasElement(Document&);
   void Dispose();
 
   using ContextFactoryVector =

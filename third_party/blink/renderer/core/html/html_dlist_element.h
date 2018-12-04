@@ -33,7 +33,6 @@ class HTMLDListElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLDListElement);
 
- private:
   explicit HTMLDListElement(Document&);
 };
 

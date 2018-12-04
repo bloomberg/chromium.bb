@@ -42,6 +42,9 @@ class CORE_EXPORT SVGImageElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGImageElement);
+
+  explicit SVGImageElement(Document&);
+
   void Trace(blink::Visitor*) override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
@@ -78,8 +81,6 @@ class CORE_EXPORT SVGImageElement final
   }
 
  private:
-  explicit SVGImageElement(Document&);
-
   bool IsStructurallyExternal() const override {
     return !HrefString().IsNull();
   }

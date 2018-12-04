@@ -31,7 +31,6 @@ class SVGFEFuncRElement final : public SVGComponentTransferFunctionElement {
  public:
   DECLARE_NODE_FACTORY(SVGFEFuncRElement);
 
- private:
   explicit SVGFEFuncRElement(Document&);
 };
 
