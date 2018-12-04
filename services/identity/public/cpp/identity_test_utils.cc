@@ -358,9 +358,7 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
     const GoogleServiceAuthError& auth_error) {
   DCHECK(identity_manager->HasAccountWithRefreshToken(account_id));
   identity_manager->GetTokenService()->GetDelegate()->UpdateAuthError(
-      account_id, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                          CREDENTIALS_REJECTED_BY_SERVER));
+      account_id, auth_error);
 }
 
 }  // namespace identity
