@@ -510,12 +510,14 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
       controller_->GetHoverOpacityForRadialHighlight());
   hover_controller_.Show(GlowHoverController::SUBTLE);
   UpdateForegroundColors();
+  Layout();
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   mouse_hovered_ = false;
   hover_controller_.Hide();
   UpdateForegroundColors();
+  Layout();
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
@@ -671,15 +673,16 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
-  InvalidateLayout();
+  Layout();
 }
 
 void Tab::AlertStateChanged() {
-  InvalidateLayout();
+  Layout();
 }
 
 void Tab::FrameColorsChanged() {
   UpdateForegroundColors();
+  SchedulePaint();
 }
 
 void Tab::SelectedStateChanged() {
@@ -721,7 +724,8 @@ void Tab::SetData(TabRendererData data) {
   if (data_.alert_state != old.alert_state || data_.title != old.title)
     TooltipTextChanged();
 
-  InvalidateLayout();
+  Layout();
+  SchedulePaint();
 }
 
 void Tab::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
@@ -913,8 +917,12 @@ void Tab::UpdateIconVisibility() {
     if (showing_icon_)
       available_width -= favicon_width;
 
+    // Show the close button if it's allowed to show on hover, even if it's
+    // forced to be hidden normally.
+    const bool show_on_hover = controller_->ShouldShowCloseButtonOnHover();
+    showing_close_button_ |= show_on_hover && hover_controller_.ShouldDraw();
     showing_close_button_ &= large_enough_for_close_button;
-    if (showing_close_button_)
+    if (showing_close_button_ || show_on_hover)
       available_width -= close_button_width;
 
     // If no other controls are visible, show the alert icon or the favicon
@@ -1051,6 +1059,4 @@ void Tab::UpdateForegroundColors() {
     button_color_ = generated_icon_color;
     alert_indicator_->OnParentTabButtonColorChanged();
   }
-
-  SchedulePaint();
 }

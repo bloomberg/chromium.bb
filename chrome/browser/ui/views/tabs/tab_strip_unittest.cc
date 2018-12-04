@@ -216,12 +216,6 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_->StoppedDraggingTab(tab, &is_first_tab);
   }
 
-  void LayoutTabs() {
-    for (int i = 0; i < tab_strip_->tab_count(); ++i) {
-      tab_strip_->tab_at(i)->Layout();
-    }
-  }
-
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
@@ -483,7 +477,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // tab close button hidden and the newly-active tab should show
   // its tab close button.
   tab_strip_->SelectTab(tab2);
-  LayoutTabs();
   ASSERT_FALSE(tab1->IsActive());
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -494,7 +487,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // After closing the active tab, the tab which becomes active should
   // show its tab close button.
   tab_strip_->CloseTab(tab1, CLOSE_TAB_FROM_TOUCH);
-  LayoutTabs();
   tab1 = nullptr;
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -558,7 +550,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // An active tab added to the tabstrip should show its tab close
   // button.
   controller_->AddTab(4, true);
-  LayoutTabs();
   Tab* tab4 = tab_strip_->tab_at(4);
   ASSERT_TRUE(tab4->IsActive());
   EXPECT_TRUE(tab4->showing_close_button_);
@@ -571,7 +562,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // tab close button hidden and the newly-active tab should show
   // its tab close button.
   tab_strip_->SelectTab(tab2);
-  LayoutTabs();
   ASSERT_FALSE(tab4->IsActive());
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -583,7 +573,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // After closing the active tab, the tab which becomes active should
   // show its tab close button.
   tab_strip_->CloseTab(tab2, CLOSE_TAB_FROM_TOUCH);
-  LayoutTabs();
   tab2 = nullptr;
   ASSERT_TRUE(tab3->IsActive());
   DoLayout();

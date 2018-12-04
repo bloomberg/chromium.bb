@@ -50,6 +50,7 @@ class FakeTabController : public TabController {
     return LEADING;
   }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
+  bool ShouldShowCloseButtonOnHover() override { return false; }
   bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab) override {}
   void ExtendSelectionTo(Tab* tab) override {}
@@ -857,7 +858,6 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
   TabRendererData data;
   data.show_icon = false;
   tab.SetData(data);
-  tab.Layout();
   EndTitleAnimation(&tab);
   EXPECT_FALSE(icon->visible());
   // Title should be placed where the favicon was.
@@ -948,7 +948,6 @@ TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
   start_media.alert_state = TabAlertState::AUDIO_PLAYING;
   start_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(start_media));
-  media_tab->Layout();
 
   // When audio starts, pinned inactive tab shows indicator.
   EXPECT_FALSE(showing_icon(media_tab));
@@ -959,7 +958,6 @@ TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
   stop_media.alert_state = TabAlertState::NONE;
   stop_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(stop_media));
-  media_tab->Layout();
 
   // When audio ends, pinned inactive tab fades out indicator.
   EXPECT_FALSE(showing_icon(media_tab));
@@ -970,7 +968,6 @@ TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
   // out animation to stop, reach out and stop the fade animation directly,
   // to make sure that it updates the tab appropriately when it's done.
   StopAnimation(media_tab);
-  media_tab->Layout();
 
   EXPECT_TRUE(showing_icon(media_tab));
   EXPECT_FALSE(showing_alert_indicator(media_tab));
