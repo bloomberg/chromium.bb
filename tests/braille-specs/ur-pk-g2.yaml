@@ -1,7 +1,8 @@
 ﻿display: unicode.dis
 table:
-  locale: ur_PK
+  locale: ur
   type: literary
+  contraction: full
   __assert-match: ur-pk-g2.ctb
 
 flags: {testmode: forward}

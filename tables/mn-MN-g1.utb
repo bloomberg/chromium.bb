@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Mongolian uncontracted braille
+#
 #+locale:mn
 #+type:literary
 #+contraction:no

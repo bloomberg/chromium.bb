@@ -1,8 +1,10 @@
 # Urdu 6 Dot Grade 2 Braille Table
 #
-#+locale:ur_PK
+#-display-name: Urdu contracted braille
+#
+#+locale:ur
 #+type:literary
-#+contraction:yes
+#+contraction:full
 #+grade:2
 #
 # Copyright (C) 2018 Compass Braille

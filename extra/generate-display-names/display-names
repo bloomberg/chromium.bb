@@ -87,6 +87,8 @@
 * ../../tables/lv.tbl                           Latvian braille
 * ../../tables/mao-nz-g1.ctb                    Maori braille
 * ../../tables/ml.tbl                           Malayalam braille
+* ../../tables/mn-MN-g1.utb                     Mongolian uncontracted braille
+* ../../tables/mn-MN-g2.ctb                     Mongolian contracted braille
 * ../../tables/mni.tbl                          Manipuri braille
 * ../../tables/mr.tbl                           Marathi braille
 * ../../tables/mt.tbl                           Maltese computer braille
@@ -123,6 +125,8 @@
 * ../../tables/ta.tbl                           Tamil computer braille
 * ../../tables/te.tbl                           Telugu braille
 * ../../tables/tr.tbl                           Turkish computer braille
+* ../../tables/ur-pk-g1.utb                     Urdu uncontracted braille
+* ../../tables/ur-pk-g2.ctb                     Urdu contracted braille
 * ../../tables/vi.ctb                           Vietnamese computer braille
 * ../../tables/vi.tbl                           Vietnamese braille
   ../../tables/zh_CHN.tbl                       Mainland Chinese braille without tone

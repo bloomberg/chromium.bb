@@ -1,5 +1,7 @@
 # Urdu 6 Dot Grade 1 Braille Table
 #
+#-display-name: Urdu uncontracted braille
+#
 #+locale:ur
 #+type:literary
 #+contraction:no
