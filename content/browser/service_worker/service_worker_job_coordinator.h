@@ -41,7 +41,9 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
               bool skip_script_comparison,
               ServiceWorkerRegisterJob::RegistrationCallback callback);
 
-  // Calls ServiceWorkerRegisterJobBase::Abort() on all jobs and removes them.
+  // Calls ServiceWorkerRegisterJobBase::Abort() on the specified jobs (all jobs
+  // for a given scope, or all jobs entirely) and removes them.
+  void Abort(const GURL& scope);
   void AbortAll();
 
   // Removes the job. A job that was not aborted must call FinishJob when it is

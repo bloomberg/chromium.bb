@@ -150,6 +150,14 @@ void ServiceWorkerJobCoordinator::Update(
   queued_job->AddCallback(std::move(callback));
 }
 
+void ServiceWorkerJobCoordinator::Abort(const GURL& scope) {
+  auto pending_jobs = job_queues_.find(scope);
+  if (pending_jobs == job_queues_.end())
+    return;
+  pending_jobs->second.AbortAll();
+  job_queues_.erase(pending_jobs);
+}
+
 void ServiceWorkerJobCoordinator::AbortAll() {
   for (auto& job_pair : job_queues_)
     job_pair.second.AbortAll();

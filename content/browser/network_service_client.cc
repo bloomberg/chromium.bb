@@ -319,6 +319,27 @@ base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
   return WebContentsGetterRegistry::GetInstance()->Get(window_id);
 }
 
+WebContents* GetWebContents(int process_id, int routing_id) {
+  if (process_id != network::mojom::kBrowserProcessId) {
+    return WebContentsImpl::FromRenderFrameHostID(process_id, routing_id);
+  }
+  return WebContents::FromFrameTreeNodeId(routing_id);
+}
+
+BrowserContext* GetBrowserContext(int process_id, int routing_id) {
+  WebContents* web_contents = GetWebContents(process_id, routing_id);
+  if (web_contents)
+    return web_contents->GetBrowserContext();
+  // Some requests such as service worker updates are not associated with
+  // a WebContents so we can't use it to obtain the BrowserContext.
+  // TODO(dullweber): Could we always use RenderProcessHost?
+  RenderProcessHost* process_host = RenderProcessHostImpl::FromID(process_id);
+  if (process_host)
+    return process_host->GetBrowserContext();
+
+  return nullptr;
+}
+
 void OnCertificateRequestedContinuation(
     uint32_t process_id,
     uint32_t routing_id,
@@ -329,10 +350,7 @@ void OnCertificateRequestedContinuation(
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
     web_contents_getter =
-        process_id != network::mojom::kBrowserProcessId
-            ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
-                                  process_id, routing_id)
-            : base::BindRepeating(WebContents::FromFrameTreeNodeId, routing_id);
+        base::BindRepeating(GetWebContents, process_id, routing_id);
   }
   if (!web_contents_getter.Run()) {
     network::mojom::SSLPrivateKeyPtr ssl_private_key;
@@ -379,9 +397,7 @@ void NetworkServiceClient::OnAuthRequired(
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   base::Callback<WebContents*(void)> web_contents_getter =
-      process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
-                              process_id, routing_id)
-                 : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
+      base::BindRepeating(GetWebContents, process_id, routing_id);
 
   if (!web_contents_getter.Run()) {
     std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
@@ -439,9 +455,7 @@ void NetworkServiceClient::OnSSLCertificateError(
   SSLErrorDelegate* delegate =
       new SSLErrorDelegate(std::move(response));  // deletes self
   base::Callback<WebContents*(void)> web_contents_getter =
-      process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
-                              process_id, routing_id)
-                 : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
+      base::BindRepeating(GetWebContents, process_id, routing_id);
   SSLManager::OnSSLCertificateError(
       delegate->GetWeakPtr(), static_cast<ResourceType>(resource_type), url,
       std::move(web_contents_getter), ssl_info, fatal);
@@ -501,11 +515,7 @@ void NetworkServiceClient::OnLoadingStateUpdate(
     load_info.upload_position = info->upload_position;
     load_info.upload_size = info->upload_size;
     load_info.web_contents_getter =
-        info->process_id
-            ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
-                                  info->process_id, info->routing_id)
-            : base::BindRepeating(WebContents::FromFrameTreeNodeId,
-                                  info->routing_id);
+        base::BindRepeating(GetWebContents, info->process_id, info->routing_id);
     rdh_infos->push_back(std::move(load_info));
   }
 
@@ -522,15 +532,13 @@ void NetworkServiceClient::OnClearSiteData(int process_id,
                                            const std::string& header_value,
                                            int load_flags,
                                            OnClearSiteDataCallback callback) {
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
-      process_id
-          ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
-                                process_id, routing_id)
-          : base::BindRepeating(WebContents::FromFrameTreeNodeId, routing_id);
-
-  ClearSiteDataHandler::HandleHeader(std::move(web_contents_getter), url,
-                                     header_value, load_flags,
-                                     std::move(callback));
+  auto browser_context_getter =
+      base::BindRepeating(GetBrowserContext, process_id, routing_id);
+  auto web_contents_getter =
+      base::BindRepeating(GetWebContents, process_id, routing_id);
+  ClearSiteDataHandler::HandleHeader(browser_context_getter,
+                                     web_contents_getter, url, header_value,
+                                     load_flags, std::move(callback));
 }
 
 void NetworkServiceClient::OnCertDBChanged() {

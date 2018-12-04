@@ -103,12 +103,13 @@ void ClearSiteDataHandler::ConsoleMessagesDelegate::
 
 // static
 void ClearSiteDataHandler::HandleHeader(
+    base::RepeatingCallback<BrowserContext*()> browser_context_getter,
     base::RepeatingCallback<WebContents*()> web_contents_getter,
     const GURL& url,
     const std::string& header_value,
     int load_flags,
     base::OnceClosure callback) {
-  ClearSiteDataHandler handler(std::move(web_contents_getter), url,
+  ClearSiteDataHandler handler(browser_context_getter, web_contents_getter, url,
                                header_value, load_flags, std::move(callback),
                                std::make_unique<ConsoleMessagesDelegate>());
   handler.HandleHeaderAndOutputConsoleMessages();
@@ -127,18 +128,21 @@ bool ClearSiteDataHandler::ParseHeaderForTesting(
 }
 
 ClearSiteDataHandler::ClearSiteDataHandler(
+    base::RepeatingCallback<BrowserContext*()> browser_context_getter,
     base::RepeatingCallback<WebContents*()> web_contents_getter,
     const GURL& url,
     const std::string& header_value,
     int load_flags,
     base::OnceClosure callback,
     std::unique_ptr<ConsoleMessagesDelegate> delegate)
-    : web_contents_getter_(std::move(web_contents_getter)),
+    : browser_context_getter_(browser_context_getter),
+      web_contents_getter_(web_contents_getter),
       url_(url),
       header_value_(header_value),
       load_flags_(load_flags),
       callback_(std::move(callback)),
       delegate_(std::move(delegate)) {
+  DCHECK(browser_context_getter_);
   DCHECK(web_contents_getter_);
   DCHECK(delegate_);
 }
@@ -292,7 +296,7 @@ void ClearSiteDataHandler::ExecuteClearingTask(const url::Origin& origin,
                                                bool clear_storage,
                                                bool clear_cache,
                                                base::OnceClosure callback) {
-  clear_site_data_utils::ClearSiteData(web_contents_getter_, origin,
+  clear_site_data_utils::ClearSiteData(browser_context_getter_, origin,
                                        clear_cookies, clear_storage,
                                        clear_cache, std::move(callback));
 }

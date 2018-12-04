@@ -1005,9 +1005,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
   AddQuery(&url, "file", "worker_test.html");
   NavigateToURL(shell(), url);
-  // TODO(crbug.com/898465): Fix and enable expectation for storage deletion.
-  // delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
-  // false);
+  delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
+                                      false);
   SetClearSiteDataHeader("\"storage\"");
   EXPECT_TRUE(RunScriptAndGetBool("installServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
@@ -1015,7 +1014,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
 }
 
 // Tests that sending Clear-Site-Data during a service worker update
-// doesn't fail. (see crbug.com/898465)
+// removes the service worker. (see crbug.com/898465)
 IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        ClearSiteDataDuringServiceWorkerUpdate) {
   GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
@@ -1025,13 +1024,13 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   EXPECT_TRUE(RunScriptAndGetBool("installServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
   // Update the service worker and send C-S-D during update.
+  delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
+                                      false);
   SetClearSiteDataHeader("\"storage\"");
-  EXPECT_TRUE(RunScriptAndGetBool("updateServiceWorker()"));
-  // TODO(crbug.com/898465): Fix and enable expectation for storage deletion.
-  // delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
-  // false);
+  // Expect the update to fail and the service worker to be removed.
+  EXPECT_FALSE(RunScriptAndGetBool("updateServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
-  EXPECT_TRUE(RunScriptAndGetBool("hasServiceWorker()"));
+  EXPECT_FALSE(RunScriptAndGetBool("hasServiceWorker()"));
 }
 
 }  // namespace content
