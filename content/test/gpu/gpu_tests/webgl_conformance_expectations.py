@@ -518,6 +518,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Vulkan / Win / Intel / Passthough command decoder
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'passthrough', 'vulkan', 'intel'], bug=2722) # ANGLE bug ID
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+        ['win', 'passthrough', 'vulkan', 'intel'], bug=3005) # ANGLE bug ID
 
     # Vulkan / Win / AMD / Passthough command decoder
     self.Fail('conformance/buffers/buffer-data-dynamic-delay.html',
