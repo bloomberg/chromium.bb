@@ -115,6 +115,23 @@ void CachedImageFetcherBridge::FetchImage(JNIEnv* j_env,
       kTrafficAnnotation);
 }
 
+void CachedImageFetcherBridge::ReportEvent(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_event_id) {
+  CachedImageFetcherEvent event =
+      static_cast<CachedImageFetcherEvent>(j_event_id);
+  CachedImageFetcherMetricsReporter::ReportEvent(event);
+}
+
+void CachedImageFetcherBridge::ReportCacheHitTime(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jlong start_time_millis) {
+  base::Time start_time = base::Time::FromJavaTime(start_time_millis);
+  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(start_time);
+}
+
 void CachedImageFetcherBridge::OnImageFetched(
     base::android::ScopedJavaGlobalRef<jobject> callback,
     const std::string& id,

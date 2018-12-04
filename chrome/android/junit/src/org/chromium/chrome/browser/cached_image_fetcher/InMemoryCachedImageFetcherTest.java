@@ -117,6 +117,10 @@ public class InMemoryCachedImageFetcherTest {
 
         verify(mCachedImageFetcherImpl, /* Should only go to native the first time. */ times(1))
                 .fetchImage(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+
+        // Verify metrics are reported.
+        verify(mCachedImageFetcherImpl)
+                .reportEvent(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
     }
 
     @Test

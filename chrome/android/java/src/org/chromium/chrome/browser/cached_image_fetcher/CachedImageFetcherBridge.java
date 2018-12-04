@@ -56,10 +56,34 @@ class CachedImageFetcherBridge {
         nativeFetchImage(mNativeCachedImageFetcherBridge, url, width, height, callback);
     }
 
+    /**
+     * Report a metrics event.
+     *
+     * @param eventId The event to report.
+     */
+    public void reportEvent(@CachedImageFetcherEvent int eventId) {
+        assert mNativeCachedImageFetcherBridge != 0;
+        nativeReportEvent(mNativeCachedImageFetcherBridge, eventId);
+    }
+
+    /**
+     * Report a timing event for a cache hit.
+     *
+     * @param startTimeMillis The start time (in milliseconds) of the request, used to measure the
+     * total duration.
+     */
+    public void reportCacheHitTime(long startTimeMillis) {
+        assert mNativeCachedImageFetcherBridge != 0;
+        nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, startTimeMillis);
+    }
+
     // Native methods
     private static native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeCachedImageFetcherBridge);
     private native String nativeGetFilePath(long nativeCachedImageFetcherBridge, String url);
     private native void nativeFetchImage(long nativeCachedImageFetcherBridge, String url,
             int widthPx, int heightPx, Callback<Bitmap> callback);
+    private native void nativeReportEvent(long nativeCachedImageFetcherBridge, int eventId);
+    private native void nativeReportCacheHitTime(
+            long nativeCachedImageFetcherBridge, long startTimeMillis);
 }

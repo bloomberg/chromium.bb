@@ -12,6 +12,8 @@ namespace image_fetcher {
 // Enum for the result of the fetch, reported through UMA. Present in enums.xml
 // as CachedImageFetcherEvent. New values should be added at the end and things
 // should not be renumbered.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+// org.chromium.chrome.browser.cached_image_fetcher)
 enum class CachedImageFetcherEvent {
   kImageRequest = 0,
   kCacheHit = 1,
@@ -21,7 +23,9 @@ enum class CachedImageFetcherEvent {
   kTotalFailure = 5,
   kCacheStartupEvictionStarted = 6,
   kCacheStartupEvictionFinished = 7,
-  kMaxValue = kCacheStartupEvictionFinished,
+  kJavaInMemoryCacheHit = 8,
+  kJavaDiskCacheHit = 9,
+  kMaxValue = kJavaDiskCacheHit,
 };
 
 class CachedImageFetcherMetricsReporter {
@@ -29,10 +33,17 @@ class CachedImageFetcherMetricsReporter {
   // Report cache events, used by CachedImageFetcher and composing classes.
   static void ReportEvent(CachedImageFetcherEvent event);
 
-  // Report timing for various Cache events related to CachedImageFetcher.
+  // Report the time it takes to load an image from the cache in native code.
   static void ReportImageLoadFromCacheTime(base::Time start_time);
+
+  // Report the time it takes to load an image from the network.
   static void ReportImageLoadFromNetworkTime(base::Time start_time);
+
+  // Report the time it takes to load an image from the network after a cache
+  // hit.
   static void ReportImageLoadFromNetworkAfterCacheHit(base::Time start_time);
+
+  // Report the time between cache evictions.
   static void ReportTimeSinceLastCacheLRUEviction(base::Time start_time);
 };
 

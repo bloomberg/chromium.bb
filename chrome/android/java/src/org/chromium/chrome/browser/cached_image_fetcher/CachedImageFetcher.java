@@ -20,6 +20,13 @@ public interface CachedImageFetcher {
     }
 
     /**
+     * Report an event metric.
+     *
+     * @param eventId The event to be reported
+     */
+    void reportEvent(@CachedImageFetcherEvent int eventId);
+
+    /**
      * Fetches the image at url with the desired size. Image is null if not
      * found or fails decoding.
      *
