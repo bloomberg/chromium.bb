@@ -148,9 +148,6 @@ class ExtensionsClient {
   // Can be overridden in tests.
   virtual bool ExtensionAPIEnabledInExtensionServiceWorkers() const;
 
-  // Returns the user agent used by the content module.
-  virtual std::string GetUserAgent() const;
-
   // Adds client specific permitted origins to |origin_patterns| for
   // cross-origin communication for an extension context.
   virtual void AddOriginAccessPermissions(

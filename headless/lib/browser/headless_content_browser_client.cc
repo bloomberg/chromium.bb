@@ -348,4 +348,12 @@ HeadlessContentBrowserClient::CreateNetworkContext(
       in_memory, relative_partition_path);
 }
 
+std::string HeadlessContentBrowserClient::GetProduct() const {
+  return browser_->options()->product_name_and_version;
+}
+
+std::string HeadlessContentBrowserClient::GetUserAgent() const {
+  return browser_->options()->user_agent;
+}
+
 }  // namespace headless

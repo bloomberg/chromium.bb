@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/user_agent.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
@@ -285,6 +286,11 @@ bool CastExtensionsBrowserClient::IsLockScreenContext(
 std::string CastExtensionsBrowserClient::GetApplicationLocale() {
   // TODO(b/70902491): Use system locale.
   return "en-US";
+}
+
+std::string CastExtensionsBrowserClient::GetUserAgent() const {
+  return content::BuildUserAgentFromProduct(
+      version_info::GetProductNameAndVersionForUserAgent());
 }
 
 }  // namespace extensions

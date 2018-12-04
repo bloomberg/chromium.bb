@@ -5,7 +5,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/common/chrome_content_client.h"
+#include "chrome/browser/chrome_content_browser_client.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ContentUtils_jni.h"
@@ -19,8 +20,7 @@ static void JNI_ContentUtils_SetUserAgentOverride(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   const char kLinuxInfoStr[] = "X11; Linux x86_64";
-  ChromeContentClient content_client;
-  std::string product = content_client.GetProduct();
+  std::string product = version_info::GetProductNameAndVersionForUserAgent();
   std::string spoofed_ua =
       content::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   content::WebContents* web_contents =

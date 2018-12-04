@@ -756,7 +756,7 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetContentClient()->GetUserAgent();
+  context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
   context_params->enable_data_url_support = true;
   GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
@@ -893,6 +893,14 @@ content::PreviewsState ContentBrowserClient::DetermineCommittedPreviews(
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {
   return content::PREVIEWS_OFF;
+}
+
+std::string ContentBrowserClient::GetProduct() const {
+  return std::string();
+}
+
+std::string ContentBrowserClient::GetUserAgent() const {
+  return std::string();
 }
 
 }  // namespace content

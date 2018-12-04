@@ -57,10 +57,6 @@ TestContentClient::TestContentClient() {
 TestContentClient::~TestContentClient() {
 }
 
-std::string TestContentClient::GetUserAgent() const {
-  return std::string("TestContentClient");
-}
-
 base::StringPiece TestContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {

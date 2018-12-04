@@ -5,7 +5,7 @@
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/common/chrome_content_client.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"

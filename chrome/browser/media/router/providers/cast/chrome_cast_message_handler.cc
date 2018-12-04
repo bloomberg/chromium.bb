@@ -5,8 +5,8 @@
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
-#include "chrome/common/chrome_content_client.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/version_info/version_info.h"

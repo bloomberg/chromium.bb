@@ -83,8 +83,7 @@ const char kHeadlessCrashKey[] = "headless";
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
     std::unique_ptr<HeadlessBrowserImpl> browser)
-    : content_client_(browser->options()),
-      browser_(std::move(browser)),
+    : browser_(std::move(browser)),
       headless_crash_key_(base::debug::AllocateCrashKeyString(
           kHeadlessCrashKey,
           base::debug::CrashKeySize::Size32)) {

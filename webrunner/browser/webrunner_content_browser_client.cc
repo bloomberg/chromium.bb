@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "components/version_info/version_info.h"
+#include "content/public/common/user_agent.h"
 #include "webrunner/browser/webrunner_browser_main_parts.h"
 
 namespace webrunner {
@@ -22,6 +24,11 @@ WebRunnerContentBrowserClient::CreateBrowserMainParts(
   DCHECK(context_channel_);
   main_parts_ = new WebRunnerBrowserMainParts(std::move(context_channel_));
   return main_parts_;
+}
+
+std::string WebRunnerContentBrowserClient::GetUserAgent() const {
+  return content::BuildUserAgentFromProduct(
+      version_info::GetProductNameAndVersionForUserAgent());
 }
 
 }  // namespace webrunner

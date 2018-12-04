@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -56,6 +57,60 @@
 using content::BrowsingDataFilterBuilder;
 using testing::_;
 using ChromeContentBrowserClientTest = testing::Test;
+
+namespace {
+
+void CheckUserAgentStringOrdering(bool mobile_device) {
+  std::vector<std::string> pieces;
+
+  // Check if the pieces of the user agent string come in the correct order.
+  ChromeContentBrowserClient content_browser_client;
+  std::string buffer = content_browser_client.GetUserAgent();
+
+  pieces = base::SplitStringUsingSubstr(
+      buffer, "Mozilla/5.0 (", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  buffer = pieces[1];
+  EXPECT_EQ("", pieces[0]);
+
+  pieces = base::SplitStringUsingSubstr(
+      buffer, ") AppleWebKit/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  buffer = pieces[1];
+  std::string os_str = pieces[0];
+
+  pieces =
+      base::SplitStringUsingSubstr(buffer, " (KHTML, like Gecko) ",
+                                   base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  buffer = pieces[1];
+  std::string webkit_version_str = pieces[0];
+
+  pieces = base::SplitStringUsingSubstr(
+      buffer, " Safari/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  std::string product_str = pieces[0];
+  std::string safari_version_str = pieces[1];
+
+  // Not sure what can be done to better check the OS string, since it's highly
+  // platform-dependent.
+  EXPECT_FALSE(os_str.empty());
+
+  // Check that the version numbers match.
+  EXPECT_FALSE(webkit_version_str.empty());
+  EXPECT_FALSE(safari_version_str.empty());
+  EXPECT_EQ(webkit_version_str, safari_version_str);
+
+  EXPECT_TRUE(
+      base::StartsWith(product_str, "Chrome/", base::CompareCase::SENSITIVE));
+  if (mobile_device) {
+    // "Mobile" gets tacked on to the end for mobile devices, like phones.
+    EXPECT_TRUE(
+        base::EndsWith(product_str, " Mobile", base::CompareCase::SENSITIVE));
+  }
+}
+
+}  // namespace
 
 TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   ChromeContentBrowserClient client;
@@ -381,6 +436,26 @@ TEST(ChromeContentBrowserClientTest, GetMetricSuffixForURL) {
   // Not a Search result page (no query).
   EXPECT_EQ("", client.GetMetricSuffixForURL(
                     GURL("https://www.google.com/search?notaquery=nope")));
+}
+
+TEST(ChromeContentBrowserClient, UserAgentStringOrdering) {
+#if defined(OS_ANDROID)
+  const char* const kArguments[] = {"chrome"};
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->InitFromArgv(1, kArguments);
+
+  // Do it for regular devices.
+  ASSERT_FALSE(command_line->HasSwitch(switches::kUseMobileUserAgent));
+  CheckUserAgentStringOrdering(false);
+
+  // Do it for mobile devices.
+  command_line->AppendSwitch(switches::kUseMobileUserAgent);
+  ASSERT_TRUE(command_line->HasSwitch(switches::kUseMobileUserAgent));
+  CheckUserAgentStringOrdering(true);
+#else
+  CheckUserAgentStringOrdering(false);
+#endif
 }
 
 #if defined(OS_CHROMEOS)

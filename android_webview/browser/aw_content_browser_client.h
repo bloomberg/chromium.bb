@@ -34,6 +34,9 @@ namespace android_webview {
 class AwBrowserContext;
 class AwFeatureListCreator;
 
+std::string GetProduct();
+std::string GetUserAgent();
+
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
   // This is what AwContentBrowserClient::GetAcceptLangs uses.
@@ -215,6 +218,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
+  std::string GetProduct() const override;
+  std::string GetUserAgent() const override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;

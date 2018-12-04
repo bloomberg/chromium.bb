@@ -9,18 +9,9 @@
 
 namespace headless {
 
-HeadlessContentClient::HeadlessContentClient(HeadlessBrowser::Options* options)
-    : options_(options) {}
+HeadlessContentClient::HeadlessContentClient() = default;
 
 HeadlessContentClient::~HeadlessContentClient() = default;
-
-std::string HeadlessContentClient::GetProduct() const {
-  return options_->product_name_and_version;
-}
-
-std::string HeadlessContentClient::GetUserAgent() const {
-  return options_->user_agent;
-}
 
 base::string16 HeadlessContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);

@@ -1444,6 +1444,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void LogWebFeatureForCurrentPage(
       content::RenderFrameHost* render_frame_host,
       blink::mojom::WebFeature feature) {}
+
+  // Returns a string describing the embedder product name and version,
+  // of the form "productname/version", with no other slashes.
+  // Used as part of the user agent string.
+  virtual std::string GetProduct() const;
+
+  // Returns the user agent.  Content may cache this value.
+  virtual std::string GetUserAgent() const;
 };
 
 }  // namespace content

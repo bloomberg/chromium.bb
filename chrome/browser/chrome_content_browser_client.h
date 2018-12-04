@@ -74,6 +74,9 @@ namespace url {
 class Origin;
 }
 
+// Returns the user agent of Chrome.
+std::string GetUserAgent();
+
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ChromeContentBrowserClient(
@@ -543,6 +546,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const net::HttpResponseHeaders* response_headers) override;
   void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
                                    blink::mojom::WebFeature feature) override;
+
+  std::string GetProduct() const override;
+  std::string GetUserAgent() const override;
 
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(

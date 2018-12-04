@@ -24,6 +24,7 @@ class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
   // ContentBrowserClient overrides.
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
+  std::string GetUserAgent() const override;
 
  private:
   zx::channel context_channel_;

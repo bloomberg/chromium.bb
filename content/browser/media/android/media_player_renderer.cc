@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -112,7 +113,7 @@ void MediaPlayerRenderer::CreateMediaPlayer(
     return;
   }
 
-  const std::string user_agent = GetContentClient()->GetUserAgent();
+  const std::string user_agent = GetContentClient()->browser()->GetUserAgent();
 
   media_player_.reset(new media::MediaPlayerBridge(
       kUnusedAndIrrelevantPlayerId, url_params.media_url,

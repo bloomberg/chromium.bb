@@ -28,6 +28,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -625,7 +626,7 @@ std::unique_ptr<base::DictionaryValue> GpuMessageHandler::OnRequestClientInfo(
 
   auto dict = std::make_unique<base::DictionaryValue>();
 
-  dict->SetString("version", GetContentClient()->GetProduct());
+  dict->SetString("version", GetContentClient()->browser()->GetProduct());
   dict->SetString("command_line",
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
   dict->SetString("operating_system",

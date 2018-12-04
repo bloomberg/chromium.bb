@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/version_info",
+  "+content/public/common",
   "+content/public/browser",
   "+content/public/test",
   "+mojo/public/cpp/bindings",
