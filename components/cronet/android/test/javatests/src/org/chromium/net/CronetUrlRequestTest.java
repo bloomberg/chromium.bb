@@ -37,7 +37,9 @@ import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetUrlRequest;
 import org.chromium.net.impl.UrlResponseInfoImpl;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.FailurePhase;
+import org.chromium.net.test.ServerCertificate;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -753,6 +755,42 @@ public class CronetUrlRequestTest {
         assertContains("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
                 callback.mError.getMessage());
         assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+    }
+
+    /**
+     * Tests that an SSL cert error with upload will be reported via {@link
+     * UrlRequest.Callback#onFailed}.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+    public void testSSLCertificateError() throws Exception {
+        EmbeddedTestServer sslServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                getContext(), ServerCertificate.CERT_EXPIRED);
+
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                sslServer.getURL("/"), callback, callback.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertNull(callback.mResponseInfo);
+        assertNotNull(callback.mError);
+        assertTrue(callback.mOnErrorCalled);
+        assertEquals(-201, ((NetworkException) callback.mError).getCronetInternalErrorCode());
+        assertContains("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
+                callback.mError.getMessage());
+        assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+
+        sslServer.stopAndDestroyServer();
     }
 
     /**
