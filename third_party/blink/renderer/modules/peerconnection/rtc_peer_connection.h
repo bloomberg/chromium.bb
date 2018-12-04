@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_H_
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
