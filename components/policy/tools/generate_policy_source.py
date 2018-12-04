@@ -451,6 +451,10 @@ SIMPLE_SCHEMA_NAME_MAP = {
 INVALID_INDEX = -1
 MIN_INDEX = -1
 MAX_INDEX = (1 << 15) - 1  # signed short in c++
+MIN_POLICY_ID = 0
+MAX_POLICY_ID = (1 << 16) - 1  # unsigned short
+MIN_EXTERNAL_DATA_SIZE = 0
+MAX_EXTERNAL_DATA_SIZE = (1 << 32) - 1  # unsigned int32
 
 
 class SchemaNodesGenerator:
@@ -919,6 +923,9 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
   for policy in policies:
     if policy.is_supported:
+      assert policy.id >= MIN_POLICY_ID and policy.id <= MAX_POLICY_ID
+      assert (policy.max_size >= MIN_EXTERNAL_DATA_SIZE and
+              policy.max_size <= MAX_EXTERNAL_DATA_SIZE)
       f.write('  // %s\n' % policy.name)
       f.write('  { %-14s %-16s %3s, %24s,\n'
               '    %s },\n' % ('true,' if policy.is_deprecated else 'false,',
