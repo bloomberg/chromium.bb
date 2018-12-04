@@ -12,6 +12,8 @@ import tempfile
 import time
 import uuid
 
+# TODO(https://crbug.com/900790): Re-enable multiplexing once upstream issues
+# are resolved.
 _SSH_CONFIG_TEMPLATE = """
 Host *
   CheckHostIP no
@@ -24,8 +26,8 @@ Host *
   IdentityFile {identity}
   ServerAliveInterval 2
   ServerAliveCountMax 5
-  ControlMaster auto
-  ControlPersist 1m
+  ControlMaster no
+  ControlPersist no
   ControlPath /tmp/ssh-%r@%h:%p
   ConnectTimeout 5
   """
