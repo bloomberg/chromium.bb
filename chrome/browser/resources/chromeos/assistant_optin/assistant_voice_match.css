@@ -24,11 +24,17 @@
   padding: 0 8px 0 8px;
 }
 
-.intro #recording-container,
-.recording #intro-container,
-.completed #intro-container {
-  position: absolute;
-  visibility: hidden;
+#intro-container,
+#recording-container,
+#already-setup-container {
+  display: none;
+}
+
+.intro #intro-container,
+.recording #recording-container,
+.completed #recording-container,
+.already-setup #already-setup-container {
+  display: block;
 }
 
 .recording #title-completed,
@@ -37,9 +43,10 @@
 }
 
 .intro #skip-button,
-.intro #next-button,
+.intro #agree-button,
 .recording #later-button,
-.completed #done-button {
+.completed #done-button,
+.already-setup #next-button {
   display: block;
 }
 

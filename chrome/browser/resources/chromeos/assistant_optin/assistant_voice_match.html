@@ -48,25 +48,35 @@
             <div class="content" id="footer-text"
                 i18n-content="assistantVoiceMatchFooter"></div>
           </div>
+          <div id="already-setup-container">
+            <div class="title" id="title-already-setup"
+                i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
+            <div class="content"
+                i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
+          </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="skip-button" on-tap="onSkipTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="skip-button-text">No thanks</div>
+          <div i18n-content="assistantOptinNoThanksButton"></div>
         </oobe-text-button>
         <oobe-text-button id="later-button" on-tap="onSkipTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="skip-button-text">Do it later</div>
+          <div i18n-content="assistantOptinLaterButton"></div>
         </oobe-text-button>
-        <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
+        <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="next-button-text">I agree</div>
+          <div i18n-content="assistantOptinAgreeButton"></div>
         </oobe-text-button>
         <oobe-text-button id="done-button" inverse on-tap="onDoneTap_"
             disabled="[[buttonsDisabled]]">
-          <div id="done-button-text">Save</div>
+          <div i18n-content="assistantOptinSaveButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="next-button" inverse on-tap="onDoneTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="next"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

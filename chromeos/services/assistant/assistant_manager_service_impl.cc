@@ -23,6 +23,7 @@
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
@@ -74,7 +75,8 @@ void UpdateInternalOptions(
     assistant_client::AssistantManagerInternal* assistant_manager_internal,
     const std::string& arc_version,
     const std::string& locale,
-    bool spoken_feedback_enabled) {
+    bool spoken_feedback_enabled,
+    bool speaker_enrollment_done) {
   // Build user agent string.
   std::string user_agent;
   base::StringAppendF(&user_agent,
@@ -93,6 +95,12 @@ void UpdateInternalOptions(
       assistant_manager_internal->CreateDefaultInternalOptions();
   SetAssistantOptions(internal_options, user_agent, locale,
                       spoken_feedback_enabled);
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
+      speaker_enrollment_done) {
+    internal_options->EnableRequireVoiceMatchVerification();
+  }
+
   assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;
   });
@@ -823,7 +831,7 @@ AssistantManagerServiceImpl::StartAssistantInternal(
       UnwrapAssistantManagerInternal(assistant_manager.get());
 
   UpdateInternalOptions(assistant_manager_internal, arc_version, locale,
-                        spoken_feedback_enabled);
+                        spoken_feedback_enabled, speaker_id_enrollment_done_);
 
   assistant_manager_internal->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal->RegisterActionModule(action_module_.get());
@@ -862,8 +870,32 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
   std::move(post_init_callback).Run();
   UpdateDeviceSettings();
+  SyncSpeakerIdEnrollmentStatus();
 }
 
+void AssistantManagerServiceImpl::SyncSpeakerIdEnrollmentStatus() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  if (speaker_id_enrollment_client_) {
+    // Speaker id enrollment is in progress.
+    return;
+  }
+
+  // TODO(updowndota): Add a dedicate API for fetching enrollment status.
+  assistant_client::SpeakerIdEnrollmentConfig client_config;
+  client_config.user_id = kUserID;
+  client_config.skip_cloud_enrollment = false;
+
+  assistant_manager_internal_->StartSpeakerIdEnrollment(
+      client_config,
+      [weak_ptr = weak_factory_.GetWeakPtr(),
+       task_runner = main_thread_task_runner_](
+          const assistant_client::SpeakerIdEnrollmentUpdate& update) {
+        task_runner->PostTask(
+            FROM_HERE, base::BindOnce(&AssistantManagerServiceImpl::
+                                          HandleSpeakerIdEnrollmentStatusSync,
+                                      weak_ptr, update));
+      });
+}
 
 void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
@@ -918,10 +950,45 @@ void AssistantManagerServiceImpl::HandleSpeakerIdEnrollmentUpdate(
       break;
     case SpeakerIdEnrollmentState::DONE:
       speaker_id_enrollment_client_->OnSpeakerIdEnrollmentDone();
+      if (!speaker_id_enrollment_done_) {
+        speaker_id_enrollment_done_ = true;
+        UpdateInternalOptions(assistant_manager_internal_,
+                              chromeos::version_loader::GetARCVersion(),
+                              service_->assistant_state()->locale().value(),
+                              spoken_feedback_enabled_,
+                              speaker_id_enrollment_done_);
+      }
       break;
     case SpeakerIdEnrollmentState::FAILURE:
       speaker_id_enrollment_client_->OnSpeakerIdEnrollmentFailure();
       break;
+    case SpeakerIdEnrollmentState::INIT:
+    case SpeakerIdEnrollmentState::CHECK:
+    case SpeakerIdEnrollmentState::UPLOAD:
+    case SpeakerIdEnrollmentState::FETCH:
+      break;
+  }
+}
+
+void AssistantManagerServiceImpl::HandleSpeakerIdEnrollmentStatusSync(
+    const assistant_client::SpeakerIdEnrollmentUpdate& update) {
+  switch (update.state) {
+    case SpeakerIdEnrollmentState::LISTEN:
+      speaker_id_enrollment_done_ = false;
+      // Stop the enrollment since we already get the status.
+      if (!speaker_id_enrollment_client_)
+        StopSpeakerIdEnrollment(base::DoNothing());
+      break;
+    case SpeakerIdEnrollmentState::DONE:
+      speaker_id_enrollment_done_ = true;
+      UpdateInternalOptions(assistant_manager_internal_,
+                            chromeos::version_loader::GetARCVersion(),
+                            service_->assistant_state()->locale().value(),
+                            spoken_feedback_enabled_,
+                            speaker_id_enrollment_done_);
+      break;
+    case SpeakerIdEnrollmentState::PROCESS:
+    case SpeakerIdEnrollmentState::FAILURE:
     case SpeakerIdEnrollmentState::INIT:
     case SpeakerIdEnrollmentState::CHECK:
     case SpeakerIdEnrollmentState::UPLOAD:
@@ -1217,10 +1284,10 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
   // When |spoken_feedback_enabled_| changes we need to update our internal
   // options to turn on/off A11Y features in LibAssistant.
   if (assistant_manager_internal_)
-    UpdateInternalOptions(assistant_manager_internal_,
-                          chromeos::version_loader::GetARCVersion(),
-                          service_->assistant_state()->locale().value(),
-                          spoken_feedback_enabled_);
+    UpdateInternalOptions(
+        assistant_manager_internal_, chromeos::version_loader::GetARCVersion(),
+        service_->assistant_state()->locale().value(), spoken_feedback_enabled_,
+        speaker_id_enrollment_done_);
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(
