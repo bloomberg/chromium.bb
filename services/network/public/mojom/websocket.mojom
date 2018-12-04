@@ -52,8 +52,6 @@ interface WebSocketClient {
   OnFailChannel(string reason);
 
   // Notify the renderer that the browser has started an opening handshake.
-  // This message is for showing the request in the inspector and
-  // can be omitted if the inspector is not active.
   OnStartOpeningHandshake(WebSocketHandshakeRequest request);
 
   // Notify the renderer that the browser has finished an opening handshake.

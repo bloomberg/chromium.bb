@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
         bool fatal) = 0;
     // This function may delete |impl|.
     virtual void ReportBadMessage(BadMessageReason reason, WebSocket* impl) = 0;
-    virtual bool CanReadRawCookies() = 0;
+    virtual bool CanReadRawCookies(const GURL& url) = 0;
     virtual void OnCreateURLRequest(int child_id,
                                     int frame_id,
                                     net::URLRequest* request) = 0;

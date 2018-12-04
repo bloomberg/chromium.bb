@@ -356,12 +356,24 @@ class NetworkContext::ContextNetworkDelegate
                                   GURL* new_url) override {
     if (!enable_referrers_)
       request->SetReferrer(std::string());
-    if (network_context_->network_service())
-      network_context_->network_service()->OnBeforeURLRequest();
+    NetworkService* network_service = network_context_->network_service();
+    if (network_service)
+      network_service->OnBeforeURLRequest();
 
     auto* loader = URLLoader::ForRequest(*request);
-    if (loader && loader->new_redirect_url())
+    if (!loader)
+      return;
+    const GURL* effective_url = nullptr;
+    if (loader->new_redirect_url()) {
       *new_url = loader->new_redirect_url().value();
+      effective_url = new_url;
+    } else {
+      effective_url = &request->url();
+    }
+    if (network_service) {
+      loader->SetAllowReportingRawHeaders(network_service->HasRawHeadersAccess(
+          loader->GetProcessId(), *effective_url));
+    }
   }
 
   void OnBeforeRedirectInternal(net::URLRequest* request,

@@ -36,6 +36,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -817,7 +818,10 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   EXPECT_FALSE(client()->response_head().raw_request_response_info);
-  service()->SetRawHeadersAccess(process_id, true);
+  service()->SetRawHeadersAccess(
+      process_id,
+      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80),
+       url::Origin::Create(request.url)});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   {
@@ -828,9 +832,72 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
     EXPECT_EQ("OK", request_response_info->http_status_text);
   }
 
-  service()->SetRawHeadersAccess(process_id, false);
+  service()->SetRawHeadersAccess(process_id, {});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+
+  service()->SetRawHeadersAccess(
+      process_id,
+      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80)});
+  StartLoadingURL(request, process_id);
+  client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+}
+
+class NetworkServiceTestWithResolverMap : public NetworkServiceTestWithService {
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        network::switches::kHostResolverRules, "MAP *.test 127.0.0.1");
+    NetworkServiceTestWithService::SetUp();
+  }
+};
+
+TEST_F(NetworkServiceTestWithResolverMap, RawRequestAccessControlWithRedirect) {
+  CreateNetworkContext();
+
+  const uint32_t process_id = 42;
+  // initial_url in a.test redirects to b_url (in b.test) that then redirects to
+  // url_a in a.test.
+  GURL url_a = test_server()->GetURL("a.test", "/echo");
+  GURL url_b =
+      test_server()->GetURL("b.test", "/server-redirect?" + url_a.spec());
+  GURL initial_url =
+      test_server()->GetURL("a.test", "/server-redirect?" + url_b.spec());
+  ResourceRequest request;
+  request.url = initial_url;
+  request.method = "GET";
+  request.report_raw_headers = true;
+  request.request_initiator = url::Origin();
+
+  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_a)});
+
+  StartLoadingURL(request, process_id);
+  client()->RunUntilRedirectReceived();  // from a.test to b.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->ClearHasReceivedRedirect();
+  client()->RunUntilRedirectReceived();  // from b.test to a.test
+  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->RunUntilComplete();  // Done loading a.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info.get());
+
+  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_b)});
+
+  StartLoadingURL(request, process_id);
+  client()->RunUntilRedirectReceived();  // from a.test to b.test
+  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->ClearHasReceivedRedirect();
+  client()->RunUntilRedirectReceived();  // from b.test to a.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->RunUntilComplete();  // Done loading a.test
   EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
 }
 

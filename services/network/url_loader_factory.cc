@@ -83,16 +83,6 @@ void URLLoaderFactory::CreateLoaderAndStart(
         origin_head_same_as_request_origin);
   }
 
-  bool report_raw_headers = false;
-  if (url_request.report_raw_headers) {
-    const NetworkService* service = context_->network_service();
-    report_raw_headers =
-        service && service->HasRawHeadersAccess(params_->process_id);
-    if (!report_raw_headers)
-      DLOG(ERROR) << "Denying raw headers request by process "
-                  << params_->process_id;
-  }
-
   mojom::NetworkServiceClient* network_service_client = nullptr;
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder;
   base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator;
@@ -143,8 +133,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       context_->url_request_context(), network_service_client,
       base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
-      std::move(request), options, url_request, report_raw_headers,
-      std::move(client),
+      std::move(request), options, url_request, std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),

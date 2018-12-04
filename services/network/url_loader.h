@@ -60,7 +60,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojom::URLLoaderRequest url_loader_request,
       int32_t options,
       const ResourceRequest& request,
-      bool report_raw_headers,
       mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const mojom::URLLoaderFactoryParams* factory_params,
@@ -131,6 +130,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const base::Optional<GURL>& new_redirect_url() const {
     return new_redirect_url_;
   }
+
+  void SetAllowReportingRawHeaders(bool allow);
 
   // Gets the URLLoader associated with this request.
   static URLLoader* ForRequest(const net::URLRequest& request);
@@ -253,6 +254,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;
 
+  // Whether client requested raw headers.
+  const bool want_raw_headers_;
+  // Whether we actually should report them.
   bool report_raw_headers_;
   net::HttpRawRequestHeaders raw_request_headers_;
   scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
