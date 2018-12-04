@@ -2754,6 +2754,13 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     CHECK_EQ(url_to_load, frame_entry->url());
   }
 
+  if (auto* rfh = node->current_frame_host()) {
+    if (rfh->is_attaching_inner_delegate()) {
+      // Avoid starting any new navigations since this node is now preparing for
+      // attaching an inner delegate.
+      return nullptr;
+    }
+  }
 
   if (!IsValidURLForNavigation(node->IsMainFrame(), virtual_url, url_to_load))
     return nullptr;
@@ -2850,6 +2857,14 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     // case avoids issues with sending data to the wrong page.
     dest_url = entry.GetOriginalRequestURL();
     dest_referrer = Referrer();
+  }
+
+  if (auto* rfh = frame_tree_node->current_frame_host()) {
+    if (rfh->is_attaching_inner_delegate()) {
+      // Avoid starting any new navigations since this node is now preparing for
+      // attaching an inner delegate.
+      return nullptr;
+    }
   }
 
   if (!IsValidURLForNavigation(frame_tree_node->IsMainFrame(),

@@ -1766,11 +1766,26 @@ void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
   GetMainFrame()->DispatchBeforeUnload(before_unload_type, false);
 }
 
+bool WebContentsImpl::CanAttachToOuterContentsFrame(
+    RenderFrameHost* outer_contents_frame) {
+  bool web_contents_valid = !node_.outer_web_contents() &&
+                            FromRenderFrameHost(outer_contents_frame) != this;
+  bool rfh_valid = outer_contents_frame->GetParent()->GetSiteInstance() ==
+                   outer_contents_frame->GetSiteInstance();
+  bool rfh_is_loading = static_cast<RenderFrameHostImpl*>(outer_contents_frame)
+                            ->frame_tree_node()
+                            ->IsLoading();
+  return web_contents_valid && rfh_valid && !rfh_is_loading;
+}
+
 void WebContentsImpl::AttachToOuterWebContentsFrame(
     std::unique_ptr<WebContents> current_web_contents,
     RenderFrameHost* outer_contents_frame) {
   DCHECK(!node_.outer_web_contents());
   DCHECK_EQ(current_web_contents.get(), this);
+  DCHECK(CanAttachToOuterContentsFrame(outer_contents_frame));
+  auto* outer_contents_frame_impl =
+      static_cast<RenderFrameHostImpl*>(outer_contents_frame);
 
   RenderFrameHostManager* render_manager = GetRenderManager();
 
@@ -1791,8 +1806,6 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   if (!render_manager->GetRenderWidgetHostView())
     CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
 
-  auto* outer_contents_frame_impl =
-      static_cast<RenderFrameHostImpl*>(outer_contents_frame);
   // Create a link to our outer WebContents.
   node_.ConnectToOuterWebContents(std::move(current_web_contents),
                                   outer_contents_frame_impl);

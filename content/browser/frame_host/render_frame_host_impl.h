@@ -259,6 +259,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool push_to_renderer_now) override;
   bool IsSandboxed(blink::WebSandboxFlags flags) const override;
   void FlushNetworkAndNavigationInterfacesForTesting() override;
+  bool PrepareForInnerWebContentsAttach() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -801,6 +802,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // started (or stopped) playing audible audio.
   void AudioContextPlaybackStarted(int audio_context_id);
   void AudioContextPlaybackStopped(int audio_context_id);
+
+  bool is_attaching_inner_delegate() const {
+    return is_attaching_inner_delegate_;
+  }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1477,6 +1482,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
   bool is_loading_;
+
+  // TODO(ekaramad): This flag is used for block navigations that are not using
+  // the network stack from starting and interfering with the inner WebContents
+  // attaching process. Investigate if it can be removed after moving the attach
+  // logic into content layer (https://crbug.com/911161).
+  // When true the RFH is in a transient state where it cancels all navigations
+  // and does not accept any new navigations until an inner WebContents is
+  // attached.
+  bool is_attaching_inner_delegate_ = false;
 
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,

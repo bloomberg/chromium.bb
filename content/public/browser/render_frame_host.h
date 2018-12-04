@@ -347,6 +347,15 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // received by the other end. For test use only.
   virtual void FlushNetworkAndNavigationInterfacesForTesting() = 0;
 
+  // Prepares this frame for attaching an inner WebContents to its own (outer)
+  // WebContents. This includes canceling all navigation requests as well as
+  // reseting the loading state. Returns false if attaching is not possible (
+  // if this is a main frame or a cross-process subframe), or true otherwise.
+  // Note: if this is called during an ongoing navigation it is not safe to
+  // attach WebContentses immediately after returning from this function (post
+  // task to ensure all observer calls related to the navigation complete).
+  virtual bool PrepareForInnerWebContentsAttach() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

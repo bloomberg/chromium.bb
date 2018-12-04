@@ -136,6 +136,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/referrer_type_converters.h"
@@ -2798,6 +2799,16 @@ void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting() {
   navigation_control_.FlushForTesting();
 }
 
+bool RenderFrameHostImpl::PrepareForInnerWebContentsAttach() {
+  DCHECK(MimeHandlerViewMode::UsesCrossProcessFrame());
+  if (IsCrossProcessSubframe() || !GetParent())
+    return false;
+  ResetNavigationRequests();
+  ResetLoadingState();
+  is_attaching_inner_delegate_ = true;
+  return true;
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
@@ -3672,6 +3683,12 @@ void RenderFrameHostImpl::BeginNavigation(
     blink::mojom::BlobURLTokenPtr blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator) {
+  if (is_attaching_inner_delegate_) {
+    // Avoid starting any new navigations since this frame is in the process of
+    // attaching an inner delegate.
+    return;
+  }
+
   if (!is_active())
     return;
 
@@ -6050,7 +6067,9 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
     if (find_request != navigation_requests_.end()) {
       navigation_request_ = std::move(find_request->second);
     } else {
-      NOTREACHED();
+      // This frame might be used for attaching an inner WebContents in which
+      // case |navigation_requests_| are deleted during attaching.
+      DCHECK(is_attaching_inner_delegate_);
     }
   }
   // Remove the requests from the list of NavigationRequests waiting to commit.

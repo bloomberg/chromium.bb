@@ -528,6 +528,14 @@ class WebContents : public PageNavigator,
   // potential discard without causing the dialog to appear.
   virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
+  // Returns true if it is safe for this WebContents to attach to the outer
+  // WebContents associated with |render_frame_host| using the method
+  // AttachToOuterWebContentsFrame. If a frame belongs to |this| WebContents or
+  // is in loading state or not in the same SiteInstance as its parent frame it
+  // should not be used for attaching.
+  virtual bool CanAttachToOuterContentsFrame(
+      RenderFrameHost* outer_contents_frame) = 0;
+
   // Attaches |current_web_contents| to its container frame
   // |outer_contents_frame|.
   virtual void AttachToOuterWebContentsFrame(

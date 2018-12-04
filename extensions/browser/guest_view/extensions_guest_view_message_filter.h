@@ -118,11 +118,12 @@ class ExtensionsGuestViewMessageFilter
       content::WebContents* web_contents);
 
   // Called by a FrameNavigationHelper on UI thread to notify the message filter
-  // whether or not it should proceed with attaching a guest. if |plugin_rfh| is
-  // nullptr, the MimeHandlerViewGuest associated with |element_instance_id|
-  // will be destroyed and deleted.
+  // whether or not it should proceed with attaching a guest. If the
+  // RenderFrameHost associated with |plugin_frame_routing_id| in the process
+  // identified by |render_process_id_| is not found, the MimeHandlerViewGuest
+  // associated with |element_instance_id| will be destroyed and deleted.
   void ResumeAttachOrDestroy(int32_t element_instance_id,
-                             content::RenderFrameHost* plugin_rfh);
+                             int32_t plugin_frame_routing_id);
 
   std::map<int32_t, std::unique_ptr<FrameNavigationHelper>>
       frame_navigation_helpers_;
