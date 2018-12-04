@@ -80,35 +80,6 @@ base::TimeDelta RandomTimeDelta(base::TimeDelta max) {
       base::RandGenerator(max.InMicroseconds()));
 }
 
-// Returns a TimeDelta profile duration based on the current chrome channel.
-base::TimeDelta ProfileDuration() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV:
-    case version_info::Channel::BETA:
-      return base::TimeDelta::FromSeconds(4);
-    case version_info::Channel::STABLE:
-    case version_info::Channel::UNKNOWN:
-    default:
-      return base::TimeDelta::FromSeconds(2);
-  }
-}
-
-// Returns a TimeDelta interval duration for periodic collection based on the
-// current chrome channel.
-base::TimeDelta PeriodicCollectionInterval() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV:
-    case version_info::Channel::BETA:
-      return base::TimeDelta::FromMinutes(90);
-    case version_info::Channel::STABLE:
-    case version_info::Channel::UNKNOWN:
-    default:
-      return base::TimeDelta::FromMinutes(180);
-  }
-}
-
 // Gets parameter named by |key| from the map. If it is present and is an
 // integer, stores the result in |out| and return true. Otherwise return false.
 bool GetInt64Param(const std::map<std::string, std::string>& params,
@@ -312,36 +283,6 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 }
 
 }  // namespace internal
-
-PerfProvider::CollectionParams::CollectionParams()
-    : CollectionParams(ProfileDuration() /* collection_duration */,
-                       PeriodicCollectionInterval() /* periodic_interval */,
-                       PerfProvider::CollectionParams::
-                           TriggerParams(/* resume_from_suspend */
-                                         10 /* sampling_factor */,
-                                         base::TimeDelta::FromSeconds(
-                                             5)) /* max_collection_delay */,
-                       PerfProvider::CollectionParams::
-                           TriggerParams(/* restore_session */
-                                         10 /* sampling_factor */,
-                                         base::TimeDelta::FromSeconds(
-                                             10)) /* max_collection_delay */) {}
-
-PerfProvider::CollectionParams::CollectionParams(
-    base::TimeDelta collection_duration,
-    base::TimeDelta periodic_interval,
-    TriggerParams resume_from_suspend,
-    TriggerParams restore_session)
-    : collection_duration_(collection_duration),
-      periodic_interval_(periodic_interval),
-      resume_from_suspend_(resume_from_suspend),
-      restore_session_(restore_session) {}
-
-PerfProvider::CollectionParams::TriggerParams::TriggerParams(
-    int64_t sampling_factor,
-    base::TimeDelta max_collection_delay)
-    : sampling_factor_(sampling_factor),
-      max_collection_delay_(max_collection_delay) {}
 
 PerfProvider::PerfProvider()
     : login_observer_(this),
