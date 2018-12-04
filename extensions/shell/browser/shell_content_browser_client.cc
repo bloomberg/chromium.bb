@@ -25,6 +25,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
@@ -47,6 +48,7 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
+#include "extensions/shell/common/version.h"  // Generated file.
 #include "storage/browser/quota/quota_settings.h"
 #include "url/gurl.h"
 
@@ -326,6 +328,12 @@ ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     const url::Origin& request_initiator) {
   return URLLoaderFactoryManager::CreateFactory(
       process, network_context, header_client, request_initiator);
+}
+
+std::string ShellContentBrowserClient::GetUserAgent() const {
+  // Must contain a user agent string for version sniffing. For example,
+  // pluginless WebRTC Hangouts checks the Chrome version number.
+  return content::BuildUserAgentFromProduct("Chrome/" PRODUCT_VERSION);
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

@@ -102,10 +102,6 @@ void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #endif
 }
 
-std::string CastContentClient::GetUserAgent() const {
-  return chromecast::shell::GetUserAgent();
-}
-
 base::string16 CastContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }

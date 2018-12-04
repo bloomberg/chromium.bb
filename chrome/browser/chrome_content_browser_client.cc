@@ -278,6 +278,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -1013,7 +1014,28 @@ void LaunchURL(
   }
 }
 
+std::string GetProduct() {
+  return version_info::GetProductNameAndVersionForUserAgent();
+}
+
 }  // namespace
+
+std::string GetUserAgent() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUserAgent)) {
+    std::string ua = command_line->GetSwitchValueASCII(switches::kUserAgent);
+    if (net::HttpUtil::IsValidHeaderValue(ua))
+      return ua;
+    LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
+  }
+
+  std::string product = GetProduct();
+#if defined(OS_ANDROID)
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+#endif
+  return content::BuildUserAgentFromProduct(product);
+}
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
     ChromeFeatureListCreator* chrome_feature_list_creator)
@@ -5288,4 +5310,12 @@ void ChromeContentBrowserClient::LogWebFeatureForCurrentPage(
   page_load_metrics::mojom::PageLoadFeatures new_features({feature}, {}, {});
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
       render_frame_host, new_features);
+}
+
+std::string ChromeContentBrowserClient::GetProduct() const {
+  return ::GetProduct();
+}
+
+std::string ChromeContentBrowserClient::GetUserAgent() const {
+  return ::GetUserAgent();
 }

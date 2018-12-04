@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/android/download/download_controller_base.h"
-#include "chrome/common/chrome_content_client.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"

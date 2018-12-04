@@ -40,14 +40,12 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
-#include "components/version_info/version_info.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
@@ -394,28 +392,7 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
 }
 #endif  // defined(REGISTER_BUNDLED_WIDEVINE_CDM)
 
-std::string GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
-}
-
 }  // namespace
-
-std::string GetUserAgent() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent)) {
-    std::string ua = command_line->GetSwitchValueASCII(switches::kUserAgent);
-    if (net::HttpUtil::IsValidHeaderValue(ua))
-      return ua;
-    LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
-  }
-
-  std::string product = GetProduct();
-#if defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-#endif
-  return content::BuildUserAgentFromProduct(product);
-}
 
 ChromeContentClient::ChromeContentClient() {
 }
@@ -674,14 +651,6 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #if defined(OS_ANDROID)
   schemes->local_schemes.push_back(url::kContentScheme);
 #endif
-}
-
-std::string ChromeContentClient::GetProduct() const {
-  return ::GetProduct();
-}
-
-std::string ChromeContentClient::GetUserAgent() const {
-  return ::GetUserAgent();
 }
 
 base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {

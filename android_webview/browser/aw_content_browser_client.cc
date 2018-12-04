@@ -77,6 +77,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "net/android/network_library.h"
 #include "net/log/net_log.h"
@@ -210,6 +211,21 @@ void OnReceivedErrorOnUIThread(
 }
 
 }  // anonymous namespace
+
+std::string GetProduct() {
+  return version_info::GetProductNameAndVersionForUserAgent();
+}
+
+std::string GetUserAgent() {
+  // "Version/4.0" had been hardcoded in the legacy WebView.
+  std::string product = "Version/4.0 " + GetProduct();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMobileUserAgent)) {
+    product += " Mobile";
+  }
+  return content::BuildUserAgentFromProductAndExtraOSInfo(
+      product, "; wv", true /* include_android_build_number */);
+}
 
 // TODO(yirui): can use similar logic as in PrependToAcceptLanguagesIfNecessary
 // in chrome/browser/android/preferences/pref_service_bridge.cc
@@ -880,6 +896,14 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
                      std::move(proxied_request), std::move(target_factory_info),
                      nullptr /* AwInterceptedRequestHandler */));
   return true;
+}
+
+std::string AwContentBrowserClient::GetProduct() const {
+  return android_webview::GetProduct();
+}
+
+std::string AwContentBrowserClient::GetUserAgent() const {
+  return android_webview::GetUserAgent();
 }
 
 content::SpeechRecognitionManagerDelegate*

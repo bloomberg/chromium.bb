@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -563,6 +564,10 @@ UserScriptListener* ChromeExtensionsBrowserClient::GetUserScriptListener() {
   if (!user_script_listener_)
     user_script_listener_ = std::make_unique<UserScriptListener>();
   return user_script_listener_.get();
+}
+
+std::string ChromeExtensionsBrowserClient::GetUserAgent() const {
+  return ::GetUserAgent();
 }
 
 // static

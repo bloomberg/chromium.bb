@@ -196,10 +196,11 @@ void AddAdditionalRequestHeaders(
   // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
   headers->SetHeaderIfMissing("Upgrade-Insecure-Requests", "1");
 
-  headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
-                              user_agent_override.empty()
-                                  ? GetContentClient()->GetUserAgent()
-                                  : user_agent_override);
+  headers->SetHeaderIfMissing(
+      net::HttpRequestHeaders::kUserAgent,
+      user_agent_override.empty()
+          ? GetContentClient()->browser()->GetUserAgent()
+          : user_agent_override);
 
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.

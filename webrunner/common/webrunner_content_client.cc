@@ -4,8 +4,6 @@
 
 #include "webrunner/common/webrunner_content_client.h"
 
-#include "components/version_info/version_info.h"
-#include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -13,11 +11,6 @@ namespace webrunner {
 
 WebRunnerContentClient::WebRunnerContentClient() = default;
 WebRunnerContentClient::~WebRunnerContentClient() = default;
-
-std::string WebRunnerContentClient::GetUserAgent() const {
-  return content::BuildUserAgentFromProduct(
-      version_info::GetProductNameAndVersionForUserAgent());
-}
 
 base::string16 WebRunnerContentClient::GetLocalizedString(
     int message_id) const {

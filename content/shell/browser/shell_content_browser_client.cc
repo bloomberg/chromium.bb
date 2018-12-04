@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/test_service.h"
 #include "content/shell/browser/shell.h"
@@ -142,6 +143,14 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 #endif  // defined(OS_ANDROID)
 
 }  // namespace
+
+std::string GetShellUserAgent() {
+  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+  return BuildUserAgentFromProduct(product);
+}
 
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
   return g_browser_client;
@@ -400,6 +409,10 @@ scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
 #else
   return ShellLoginDialog::Create(auth_info, std::move(auth_required_callback));
 #endif
+}
+
+std::string ShellContentBrowserClient::GetUserAgent() const {
+  return GetShellUserAgent();
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

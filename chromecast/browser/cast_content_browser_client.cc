@@ -44,6 +44,7 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/tts/tts_controller.h"
 #include "chromecast/browser/url_request_context_factory.h"
+#include "chromecast/common/cast_content_client.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_resource_tracker.h"
@@ -901,6 +902,10 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
   }
 #endif
   return throttles;
+}
+
+std::string CastContentBrowserClient::GetUserAgent() const {
+  return chromecast::shell::GetUserAgent();
 }
 
 }  // namespace shell

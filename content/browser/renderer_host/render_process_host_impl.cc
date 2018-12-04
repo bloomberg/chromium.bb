@@ -4449,7 +4449,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
   // Pass bits of global renderer state to the renderer.
-  GetRendererInterface()->SetUserAgent(GetContentClient()->GetUserAgent());
+  GetRendererInterface()->SetUserAgent(
+      GetContentClient()->browser()->GetUserAgent());
   NotifyRendererIfLockedToSite();
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
       base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {

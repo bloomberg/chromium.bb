@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extensions_client.h"
 #include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
@@ -30,7 +29,7 @@ void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
                                    const SendFeedbackCallback& callback) {
   feedback_data->set_locale(
       ExtensionsBrowserClient::Get()->GetApplicationLocale());
-  feedback_data->set_user_agent(ExtensionsClient::Get()->GetUserAgent());
+  feedback_data->set_user_agent(ExtensionsBrowserClient::Get()->GetUserAgent());
 
   if (!feedback_data->attached_file_uuid().empty()) {
     // Self-deleting object.

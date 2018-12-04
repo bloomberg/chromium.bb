@@ -24,9 +24,6 @@
 #include "content/public/common/pepper_plugin_info.h"
 #endif
 
-// Returns the user agent of Chrome.
-std::string GetUserAgent();
-
 class ChromeContentClient : public content::ContentClient {
  public:
 #if defined(GOOGLE_CHROME_BUILD)
@@ -83,8 +80,6 @@ class ChromeContentClient : public content::ContentClient {
       std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override;
 
   void AddAdditionalSchemes(Schemes* schemes) override;
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
   base::string16 GetLocalizedString(int message_id) const override;
   base::StringPiece GetDataResource(
       int resource_id,

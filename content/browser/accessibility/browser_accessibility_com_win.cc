@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
@@ -93,7 +94,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appName(BSTR* app_name) {
   // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
   // the part before the "/".
   std::vector<std::string> product_components =
-      base::SplitString(GetContentClient()->GetProduct(), "/",
+      base::SplitString(GetContentClient()->browser()->GetProduct(), "/",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   // |GetProduct| will return an empty string if we are running the content
   // shell instead of Chrome.
@@ -113,7 +114,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appVersion(BSTR* app_version) {
   // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
   // the part after the "/".
   std::vector<std::string> product_components =
-      base::SplitString(GetContentClient()->GetProduct(), "/",
+      base::SplitString(GetContentClient()->browser()->GetProduct(), "/",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   // |GetProduct| will return an empty string if we are running the content
   // shell instead of Chrome.
@@ -144,7 +145,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_toolkitVersion(
   if (!toolkit_version)
     return E_INVALIDARG;
 
-  std::string user_agent = GetContentClient()->GetUserAgent();
+  std::string user_agent = GetContentClient()->browser()->GetUserAgent();
   *toolkit_version = SysAllocString(base::UTF8ToUTF16(user_agent).c_str());
   DCHECK(*toolkit_version);
   return *toolkit_version ? S_OK : E_FAIL;

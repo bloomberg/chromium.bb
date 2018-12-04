@@ -7,7 +7,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/nacl/common/buildflags.h"
-#include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "extensions/shell/common/version.h"  // Generated file.
 #include "ui/base/l10n/l10n_util.h"
@@ -81,12 +80,6 @@ void ShellContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->secure_schemes.push_back(kExtensionScheme);
   schemes->cors_enabled_schemes.push_back(kExtensionScheme);
   schemes->csp_bypassing_schemes.push_back(kExtensionScheme);
-}
-
-std::string ShellContentClient::GetUserAgent() const {
-  // Must contain a user agent string for version sniffing. For example,
-  // pluginless WebRTC Hangouts checks the Chrome version number.
-  return content::BuildUserAgentFromProduct("Chrome/" PRODUCT_VERSION);
 }
 
 base::string16 ShellContentClient::GetLocalizedString(int message_id) const {

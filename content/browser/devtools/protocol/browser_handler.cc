@@ -16,6 +16,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
@@ -60,8 +61,8 @@ Response BrowserHandler::GetVersion(std::string* protocol_version,
                                     std::string* js_version) {
   *protocol_version = DevToolsAgentHost::GetProtocolVersion();
   *revision = GetWebKitRevision();
-  *product = GetContentClient()->GetProduct();
-  *user_agent = GetContentClient()->GetUserAgent();
+  *product = GetContentClient()->browser()->GetProduct();
+  *user_agent = GetContentClient()->browser()->GetUserAgent();
   *js_version = V8_VERSION_STRING;
   return Response::OK();
 }

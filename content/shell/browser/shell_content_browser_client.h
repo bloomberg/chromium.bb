@@ -22,6 +22,8 @@ class ResourceDispatcherHostDelegate;
 class ShellBrowserContext;
 class ShellBrowserMainParts;
 
+std::string GetShellUserAgent();
+
 class ShellContentBrowserClient : public ContentBrowserClient {
  public:
   // Gets the current instance.
@@ -84,6 +86,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
+
+  std::string GetUserAgent() const override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

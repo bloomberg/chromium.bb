@@ -117,6 +117,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   KioskDelegate* GetKioskDelegate() override;
   bool IsLockScreenContext(content::BrowserContext* context) override;
   std::string GetApplicationLocale() override;
+  std::string GetUserAgent() const override;
 
   // |context| is the single BrowserContext used for IsValidContext().
   // |pref_service| is used for GetPrefServiceForContext().

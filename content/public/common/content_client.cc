@@ -71,14 +71,6 @@ bool ContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
   return false;
 }
 
-std::string ContentClient::GetProduct() const {
-  return std::string();
-}
-
-std::string ContentClient::GetUserAgent() const {
-  return std::string();
-}
-
 base::string16 ContentClient::GetLocalizedString(int message_id) const {
   return base::string16();
 }

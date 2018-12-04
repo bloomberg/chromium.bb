@@ -362,6 +362,9 @@ class ExtensionsBrowserClient {
 
   virtual UserScriptListener* GetUserScriptListener();
 
+  // Returns the user agent used by the content module.
+  virtual std::string GetUserAgent() const;
+
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
 

@@ -153,6 +153,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   UserScriptListener* GetUserScriptListener() override;
+  std::string GetUserAgent() const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 

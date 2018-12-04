@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/common/shell_content_client.h"
+#include "extensions/shell/browser/shell_content_browser_client.h"
 
 #include <string>
 
@@ -10,13 +10,11 @@
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test ShellContentClientTest;
-
 namespace extensions {
 
 // Tests that the app_shell user agent looks like a Chrome user agent.
-TEST_F(ShellContentClientTest, UserAgentFormat) {
-  ShellContentClient client;
+TEST(ShellContentBrowserClientTest, UserAgentFormat) {
+  ShellContentBrowserClient client(nullptr);
   std::string user_agent = client.GetUserAgent();
 
   // Must start with the usual Mozilla-compatibility string.

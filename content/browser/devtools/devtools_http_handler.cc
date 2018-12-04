@@ -30,6 +30,7 @@
 #include "content/browser/devtools/grit/devtools_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -569,8 +570,9 @@ void DevToolsHttpHandler::OnJsonRequest(
     version.SetString("Protocol-Version",
                       DevToolsAgentHost::GetProtocolVersion());
     version.SetString("WebKit-Version", GetWebKitVersion());
-    version.SetString("Browser", GetContentClient()->GetProduct());
-    version.SetString("User-Agent", GetContentClient()->GetUserAgent());
+    version.SetString("Browser", GetContentClient()->browser()->GetProduct());
+    version.SetString("User-Agent",
+                      GetContentClient()->browser()->GetUserAgent());
     version.SetString("V8-Version", V8_VERSION_STRING);
     std::string host = info.headers["host"];
     version.SetString(
