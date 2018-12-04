@@ -16,6 +16,10 @@ const char kCrostiniMimeTypes[] = "crostini.mime_types";
 const char kCrostiniRegistry[] = "crostini.registry";
 // List of filesystem paths that are shared with the crostini container.
 const char kCrostiniSharedPaths[] = "crostini.shared_paths";
+// List of USB devices with their system guid, a name/description and their
+// enabled state for use with Crostini.
+const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
+
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.
 const char kUserCrostiniAllowedByPolicy[] = "crostini.user_allowed_by_policy";
@@ -36,6 +40,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kCrostiniMimeTypes);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
   registry->RegisterListPref(kCrostiniSharedPaths);
+  registry->RegisterListPref(kCrostiniSharedUsbDevices);
   registry->RegisterBooleanPref(crostini::prefs::kReportCrostiniUsageEnabled,
                                 false);
   registry->RegisterStringPref(kCrostiniLastLaunchVersion, std::string());
