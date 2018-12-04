@@ -95,6 +95,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool ComputeShouldClipOverflow() const override {
     return LayoutBox::ComputeShouldClipOverflow() || ShouldApplyViewportClip();
   }
+  LayoutRect ComputeContentsVisualOverflow() const;
 
   const LayoutObjectChildList* Children() const { return &children_; }
   LayoutObjectChildList* Children() { return &children_; }
