@@ -17717,6 +17717,92 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, CreateReportHttps) {
   EXPECT_EQ(0, error.reporting_upload_depth);
 }
 
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
+  base::HistogramTester histograms;
+  RequestPolicy();
+  EXPECT_EQ(1u, network_error_logging_service()->headers().size());
+  EXPECT_EQ(1u, network_error_logging_service()->errors().size());
+
+  // Make HTTP request
+  std::string extra_header_string = extra_headers_.ToString();
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"),
+      MockWrite(ASYNC, extra_header_string.data(), extra_header_string.size()),
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.extra_headers = extra_headers_;
+  request.reporting_upload_depth = reporting_upload_depth_;
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  StaticSocketDataProvider reads(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&reads);
+
+  TestCompletionCallback callback;
+  auto session = CreateSession(&session_deps_);
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  // Insecure request does not generate a report
+  histograms.ExpectBucketCount(
+      NetworkErrorLoggingService::kRequestOutcomeHistogram,
+      NetworkErrorLoggingService::RequestOutcome::DISCARDED_INSECURE_ORIGIN, 1);
+
+  EXPECT_EQ(1u, network_error_logging_service()->errors().size());
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       DontCreateReportHttpError) {
+  base::HistogramTester histograms;
+  RequestPolicy();
+  EXPECT_EQ(1u, network_error_logging_service()->headers().size());
+  EXPECT_EQ(1u, network_error_logging_service()->errors().size());
+
+  // Make HTTP request that fails
+  MockRead data_reads[] = {
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpRequestInfo request;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  request.method = "GET";
+  request.url = GURL("http://www.originwithoutpolicy.com:2000/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_INVALID_HTTP_RESPONSE));
+
+  // Insecure request does not generate a report, regardless of existence of a
+  // policy for the origin.
+  histograms.ExpectBucketCount(
+      NetworkErrorLoggingService::kRequestOutcomeHistogram,
+      NetworkErrorLoggingService::RequestOutcome::DISCARDED_INSECURE_ORIGIN, 1);
+
+  EXPECT_EQ(1u, network_error_logging_service()->errors().size());
+}
+
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportContainsReferrer) {
   constexpr char kReferrer[] = "https://www.example.org/login/";
   extra_headers_.SetHeader("Referer", kReferrer);

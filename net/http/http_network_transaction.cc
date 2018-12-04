@@ -1391,7 +1391,11 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
     return;
   }
 
-  // TODO(crbug.com/903893): Ignore errors from non-HTTPS origins.
+  // Ignore errors from non-HTTPS origins.
+  if (!url_.SchemeIsCryptographic()) {
+    NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin();
+    return;
+  }
 
   NetworkErrorLoggingService::RequestDetails details;
 
