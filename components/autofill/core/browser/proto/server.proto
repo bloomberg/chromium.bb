@@ -185,7 +185,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 36
+// Next available id: 37
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -370,6 +370,25 @@ message AutofillUploadContents {
 
   // Form-level metadata observed by the client, randomized.
   optional AutofillRandomizedFormMetadata randomized_form_metadata = 32;
+
+  // Information about a button's title.
+  message ButtonTitle {
+    // Text showed on the button.
+    optional string title = 1;
+
+    // Describes how the button is implemented in HTML source.
+    enum ButtonTitleType {
+      NONE = 0;
+      BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>
+      BUTTON_ELEMENT_BUTTON_TYPE = 2;  // <button type='button'>
+      INPUT_ELEMENT_SUBMIT_TYPE = 3;   // <input type='submit'>
+      INPUT_ELEMENT_BUTTON_TYPE = 4;   // <input type='button'>
+    }
+    optional ButtonTitleType type = 2;
+  }
+  // Titles of form's buttons.
+  // TODO(850606): Deprecate once randomized metadata is launched.
+  repeated ButtonTitle button_title = 36;
 }
 
 // This proto contains information about the validity of each field in an
