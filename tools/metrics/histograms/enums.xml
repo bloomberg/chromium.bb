@@ -45703,6 +45703,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Images and videos"/>
 </enum>
 
+<enum name="SendPasswordFormToBrowserProcess">
+  <int value="0" label="Wasn't sent"/>
+  <int value="1" label="Sent, only_visible == true"/>
+  <int value="2" label="Sent, newly added form"/>
+  <int value="3" label="Sent, structure change"/>
+  <int value="4" label="Sent, no form-tag"/>
+  <int value="5" label="Sent, no form id"/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
