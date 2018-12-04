@@ -2684,7 +2684,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   bool force_shader_name_hashing_for_test;
 
-  GLfloat line_width_range_[2];
+  GLfloat line_width_range_[2] = {0.0, 1.0};
 
   SamplerState default_sampler_state_;
 
