@@ -27,6 +27,10 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
+namespace ui {
+class AXEventBundleSink;
+}
+
 namespace views {
 class AXAuraObjWrapper;
 class View;
@@ -34,8 +38,6 @@ class View;
 
 using AuraAXTreeSerializer = ui::
     AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
-
-struct ExtensionMsg_AccessibilityEventBundleParams;
 
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public ui::AXHostDelegate,
@@ -67,10 +69,8 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // views::AXEventObserver:
   void OnViewEvent(views::View* view, ax::mojom::Event event_type) override;
 
-  void set_event_bundle_callback_for_testing(
-      base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-          callback) {
-    event_bundle_callback_for_testing_ = callback;
+  void set_event_bundle_sink(ui::AXEventBundleSink* sink) {
+    event_bundle_sink_ = sink;
   }
 
  protected:
@@ -113,8 +113,9 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   std::vector<std::pair<views::AXAuraObjWrapper*, ax::mojom::Event>>
       pending_events_;
 
-  base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-      event_bundle_callback_for_testing_;
+  // The handler for AXEvents (e.g. the extensions subsystem in production, or
+  // a fake for tests).
+  ui::AXEventBundleSink* event_bundle_sink_ = nullptr;
 
   base::WeakPtrFactory<AutomationManagerAura> weak_ptr_factory_;
 
