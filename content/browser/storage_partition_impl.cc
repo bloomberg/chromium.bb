@@ -765,7 +765,8 @@ base::FilePath StoragePartitionImpl::GetPath() {
 
 net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
   // TODO(jam): enable for all, still used on WebView and Chromecast
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     DCHECK(g_allow_get_url_request_context);
 #endif
@@ -774,7 +775,8 @@ net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
 
 net::URLRequestContextGetter*
 StoragePartitionImpl::GetMediaURLRequestContext() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     DCHECK(g_allow_get_url_request_context);
 #endif
