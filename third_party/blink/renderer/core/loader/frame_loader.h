@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
@@ -253,6 +254,10 @@ class CORE_EXPORT FrameLoader final {
   void ClientDroppedNavigation();
   void MarkAsLoading();
 
+  ContentSecurityPolicy* GetLastOriginDocumentCSP() {
+    return last_origin_document_csp_.Get();
+  }
+
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(
@@ -335,6 +340,8 @@ class CORE_EXPORT FrameLoader final {
   bool detached_;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
+
+  Member<ContentSecurityPolicy> last_origin_document_csp_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };
