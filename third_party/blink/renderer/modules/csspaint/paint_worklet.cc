@@ -140,7 +140,7 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   ProvidePaintWorkletProxyClientTo(worker_clients, proxy_client);
 
   PaintWorkletMessagingProxy* proxy =
-      new PaintWorkletMessagingProxy(GetExecutionContext());
+      MakeGarbageCollected<PaintWorkletMessagingProxy>(GetExecutionContext());
   proxy->Initialize(worker_clients, ModuleResponsesMap());
   return proxy;
 }

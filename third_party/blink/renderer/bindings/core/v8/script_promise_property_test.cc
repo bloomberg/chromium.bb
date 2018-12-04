@@ -80,9 +80,10 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
       Property;
   GarbageCollectedHolder(ExecutionContext* execution_context)
       : GarbageCollectedScriptWrappable("holder"),
-        property_(new Property(execution_context,
-                               ToGarbageCollectedScriptWrappable(),
-                               Property::kReady)) {}
+        property_(
+            MakeGarbageCollected<Property>(execution_context,
+                                           ToGarbageCollectedScriptWrappable(),
+                                           Property::kReady)) {}
 
   Property* GetProperty() { return property_; }
   GarbageCollectedScriptWrappable* ToGarbageCollectedScriptWrappable() {
@@ -195,7 +196,7 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
     typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T,
                                   ToV8UndefinedGenerator>
         Property;
-    Property* property = new Property(
+    Property* property = MakeGarbageCollected<Property>(
         &GetDocument(),
         MakeGarbageCollected<GarbageCollectedScriptWrappable>("holder"),
         Property::kReady);

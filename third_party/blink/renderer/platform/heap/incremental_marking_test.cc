@@ -389,16 +389,15 @@ class Child : public GarbageCollected<Child>,
   USING_GARBAGE_COLLECTED_MIXIN(Child);
 
  public:
-  static Child* Create() { return new Child(); }
+  static Child* Create() { return MakeGarbageCollected<Child>(); }
+
+  Child() : ClassWithVirtual(), Mixin() {}
   ~Child() override {}
 
   void Trace(blink::Visitor* visitor) override { Mixin::Trace(visitor); }
 
   void Foo() override {}
   void Bar() override {}
-
- protected:
-  Child() : ClassWithVirtual(), Mixin() {}
 };
 
 class ParentWithMixinPointer : public GarbageCollected<ParentWithMixinPointer> {
@@ -1506,7 +1505,8 @@ class RegisteringObject : public GarbageCollected<RegisteringObject>,
 TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   IncrementalMarkingScope scope(ThreadState::Current());
   ObjectRegistry registry;
-  RegisteringObject* object = new RegisteringObject(&registry);
+  RegisteringObject* object =
+      MakeGarbageCollected<RegisteringObject>(&registry);
 
   // Clear any objects that have been added to the regular marking worklist in
   // the process of calling the constructor.
@@ -1540,7 +1540,7 @@ TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
 
 TEST(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
   ObjectRegistry registry;
-  RegisteringMixin* mixin = new RegisteringObject(&registry);
+  RegisteringMixin* mixin = MakeGarbageCollected<RegisteringObject>(&registry);
   HeapObjectHeader* header = mixin->GetHeapObjectHeader();
   const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
   EXPECT_NE(uninitialized_value, header);

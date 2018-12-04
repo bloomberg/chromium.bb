@@ -23,6 +23,8 @@ class GamepadDispatcher final
 
  public:
   static GamepadDispatcher& Instance();
+
+  GamepadDispatcher();
   ~GamepadDispatcher() override;
 
   void SampleGamepads(device::Gamepads&);
@@ -39,8 +41,6 @@ class GamepadDispatcher final
   void Trace(blink::Visitor*) override;
 
  private:
-  GamepadDispatcher();
-
   void InitializeHaptics();
 
   // WebGamepadListener

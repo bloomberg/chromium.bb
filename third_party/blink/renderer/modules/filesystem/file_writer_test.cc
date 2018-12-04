@@ -161,7 +161,7 @@ class FileWriterTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    testable_writer_ = new TestableFileWriter();
+    testable_writer_ = MakeGarbageCollected<TestableFileWriter>();
     testable_writer_->Initialize(mock_path_as_kurl(), 10);
   }
 

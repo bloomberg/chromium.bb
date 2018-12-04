@@ -85,7 +85,7 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching) {
   V8TestingScope scope;
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       scope.GetExecutionContext(), event_type_names::kShippingaddresschange);
-  event->SetPaymentDetailsUpdater(new MockPaymentUpdater);
+  event->SetPaymentDetailsUpdater((MakeGarbageCollected<MockPaymentUpdater>()));
 
   event->updateWith(
       scope.GetScriptState(),

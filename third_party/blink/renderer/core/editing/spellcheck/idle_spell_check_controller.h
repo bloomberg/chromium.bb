@@ -34,6 +34,8 @@ class CORE_EXPORT IdleSpellCheckController final
 
  public:
   static IdleSpellCheckController* Create(LocalFrame&);
+
+  explicit IdleSpellCheckController(LocalFrame&);
   ~IdleSpellCheckController();
 
   enum class State {
@@ -65,8 +67,6 @@ class CORE_EXPORT IdleSpellCheckController final
 
  private:
   class IdleCallback;
-
-  explicit IdleSpellCheckController(LocalFrame&);
 
   LocalFrame& GetFrame() const { return *frame_; }
 

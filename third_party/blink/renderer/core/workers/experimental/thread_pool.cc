@@ -78,7 +78,7 @@ const char ThreadPool::kSupplementName[] = "ThreadPool";
 ThreadPool* ThreadPool::From(Document& document) {
   ThreadPool* thread_pool = Supplement<Document>::From<ThreadPool>(document);
   if (!thread_pool) {
-    thread_pool = new ThreadPool(document);
+    thread_pool = MakeGarbageCollected<ThreadPool>(document);
     Supplement<Document>::ProvideTo(document, thread_pool);
   }
   return thread_pool;

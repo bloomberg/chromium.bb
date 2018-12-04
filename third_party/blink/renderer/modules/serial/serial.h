@@ -26,6 +26,8 @@ class Serial final : public EventTargetWithInlineData,
  public:
   static Serial* Create(ExecutionContext& executionContext);
 
+  explicit Serial(ExecutionContext&);
+
   // EventTarget
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
@@ -36,9 +38,6 @@ class Serial final : public EventTargetWithInlineData,
   ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
 
   void Trace(Visitor*) override;
-
- private:
-  explicit Serial(ExecutionContext&);
 };
 
 }  // namespace blink

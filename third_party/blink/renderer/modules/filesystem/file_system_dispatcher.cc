@@ -81,7 +81,7 @@ FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
   FileSystemDispatcher* dispatcher =
       Supplement<ExecutionContext>::From<FileSystemDispatcher>(context);
   if (!dispatcher) {
-    dispatcher = new FileSystemDispatcher(*context);
+    dispatcher = MakeGarbageCollected<FileSystemDispatcher>(*context);
     Supplement<ExecutionContext>::ProvideTo(*context, dispatcher);
   }
   return *dispatcher;

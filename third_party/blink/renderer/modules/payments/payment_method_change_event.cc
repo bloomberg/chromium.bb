@@ -17,7 +17,8 @@ PaymentMethodChangeEvent* PaymentMethodChangeEvent::Create(
     ScriptState* script_state,
     const AtomicString& type,
     const PaymentMethodChangeEventInit* init) {
-  return new PaymentMethodChangeEvent(script_state, type, init);
+  return MakeGarbageCollected<PaymentMethodChangeEvent>(script_state, type,
+                                                        init);
 }
 
 const String& PaymentMethodChangeEvent::methodName() const {

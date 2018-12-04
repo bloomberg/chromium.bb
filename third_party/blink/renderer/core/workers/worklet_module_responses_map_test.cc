@@ -64,18 +64,18 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
   EXPECT_FALSE(clients[0]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls should wait for the
   // completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[1]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[1]->GetResult());
 
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
 
@@ -94,18 +94,18 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
   EXPECT_FALSE(clients[0]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls should wait for the
   // completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[1]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[1]->GetResult());
 
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
 
@@ -127,26 +127,26 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| initiates a fetch request.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
   EXPECT_FALSE(clients[0]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls for |kUrl1| should
   // wait for the completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[1]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[1]->GetResult());
 
   // An initial read call for |kUrl2| initiates a fetch request.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
   EXPECT_FALSE(clients[2]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls for |kUrl2| should
   // wait for the completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[3]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[3]->GetResult());
 
@@ -203,27 +203,27 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
 
   // An initial read call for |kUrl1| creates a placeholder entry and asks the
   // client to fetch a module script.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[0]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[0]->GetResult());
   EXPECT_FALSE(clients[0]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls for |kUrl1| should
   // wait for the completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl1, clients[1]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[1]->GetResult());
 
   // An initial read call for |kUrl2| also creates a placeholder entry and asks
   // the client to fetch a module script.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[2]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[2]->GetResult());
   EXPECT_FALSE(clients[2]->GetParams().has_value());
 
   // The entry is now being fetched. Following read calls for |kUrl2| should
   // wait for the completion.
-  clients.push_back(new ClientImpl);
+  clients.push_back(MakeGarbageCollected<ClientImpl>());
   Fetch(kUrl2, clients[3]);
   EXPECT_EQ(ClientImpl::Result::kInitial, clients[3]->GetResult());
 

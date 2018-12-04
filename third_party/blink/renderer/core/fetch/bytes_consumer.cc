@@ -369,7 +369,7 @@ void BytesConsumer::Tee(ExecutionContext* execution_context,
       src->DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (blob_data_handle) {
     // Register a client in order to be consistent.
-    src->SetClient(new NoopClient);
+    src->SetClient(MakeGarbageCollected<NoopClient>());
     *dest1 = MakeGarbageCollected<BlobBytesConsumer>(execution_context,
                                                      blob_data_handle);
     *dest2 = MakeGarbageCollected<BlobBytesConsumer>(execution_context,

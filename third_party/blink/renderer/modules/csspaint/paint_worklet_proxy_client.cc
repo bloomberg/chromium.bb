@@ -19,7 +19,7 @@ const char PaintWorkletProxyClient::kSupplementName[] =
 
 // static
 PaintWorkletProxyClient* PaintWorkletProxyClient::Create() {
-  return new PaintWorkletProxyClient;
+  return MakeGarbageCollected<PaintWorkletProxyClient>();
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient()

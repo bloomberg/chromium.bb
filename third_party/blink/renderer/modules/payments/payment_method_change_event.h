@@ -35,13 +35,13 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
   const String& methodName() const;
   const ScriptValue methodDetails(ScriptState*) const;
 
-  void Trace(Visitor* visitor) override;
-
- private:
   PaymentMethodChangeEvent(ScriptState*,
                            const AtomicString& type,
                            const PaymentMethodChangeEventInit*);
 
+  void Trace(Visitor* visitor) override;
+
+ private:
   String method_name_;
   TraceWrapperV8Reference<v8::Value> method_details_;
 };

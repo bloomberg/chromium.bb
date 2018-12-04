@@ -52,7 +52,7 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   RecordOriginTypeAccess(*execution_context);
   if (!connection_list_property_) {
-    connection_list_property_ = new ConnectionListProperty(
+    connection_list_property_ = MakeGarbageCollected<ConnectionListProperty>(
         execution_context, this, ConnectionListProperty::kReady);
   }
 

@@ -456,8 +456,8 @@ void FontFace::SetError(DOMException* error) {
 
 ScriptPromise FontFace::FontStatusPromise(ScriptState* script_state) {
   if (!loaded_property_) {
-    loaded_property_ = new LoadedProperty(ExecutionContext::From(script_state),
-                                          this, LoadedProperty::kLoaded);
+    loaded_property_ = MakeGarbageCollected<LoadedProperty>(
+        ExecutionContext::From(script_state), this, LoadedProperty::kLoaded);
     if (status_ == kLoaded)
       loaded_property_->Resolve(this);
     else if (status_ == kError)

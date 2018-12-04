@@ -38,7 +38,7 @@ WakeLock::WakeLock(ScriptState* script_state, LockType type)
 
 ScriptPromise WakeLock::GetPromise(ScriptState* script_state) {
   if (!wake_lock_property_) {
-    wake_lock_property_ = new WakeLockProperty(
+    wake_lock_property_ = MakeGarbageCollected<WakeLockProperty>(
         ExecutionContext::From(script_state), this, WakeLockProperty::kReady);
     wake_lock_property_->Resolve(this);
   }

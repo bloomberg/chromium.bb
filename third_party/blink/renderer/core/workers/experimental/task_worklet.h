@@ -33,10 +33,11 @@ class TaskWorklet final : public Worklet,
 
   ThreadPoolThread* GetLeastBusyThread() override;
 
+  explicit TaskWorklet(Document*);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit TaskWorklet(Document*);
   ~TaskWorklet() override = default;
 
   bool NeedsToCreateGlobalScope() final;

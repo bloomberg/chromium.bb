@@ -29,7 +29,7 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
     urls.push_back(url_test_helpers::ToKURL("https://another.com"));
 
     Persistent<PresentationAvailabilityProperty> resolver =
-        new PresentationAvailabilityProperty(
+        MakeGarbageCollected<PresentationAvailabilityProperty>(
             scope.GetExecutionContext(), nullptr,
             PresentationAvailabilityProperty::kReady);
     Persistent<PresentationAvailability> availability =

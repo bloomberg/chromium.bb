@@ -33,7 +33,8 @@ ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher(
     case ModuleScriptCustomFetchType::kWorkletAddModule:
       break;
     case ModuleScriptCustomFetchType::kInstalledServiceWorker:
-      return new InstalledServiceWorkerModuleScriptFetcher(global_scope);
+      return MakeGarbageCollected<InstalledServiceWorkerModuleScriptFetcher>(
+          global_scope);
   }
   NOTREACHED();
   return nullptr;

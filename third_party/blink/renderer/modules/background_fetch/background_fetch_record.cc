@@ -14,9 +14,9 @@ BackgroundFetchRecord::BackgroundFetchRecord(Request* request,
     : request_(request), script_state_(script_state) {
   DCHECK(request_);
   DCHECK(script_state_);
-  response_ready_property_ =
-      new ResponseReadyProperty(ExecutionContext::From(script_state), this,
-                                ResponseReadyProperty::kResponseReady);
+  response_ready_property_ = MakeGarbageCollected<ResponseReadyProperty>(
+      ExecutionContext::From(script_state), this,
+      ResponseReadyProperty::kResponseReady);
 }
 
 BackgroundFetchRecord::~BackgroundFetchRecord() = default;

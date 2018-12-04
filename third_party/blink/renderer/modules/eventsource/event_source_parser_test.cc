@@ -91,7 +91,7 @@ class EventSourceParserTest : public testing::Test {
  protected:
   using Type = EventOrReconnectionTimeSetting::Type;
   EventSourceParserTest()
-      : client_(new Client),
+      : client_(MakeGarbageCollected<Client>()),
         parser_(
             MakeGarbageCollected<EventSourceParser>(AtomicString(), client_)) {}
   ~EventSourceParserTest() override = default;

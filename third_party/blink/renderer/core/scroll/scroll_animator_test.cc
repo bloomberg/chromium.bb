@@ -377,7 +377,7 @@ TEST(ScrollAnimatorTest, AnimatedScrollTakeover) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   TestScrollAnimator* scroll_animator =
-      new TestScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(2);
   // Called from userScroll, updateCompositorAnimations, then
@@ -528,7 +528,7 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   TestScrollAnimator* scroll_animator =
-      new TestScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
   // Called when reset, not setting anywhere else.
   EXPECT_CALL(*scrollable_area, UpdateScrollOffset(_, _)).Times(1);
@@ -608,7 +608,7 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared) {
       MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
                                                 ScrollOffset(1000, 1000));
   TestScrollAnimator* animator =
-      new TestScrollAnimator(scrollable_area, GetMockedTime);
+      MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
   // From calls to adjust/takeoverImplOnlyScrollOffsetAnimation.
   EXPECT_CALL(*scrollable_area, RegisterForAnimation()).Times(3);

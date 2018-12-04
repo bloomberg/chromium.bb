@@ -18,7 +18,7 @@ RTCPeerConnectionController& RTCPeerConnectionController::From(
   RTCPeerConnectionController* supplement =
       Supplement<Document>::From<RTCPeerConnectionController>(document);
   if (!supplement) {
-    supplement = new RTCPeerConnectionController(document);
+    supplement = MakeGarbageCollected<RTCPeerConnectionController>(document);
     Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;
