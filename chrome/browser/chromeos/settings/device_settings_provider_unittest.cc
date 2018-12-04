@@ -249,6 +249,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetPluginVmAllowedSetting(bool plugin_vm_allowed) {
+    em::PluginVmAllowedProto* proto =
+        device_policy_.payload().mutable_plugin_vm_allowed();
+    proto->set_plugin_vm_allowed(plugin_vm_allowed);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -666,6 +673,14 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   test_list.GetList().push_back(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
+  SetPluginVmAllowedSetting(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kPluginVmAllowed));
+
+  SetPluginVmAllowedSetting(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kPluginVmAllowed));
 }
 
 }  // namespace chromeos

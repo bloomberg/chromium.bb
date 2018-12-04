@@ -3436,7 +3436,9 @@
         "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
       }
     },
-    "pref_mappings": []
+    "pref_mappings": [
+      { "pref": "plugin_vm.image" }
+    ]
   },
 
   "----- Chrome OS device policies ---------------------------------------": {},
@@ -4118,7 +4120,9 @@
   "PluginVmAllowed": {
     "os": ["chromeos"],
     "test_policy": { "PluginVmAllowed": true },
-    "pref_mappings": []
+    "pref_mappings": [
+      { "pref": "cros.device.plugin_vm_allowed" }
+    ]
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},
