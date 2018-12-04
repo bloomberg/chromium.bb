@@ -35,7 +35,6 @@
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
@@ -291,8 +290,7 @@ int RunService(MainDelegate* delegate) {
           return;
         }
 
-        ServiceContext context(std::move(service), std::move(request));
-        context.SetQuitClosure(run_loop.QuitClosure());
+        service->set_termination_closure(run_loop.QuitClosure());
         run_loop.Run();
       },
       delegate, &exit_code));

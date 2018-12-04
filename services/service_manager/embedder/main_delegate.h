@@ -16,6 +16,7 @@
 #include "services/service_manager/embedder/service_manager_embedder_export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class CommandLine;

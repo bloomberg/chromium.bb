@@ -14,7 +14,6 @@
 
 namespace service_manager {
 
-class ServiceContext;
 struct BindSourceInfo;
 
 // The primary contract between a Service and the Service Manager, receiving
@@ -104,23 +103,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   // delete |*this| before returning.
   void Terminate();
 
-  // Accesses the ServiceContext associated with this Service. Note that this is
-  // only valid AFTER the Service's constructor has run.
-  ServiceContext* context() const;
-
  private:
-  friend class ServiceContext;
-  friend class TestServiceDecorator;
-
   base::OnceClosure termination_closure_;
 
-  // NOTE: This MUST be called before any public Service methods. ServiceContext
-  // satisfies this guarantee for any Service instance it owns.
-  virtual void SetContext(ServiceContext* context);
-
-  ServiceContext* service_context_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 }  // namespace service_manager

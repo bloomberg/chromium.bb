@@ -7,23 +7,12 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
 
 ServiceKeepalive::ServiceKeepalive(ServiceBinding* binding,
                                    base::Optional<base::TimeDelta> idle_timeout)
     : binding_(binding),
-      idle_timeout_(idle_timeout),
-      ref_factory_(base::BindRepeating(&ServiceKeepalive::OnRefCountZero,
-                                       base::Unretained(this))) {
-  ref_factory_.SetRefAddedCallback(base::BindRepeating(
-      &ServiceKeepalive::OnRefAdded, base::Unretained(this)));
-}
-
-ServiceKeepalive::ServiceKeepalive(ServiceContext* context,
-                                   base::Optional<base::TimeDelta> idle_timeout)
-    : context_(context),
       idle_timeout_(idle_timeout),
       ref_factory_(base::BindRepeating(&ServiceKeepalive::OnRefCountZero,
                                        base::Unretained(this))) {
@@ -70,9 +59,7 @@ void ServiceKeepalive::OnTimerExpired() {
   for (auto& observer : observers_)
     observer.OnIdleTimeout();
 
-  if (context_)
-    context_->CreateQuitClosure().Run();
-  else if (binding_)
+  if (binding_)
     binding_->RequestClose();
 }
 

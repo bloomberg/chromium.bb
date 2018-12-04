@@ -4,9 +4,8 @@
 
 #include "services/service_manager/public/cpp/service.h"
 
-#include "base/logging.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
 
@@ -50,16 +49,6 @@ void Service::RunUntilTermination() {
 void Service::Terminate() {
   if (termination_closure_)
     std::move(termination_closure_).Run();
-}
-
-ServiceContext* Service::context() const {
-  DCHECK(service_context_)
-      << "Service::context() may only be called after the Service constructor.";
-  return service_context_;
-}
-
-void Service::SetContext(ServiceContext* context) {
-  service_context_ = context;
 }
 
 }  // namespace service_manager
