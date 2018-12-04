@@ -7,11 +7,5 @@ window.onload = () => {
     chrome.test.sendMessage('Seen wheel event');
   });
 
-  // We need to wait for the compositor thread to be made aware of the wheel
-  // listener before sending the pinch event sequence.
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      chrome.test.sendMessage('Launched');
-    });
-  });
+  chrome.test.sendMessage('Launched');
 };

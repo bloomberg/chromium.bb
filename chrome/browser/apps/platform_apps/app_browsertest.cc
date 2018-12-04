@@ -1382,6 +1382,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   WebContents* web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(web_contents);
 
+  // Ensure the compositor thread is aware of the wheel listener.
+  content::MainThreadFrameObserver synchronize_threads(
+      web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+  synchronize_threads.Wait();
+
   ExtensionTestMessageListener synthetic_wheel_listener("Seen wheel event",
                                                         false);
 
