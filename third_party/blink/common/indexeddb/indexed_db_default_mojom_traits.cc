@@ -80,14 +80,15 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::GetTag(
     case blink::kWebIDBKeyTypeNumber:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
     case blink::kWebIDBKeyTypeInvalid:
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
     case blink::kWebIDBKeyTypeNull:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
 
     // Not used, fall through to NOTREACHED.
     case blink::kWebIDBKeyTypeMin:;
   }
   NOTREACHED();
-  return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+  return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
 }
 
 // static
@@ -122,15 +123,12 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::Read(
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
       *out = blink::IndexedDBKey(data.number(), blink::kWebIDBKeyTypeNumber);
       return true;
-    case blink::mojom::IDBKeyDataDataView::Tag::OTHER:
-      switch (data.other()) {
-        case blink::mojom::IDBDatalessKeyType::Invalid:
-          *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
-          return true;
-        case blink::mojom::IDBDatalessKeyType::Null:
-          *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
-          return true;
-      }
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
+      *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
+      return true;
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
+      *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
+      return true;
   }
 
   return false;

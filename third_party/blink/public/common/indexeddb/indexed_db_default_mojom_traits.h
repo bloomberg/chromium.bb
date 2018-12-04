@@ -97,17 +97,11 @@ struct BLINK_COMMON_EXPORT
   }
   static double date(const blink::IndexedDBKey& key) { return key.date(); }
   static double number(const blink::IndexedDBKey& key) { return key.number(); }
-  static blink::mojom::IDBDatalessKeyType other(
-      const blink::IndexedDBKey& key) {
-    switch (key.type()) {
-      case blink::kWebIDBKeyTypeInvalid:
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-      case blink::kWebIDBKeyTypeNull:
-        return blink::mojom::IDBDatalessKeyType::Null;
-      default:
-        NOTREACHED();
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-    }
+  static bool other_invalid(const blink::IndexedDBKey& key) {
+    return key.type() == blink::kWebIDBKeyTypeInvalid;
+  }
+  static bool other_null(const blink::IndexedDBKey& key) {
+    return key.type() == blink::kWebIDBKeyTypeNull;
   }
 };
 

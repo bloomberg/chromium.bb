@@ -84,7 +84,7 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::GetTag(
     const blink::WebIDBKey& key) {
   switch (key.View().KeyType()) {
     case blink::kWebIDBKeyTypeInvalid:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
     case blink::kWebIDBKeyTypeArray:
       return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
     case blink::kWebIDBKeyTypeBinary:
@@ -96,13 +96,13 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::GetTag(
     case blink::kWebIDBKeyTypeNumber:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
     case blink::kWebIDBKeyTypeNull:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
 
     // Not used, fall through to NOTREACHED.
     case blink::kWebIDBKeyTypeMin:;
   }
   NOTREACHED();
-  return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+  return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
 }
 
 // static
@@ -142,15 +142,12 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::Read(
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
       *out = blink::WebIDBKey::CreateNumber(data.number());
       return true;
-    case blink::mojom::IDBKeyDataDataView::Tag::OTHER:
-      switch (data.other()) {
-        case blink::mojom::IDBDatalessKeyType::Invalid:
-          *out = blink::WebIDBKey::CreateInvalid();
-          return true;
-        case blink::mojom::IDBDatalessKeyType::Null:
-          *out = blink::WebIDBKey::CreateNull();
-          return true;
-      }
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
+      *out = blink::WebIDBKey::CreateInvalid();
+      return true;
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
+      *out = blink::WebIDBKey::CreateNull();
+      return true;
   }
 
   return false;
