@@ -766,14 +766,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .EnableDriveFs(),
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline()));
 
-// Flaky on ASAN. https://crbug.com/911609
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
-#else
-#define MAYBE_CopyBetweenWindows CopyBetweenWindows
-#endif
+// Flaky on ASAN and linux-chromeos-dbg.
+// * https://crbug.com/911609
+// * https://crbug.com/911824
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
+    DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("copyBetweenWindowsLocalToDrive").DisableDriveFs(),
