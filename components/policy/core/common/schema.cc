@@ -39,12 +39,12 @@ namespace {
 
 struct ReferencesAndIDs {
   // Maps schema "id" attributes to the corresponding SchemaNode index.
-  std::map<std::string, int> id_map;
+  std::map<std::string, short> id_map;
 
   // List of pairs of references to be assigned later. The string is the "id"
   // whose corresponding index should be stored in the pointer, once all the IDs
   // are available.
-  std::vector<std::pair<std::string, int*>> reference_list;
+  std::vector<std::pair<std::string, short*>> reference_list;
 };
 
 // Sizes for the storage arrays. These are calculated in advance so that the
@@ -78,7 +78,7 @@ constexpr char kSensitiveValueMask[] = "********";
 
 // An invalid index, indicating that a node is not present; similar to a NULL
 // pointer.
-const int kInvalid = -1;
+const short kInvalid = -1;
 
 // Maps a schema key to the corresponding base::Value::Type
 struct SchemaKeyToValueType {
@@ -576,7 +576,7 @@ class Schema::InternalStorage
   // If |schema| is invalid then |error| gets the error reason and false is
   // returned. Otherwise returns true.
   bool Parse(const base::DictionaryValue& schema,
-             int* index,
+             short* index,
              ReferencesAndIDs* references_and_ids,
              std::string* error);
 
@@ -681,7 +681,7 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   storage->int_enums_.reserve(sizes.int_enums);
   storage->string_enums_.reserve(sizes.string_enums);
 
-  int root_index = kInvalid;
+  short root_index = kInvalid;
   ReferencesAndIDs references_and_ids;
   if (!storage->Parse(schema, &root_index, &references_and_ids, error))
     return nullptr;
@@ -822,7 +822,7 @@ void Schema::InternalStorage::DetermineStorageSizes(
 }
 
 bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
-                                    int* index,
+                                    short* index,
                                     ReferencesAndIDs* references_and_ids,
                                     std::string* error) {
   std::string ref_string;
@@ -848,7 +848,13 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
     return false;
   }
 
-  *index = static_cast<int>(schema_nodes_.size());
+  if (schema_nodes_.size() > std::numeric_limits<short>::max()) {
+    *error = "Can't have more than " +
+             std::to_string(std::numeric_limits<short>::max()) +
+             " schema nodes.";
+    return false;
+  }
+  *index = static_cast<short>(schema_nodes_.size());
   schema_nodes_.push_back(SchemaNode());
   SchemaNode* schema_node = &schema_nodes_.back();
   schema_node->type = type;

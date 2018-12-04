@@ -449,6 +449,8 @@ SIMPLE_SCHEMA_NAME_MAP = {
 }
 
 INVALID_INDEX = -1
+MIN_INDEX = -1
+MAX_INDEX = (1 << 15) - 1  # signed short in c++
 
 
 class SchemaNodesGenerator:
@@ -709,6 +711,7 @@ class SchemaNodesGenerator:
             '//  Type' + ' ' * 27 +
             'Extra  IsSensitiveValue HasSensitiveChildren\n')
     for schema_node in self.schema_nodes:
+      assert schema_node.extra >= MIN_INDEX and schema_node.extra <= MAX_INDEX
       comment = ('\n' + ' ' * 69 + '// ').join(schema_node.comments)
       f.write('  { base::Value::%-19s %4s %-16s %-5s },  // %s\n' %
               (schema_node.schema_type + ',', str(schema_node.extra) + ',',
@@ -729,6 +732,9 @@ class SchemaNodesGenerator:
               '//  Begin    End  PatternEnd  RequiredBegin  RequiredEnd'
               '  Additional Properties\n')
       for properties_node in self.properties_nodes:
+        for i in range(0, len(properties_node) - 1):
+          assert (properties_node[i] >= MIN_INDEX and
+                  properties_node[i] <= MAX_INDEX)
         f.write(
             '  { %5d, %5d, %5d, %5d, %10d, %5d },  // %s\n' % properties_node)
       f.write('};\n\n')

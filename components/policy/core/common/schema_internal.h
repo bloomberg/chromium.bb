@@ -34,7 +34,7 @@ struct POLICY_EXPORT SchemaNode {
   // RestrictionNode describing the restriction on the value.
   //
   // Otherwise extra is -1 and is invalid.
-  int extra;
+  short extra;
 
   // True if this value is sensitive and should be masked before displaying it
   // to the user.
@@ -51,14 +51,14 @@ struct POLICY_EXPORT PropertyNode {
 
   // An offset into SchemaData::schema_nodes that indexes the SchemaNode
   // describing the structure of this key.
-  int schema;
+  short schema;
 };
 
 // Represents the list of keys of a map policy.
 struct POLICY_EXPORT PropertiesNode {
   // An offset into SchemaData::property_nodes that indexes the PropertyNode
   // describing the first known property of this map policy.
-  int begin;
+  short begin;
 
   // An offset into SchemaData::property_nodes that indexes the PropertyNode
   // right beyond the last known property of this map policy.
@@ -68,18 +68,18 @@ struct POLICY_EXPORT PropertiesNode {
   //
   // Note that the range [begin, end) is sorted by PropertyNode::key, so that
   // properties can be looked up by binary searching in the range.
-  int end;
+  short end;
 
   // An offset into SchemaData::property_nodes that indexes the PropertyNode
   // right beyond the last known pattern property.
   //
   // [end, pattern_end) is the range that covers all pattern properties
   // defined. It's not required to be sorted.
-  int pattern_end;
+  short pattern_end;
 
   // An offset into SchemaData::required_properties that indexes the first
   // required property of this map policy.
-  int required_begin;
+  short required_begin;
 
   // An offset into SchemaData::required_properties that indexes the property
   // right beyond the last required property.
@@ -88,14 +88,14 @@ struct POLICY_EXPORT PropertiesNode {
   // PropertiesNode corresponds to does not have any required properties.
   //
   // Note that the range [required_begin, required_end) is not sorted.
-  int required_end;
+  short required_end;
 
   // If this map policy supports keys with any value (besides the well-known
   // values described in the range [begin, end)) then |additional| is an offset
   // into SchemaData::schema_nodes that indexes the SchemaNode describing the
   // structure of the values for those keys. Otherwise |additional| is -1 and
   // is invalid.
-  int additional;
+  short additional;
 };
 
 // Represents the restriction on Type::INTEGER or Type::STRING instance of
