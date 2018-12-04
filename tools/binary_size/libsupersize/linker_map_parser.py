@@ -292,21 +292,6 @@ class MapFileParserGold(object):
         raise
 
 
-class _SymbolMaker(object):
-  def __init__(self):
-    self.syms = []
-    self.cur_sym = None
-
-  def Flush(self):
-    if self.cur_sym:
-      self.syms.append(self.cur_sym)
-      self.cur_sym = None
-
-  def Create(self, *args, **kwargs):
-    self.Flush()
-    self.cur_sym = models.Symbol(*args, **kwargs)
-
-
 class MapFileParserLld(object):
   """Parses a linker map file from LLD."""
   # TODO(huangs): Add LTO support.
@@ -367,7 +352,7 @@ class MapFileParserLld(object):
     map_file_version = int(self._linker_name.split('_v')[1])
     pattern = MapFileParserLld._LINE_RE[map_file_version]
 
-    sym_maker = _SymbolMaker()
+    syms = []
     cur_section = None
     cur_section_is_useful = None
     promoted_name_count = 0
@@ -382,7 +367,6 @@ class MapFileParserLld(object):
       tok = m.group(5)
 
       if indent_size == 0:
-        sym_maker.Flush()
         if not tok.startswith('PROVIDE_HIDDEN'):
           self._section_sizes[tok] = size
         cur_section = tok
@@ -393,14 +377,15 @@ class MapFileParserLld(object):
                             models.SECTION_RODATA,
                             models.SECTION_TEXT) or
             cur_section.startswith(models.SECTION_DATA))
+
       elif cur_section_is_useful:
         if indent_size == 8:
-          sym_maker.Flush()
-          # e.g. path.o:(.text._name)
+          # Create preliminary Symbol, which can be modified as sym[-1].
+          syms.append(models.Symbol(cur_section, size, address=address))
+          # E.g. path.o:(.text._name)
           cur_obj, paren_value = tok.split(':')
           # "(.text._name)" -> "_name".
           mangled_name = paren_value[mangled_start_idx:-1]
-          sym_maker.Create(cur_section, size, address=address)
           # As of 2017/11 LLD does not distinguish merged strings from other
           # merged data. Feature request is filed under:
           # https://bugs.llvm.org/show_bug.cgi?id=35248
@@ -409,14 +394,14 @@ class MapFileParserLld(object):
               # Treat all <internal> sections within .rodata as as string
               # literals. Some may hold numeric constants or other data, but
               # there is currently no way to distinguish them.
-              sym_maker.cur_sym.full_name = '** lld merge strings'
+              syms[-1].full_name = '** lld merge strings'
             else:
               # e.g. <internal>:(.text.thunk)
-              sym_maker.cur_sym.full_name = '** ' + mangled_name
+              syms[-1].full_name = '** ' + mangled_name
           elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
             pass
           else:
-            sym_maker.cur_sym.object_path = cur_obj
+            syms[-1].object_path = cur_obj
 
         elif indent_size == 16:
           # Ignore anything with '.L_MergedGlobals' prefix. This seems to only
@@ -425,7 +410,7 @@ class MapFileParserLld(object):
             continue
           # If multiple entries exist, take the first on that reports a size.
           # Zero-length symbols look like "$t.4", "$d.5".
-          if size and not sym_maker.cur_sym.full_name:
+          if size and not syms[-1].full_name:
             # Outlined functions have names like OUTLINED_FUNCTION_0, which can
             # appear 1000+ time that can cause false aliasing. We treat these as
             # special cases by designating them as a placeholder symbols and
@@ -436,14 +421,13 @@ class MapFileParserLld(object):
             if len(tok) != len(stripped_tok):
               promoted_name_count += 1
               tok = stripped_tok
-            sym_maker.cur_sym.full_name = tok
+            syms[-1].full_name = tok
         else:
           logging.error('Problem line: %r', line)
 
-    sym_maker.Flush()
     if promoted_name_count:
       logging.info('Found %d promoted global names', promoted_name_count)
-    return self._section_sizes, sym_maker.syms
+    return self._section_sizes, syms
 
 
 def _DetectLto(lines):
@@ -541,6 +525,7 @@ def main():
       default=0,
       action='count',
       help='Verbose level (multiple times for more)')
+  parser.add_argument('--dump', action='store_true')
   args = parser.parse_args()
 
   logging.basicConfig(
@@ -554,17 +539,22 @@ def main():
   with open(args.linker_file, 'r') as map_file:
     section_sizes, syms = MapFileParser().Parse(linker_name, map_file)
 
-  # Enter interactive shell.
-  readline.parse_and_bind('tab: complete')
-  variables = {'section_sizes': section_sizes, 'syms': syms}
-  banner_lines = [
-      '*' * 80,
-      'Variables:',
-      '  section_sizes: Map from section to sizes.',
-      '  syms: Raw symbols parsed from the linker map file.',
-      '*' * 80,
-  ]
-  code.InteractiveConsole(variables).interact('\n'.join(banner_lines))
+  if args.dump:
+    print(section_sizes)
+    for sym in syms:
+      print(sym)
+  else:
+    # Enter interactive shell.
+    readline.parse_and_bind('tab: complete')
+    variables = {'section_sizes': section_sizes, 'syms': syms}
+    banner_lines = [
+        '*' * 80,
+        'Variables:',
+        '  section_sizes: Map from section to sizes.',
+        '  syms: Raw symbols parsed from the linker map file.',
+        '*' * 80,
+    ]
+    code.InteractiveConsole(variables).interact('\n'.join(banner_lines))
 
 
 if __name__ == '__main__':
