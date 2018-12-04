@@ -1112,6 +1112,7 @@ class MetaBuildWrapper(object):
       cmdline = [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
+          '--test-launcher-bot-mode',
       ]
     elif is_simplechrome and test_type != 'script':
       cmdline = [

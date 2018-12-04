@@ -63,12 +63,18 @@ def main():
                       help='Enable Chrome test server spawner.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
+  parser.add_argument('--test-launcher-bot-mode', action='store_true',
+                      default=False,
+                      help='Informs the TestLauncher to that it should enable '
+                      'special allowances for running on a test bot.')
   args = parser.parse_args()
   ConfigureLogging(args)
 
   child_args = ['--test-launcher-retry-limit=0']
   if args.single_process_tests:
     child_args.append('--single-process-tests')
+  if args.test_launcher_bot_mode:
+    child_args.append('--test-launcher-bot-mode')
   if args.test_launcher_batch_limit:
     child_args.append('--test-launcher-batch-limit=%d' %
                        args.test_launcher_batch_limit)
