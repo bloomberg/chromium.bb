@@ -1339,6 +1339,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-blink-gen-property-trees",
+    "owners": [ "paint-dev@chromium.org" ],
+    "expiry_milestone": 74
+  },
+  {
     "name": "enable-layout-ng",
     "owners": [ "layout-dev@chromium.org" ],
     "expiry_milestone": 80

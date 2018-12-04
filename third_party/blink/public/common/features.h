@@ -19,6 +19,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
 BLINK_COMMON_EXPORT extern const base::Feature kImplicitRootScroller;
 BLINK_COMMON_EXPORT extern const base::Feature kJankTracking;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkGenPropertyTrees;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
