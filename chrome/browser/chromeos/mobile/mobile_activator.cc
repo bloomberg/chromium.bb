@@ -24,8 +24,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -35,7 +33,6 @@
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -197,7 +194,6 @@ void MobileActivator::TerminateActivation() {
     NetworkHandler::Get()->network_state_handler()->
         RemoveObserver(this, FROM_HERE);
   }
-  ReEnableCertRevocationChecking();
   meid_.clear();
   iccid_.clear();
   service_path_.clear();
@@ -311,8 +307,6 @@ void MobileActivator::GetPropertiesAndContinueActivation(
 
   if (payment_url.empty() && usage_url.empty())
     return;
-
-  DisableCertRevocationChecking();
 
   // We want shill to connect us after activations, so enable autoconnect.
   base::DictionaryValue auto_connect_property;
@@ -906,10 +900,6 @@ void MobileActivator::CompleteActivation() {
   // Remove observers, we are done with this page.
   NetworkHandler::Get()->network_state_handler()->
       RemoveObserver(this, FROM_HERE);
-
-  // Reactivate other types of connections if we have
-  // shut them down previously.
-  ReEnableCertRevocationChecking();
 }
 
 bool MobileActivator::RunningActivation() const {
@@ -1080,33 +1070,6 @@ void MobileActivator::ChangeState(const NetworkState* network,
       break;
     default:
       break;
-  }
-}
-
-void MobileActivator::ReEnableCertRevocationChecking() {
-  // Check that both the browser process and prefs exist before trying to
-  // use them, since this method can be called by the destructor while Chrome
-  // is shutting down, during which either could be NULL.
-  if (!g_browser_process)
-    return;
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs)
-    return;
-  if (reenable_cert_check_) {
-    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, true);
-    reenable_cert_check_ = false;
-  }
-}
-
-void MobileActivator::DisableCertRevocationChecking() {
-  // Disable SSL cert checks since we might be performing activation in the
-  // restricted pool.
-  // TODO(rkc): We want to do this only if on Cellular.
-  PrefService* prefs = g_browser_process->local_state();
-  if (!reenable_cert_check_ &&
-      prefs->GetBoolean(prefs::kCertRevocationCheckingEnabled)) {
-    reenable_cert_check_ = true;
-    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
   }
 }
 
