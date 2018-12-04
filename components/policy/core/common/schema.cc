@@ -37,13 +37,15 @@ using internal::SchemaNode;
 
 namespace {
 
-// Maps schema "id" attributes to the corresponding SchemaNode index.
-typedef std::map<std::string, int> IdMap;
+struct ReferencesAndIDs {
+  // Maps schema "id" attributes to the corresponding SchemaNode index.
+  std::map<std::string, int> id_map;
 
-// List of pairs of references to be assigned later. The string is the "id"
-// whose corresponding index should be stored in the pointer, once all the IDs
-// are available.
-typedef std::vector<std::pair<std::string, int*> > ReferenceList;
+  // List of pairs of references to be assigned later. The string is the "id"
+  // whose corresponding index should be stored in the pointer, once all the IDs
+  // are available.
+  std::vector<std::pair<std::string, int*>> reference_list;
+};
 
 // Sizes for the storage arrays. These are calculated in advance so that the
 // arrays don't have to be resized during parsing, which would invalidate
@@ -575,24 +577,21 @@ class Schema::InternalStorage
   // returned. Otherwise returns true.
   bool Parse(const base::DictionaryValue& schema,
              int* index,
-             IdMap* id_map,
-             ReferenceList* reference_list,
+             ReferencesAndIDs* references_and_ids,
              std::string* error);
 
   // Helper for Parse() that gets an already assigned |schema_node| instead of
   // an |index| pointer.
   bool ParseDictionary(const base::DictionaryValue& schema,
                        SchemaNode* schema_node,
-                       IdMap* id_map,
-                       ReferenceList* reference_list,
+                       ReferencesAndIDs* references_and_ids,
                        std::string* error);
 
   // Helper for Parse() that gets an already assigned |schema_node| instead of
   // an |index| pointer.
   bool ParseList(const base::DictionaryValue& schema,
                  SchemaNode* schema_node,
-                 IdMap* id_map,
-                 ReferenceList* reference_list,
+                 ReferencesAndIDs* references_and_ids,
                  std::string* error);
 
   bool ParseEnum(const base::DictionaryValue& schema,
@@ -611,8 +610,7 @@ class Schema::InternalStorage
   // Assigns the IDs in |id_map| to the pending references in the
   // |reference_list|. If an ID is missing then |error| is set and false is
   // returned; otherwise returns true.
-  static bool ResolveReferences(const IdMap& id_map,
-                                const ReferenceList& reference_list,
+  static bool ResolveReferences(const ReferencesAndIDs& references_and_ids,
                                 std::string* error);
 
   // Sets |has_sensitive_children| for all |SchemaNode|s in |schema_nodes_|.
@@ -684,9 +682,8 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   storage->string_enums_.reserve(sizes.string_enums);
 
   int root_index = kInvalid;
-  IdMap id_map;
-  ReferenceList reference_list;
-  if (!storage->Parse(schema, &root_index, &id_map, &reference_list, error))
+  ReferencesAndIDs references_and_ids;
+  if (!storage->Parse(schema, &root_index, &references_and_ids, error))
     return nullptr;
 
   if (root_index == kInvalid) {
@@ -710,7 +707,7 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
     return nullptr;
   }
 
-  if (!ResolveReferences(id_map, reference_list, error))
+  if (!ResolveReferences(references_and_ids, error))
     return nullptr;
 
   storage->FindSensitiveChildren();
@@ -826,8 +823,7 @@ void Schema::InternalStorage::DetermineStorageSizes(
 
 bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
                                     int* index,
-                                    IdMap* id_map,
-                                    ReferenceList* reference_list,
+                                    ReferencesAndIDs* references_and_ids,
                                     std::string* error) {
   std::string ref_string;
   if (schema.GetString(schema::kRef, &ref_string)) {
@@ -836,7 +832,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
       *error = "Schemas with a $ref can't have an id";
       return false;
     }
-    reference_list->push_back(std::make_pair(ref_string, index));
+    references_and_ids->reference_list.emplace_back(ref_string, index);
     return true;
   }
 
@@ -864,10 +860,10 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
     schema_node->is_sensitive_value = is_sensitive_value;
 
   if (type == base::Value::Type::DICTIONARY) {
-    if (!ParseDictionary(schema, schema_node, id_map, reference_list, error))
+    if (!ParseDictionary(schema, schema_node, references_and_ids, error))
       return false;
   } else if (type == base::Value::Type::LIST) {
-    if (!ParseList(schema, schema_node, id_map, reference_list, error))
+    if (!ParseList(schema, schema_node, references_and_ids, error))
       return false;
   } else if (schema.HasKey(schema::kEnum)) {
     if (!ParseEnum(schema, type, schema_node, error))
@@ -886,11 +882,12 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   }
   std::string id_string;
   if (schema.GetString(schema::kId, &id_string)) {
-    if (base::ContainsKey(*id_map, id_string)) {
+    auto& id_map = references_and_ids->id_map;
+    if (base::ContainsKey(id_map, id_string)) {
       *error = "Duplicated id: " + id_string;
       return false;
     }
-    (*id_map)[id_string] = *index;
+    id_map[id_string] = *index;
   }
 
   return true;
@@ -899,8 +896,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
 bool Schema::InternalStorage::ParseDictionary(
     const base::DictionaryValue& schema,
     SchemaNode* schema_node,
-    IdMap* id_map,
-    ReferenceList* reference_list,
+    ReferencesAndIDs* references_and_ids,
     std::string* error) {
   int extra = static_cast<int>(properties_nodes_.size());
   properties_nodes_.push_back(PropertiesNode());
@@ -909,8 +905,8 @@ bool Schema::InternalStorage::ParseDictionary(
 
   const base::DictionaryValue* dict = nullptr;
   if (schema.GetDictionary(schema::kAdditionalProperties, &dict)) {
-    if (!Parse(*dict, &properties_nodes_[extra].additional,
-               id_map, reference_list, error)) {
+    if (!Parse(*dict, &properties_nodes_[extra].additional, references_and_ids,
+               error)) {
       return false;
     }
   }
@@ -944,8 +940,8 @@ bool Schema::InternalStorage::ParseDictionary(
       CHECK(it.value().GetAsDictionary(&dict));
       strings_.push_back(it.key());
       property_nodes_[index].key = strings_.back().c_str();
-      if (!Parse(*dict, &property_nodes_[index].schema,
-                 id_map, reference_list, error)) {
+      if (!Parse(*dict, &property_nodes_[index].schema, references_and_ids,
+                 error)) {
         return false;
       }
     }
@@ -967,8 +963,8 @@ bool Schema::InternalStorage::ParseDictionary(
       }
       strings_.push_back(it.key());
       property_nodes_[index].key = strings_.back().c_str();
-      if (!Parse(*dict, &property_nodes_[index].schema,
-                 id_map, reference_list, error)) {
+      if (!Parse(*dict, &property_nodes_[index].schema, references_and_ids,
+                 error)) {
         return false;
       }
     }
@@ -998,15 +994,14 @@ bool Schema::InternalStorage::ParseDictionary(
 
 bool Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
                                         SchemaNode* schema_node,
-                                        IdMap* id_map,
-                                        ReferenceList* reference_list,
+                                        ReferencesAndIDs* references_and_ids,
                                         std::string* error) {
   const base::DictionaryValue* dict = nullptr;
   if (!schema.GetDictionary(schema::kItems, &dict)) {
     *error = "Arrays must declare a single schema for their items.";
     return false;
   }
-  return Parse(*dict, &schema_node->extra, id_map, reference_list, error);
+  return Parse(*dict, &schema_node->extra, references_and_ids, error);
 }
 
 bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
@@ -1109,9 +1104,10 @@ bool Schema::InternalStorage::ParseStringPattern(
 
 // static
 bool Schema::InternalStorage::ResolveReferences(
-    const IdMap& id_map,
-    const ReferenceList& reference_list,
+    const ReferencesAndIDs& references_and_ids,
     std::string* error) {
+  const auto& reference_list = references_and_ids.reference_list;
+  const auto& id_map = references_and_ids.id_map;
   for (auto ref = reference_list.begin(); ref != reference_list.end(); ++ref) {
     auto id = id_map.find(ref->first);
     if (id == id_map.end()) {
