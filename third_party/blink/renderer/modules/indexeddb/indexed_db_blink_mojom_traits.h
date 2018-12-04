@@ -109,16 +109,11 @@ struct MODULES_EXPORT
   static double number(const blink::WebIDBKey& key) {
     return key.View().Number();
   }
-  static blink::mojom::IDBDatalessKeyType other(const blink::WebIDBKey& key) {
-    switch (key.View().KeyType()) {
-      case blink::kWebIDBKeyTypeInvalid:
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-      case blink::kWebIDBKeyTypeNull:
-        return blink::mojom::IDBDatalessKeyType::Null;
-      default:
-        NOTREACHED();
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-    }
+  static bool other_invalid(const blink::WebIDBKey& key) {
+    return key.View().KeyType() == blink::kWebIDBKeyTypeInvalid;
+  }
+  static bool other_null(const blink::WebIDBKey& key) {
+    return key.View().KeyType() == blink::kWebIDBKeyTypeNull;
   }
 };
 

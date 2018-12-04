@@ -32,22 +32,16 @@ enum IDBDataLoss {
   Total,
 };
 
-// Represents key types that hold no data and so cannot be options in the
-// IDBKeyData union.
-// TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
-// dataful options.
-enum IDBDatalessKeyType {
-  Invalid,
-  Null,
-};
-
 union IDBKeyData {
   array<IDBKey> key_array;
   array<uint8> binary;
   mojo_base.mojom.String16 string;
   double date;
   double number;
-  IDBDatalessKeyType other;
+  // TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
+  // dataful options above.
+  bool other_invalid;
+  bool other_null;
 };
 
 // Defined as a structure so that it can by typemapped with StructTraits.
