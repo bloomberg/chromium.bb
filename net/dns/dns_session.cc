@@ -118,7 +118,6 @@ DnsSession::DnsSession(const DnsConfig& config,
 }
 
 DnsSession::~DnsSession() {
-  RecordServerStats();
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
@@ -145,7 +144,6 @@ void DnsSession::OnConnectionTypeChanged(
   UpdateTimeouts(type);
   const char* kTrialName = "AsyncDnsFlushServerStatsOnConnectionTypeChange";
   if (base::FieldTrialList::FindFullName(kTrialName) == "enable") {
-    RecordServerStats();
     InitializeServerStats();
   }
 }
@@ -220,20 +218,11 @@ unsigned DnsSession::NextGoodDnsOverHttpsServerIndex(unsigned server_index) {
 }
 
 void DnsSession::RecordServerFailure(unsigned server_index) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("AsyncDNS.ServerFailureIndex", server_index, 1,
-                              10, 11);
   ++(server_stats_[server_index]->last_failure_count);
   server_stats_[server_index]->last_failure = base::Time::Now();
 }
 
 void DnsSession::RecordServerSuccess(unsigned server_index) {
-  if (server_stats_[server_index]->last_success.is_null()) {
-    UMA_HISTOGRAM_COUNTS_100("AsyncDNS.ServerFailuresAfterNetworkChange",
-                           server_stats_[server_index]->last_failure_count);
-  } else {
-    UMA_HISTOGRAM_COUNTS_100("AsyncDNS.ServerFailuresBeforeSuccess",
-                           server_stats_[server_index]->last_failure_count);
-  }
   server_stats_[server_index]->last_failure_count = 0;
   server_stats_[server_index]->last_failure = base::Time();
   server_stats_[server_index]->last_success = base::Time::Now();
@@ -241,17 +230,6 @@ void DnsSession::RecordServerSuccess(unsigned server_index) {
 
 void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
   DCHECK_LT(server_index, server_stats_.size());
-
-  // For measurement, assume it is the first attempt (no backoff).
-  base::TimeDelta timeout_jacobson = NextTimeoutFromJacobson(server_index, 0);
-  base::TimeDelta timeout_histogram = NextTimeoutFromHistogram(server_index, 0);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutErrorJacobson", rtt - timeout_jacobson);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutErrorHistogram",
-                      rtt - timeout_histogram);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutErrorJacobsonUnder",
-                      timeout_jacobson - rtt);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutErrorHistogramUnder",
-                      timeout_histogram - rtt);
 
   // Jacobson/Karels algorithm for TCP.
   // Using parameters: alpha = 1/8, delta = 1/4, beta = 4
@@ -274,35 +252,37 @@ void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
       static_cast<base::HistogramBase::Sample>(rtt_ms), 1);
 }
 
-void DnsSession::RecordLostPacket(unsigned server_index, int attempt) {
-  base::TimeDelta timeout_jacobson =
-      NextTimeoutFromJacobson(server_index, attempt);
-  base::TimeDelta timeout_histogram =
-      NextTimeoutFromHistogram(server_index, attempt);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutSpentJacobson", timeout_jacobson);
-  UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutSpentHistogram", timeout_histogram);
-}
-
-void DnsSession::RecordServerStats() {
-  for (size_t index = 0; index < server_stats_.size(); ++index) {
-    if (server_stats_[index]->last_failure_count) {
-      if (server_stats_[index]->last_success.is_null()) {
-        UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.ServerFailuresWithoutSuccess",
-                                server_stats_[index]->last_failure_count);
-      } else {
-        UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.ServerFailuresAfterSuccess",
-                                server_stats_[index]->last_failure_count);
-      }
-    }
-  }
-}
-
-
 base::TimeDelta DnsSession::NextTimeout(unsigned server_index, int attempt) {
   // Respect initial timeout (from config or field trial) if it exceeds max.
   if (initial_timeout_ > max_timeout_)
     return initial_timeout_;
-  return NextTimeoutFromHistogram(server_index, attempt);
+
+  DCHECK_LT(server_index, server_stats_.size());
+
+  static_assert(std::numeric_limits<base::HistogramBase::Count>::is_signed,
+                "histogram base count assumed to be signed");
+
+  // Use fixed percentile of observed samples.
+  const base::SampleVector& samples =
+      *server_stats_[server_index]->rtt_histogram;
+
+  base::HistogramBase::Count total = samples.TotalCount();
+  base::HistogramBase::Count remaining_count = kRTOPercentile * total / 100;
+  size_t index = 0;
+  while (remaining_count > 0 && index < rtt_buckets_.Get().size()) {
+    remaining_count -= samples.GetCountAtIndex(index);
+    ++index;
+  }
+
+  base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(rtt_buckets_.Get().range(index));
+
+  timeout = std::max(timeout, base::TimeDelta::FromMilliseconds(kMinTimeoutMs));
+
+  // The timeout still doubles every full round.
+  unsigned num_backoffs = attempt / config_.nameservers.size();
+
+  return std::min(timeout * (1 << num_backoffs), max_timeout_);
 }
 
 // Allocate a socket, already connected to the server address.
@@ -336,51 +316,6 @@ void DnsSession::FreeSocket(unsigned server_index,
   socket->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
 
   socket_pool_->FreeSocket(server_index, std::move(socket));
-}
-
-base::TimeDelta DnsSession::NextTimeoutFromJacobson(unsigned server_index,
-                                                    int attempt) {
-  DCHECK_LT(server_index, server_stats_.size());
-
-  base::TimeDelta timeout = server_stats_[server_index]->rtt_estimate +
-                            4 * server_stats_[server_index]->rtt_deviation;
-
-  timeout = std::max(timeout, base::TimeDelta::FromMilliseconds(kMinTimeoutMs));
-
-  // The timeout doubles every full round.
-  unsigned num_backoffs = attempt / config_.nameservers.size();
-
-  return std::min(timeout * (1 << num_backoffs), max_timeout_);
-}
-
-base::TimeDelta DnsSession::NextTimeoutFromHistogram(unsigned server_index,
-                                                     int attempt) {
-  DCHECK_LT(server_index, server_stats_.size());
-
-  static_assert(std::numeric_limits<base::HistogramBase::Count>::is_signed,
-                "histogram base count assumed to be signed");
-
-  // Use fixed percentile of observed samples.
-  const base::SampleVector& samples =
-      *server_stats_[server_index]->rtt_histogram;
-
-  base::HistogramBase::Count total = samples.TotalCount();
-  base::HistogramBase::Count remaining_count = kRTOPercentile * total / 100;
-  size_t index = 0;
-  while (remaining_count > 0 && index < rtt_buckets_.Get().size()) {
-    remaining_count -= samples.GetCountAtIndex(index);
-    ++index;
-  }
-
-  base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(rtt_buckets_.Get().range(index));
-
-  timeout = std::max(timeout, base::TimeDelta::FromMilliseconds(kMinTimeoutMs));
-
-  // The timeout still doubles every full round.
-  unsigned num_backoffs = attempt / config_.nameservers.size();
-
-  return std::min(timeout * (1 << num_backoffs), max_timeout_);
 }
 
 }  // namespace net
