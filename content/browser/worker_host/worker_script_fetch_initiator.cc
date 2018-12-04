@@ -30,6 +30,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
@@ -135,6 +136,8 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
   if (file_support) {
     auto file_factory = std::make_unique<FileURLLoaderFactory>(
         storage_partition->browser_context()->GetPath(),
+        BrowserContext::GetSharedCorsOriginAccessList(
+            storage_partition->browser_context()),
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
