@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/device_info/local_device_info_provider.h"
@@ -121,7 +121,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     did_connect_ = true;
   }
 
-  base::MessageLoop frontend_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::Thread model_thread_;
   TestUserShare test_user_share_;
   NiceMock<SyncApiComponentFactoryMock> factory_;

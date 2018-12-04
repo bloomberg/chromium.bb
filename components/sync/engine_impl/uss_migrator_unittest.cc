@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/hash_util.h"
@@ -102,7 +102,7 @@ class UssMigratorTest : public ::testing::Test {
  private:
   syncable::Directory* directory() { return user_share()->directory.get(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<TestEntryFactory> entry_factory_;

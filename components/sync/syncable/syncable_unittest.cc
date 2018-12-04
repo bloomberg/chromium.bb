@@ -14,9 +14,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -131,7 +131,7 @@ TestDirectory::~TestDirectory() {}
 #define MAYBE_FailInitialWrite FailInitialWrite
 #endif
 TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   base::ScopedTempDir temp_dir;
@@ -548,7 +548,7 @@ class SyncableDirectoryManagement : public testing::Test {
   void TearDown() override {}
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;

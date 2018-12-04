@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
@@ -102,7 +102,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return test_user_share_.user_share()->directory.get();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;

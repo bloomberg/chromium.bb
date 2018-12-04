@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
@@ -87,7 +87,8 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   base::ObserverList<TypeDebugInfoObserver>::Unchecked type_observers_;
 
  private:
-  base::MessageLoop loop_;  // Needed to initialize the directory.
+  // Needed to initialize the directory.
+  base::test::ScopedTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   scoped_refptr<FakeModelWorker> ui_worker_;
 };
@@ -606,7 +607,8 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   syncable::Directory* directory() { return dir_maker_.directory(); }
 
  private:
-  base::MessageLoop loop_;  // Needed to initialize the directory.
+  // Needed to initialize the directory.
+  base::test::ScopedTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
   std::unique_ptr<TestEntryFactory> entry_factory_;
 

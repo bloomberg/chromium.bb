@@ -11,10 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/sync/base/node_ordinal.h"
 #include "components/sync/base/time.h"
@@ -107,7 +107,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 

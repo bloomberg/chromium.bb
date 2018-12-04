@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/model/data_batch.h"
@@ -318,8 +318,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
  private:
   int change_count_ = 0;
 
-  // In memory model type store needs a MessageLoop.
-  base::MessageLoop message_loop_;
+  // In memory model type store needs to be able to post tasks.
+  base::test::ScopedTaskEnvironment task_environment_;
 
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
 
