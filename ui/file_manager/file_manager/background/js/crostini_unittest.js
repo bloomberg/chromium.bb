@@ -48,7 +48,7 @@ function setUp() {
       /** @type {!VolumeManagerCommon.RootType<string>} */ ('testroot');
 
   // Create and initialize Crostini.
-  crostini = new Crostini();
+  crostini = new CrostiniImpl();
   crostini.init(volumeManager);
 }
 
@@ -136,7 +136,7 @@ function testCanSharePath() {
 
   // Test with DriveFs disabled.
   setDriveFsEnabled(false);
-  const disallowed = new Map(Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE);
+  const disallowed = new Map(CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE);
   disallowed.set('test', 'test');
   for (let type of disallowed.keys()) {
     volumeManagerRootType =
@@ -156,8 +156,8 @@ function testCanSharePath() {
   // Test with DriveFs enabled.
   setDriveFsEnabled(true);
   const allowed = new Map([
-    ...Crostini.VALID_ROOT_TYPES_FOR_SHARE,
-    ...Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE
+    ...CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE,
+    ...CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE
   ]);
   for (let type of allowed.keys()) {
     volumeManagerRootType = type;

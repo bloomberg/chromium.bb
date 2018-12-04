@@ -4,9 +4,21 @@
 
 /**
  * Crostini shared path state handler.
- * @constructor
+ *
+ * @interface
  */
 function Crostini() {}
+
+/**
+ * Initialize Volume Manager.
+ * @param {!VolumeManager} volumeManager
+ */
+Crostini.prototype.init = function(volumeManager) {};
+
+/**
+ * Register for any shared path changes.
+ */
+Crostini.prototype.listen = function() {};
 
 /**
  * Set from feature 'crostini-files'.
@@ -15,7 +27,8 @@ function Crostini() {}
 Crostini.prototype.setEnabled = function(enabled) {};
 
 /**
- * @return {boolean} Whether crostini is enabled.
+ * Returns true if crostini is enabled.
+ * @return {boolean}
  */
 Crostini.prototype.isEnabled = function() {};
 

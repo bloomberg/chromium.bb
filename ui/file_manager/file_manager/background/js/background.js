@@ -80,7 +80,7 @@ function FileBrowserBackgroundImpl() {
       this.driveSyncHandler);
 
   /** @type {!Crostini} */
-  this.crostini = new Crostini();
+  this.crostini = new CrostiniImpl();
 
   /**
    * String assets.
