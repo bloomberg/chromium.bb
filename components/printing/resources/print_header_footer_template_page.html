@@ -82,8 +82,11 @@ function setupHeaderFooterTemplate(options) {
 
   options.date = new Date(options.date).toLocaleDateString();
   for (const cssClass of ['date', 'title', 'url', 'pageNumber', 'totalPages']) {
-    for (const element of document.querySelectorAll(`.${cssClass}`))
+    for (const element of document.querySelectorAll(`.${cssClass}`)) {
       element.textContent = options[cssClass];
+      if (options.isRtl)
+        element.dir = 'rtl';
+    }
   }
 }
 
