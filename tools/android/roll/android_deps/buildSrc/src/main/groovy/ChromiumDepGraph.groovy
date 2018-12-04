@@ -44,6 +44,10 @@ class ChromiumDepGraph {
         'org_checkerframework_checker_compat_qual' :new DependencyDescription(
             licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
             licenseName: "GPL v2 with the classpath exception"),
+        'com_google_protobuf_protobuf_lite' :new DependencyDescription(
+            url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
+            licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
+            licenseName: "BSD"),
     ]
 
     Project project
