@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
+#include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -62,7 +62,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
@@ -347,15 +346,16 @@ class MockOutShowHide : public T {
   EXPECT_CALL(*mock_var, Show()).Times(0);                                  \
   EXPECT_CALL(*mock_var, Hide()).Times(0);
 
-class WizardControllerTest : public InProcessBrowserTest {
+class WizardControllerTest : public WizardInProcessBrowserTest {
  protected:
-  WizardControllerTest() = default;
-  ~WizardControllerTest() override = default;
+  WizardControllerTest()
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_TEST_NO_WINDOW) {}
+  ~WizardControllerTest() override {}
 
   void SetUpOnMainThread() override {
     AccessibilityManager::Get()->SetProfileForTest(
         ProfileHelper::GetSigninProfile());
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    WizardInProcessBrowserTest::SetUpOnMainThread();
   }
 
   ErrorScreen* GetErrorScreen() {
