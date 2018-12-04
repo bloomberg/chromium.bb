@@ -80,8 +80,6 @@ TEST_F(NavigationDelegateTest, RequestFails) {
   OCMExpect([mock_delegate_ webViewDidCommitNavigation:web_view_]);
   OCMExpect([mock_delegate_ webView:web_view_
          didFailNavigationWithError:[OCMArg any]]);
-  // -webViewDidCommitNavigation: is called one more time for failures.
-  OCMExpect([mock_delegate_ webViewDidCommitNavigation:web_view_]);
 
   ASSERT_TRUE(test::LoadUrl(web_view_, GetCloseSocketURL()));
   [(id)mock_delegate_ verify];
