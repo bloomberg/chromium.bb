@@ -2120,8 +2120,10 @@ class ComputedStyle : public ComputedStyleBase,
   // CanContainFixedPositionObjects.  We currently never use this value
   // directly, always OR'ing it with CanContainFixedPositionObjects.
   bool CanContainAbsolutePositionObjects() const {
-    return GetPosition() != EPosition::kStatic;
+    return GetPosition() != EPosition::kStatic ||
+           WillChangeProperties().Contains(CSSPropertyPosition);
   }
+
   bool CanContainFixedPositionObjects(bool is_document_element) const {
     return HasTransformRelatedProperty() ||
            // Filter establishes containing block for non-document elements:

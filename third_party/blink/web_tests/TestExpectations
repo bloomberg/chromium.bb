@@ -3091,8 +3091,6 @@ crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.sharedworker.html [ T
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/webapi/abort.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/abort.any.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
