@@ -111,12 +111,15 @@ void PowerMonitorDeviceSource::PlatformInit() {
     return;
 
   // Add the notification port and battery monitor to the application runloop
-  CFRunLoopAddSource(CFRunLoopGetCurrent(), IONotificationPortGetRunLoopSource(
-                                                g_notification_port_ref),
-                     kCFRunLoopCommonModes);
+  CFRunLoopAddSource(
+      CFRunLoopGetCurrent(),
+      IONotificationPortGetRunLoopSource(g_notification_port_ref),
+      kCFRunLoopCommonModes);
 
   base::ScopedCFTypeRef<CFRunLoopSourceRef> battery_status_ref(
       IOPSNotificationCreateRunLoopSource(BatteryEventCallback, nullptr));
+  DCHECK(battery_status_ref);  // crbug.com/897557
+
   CFRunLoopAddSource(CFRunLoopGetCurrent(), battery_status_ref,
                      kCFRunLoopDefaultMode);
   g_battery_status_ref = battery_status_ref.release();

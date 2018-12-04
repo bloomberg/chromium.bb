@@ -59,6 +59,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 // Flags spied upon from other layers.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNaClLoaderProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiBrokerProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiPluginProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
