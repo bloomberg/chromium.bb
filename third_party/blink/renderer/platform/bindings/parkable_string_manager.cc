@@ -21,6 +21,8 @@
 
 namespace blink {
 
+namespace {
+
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
@@ -28,11 +30,11 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
   void OnPurgeMemory() override {
     if (!base::FeatureList::IsEnabled(kCompressParkableStringsInBackground))
       return;
-
-    ParkableStringManager::Instance().ParkAllIfRendererBackgrounded(
-        ParkableStringImpl::ParkingMode::kAlways);
+    ParkableStringManager::Instance().PurgeMemory();
   }
 };
+
+}  // namespace
 
 ParkableStringManager& ParkableStringManager::Instance() {
   DCHECK(IsMainThread());
@@ -151,13 +153,9 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
   unparked_strings_.insert(new_unparked_string, was_parked_string);
 }
 
-void ParkableStringManager::ParkAllIfRendererBackgrounded(
-    ParkableStringImpl::ParkingMode mode) {
+void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(IsMainThread());
   DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
-
-  if (!IsRendererBackgrounded())
-    return;
 
   size_t total_size = 0;
   for (ParkableStringImpl* str : parked_strings_)
@@ -182,13 +180,22 @@ void ParkableStringManager::ParkAllIfRendererBackgrounded(
     total_size += str->CharactersSizeInBytes();
   }
 
-  // Only collect stats for "full" parking calls.
-  if (mode == ParkableStringImpl::ParkingMode::kAlways) {
+  // Only collect stats for "full" parking calls in background.
+  if (mode == ParkableStringImpl::ParkingMode::kAlways &&
+      IsRendererBackgrounded()) {
     size_t total_size_kb = total_size / 1000;
     UMA_HISTOGRAM_COUNTS_100000("Memory.MovableStringsTotalSizeKb",
                                 total_size_kb);
     UMA_HISTOGRAM_COUNTS_1000("Memory.MovableStringsCount", Size());
   }
+}
+
+void ParkableStringManager::ParkAllIfRendererBackgrounded(
+    ParkableStringImpl::ParkingMode mode) {
+  DCHECK(IsMainThread());
+
+  if (IsRendererBackgrounded())
+    ParkAll(mode);
 }
 
 size_t ParkableStringManager::Size() const {
@@ -235,6 +242,23 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
         (100 * total_compressed_size) / total_before_compression_size;
     UMA_HISTOGRAM_PERCENTAGE("Memory.ParkableString.CompressionRatio",
                              ratio_percentage);
+  }
+}
+
+void ParkableStringManager::PurgeMemory() {
+  DCHECK(IsMainThread());
+  DCHECK(base::FeatureList::IsEnabled(kCompressParkableStringsInBackground));
+
+  ParkAll(ParkableStringImpl::ParkingMode::kAlways);
+  // Critical memory pressure: drop compressed data for strings that we cannot
+  // park now.
+  //
+  // After |ParkAll()| has been called, parkable strings have either been parked
+  // synchronously (and no longer in |unparked_strings_|), or being parked and
+  // purging is a no-op.
+  if (!IsRendererBackgrounded()) {
+    for (ParkableStringImpl* str : unparked_strings_.Values())
+      str->PurgeMemory();
   }
 }
 

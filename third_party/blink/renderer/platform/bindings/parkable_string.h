@@ -60,6 +60,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
   void Lock();
   void Unlock();
 
+  void PurgeMemory();
+
   // The returned string may be used as a normal one, as long as the
   // returned value (or a copy of it) is alive.
   const String& ToString();

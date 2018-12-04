@@ -543,14 +543,14 @@ TEST_F(ParkableStringTest, SynchronousCompression) {
   parkable.ToString();
   EXPECT_TRUE(parkable.Impl()->has_compressed_data());
   // No waiting, synchronous compression.
-  manager.ParkAllIfRendererBackgrounded(
-      ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
+  manager.ParkAll(ParkableStringImpl::ParkingMode::kIfCompressedDataExists);
   EXPECT_TRUE(parkable.Impl()->is_parked());
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
-TEST_F(ParkableStringTest, OnPurgeMemory) {
+TEST_F(ParkableStringTest, OnPurgeMemoryInBackground) {
   ParkableString parkable = CreateAndParkAll();
+  EXPECT_TRUE(ParkableStringManager::Instance().IsRendererBackgrounded());
 
   parkable.ToString();
   EXPECT_FALSE(parkable.Impl()->is_parked());
@@ -558,6 +558,37 @@ TEST_F(ParkableStringTest, OnPurgeMemory) {
 
   MemoryCoordinator::Instance().OnPurgeMemory();
   EXPECT_TRUE(parkable.Impl()->is_parked());
+
+  parkable.ToString();
+  EXPECT_TRUE(parkable.Impl()->has_compressed_data());
+}
+
+TEST_F(ParkableStringTest, OnPurgeMemoryInForeground) {
+  ParkableString parkable1 = CreateAndParkAll();
+  ParkableString parkable2(MakeLargeString().ReleaseImpl());
+
+  // Park everything.
+  ParkableStringManager::Instance().SetRendererBackgrounded(true);
+  WaitForDelayedParking();
+  EXPECT_TRUE(parkable1.Impl()->is_parked());
+  EXPECT_TRUE(parkable2.Impl()->is_parked());
+
+  ParkableStringManager::Instance().SetRendererBackgrounded(false);
+
+  // Different usage patterns:
+  // 1. Parkable, will be parked synchronouly.
+  // 2. Cannot be parked, compressed representation is purged.
+  parkable1.ToString();
+  String retained = parkable2.ToString();
+  EXPECT_TRUE(parkable2.Impl()->has_compressed_data());
+
+  MemoryCoordinator::Instance().OnPurgeMemory();
+  EXPECT_TRUE(parkable1.Impl()->is_parked());  // Parked synchronously.
+  EXPECT_FALSE(parkable2.Impl()->is_parked());
+  EXPECT_FALSE(parkable2.Impl()->has_compressed_data());  // Purged.
+
+  parkable1.ToString();
+  EXPECT_TRUE(parkable1.Impl()->has_compressed_data());
 }
 
 }  // namespace blink

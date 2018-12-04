@@ -185,6 +185,12 @@ void ParkableStringImpl::Unlock() {
 #endif  // defined(ADDRESS_SANITIZER) && DCHECK_IS_ON()
 }
 
+void ParkableStringImpl::PurgeMemory() {
+  AssertOnValidThread();
+  if (state_ == State::kUnparked)
+    compressed_ = nullptr;
+}
+
 const String& ParkableStringImpl::ToString() {
   AssertOnValidThread();
   MutexLocker locker(mutex_);
