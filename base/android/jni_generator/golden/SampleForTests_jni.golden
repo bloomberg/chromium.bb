@@ -24,11 +24,6 @@ const char kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024In
     "org/chromium/example/jni_generator/SampleForTests$InnerStructA";
 
 JNI_REGISTRATION_EXPORT extern const char
-    kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass[];
-const char kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass[] =
-    "org/chromium/example/jni_generator/SampleForTests$InnerClass";
-
-JNI_REGISTRATION_EXPORT extern const char
     kClassPath_org_chromium_example_jni_1generator_SampleForTests[];
 const char kClassPath_org_chromium_example_jni_1generator_SampleForTests[] =
     "org/chromium/example/jni_generator/SampleForTests";
@@ -47,18 +42,6 @@ inline jclass org_chromium_example_jni_1generator_SampleForTests_00024InnerStruc
   return base::android::LazyGetClass(env,
       kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024InnerStructA,
       &g_org_chromium_example_jni_1generator_SampleForTests_00024InnerStructA_clazz);
-}
-#endif
-// Leaking this jclass as we cannot use LazyInstance from some threads.
-JNI_REGISTRATION_EXPORT std::atomic<jclass>
-    g_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_clazz(nullptr);
-#ifndef org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_clazz_defined
-#define org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_clazz_defined
-inline jclass org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_clazz(JNIEnv* env)
-    {
-  return base::android::LazyGetClass(env,
-      kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass,
-      &g_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_clazz);
 }
 #endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
@@ -207,15 +190,6 @@ JNI_GENERATOR_EXPORT jstring
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
   return native->ReturnAString(env, base::android::JavaParamRef<jobject>(env, jcaller)).Release();
-}
-
-static jint JNI_InnerClass_GetInnerIntFunction(JNIEnv* env);
-
-JNI_GENERATOR_EXPORT jint
-    Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(
-    JNIEnv* env,
-    jclass jcaller) {
-  return JNI_InnerClass_GetInnerIntFunction(env);
 }
 
 
