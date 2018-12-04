@@ -26,12 +26,23 @@
 #include "services/ws/window_service_observer.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_factory.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/base/mojo/clipboard_host.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace ws {
+
+namespace {
+
+// Returns true if |window| has remote client and marked as has-content.
+bool IsRemoteOpaqueWindow(const aura::Window* window) {
+  return WindowService::HasRemoteClient(window) &&
+         window->GetProperty(aura::client::kClientWindowHasContent);
+}
+
+}  // namespace
 
 WindowService::WindowService(
     WindowServiceDelegate* delegate,
@@ -64,10 +75,9 @@ WindowService::WindowService(
       mojom::WindowManager::kShadowElevation_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 
-  // Extends WindowOcclusionTracker to treat windows with remote client as
-  // has-content.
+  // Extends WindowOcclusionTracker to check whether remote window has content.
   env_->GetWindowOcclusionTracker()->set_window_has_content_callback(
-      base::BindRepeating(&WindowService::HasRemoteClient));
+      base::BindRepeating(&IsRemoteOpaqueWindow));
 }
 
 WindowService::~WindowService() {
