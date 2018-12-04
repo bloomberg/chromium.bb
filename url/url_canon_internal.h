@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "url/url_canon.h"
 
@@ -84,7 +85,7 @@ void AppendStringOfType(const base::char16* source, int length,
 
 // Maps the hex numerical values 0x0 to 0xf to the corresponding ASCII digit
 // that will be used to represent it.
-URL_EXPORT extern const char kHexCharLookup[0x10];
+COMPONENT_EXPORT(URL) extern const char kHexCharLookup[0x10];
 
 // This lookup table allows fast conversion between ASCII hex letters and their
 // corresponding numerical value. The 8-bit range is divided up into 8
@@ -149,8 +150,11 @@ extern const base::char16 kUnicodeReplacementCharacter;
 // |*begin| will be updated to point to the last character consumed so it
 // can be incremented in a loop and will be ready for the next character.
 // (for a single-byte ASCII character, it will not be changed).
-URL_EXPORT bool ReadUTFChar(const char* str, int* begin, int length,
-                            unsigned* code_point_out);
+COMPONENT_EXPORT(URL)
+bool ReadUTFChar(const char* str,
+                 int* begin,
+                 int length,
+                 unsigned* code_point_out);
 
 // Generic To-UTF-8 converter. This will call the given append method for each
 // character that should be appended, with the given output method. Wrappers
@@ -224,8 +228,11 @@ inline void AppendUTF8EscapedValue(unsigned char_value, CanonOutput* output) {
 // |*begin| will be updated to point to the last character consumed so it
 // can be incremented in a loop and will be ready for the next character.
 // (for a single-16-bit-word character, it will not be changed).
-URL_EXPORT bool ReadUTFChar(const base::char16* str, int* begin, int length,
-                            unsigned* code_point_out);
+COMPONENT_EXPORT(URL)
+bool ReadUTFChar(const base::char16* str,
+                 int* begin,
+                 int length,
+                 unsigned* code_point_out);
 
 // Equivalent to U16_APPEND_UNSAFE in ICU but uses our output method.
 inline void AppendUTF16Value(unsigned code_point,
@@ -343,10 +350,14 @@ void AppendInvalidNarrowString(const base::char16* spec, int begin, int end,
 // replacing the invalid characters with the "invalid character". It will
 // return false in the failure case, and the caller should not continue as
 // normal.
-URL_EXPORT bool ConvertUTF16ToUTF8(const base::char16* input, int input_len,
-                                   CanonOutput* output);
-URL_EXPORT bool ConvertUTF8ToUTF16(const char* input, int input_len,
-                                   CanonOutputT<base::char16>* output);
+COMPONENT_EXPORT(URL)
+bool ConvertUTF16ToUTF8(const base::char16* input,
+                        int input_len,
+                        CanonOutput* output);
+COMPONENT_EXPORT(URL)
+bool ConvertUTF8ToUTF16(const char* input,
+                        int input_len,
+                        CanonOutputT<base::char16>* output);
 
 // Converts from UTF-16 to 8-bit using the character set converter. If the
 // converter is NULL, this will use UTF-8.
@@ -405,10 +416,10 @@ bool CanonicalizePartialPath(const base::char16* spec,
 #ifndef WIN32
 
 // Implementations of Windows' int-to-string conversions
-URL_EXPORT int _itoa_s(int value, char* buffer, size_t size_in_chars,
-                       int radix);
-URL_EXPORT int _itow_s(int value, base::char16* buffer, size_t size_in_chars,
-                       int radix);
+COMPONENT_EXPORT(URL)
+int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
+COMPONENT_EXPORT(URL)
+int _itow_s(int value, base::char16* buffer, size_t size_in_chars, int radix);
 
 // Secure template overloads for these functions
 template<size_t N>

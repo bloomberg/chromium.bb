@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
 import("features.gni")
 
 if (is_android) {
@@ -47,7 +47,6 @@ component("url") {
     "url_canon_stdurl.cc",
     "url_constants.cc",
     "url_constants.h",
-    "url_export.h",
     "url_file.h",
     "url_parse_file.cc",
     "url_parse_internal.h",
@@ -56,7 +55,7 @@ component("url") {
     "url_util_internal.h",
   ]
 
-  defines = [ "URL_IMPLEMENTATION" ]
+  defines = [ "IS_URL_IMPL" ]
 
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
