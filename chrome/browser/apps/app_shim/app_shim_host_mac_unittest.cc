@@ -118,7 +118,7 @@ class AppShimHostTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
-  apps::AppShimHandler::Host* host() { return host_.get(); }
+  AppShimHost* host() { return host_.get(); }
   chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
@@ -151,17 +151,17 @@ class AppShimHostTest : public testing::Test,
     host_->OnAppLaunchComplete(launch_result_);
   }
 
-  void OnShimClose(Host* host) override { ++close_count_; }
+  void OnShimClose(AppShimHost* host) override { ++close_count_; }
 
-  void OnShimFocus(Host* host,
+  void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
 
-  void OnShimSetHidden(Host* host, bool hidden) override {}
+  void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
 
-  void OnShimQuit(Host* host) override { ++quit_count_; }
+  void OnShimQuit(AppShimHost* host) override { ++quit_count_; }
 
   apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
   int launch_count_ = 0;
