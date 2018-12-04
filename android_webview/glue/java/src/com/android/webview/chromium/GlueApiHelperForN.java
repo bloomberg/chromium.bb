@@ -11,7 +11,6 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.os.UserManager;
 import android.webkit.ServiceWorkerController;
-import android.webkit.TokenBindingService;
 import android.webkit.WebView;
 import android.webkit.WebViewDelegate;
 
@@ -37,16 +36,6 @@ public final class GlueApiHelperForN {
     public static ServiceWorkerController createServiceWorkerControllerAdapter(
             WebViewChromiumAwInit awInit) {
         return new ServiceWorkerControllerAdapter(awInit.getServiceWorkerController());
-    }
-
-    /**
-     * See {@link
-     * TokenBindingManagerAdapter#TokenBindingManagerAdapter(WebViewChromiumFactoryProvider)}, which
-     * was added in N.
-     */
-    public static TokenBindingService createTokenBindingManagerAdapter(
-            WebViewChromiumFactoryProvider factory) {
-        return new TokenBindingManagerAdapter(factory);
     }
 
     /**
