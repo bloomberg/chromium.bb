@@ -16,7 +16,7 @@ NavigatorSerial& NavigatorSerial::From(Navigator& navigator) {
   NavigatorSerial* supplement =
       Supplement<Navigator>::From<NavigatorSerial>(navigator);
   if (!supplement) {
-    supplement = new NavigatorSerial(navigator);
+    supplement = MakeGarbageCollected<NavigatorSerial>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

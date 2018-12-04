@@ -273,7 +273,8 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
                                               WebViewClient* client) const {
   MediaKeysController::ProvideMediaKeysTo(page);
   ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
-  ::blink::ProvideDatabaseClientTo(page, new DatabaseClient);
+  ::blink::ProvideDatabaseClientTo(page,
+                                   MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
 }
 

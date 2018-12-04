@@ -14,7 +14,7 @@ namespace blink {
 
 BatteryDispatcher& BatteryDispatcher::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<BatteryDispatcher>, battery_dispatcher,
-                      (new BatteryDispatcher));
+                      (MakeGarbageCollected<BatteryDispatcher>()));
   return *battery_dispatcher;
 }
 

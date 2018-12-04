@@ -164,7 +164,7 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
           ->GetTaskRunner(TaskType::kInternalDefault));
   pending_operation_ = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  auto* client = new StreamWriterClient(this);
+  auto* client = MakeGarbageCollected<StreamWriterClient>(this);
   stream_loader_->Start(consumer, client);
   writer_->WriteStream(
       position, client->TakeDataPipe(),

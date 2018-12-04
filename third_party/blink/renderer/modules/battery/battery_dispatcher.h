@@ -22,13 +22,13 @@ class MODULES_EXPORT BatteryDispatcher final
  public:
   static BatteryDispatcher& Instance();
 
+  BatteryDispatcher();
+
   const BatteryStatus* LatestData() const {
     return has_latest_data_ ? &battery_status_ : nullptr;
   }
 
  private:
-  BatteryDispatcher();
-
   void QueryNextStatus();
   void OnDidChange(device::mojom::blink::BatteryStatusPtr);
   void UpdateBatteryStatus(const BatteryStatus&);

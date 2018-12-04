@@ -38,11 +38,11 @@ class RTCPeerConnectionController
 
   void MaybeReportComplexSdp(ComplexSdpCategory);
 
+  explicit RTCPeerConnectionController(Document&);
+
   void Trace(Visitor*) override;
 
  private:
-  explicit RTCPeerConnectionController(Document&);
-
   bool has_reported_ukm_ = false;
 };
 

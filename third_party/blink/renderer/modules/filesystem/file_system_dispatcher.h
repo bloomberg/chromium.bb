@@ -37,6 +37,8 @@ class FileSystemDispatcher
   static const char kSupplementName[];
 
   static FileSystemDispatcher& From(ExecutionContext* context);
+
+  explicit FileSystemDispatcher(ExecutionContext& context);
   virtual ~FileSystemDispatcher();
 
   mojom::blink::FileSystemManager& GetFileSystemManager();
@@ -141,8 +143,6 @@ class FileSystemDispatcher
  private:
   class WriteListener;
   class ReadDirectoryListener;
-
-  explicit FileSystemDispatcher(ExecutionContext& context);
 
   void DidOpenFileSystem(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
                          const String& name,

@@ -34,6 +34,7 @@ class MODULES_EXPORT RTCDtlsTransport final : public EventTargetWithInlineData,
  public:
   static RTCDtlsTransport* Create(ExecutionContext* context);
 
+  explicit RTCDtlsTransport(ExecutionContext* context);
   ~RTCDtlsTransport() override;
 
   // rtc_dtls_transport.idl
@@ -51,7 +52,6 @@ class MODULES_EXPORT RTCDtlsTransport final : public EventTargetWithInlineData,
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit RTCDtlsTransport(ExecutionContext* context);
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
 };
 

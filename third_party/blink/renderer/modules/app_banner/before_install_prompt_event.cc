@@ -24,9 +24,10 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
       banner_service_(std::move(service_ptr)),
       binding_(this, std::move(event_request)),
       platforms_(platforms),
-      user_choice_(new UserChoiceProperty(frame.GetDocument(),
-                                          this,
-                                          UserChoiceProperty::kUserChoice)),
+      user_choice_(MakeGarbageCollected<UserChoiceProperty>(
+          frame.GetDocument(),
+          this,
+          UserChoiceProperty::kUserChoice)),
       require_gesture_(require_gesture) {
   DCHECK(banner_service_);
   DCHECK(binding_.is_bound());

@@ -267,7 +267,8 @@ RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
 }
 
 RTCQuicStream* RTCQuicTransport::AddStream(QuicStreamProxy* stream_proxy) {
-  auto* stream = new RTCQuicStream(GetExecutionContext(), this, stream_proxy);
+  auto* stream = MakeGarbageCollected<RTCQuicStream>(GetExecutionContext(),
+                                                     this, stream_proxy);
   stream_proxy->set_delegate(stream);
   streams_.insert(stream);
   return stream;

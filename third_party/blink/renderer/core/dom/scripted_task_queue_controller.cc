@@ -19,7 +19,8 @@ ScriptedTaskQueueController* ScriptedTaskQueueController::From(
   ScriptedTaskQueueController* task_queue_controller =
       Supplement<Document>::From<ScriptedTaskQueueController>(document);
   if (!task_queue_controller) {
-    task_queue_controller = new ScriptedTaskQueueController(&document);
+    task_queue_controller =
+        MakeGarbageCollected<ScriptedTaskQueueController>(&document);
     Supplement<Document>::ProvideTo(document, task_queue_controller);
   }
   return task_queue_controller;

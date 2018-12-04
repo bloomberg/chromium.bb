@@ -14,7 +14,7 @@ WorkerNavigatorSerial& WorkerNavigatorSerial::From(WorkerNavigator& navigator) {
   WorkerNavigatorSerial* supplement =
       Supplement<WorkerNavigator>::From<WorkerNavigatorSerial>(navigator);
   if (!supplement) {
-    supplement = new WorkerNavigatorSerial(navigator);
+    supplement = MakeGarbageCollected<WorkerNavigatorSerial>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

@@ -25,8 +25,10 @@ class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
  public:
   static ScriptedTaskQueue* Create(ExecutionContext* context,
                                    TaskType task_type) {
-    return new ScriptedTaskQueue(context, task_type);
+    return MakeGarbageCollected<ScriptedTaskQueue>(context, task_type);
   }
+
+  explicit ScriptedTaskQueue(ExecutionContext*, TaskType);
 
   using CallbackId = int;
 
@@ -39,8 +41,6 @@ class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ScriptedTaskQueue(ExecutionContext*, TaskType);
-
   // PausableObject interface.
   void ContextDestroyed(ExecutionContext*) override;
   void Pause() override;

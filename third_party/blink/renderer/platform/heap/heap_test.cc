@@ -1181,7 +1181,10 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
   USING_PRE_FINALIZER(PreFinalizerSubClass, Dispose);
 
  public:
-  static PreFinalizerSubClass* Create() { return new PreFinalizerSubClass(); }
+  static PreFinalizerSubClass* Create() {
+    return MakeGarbageCollected<PreFinalizerSubClass>();
+  }
+  PreFinalizerSubClass() : was_destructed_(false) {}
   ~PreFinalizerSubClass() override { was_destructed_ = true; }
   void Trace(blink::Visitor* visitor) override {}
   void Dispose() {
@@ -1193,7 +1196,6 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
   }
 
  protected:
-  PreFinalizerSubClass() : was_destructed_(false) {}
   bool was_destructed_;
 };
 
@@ -1382,21 +1384,20 @@ class Mixin : public GarbageCollectedMixin {
 class UseMixin : public SimpleObject, public Mixin {
   USING_GARBAGE_COLLECTED_MIXIN(UseMixin)
  public:
-  static UseMixin* Create() { return new UseMixin(); }
+  static UseMixin* Create() { return MakeGarbageCollected<UseMixin>(); }
+
+  UseMixin() {
+    // Verify that WTF::IsGarbageCollectedType<> works as expected for mixins.
+    static_assert(WTF::IsGarbageCollectedType<UseMixin>::value,
+                  "IsGarbageCollectedType<> sanity check failed for GC mixin.");
+    trace_count_ = 0;
+  }
 
   static int trace_count_;
   void Trace(blink::Visitor* visitor) override {
     SimpleObject::Trace(visitor);
     Mixin::Trace(visitor);
     ++trace_count_;
-  }
-
- private:
-  UseMixin() {
-    // Verify that WTF::IsGarbageCollectedType<> works as expected for mixins.
-    static_assert(WTF::IsGarbageCollectedType<UseMixin>::value,
-                  "IsGarbageCollectedType<> sanity check failed for GC mixin.");
-    trace_count_ = 0;
   }
 };
 
@@ -1651,7 +1652,7 @@ class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
 };
 
 TEST(HeapDeathTest, LargeGarbageCollectedMixin) {
-  EXPECT_DEATH(new LargeMixin(), "");
+  EXPECT_DEATH(MakeGarbageCollected<LargeMixin>(), "");
 }
 
 TEST(HeapTest, Transition) {
@@ -4698,7 +4699,7 @@ TEST(HeapTest, MultipleMixins) {
 
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
-  MultipleMixins* obj = new MultipleMixins();
+  MultipleMixins* obj = MakeGarbageCollected<MultipleMixins>();
   {
     Persistent<MixinA> a = obj;
     PreciselyCollectGarbage();
@@ -4718,7 +4719,7 @@ TEST(HeapTest, DerivedMultipleMixins) {
   IntWrapper::destructor_calls_ = 0;
   DerivedMultipleMixins::trace_called_ = 0;
 
-  DerivedMultipleMixins* obj = new DerivedMultipleMixins();
+  DerivedMultipleMixins* obj = MakeGarbageCollected<DerivedMultipleMixins>();
   {
     Persistent<MixinA> a = obj;
     PreciselyCollectGarbage();
@@ -4749,7 +4750,8 @@ TEST(HeapTest, MixinInstanceWithoutTrace) {
   // references inherits the mixin's trace implementation.
   ClearOutOldGarbage();
   MixinA::trace_count_ = 0;
-  MixinInstanceWithoutTrace* obj = new MixinInstanceWithoutTrace();
+  MixinInstanceWithoutTrace* obj =
+      MakeGarbageCollected<MixinInstanceWithoutTrace>();
   int saved_trace_count = 0;
   {
     Persistent<MixinA> a = obj;
@@ -5713,7 +5715,7 @@ int ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
 TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
   ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
   ClassWithGarbageCollectingMixinConstructor* a =
-      new ClassWithGarbageCollectingMixinConstructor();
+      MakeGarbageCollected<ClassWithGarbageCollectingMixinConstructor>();
   a->Verify();
 }
 
@@ -6257,8 +6259,9 @@ class TestMixinAllocationB : public TestMixinAllocationA {
 
  public:
   TestMixinAllocationB()
-      : a_(new TestMixinAllocationA())  // Construct object during a mixin
-                                        // construction.
+      : a_(MakeGarbageCollected<TestMixinAllocationA>())  // Construct object
+                                                          // during a mixin
+                                                          // construction.
   {
     // Completely wrong in general, but test only
     // runs this constructor while constructing another mixin.
@@ -6286,7 +6289,7 @@ class TestMixinAllocationC final : public TestMixinAllocationB {
 };
 
 TEST(HeapTest, NestedMixinConstruction) {
-  TestMixinAllocationC* object = new TestMixinAllocationC();
+  TestMixinAllocationC* object = MakeGarbageCollected<TestMixinAllocationC>();
   EXPECT_TRUE(object);
 }
 
@@ -6315,7 +6318,16 @@ class TestMixinAllocatingObject final
 
  public:
   static TestMixinAllocatingObject* Create(ClassWithMember* member) {
-    return new TestMixinAllocatingObject(member);
+    return MakeGarbageCollected<TestMixinAllocatingObject>(member);
+  }
+
+  TestMixinAllocatingObject(ClassWithMember* member)
+      : ObjectWithLargeAmountsOfAllocationInConstructor(600, member),
+        trace_counter_(TraceCounter::Create()) {
+    DCHECK(!ThreadState::Current()->IsGCForbidden());
+    ConservativelyCollectGarbage();
+    EXPECT_GT(member->TraceCount(), 0);
+    EXPECT_GT(TraceCount(), 0);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -6326,15 +6338,6 @@ class TestMixinAllocatingObject final
   int TraceCount() const { return trace_counter_->TraceCount(); }
 
  private:
-  TestMixinAllocatingObject(ClassWithMember* member)
-      : ObjectWithLargeAmountsOfAllocationInConstructor(600, member),
-        trace_counter_(TraceCounter::Create()) {
-    DCHECK(!ThreadState::Current()->IsGCForbidden());
-    ConservativelyCollectGarbage();
-    EXPECT_GT(member->TraceCount(), 0);
-    EXPECT_GT(TraceCount(), 0);
-  }
-
   Member<TraceCounter> trace_counter_;
 };
 

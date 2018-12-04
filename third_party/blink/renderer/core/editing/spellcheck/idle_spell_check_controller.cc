@@ -70,7 +70,7 @@ void IdleSpellCheckController::Trace(blink::Visitor* visitor) {
 }
 
 IdleSpellCheckController* IdleSpellCheckController::Create(LocalFrame& frame) {
-  return new IdleSpellCheckController(frame);
+  return MakeGarbageCollected<IdleSpellCheckController>(frame);
 }
 
 IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)

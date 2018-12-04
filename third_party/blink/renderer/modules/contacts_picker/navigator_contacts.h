@@ -27,11 +27,11 @@ class NavigatorContacts final : public GarbageCollected<NavigatorContacts>,
   static ContactsManager* contacts(Navigator& navigator);
   ContactsManager* contacts();
 
+  explicit NavigatorContacts(Navigator& navigator);
+
   void Trace(Visitor* visitor) override;
 
  private:
-  explicit NavigatorContacts(Navigator& navigator);
-
   Member<ContactsManager> contacts_manager_;
 };
 

@@ -70,9 +70,10 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
                                std::move(storage_partition_service_ptr),
                                kTestCacheLimit);
-  StorageNamespace* localStorage = new StorageNamespace(&controller);
-  StorageNamespace* sessionStorage =
-      new StorageNamespace(&controller, kSessionStorageNamespace);
+  StorageNamespace* localStorage =
+      MakeGarbageCollected<StorageNamespace>(&controller);
+  StorageNamespace* sessionStorage = MakeGarbageCollected<StorageNamespace>(
+      &controller, kSessionStorageNamespace);
 
   EXPECT_FALSE(localStorage->IsSessionStorage());
   EXPECT_TRUE(sessionStorage->IsSessionStorage());

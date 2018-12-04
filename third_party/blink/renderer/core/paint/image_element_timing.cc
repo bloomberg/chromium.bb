@@ -32,7 +32,7 @@ ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
   ImageElementTiming* timing =
       Supplement<LocalDOMWindow>::From<ImageElementTiming>(window);
   if (!timing) {
-    timing = new ImageElementTiming(window);
+    timing = MakeGarbageCollected<ImageElementTiming>(window);
     ProvideTo(window, timing);
   }
   return *timing;

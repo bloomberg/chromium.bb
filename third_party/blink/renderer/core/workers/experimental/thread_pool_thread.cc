@@ -61,9 +61,12 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
 
 WorkerOrWorkletGlobalScope* ThreadPoolThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  if (backing_policy_ == kWorker)
-    return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
-  return new TaskWorkletGlobalScope(std::move(creation_params), this);
+  if (backing_policy_ == kWorker) {
+    return MakeGarbageCollected<ThreadPoolWorkerGlobalScope>(
+        std::move(creation_params), this);
+  }
+  return MakeGarbageCollected<TaskWorkletGlobalScope>(
+      std::move(creation_params), this);
 }
 
 }  // namespace blink

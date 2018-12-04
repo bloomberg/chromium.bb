@@ -28,13 +28,12 @@ class ScreenOrientationDispatcher final
  public:
   static ScreenOrientationDispatcher& Instance();
 
+  ScreenOrientationDispatcher();
   ~ScreenOrientationDispatcher();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  ScreenOrientationDispatcher();
-
   // Inherited from PlatformEventDispatcher.
   void StartListening(LocalFrame*) override;
   void StopListening() override;

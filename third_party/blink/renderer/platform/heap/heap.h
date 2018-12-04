@@ -538,6 +538,11 @@ class GarbageCollected {
   }
 
   static void* AllocateObject(size_t size, bool eagerly_sweep) {
+    if (IsGarbageCollectedMixin<T>::value) {
+      // Ban large mixin so we can use PageFromObject() on them.
+      CHECK_GE(kLargeObjectSizeThreshold, size)
+          << "GarbageCollectedMixin may not be a large object";
+    }
     return ThreadHeap::Allocate<T>(size, eagerly_sweep);
   }
 

@@ -17,12 +17,15 @@ class OverscrollEvent final : public Event {
   static OverscrollEvent* Create(const AtomicString& type,
                                  double delta_x,
                                  double delta_y) {
-    return new OverscrollEvent(type, delta_x, delta_y);
+    return MakeGarbageCollected<OverscrollEvent>(type, delta_x, delta_y);
   }
   static OverscrollEvent* Create(const AtomicString& type,
                                  const OverscrollEventInit* initializer) {
-    return new OverscrollEvent(type, initializer);
+    return MakeGarbageCollected<OverscrollEvent>(type, initializer);
   }
+
+  OverscrollEvent(const AtomicString&, double delta_x, double delta_y);
+  OverscrollEvent(const AtomicString&, const OverscrollEventInit*);
 
   double deltaX() const { return delta_x_; }
   double deltaY() const { return delta_y_; }
@@ -30,9 +33,6 @@ class OverscrollEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  OverscrollEvent(const AtomicString&, double delta_x, double delta_y);
-  OverscrollEvent(const AtomicString&, const OverscrollEventInit*);
-
   double delta_x_ = 0;
   double delta_y_ = 0;
 };

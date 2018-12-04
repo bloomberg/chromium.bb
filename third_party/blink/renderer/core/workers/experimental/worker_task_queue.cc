@@ -45,8 +45,9 @@ ScriptPromise WorkerTaskQueue::postFunction(
   DCHECK(document_->IsContextThread());
   DCHECK(function.IsFunction());
 
-  Task* task = new Task(ThreadPool::From(*document_), script_state, function,
-                        arguments, task_type_);
+  Task* task =
+      MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
+                                 function, arguments, task_type_);
   if (signal)
     signal->AddAlgorithm(WTF::Bind(&Task::cancel, WrapWeakPersistent(task)));
   return task->result(script_state);
@@ -57,8 +58,8 @@ Task* WorkerTaskQueue::postTask(ScriptState* script_state,
                                 const Vector<ScriptValue>& arguments) {
   DCHECK(document_->IsContextThread());
   DCHECK(function.IsFunction());
-  return new Task(ThreadPool::From(*document_), script_state, function,
-                  arguments, task_type_);
+  return MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
+                                    function, arguments, task_type_);
 }
 
 void WorkerTaskQueue::Trace(blink::Visitor* visitor) {

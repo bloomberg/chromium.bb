@@ -551,7 +551,8 @@ ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {
-  return new ReadyProperty(GetExecutionContext(), this, ReadyProperty::kReady);
+  return MakeGarbageCollected<ReadyProperty>(GetExecutionContext(), this,
+                                             ReadyProperty::kReady);
 }
 
 }  // namespace blink

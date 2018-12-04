@@ -254,7 +254,8 @@ ParkableStringManager::ParkableStringManager()
       parked_strings_() {
   // No need to ever unregister, as the only ParkableStringManager instance
   // lives forever.
-  MemoryCoordinator::Instance().RegisterClient(new OnPurgeMemoryListener());
+  MemoryCoordinator::Instance().RegisterClient(
+      MakeGarbageCollected<OnPurgeMemoryListener>());
 }
 
 }  // namespace blink

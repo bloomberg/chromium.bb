@@ -28,6 +28,7 @@ class CORE_EXPORT ImageElementTiming final
  public:
   static const char kSupplementName[];
 
+  explicit ImageElementTiming(LocalDOMWindow&);
   virtual ~ImageElementTiming() = default;
 
   static ImageElementTiming& From(LocalDOMWindow&);
@@ -44,8 +45,6 @@ class CORE_EXPORT ImageElementTiming final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ImageElementTiming(LocalDOMWindow&);
-
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
                                 base::TimeTicks timestamp);

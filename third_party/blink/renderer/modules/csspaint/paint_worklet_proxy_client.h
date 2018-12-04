@@ -33,6 +33,8 @@ class MODULES_EXPORT PaintWorkletProxyClient
   static const char kSupplementName[];
 
   static PaintWorkletProxyClient* Create();
+
+  PaintWorkletProxyClient();
   virtual ~PaintWorkletProxyClient() = default;
 
   void Trace(blink::Visitor*) override;
@@ -41,9 +43,6 @@ class MODULES_EXPORT PaintWorkletProxyClient
   void Dispose();
 
   static PaintWorkletProxyClient* From(WorkerClients*);
-
- protected:
-  PaintWorkletProxyClient();
 
  private:
   CrossThreadPersistent<PaintWorkletGlobalScope> global_scope_;

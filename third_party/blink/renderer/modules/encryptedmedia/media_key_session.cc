@@ -358,9 +358,10 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       is_uninitialized_(true),
       is_callable_(false),
       is_closing_or_closed_(false),
-      closed_promise_(new ClosedPromise(ExecutionContext::From(script_state),
-                                        this,
-                                        ClosedPromise::kClosed)),
+      closed_promise_(MakeGarbageCollected<ClosedPromise>(
+          ExecutionContext::From(script_state),
+          this,
+          ClosedPromise::kClosed)),
       action_timer_(ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kMiscPlatformAPI),
                     this,

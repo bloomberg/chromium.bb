@@ -27,7 +27,7 @@ BatteryManager::BatteryManager(ExecutionContext* context)
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {
-    battery_property_ = new BatteryProperty(
+    battery_property_ = MakeGarbageCollected<BatteryProperty>(
         ExecutionContext::From(script_state), this, BatteryProperty::kReady);
 
     // If the context is in a stopped state already, do not start updating.

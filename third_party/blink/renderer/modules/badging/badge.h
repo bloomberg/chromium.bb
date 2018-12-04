@@ -26,6 +26,7 @@ class Badge final : public ScriptWrappable,
 
   static Badge* From(ExecutionContext*);
 
+  explicit Badge(ExecutionContext*);
   ~Badge() override;
 
   // Badge IDL interface.
@@ -39,8 +40,6 @@ class Badge final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit Badge(ExecutionContext*);
-
   static Badge* BadgeFromState(ScriptState* script_state);
 
   blink::mojom::blink::BadgeServicePtr badge_service_;

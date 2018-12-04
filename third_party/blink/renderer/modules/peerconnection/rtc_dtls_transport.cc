@@ -31,7 +31,7 @@
 namespace blink {
 
 RTCDtlsTransport* RTCDtlsTransport::Create(ExecutionContext* context) {
-  return new RTCDtlsTransport(context);
+  return MakeGarbageCollected<RTCDtlsTransport>(context);
 }
 
 RTCDtlsTransport::RTCDtlsTransport(ExecutionContext* context)

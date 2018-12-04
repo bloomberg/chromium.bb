@@ -182,7 +182,7 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
 
   PaymentResponse* output = MakeGarbageCollected<PaymentResponse>(
       scope.GetScriptState(), std::move(input), address,
-      new MockPaymentStateResolver, "id");
+      MakeGarbageCollected<MockPaymentStateResolver>(), "id");
   ScriptValue json_object = output->toJSONForBinding(scope.GetScriptState());
   EXPECT_TRUE(json_object.IsObject());
 

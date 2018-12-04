@@ -10,7 +10,7 @@ namespace blink {
 
 // static
 Serial* Serial::Create(ExecutionContext& execution_context) {
-  return new Serial(execution_context);
+  return MakeGarbageCollected<Serial>(execution_context);
 }
 
 ExecutionContext* Serial::GetExecutionContext() const {

@@ -16,7 +16,7 @@ DocumentPortals& DocumentPortals::From(Document& document) {
   DocumentPortals* supplement =
       Supplement<Document>::From<DocumentPortals>(document);
   if (!supplement) {
-    supplement = new DocumentPortals(document);
+    supplement = MakeGarbageCollected<DocumentPortals>(document);
     Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;

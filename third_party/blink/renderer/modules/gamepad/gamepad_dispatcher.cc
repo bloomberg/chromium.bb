@@ -15,7 +15,7 @@ using device::mojom::blink::GamepadHapticsManager;
 
 GamepadDispatcher& GamepadDispatcher::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<GamepadDispatcher>, gamepad_dispatcher,
-                      (new GamepadDispatcher));
+                      (MakeGarbageCollected<GamepadDispatcher>()));
   return *gamepad_dispatcher;
 }
 

@@ -25,11 +25,11 @@ class NavigatorSerial final : public GarbageCollected<NavigatorSerial>,
   static Serial* serial(Navigator&);
   Serial* serial() { return serial_; }
 
+  explicit NavigatorSerial(Navigator&);
+
   void Trace(Visitor*) override;
 
  private:
-  explicit NavigatorSerial(Navigator&);
-
   Member<Serial> serial_;
 };
 

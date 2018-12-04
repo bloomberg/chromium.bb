@@ -21,7 +21,7 @@ Badge::~Badge() = default;
 Badge* Badge::From(ExecutionContext* context) {
   Badge* supplement = Supplement<ExecutionContext>::From<Badge>(context);
   if (!supplement) {
-    supplement = new Badge(context);
+    supplement = MakeGarbageCollected<Badge>(context);
     ProvideTo(*context, supplement);
   }
   return supplement;

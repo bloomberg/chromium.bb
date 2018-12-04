@@ -685,9 +685,9 @@ void Animation::finish(ExceptionState& exception_state) {
 
 ScriptPromise Animation::finished(ScriptState* script_state) {
   if (!finished_promise_) {
-    finished_promise_ =
-        new AnimationPromise(ExecutionContext::From(script_state), this,
-                             AnimationPromise::kFinished);
+    finished_promise_ = MakeGarbageCollected<AnimationPromise>(
+        ExecutionContext::From(script_state), this,
+        AnimationPromise::kFinished);
     if (PlayStateInternal() == kFinished)
       finished_promise_->Resolve(this);
   }
@@ -696,8 +696,8 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
 
 ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
-    ready_promise_ = new AnimationPromise(ExecutionContext::From(script_state),
-                                          this, AnimationPromise::kReady);
+    ready_promise_ = MakeGarbageCollected<AnimationPromise>(
+        ExecutionContext::From(script_state), this, AnimationPromise::kReady);
     if (PlayStateInternal() != kPending)
       ready_promise_->Resolve(this);
   }

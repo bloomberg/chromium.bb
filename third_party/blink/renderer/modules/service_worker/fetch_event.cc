@@ -96,7 +96,7 @@ FetchEvent::FetchEvent(ScriptState* script_state,
     : ExtendableEvent(type, initializer, wait_until_observer),
       ContextClient(ExecutionContext::From(script_state)),
       observer_(respond_with_observer),
-      preload_response_property_(new PreloadResponseProperty(
+      preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
           ExecutionContext::From(script_state),
           this,
           PreloadResponseProperty::kPreloadResponse)) {
