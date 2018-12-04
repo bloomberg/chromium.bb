@@ -67,6 +67,8 @@ class WMHelperTester : public WMHelper {
   bool IsTabletModeWindowManagerEnabled() const override { return false; }
   double GetDefaultDeviceScaleFactor() const override { return 1.0; }
 
+  LifetimeManager* GetLifetimeManager() override { return &lifetime_manager_; }
+
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override {}
   int OnDragUpdated(const ui::DropTargetEvent& event) override { return 0; }
@@ -76,6 +78,7 @@ class WMHelperTester : public WMHelper {
  private:
   aura::Env* const env_;
   aura::Window* root_window_;
+  LifetimeManager lifetime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperTester);
 };

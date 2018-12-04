@@ -13,6 +13,21 @@ WMHelper* g_instance = nullptr;
 
 }  // namespace
 
+WMHelper::LifetimeManager::LifetimeManager() = default;
+
+WMHelper::LifetimeManager::~LifetimeManager() {
+  for (Observer& observer : observers_)
+    observer.OnDestroyed();
+}
+
+void WMHelper::LifetimeManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WMHelper::LifetimeManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 WMHelper::WMHelper() {}
 
 WMHelper::~WMHelper() {}
