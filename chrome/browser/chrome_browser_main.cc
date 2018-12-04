@@ -326,11 +326,6 @@ using content::BrowserThread;
 
 namespace {
 
-struct ApplicationLocaleResult {
-  std::string actual_locale;
-  std::string preferred_locale;
-};
-
 #if !defined(OS_ANDROID)
 // Holds the RunLoop for the non-Android MainMessageLoopRun() to Run().
 base::RunLoop* g_run_loop = nullptr;
@@ -620,22 +615,6 @@ std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
 
 }  // namespace
 
-namespace chrome_browser {
-
-// This error message is not localized because we failed to load the
-// localization data files.
-#if defined(OS_WIN)
-const char kMissingLocaleDataTitle[] = "Missing File Error";
-#endif  // defined(OS_WIN)
-
-#if defined(OS_WIN)
-// TODO(port) This should be used on Linux Aura as well. http://crbug.com/338969
-const char kMissingLocaleDataMessage[] =
-    "Unable to find locale data files. Please reinstall.";
-#endif  // defined(OS_WIN)
-
-}  // namespace chrome_browser
-
 // BrowserMainParts ------------------------------------------------------------
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
@@ -915,16 +894,16 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   }
 #endif  // defined(OS_WIN)
 
-  if (browser_process_->actual_locale().empty()) {
+  std::string locale = chrome_feature_list_creator_->actual_locale();
+  if (locale.empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;
   }
+  browser_process_->SetApplicationLocale(locale);
 
   const int apply_first_run_result = ApplyFirstRunPrefs();
   if (apply_first_run_result != service_manager::RESULT_CODE_NORMAL_EXIT)
     return apply_first_run_result;
-
-  browser_process_->SetApplicationLocale(browser_process_->actual_locale());
 
   SetupOriginTrialsCommandLine(browser_process_->local_state());
 

@@ -29,17 +29,6 @@ class ShutdownWatcherHelper;
 class ThreadProfiler;
 class WebUsbDetector;
 
-namespace chrome_browser {
-// For use by ShowMissingLocaleMessageBox.
-#if defined(OS_WIN)
-extern const char kMissingLocaleDataTitle[];
-#endif
-
-#if defined(OS_WIN)
-extern const char kMissingLocaleDataMessage[];
-#endif
-}
-
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   ~ChromeBrowserMainParts() override;
