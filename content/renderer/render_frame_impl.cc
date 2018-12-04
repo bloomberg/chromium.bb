@@ -3985,7 +3985,7 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     // navigation completes. If that navigation aborts then we detach the
     // provisional main frame, and drop the WebFrameWidget. Since we then no
     // longer expect to use this RenderWidget immediately, we drop any resources
-    // that were being prepared. This is a no-op if the RenderWidget was
+    // that were being prepared. This is a no-op if the RenderWidget was already
     // unfrozen and not in a warming up state.
     render_widget_->AbortWarmupCompositor();
   } else if (render_widget_) {
