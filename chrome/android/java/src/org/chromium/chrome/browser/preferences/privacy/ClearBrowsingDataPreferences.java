@@ -189,8 +189,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * The various data types that can be cleared via this screen.
      */
     @IntDef({DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
-            DialogOption.CLEAR_MEDIA_LICENSES, DialogOption.CLEAR_CACHE,
-            DialogOption.CLEAR_PASSWORDS, DialogOption.CLEAR_FORM_DATA,
+            DialogOption.CLEAR_CACHE, DialogOption.CLEAR_PASSWORDS, DialogOption.CLEAR_FORM_DATA,
             DialogOption.CLEAR_SITE_SETTINGS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DialogOption {
@@ -200,12 +199,11 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         // #getPreferenceKey(int) getPreferenceKey} and {@link #getIcon(int) getIcon}.
         int CLEAR_HISTORY = 0;
         int CLEAR_COOKIES_AND_SITE_DATA = 1;
-        int CLEAR_MEDIA_LICENSES = 2;
-        int CLEAR_CACHE = 3;
-        int CLEAR_PASSWORDS = 4;
-        int CLEAR_FORM_DATA = 5;
-        int CLEAR_SITE_SETTINGS = 6;
-        int NUM_ENTRIES = 7;
+        int CLEAR_CACHE = 2;
+        int CLEAR_PASSWORDS = 3;
+        int CLEAR_FORM_DATA = 4;
+        int CLEAR_SITE_SETTINGS = 5;
+        int NUM_ENTRIES = 6;
     }
 
     public static final String CLEAR_BROWSING_DATA_FETCHER = "clearBrowsingDataFetcher";
@@ -246,8 +244,6 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
                 return BrowsingDataType.FORM_DATA;
             case DialogOption.CLEAR_HISTORY:
                 return BrowsingDataType.HISTORY;
-            case DialogOption.CLEAR_MEDIA_LICENSES:
-                return BrowsingDataType.MEDIA_LICENSES;
             case DialogOption.CLEAR_PASSWORDS:
                 return BrowsingDataType.PASSWORDS;
             case DialogOption.CLEAR_SITE_SETTINGS:
@@ -267,8 +263,6 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
                 return "clear_form_data_checkbox";
             case DialogOption.CLEAR_HISTORY:
                 return "clear_history_checkbox";
-            case DialogOption.CLEAR_MEDIA_LICENSES:
-                return "clear_media_licenses_checkbox";
             case DialogOption.CLEAR_PASSWORDS:
                 return "clear_passwords_checkbox";
             case DialogOption.CLEAR_SITE_SETTINGS:
@@ -288,8 +282,6 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
                 return R.drawable.ic_edit_24dp;
             case DialogOption.CLEAR_HISTORY:
                 return R.drawable.ic_watch_later_24dp;
-            case DialogOption.CLEAR_MEDIA_LICENSES:
-                return R.drawable.permission_protected_media;
             case DialogOption.CLEAR_PASSWORDS:
                 return R.drawable.ic_vpn_key_grey;
             case DialogOption.CLEAR_SITE_SETTINGS:
@@ -297,19 +289,6 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
             default:
                 throw new IllegalArgumentException();
         }
-    }
-
-    /**
-     * Determine the array of data types to be deleted.
-     * @param options The set of selected {@link DialogOption} entries.
-     * @return int[] List of {@link BrowsingDataType} that should be deleted.
-     */
-    protected Set<Integer> getDataTypesFromOptions(Set<Integer> options) {
-        Set<Integer> dataTypes = new ArraySet<>();
-        for (@DialogOption Integer option : options) {
-            dataTypes.add(getDataType(option));
-        }
-        return dataTypes;
     }
 
     /**
@@ -349,7 +328,10 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
             @Nullable int[] ignoredDomainReasons) {
         onClearBrowsingData();
         showProgressDialog();
-        Set<Integer> dataTypes = getDataTypesFromOptions(options);
+        Set<Integer> dataTypes = new ArraySet<>();
+        for (@DialogOption Integer option : options) {
+            dataTypes.add(getDataType(option));
+        }
 
         RecordHistogram.recordMediumTimesHistogram("History.ClearBrowsingData.TimeSpentInDialog",
                 SystemClock.elapsedRealtime() - mDialogOpened, TimeUnit.MILLISECONDS);

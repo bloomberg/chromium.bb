@@ -99,7 +99,7 @@ public class BrowsingDataBridgeTest {
         assertThat(mActionTester.toString(), getActions(),
                 Matchers.containsInAnyOrder("ClearBrowsingData_LastHour",
                         "ClearBrowsingData_MaskContainsUnprotectedWeb", "ClearBrowsingData_Cookies",
-                        "ClearBrowsingData_SiteUsageData"));
+                        "ClearBrowsingData_SiteUsageData", "ClearBrowsingData_ContentLicenses"));
     }
 
     /**
@@ -211,6 +211,6 @@ public class BrowsingDataBridgeTest {
                         "ClearBrowsingData_ShaderCache", "ClearBrowsingData_Cookies",
                         "ClearBrowsingData_Autofill", "ClearBrowsingData_History",
                         "ClearBrowsingData_Passwords", "ClearBrowsingData_ContentSettings",
-                        "ClearBrowsingData_SiteUsageData"));
+                        "ClearBrowsingData_SiteUsageData", "ClearBrowsingData_ContentLicenses"));
     }
 }
