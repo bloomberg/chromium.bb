@@ -600,8 +600,9 @@ class CompleteState(object):
         meta = isolated_format.file_to_metadata(
             filepath,
             self.saved_state.read_only,
-            self.saved_state.algo,
             collapse_symlinks)
+        if 'l' not in meta:
+          meta['h'] = isolated_format.hash_file(filepath, self.saved_state.algo)
         self.saved_state.files[infile] = meta
 
   def save_files(self):
@@ -801,6 +802,7 @@ def _process_infiles(infiles):
       seen.add(filepath)
       yield isolateserver.FileItem(
           path=filepath,
+          algo=None,
           digest=metadata['h'],
           size=metadata['s'],
           high_priority=metadata.get('priority') == '0')
@@ -826,8 +828,10 @@ def _expand_directories_and_symlinks(
   out = []
   for relfile in infiles:
     try:
+      # Ignore the symlink hint, this code will be eventually deleted so it is
+      # not worth optimizing.
       out.extend(
-          relpath for relpath
+          relpath for relpath, _is_symlink
           in isolated_format.expand_directory_and_symlink(
               indir, relfile, blacklist, follow_symlinks))
     except isolated_format.MappingError as e:

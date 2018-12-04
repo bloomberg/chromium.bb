@@ -327,13 +327,34 @@ class FileItem(isolate_storage.Item):
   be derived from the file content.
   """
 
-  def __init__(self, path, digest=None, size=None, high_priority=False):
+  def __init__(self, path, algo, digest=None, size=None, high_priority=False):
     super(FileItem, self).__init__(
         digest,
         size if size is not None else fs.stat(path).st_size,
-        high_priority)
-    self.path = path
-    self.compression_level = _get_zip_compression_level(path)
+        high_priority,
+        compression_level=_get_zip_compression_level(path))
+    self._path = path
+    self._algo = algo
+    self._meta = None
+
+  @property
+  def path(self):
+    return self._path
+
+  @property
+  def digest(self):
+    if not self._digest:
+      self._digest = isolated_format.hash_file(self._path, self._algo)
+    return self._digest
+
+  @property
+  def meta(self):
+    if not self._meta:
+      # TODO(maruel): Inline.
+      self._meta = isolated_format.file_to_metadata(self.path, 0, False)
+      # We need to hash right away.
+      self._meta['h'] = self.digest
+    return self._meta
 
   def content(self):
     return file_read(self.path)
@@ -342,12 +363,15 @@ class FileItem(isolate_storage.Item):
 class BufferItem(isolate_storage.Item):
   """A byte buffer to push to Storage."""
 
-  def __init__(self, buf, high_priority=False):
-    super(BufferItem, self).__init__(None, len(buf), high_priority)
-    self.buffer = buf
+  def __init__(self, buf, algo, high_priority=False):
+    super(BufferItem, self).__init__(
+        digest=algo(buf).hexdigest(),
+        size=len(buf),
+        high_priority=high_priority)
+    self._buffer = buf
 
   def content(self):
-    return [self.buffer]
+    return [self._buffer]
 
 
 class Storage(object):
@@ -601,8 +625,6 @@ class Storage(object):
         # This must be done in the primary thread since items can be a
         # generator.
         for item in items:
-          # This is I/O heavy.
-          item.prepare(self.server_ref.hash_algo)
           if seen.setdefault(item.digest, item) is item:
             incoming.put(item)
       finally:
@@ -641,7 +663,6 @@ class Storage(object):
       """Pushes an isolate_storage.Item and returns it to |channel|."""
       if self._aborted:
         raise Aborted()
-      item.prepare(self.server_ref.hash_algo)
       self._storage_api.push(item, push_state, content)
       return item
 
@@ -1222,25 +1243,25 @@ def _directory_to_metadata(root, algo, blacklist):
     tuple(FileItem, relpath, metadata)
     For a symlink, FileItem is None.
   """
+  # Current tar file bundle, if any.
   root = file_path.get_native_path_case(root)
-  for relpath in isolated_format.expand_directory_and_symlink(
+  for relpath, issymlink in isolated_format.expand_directory_and_symlink(
       root,
       u'.' + os.path.sep,
       blacklist,
       follow_symlinks=(sys.platform != 'win32')):
-    # Immediately hash the file. We need the hash to construct the isolated
-    # file.
-    # TODO(maruel): This should be done lazily?
-    meta = isolated_format.file_to_metadata(
-        os.path.join(root, relpath), 0, algo, False)
-    item = None
-    if 'h' in meta:
-      item = FileItem(
-            path=os.path.join(root, relpath),
-            digest=meta['h'],
-            size=meta['s'],
-            high_priority=relpath.endswith('.isolated'))
-    yield item, relpath, meta
+
+    filepath = os.path.join(root, relpath)
+    if issymlink:
+      meta = isolated_format.file_to_metadata(filepath, 0, False)
+      yield None, relpath, meta
+      continue
+
+    prio = relpath.endswith('.isolated')
+
+    # Yield the file individually.
+    item = FileItem(path=filepath, algo=algo, size=None, high_priority=prio)
+    yield item, relpath, item.meta
 
 
 def _print_upload_stats(items, missing):
@@ -1267,13 +1288,13 @@ def _print_upload_stats(items, missing):
       cache_miss_size * 100. / total_size if total_size else 0)
 
 
-def _enqueue_dir(dirpath, blacklist, tempdir, hash_algo, hash_algo_name):
+def _enqueue_dir(dirpath, blacklist, hash_algo, hash_algo_name):
   """Called by archive_files_to_storage for a directory.
 
   Create an .isolated file.
 
   Yields:
-    FileItem for every file found, plus one for the isolated file itself.
+    FileItem for every file found, plus one for the .isolated file itself.
   """
   files = {}
   for item, relpath, meta in _directory_to_metadata(
@@ -1283,24 +1304,20 @@ def _enqueue_dir(dirpath, blacklist, tempdir, hash_algo, hash_algo_name):
     if item:
       yield item
 
+  # TODO(maruel): If there' not file, don't yield an .isolated file.
   data = {
-      'algo': hash_algo_name,
-      'files': files,
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+    'algo': hash_algo_name,
+    'files': files,
+    'version': isolated_format.ISOLATED_FILE_VERSION,
   }
-  # TODO(maruel): Stop putting to disk.
-  handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
-  os.close(handle)
-  isolated_format.save_isolated(isolated, data)
-  yield FileItem(
-      path=isolated,
-      digest=isolated_format.hash_file(isolated, hash_algo),
-      size=fs.stat(isolated).st_size,
-      high_priority=True)
+  # Keep the file in memory. This is fine because .isolated files are relatively
+  # small.
+  yield BufferItem(
+      tools.format_json(data, True), algo=hash_algo, high_priority=True)
 
 
 def archive_files_to_storage(storage, files, blacklist):
-  """Stores every entries into remote storage and returns stats.
+  """Stores every entry into remote storage and returns stats.
 
   Arguments:
     storage: a Storage object that communicates with the remote object store.
@@ -1311,74 +1328,69 @@ def archive_files_to_storage(storage, files, blacklist):
 
   Returns:
     tuple(OrderedDict(path: hash), list(FileItem cold), list(FileItem hot)).
-    The first file in the first item is always the isolated file.
+    The first file in the first item is always the .isolated file.
   """
   # Dict of path to hash.
   results = collections.OrderedDict()
   hash_algo = storage.server_ref.hash_algo
   hash_algo_name = storage.server_ref.hash_algo_name
-  # TODO(maruel): Stop needing a temporary directory.
-  tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
-  try:
-    # Generator of FileItem to pass to upload_items() concurrent operation.
-    channel = threading_utils.TaskChannel()
-    uploaded_digests = set()
-    def _upload_items():
-      results = storage.upload_items(channel)
-      uploaded_digests.update(f.digest for f in results)
-    t = threading.Thread(target=_upload_items)
-    t.start()
+  # Generator of FileItem to pass to upload_items() concurrent operation.
+  channel = threading_utils.TaskChannel()
+  uploaded_digests = set()
+  def _upload_items():
+    results = storage.upload_items(channel)
+    uploaded_digests.update(f.digest for f in results)
+  t = threading.Thread(target=_upload_items)
+  t.start()
 
-    # Keep track locally of the items to determine cold and hot items.
-    items_found = []
-    try:
-      for f in files:
-        assert isinstance(f, unicode), repr(f)
-        if f in results:
-          # Duplicate
-          continue
-        try:
-          h = None
-          filepath = os.path.abspath(f)
-          if fs.isdir(filepath):
-            # Uploading a whole directory.
-            for item in _enqueue_dir(
-                filepath, blacklist, tempdir, hash_algo, hash_algo_name):
-              channel.send_result(item)
-              items_found.append(item)
-              # The very last item will be the isolated file.
-              h = item.digest
-          elif fs.isfile(filepath):
-            h = isolated_format.hash_file(filepath, hash_algo)
-            item = FileItem(
-                path=filepath,
-                digest=h,
-                size=fs.stat(filepath).st_size,
-                high_priority=f.endswith('.isolated'))
+  # Keep track locally of the items to determine cold and hot items.
+  items_found = []
+  try:
+    for f in files:
+      assert isinstance(f, unicode), repr(f)
+      if f in results:
+        # Duplicate
+        continue
+      try:
+        filepath = os.path.abspath(f)
+        if fs.isdir(filepath):
+          # Uploading a whole directory.
+          item = None
+          for item in _enqueue_dir(
+              filepath, blacklist, hash_algo, hash_algo_name):
             channel.send_result(item)
             items_found.append(item)
-          else:
-            raise Error('%s is neither a file or directory.' % f)
-          results[f] = h
-        except OSError:
-          raise Error('Failed to process %s.' % f)
-    finally:
-      # Stops the generator, so _upload_items() can exit.
-      channel.send_done()
-    t.join()
-
-    cold = []
-    hot = []
-    for i in items_found:
-      # Note that multiple FileItem may have the same .digest.
-      if i.digest in uploaded_digests:
-        cold.append(i)
-      else:
-        hot.append(i)
-    return results, cold, hot
+            # The very last item will be the .isolated file.
+          if not item:
+            # There was no file in the directory.
+            continue
+        elif fs.isfile(filepath):
+          item = FileItem(
+              path=filepath,
+              algo=hash_algo,
+              size=None,
+              high_priority=f.endswith('.isolated'))
+          channel.send_result(item)
+          items_found.append(item)
+        else:
+          raise Error('%s is neither a file or directory.' % f)
+        results[f] = item.digest
+      except OSError:
+        raise Error('Failed to process %s.' % f)
   finally:
-    if tempdir and fs.isdir(tempdir):
-      file_path.rmtree(tempdir)
+    # Stops the generator, so _upload_items() can exit.
+    channel.send_done()
+  t.join()
+
+  cold = []
+  hot = []
+  for i in items_found:
+    # Note that multiple FileItem may have the same .digest.
+    if i.digest in uploaded_digests:
+      cold.append(i)
+    else:
+      hot.append(i)
+  return results, cold, hot
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')

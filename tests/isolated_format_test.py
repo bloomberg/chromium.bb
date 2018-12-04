@@ -50,10 +50,15 @@ class SymlinkTest(unittest.TestCase):
       fs.mkdir(os.path.join(self.cwd, u'Dest'))
       fs.open(os.path.join(self.cwd, u'Dest', u'file.txt'), 'w').close()
 
-      result = isolated_format._expand_symlinks(unicode(self.cwd), u'link')
-      self.assertEqual((u'Dest', [u'link']), result)
-      result = isolated_format._expand_symlinks(self.cwd, u'link/File.txt')
-      self.assertEqual((u'Dest/file.txt', [u'link']), result)
+      relfile, symlinks = isolated_format._expand_symlinks(self.cwd, u'.')
+      self.assertEqual((u'.', []), (relfile, symlinks))
+
+      relfile, symlinks = isolated_format._expand_symlinks(self.cwd, u'link')
+      self.assertEqual((u'Dest', [u'link']), (relfile, symlinks))
+
+      relfile, symlinks = isolated_format._expand_symlinks(
+          self.cwd, u'link/File.txt')
+      self.assertEqual((u'Dest/file.txt', [u'link']), (relfile, symlinks))
 
     def test_file_to_metadata_path_case_simple(self):
       # Ensure the symlink dest is saved in the right path case.
@@ -61,8 +66,7 @@ class SymlinkTest(unittest.TestCase):
       fs.mkdir(subdir)
       linkdir = os.path.join(self.cwd, u'linkdir')
       fs.symlink('subDir', linkdir)
-      actual = isolated_format.file_to_metadata(
-          linkdir.upper(), True, ALGO, False)
+      actual = isolated_format.file_to_metadata(linkdir.upper(), True, False)
       self.assertEqual({'l': u'subdir'}, actual)
 
     def test_file_to_metadata_path_case_complex(self):
@@ -81,11 +85,11 @@ class SymlinkTest(unittest.TestCase):
       fs.symlink('linkedDir1', subsymlinkdir)
 
       actual = isolated_format.file_to_metadata(
-          subsymlinkdir.upper(), True, ALGO, False)
+          subsymlinkdir.upper(), True, False)
       self.assertEqual({'l': u'linkeddir1'}, actual)
 
       actual = isolated_format.file_to_metadata(
-          linkeddir1.upper(), True, ALGO, False)
+          linkeddir1.upper(), True, False)
       self.assertEqual({'l': u'../linkeddir2'}, actual)
 
   if sys.platform != 'win32':
@@ -107,8 +111,9 @@ class SymlinkTest(unittest.TestCase):
       # normal directory.
       fs.symlink(tmp, src_out)
       fs.open(os.path.join(tmp_foo, u'bar.txt'), 'w').close()
-      actual = isolated_format._expand_symlinks(src, u'out/foo/bar.txt')
-      self.assertEqual((u'out/foo/bar.txt', []), actual)
+      relfile, symlinks = isolated_format._expand_symlinks(
+          src, u'out/foo/bar.txt')
+      self.assertEqual((u'out/foo/bar.txt', []), (relfile, symlinks))
 
     def test_file_to_metadata_path_case_collapse(self):
       # Ensure setting the collapse_symlink option doesn't include the symlinks
@@ -124,8 +129,8 @@ class SymlinkTest(unittest.TestCase):
       sym_file = os.path.join(basedir, u'linkdir', u'Sym.txt')
       fs.symlink('../subdir/Foo.txt', sym_file)
 
-      actual = isolated_format.file_to_metadata(sym_file, True, ALGO, True)
-
+      actual = isolated_format.file_to_metadata(sym_file, True, True)
+      actual['h'] = isolated_format.hash_file(sym_file, ALGO)
       expected = {
         # SHA-1 of empty string
         'h': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
