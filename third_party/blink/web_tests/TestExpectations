@@ -1868,6 +1868,7 @@ crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross
 # Timeout tests in dictionary order.
 
 # Failing tests in dictionary order.
+crbug.com/870173 virtual/outofblink-cors/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Pass Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
