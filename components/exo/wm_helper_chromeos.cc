@@ -220,4 +220,8 @@ double WMHelperChromeOS::GetDefaultDeviceScaleFactor() const {
   return display_info.display_modes()[0].device_scale_factor();
 }
 
+WMHelper::LifetimeManager* WMHelperChromeOS::GetLifetimeManager() {
+  return &lifetime_manager_;
+}
+
 }  // namespace exo

@@ -160,6 +160,10 @@ double WMHelperCastShell::GetDefaultDeviceScaleFactor() const {
   return 1.0;
 }
 
+WMHelper::LifetimeManager* WMHelperCastShell::GetLifetimeManager() {
+  return &lifetime_manager_;
+}
+
 WMHelperCastShell::CastDisplayObserver::CastDisplayObserver() {}
 
 WMHelperCastShell::CastDisplayObserver::~CastDisplayObserver() {}

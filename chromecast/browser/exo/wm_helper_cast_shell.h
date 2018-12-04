@@ -96,6 +96,8 @@ class WMHelperCastShell : public WMHelper {
   bool IsTabletModeWindowManagerEnabled() const override;
   double GetDefaultDeviceScaleFactor() const override;
 
+  LifetimeManager* GetLifetimeManager() override;
+
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
@@ -126,6 +128,8 @@ class WMHelperCastShell : public WMHelper {
   aura::Env* const env_;
   CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
+  LifetimeManager lifetime_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(WMHelperCastShell);
 };
 
