@@ -117,7 +117,8 @@ enum class NavigationDownloadPolicy {
 // Returns whether the given |policy| should allow for a download. This function
 // should be removed when http://crbug.com/632514 is resolved, when callers will
 // just compare with kAllow.
-bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
+bool CONTENT_EXPORT
+IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
 
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {

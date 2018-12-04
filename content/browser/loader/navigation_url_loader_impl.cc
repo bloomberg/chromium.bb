@@ -1779,8 +1779,8 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   // NavigationResourceHandler::OnResponseStarted() does.
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints),
-      std::move(navigation_data), global_request_id,
-      is_download && IsNavigationDownloadAllowed(download_policy_), is_stream,
+      std::move(navigation_data), global_request_id, is_download,
+      download_policy_, is_stream,
       request_controller_->TakeSubresourceLoaderParams());
 }
 
