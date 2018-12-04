@@ -13,8 +13,8 @@ namespace content {
 
 // static
 TtsPlatform* TtsPlatform::GetInstance() {
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // Chrome and Android TTS platforms have chrome/ dependencies.
+#if defined(OS_CHROMEOS)
+  // Chrome TTS platform has chrome/ dependencies.
   return GetContentClient()->browser()->GetTtsPlatform();
 #elif defined(OS_FUCHSIA)
   // There is no platform TTS definition for Fuchsia.

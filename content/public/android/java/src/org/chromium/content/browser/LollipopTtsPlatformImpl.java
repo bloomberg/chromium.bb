@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.content.browser;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -10,9 +10,12 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 
+import org.chromium.base.annotations.JNINamespace;
+
 /**
  * Subclass of TtsPlatformImpl for Lollipop to make use of newer APIs.
  */
+@JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopTtsPlatformImpl extends TtsPlatformImpl {
     protected LollipopTtsPlatformImpl(long nativeTtsPlatformImplAndroid) {
@@ -37,8 +40,7 @@ class LollipopTtsPlatformImpl extends TtsPlatformImpl {
 
             @Override
             @Deprecated
-            public void onError(final String utteranceId) {
-            }
+            public void onError(final String utteranceId) {}
 
             @Override
             public void onStart(final String utteranceId) {
@@ -56,7 +58,7 @@ class LollipopTtsPlatformImpl extends TtsPlatformImpl {
         if (volume != 1.0) {
             params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume);
         }
-        return mTextToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, params,
-                Integer.toString(utteranceId));
+        return mTextToSpeech.speak(
+                text, TextToSpeech.QUEUE_FLUSH, params, Integer.toString(utteranceId));
     }
 }
