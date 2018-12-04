@@ -32,10 +32,6 @@ namespace extensions {
 class MessagePropertyProvider;
 }
 
-namespace invalidation {
-class DeprecatedProfileInvalidationProviderFactory;
-}
-
 namespace storage {
 class FileSystemContext;
 }
@@ -83,8 +79,6 @@ class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
  private:
   // https://crbug.com/806817
   friend class cast::CastTransportHostFilter;
-  // https://crbug.com/875032
-  friend class invalidation::DeprecatedProfileInvalidationProviderFactory;
   // ChannelID is being removed now.
   friend class extensions::MessagePropertyProvider;
   // Uses URLRequestContextGetter to cast to a derived class.
