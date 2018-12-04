@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
@@ -187,7 +186,6 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/910549")
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
