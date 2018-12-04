@@ -5756,3 +5756,4 @@ crbug.com/910846 [ Win ] virtual/streaming-preload/external/wpt/html/semantics/s
 
 #Sheriff 2018-12-04
 crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]
+crbug.com/911634 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure ]
