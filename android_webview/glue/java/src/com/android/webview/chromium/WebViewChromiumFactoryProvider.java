@@ -522,7 +522,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public TokenBindingService getTokenBindingService() {
-        return mAwInit.getTokenBindingService();
+        return null;
     }
 
     @Override
