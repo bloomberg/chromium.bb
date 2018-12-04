@@ -166,7 +166,7 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
 def _CreateArgumentParser():
   """Creates and returns the argument parser."""
   parser = argparse.ArgumentParser()
-  parser.add_argument('--target-arch', action='store',
+  parser.add_argument('--target-arch', action='store', default='arm',
                       choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                       help='The target architecture for the library.')
   parser.add_argument('--unpatched-orderfile', required=True,
@@ -180,8 +180,6 @@ def _CreateArgumentParser():
 def main():
   parser = _CreateArgumentParser()
   options = parser.parse_args()
-  if not options.target_arch:
-    options.arch = cygprofile_utils.DetectArchitecture()
   symbol_extractor.SetArchitecture(options.target_arch)
   GeneratePatchedOrderfile(options.unpatched_orderfile, options.native_library,
                            options.output_file)
