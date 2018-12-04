@@ -19,6 +19,7 @@
 #include "url/gurl.h"
 
 namespace safe_browsing {
+
 class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
  public:
   SafeBrowsingApiHandlerBridge();
@@ -39,6 +40,10 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
 
   // True if we've once tried to create the above object.
   bool checked_api_support_;
+
+  // Used as a key to identify unique requests sent to Java to get Safe Browsing
+  // reputation from GmsCore.
+  jlong next_callback_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingApiHandlerBridge);
 };
