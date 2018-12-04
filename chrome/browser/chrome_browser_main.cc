@@ -1114,7 +1114,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       (local_state->IsManagedPreference(prefs::kIsolateOrigins) &&
        local_state->GetString(prefs::kIsolateOrigins).empty())) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableSiteIsolation);
+        switches::kDisableSiteIsolationForPolicy);
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
