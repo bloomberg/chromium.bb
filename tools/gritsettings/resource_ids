@@ -382,8 +382,11 @@
     "messages": [25900],
   },
 
+  "ui/base/test/ui_base_test_resources.grd": {
+    "messages": [26000],
+  },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [26000],
+    "structures": [26010],
   },
   "ui/chromeos/ui_chromeos_strings.grd": {
     "messages": [26100],

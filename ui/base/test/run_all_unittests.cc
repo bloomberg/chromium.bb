@@ -82,6 +82,22 @@ void UIBaseTestSuite::Initialize() {
   // later, so use the path created by ui_test_pak.
   base::PathService::Override(ui::DIR_LOCALES, assets_path.AppendASCII("ui"));
 #endif
+
+#if !defined(OS_ANDROID)
+  base::FilePath dir_resources;
+  bool result;
+#if defined(OS_MACOSX) || defined(OS_IOS)
+  result = base::PathService::Get(base::DIR_MODULE, &dir_resources);
+#else
+  dir_resources = assets_path;
+  result = true;
+#endif
+  DCHECK(result);
+  base::FilePath ui_base_test_resources_pak =
+      dir_resources.Append(FILE_PATH_LITERAL("ui_base_test_resources.pak"));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      ui_base_test_resources_pak, ui::SCALE_FACTOR_NONE);
+#endif  // !defined(OS_ANDROID)
 }
 
 void UIBaseTestSuite::Shutdown() {

@@ -10,6 +10,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/branding.gni")
 import("//testing/test.gni")
+import("//tools/grit/grit_rule.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -786,6 +787,45 @@ bundle_data("ui_base_unittests_bundle_data") {
   ]
 }
 
+# The resource labels below should not end with "_resources" or the Android
+# build rules will look for a nonexistent __build_config label.
+grit("ui_base_test_resources_grit") {
+  testonly = true
+  source = "test/ui_base_test_resources.grd"
+  outputs = [
+    "grit/ui_base_test_resources.h",
+    "ui_base_test_resources.pak",
+  ]
+}
+
+copy("ui_base_test_resources_pak") {
+  testonly = true
+  sources = [
+    "$target_gen_dir/ui_base_test_resources.pak",
+  ]
+  outputs = [
+    "$root_out_dir/ui_base_test_resources.pak",
+  ]
+  public_deps = [
+    ":ui_base_test_resources_grit",
+  ]
+}
+
+if (is_ios) {
+  bundle_data("ui_base_test_bundle_data") {
+    testonly = true
+    public_deps = [
+      ":ui_base_test_resources_grit",
+    ]
+    sources = [
+      "$target_gen_dir/ui_base_test_resources.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
 test("ui_base_unittests") {
   sources = [
     "class_property_unittest.cc",
@@ -853,7 +893,6 @@ test("ui_base_unittests") {
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
       "models/tree_node_model_unittest.cc",
-      "test/data/resource.h",
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
@@ -890,6 +929,7 @@ test("ui_base_unittests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    ":ui_base_test_resources_grit",
     ":ui_base_unittests_bundle_data",
     "//base",
     "//base/test:test_support",
@@ -912,6 +952,13 @@ test("ui_base_unittests") {
     "//ui/strings",
     "//url",
   ]
+
+  if (is_ios) {
+    deps += [ ":ui_base_test_bundle_data" ]
+  } else if (!is_android) {
+    data += [ "$root_out_dir/ui_base_test_resources.pak" ]
+    data_deps += [ ":ui_base_test_resources_pak" ]
+  }
 
   if (build_ime) {
     deps += [ "//ui/base/ime" ]
