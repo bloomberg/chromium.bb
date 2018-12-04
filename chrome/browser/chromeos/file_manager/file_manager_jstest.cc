@@ -98,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/file_tasks_unittest.html")));
+  RunGeneratedTest("/foreground/js/file_tasks_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {
