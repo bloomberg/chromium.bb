@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BrowsingModeBottomToolbarViewBinder.ViewHolder;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -101,8 +102,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
-                mMediator.showIPH(tab.getActivity(), iphAnchor,
-                        TrackerFactory.getTrackerForProfile(tab.getProfile()));
+                final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+                tracker.addOnInitializedCallback(
+                        (ready) -> mMediator.showIPH(tab.getActivity(), iphAnchor, tracker));
                 tabProvider.removeObserver(this);
             }
         });
