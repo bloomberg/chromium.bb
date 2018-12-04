@@ -25,6 +25,10 @@ static constexpr size_t kMaxKeyLen = 256;
 static constexpr size_t kMaxValueLen = 256;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Reject too long inputs as they may cause non actionable timeouts issues.
+  if (size > 128 * 1024)
+    return 0;
+
   Env* mem_env = NewMemEnv(Env::Default());
   base::FuzzedDataProvider data_provider(data, size);
 
