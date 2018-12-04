@@ -3032,10 +3032,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
                              for b in unified_builds])
 
   def _IsLakituConfig(config):
-    # Let's start with only lakitu_next since this is the first time we are
-    # adding a second master release builder.
-    # TODO: include all lakitu boards here.
-    return 'lakitu_next' in config['name']
+    return 'lakitu' in config['name']
 
   def _CreateMasterConfig(name):
     return site_config.Add(
