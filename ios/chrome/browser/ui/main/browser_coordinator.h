@@ -24,12 +24,6 @@
 // The model.
 @property(nonatomic, weak) TabModel* tabModel;
 
-// Activates/deactivates the object. This will enable/disable the ability for
-// this object to browse, and to have live UIWebViews associated with it. While
-// not active, the UI will not react to changes in the tab model, so generally
-// an inactive BVC should not be visible.
-@property(nonatomic, assign, getter=isActive) BOOL active;
-
 // Clears any presented state on BVC.
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;

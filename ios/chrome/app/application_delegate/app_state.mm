@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -403,8 +402,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   if ([_browserLauncher browserInitializationStage] >=
       INITIALIZATION_STAGE_FOREGROUND) {
     [[_browserLauncher browserViewInformation] haltAllTabs];
-    _browserLauncher.browserViewInformation.currentBrowserCoordinator.active =
-        NO;
+    [_browserLauncher browserViewInformation].currentBVC.active = NO;
   }
 
   // TODO(crbug.com/585700): remove this.
