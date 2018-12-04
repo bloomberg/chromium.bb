@@ -111,6 +111,7 @@ class NetErrorTabHelper
   // chrome::mojom::NetworkEasterEgg:
   void GetHighScore(GetHighScoreCallback callback) override;
   void UpdateHighScore(uint32_t high_score) override;
+  void ResetHighScore() override;
 
   // Shows the diagnostics dialog after its been sanitized, virtual for
   // testing.

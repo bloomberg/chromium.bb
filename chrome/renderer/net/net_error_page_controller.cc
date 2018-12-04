@@ -67,6 +67,12 @@ bool NetErrorPageController::UpdateEasterEggHighScore(int high_score) {
   return true;
 }
 
+bool NetErrorPageController::ResetEasterEggHighScore() {
+  if (delegate_)
+    delegate_->ResetEasterEggHighScore();
+  return true;
+}
+
 bool NetErrorPageController::DiagnoseErrorsButtonClick() {
   return ButtonClick(NetErrorHelperCore::DIAGNOSE_ERROR);
 }
@@ -147,6 +153,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("trackEasterEgg", &NetErrorPageController::TrackEasterEgg)
       .SetMethod("updateEasterEggHighScore",
                  &NetErrorPageController::UpdateEasterEggHighScore)
+      .SetMethod("resetEasterEggHighScore",
+                 &NetErrorPageController::ResetEasterEggHighScore)
       .SetMethod("trackCachedCopyButtonClick",
                  &NetErrorPageController::TrackCachedCopyButtonClick)
       .SetMethod("launchOfflineItem",

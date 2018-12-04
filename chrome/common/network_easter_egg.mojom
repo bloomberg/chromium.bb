@@ -11,4 +11,7 @@ interface NetworkEasterEgg {
   // Update the high score stored in the user's profile. Only has an effect if
   // |high_score| is higher than the old score in the profile.
   UpdateHighScore(uint32 high_score);
+
+  // Clear any high score stored in the user's profile.
+  ResetHighScore();
 };

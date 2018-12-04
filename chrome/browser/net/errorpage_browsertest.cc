@@ -1480,20 +1480,37 @@ IN_PROC_BROWSER_TEST_F(ErrorPageOfflineTestWithAllowDinosaurTrue,
   std::string result = NavigateToPageAndReadText();
   EXPECT_EQ("", result);
 
-  base::RunLoop run_loop;
+  {
+    base::RunLoop run_loop;
+    PrefChangeRegistrar change_observer;
+    change_observer.Init(profile->GetPrefs());
+    change_observer.Add(prefs::kNetworkEasterEggHighScore,
+                        run_loop.QuitClosure());
 
-  PrefChangeRegistrar change_observer;
-  change_observer.Init(profile->GetPrefs());
-  change_observer.Add(prefs::kNetworkEasterEggHighScore,
-                      run_loop.QuitClosure());
+    // Save a new high score.
+    EXPECT_TRUE(content::ExecJs(
+        web_contents, "errorPageController.updateEasterEggHighScore(2000);"));
 
-  EXPECT_TRUE(content::ExecJs(
-      web_contents, "errorPageController.updateEasterEggHighScore(2000);"));
+    // Wait for preference change.
+    run_loop.Run();
+    EXPECT_EQ(2000, easter_egg_high_score.GetValue());
+  }
 
-  // Wait for preference change.
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    PrefChangeRegistrar change_observer;
+    change_observer.Init(profile->GetPrefs());
+    change_observer.Add(prefs::kNetworkEasterEggHighScore,
+                        run_loop.QuitClosure());
 
-  EXPECT_EQ(2000, easter_egg_high_score.GetValue());
+    // Reset high score back to 0.
+    EXPECT_TRUE(content::ExecJs(
+        web_contents, "errorPageController.resetEasterEggHighScore();"));
+
+    // Wait for preference change.
+    run_loop.Run();
+    EXPECT_EQ(0, easter_egg_high_score.GetValue());
+  }
 }
 
 // A test fixture that simulates failing requests for an IDN domain name.
