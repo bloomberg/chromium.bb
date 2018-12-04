@@ -1005,6 +1005,16 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     return;
   }
 
+  if (url_.ProtocolIs("ftp")) {
+    LogConsoleError(GetExecutionContext(), "FTP is not supported.");
+    HandleNetworkError();
+    if (!async_) {
+      ThrowForLoadFailureIfNeeded(
+          exception_state, "Making a request to a FTP URL is not supported.");
+    }
+    return;
+  }
+
   DCHECK(GetExecutionContext());
   ExecutionContext& execution_context = *GetExecutionContext();
 
