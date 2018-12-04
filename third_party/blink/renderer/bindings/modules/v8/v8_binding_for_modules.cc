@@ -90,21 +90,23 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   switch (key->GetType()) {
-    case IDBKey::kInvalidType:
-    case IDBKey::kTypeEnumMax:
+    case mojom::IDBKeyType::Invalid:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return v8::Local<v8::Value>();
-    case IDBKey::kNumberType:
+    case mojom::IDBKeyType::Null:
+      return v8::Null(isolate);
+    case mojom::IDBKeyType::Number:
       return v8::Number::New(isolate, key->Number());
-    case IDBKey::kStringType:
+    case mojom::IDBKeyType::String:
       return V8String(isolate, key->GetString());
-    case IDBKey::kBinaryType:
+    case mojom::IDBKeyType::Binary:
       // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-key
       return ToV8(DOMArrayBuffer::Create(key->Binary()), creation_context,
                   isolate);
-    case IDBKey::kDateType:
+    case mojom::IDBKeyType::Date:
       return v8::Date::New(context, key->Date()).ToLocalChecked();
-    case IDBKey::kArrayType: {
+    case mojom::IDBKeyType::Array: {
       v8::Local<v8::Array> array = v8::Array::New(isolate, key->Array().size());
       for (wtf_size_t i = 0; i < key->Array().size(); ++i) {
         v8::Local<v8::Value> value =

@@ -188,7 +188,7 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
       EXPECT_EQ(continue_calls, mock_cursor_->continue_calls());
       EXPECT_EQ(repetitions + 1, mock_cursor_->prefetch_calls());
 
-      EXPECT_EQ(kWebIDBKeyTypeNumber, key.type());
+      EXPECT_EQ(mojom::IDBKeyType::Number, key.type());
       EXPECT_EQ(expected_key, static_cast<int>(blobs.size()));
       EXPECT_EQ(expected_key++, key.number());
     }

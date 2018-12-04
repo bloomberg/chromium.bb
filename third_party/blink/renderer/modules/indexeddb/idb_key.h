@@ -58,7 +58,7 @@ class MODULES_EXPORT IDBKey {
   }
 
   static std::unique_ptr<IDBKey> CreateNumber(double number) {
-    return base::WrapUnique(new IDBKey(kNumberType, number));
+    return base::WrapUnique(new IDBKey(mojom::IDBKeyType::Number, number));
   }
 
   static std::unique_ptr<IDBKey> CreateBinary(
@@ -71,7 +71,7 @@ class MODULES_EXPORT IDBKey {
   }
 
   static std::unique_ptr<IDBKey> CreateDate(double date) {
-    return base::WrapUnique(new IDBKey(kDateType, date));
+    return base::WrapUnique(new IDBKey(mojom::IDBKeyType::Date, date));
   }
 
   static std::unique_ptr<IDBKey> CreateArray(KeyArray array) {
@@ -89,25 +89,26 @@ class MODULES_EXPORT IDBKey {
       return nullptr;
 
     switch (rkey->GetType()) {
-      case kInvalidType:
+      case mojom::IDBKeyType::Invalid:
         return IDBKey::CreateInvalid();
-      case kArrayType: {
+      case mojom::IDBKeyType::Array: {
         IDBKey::KeyArray lkey_array;
         const auto& rkey_array = rkey->Array();
         for (const auto& rkey_item : rkey_array)
           lkey_array.push_back(IDBKey::Clone(rkey_item));
         return IDBKey::CreateArray(std::move(lkey_array));
       }
-      case kBinaryType:
+      case mojom::IDBKeyType::Binary:
         return IDBKey::CreateBinary(rkey->Binary());
-      case kStringType:
+      case mojom::IDBKeyType::String:
         return IDBKey::CreateString(rkey->GetString());
-      case kDateType:
+      case mojom::IDBKeyType::Date:
         return IDBKey::CreateDate(rkey->Date());
-      case kNumberType:
+      case mojom::IDBKeyType::Number:
         return IDBKey::CreateNumber(rkey->Number());
 
-      case kTypeEnumMax:
+      case mojom::IDBKeyType::Null:
+      case mojom::IDBKeyType::Min:
         break;  // Not used, NOTREACHED.
     }
     NOTREACHED();
@@ -122,44 +123,31 @@ class MODULES_EXPORT IDBKey {
   //            this variable back to idb_key.cc's anonymous namespace.
   static const size_t kIDBKeyOverheadSize = 16;
 
-  // In order of the least to the highest precedent in terms of sort order.
-  // These values are written to logs. New enum values can be added, but
-  // existing enums must never be renumbered or deleted and reused.
-  enum Type {
-    kInvalidType = 0,
-    kArrayType = 1,
-    kBinaryType = 2,
-    kStringType = 3,
-    kDateType = 4,
-    kNumberType = 5,
-    kTypeEnumMax,
-  };
-
-  Type GetType() const { return type_; }
+  mojom::IDBKeyType GetType() const { return type_; }
   bool IsValid() const;
 
   const KeyArray& Array() const {
-    DCHECK_EQ(type_, kArrayType);
+    DCHECK_EQ(type_, mojom::IDBKeyType::Array);
     return array_;
   }
 
   scoped_refptr<SharedBuffer> Binary() const {
-    DCHECK_EQ(type_, kBinaryType);
+    DCHECK_EQ(type_, mojom::IDBKeyType::Binary);
     return binary_;
   }
 
   const String& GetString() const {
-    DCHECK_EQ(type_, kStringType);
+    DCHECK_EQ(type_, mojom::IDBKeyType::String);
     return string_;
   }
 
   double Date() const {
-    DCHECK_EQ(type_, kDateType);
+    DCHECK_EQ(type_, mojom::IDBKeyType::Date);
     return number_;
   }
 
   double Number() const {
-    DCHECK_EQ(type_, kNumberType);
+    DCHECK_EQ(type_, mojom::IDBKeyType::Number);
     return number_;
   }
 
@@ -184,12 +172,12 @@ class MODULES_EXPORT IDBKey {
   DISALLOW_COPY_AND_ASSIGN(IDBKey);
 
   IDBKey();
-  IDBKey(Type type, double number);
+  IDBKey(mojom::IDBKeyType type, double number);
   explicit IDBKey(const String& value);
   explicit IDBKey(scoped_refptr<SharedBuffer> value);
   explicit IDBKey(KeyArray key_array);
 
-  Type type_;
+  mojom::IDBKeyType type_;
   KeyArray array_;
   scoped_refptr<SharedBuffer> binary_;
   const String string_;

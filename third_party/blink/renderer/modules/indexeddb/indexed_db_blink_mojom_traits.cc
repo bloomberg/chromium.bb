@@ -83,23 +83,23 @@ blink::mojom::IDBKeyDataDataView::Tag
 UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::GetTag(
     const blink::WebIDBKey& key) {
   switch (key.View().KeyType()) {
-    case blink::kWebIDBKeyTypeInvalid:
+    case blink::mojom::IDBKeyType::Invalid:
       return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
-    case blink::kWebIDBKeyTypeArray:
+    case blink::mojom::IDBKeyType::Array:
       return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
-    case blink::kWebIDBKeyTypeBinary:
+    case blink::mojom::IDBKeyType::Binary:
       return blink::mojom::IDBKeyDataDataView::Tag::BINARY;
-    case blink::kWebIDBKeyTypeString:
+    case blink::mojom::IDBKeyType::String:
       return blink::mojom::IDBKeyDataDataView::Tag::STRING;
-    case blink::kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       return blink::mojom::IDBKeyDataDataView::Tag::DATE;
-    case blink::kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
-    case blink::kWebIDBKeyTypeNull:
+    case blink::mojom::IDBKeyType::Null:
       return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
 
     // Not used, fall through to NOTREACHED.
-    case blink::kWebIDBKeyTypeMin:;
+    case blink::mojom::IDBKeyType::Min:;
   }
   NOTREACHED();
   return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;

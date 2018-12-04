@@ -319,10 +319,10 @@ static WebVector<WebIDBKey> GenerateIndexKeysForValue(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, key_type_histogram,
       ("WebCore.IndexedDB.ObjectStore.IndexEntry.KeyType",
-       static_cast<int>(IDBKey::kTypeEnumMax)));
+       static_cast<int>(mojom::IDBKeyType::kMaxValue)));
 
   if (!index_metadata.multi_entry ||
-      index_key->GetType() != IDBKey::kArrayType) {
+      index_key->GetType() != mojom::IDBKeyType::Array) {
     if (!index_key->IsValid())
       return WebVector<WebIDBKey>();
 
@@ -333,7 +333,7 @@ static WebVector<WebIDBKey> GenerateIndexKeysForValue(
     return WebVector<WebIDBKey>(std::move(index_keys));
   } else {
     DCHECK(index_metadata.multi_entry);
-    DCHECK_EQ(index_key->GetType(), IDBKey::kArrayType);
+    DCHECK_EQ(index_key->GetType(), mojom::IDBKeyType::Array);
     WebVector<WebIDBKey> index_keys =
         IDBKey::ToMultiEntryArray(std::move(index_key));
     for (const WebIDBKey& key : index_keys)
@@ -554,7 +554,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         EnumerationHistogram, key_type_histogram,
         ("WebCore.IndexedDB.ObjectStore.Record.KeyType",
-         static_cast<int>(IDBKey::kTypeEnumMax)));
+         static_cast<int>(mojom::IDBKeyType::kMaxValue)));
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 

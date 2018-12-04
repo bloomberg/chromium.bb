@@ -98,10 +98,10 @@ struct BLINK_COMMON_EXPORT
   static double date(const blink::IndexedDBKey& key) { return key.date(); }
   static double number(const blink::IndexedDBKey& key) { return key.number(); }
   static bool other_invalid(const blink::IndexedDBKey& key) {
-    return key.type() == blink::kWebIDBKeyTypeInvalid;
+    return key.type() == blink::mojom::IDBKeyType::Invalid;
   }
   static bool other_null(const blink::IndexedDBKey& key) {
-    return key.type() == blink::kWebIDBKeyTypeNull;
+    return key.type() == blink::mojom::IDBKeyType::Null;
   }
 };
 

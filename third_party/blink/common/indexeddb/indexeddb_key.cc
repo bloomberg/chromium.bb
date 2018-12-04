@@ -9,16 +9,6 @@
 
 namespace blink {
 
-using blink::WebIDBKeyType;
-using blink::kWebIDBKeyTypeArray;
-using blink::kWebIDBKeyTypeBinary;
-using blink::kWebIDBKeyTypeDate;
-using blink::kWebIDBKeyTypeInvalid;
-using blink::kWebIDBKeyTypeMin;
-using blink::kWebIDBKeyTypeNull;
-using blink::kWebIDBKeyTypeNumber;
-using blink::kWebIDBKeyTypeString;
-
 namespace {
 
 // Very rough estimate of minimum key size overhead.
@@ -44,33 +34,34 @@ int Compare(const T& a, const T& b) {
 }  // namespace
 
 IndexedDBKey::IndexedDBKey()
-    : type_(kWebIDBKeyTypeNull), size_estimate_(kOverheadSize) {}
+    : type_(mojom::IDBKeyType::Null), size_estimate_(kOverheadSize) {}
 
-IndexedDBKey::IndexedDBKey(WebIDBKeyType type)
+IndexedDBKey::IndexedDBKey(mojom::IDBKeyType type)
     : type_(type), size_estimate_(kOverheadSize) {
-  DCHECK(type == kWebIDBKeyTypeNull || type == kWebIDBKeyTypeInvalid);
+  DCHECK(type == mojom::IDBKeyType::Null || type == mojom::IDBKeyType::Invalid);
 }
 
-IndexedDBKey::IndexedDBKey(double number, WebIDBKeyType type)
+IndexedDBKey::IndexedDBKey(double number, mojom::IDBKeyType type)
     : type_(type),
       number_(number),
       size_estimate_(kOverheadSize + sizeof(number)) {
-  DCHECK(type == kWebIDBKeyTypeNumber || type == kWebIDBKeyTypeDate);
+  DCHECK(type == blink::mojom::IDBKeyType::Number ||
+         type == blink::mojom::IDBKeyType::Date);
 }
 
 IndexedDBKey::IndexedDBKey(KeyArray array)
-    : type_(kWebIDBKeyTypeArray),
+    : type_(blink::mojom::IDBKeyType::Array),
       array_(std::move(array)),
       size_estimate_(kOverheadSize + CalculateArraySize(array_)) {}
 
 IndexedDBKey::IndexedDBKey(std::string binary)
-    : type_(kWebIDBKeyTypeBinary),
+    : type_(blink::mojom::IDBKeyType::Binary),
       binary_(std::move(binary)),
       size_estimate_(kOverheadSize +
                      (binary_.length() * sizeof(std::string::value_type))) {}
 
 IndexedDBKey::IndexedDBKey(base::string16 string)
-    : type_(kWebIDBKeyTypeString),
+    : type_(mojom::IDBKeyType::String),
       string_(std::move(string)),
       size_estimate_(kOverheadSize +
                      (string_.length() * sizeof(base::string16::value_type))) {}
@@ -80,10 +71,10 @@ IndexedDBKey::~IndexedDBKey() = default;
 IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) = default;
 
 bool IndexedDBKey::IsValid() const {
-  if (type_ == kWebIDBKeyTypeInvalid || type_ == kWebIDBKeyTypeNull)
+  if (type_ == mojom::IDBKeyType::Invalid || type_ == mojom::IDBKeyType::Null)
     return false;
 
-  if (type_ == kWebIDBKeyTypeArray) {
+  if (type_ == blink::mojom::IDBKeyType::Array) {
     for (size_t i = 0; i < array_.size(); i++) {
       if (!array_[i].IsValid())
         return false;
@@ -108,23 +99,23 @@ int IndexedDBKey::CompareTo(const IndexedDBKey& other) const {
     return type_ > other.type_ ? -1 : 1;
 
   switch (type_) {
-    case kWebIDBKeyTypeArray:
+    case mojom::IDBKeyType::Array:
       for (size_t i = 0; i < array_.size() && i < other.array_.size(); ++i) {
         int result = array_[i].CompareTo(other.array_[i]);
         if (result != 0)
           return result;
       }
       return Compare(array_.size(), other.array_.size());
-    case kWebIDBKeyTypeBinary:
+    case mojom::IDBKeyType::Binary:
       return binary_.compare(other.binary_);
-    case kWebIDBKeyTypeString:
+    case mojom::IDBKeyType::String:
       return string_.compare(other.string_);
-    case kWebIDBKeyTypeDate:
-    case kWebIDBKeyTypeNumber:
+    case mojom::IDBKeyType::Date:
+    case mojom::IDBKeyType::Number:
       return Compare(number_, other.number_);
-    case kWebIDBKeyTypeInvalid:
-    case kWebIDBKeyTypeNull:
-    case kWebIDBKeyTypeMin:
+    case mojom::IDBKeyType::Invalid:
+    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::Min:
     default:
       NOTREACHED();
       return 0;
