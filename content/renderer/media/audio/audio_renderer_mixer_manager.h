@@ -53,7 +53,7 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // device to use. If |device_id| is empty and |session_id| is nonzero,
   // output device associated with the opened input device designated by
   // |session_id| is used. Otherwise, |session_id| is ignored.
-  media::AudioRendererMixerInput* CreateInput(
+  scoped_refptr<media::AudioRendererMixerInput> CreateInput(
       int source_render_frame_id,
       int session_id,
       const std::string& device_id,
@@ -65,14 +65,13 @@ class CONTENT_EXPORT AudioRendererMixerManager
       int source_render_frame_id,
       const media::AudioParameters& input_params,
       media::AudioLatency::LatencyType latency,
-      const std::string& device_id,
-      media::OutputDeviceStatus* device_status) final;
+      const media::OutputDeviceInfo& sink_info,
+      scoped_refptr<media::AudioRendererSink> sink) final;
 
   void ReturnMixer(media::AudioRendererMixer* mixer) final;
 
-  media::OutputDeviceInfo GetOutputDeviceInfo(
+  scoped_refptr<media::AudioRendererSink> GetSink(
       int source_render_frame_id,
-      int session_id,
       const std::string& device_id) final;
 
  protected:

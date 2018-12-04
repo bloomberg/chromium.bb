@@ -39,6 +39,7 @@ source_set("renderers") {
     "//components/viz/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
+    "//media/audio",
     "//media/base",
     "//media/filters",
     "//media/video",

@@ -147,7 +147,8 @@ std::unique_ptr<AudioRendererMixerManager> AudioRendererMixerManager::Create() {
       base::BindRepeating(&AudioDeviceFactory::NewAudioRendererMixerSink)));
 }
 
-media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
+scoped_refptr<media::AudioRendererMixerInput>
+AudioRendererMixerManager::CreateInput(
     int source_render_frame_id,
     int session_id,
     const std::string& device_id,
@@ -155,23 +156,26 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
   // AudioRendererMixerManager lives on the renderer thread and is destroyed on
   // renderer thread destruction, so it's safe to pass its pointer to a mixer
   // input.
-  return new media::AudioRendererMixerInput(
-      this, source_render_frame_id,
-      media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
-                                                                device_id)
-          ? GetOutputDeviceInfo(source_render_frame_id, session_id, device_id)
-                .device_id()
-          : device_id,
-      latency);
+  //
+  // TODO(olka, grunell): |session_id| is always zero, delete since
+  // NewAudioRenderingMixingStrategy didn't ship, https://crbug.com/870836.
+  DCHECK_EQ(session_id, 0);
+  return base::MakeRefCounted<media::AudioRendererMixerInput>(
+      this, source_render_frame_id, device_id, latency);
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     int source_render_frame_id,
     const media::AudioParameters& input_params,
     media::AudioLatency::LatencyType latency,
-    const std::string& device_id,
-    media::OutputDeviceStatus* device_status) {
-  const MixerKey key(source_render_frame_id, input_params, latency, device_id);
+    const media::OutputDeviceInfo& sink_info,
+    scoped_refptr<media::AudioRendererSink> sink) {
+  // Ownership of the sink must be given to GetMixer().
+  DCHECK(sink->HasOneRef());
+  DCHECK_EQ(sink_info.device_status(), media::OUTPUT_DEVICE_STATUS_OK);
+
+  const MixerKey key(source_render_frame_id, input_params, latency,
+                     sink_info.device_id());
   base::AutoLock auto_lock(mixers_lock_);
 
   // Update latency map when the mixer is requested, i.e. there is an attempt to
@@ -189,27 +193,22 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 
   auto it = mixers_.find(key);
   if (it != mixers_.end()) {
-    if (device_status)
-      *device_status = media::OUTPUT_DEVICE_STATUS_OK;
-
     it->second.ref_count++;
     DVLOG(1) << "Reusing mixer: " << it->second.mixer;
+
+    // Sink will now be released unused, but still must be stopped.
+    //
+    // TODO(dalecurtis): Is it worth caching this sink instead for a future
+    // GetSink() call? We should experiment with a few top sites. We can't just
+    // drop in AudioRendererSinkCache here since it doesn't reuse sinks once
+    // they've been vended externally to the class.
+    sink->Stop();
+
     return it->second.mixer;
   }
 
-  scoped_refptr<media::AudioRendererSink> sink = create_sink_cb_.Run(
-      source_render_frame_id, media::AudioSinkParameters(0, device_id));
-
-  const media::OutputDeviceInfo& device_info = sink->GetOutputDeviceInfo();
-  if (device_status)
-    *device_status = device_info.device_status();
-  if (device_info.device_status() != media::OUTPUT_DEVICE_STATUS_OK) {
-    sink->Stop();
-    return nullptr;
-  }
-
   const media::AudioParameters& mixer_output_params =
-      GetMixerOutputParams(input_params, device_info.output_params(), latency);
+      GetMixerOutputParams(input_params, sink_info.output_params(), latency);
   media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
       mixer_output_params, std::move(sink),
       base::BindRepeating(LogMixerUmaHistogram, latency));
@@ -237,16 +236,11 @@ void AudioRendererMixerManager::ReturnMixer(media::AudioRendererMixer* mixer) {
   }
 }
 
-media::OutputDeviceInfo AudioRendererMixerManager::GetOutputDeviceInfo(
+scoped_refptr<media::AudioRendererSink> AudioRendererMixerManager::GetSink(
     int source_render_frame_id,
-    int session_id,
     const std::string& device_id) {
-  auto sink =
-      create_sink_cb_.Run(source_render_frame_id,
-                          media::AudioSinkParameters(session_id, device_id));
-  auto info = sink->GetOutputDeviceInfo();
-  sink->Stop();
-  return info;
+  return create_sink_cb_.Run(source_render_frame_id,
+                             media::AudioSinkParameters(0, device_id));
 }
 
 AudioRendererMixerManager::MixerKey::MixerKey(

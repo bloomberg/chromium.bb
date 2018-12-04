@@ -78,10 +78,9 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
   DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
                         << "GetOutputDeviceInfo() is called on a wrong thread ";
   DCHECK(!params.processing_id.has_value());
-  return scoped_refptr<media::AudioRendererMixerInput>(
-      render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_frame_id, params.session_id, params.device_id,
-          AudioDeviceFactory::GetSourceLatencyType(source_type)));
+  return render_thread->GetAudioRendererMixerManager()->CreateInput(
+      render_frame_id, params.session_id, params.device_id,
+      AudioDeviceFactory::GetSourceLatencyType(source_type));
 }
 
 }  // namespace
@@ -110,8 +109,9 @@ scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererMixerSink(
     int render_frame_id,
     const media::AudioSinkParameters& params) {
-  return NewFinalAudioRendererSink(render_frame_id, params,
-                                   GetDefaultAuthTimeout());
+  // AudioRendererMixer sinks are always used asynchronously and thus can
+  // operate without a timeout value.
+  return NewFinalAudioRendererSink(render_frame_id, params, base::TimeDelta());
 }
 
 // static

@@ -80,7 +80,6 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   int RenderForTesting(AudioBus* audio_bus);
 
  protected:
-  virtual scoped_refptr<SwitchableAudioRendererSink> CreateFallbackSink();
   ~WebAudioSourceProviderImpl() override;
 
  private:

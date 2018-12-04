@@ -18,7 +18,6 @@
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/audio/null_audio_sink.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
@@ -197,22 +196,6 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStopped);
 
-  OutputDeviceStatus device_status =
-      sink_ ? sink_->GetOutputDeviceInfo().device_status()
-            : OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND;
-
-  UMA_HISTOGRAM_ENUMERATION("Media.WebAudioSourceProvider.SinkStatus",
-                            device_status, OUTPUT_DEVICE_STATUS_MAX + 1);
-
-  if (device_status != OUTPUT_DEVICE_STATUS_OK) {
-    // Since null sink is always OK, we will fall back to it once and forever.
-    if (sink_)
-      sink_->Stop();
-    sink_ = CreateFallbackSink();
-    MEDIA_LOG(ERROR, media_log_)
-        << "Output device error, falling back to null sink";
-  }
-
   tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
 
   sink_->Initialize(params, tee_filter_.get());
@@ -262,9 +245,8 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
 }
 
 OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
-  base::AutoLock auto_lock(sink_lock_);
-  return sink_ ? sink_->GetOutputDeviceInfo()
-               : OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND);
+  NOTREACHED();  // The blocking API is intentionally not supported.
+  return OutputDeviceInfo();
 }
 
 void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
@@ -322,12 +304,6 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
 
   // Inform Blink about the audio stream format.
   client_->SetFormat(tee_filter_->channels(), tee_filter_->sample_rate());
-}
-
-scoped_refptr<SwitchableAudioRendererSink>
-WebAudioSourceProviderImpl::CreateFallbackSink() {
-  // Assuming it is called on media thread.
-  return new NullAudioSink(base::ThreadTaskRunnerHandle::Get());
 }
 
 int WebAudioSourceProviderImpl::TeeFilter::Render(

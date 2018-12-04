@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_mixer_pool.h"
@@ -55,7 +56,7 @@ using AudioRendererMixerTestData =
 
 class AudioRendererMixerTest
     : public testing::TestWithParam<AudioRendererMixerTestData>,
-      AudioRendererMixerPool {
+      public AudioRendererMixerPool {
  public:
   AudioRendererMixerTest()
       : epsilon_(std::get<3>(GetParam())), half_fill_(false) {
@@ -93,8 +94,8 @@ class AudioRendererMixerTest
   AudioRendererMixer* GetMixer(int owner_id,
                                const AudioParameters& params,
                                AudioLatency::LatencyType latency,
-                               const std::string& device_id,
-                               OutputDeviceStatus* device_status) final {
+                               const OutputDeviceInfo& sink_info,
+                               scoped_refptr<AudioRendererSink> sink) final {
     return mixer_.get();
   };
 
@@ -102,8 +103,11 @@ class AudioRendererMixerTest
     EXPECT_EQ(mixer_.get(), mixer);
   }
 
-  MOCK_METHOD3(GetOutputDeviceInfo,
-               OutputDeviceInfo(int, int, const std::string&));
+  scoped_refptr<AudioRendererSink> GetSink(
+      int owner_id,
+      const std::string& device_id) override {
+    return sink_;
+  }
 
   void InitializeInputs(int inputs_per_sample_rate) {
     mixer_inputs_.reserve(inputs_per_sample_rate * input_parameters_.size());
@@ -334,15 +338,20 @@ class AudioRendererMixerTest
   }
 
   scoped_refptr<AudioRendererMixerInput> CreateMixerInput() {
-    return new AudioRendererMixerInput(this,
-                                       // Zero frame id, default device ID.
-                                       0, std::string(),
-                                       AudioLatency::LATENCY_PLAYBACK);
+    auto input = base::MakeRefCounted<AudioRendererMixerInput>(
+        this,
+        // Zero frame id, default device ID.
+        0, std::string(), AudioLatency::LATENCY_PLAYBACK);
+    input->GetOutputDeviceInfoAsync(
+        base::DoNothing());  // Primes input, needed for tests.
+    task_env_.RunUntilIdle();
+    return input;
   }
 
  protected:
   virtual ~AudioRendererMixerTest() = default;
 
+  base::test::ScopedTaskEnvironment task_env_;
   scoped_refptr<MockAudioRendererSink> sink_;
   std::unique_ptr<AudioRendererMixer> mixer_;
   AudioRendererSink::RenderCallback* mixer_callback_;
@@ -350,7 +359,7 @@ class AudioRendererMixerTest
   AudioParameters output_parameters_;
   std::unique_ptr<AudioBus> audio_bus_;
   std::unique_ptr<AudioBus> expected_audio_bus_;
-  std::vector< scoped_refptr<AudioRendererMixerInput> > mixer_inputs_;
+  std::vector<scoped_refptr<AudioRendererMixerInput>> mixer_inputs_;
   std::vector<std::unique_ptr<FakeAudioRenderCallback>> fake_callbacks_;
   std::unique_ptr<FakeAudioRenderCallback> expected_callback_;
   double epsilon_;

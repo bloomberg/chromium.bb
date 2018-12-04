@@ -13,31 +13,38 @@
 namespace media {
 class AudioParameters;
 class AudioRendererMixer;
+class AudioRendererSink;
 
 // Provides AudioRendererMixer instances for shared usage.
 // Thread safe.
 class MEDIA_EXPORT AudioRendererMixerPool {
  public:
-  AudioRendererMixerPool() {}
-  virtual ~AudioRendererMixerPool() {}
+  AudioRendererMixerPool() = default;
+  virtual ~AudioRendererMixerPool() = default;
 
   // Obtains a pointer to mixer instance based on AudioParameters. The pointer
   // is guaranteed to be valid (at least) until it's rereleased by a call to
   // ReturnMixer().
-  virtual AudioRendererMixer* GetMixer(int owner_id,
-                                       const AudioParameters& params,
-                                       AudioLatency::LatencyType latency,
-                                       const std::string& device_id,
-                                       OutputDeviceStatus* device_status) = 0;
+  //
+  // Ownership of |sink| must be passed to GetMixer(), it will be stopped and
+  // discard if an existing mixer can be reused. Clients must have called
+  // GetOutputDeviceInfoAsync() on |sink| to get |sink_info|, and it must have
+  // a device_status() == OUTPUT_DEVICE_STATUS_OK.
+  virtual AudioRendererMixer* GetMixer(
+      int owner_id,
+      const AudioParameters& input_params,
+      AudioLatency::LatencyType latency,
+      const OutputDeviceInfo& sink_info,
+      scoped_refptr<AudioRendererSink> sink) = 0;
 
   // Returns mixer back to the pool, must be called when the mixer is not needed
   // any more to avoid memory leakage.
   virtual void ReturnMixer(AudioRendererMixer* mixer) = 0;
 
-  // Returns output device information
-  virtual OutputDeviceInfo GetOutputDeviceInfo(
+  // Returns an AudioRendererSink for use with GetMixer(). Inputs must call this
+  // to get a sink to use with a subsequent GetMixer()
+  virtual scoped_refptr<AudioRendererSink> GetSink(
       int owner_id,
-      int session_id,
       const std::string& device_id) = 0;
 
  private:
