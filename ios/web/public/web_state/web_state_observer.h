@@ -49,7 +49,7 @@ class WebStateObserver {
   // navigations).
   // DEPRECATED. Use |DidFinishNavigation| to listen for
   // "navigation item committed" signals.
-  // TODO(crbug.com/720786): Remove this method.
+  // TODO(crbug.com/781534): Remove this method.
   virtual void NavigationItemCommitted(
       WebState* web_state,
       const LoadCommittedDetails& load_details) {}
