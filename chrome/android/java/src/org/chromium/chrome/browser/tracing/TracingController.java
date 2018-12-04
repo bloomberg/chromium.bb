@@ -280,8 +280,11 @@ public class TracingController {
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         Context context = ContextUtils.getApplicationContext();
-        context.startActivity(Intent.createChooser(
-                shareIntent, context.getResources().getString(R.string.tracing_share)));
+        Intent chooser = Intent.createChooser(
+                shareIntent, context.getResources().getString(R.string.tracing_share));
+        // We start this activity outside the main activity.
+        chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(chooser);
 
         // Delete the file after an hour. This won't work if the app quits in the meantime, so we
         // also check for old files when TraceController is created.
