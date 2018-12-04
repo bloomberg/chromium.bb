@@ -31,9 +31,9 @@ class SVGTextElement final : public SVGTextPositioningElement {
  public:
   DECLARE_NODE_FACTORY(SVGTextElement);
 
- private:
   explicit SVGTextElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 

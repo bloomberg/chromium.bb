@@ -15,9 +15,9 @@ class HTMLRubyElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLRubyElement);
 
- private:
   explicit HTMLRubyElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   bool ShouldForceLegacyLayout() const final { return true; }
 };

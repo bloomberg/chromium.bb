@@ -42,6 +42,8 @@ class SVGFEConvolveMatrixElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
 
+  explicit SVGFEConvolveMatrixElement(Document&);
+
   SVGAnimatedBoolean* preserveAlpha() { return preserve_alpha_.Get(); }
   SVGAnimatedNumber* divisor() { return divisor_.Get(); }
   SVGAnimatedNumber* bias() { return bias_.Get(); }
@@ -62,8 +64,6 @@ class SVGFEConvolveMatrixElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEConvolveMatrixElement(Document&);
-
   IntSize MatrixOrder() const;
   IntPoint TargetPoint() const;
   float ComputeDivisor() const;

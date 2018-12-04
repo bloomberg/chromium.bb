@@ -35,13 +35,13 @@ class CORE_EXPORT HTMLHtmlElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLHtmlElement);
 
+  explicit HTMLHtmlElement(Document&);
+
   void InsertedByParser();
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
  private:
-  explicit HTMLHtmlElement(Document&);
-
   void MaybeSetupApplicationCache();
 
   bool IsURLAttribute(const Attribute&) const override;

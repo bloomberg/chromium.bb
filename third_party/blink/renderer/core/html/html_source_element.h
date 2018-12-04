@@ -42,6 +42,8 @@ class HTMLSourceElement final : public HTMLElement {
   class Listener;
 
   DECLARE_NODE_FACTORY(HTMLSourceElement);
+
+  explicit HTMLSourceElement(Document&);
   ~HTMLSourceElement() override;
 
   // Returns attributes that should be checked against Trusted Types
@@ -63,8 +65,6 @@ class HTMLSourceElement final : public HTMLElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLSourceElement(Document&);
-
   void DispatchPendingEvent();
 
   void DidMoveToNewDocument(Document& old_document) override;

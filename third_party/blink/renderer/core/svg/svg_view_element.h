@@ -36,11 +36,12 @@ class SVGViewElement final : public SVGElement,
 
  public:
   DECLARE_NODE_FACTORY(SVGViewElement);
+
+  explicit SVGViewElement(Document&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGViewElement(Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {

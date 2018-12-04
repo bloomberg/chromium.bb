@@ -43,8 +43,9 @@ class ProgressShadowElement : public HTMLDivElement {
  public:
   DECLARE_NODE_FACTORY(ProgressShadowElement);
 
- private:
   explicit ProgressShadowElement(Document&);
+
+ private:
   HTMLProgressElement* ProgressElement() const;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 };

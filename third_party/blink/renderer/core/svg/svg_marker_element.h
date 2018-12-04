@@ -58,6 +58,8 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
 
   DECLARE_NODE_FACTORY(SVGMarkerElement);
 
+  explicit SVGMarkerElement(Document&);
+
   AffineTransform ViewBoxToViewTransform(float view_width,
                                          float view_height) const;
 
@@ -79,8 +81,6 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGMarkerElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

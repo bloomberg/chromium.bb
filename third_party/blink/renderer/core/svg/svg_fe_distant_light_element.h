@@ -30,9 +30,9 @@ class SVGFEDistantLightElement final : public SVGFELightElement {
  public:
   DECLARE_NODE_FACTORY(SVGFEDistantLightElement);
 
- private:
   explicit SVGFEDistantLightElement(Document&);
 
+ private:
   scoped_refptr<LightSource> GetLightSource(Filter*) const override;
 };
 

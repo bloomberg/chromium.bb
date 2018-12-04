@@ -32,6 +32,8 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGForeignObjectElement);
 
+  explicit SVGForeignObjectElement(Document&);
+
   SVGAnimatedLength* x() const { return x_.Get(); }
   SVGAnimatedLength* y() const { return y_.Get(); }
   SVGAnimatedLength* width() const { return width_.Get(); }
@@ -40,8 +42,6 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGForeignObjectElement(Document&);
-
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,
       const AtomicString&,

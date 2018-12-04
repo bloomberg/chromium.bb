@@ -35,6 +35,8 @@ class SVGPathElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGPathElement);
 
+  explicit SVGPathElement(Document&);
+
   Path AsPath() const override;
   Path AttributePath() const;
 
@@ -52,8 +54,6 @@ class SVGPathElement final : public SVGGeometryElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGPathElement(Document&);
-
   const StylePath* GetStylePath() const;
 
   void SvgAttributeChanged(const QualifiedName&) override;

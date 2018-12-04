@@ -36,9 +36,9 @@ class HTMLFontElement final : public HTMLElement {
 
   static bool CssValueFromFontSizeNumber(const String&, CSSValueID&);
 
- private:
   explicit HTMLFontElement(Document&);
 
+ private:
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

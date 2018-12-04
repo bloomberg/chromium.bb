@@ -47,6 +47,8 @@ class SVGPatternElement final : public SVGElement,
  public:
   DECLARE_NODE_FACTORY(SVGPatternElement);
 
+  explicit SVGPatternElement(Document&);
+
   void CollectPatternAttributes(PatternAttributes&) const;
 
   AffineTransform LocalCoordinateSpaceTransform(CTMScope) const override;
@@ -83,8 +85,6 @@ class SVGPatternElement final : public SVGElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGPatternElement(Document&);
-
   bool IsValid() const override { return SVGTests::IsValid(); }
 
   void CollectStyleForPresentationAttribute(

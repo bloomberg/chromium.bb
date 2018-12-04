@@ -31,9 +31,9 @@ class SVGTSpanElement final : public SVGTextPositioningElement {
  public:
   DECLARE_NODE_FACTORY(SVGTSpanElement);
 
- private:
   explicit SVGTSpanElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 };

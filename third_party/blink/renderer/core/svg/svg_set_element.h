@@ -33,8 +33,9 @@ class CORE_EXPORT SVGSetElement final : public SVGAnimateElement {
  public:
   DECLARE_NODE_FACTORY(SVGSetElement);
 
- private:
   explicit SVGSetElement(Document&);
+
+ private:
   void UpdateAnimationMode() override;
 };
 

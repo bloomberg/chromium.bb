@@ -32,13 +32,14 @@ class SVGFEMergeNodeElement final : public SVGElement {
 
  public:
   DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
+
+  explicit SVGFEMergeNodeElement(Document&);
+
   SVGAnimatedString* in1() { return in1_.Get(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEMergeNodeElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {

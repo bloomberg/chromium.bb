@@ -179,8 +179,10 @@ void ContentSecurityPolicy::SetupSelf(const SecurityOrigin& security_origin) {
 
 void ContentSecurityPolicy::SetupSelf(const ContentSecurityPolicy& other) {
   self_protocol_ = other.self_protocol_;
-  if (other.self_source_)
-    self_source_ = new CSPSource(this, *(other.self_source_.Get()));
+  if (other.self_source_) {
+    self_source_ =
+        MakeGarbageCollected<CSPSource>(this, *(other.self_source_.Get()));
+  }
 }
 
 void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {

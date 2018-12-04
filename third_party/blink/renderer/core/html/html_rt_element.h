@@ -15,9 +15,9 @@ class HTMLRTElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLRTElement);
 
- private:
   explicit HTMLRTElement(Document&);
 
+ private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 

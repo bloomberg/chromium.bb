@@ -40,6 +40,8 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
  public:
   DECLARE_NODE_FACTORY(HTMLAreaElement);
 
+  explicit HTMLAreaElement(Document&);
+
   bool IsDefault() const { return shape_ == kDefault; }
 
   // |containerObject| in the following functions is an object (normally a
@@ -58,7 +60,6 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
   HTMLImageElement* ImageElement() const;
 
  private:
-  explicit HTMLAreaElement(Document&);
   ~HTMLAreaElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

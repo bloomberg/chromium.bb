@@ -37,6 +37,8 @@ class SVGFEMorphologyElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
+  explicit SVGFEMorphologyElement(Document&);
+
   SVGAnimatedNumber* radiusX() { return radius_->FirstNumber(); }
   SVGAnimatedNumber* radiusY() { return radius_->SecondNumber(); }
   SVGAnimatedString* in1() { return in1_.Get(); }
@@ -47,8 +49,6 @@ class SVGFEMorphologyElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEMorphologyElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;

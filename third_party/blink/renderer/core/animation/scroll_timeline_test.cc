@@ -227,9 +227,9 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   Element* scroll_source = nullptr;
   CSSPrimitiveValue* start_scroll_offset = nullptr;
   CSSPrimitiveValue* end_scroll_offset = nullptr;
-  ScrollTimeline* scroll_timeline =
-      new ScrollTimeline(scroll_source, ScrollTimeline::Block,
-                         start_scroll_offset, end_scroll_offset, 100);
+  ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
+      scroll_source, ScrollTimeline::Block, start_scroll_offset,
+      end_scroll_offset, 100);
 
   // Sanity checks.
   ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);

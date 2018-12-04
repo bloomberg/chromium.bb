@@ -1106,7 +1106,7 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 
 #define DECLARE_NODE_FACTORY(T) static T* Create(Document&)
 #define DEFINE_NODE_FACTORY(T) \
-  T* T::Create(Document& document) { return new T(document); }
+  T* T::Create(Document& document) { return MakeGarbageCollected<T>(document); }
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);

@@ -33,11 +33,11 @@ class SVGSymbolElement final : public SVGElement, public SVGFitToViewBox {
  public:
   DECLARE_NODE_FACTORY(SVGSymbolElement);
 
+  explicit SVGSymbolElement(Document&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGSymbolElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;

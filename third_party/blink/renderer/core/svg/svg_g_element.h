@@ -31,9 +31,9 @@ class CORE_EXPORT SVGGElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGGElement);
 
- protected:
   explicit SVGGElement(Document&, ConstructionType = kCreateSVGElement);
 
+ protected:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
  private:

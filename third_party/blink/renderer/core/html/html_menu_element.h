@@ -33,7 +33,6 @@ class HTMLMenuElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLMenuElement);
 
- private:
   explicit HTMLMenuElement(Document&);
 };
 

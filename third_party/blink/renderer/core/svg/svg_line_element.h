@@ -33,6 +33,8 @@ class SVGLineElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGLineElement);
 
+  explicit SVGLineElement(Document&);
+
   Path AsPath() const override;
 
   SVGAnimatedLength* x1() const { return x1_.Get(); }
@@ -43,8 +45,6 @@ class SVGLineElement final : public SVGGeometryElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGLineElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
   bool SelfHasRelativeLengths() const override;

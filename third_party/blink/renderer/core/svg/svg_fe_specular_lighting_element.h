@@ -36,6 +36,9 @@ class SVGFESpecularLightingElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGFESpecularLightingElement);
+
+  explicit SVGFESpecularLightingElement(Document&);
+
   void LightElementAttributeChanged(const SVGFELightElement*,
                                     const QualifiedName&);
 
@@ -53,8 +56,6 @@ class SVGFESpecularLightingElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFESpecularLightingElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
