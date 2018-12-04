@@ -296,6 +296,8 @@ source_set("chromeos") {
     "accessibility/switch_access_event_handler.h",
     "accessibility/switch_access_panel.cc",
     "accessibility/switch_access_panel.h",
+    "account_manager/account_manager_migrator.cc",
+    "account_manager/account_manager_migrator.h",
     "account_manager/account_migration_runner.cc",
     "account_manager/account_migration_runner.h",
     "account_mapper_util.cc",
