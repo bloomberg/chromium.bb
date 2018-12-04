@@ -7865,6 +7865,11 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
           content::BrowserContext::GetDefaultStoragePartition(
               browser()->profile());
       partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
+    } else {
+      RunOnIOThreadBlocking(base::BindOnce(
+          &SSLPKPBrowserTest::EnableStaticPinsOnIOThread,
+          base::Unretained(this),
+          base::RetainedRef(browser()->profile()->GetRequestContext())));
     }
 
     if (content::IsOutOfProcessNetworkService()) {
@@ -7876,12 +7881,11 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
           ->BindInterface(content::mojom::kNetworkServiceName,
                           &network_service_test);
       network_service_test->SetTransportSecurityStateSource(reporting_port);
-      return;
+    } else {
+      RunOnIOThreadBlocking(base::BindOnce(
+          &SSLPKPBrowserTest::SetTransportSecurityStateSourceOnIO,
+          base::Unretained(this), reporting_port));
     }
-    RunOnIOThreadBlocking(base::BindOnce(
-        &SSLPKPBrowserTest::EnableStaticPinsOnIOThread, base::Unretained(this),
-        base::RetainedRef(browser()->profile()->GetRequestContext()),
-        reporting_port));
   }
 
  private:
@@ -7892,13 +7896,14 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
     run_loop.Run();
   }
 
-  void EnableStaticPinsOnIOThread(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      int reporting_port) {
+  void SetTransportSecurityStateSourceOnIO(int reporting_port) {
     transport_security_state_source_ =
         std::make_unique<net::ScopedTransportSecurityStateSource>(
             reporting_port);
+  }
 
+  void EnableStaticPinsOnIOThread(
+      scoped_refptr<net::URLRequestContextGetter> context_getter) {
     net::TransportSecurityState* state =
         context_getter->GetURLRequestContext()->transport_security_state();
     state->EnableStaticPinsForTesting();
