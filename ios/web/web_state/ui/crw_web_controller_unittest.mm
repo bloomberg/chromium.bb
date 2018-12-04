@@ -742,46 +742,6 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   EXPECT_EQ(kAbsolute, trust_level);
 }
 
-// Tests |currentURLWithTrustLevel:| method.
-TEST_P(CRWWebControllerTest, CurrentUrlWithFailProvisionalNavigation) {
-  GURL url("http://chromium.test");
-  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
-
-  [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
-  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
-  SetWebViewURL(@"http://chromium.test");
-
-  // Stub out the injection process.
-  [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
-                          completionHandler:OCMOCK_ANY];
-
-  // Simulate a page load to trigger a URL update.
-  NSError* error = [NSError errorWithDomain:NSURLErrorDomain
-                                       code:NSURLErrorUnsupportedURL
-                                   userInfo:nil];
-  NSObject* navigation = [[NSObject alloc] init];
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
-
-  NSObject* placeholder = [[NSObject alloc] init];
-  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:placeholder])
-      loadRequest:OCMOCK_ANY];
-  // When navigating back slim navigation will immediately commit, so skip
-  // didFailProvisionalNavigation.
-  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [navigation_delegate_ webView:mock_web_view_
-        didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
-                           withError:error];
-  } else {
-    [mock_wk_list_ setCurrentURL:@"http://chromium.test"];
-    [navigation_delegate_ webView:mock_web_view_
-              didCommitNavigation:static_cast<WKNavigation*>(navigation)];
-  }
-
-  URLVerificationTrustLevel trust_level = kNone;
-  EXPECT_EQ(url, [web_controller() currentURLWithTrustLevel:&trust_level]);
-  EXPECT_EQ(kAbsolute, trust_level);
-}
 INSTANTIATE_TEST_CASES(CRWWebControllerResponseTest);
 
 // Test fixture to test decidePolicyForNavigationAction:decisionHandler:

@@ -134,6 +134,14 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
   EXPECT_EQ(error, [states_ contextForNavigation:navigation1_]->GetError());
   EXPECT_TRUE(
       [states_ contextForNavigation:navigation1_]->IsRendererInitiated());
+
+  // Extract existing context.
+  std::unique_ptr<web::NavigationContextImpl> extractedContext =
+      [states_ removeNavigation:navigation1_];
+  EXPECT_EQ(GURL(kTestUrl2), extractedContext->GetUrl());
+  EXPECT_FALSE(extractedContext->IsSameDocument());
+  EXPECT_EQ(error, extractedContext->GetError());
+  EXPECT_TRUE(extractedContext->IsRendererInitiated());
 }
 
 // Tests null WKNavigation object.
