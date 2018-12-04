@@ -126,7 +126,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'TextFocusFeedback', function() {
 /**
  * Test feedback when a contenteditable field gets focus.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'ContentEditableFocusFeedback',
+// Flaky on Chromium OS: crbug.com/622387.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ContentEditableFocusFeedback',
        function() {
   this.loadHtml('<div>' +
       '<label for="mytext">Label</label>' +
@@ -436,7 +437,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'EditableTextListboxUpdatingInput',
 /**
  * Tests navigating through a multiline text area.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'MultilineNavigation', function() {
+// Flaky on Chromium OS: crbug.com/622387.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_MultilineNavigation', function() {
   this.loadHtml('<div> <textarea id="area">' +
       'one' +
       '\n\n' +
