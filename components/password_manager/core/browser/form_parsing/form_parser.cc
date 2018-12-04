@@ -27,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FieldPropertiesFlags;
+using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using base::string16;
@@ -166,6 +167,10 @@ struct SignificantFields {
   // some constraints. The resulting PasswordForm should only be used for
   // fallback UI.
   bool is_fallback = false;
+
+  // True iff the new password field was found with server hints or autocomplete
+  // attributes.
+  bool is_new_password_reliable = false;
 
   // Returns true if some password field is present. This is the minimal
   // requirement for a successful creation of a PasswordForm is present.
@@ -693,12 +698,16 @@ void SetFields(const SignificantFields& significant_fields,
     password_form->new_password_element =
         GetPlatformSpecificIdentifier(*significant_fields.new_password);
     password_form->new_password_value = significant_fields.new_password->value;
+    password_form->new_password_element_renderer_id =
+        significant_fields.new_password->unique_renderer_id;
   }
 
   if (significant_fields.confirmation_password) {
     password_form->confirmation_password_element =
         GetPlatformSpecificIdentifier(
             *significant_fields.confirmation_password);
+    password_form->confirmation_password_element_renderer_id =
+        significant_fields.confirmation_password->unique_renderer_id;
   }
 }
 
@@ -819,7 +828,7 @@ bool GetMayUsePrefilledPlaceholder(
 // occurred in the form and their associated elements. |form_predictions| is
 // used to find fields that may have preffilled placeholders.
 std::unique_ptr<PasswordForm> AssemblePasswordForm(
-    const autofill::FormData& form_data,
+    const FormData& form_data,
     const SignificantFields& significant_fields,
     autofill::ValueElementVector all_possible_passwords,
     autofill::ValueElementVector all_possible_usernames,
@@ -843,6 +852,8 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->type = PasswordForm::TYPE_MANUAL;
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
+  result->is_new_password_reliable =
+      significant_fields.is_new_password_reliable;
   result->only_for_fallback_saving = significant_fields.is_fallback;
   result->submission_event = form_data.submission_event;
 
@@ -857,9 +868,8 @@ FormDataParser::FormDataParser() = default;
 
 FormDataParser::~FormDataParser() = default;
 
-std::unique_ptr<PasswordForm> FormDataParser::Parse(
-    const autofill::FormData& form_data,
-    Mode mode) {
+std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
+                                                    Mode mode) {
   readonly_status_ = ReadonlyPasswordFields::kNoHeuristics;
   autofill::ValueElementVector all_possible_passwords;
   autofill::ValueElementVector all_possible_usernames;
@@ -890,6 +900,15 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(
       username_detection_method =
           UsernameDetectionMethod::kAutocompleteAttribute;
     }
+  }
+
+  // Pass the "reliability" information to mark the new-password fields as
+  // eligible for automatic password generation. This only makes sense when
+  // forms are analysed for filling, because no passwords are generated when the
+  // user saves the already entered one.
+  if (mode == Mode::kFilling && significant_fields &&
+      significant_fields->new_password) {
+    significant_fields->is_new_password_reliable = true;
   }
 
   // (3) Now try to fill the gaps.

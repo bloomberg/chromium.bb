@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -29,6 +30,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
+using autofill::NewPasswordFormGenerationData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using autofill::ServerFieldType;
@@ -57,6 +59,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
+  MOCK_METHOD1(FormEligibleForGenerationFound,
+               void(const autofill::NewPasswordFormGenerationData&));
 };
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
@@ -373,6 +377,7 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
 
   CreateFormManager(observed_form_);
   EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
+  EXPECT_CALL(driver_, FormEligibleForGenerationFound(_)).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   CreateFormManager(observed_form_);
@@ -420,6 +425,11 @@ TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
 
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+
+  NewPasswordFormGenerationData generation_data;
+  EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
+      .WillOnce(SaveArg<0>(&generation_data));
+
   CreateFormManager(observed_form_);
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
@@ -427,6 +437,38 @@ TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
   constexpr uint32_t kNoID = FormFieldData::kNotSetFormControlRendererId;
   EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+  EXPECT_EQ(observed_form_.fields.back().unique_renderer_id,
+            generation_data.new_password_renderer_id);
+  EXPECT_EQ(kNoID, generation_data.confirmation_password_renderer_id);
+}
+
+// Check that generation signal is sent the the renderer when new password
+// fields are marked with autocomplete attribute.
+TEST_F(NewPasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  // Make |observed_form_| to be sign-up form.
+  observed_form_.fields.back().autocomplete_attribute = "new-password";
+  const uint32_t new_password_render_id =
+      observed_form_.fields.back().unique_renderer_id;
+  // Add a confirmation field.
+  FormFieldData field;
+  const uint32_t confirm_password_render_id = new_password_render_id + 1;
+  field.unique_renderer_id = confirm_password_render_id;
+  field.form_control_type = "password";
+  field.autocomplete_attribute = "new-password";
+  observed_form_.fields.push_back(field);
+
+  NewPasswordFormGenerationData generation_data;
+  EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
+      .WillOnce(SaveArg<0>(&generation_data));
+
+  CreateFormManager(observed_form_);
+  fetcher_->SetNonFederated({}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(new_password_render_id, generation_data.new_password_renderer_id);
+  EXPECT_EQ(confirm_password_render_id,
+            generation_data.confirmation_password_renderer_id);
 }
 
 TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {

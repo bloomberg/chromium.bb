@@ -37,6 +37,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("username_value", form.username_value);
   target->SetString("password_element", form.password_element);
   target->SetString("password_value", form.password_value);
+  target->SetInteger("password_element_renderer_id",
+                     form.password_element_renderer_id);
   target->SetString("new_password_element", form.new_password_element);
   target->SetInteger("password_element_renderer_id",
                      form.password_element_renderer_id);
@@ -45,6 +47,8 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.new_password_marked_by_site);
   target->SetString("confirmation_password_element",
                     form.confirmation_password_element);
+  target->SetInteger("confirmation_password_element_renderer_id",
+                     form.confirmation_password_element_renderer_id);
   target->SetString("other_possible_usernames",
                     ValueElementVectorToString(form.other_possible_usernames));
   target->SetString("all_possible_passwords",
@@ -74,6 +78,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("only_for_fallback_saving", form.only_for_fallback_saving);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.is_gaia_with_skip_save_password_form);
+  target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
 }
 
 }  // namespace
@@ -130,7 +135,12 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          password_element_renderer_id == form.password_element_renderer_id &&
          password_value == form.password_value &&
          new_password_element == form.new_password_element &&
+         confirmation_password_element_renderer_id ==
+             form.confirmation_password_element_renderer_id &&
          new_password_marked_by_site == form.new_password_marked_by_site &&
+         confirmation_password_element == form.confirmation_password_element &&
+         confirmation_password_element_renderer_id ==
+             form.confirmation_password_element_renderer_id &&
          new_password_value == form.new_password_value &&
          preferred == form.preferred && date_created == form.date_created &&
          date_synced == form.date_synced &&
@@ -153,7 +163,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          submission_event == form.submission_event &&
          only_for_fallback_saving == form.only_for_fallback_saving &&
          is_gaia_with_skip_save_password_form ==
-             form.is_gaia_with_skip_save_password_form;
+             form.is_gaia_with_skip_save_password_form &&
+         is_new_password_reliable == form.is_new_password_reliable;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

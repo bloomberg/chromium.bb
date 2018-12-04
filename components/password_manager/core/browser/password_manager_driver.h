@@ -18,6 +18,7 @@
 namespace autofill {
 class AutofillDriver;
 struct FormData;
+struct NewPasswordFormGenerationData;
 struct PasswordForm;
 struct PasswordFormGenerationData;
 struct PasswordFormFillData;
@@ -54,6 +55,11 @@ class PasswordManagerDriver
   // generated.
   virtual void FormsEligibleForGenerationFound(
       const std::vector<autofill::PasswordFormGenerationData>& forms) = 0;
+
+  // Notifies the driver that a password can be generated on the fields
+  // identified by |form|.
+  virtual void FormEligibleForGenerationFound(
+      const autofill::NewPasswordFormGenerationData& form) {}
 
   // Notifies the driver that username and password predictions from autofill
   // have been received.

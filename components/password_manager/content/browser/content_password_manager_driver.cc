@@ -84,6 +84,14 @@ void ContentPasswordManagerDriver::FormsEligibleForGenerationFound(
   GetPasswordGenerationAgent()->FoundFormsEligibleForGeneration(forms);
 }
 
+void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
+    const autofill::NewPasswordFormGenerationData& form) {
+  if (GetPasswordGenerationManager()->IsGenerationEnabled(
+          /*log_debug_data=*/true)) {
+    GetPasswordGenerationAgent()->FoundFormEligibleForGeneration(form);
+  }
+}
+
 void ContentPasswordManagerDriver::AutofillDataReceived(
     const std::map<autofill::FormData,
                    autofill::PasswordFormFieldPredictionMap>& predictions) {

@@ -37,6 +37,7 @@ type_mappings = [
   "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
   "autofill.mojom.FormsPredictionsMap=autofill::FormsPredictionsMap",
   "autofill.mojom.GenerationUploadStatus=autofill::PasswordForm::GenerationUploadStatus",
+  "autofill.mojom.NewPasswordFormGenerationData=autofill::NewPasswordFormGenerationData",
   "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
   "autofill.mojom.PasswordForm=autofill::PasswordForm",
   "autofill.mojom.PasswordFormFieldPredictionMap=autofill::PasswordFormFieldPredictionMap",

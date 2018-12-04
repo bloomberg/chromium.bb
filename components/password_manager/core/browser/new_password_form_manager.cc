@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
@@ -592,6 +593,15 @@ void NewPasswordFormManager::Fill() {
   // function when the old parsing is removed.
   if (!driver_)
     return;
+
+  if (!IsBlacklisted() && observed_password_form->is_new_password_reliable) {
+    driver_->FormEligibleForGenerationFound(
+        {.new_password_renderer_id =
+             observed_password_form->new_password_element_renderer_id,
+         .confirmation_password_renderer_id =
+             observed_password_form
+                 ->confirmation_password_element_renderer_id});
+  }
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
   // matches.

@@ -200,6 +200,12 @@ struct PasswordFormGenerationData {
   uint32 confirmation_field_signature;
 };
 
+// autofill::NewPasswordFormGenerationData
+struct NewPasswordFormGenerationData {
+   uint32 new_password_renderer_id;
+   uint32 confirmation_password_renderer_id;
+};
+
 // autofill::password_generation::PasswordGenerationUIData
 struct PasswordGenerationUIData {
   gfx.mojom.RectF bounds;

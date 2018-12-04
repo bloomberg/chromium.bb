@@ -486,6 +486,11 @@ void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
   DetermineGenerationElement();
 }
 
+void PasswordGenerationAgent::FoundFormEligibleForGeneration(
+    const NewPasswordFormGenerationData& form) {
+  // TODO(https://crbug.com/866444): Implement processing |form|.
+}
+
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
   if (SetUpUserTriggeredGeneration()) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
