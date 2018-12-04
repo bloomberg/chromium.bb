@@ -374,6 +374,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // is an element within an ordered set.
   // Invalidated every time the tree is updated.
   mutable std::unordered_map<int32_t, OrderedSetInfo> ordered_set_info_map_;
+
+  // AXTree owns pointers so copying is non-trivial.
+  DISALLOW_COPY_AND_ASSIGN(AXTree);
 };
 
 }  // namespace ui
