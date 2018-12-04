@@ -17,6 +17,7 @@
 #include "components/arc/test/fake_power_instance.h"
 #include "components/arc/test/fake_wake_lock_instance.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,16 +29,9 @@ class ArcWakeLockBridgeTest : public testing::Test {
  public:
   ArcWakeLockBridgeTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
-    auto wake_lock_provider_ptr =
-        std::make_unique<device::TestWakeLockProvider>();
-    wake_lock_provider_ = wake_lock_provider_ptr.get();
-
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(wake_lock_provider_ptr));
-    connector_ = connector_factory_->CreateConnector();
-
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        wake_lock_provider_(
+            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
     fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         base::WrapUnique(fake_power_manager_client_));
@@ -45,7 +39,8 @@ class ArcWakeLockBridgeTest : public testing::Test {
     bridge_service_ = std::make_unique<ArcBridgeService>();
     wake_lock_bridge_ =
         std::make_unique<ArcWakeLockBridge>(nullptr, bridge_service_.get());
-    wake_lock_bridge_->set_connector_for_testing(connector_.get());
+    wake_lock_bridge_->set_connector_for_testing(
+        connector_factory_.GetDefaultConnector());
     CreateWakeLockInstance();
   }
 
@@ -69,8 +64,8 @@ class ArcWakeLockBridgeTest : public testing::Test {
     instance_.reset();
   }
 
-  device::TestWakeLockProvider* GetWakeLockProvider() const {
-    return wake_lock_provider_;
+  device::TestWakeLockProvider* GetWakeLockProvider() {
+    return &wake_lock_provider_;
   }
 
   // Returns true iff there is no failure acquiring a system wake lock.
@@ -118,9 +113,8 @@ class ArcWakeLockBridgeTest : public testing::Test {
   chromeos::FakePowerManagerClient* fake_power_manager_client_;
 
  private:
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-  device::TestWakeLockProvider* wake_lock_provider_;
+  service_manager::TestConnectorFactory connector_factory_;
+  device::TestWakeLockProvider wake_lock_provider_;
 
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<FakeWakeLockInstance> instance_;

@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,12 +49,10 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
  public:
   DialMediaSinkServiceImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()),
+        data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)),
         media_sink_service_(new DialMediaSinkServiceImpl(
-            connector_.get(),
+            connector_factory_.GetDefaultConnector(),
             mock_sink_discovered_cb_.Get(),
             base::SequencedTaskRunnerHandle::Get())) {}
 
@@ -103,8 +102,8 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
 
  protected:
   const content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
 
   base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_cb_;
   base::MockCallback<

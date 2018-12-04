@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -30,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
@@ -42,7 +44,9 @@ namespace {
 class TestHighlighterController : public ash::mojom::HighlighterController,
                                   public service_manager::Service {
  public:
-  TestHighlighterController() : binding_(this) {}
+  explicit TestHighlighterController(
+      service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
   ~TestHighlighterController() override = default;
 
   void CallHandleSelection(const gfx::Rect& rect) {
@@ -91,7 +95,8 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
     binding_.Close();
   }
 
-  mojo::Binding<ash::mojom::HighlighterController> binding_;
+  service_manager::ServiceBinding service_binding_;
+  mojo::Binding<ash::mojom::HighlighterController> binding_{this};
   ash::mojom::HighlighterControllerClientPtr client_;
   bool is_enabled_ = false;
 
@@ -141,21 +146,16 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     arc_bridge_service_ = std::make_unique<ArcBridgeService>();
 
-    auto highlighter_controller_ptr =
-        std::make_unique<TestHighlighterController>();
-    highlighter_controller_ = highlighter_controller_ptr.get();
     voice_interaction_controller_ =
         std::make_unique<FakeVoiceInteractionController>();
     voice_interaction_controller_client_ =
         std::make_unique<VoiceInteractionControllerClient>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(highlighter_controller_ptr));
-    connector_ = connector_factory_->CreateConnector();
+    highlighter_controller_ = std::make_unique<TestHighlighterController>(
+        connector_factory_.RegisterInstance(ash::mojom::kServiceName));
     framework_service_ = std::make_unique<ArcVoiceInteractionFrameworkService>(
         profile_.get(), arc_bridge_service_.get());
     framework_service_->GetHighlighterClientForTesting()
-        ->SetConnectorForTesting(connector_.get());
+        ->SetConnectorForTesting(connector_factory_.GetDefaultConnector());
     voice_interaction_controller_client()->SetControllerForTesting(
         voice_interaction_controller_->CreateInterfacePtrAndBind());
     framework_instance_ =
@@ -201,7 +201,7 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
   }
 
   TestHighlighterController* highlighter_controller() const {
-    return highlighter_controller_;
+    return highlighter_controller_.get();
   }
 
   FakeVoiceInteractionController* voice_interaction_controller() {
@@ -228,10 +228,8 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-  // |highlighter_controller_| is valid until |connector_factory_| is deleted.
-  TestHighlighterController* highlighter_controller_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<TestHighlighterController> highlighter_controller_;
   std::unique_ptr<FakeVoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<ArcVoiceInteractionFrameworkService> framework_service_;
   std::unique_ptr<FakeVoiceInteractionFrameworkInstance> framework_instance_;

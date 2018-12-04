@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -48,6 +49,7 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/value_builder.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "url/gurl.h"
 
@@ -150,7 +152,9 @@ class TestObserver : public NoteTakingHelper::Observer {
 class TestNoteTakingController : public ash::mojom::NoteTakingController,
                                  public service_manager::Service {
  public:
-  TestNoteTakingController() : binding_(this) {}
+  explicit TestNoteTakingController(
+      service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
 
   ~TestNoteTakingController() override = default;
 
@@ -185,7 +189,8 @@ class TestNoteTakingController : public ash::mojom::NoteTakingController,
     binding_.Close();
   }
 
-  mojo::Binding<ash::mojom::NoteTakingController> binding_;
+  service_manager::ServiceBinding service_binding_;
+  mojo::Binding<ash::mojom::NoteTakingController> binding_{this};
   ash::mojom::NoteTakingControllerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNoteTakingController);
@@ -244,7 +249,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   static NoteTakingHelper* helper() { return NoteTakingHelper::Get(); }
 
   TestNoteTakingController* test_note_taking_controller() {
-    return test_note_taking_controller_;
+    return test_note_taking_controller_.get();
   }
 
   NoteTakingControllerClient* note_taking_client() {
@@ -300,15 +305,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(base::Bind(
         &NoteTakingHelperTest::LaunchChromeApp, base::Unretained(this)));
 
-    auto test_note_taking_controller_ptr =
-        std::make_unique<TestNoteTakingController>();
-    test_note_taking_controller_ = test_note_taking_controller_ptr.get();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(test_note_taking_controller_ptr));
-    connector_ = connector_factory_->CreateConnector();
-
-    note_taking_client()->SetConnectorForTesting(connector_.get());
+    test_note_taking_controller_ = std::make_unique<TestNoteTakingController>(
+        connector_factory_.RegisterInstance(ash::mojom::kServiceName));
+    note_taking_client()->SetConnectorForTesting(
+        connector_factory_.GetDefaultConnector());
   }
 
   // Creates an extension.
@@ -508,10 +508,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
   ArcAppTest arc_test_;
   std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  // |test_note_taking_controller_| is owned by |connector_factory_|.
-  TestNoteTakingController* test_note_taking_controller_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<TestNoteTakingController> test_note_taking_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelperTest);
 };

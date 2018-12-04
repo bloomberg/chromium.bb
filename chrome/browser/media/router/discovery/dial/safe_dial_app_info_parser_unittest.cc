@@ -14,6 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,16 +98,14 @@ constexpr char kInvalidXmlMultipleServices[] =
 class SafeDialAppInfoParserTest : public testing::Test {
  public:
   SafeDialAppInfoParserTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()) {}
+      : data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)) {}
 
   std::unique_ptr<ParsedDialAppInfo> Parse(
       const std::string& xml,
       SafeDialAppInfoParser::ParsingResult expected_result) {
     base::RunLoop run_loop;
-    DataDecoder data_decoder(connector_.get());
+    DataDecoder data_decoder(connector_factory_.GetDefaultConnector());
     SafeDialAppInfoParser parser(&data_decoder);
     parser.Parse(xml,
                  base::BindOnce(&SafeDialAppInfoParserTest::OnParsingCompleted,
@@ -124,8 +123,8 @@ class SafeDialAppInfoParserTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
   std::unique_ptr<ParsedDialAppInfo> app_info_;
   DISALLOW_COPY_AND_ASSIGN(SafeDialAppInfoParserTest);
 };

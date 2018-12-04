@@ -26,10 +26,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -204,7 +206,9 @@ class FakeIdentityService
     : public identity::mojom::IdentityManagerInterceptorForTesting,
       public service_manager::Service {
  public:
-  explicit FakeIdentityService(MockIdentityManager* mock) : mock_(mock) {
+  FakeIdentityService(MockIdentityManager* mock,
+                      service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)), mock_(mock) {
     binder_registry_.AddInterface(
         base::BindRepeating(&FakeIdentityService::BindIdentityManagerRequest,
                             base::Unretained(this)));
@@ -249,6 +253,7 @@ class FakeIdentityService
     return nullptr;
   }
 
+  service_manager::ServiceBinding service_binding_;
   MockIdentityManager* const mock_;
   service_manager::BinderRegistry binder_registry_;
   mojo::BindingSet<identity::mojom::IdentityManager> bindings_;
@@ -285,11 +290,11 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
 
     disk_manager_ = std::make_unique<chromeos::disks::MockDiskMountManager>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<FakeIdentityService>(&mock_identity_manager_));
+    identity_service_ = std::make_unique<FakeIdentityService>(
+        &mock_identity_manager_,
+        connector_factory_.RegisterInstance(identity::mojom::kServiceName));
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        connector_factory_->CreateConnector(), account_id_);
+        connector_factory_.CreateConnector(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     host_ = std::make_unique<DriveFsHost>(
@@ -416,7 +421,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<chromeos::disks::MockDiskMountManager> disk_manager_;
   base::SimpleTestClock clock_;
   MockIdentityManager mock_identity_manager_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<FakeIdentityService> identity_service_;
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
@@ -693,7 +699,7 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
   };
   for (auto& account : unsupported_accounts) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
-        connector_factory_->CreateConnector(), account);
+        connector_factory_.CreateConnector(), account);
     host_ = std::make_unique<DriveFsHost>(
         profile_path_, host_delegate_.get(), host_delegate_.get(), &clock_,
         disk_manager_.get(), std::make_unique<base::MockOneShotTimer>());

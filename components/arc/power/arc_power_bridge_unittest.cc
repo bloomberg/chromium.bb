@@ -17,6 +17,7 @@
 #include "components/arc/test/fake_power_instance.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,19 +36,14 @@ class ArcPowerBridgeTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
     power_manager_client_->set_screen_brightness_percent(kInitialBrightness);
 
-    auto wake_lock_provider_ptr =
-        std::make_unique<device::TestWakeLockProvider>();
-    wake_lock_provider_ = wake_lock_provider_ptr.get();
-
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(wake_lock_provider_ptr));
-    connector_ = connector_factory_->CreateConnector();
+    wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>(
+        connector_factory_.RegisterInstance(device::mojom::kServiceName));
 
     bridge_service_ = std::make_unique<ArcBridgeService>();
     power_bridge_ = std::make_unique<ArcPowerBridge>(nullptr /* context */,
                                                      bridge_service_.get());
-    power_bridge_->set_connector_for_test(connector_.get());
+    power_bridge_->set_connector_for_test(
+        connector_factory_.GetDefaultConnector());
     CreatePowerInstance();
   }
 
@@ -80,6 +76,7 @@ class ArcPowerBridgeTest : public testing::Test {
     power_bridge_->OnAcquireDisplayWakeLock(type);
     power_bridge_->FlushWakeLocksForTesting();
   }
+
   void ReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) {
     power_bridge_->OnReleaseDisplayWakeLock(type);
     power_bridge_->FlushWakeLocksForTesting();
@@ -87,9 +84,8 @@ class ArcPowerBridgeTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-  device::TestWakeLockProvider* wake_lock_provider_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<device::TestWakeLockProvider> wake_lock_provider_;
 
   chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.
 

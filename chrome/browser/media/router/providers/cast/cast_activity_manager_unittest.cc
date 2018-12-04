@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,10 +60,8 @@ class ClientPresentationConnection
 class CastActivityManagerTest : public testing::Test {
  public:
   CastActivityManagerTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()),
+      : data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)),
         socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
@@ -78,7 +77,8 @@ class CastActivityManagerTest : public testing::Test {
 
     manager_ = std::make_unique<CastActivityManager>(
         &media_sink_service_, &message_handler_, router_ptr_.get(),
-        std::make_unique<DataDecoder>(connector_.get()), "hash-token");
+        std::make_unique<DataDecoder>(connector_factory_.GetDefaultConnector()),
+        "hash-token");
 
     // Make sure we get route updates.
     manager_->AddRouteQuery(MediaSource::Id());
@@ -257,8 +257,8 @@ class CastActivityManagerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
 
   MockMojoMediaRouter mock_router_;
   mojom::MediaRouterPtr router_ptr_;
