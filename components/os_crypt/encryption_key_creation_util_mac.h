@@ -31,8 +31,9 @@ class COMPONENT_EXPORT(OS_CRYPT) EncryptionKeyCreationUtilMac
 
   // os_crypt::EncryptionKeyCreationUtil:
   void OnKeyWasFound() override;
-  void OnKeyNotFound(bool new_key_stored) override;
-  void OnKeychainLookupFailed() override;
+  void OnKeyNotFound(const crypto::AppleKeychain& keychain) override;
+  void OnKeyStored(bool new_key_stored) override;
+  void OnKeychainLookupFailed(int error) override;
 
  private:
   // Asynchronously updates the preference on the main thread that the

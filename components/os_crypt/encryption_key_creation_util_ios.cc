@@ -12,8 +12,11 @@ EncryptionKeyCreationUtilIOS::~EncryptionKeyCreationUtilIOS() = default;
 
 void EncryptionKeyCreationUtilIOS::OnKeyWasFound() {}
 
-void EncryptionKeyCreationUtilIOS::OnKeyNotFound(bool new_key_stored) {}
+void EncryptionKeyCreationUtilIOS::OnKeyNotFound(
+    const crypto::AppleKeychain& keychain) {}
 
-void EncryptionKeyCreationUtilIOS::OnKeychainLookupFailed() {}
+void EncryptionKeyCreationUtilIOS::OnKeyStored(bool new_key_stored) {}
+
+void EncryptionKeyCreationUtilIOS::OnKeychainLookupFailed(int error) {}
 
 }  // namespace os_crypt

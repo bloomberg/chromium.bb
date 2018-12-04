@@ -22057,6 +22057,12 @@ Called by update_net_error_codes.py.-->
   <int value="20" label=".log"/>
 </enum>
 
+<enum name="FindPasswordResult">
+  <int value="0" label="Other error"/>
+  <int value="1" label="Found"/>
+  <int value="2" label="Not found"/>
+</enum>
+
 <enum name="FirebaseConfiguredState">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled, at First Run"/>

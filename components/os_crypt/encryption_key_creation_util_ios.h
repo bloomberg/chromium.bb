@@ -19,8 +19,9 @@ class COMPONENT_EXPORT(OS_CRYPT) EncryptionKeyCreationUtilIOS
   ~EncryptionKeyCreationUtilIOS() override;
 
   void OnKeyWasFound() override;
-  void OnKeyNotFound(bool new_key_stored) override;
-  void OnKeychainLookupFailed() override;
+  void OnKeyNotFound(const crypto::AppleKeychain& keychain) override;
+  void OnKeyStored(bool new_key_stored) override;
+  void OnKeychainLookupFailed(int error) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EncryptionKeyCreationUtilIOS);
