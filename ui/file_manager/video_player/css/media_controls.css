@@ -19,8 +19,7 @@
 }
 
 .media-button.disabled,
-paper-slider[disabled],
-paper-slider.readonly {
+cr-slider.readonly {
   pointer-events: none;
 }
 
@@ -112,7 +111,7 @@ paper-slider.readonly {
 
 /* Volume slider. */
 
-paper-slider.volume {
+cr-slider.volume {
   height: 100%;
   position: relative;
   width: 110px;

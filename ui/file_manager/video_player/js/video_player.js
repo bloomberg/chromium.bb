@@ -22,6 +22,8 @@ function FullWindowVideoControls(
   this.decodeErrorOccured = false;
 
   this.casting = false;
+  this.isRtl_ =
+      window.getComputedStyle(this.playerContainer_)['direction'] === 'rtl';
 
   var currentWindow = chrome.app.window.current();
   currentWindow.onFullscreened.addListener(this.onFullScreenChanged.bind(this));
@@ -62,17 +64,17 @@ function FullWindowVideoControls(
         break;
       case 'ArrowRight':
         if (!e.target.classList.contains('volume'))
-          this.smallSkip(true);
+          this.smallSkip(!this.isRtl_ /* forward */);
         break;
       case 'ArrowLeft':
         if (!e.target.classList.contains('volume'))
-          this.smallSkip(false);
+          this.smallSkip(this.isRtl_ /* forward */);
         break;
       case 'l':
-        this.bigSkip(true);
+        this.bigSkip(true /* forward */);
         break;
       case 'j':
-        this.bigSkip(false);
+        this.bigSkip(false /* forward */);
         break;
       case 'BrowserBack':
         chrome.app.window.current().close();
@@ -85,6 +87,9 @@ function FullWindowVideoControls(
   document.addEventListener('keypress', function(e) {
     this.inactivityWatcher_.kick();
   }.wrap(this));
+  controlsContainer.addEventListener('cr-slider-value-changed-from-ui', () => {
+    this.inactivityWatcher_.kick();
+  });
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
   var clickInProgress = false;

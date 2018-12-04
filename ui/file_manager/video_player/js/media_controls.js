@@ -101,13 +101,13 @@ function MediaControls(containerElement, onMediaError) {
   this.playButton_ = null;
 
   /**
-   * @type {PaperSliderElement}
+   * @type {CrSliderElement}
    * @private
    */
   this.progressSlider_ = null;
 
   /**
-   * @type {PaperSliderElement}
+   * @type {CrSliderElement}
    * @private
    */
   this.volume_ = null;
@@ -372,20 +372,21 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
   // Set the initial width to the minimum to reduce the flicker.
   this.updateTimeLabel_(0, 0);
 
-  this.progressSlider_ = /** @type {!PaperSliderElement} */ (
-      document.createElement('paper-slider'));
+  this.progressSlider_ =
+      /** @type {!CrSliderElement} */ (document.createElement('cr-slider'));
   this.progressSlider_.classList.add('progress', 'media-control');
   this.progressSlider_.max = MediaControls.PROGRESS_RANGE;
+  this.progressSlider_.noKeybindings = true;
   this.progressSlider_.setAttribute('aria-label',
       str('MEDIA_PLAYER_SEEK_SLIDER_LABEL'));
-  this.progressSlider_.addEventListener('change', function(event) {
-    this.onProgressChange_(this.progressSlider_.ratio / 100);
-  }.bind(this));
+  this.progressSlider_.addEventListener('dragging-changed', event => {
+    this.setSeeking_(event.detail.value);
+  });
   this.progressSlider_.addEventListener(
-      'immediate-value-change',
-      function(event) {
-        this.onProgressDrag_();
-      }.bind(this));
+      'cr-slider-value-changed-from-ui', () => {
+        this.onProgressChange_();
+        this.updateTimeFromSlider_();
+      });
   timeControls.appendChild(this.progressSlider_);
 };
 
@@ -400,11 +401,19 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
   this.updateTimeLabel_(current);
 };
 
-/**
- * @param {number} value Progress [0..1].
- * @private
- */
-MediaControls.prototype.onProgressChange_ = function(value) {
+/** @private */
+MediaControls.prototype.updateTimeFromSlider_ = function() {
+  if (!this.media_)
+    return;  // Media is detached.
+
+  if (this.media_.duration && this.progressSlider_.max > 0) {
+    this.media_.currentTime =
+        this.media_.duration * this.progressSlider_.getRatio();
+  }
+};
+
+/** @private */
+MediaControls.prototype.onProgressChange_ = function() {
   if (!this.media_)
     return;  // Media is detached.
 
@@ -413,32 +422,13 @@ MediaControls.prototype.onProgressChange_ = function(value) {
     return;
   }
 
-  this.setSeeking_(false);
-
   // Re-start playing the video when the seek bar is moved from ending point.
   if (this.media_.ended)
     this.play();
 
-  var current = this.media_.duration * value;
-  this.media_.currentTime = current;
-  this.updateTimeLabel_(current);
-};
-
-/**
- * @private
- */
-MediaControls.prototype.onProgressDrag_ = function() {
-  if (!this.media_)
-    return;  // Media is detached.
-
-  this.setSeeking_(true);
-
-  // Show seeking position instead of playing position while dragging.
   if (this.media_.duration && this.progressSlider_.max > 0) {
-    var immediateRatio =
-        this.progressSlider_.immediateValue / this.progressSlider_.max;
-    var current = this.media_.duration * immediateRatio;
-    this.updateTimeLabel_(current);
+    this.updateTimeLabel_(
+        this.media_.duration * this.progressSlider_.getRatio());
   }
 };
 
@@ -454,7 +444,8 @@ MediaControls.prototype.skip_ = function(sec) {
     this.progressSlider_.value = Math.max(Math.min(
         this.progressSlider_.value + stepsToSkip,
         this.progressSlider_.max), 0);
-    this.onProgressChange_(this.progressSlider_.ratio / 100);
+    this.onProgressChange_();
+    this.updateTimeFromSlider_();
   }
 };
 
@@ -578,17 +569,13 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
   this.soundButton_.setAttribute('aria-label',
       str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
 
-  this.volume_ = /** @type {!PaperSliderElement} */ (
-      document.createElement('paper-slider'));
+  this.volume_ =
+      /** @type {!CrSliderElement} */ (document.createElement('cr-slider'));
   this.volume_.classList.add('volume', 'media-control');
   this.volume_.setAttribute('aria-label',
       str('MEDIA_PLAYER_VOLUME_SLIDER_LABEL'));
-  this.volume_.addEventListener('change', function(event) {
-    this.onVolumeChange_(this.volume_.ratio / 100);
-  }.bind(this));
-  this.volume_.addEventListener('immediate-value-change', function(event) {
-    this.onVolumeDrag_();
-  }.bind(this));
+  this.volume_.addEventListener(
+      'cr-slider-value-changed-from-ui', this.onVolumeChange_.bind(this));
   this.loadVolumeControlState();
   volumeControls.appendChild(this.volume_);
 };
@@ -655,25 +642,15 @@ MediaControls.prototype.reflectVolumeToUi_ = function() {
 
 /**
  * Handles change event of the volume slider.
- * @param {number} value Volume [0..1].
  * @private
  */
-MediaControls.prototype.onVolumeChange_ = function(value) {
+MediaControls.prototype.onVolumeChange_ = function() {
   if (!this.media_)
     return;  // Media is detached.
 
-  this.volumeModel_.onVolumeChanged(value);
+  this.volumeModel_.onVolumeChanged(this.volume_.getRatio());
   this.saveVolumeControlState();
   this.reflectVolumeToUi_();
-};
-
-/**
- * @private
- */
-MediaControls.prototype.onVolumeDrag_ = function() {
-  if (this.media_.volume !== 0) {
-    this.volumeModel_.onVolumeChanged(this.media_.volume);
-  }
 };
 
 /**
