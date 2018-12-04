@@ -3184,7 +3184,6 @@ jumbo_split_static_library("browser") {
       "signin/signin_error_notifier_ash.h",
       "signin/signin_error_notifier_factory_ash.cc",
       "signin/signin_error_notifier_factory_ash.h",
-      "speech/tts_chromeos.cc",
       "sync/sync_error_notifier_ash.cc",
       "sync/sync_error_notifier_ash.h",
       "sync/sync_error_notifier_factory_ash.cc",
