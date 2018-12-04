@@ -4237,7 +4237,6 @@ test("unit_tests") {
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
-      "../test/data/resource.rc",
     ]
     deps += [
       "//chrome:other_version",
@@ -5052,7 +5051,6 @@ if (!is_android) {
         "//ui/resources/cursors/vertical_text.cur",
         "//ui/resources/cursors/zoom_in.cur",
         "//ui/resources/cursors/zoom_out.cur",
-        "data/resource.rc",
       ]
       deps += [
         "//chrome:other_version",
@@ -5430,7 +5428,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/two_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/two_client_uss_sync_test.cc",
       "../browser/sync/test/integration/two_client_wallet_sync_test.cc",
-      "data/resource.rc",
     ]
 
     data = [
@@ -5542,7 +5539,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/performance/sync_timing_helper.h",
       "../browser/sync/test/integration/performance/typed_urls_sync_perf_test.cc",
       "base/browser_perf_tests_main.cc",
-      "data/resource.rc",
     ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
