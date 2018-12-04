@@ -281,12 +281,16 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     layer_bounds.SetLocation(*offset_from_root);
   } else {
     layer_bounds.SetLocation(LayoutPoint(context.sub_pixel_accumulation));
-    layer_bounds.MoveBy(fragment_data.PaintOffset());
-    GeometryMapper::SourceToDestinationRect(
-        fragment_data.PreTransform(),
-        context.root_fragment->LocalBorderBoxProperties().Transform(),
-        layer_bounds);
-    layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
+    if (&layer_ == context.root_layer) {
+      DCHECK_EQ(&fragment_data, context.root_fragment);
+    } else {
+      layer_bounds.MoveBy(fragment_data.PaintOffset());
+      GeometryMapper::SourceToDestinationRect(
+          fragment_data.PreTransform(),
+          context.root_fragment->LocalBorderBoxProperties().Transform(),
+          layer_bounds);
+      layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
+    }
   }
 
   CalculateBackgroundClipRectWithGeometryMapper(
