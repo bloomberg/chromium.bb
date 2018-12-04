@@ -77,7 +77,7 @@ function getMockFileManager() {
       }
     },
     namingController: {},
-    crostini: new Crostini(),
+    crostini: new CrostiniImpl(),
   };
   result.crostini.init(result.volumeManager);
   return result;
@@ -484,7 +484,7 @@ function testMaybeShareCrostiniOrShowDialog() {
   const sharedDir = new MockDirectoryEntry(mockFsDownloads, '/shared');
   const shared = new MockFileEntry(mockFsDownloads, '/shared/file');
 
-  const crostini = new Crostini();
+  const crostini = new CrostiniImpl();
   crostini.init(volumeManagerDownloads);
   crostini.setEnabled(true);
   crostini.registerSharedPath(sharedDir, volumeManagerDownloads);

@@ -34,13 +34,17 @@ function setUp() {
   cr.ui.decorate('command', cr.ui.Command);
 }
 
+/**
+ * Returns a Crostini implementation.
+ * @return {!Crostini}
+ */
 function createCrostini() {
-  const crostini = new Crostini();
-  crostini.init({
-    getLocationInfo: () => {
-      return 'test';
-    }
-  });
+  const crostini = new CrostiniImpl();
+  crostini.init(/** @type {!VolumeManager} */ ({
+    getLocationInfo: (entry) => {
+      return /** @type {!EntryLocation} */ ('test');
+    },
+  }));
   return crostini;
 }
 
