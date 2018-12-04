@@ -444,9 +444,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
   }
 
-  // This method doesn't compare the all members.
-  static bool Compare(const ResourceResponse&, const ResourceResponse&);
-
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
 
@@ -595,13 +592,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // ExtraData associated with the response.
   scoped_refptr<ExtraData> extra_data_;
 };
-
-inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) {
-  return ResourceResponse::Compare(a, b);
-}
-inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) {
-  return !(a == b);
-}
 
 }  // namespace blink
 
