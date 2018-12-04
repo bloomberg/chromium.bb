@@ -18,14 +18,9 @@ namespace gpu {
 class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
     : public gl::GLSurfaceEGL {
  public:
-  DirectCompositionChildSurfaceWin(const gfx::Size& size,
-                                   bool is_hdr,
-                                   bool has_alpha,
-                                   bool use_dcomp_surface,
-                                   bool allow_tearing);
+  DirectCompositionChildSurfaceWin();
 
   // GLSurfaceEGL implementation.
-  using GLSurface::Initialize;
   bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
   gfx::Size GetSize() override;
@@ -39,6 +34,11 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void SetVSyncEnabled(bool enabled) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              ColorSpace color_space,
+              bool has_alpha) override;
+  bool SetEnableDCLayers(bool enable) override;
 
   const Microsoft::WRL::ComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;
@@ -54,13 +54,16 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   ~DirectCompositionChildSurfaceWin() override;
 
  private:
-  // Releases previous surface or swap chain, and initializes new surface or
-  // swap chain.
-  bool InitializeSurface();
   // Release the texture that's currently being drawn to. If will_discard is
   // true then the surface should be discarded without swapping any contents
   // to it. Returns false if this fails.
   bool ReleaseDrawTexture(bool will_discard);
+
+  gfx::Size size_ = gfx::Size(1, 1);
+  bool enable_dc_layers_ = false;
+  bool is_hdr_ = false;
+  bool has_alpha_ = true;
+  bool vsync_enabled_ = true;
 
   // This is a placeholder surface used when not rendering to the
   // DirectComposition surface.
@@ -70,14 +73,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   // outside of a BeginDraw/EndDraw pair.
   EGLSurface real_surface_ = 0;
   bool first_swap_ = true;
-  const gfx::Size size_;
-  const bool is_hdr_;
-  const bool has_alpha_;
-  const bool use_dcomp_surface_;
-  const bool allow_tearing_;
   gfx::Rect swap_rect_;
   gfx::Vector2d draw_offset_;
-  bool vsync_enabled_ = true;
 
   // This is a number that increments once for every EndDraw on a surface, and
   // is used to determine when the contents have changed so Commit() needs to
@@ -89,10 +86,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> draw_texture_;
-
-  // Keep track of whether the texture has been rendered to, as the first draw
-  // to it must overwrite the entire thing.
-  bool has_been_rendered_to_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionChildSurfaceWin);
 };

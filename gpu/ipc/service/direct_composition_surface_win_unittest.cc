@@ -155,7 +155,7 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   scoped_refptr<DirectCompositionSurfaceWin> surface1(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface1->Initialize());
+  EXPECT_TRUE(surface1->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context1 = gl::init::CreateGLContext(
       nullptr, surface1.get(), gl::GLContextAttribs());
@@ -191,7 +191,7 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   scoped_refptr<DirectCompositionSurfaceWin> surface2(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface2->Initialize());
+  EXPECT_TRUE(surface2->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context2 = gl::init::CreateGLContext(
       nullptr, surface2.get(), gl::GLContextAttribs());
@@ -225,7 +225,7 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -235,38 +235,37 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
   EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
 
-  // First SetDrawRectangle must be full size of surface for DXGI
-  // swapchain.
+  // First SetDrawRectangle must be full size of surface for DXGI swapchain.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
 
-  // SetDrawRectangle can't be called again until swap.
+  // SetDrawRectangle and SetEnableDCLayers can't be called again until swap.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
-
   EXPECT_TRUE(context->IsCurrent(surface.get()));
 
   surface->SetEnableDCLayers(true);
 
-  // Surface switched to use IDCompositionSurface, so must draw to
-  // entire surface.
-  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(context->IsCurrent(surface.get()));
-  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
-
-  surface->SetEnableDCLayers(false);
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
-
-  // Surface switched to use IDXGISwapChain, so must draw to entire
+  // Surface switched to use IDCompositionSurface, so must draw to entire
   // surface.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_TRUE(context->IsCurrent(surface.get()));
+
+  surface->SetEnableDCLayers(false);
+
+  // Surface switched to use IDXGISwapChain, so must draw to entire surface.
+  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_TRUE(context->IsCurrent(surface.get()));
 
   context = nullptr;
   DestroySurface(std::move(surface));
@@ -282,7 +281,7 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -329,7 +328,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -416,7 +415,7 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -490,7 +489,7 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -558,7 +557,7 @@ TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
   scoped_refptr<DirectCompositionSurfaceWin> surface(
       new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
                                       ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
 
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
@@ -689,7 +688,7 @@ class DirectCompositionPixelTest : public testing::Test {
 
     surface_ = new DirectCompositionSurfaceWin(nullptr, delegate_.AsWeakPtr(),
                                                window_.hwnd());
-    EXPECT_TRUE(surface_->Initialize());
+    EXPECT_TRUE(surface_->Initialize(gl::GLSurfaceFormat()));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                          gl::GLContextAttribs());
     EXPECT_TRUE(context_->MakeCurrent(surface_.get()));
@@ -1207,16 +1206,16 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
               surface_->SwapBuffers(base::DoNothing()));
-
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface_->GetLayerSwapChainForTesting(0);
-    ASSERT_TRUE(swap_chain);
-
-    DXGI_SWAP_CHAIN_DESC1 desc;
-    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
-    EXPECT_EQ(desc.Width, 50u);
-    EXPECT_EQ(desc.Height, 50u);
   }
+
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface_->GetLayerSwapChainForTesting(0);
+  ASSERT_TRUE(swap_chain);
+
+  DXGI_SWAP_CHAIN_DESC1 desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
+  EXPECT_EQ(desc.Width, 50u);
+  EXPECT_EQ(desc.Height, 50u);
 
   {
     ui::DCRendererLayerParams params;
@@ -1228,16 +1227,14 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
               surface_->SwapBuffers(base::DoNothing()));
-
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface_->GetLayerSwapChainForTesting(0).Get();
-    ASSERT_TRUE(swap_chain);
-
-    DXGI_SWAP_CHAIN_DESC1 desc;
-    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
-    EXPECT_EQ(desc.Width, 30u);
-    EXPECT_EQ(desc.Height, 30u);
   }
+
+  // Swap chain isn't recreated on resize.
+  ASSERT_TRUE(surface_->GetLayerSwapChainForTesting(0));
+  EXPECT_EQ(swap_chain.Get(), surface_->GetLayerSwapChainForTesting(0).Get());
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc1(&desc)));
+  EXPECT_EQ(desc.Width, 30u);
+  EXPECT_EQ(desc.Height, 30u);
 }
 
 }  // namespace

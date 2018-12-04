@@ -54,10 +54,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
 
-  // Returns true if swap chain tearing is supported for variable refresh rate
-  // displays.  Tearing is only used if vsync is also disabled via command line.
-  static bool IsSwapChainTearingSupported();
-
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
   static void SetPreferNV12OverlaysForTesting();
@@ -65,7 +61,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.
-  using GLSurface::Initialize;
   bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
   gfx::Size GetSize() override;
@@ -113,24 +108,13 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   ~DirectCompositionSurfaceWin() override;
 
  private:
-  bool RecreateRootSurface();
-
+  HWND window_ = nullptr;
   ChildWindowWin child_window_;
 
-  HWND window_ = nullptr;
-  // This is a placeholder surface used when not rendering to the
-  // DirectComposition surface.
-  EGLSurface default_surface_ = 0;
-
-  gfx::Size size_ = gfx::Size(1, 1);
-  bool enable_dc_layers_ = false;
-  bool is_hdr_ = false;
-  bool has_alpha_ = true;
-  bool vsync_enabled_ = true;
-  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
-  std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+  std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
