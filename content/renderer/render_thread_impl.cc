@@ -1888,7 +1888,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
 }
 
 void RenderThreadImpl::RequestNewLayerTreeFrameSink(
-    int routing_id,
+    int widget_routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
@@ -1933,7 +1933,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash()) {
-    if (!RendererWindowTreeClient::Get(routing_id)) {
+    if (!RendererWindowTreeClient::Get(widget_routing_id)) {
       std::move(callback).Run(nullptr);
       return;
     }
@@ -1944,12 +1944,13 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       std::move(callback).Run(nullptr);
       return;
     }
-    RendererWindowTreeClient::Get(routing_id)
+    RendererWindowTreeClient::Get(widget_routing_id)
         ->RequestLayerTreeFrameSink(
             gpu_->CreateContextProvider(std::move(channel)),
             GetGpuMemoryBufferManager(), std::move(callback));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        routing_id, std::move(render_frame_metadata_observer_client_request),
+        widget_routing_id,
+        std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
     return;
   }
@@ -1964,10 +1965,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (is_gpu_compositing_disabled_) {
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(
-        routing_id, std::move(compositor_frame_sink_request),
+        widget_routing_id, std::move(compositor_frame_sink_request),
         std::move(compositor_frame_sink_client));
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        routing_id, std::move(render_frame_metadata_observer_client_request),
+        widget_routing_id,
+        std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
     std::move(callback).Run(
         std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
@@ -2026,9 +2028,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (layout_test_deps_) {
     if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
       std::move(callback).Run(layout_test_deps_->CreateLayerTreeFrameSink(
-          routing_id, std::move(gpu_channel_host), std::move(context_provider),
-          std::move(worker_context_provider), GetGpuMemoryBufferManager(),
-          this));
+          widget_routing_id, std::move(gpu_channel_host),
+          std::move(context_provider), std::move(worker_context_provider),
+          GetGpuMemoryBufferManager(), this));
       return;
     } else if (!params.compositor_task_runner) {
       // The frame sink provider expects a compositor task runner, but we might
@@ -2040,12 +2042,13 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    RenderWidget* widget = RenderWidget::FromRoutingID(routing_id);
+    RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
     if (widget) {
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
-          sync_message_filter(), routing_id, g_next_layer_tree_frame_sink_id++,
+          sync_message_filter(), widget_routing_id,
+          g_next_layer_tree_frame_sink_id++,
           std::move(params.synthetic_begin_frame_source),
           widget->widget_input_handler_manager()
               ->GetSynchronousCompositorRegistry(),
@@ -2057,10 +2060,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 #endif
   frame_sink_provider_->CreateForWidget(
-      routing_id, std::move(compositor_frame_sink_request),
+      widget_routing_id, std::move(compositor_frame_sink_request),
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-      routing_id, std::move(render_frame_metadata_observer_client_request),
+      widget_routing_id,
+      std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   std::move(callback).Run(
@@ -2076,11 +2080,12 @@ RenderThreadImpl::GetAssociatedInterfaceRegistry() {
 
 std::unique_ptr<cc::SwapPromise>
 RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
-    int32_t routing_id,
+    int32_t widget_routing_id,
     std::unique_ptr<viz::CopyOutputRequest> request) {
   DCHECK(layout_test_deps_ &&
          !layout_test_deps_->UseDisplayCompositorPixelDump());
-  return layout_test_deps_->RequestCopyOfOutput(routing_id, std::move(request));
+  return layout_test_deps_->RequestCopyOfOutput(widget_routing_id,
+                                                std::move(request));
 }
 
 std::unique_ptr<blink::WebMediaStreamCenter>
