@@ -3325,6 +3325,12 @@ be describing additional metrics about the same event.
       headers were received. Recorded only for the main frame request. In ms.
     </summary>
   </metric>
+  <metric name="MainFrameResource.SocketReused">
+    <summary>
+      True if the socket was reused when establishing connection to the origin
+      of the main frame request.
+    </summary>
+  </metric>
   <metric name="Navigation.PageEndReason">
     <summary>
       The |page_load_metrics::PageEndReason| for the main frame navigation of
