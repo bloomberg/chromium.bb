@@ -669,7 +669,6 @@ public class NewTabPageTest {
     }
 
     @Test
-    @DisabledTest(message = "https://crbug.com/909978")
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
