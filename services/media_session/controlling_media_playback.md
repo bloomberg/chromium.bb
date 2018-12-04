@@ -49,9 +49,10 @@ still behave as individual media sessions. Ducking is unaffected by group ids.
 # Active Media Session
 
 The active media session is the session that would be controlled if there is a
-user action (e.g. pressing the play/pause key on a keyboard). This is the most
-recent "Gain" media session that requested audio focus. We ignore transient and
-ducking sessions since they are temporary.
+user action (e.g. pressing the play/pause key on a keyboard). Part of the state
+that the media session exposes is `is_controllable`. If this boolean is true
+then the media session can be controlled by the user. The active media session
+will be the top most controllable media session.
 
 # Audio Focus Observer
 

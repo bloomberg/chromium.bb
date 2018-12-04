@@ -59,6 +59,7 @@ class MediaControllerTest : public testing::Test {
 
 TEST_F(MediaControllerTest, ActiveController_Suspend) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -76,6 +77,9 @@ TEST_F(MediaControllerTest, ActiveController_Suspend) {
 TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_Top) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -102,10 +106,14 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_Top) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_UnderTransient) {
+TEST_F(MediaControllerTest,
+       ActiveController_Multiple_Abandon_UnderNonControllable) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
   test::MockMediaSession media_session_3;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -127,7 +135,7 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_UnderTransient) {
     test::MockMediaSessionMojoObserver observer_2(media_session_2);
     test::MockMediaSessionMojoObserver observer_3(media_session_3);
 
-    RequestAudioFocus(media_session_3, mojom::AudioFocusType::kGainTransient);
+    RequestAudioFocus(media_session_3, mojom::AudioFocusType::kGain);
 
     observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
     observer_3.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
@@ -142,9 +150,12 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_Abandon_UnderTransient) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Multiple_Gain) {
+TEST_F(MediaControllerTest, ActiveController_Multiple_Controllable) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -169,9 +180,11 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_Gain) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransient) {
+TEST_F(MediaControllerTest, ActiveController_Multiple_NonControllable) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -205,9 +218,15 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransient) {
   EXPECT_EQ(4, media_session_1.add_observer_count());
 }
 
-TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransientMayDuck) {
+TEST_F(MediaControllerTest, ActiveController_Multiple_UpdateControllable) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
+
+  EXPECT_EQ(0, media_session_1.add_observer_count());
+  EXPECT_EQ(0, media_session_2.add_observer_count());
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -216,30 +235,28 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_GainTransientMayDuck) {
   }
 
   EXPECT_EQ(2, media_session_1.add_observer_count());
+  EXPECT_EQ(0, media_session_2.add_observer_count());
 
   {
-    test::MockMediaSessionMojoObserver observer_1(media_session_1);
-    test::MockMediaSessionMojoObserver observer_2(media_session_2);
-
-    RequestAudioFocus(media_session_2,
-                      mojom::AudioFocusType::kGainTransientMayDuck);
-
-    observer_1.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
-    observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGainTransient);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
-  // The top session has changed but the controller is still bound to
-  // |media_session_1|. We should make sure we do not add an observer if we
-  // already have one.
+  EXPECT_EQ(2, media_session_1.add_observer_count());
+  EXPECT_EQ(2, media_session_2.add_observer_count());
+
+  media_session_2.SetIsControllable(false);
+  media_session_2.FlushForTesting();
+
   EXPECT_EQ(3, media_session_1.add_observer_count());
+  EXPECT_EQ(2, media_session_2.add_observer_count());
 
-  {
-    test::MockMediaSessionMojoObserver observer(media_session_1);
-    controller()->Suspend();
-    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
-  }
+  media_session_1.SetIsControllable(false);
+  media_session_1.FlushForTesting();
 
-  EXPECT_EQ(4, media_session_1.add_observer_count());
+  EXPECT_EQ(3, media_session_1.add_observer_count());
+  EXPECT_EQ(2, media_session_2.add_observer_count());
 }
 
 TEST_F(MediaControllerTest, ActiveController_Suspend_Noop) {
@@ -248,6 +265,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop) {
 
 TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -268,6 +286,7 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
 
 TEST_F(MediaControllerTest, ActiveController_SuspendResume) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -290,6 +309,7 @@ TEST_F(MediaControllerTest, ActiveController_SuspendResume) {
 
 TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Playing) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -306,6 +326,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Playing) {
 
 TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -328,6 +349,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
 
 TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -345,6 +367,7 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
 
 TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Paused) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session);
@@ -368,6 +391,9 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Paused) {
 TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
 
   {
     test::MockMediaSessionMojoObserver observer(media_session_1);
@@ -406,6 +432,8 @@ TEST_F(MediaControllerTest, ActiveController_Observer_StateTransition) {
 
 TEST_F(MediaControllerTest, ActiveController_PreviousTrack) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   EXPECT_EQ(0, media_session.prev_track_count());
 
   {
@@ -423,6 +451,8 @@ TEST_F(MediaControllerTest, ActiveController_PreviousTrack) {
 
 TEST_F(MediaControllerTest, ActiveController_NextTrack) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   EXPECT_EQ(0, media_session.next_track_count());
 
   {
@@ -440,6 +470,8 @@ TEST_F(MediaControllerTest, ActiveController_NextTrack) {
 
 TEST_F(MediaControllerTest, ActiveController_Seek) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   EXPECT_EQ(0, media_session.seek_count());
 
   {
@@ -463,6 +495,8 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Abandoned) {
   metadata.album = base::ASCIIToUTF16("album");
 
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   base::Optional<MediaMetadata> test_metadata(metadata);
 
   {
@@ -482,6 +516,8 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Abandoned) {
 
 TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_Empty) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   base::Optional<MediaMetadata> test_metadata;
 
   {
@@ -504,6 +540,8 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
   metadata.album = base::ASCIIToUTF16("album");
 
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   base::Optional<MediaMetadata> test_metadata(metadata);
 
   {
@@ -521,6 +559,8 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
 
 TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_Empty) {
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   base::Optional<MediaMetadata> test_metadata;
 
   {
@@ -544,6 +584,8 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_AddObserver_WithInfo) {
   metadata.album = base::ASCIIToUTF16("album");
 
   test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
   base::Optional<MediaMetadata> test_metadata(metadata);
 
   {
