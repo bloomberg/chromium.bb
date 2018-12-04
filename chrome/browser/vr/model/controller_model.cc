@@ -8,17 +8,7 @@ namespace vr {
 
 ControllerModel::ControllerModel() = default;
 
-ControllerModel::ControllerModel(const ControllerModel& other)
-    : transform(other.transform),
-      laser_direction(other.laser_direction),
-      laser_origin(other.laser_origin),
-      touchpad_button_state(other.touchpad_button_state),
-      app_button_state(other.app_button_state),
-      home_button_state(other.home_button_state),
-      opacity(other.opacity),
-      resting_in_viewport(other.resting_in_viewport),
-      handedness(other.handedness),
-      battery_level(other.battery_level) {}
+ControllerModel::ControllerModel(const ControllerModel& other) = default;
 
 ControllerModel::~ControllerModel() = default;
 
