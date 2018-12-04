@@ -42,7 +42,7 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_impl_all_java"
+  target = ":cronet_impl_native_base_java"
   header_output = _jni_registration_header
   sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
@@ -329,10 +329,11 @@ cronet_impl_native_java_srcjar_deps = [
 ]
 
 cronet_impl_native_java_deps_to_package = [
+  ":cronet_urlconnection_impl_java",
   "//base:base_java",
+  "//base:jni_java",
   "//net/android:net_java",
   "//url:url_java",
-  ":cronet_urlconnection_impl_java",
 ]
 
 android_library("cronet_urlconnection_impl_java") {
@@ -468,8 +469,13 @@ android_java_prebuilt("package_impl_common_java") {
   ]
 }
 
-android_java_prebuilt("package_impl_native_java") {
+java_prebuilt("package_impl_native_java") {
+  # This target is a java_prebuilt instead of a android_java_prebuilt so we
+  # don't filter out GEN_JNI which is part of jar_excluded_patterns in
+  # android_java_prebuilt.
   jar_path = "$_package_dir/cronet_impl_native_java.jar"
+  supports_android = true
+  requires_android = true
   deps = [
     ":package_api_java",
     ":package_impl_common_java",
