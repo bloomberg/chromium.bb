@@ -266,12 +266,6 @@ StoragePartition* GetStoragePartitionFromConfig(
 void SaveSessionStateOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     AppCacheServiceImpl* appcache_service) {
-  if (context_getter) {
-    net::URLRequestContext* context = context_getter->GetURLRequestContext();
-    context->channel_id_service()
-        ->GetChannelIDStore()
-        ->SetForceKeepSessionState();
-  }
   appcache_service->set_force_keep_session_state();
 }
 

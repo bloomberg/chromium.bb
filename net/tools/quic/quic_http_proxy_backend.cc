@@ -168,8 +168,8 @@ void QuicHttpProxyBackend::InitializeURLRequestContext() {
           ProxyConfigWithAnnotation::CreateDirect()));
 #endif
 
-  // Disable net::CookieStore and net::ChannelIDService.
-  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
+  // Disable net::CookieStore.
+  context_builder.SetCookieStore(nullptr);
   context_ = context_builder.Build();
 }
 
