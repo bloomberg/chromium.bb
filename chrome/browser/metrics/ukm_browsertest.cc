@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, RegularPlusIncognitoCheck) {
   // Client ID should not have been reset.
   EXPECT_EQ(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, IncognitoPlusRegularCheck) {
   CloseBrowserSynchronously(incognito_browser);
   EXPECT_TRUE(ukm_enabled());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, RegularPlusGuestCheck) {
   // Client ID should not have been reset.
   EXPECT_EQ(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(regular_browser);
 }
 
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
   // Client ID should not have been reset.
   EXPECT_EQ(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
   // Client ID should have been reset.
   EXPECT_NE(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
             report.system_profile().hardware().hardware_class());
 #endif  // defined(OS_CHROMEOS)
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -651,7 +651,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
   EXPECT_EQ(SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G,
             report.system_profile().network().max_effective_connection_type());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
   EXPECT_TRUE(ukm_enabled());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(browser);
 }
 
@@ -708,7 +708,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
     EXPECT_NE(original_client_id, client_id());
   }
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -748,10 +748,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   EXPECT_TRUE(ukm_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
-  harness2->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
-  harness1->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness2->service()->GetUserSettings()->SetSyncRequested(false);
+  harness1->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(browser2);
   CloseBrowserSynchronously(browser1);
 }
@@ -781,7 +779,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
   // Client ID should not be reset.
   EXPECT_EQ(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -816,10 +814,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   EXPECT_TRUE(ukm_extensions_enabled());
   EXPECT_EQ(original_client_id, client_id());
 
-  harness2->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
-  harness1->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness2->service()->GetUserSettings()->SetSyncRequested(false);
+  harness1->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(browser2);
   CloseBrowserSynchronously(browser1);
 }
@@ -959,7 +955,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestUnifiedConsentDisabled,
   // Client ID should be reset.
   EXPECT_NE(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -986,7 +982,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleSyncSignoutCheck) {
   EXPECT_FALSE(ukm_enabled());
   EXPECT_NE(original_client_id, client_id());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 #endif  // !OS_CHROMEOS
@@ -1018,10 +1014,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiSyncSignoutCheck) {
   EXPECT_FALSE(ukm_enabled());
   EXPECT_NE(original_client_id, client_id());
 
-  harness2->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
-  harness1->service()->RequestStop(
-      browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness2->service()->GetUserSettings()->SetSyncRequested(false);
+  harness1->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(browser2);
   CloseBrowserSynchronously(browser1);
 }
@@ -1040,7 +1034,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, ServiceListenerInitFailedCheck) {
 
   Browser* sync_browser = CreateBrowser(profile);
   EXPECT_FALSE(ukm_enabled());
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -1065,7 +1059,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsReportingCheck) {
   Browser* sync_browser = CreateBrowser(profile);
   EXPECT_TRUE(ukm_enabled());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -1097,7 +1091,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, HistoryDeleteCheck) {
   EXPECT_EQ(original_client_id, client_id());
   EXPECT_TRUE(ukm_enabled());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
@@ -1123,7 +1117,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
 
   // Turn off Sync-the-feature by user choice. The machinery should start up
   // again in transport-only mode.
-  sync_service->RequestStop(syncer::SyncService::KEEP_DATA);
+  sync_service->GetUserSettings()->SetSyncRequested(false);
   ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
 
@@ -1156,7 +1150,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   EXPECT_EQ(unified_consent::IsUnifiedConsentFeatureEnabled(), ukm_enabled());
 
   // Finally, turn Sync-the-feature on again.
-  sync_service->RequestStart();
+  sync_service->GetUserSettings()->SetSyncRequested(true);
   ASSERT_TRUE(harness->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
@@ -1227,7 +1221,7 @@ IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
             UkmConsentParamBrowserTest::IsMetricsAndCrashReportingEnabled());
   EXPECT_EQ(is_enabled, ukm_enabled());
 
-  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
 
