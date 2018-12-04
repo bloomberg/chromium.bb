@@ -138,7 +138,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Retrieve the bounds of the View, in screen coordinates.
   virtual gfx::Rect GetViewBounds() const = 0;
 
-  // Returns the currently selected text.
+  // Returns the currently selected text in both of editable text fields and
+  // non-editable texts.
   virtual base::string16 GetSelectedText() = 0;
 
   // This only returns non-null on platforms that implement touch
