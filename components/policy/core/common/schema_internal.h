@@ -35,6 +35,10 @@ struct POLICY_EXPORT SchemaNode {
   //
   // Otherwise extra is -1 and is invalid.
   int extra;
+
+  // True if this value is sensitive and should be masked before displaying it
+  // to the user.
+  bool is_sensitive_value;
 };
 
 // Represents an entry of a map policy.
@@ -122,12 +126,6 @@ union POLICY_EXPORT RestrictionNode {
   } string_pattern_restriction;
 };
 
-// Contains metadata for a SchemaNode. This is separate from SchemaNode, because
-// schemas which don't use metadata will not have this.
-struct SchemaNodeMetadata {
-  bool is_sensitive_value;
-};
-
 // Contains arrays of related nodes. All of the offsets in these nodes reference
 // other nodes in these arrays.
 struct POLICY_EXPORT SchemaData {
@@ -140,10 +138,6 @@ struct POLICY_EXPORT SchemaData {
   const int* int_enums;
   const char* const* string_enums;
   int validation_schema_root_index;
-
-  // May be nullptr. If this is not nullptr, uses the same indices as
-  // |schema_nodes|.
-  const SchemaNodeMetadata* schema_nodes_metadata;
 };
 
 }  // namespace internal

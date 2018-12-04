@@ -703,22 +703,17 @@ class SchemaNodesGenerator:
     f.write('const internal::SchemaNode kSchemas[] = {\n'
             '//  Type                          Extra\n')
     for schema_node in self.schema_nodes:
-      comment = ('\n' + ' ' * 44 + '// ').join(schema_node.comments)
-      f.write('  { base::Value::%-18s %3d },  // %s\n' %
-              (schema_node.schema_type + ',', schema_node.extra, comment))
-    f.write('};\n\n')
-
-    f.write('const internal::SchemaNodeMetadata kSchemaNodeMetadata[] = {\n')
-    f.write('//   sensitive_data\n')
-    for schema_node in self.schema_nodes:
-      f.write('  { %s },\n' % (str(schema_node.is_sensitive_value).lower()))
+      comment = ('\n' + ' ' * 51 + '// ').join(schema_node.comments)
+      f.write('  { base::Value::%-18s %3d, %-5s },  // %s\n' %
+              (schema_node.schema_type + ',', schema_node.extra,
+               str(schema_node.is_sensitive_value).lower(), comment))
     f.write('};\n\n')
 
     if self.property_nodes:
       f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
               '//  Property                                          #Schema\n')
       for property_node in self.property_nodes:
-        f.write('  { %-50s %6d },\n' % (property_node.key + ',',
+        f.write('  { %-64s %6d },\n' % (property_node.key + ',',
                                         property_node.schema))
       f.write('};\n\n')
 
@@ -768,7 +763,6 @@ class SchemaNodesGenerator:
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
     f.write('  %d,  // validation_schema root index\n' %
             self.validation_schema_root_index)
-    f.write('  kSchemaNodeMetadata,\n')
     f.write('};\n\n')
 
   def GetByID(self, id_str):

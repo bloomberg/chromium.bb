@@ -584,15 +584,14 @@ TEST(SchemaTest, Wrap) {
   const internal::SchemaData kData = {
       kSchemas,  kPropertyNodes, kProperties,  kRestriction,
       kRequired, kIntEnums,      kStringEnums,
-      -1,       // validation_schema_root_index
-      nullptr,  // schema_nodes_metadata
+      -1  // validation_schema_root_index
   };
 
   Schema schema = Schema::Wrap(&kData);
   ASSERT_TRUE(schema.valid());
   EXPECT_EQ(base::Value::Type::DICTIONARY, schema.type());
 
-  // Wrapped schemas have no |SchemaNodeMetadata| elements.
+  // Wrapped schemas have no sensitive values.
   EXPECT_FALSE(schema.IsSensitiveValue());
 
   struct {
