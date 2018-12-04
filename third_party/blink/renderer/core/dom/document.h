@@ -640,24 +640,21 @@ class CORE_EXPORT Document : public ContainerNode,
   //
   // |chrome_client| is used to synchronously get user consent (via a modal
   // javascript dialog) to allow the unload to proceed if the beforeunload
-  // handler returns a non-null value, indicating unsaved state.
+  // handler returns a non-null value, indicating unsaved state. If a
+  // null |chrome_client| is provided and the beforeunload returns a non-null
+  // value this function will automatically return false, indicating that the
+  // unload should not proceed. A null chrome client is set to by the freezing
+  // logic, which uses this to determine if a non-empty beforeunload handler
+  // is present before allowing discarding to proceed.
   //
   // |is_reload| indicates if the beforeunload is being triggered because of a
   // reload operation, otherwise it is assumed to be a page close or navigation.
   //
-  // If |auto_cancel| is true and the beforeunload returns a non-null value then
-  // the |chrome_client| will not be invoked, and this function will
-  // automatically return false, indicating that the unload should not proceed.
-  // This is set to true by the freezing logic, which uses this to determine if
-  // a non-empty beforeunload handler is present before allowing discarding to
-  // proceed.
-  //
   // |did_allow_navigation| is set to reflect the choice made by the user via
   // the modal dialog. The value is meaningless if |auto_cancel|
   // is true, in which case it will always be set to false.
-  bool DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
+  bool DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                  bool is_reload,
-                                 bool auto_cancel,
                                  bool& did_allow_navigation);
   void DispatchUnloadEvents();
 

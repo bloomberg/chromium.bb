@@ -580,8 +580,7 @@ void LocalFrame::DidFreeze() {
       // handler indicating potentially unsaved user state.
       bool unused_did_allow_navigation = false;
       bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
-          *View()->GetChromeClient(), false /* is_reload */,
-          true /* auto_cancel */, unused_did_allow_navigation);
+          nullptr, false /* is_reload */, unused_did_allow_navigation);
       frame_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
     }
 

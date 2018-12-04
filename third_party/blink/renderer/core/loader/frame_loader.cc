@@ -1496,8 +1496,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
     IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
         frame_->GetDocument());
     if (!frame_->GetDocument()->DispatchBeforeUnloadEvent(
-            page->GetChromeClient(), is_reload, false /* auto_cancel */,
-            did_allow_navigation))
+            &page->GetChromeClient(), is_reload, did_allow_navigation))
       return false;
 
     // Then deal with descendent frames.
@@ -1518,8 +1517,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
           ignore_opens_during_unload_descendant(
               descendant_frame->GetDocument());
       if (!descendant_frame->GetDocument()->DispatchBeforeUnloadEvent(
-              page->GetChromeClient(), is_reload, false /* auto_cancel */,
-              did_allow_navigation))
+              &page->GetChromeClient(), is_reload, did_allow_navigation))
         return false;
     }
   }
