@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using content::IndexedDBContext;
@@ -68,7 +69,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
     const GURL& origin) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
-  indexed_db_context_->DeleteForOrigin(origin);
+  indexed_db_context_->DeleteForOrigin(url::Origin::Create(origin));
 }
 
 CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::PendingIndexedDBInfo(
