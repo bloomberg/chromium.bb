@@ -534,41 +534,6 @@ void ShellSurfaceBase::DisableMovement() {
     widget_->set_movement_disabled(true);
 }
 
-// static
-Surface* ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(
-    ui::LocatedEvent* event) {
-  aura::Window* window = wm::CaptureController::Get()->GetCaptureWindow();
-  gfx::PointF location_in_target = event->location_f();
-
-  if (!window)
-    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
-
-  Surface* main_surface = GetShellMainSurface(window);
-  // Skip if the event is captured by non exo windwows.
-  if (!main_surface)
-    return nullptr;
-
-  while (true) {
-    aura::Window* focused = window->GetEventHandlerForPoint(
-        gfx::ToFlooredPoint(location_in_target));
-
-    if (focused) {
-      aura::Window::ConvertPointToTarget(window, focused, &location_in_target);
-      return Surface::AsSurface(focused);
-    }
-
-    aura::Window* parent_window = wm::GetTransientParent(window);
-
-    if (!parent_window) {
-      location_in_target = event->location_f();
-      return main_surface;
-    }
-    aura::Window::ConvertPointToTarget(window, parent_window,
-                                       &location_in_target);
-    window = parent_window;
-  }
-}
-
 std::unique_ptr<base::trace_event::TracedValue>
 ShellSurfaceBase::AsTracedValue() const {
   std::unique_ptr<base::trace_event::TracedValue> value(

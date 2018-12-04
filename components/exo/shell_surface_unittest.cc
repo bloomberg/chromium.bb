@@ -705,22 +705,19 @@ TEST_F(ShellSurfaceTest, Popup) {
     // Mouse is on the top most popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(100, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(sub_popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(sub_popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the parent popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
                          gfx::Point(75, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the main window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, -25),
                          gfx::Point(75, 25), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 
   // Removing top most popup moves the grab to parent popup.
@@ -731,8 +728,7 @@ TEST_F(ShellSurfaceTest, Popup) {
     // Targetting should still work.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 }
 

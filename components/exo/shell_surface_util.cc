@@ -7,6 +7,9 @@
 #include "base/trace_event/trace_event.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace exo {
 
@@ -56,6 +59,39 @@ void SetShellMainSurface(aura::Window* window, Surface* surface) {
 
 Surface* GetShellMainSurface(const aura::Window* window) {
   return window->GetProperty(kMainSurfaceKey);
+}
+
+Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
+  aura::Window* window = wm::CaptureController::Get()->GetCaptureWindow();
+  gfx::PointF location_in_target = event->location_f();
+
+  if (!window)
+    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
+
+  Surface* main_surface = GetShellMainSurface(window);
+  // Skip if the event is captured by non exo windows.
+  if (!main_surface)
+    return nullptr;
+
+  while (true) {
+    aura::Window* focused = window->GetEventHandlerForPoint(
+        gfx::ToFlooredPoint(location_in_target));
+
+    if (focused) {
+      aura::Window::ConvertPointToTarget(window, focused, &location_in_target);
+      return Surface::AsSurface(focused);
+    }
+
+    aura::Window* parent_window = wm::GetTransientParent(window);
+
+    if (!parent_window) {
+      location_in_target = event->location_f();
+      return main_surface;
+    }
+    aura::Window::ConvertPointToTarget(window, parent_window,
+                                       &location_in_target);
+    window = parent_window;
+  }
 }
 
 }  // namespace exo

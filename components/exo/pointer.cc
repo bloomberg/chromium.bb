@@ -9,7 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_gesture_pinch_delegate.h"
-#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
@@ -375,7 +375,7 @@ void Pointer::OnDisplayConfigurationChanged() {
 // Pointer, private:
 
 Surface* Pointer::GetEffectiveTargetForEvent(ui::LocatedEvent* event) const {
-  Surface* target = ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(event);
+  Surface* target = GetTargetSurfaceForLocatedEvent(event);
 
   if (!target)
     return nullptr;

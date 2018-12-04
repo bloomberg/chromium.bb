@@ -127,12 +127,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Prevents shell surface from being moved.
   void DisableMovement();
 
-  // Returns the target surface for the located event |event|.  If an
-  // event handling is grabbed by an window, it'll first examine that
-  // window, then traverse to its transeitn parent if the parent also
-  // requested grab.
-  static Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event);
-
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 

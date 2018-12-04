@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/exo/touch.h"
-
-#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
@@ -194,7 +193,7 @@ void Touch::OnSurfaceDestroying(Surface* surface) {
 // Touch, private:
 
 Surface* Touch::GetEffectiveTargetForEvent(ui::LocatedEvent* event) const {
-  Surface* target = ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(event);
+  Surface* target = GetTargetSurfaceForLocatedEvent(event);
 
   if (!target)
     return nullptr;
