@@ -243,50 +243,44 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
                      os.path.join(source_dir, 'ucrtbase' + suffix))
 
 
-def FindVCToolsRoot():
-  """In VS2017 the PGO runtime dependencies are located in
-  {toolchain_root}/VC/Tools/MSVC/{x.y.z}/bin/Host{target_cpu}/{target_cpu}/, the
-  {version_number} part is likely to change in case of a minor update of the
-  toolchain so we don't hardcode this value here (except for the major number).
-
-  This returns the '{toolchain_root}/VC/Tools/MSVC/{x.y.z}/bin/' path.
-
-  This function should only be called when using VS2017.
+def FindVCComponentRoot(component):
+  """Find the most recent Tools or Redist or other directory in an MSVC install.
+  Typical results are {toolchain_root}/VC/{component}/MSVC/{x.y.z}. The {x.y.z}
+  version number part changes frequently so the highest version number found is
+  used.
   """
   assert GetVisualStudioVersion() == '2017'
   SetEnvironmentAndGetRuntimeDllDirs()
   assert ('GYP_MSVS_OVERRIDE_PATH' in os.environ)
-  vc_tools_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
-      'VC', 'Tools', 'MSVC')
-  for directory in os.listdir(vc_tools_msvc_root):
-    if not os.path.isdir(os.path.join(vc_tools_msvc_root, directory)):
+  vc_component_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
+      'VC', component, 'MSVC')
+  vc_component_msvc_contents = os.listdir(vc_component_msvc_root)
+  # Select the most recent toolchain if there are several.
+  vc_component_msvc_contents.sort(reverse=True)
+  for directory in vc_component_msvc_contents:
+    if not os.path.isdir(os.path.join(vc_component_msvc_root, directory)):
       continue
     if re.match('14\.\d+\.\d+', directory):
-      return os.path.join(vc_tools_msvc_root, directory, 'bin')
-  raise Exception('Unable to find the VC tools directory.')
+      return os.path.join(vc_component_msvc_root, directory)
+  raise Exception('Unable to find the VC %s directory.' % component)
+
+
+def FindVCToolsRoot():
+  """In VS2017 the PGO runtime dependencies are located in
+  {toolchain_root}/VC/Tools/MSVC/{x.y.z}/bin/Host{target_cpu}/{target_cpu}/.
+
+  This returns the '{toolchain_root}/VC/Tools/MSVC/{x.y.z}/bin/' path.
+  """
+  return os.path.join(FindVCComponentRoot('Tools'), 'bin')
 
 
 def FindVCRedistRoot():
   """In VS2017, Redist binaries are located in
-  {toolchain_root}/VC/Redist/MSVC/{x.y.z}/{target_cpu}/, the {version_number}
-  part is likely to change in case of minor update of the toolchain so we don't
-  hardcode this value here (except for the major number).
+  {toolchain_root}/VC/Redist/MSVC/{x.y.z}/{target_cpu}/.
 
   This returns the '{toolchain_root}/VC/Redist/MSVC/{x.y.z}/' path.
-
-  This function should only be called when using VS2017.
   """
-  assert GetVisualStudioVersion() == '2017'
-  SetEnvironmentAndGetRuntimeDllDirs()
-  assert ('GYP_MSVS_OVERRIDE_PATH' in os.environ)
-  vc_redist_msvc_root = os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
-      'VC', 'Redist', 'MSVC')
-  for directory in os.listdir(vc_redist_msvc_root):
-    if not os.path.isdir(os.path.join(vc_redist_msvc_root, directory)):
-      continue
-    if re.match('14\.\d+\.\d+', directory):
-      return os.path.join(vc_redist_msvc_root, directory)
-  raise Exception('Unable to find the VC redist directory')
+  return FindVCComponentRoot('Redist')
 
 
 def _CopyPGORuntime(target_dir, target_cpu):
