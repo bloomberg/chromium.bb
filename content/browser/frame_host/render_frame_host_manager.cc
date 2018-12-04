@@ -2177,11 +2177,28 @@ void RenderFrameHostManager::CommitPending() {
   old_render_frame_host =
       SetRenderFrameHost(std::move(speculative_render_frame_host_));
 
-  // For top-level frames, also hide the old RenderViewHost's view.
+  // For top-level frames, the RenderWidget{Host} will not be destroyed when the
+  // local frame is detached. https://crbug.com/419087
+  // To work around that, we hide it here. Truly this is to hit all the hide
+  // paths in the browser side, but has a side effect of also hiding the
+  // renderer side RenderWidget, even though it will get frozen anyway in the
+  // future. However freezing doesn't do all the things hiding does at this time
+  // so that's probably good.
+  // Note the RenderWidgetHostView can be missing if the process for the old
+  // RenderFrameHost crashed.
   // TODO(creis): As long as show/hide are on RVH, we don't want to hide on
   // subframe navigations or we will interfere with the top-level frame.
+  // TODO(danakj): For subframes the old_render_frame_host will get swapped out
+  // and eventually deleted on SwapOutACK. So why would we want to Hide() it
+  // here anyways?
+  // TODO(danakj): But regardless if this old frame was a local root, why dont
+  // just go through RFH::GetView() and not need to involve RVH?
   if (is_main_frame &&
       old_render_frame_host->render_view_host()->GetWidget()->GetView()) {
+    // TODO(crbug.com/908582): Note that this hides the RenderWidget but does
+    // not hide the Page. If it did hide the Page then making a new
+    // RenderFrameHost on another call to here would need to make sure it showed
+    // the RenderView when the RenderWidget was created as visible.
     old_render_frame_host->render_view_host()->GetWidget()->GetView()->Hide();
   }
 
@@ -2278,40 +2295,26 @@ void RenderFrameHostManager::CommitPending() {
                                      old_size ? &*old_size : nullptr);
   }
 
-  // Show the new view (or a sad tab) if necessary.
   bool new_rfh_has_view = !!render_frame_host_->GetView();
-  if (!delegate_->IsHidden() && new_rfh_has_view) {
-    if (!is_main_frame &&
-        !render_frame_host_->render_view_host()->is_active()) {
-      // Ensure that page visibility in the subframe's process is set to shown.
-      // This is important if the subframe is using a RenderView which
-      // started out as active and later became swapped-out, which also updates
-      // page visibility to hidden.  Without updating page visibility the
-      // subframe would not be able to generate compositor frames.  See
-      // https://crbug.com/638375.
-      //
-      // TODO(alexmos,dcheng,lfg): This workaround should be cleaned up as part
-      // of the view/widget split.  We should decouple page visibility from
-      // widget visibility.
-      RenderFrameProxyHost* proxy =
-          frame_tree_node_->frame_tree()
-              ->root()
-              ->render_manager()
-              ->GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance());
-      // The proxy should always exist since the RenderViewHost is not active.
-      proxy->Send(new PageMsg_WasShown(proxy->GetRoutingID()));
-    }
 
-    // In most cases, we need to show the new view.
+  // Show the new RenderWidgetHost if the new frame is a local root and not
+  // hidden or crashed. If the frame is not a local root this is redundant as
+  // the ancestor RenderWidgetHost would already be shown.
+  // TODO(danakj): Is this only really needed for a main frame, because the
+  // RenderWidget is not being newly recreated for the new frame due to
+  // https://crbug.com/419087 ? Would sub frames be marked correctly as shown
+  // from creation of their RenderWidgetHost?
+  if (!delegate_->IsHidden() && new_rfh_has_view)
     render_frame_host_->GetView()->Show();
-  }
+
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();
 
+  // If there's no RenderWidgetHostView on this frame's local root (or itself
+  // if it is a local root), then this RenderViewHost died while it was hidden.
+  // We ignored the RenderProcessGone call at the time, so we should send it now
+  // to make sure the sad tab shows up, etc.
   if (!new_rfh_has_view) {
-    // If the view is gone, then this RenderViewHost died while it was hidden.
-    // We ignored the RenderProcessGone call at the time, so we should send it
-    // now to make sure the sad tab shows up, etc.
     DCHECK(!render_frame_host_->IsRenderFrameLive());
     DCHECK(!render_frame_host_->render_view_host()->IsRenderViewLive());
     render_frame_host_->ResetLoadingState();
