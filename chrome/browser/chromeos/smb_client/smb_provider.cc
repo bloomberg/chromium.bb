@@ -9,8 +9,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,10 +59,7 @@ const IconSet& SmbProvider::GetIconSet() const {
 }
 
 bool SmbProvider::RequestMount(Profile* profile) {
-  auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
-  settings_manager->ShowChromePageForProfile(
-      profile, chrome::GetSettingsUrl(chrome::kSmbSharesPageAddDialog));
-
+  smb_dialog::SmbShareDialog::Show();
   return true;
 }
 
