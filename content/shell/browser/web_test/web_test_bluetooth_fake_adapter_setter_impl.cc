@@ -14,23 +14,22 @@
 
 namespace content {
 
-LayoutTestBluetoothFakeAdapterSetterImpl::
-    LayoutTestBluetoothFakeAdapterSetterImpl() {}
+WebTestBluetoothFakeAdapterSetterImpl::WebTestBluetoothFakeAdapterSetterImpl() {
+}
 
-LayoutTestBluetoothFakeAdapterSetterImpl::
-    ~LayoutTestBluetoothFakeAdapterSetterImpl() {}
+WebTestBluetoothFakeAdapterSetterImpl::
+    ~WebTestBluetoothFakeAdapterSetterImpl() {}
 
 // static
-void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
+void WebTestBluetoothFakeAdapterSetterImpl::Create(
     mojom::LayoutTestBluetoothFakeAdapterSetterRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<LayoutTestBluetoothFakeAdapterSetterImpl>(),
+      std::make_unique<WebTestBluetoothFakeAdapterSetterImpl>(),
       std::move(request));
 }
 
-void LayoutTestBluetoothFakeAdapterSetterImpl::Set(
-    const std::string& adapter_name,
-    SetCallback callback) {
+void WebTestBluetoothFakeAdapterSetterImpl::Set(const std::string& adapter_name,
+                                                SetCallback callback) {
   SetTestBluetoothScanDuration(
       BluetoothTestScanDurationSetting::kImmediateTimeout);
 

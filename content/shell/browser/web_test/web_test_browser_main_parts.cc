@@ -48,18 +48,18 @@
 
 namespace content {
 
-LayoutTestBrowserMainParts::LayoutTestBrowserMainParts(
+WebTestBrowserMainParts::WebTestBrowserMainParts(
     const MainFunctionParams& parameters)
     : ShellBrowserMainParts(parameters) {}
 
-LayoutTestBrowserMainParts::~LayoutTestBrowserMainParts() {}
+WebTestBrowserMainParts::~WebTestBrowserMainParts() {}
 
-void LayoutTestBrowserMainParts::InitializeBrowserContexts() {
+void WebTestBrowserMainParts::InitializeBrowserContexts() {
   set_browser_context(new WebTestBrowserContext(false, net_log()));
   set_off_the_record_browser_context(nullptr);
 }
 
-void LayoutTestBrowserMainParts::InitializeMessageLoopContext() {
+void WebTestBrowserMainParts::InitializeMessageLoopContext() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service_filter_.reset(new ShellPluginServiceFilter);

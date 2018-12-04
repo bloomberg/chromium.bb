@@ -10,10 +10,10 @@
 
 namespace content {
 
-class MojoLayoutTestHelper : public mojom::MojoLayoutTestHelper {
+class MojoWebTestHelper : public mojom::MojoLayoutTestHelper {
  public:
-  MojoLayoutTestHelper();
-  ~MojoLayoutTestHelper() override;
+  MojoWebTestHelper();
+  ~MojoWebTestHelper() override;
 
   static void Create(mojom::MojoLayoutTestHelperRequest request);
 
@@ -21,7 +21,7 @@ class MojoLayoutTestHelper : public mojom::MojoLayoutTestHelper {
   void Reverse(const std::string& message, ReverseCallback callback) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MojoLayoutTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(MojoWebTestHelper);
 };
 
 }  // namespace content

@@ -49,7 +49,7 @@ WebTestContentBrowserClient* g_layout_test_browser_client;
 
 void BindWebTestHelper(mojom::MojoLayoutTestHelperRequest request,
                        RenderFrameHost* render_frame_host) {
-  MojoLayoutTestHelper::Create(std::move(request));
+  MojoWebTestHelper::Create(std::move(request));
 }
 
 class TestOverlayWindow : public OverlayWindow {
@@ -140,7 +140,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI});
   registry->AddInterface(
-      base::BindRepeating(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
+      base::BindRepeating(&WebTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);
 
   registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),
@@ -154,7 +154,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           &WebTestContentBrowserClient::CreateFakeBluetoothChooser,
           base::Unretained(this)),
       ui_task_runner);
-  registry->AddInterface(base::BindRepeating(&MojoLayoutTestHelper::Create));
+  registry->AddInterface(base::BindRepeating(&MojoWebTestHelper::Create));
   registry->AddInterface(
       base::BindRepeating(&WebTestContentBrowserClient::BindClipboardHost,
                           base::Unretained(this)),
@@ -208,7 +208,7 @@ void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
 
 BrowserMainParts* WebTestContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  set_browser_main_parts(new LayoutTestBrowserMainParts(parameters));
+  set_browser_main_parts(new WebTestBrowserMainParts(parameters));
   return shell_browser_main_parts();
 }
 
