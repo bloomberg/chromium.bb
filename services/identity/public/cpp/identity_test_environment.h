@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include "base/optional.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -51,14 +52,19 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // a test). In that case, use the below constructor and switch to this
   // constructor once the conversion is complete.
   //
-  // Additionally, this constructor also takes an optional PrefService
-  // instance as parameter, which allows tests to move away from referencing
-  // IdentityManager's dependencies directly (namely AccountTrackerService,
-  // PO2TS, SigninManager and GaiaCookieManagerService), but still be able
-  // to tweak preferences on demand.
+  // This constructor also takes an optional PrefService instance as parameter,
+  // which allows tests to move away from referencing IdentityManager's
+  // dependencies directly (namely AccountTrackerService, PO2TS, SigninManager
+  // and GaiaCookieManagerService), but still be able to tweak preferences on
+  // demand.
+  //
+  // Last, this constructor can take an optional parameter |account_consistency|
+  // as parameter, to specify the account consistency policy that will be used.
   IdentityTestEnvironment(
       bool use_fake_url_loader_for_gaia_cookie_manager = false,
-      sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr);
+      sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
+      signin::AccountConsistencyMethod account_consistency =
+          signin::AccountConsistencyMethod::kDisabled);
 
   // Constructor that takes in instances of the dependencies of
   // IdentityManager and constructs an IdentityManager instance from those

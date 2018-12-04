@@ -8,7 +8,6 @@
 
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -25,7 +24,8 @@ class IdentityManagerDependenciesOwner {
  public:
   IdentityManagerDependenciesOwner(
       bool use_fake_url_loader_for_gaia_cookie_manager,
-      sync_preferences::TestingPrefServiceSyncable* pref_service);
+      sync_preferences::TestingPrefServiceSyncable* pref_service,
+      signin::AccountConsistencyMethod account_consistency);
   ~IdentityManagerDependenciesOwner();
 
   AccountTrackerService* account_tracker_service();
@@ -56,7 +56,8 @@ class IdentityManagerDependenciesOwner {
 
 IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
     bool use_fake_url_loader_for_gaia_cookie_manager,
-    sync_preferences::TestingPrefServiceSyncable* pref_service_param)
+    sync_preferences::TestingPrefServiceSyncable* pref_service_param,
+    signin::AccountConsistencyMethod account_consistency)
     : owned_pref_service_(
           pref_service_param
               ? nullptr
@@ -71,7 +72,9 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
       signin_manager_(&signin_client_,
                       &token_service_,
                       &account_tracker_,
-                      nullptr),
+                      nullptr,
+                      nullptr,
+                      account_consistency),
 #endif
       // NOTE: Some unittests set up their own TestURLFetcherFactory. In these
       // contexts FakeGaiaCookieManagerService can't set up its own
@@ -126,7 +129,8 @@ IdentityManagerDependenciesOwner::pref_service() {
 
 IdentityTestEnvironment::IdentityTestEnvironment(
     bool use_fake_url_loader_for_gaia_cookie_manager,
-    sync_preferences::TestingPrefServiceSyncable* pref_service)
+    sync_preferences::TestingPrefServiceSyncable* pref_service,
+    signin::AccountConsistencyMethod account_consistency)
     : IdentityTestEnvironment(
           /*account_tracker_service=*/nullptr,
           /*token_service=*/nullptr,
@@ -134,7 +138,8 @@ IdentityTestEnvironment::IdentityTestEnvironment(
           /*gaia_cookie_manager_service=*/nullptr,
           std::make_unique<IdentityManagerDependenciesOwner>(
               use_fake_url_loader_for_gaia_cookie_manager,
-              pref_service),
+              pref_service,
+              account_consistency),
           /*identity_manager=*/nullptr) {}
 
 IdentityTestEnvironment::IdentityTestEnvironment(
