@@ -170,29 +170,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // string.
   bool HasPrimaryAccount() const;
 
-// For ChromeOS, mutation of primary account state is not managed externally.
-#if !defined(OS_CHROMEOS)
-  // Describes options for handling of tokens upon calling
-  // ClearPrimaryAccount().
-  enum class ClearAccountTokensAction{
-      // Default action (keep or remove tokens) based on internal policy.
-      kDefault,
-      // Keeps all account tokens for all accounts.
-      kKeepAll,
-      // Removes all accounts tokens for all accounts.
-      kRemoveAll,
-  };
-
-  // Clears the primary account, removing the preferences, and canceling all
-  // auth in progress. May optionally remove account tokens - see
-  // ClearAccountTokensAction. See definitions of signin_metrics::ProfileSignout
-  // and signin_metrics::SignoutDelete for usage. Observers will be notified via
-  // OnPrimaryAccountCleared() when complete.
-  void ClearPrimaryAccount(ClearAccountTokensAction token_action,
-                           signin_metrics::ProfileSignout signout_source_metric,
-                           signin_metrics::SignoutDelete signout_delete_metric);
-#endif  // defined(OS_CHROMEOS)
-
   // Provides access to the latest cached information of all accounts that have
   // refresh tokens.
   // NOTE: The accounts should not be assumed to be in any particular order; in
