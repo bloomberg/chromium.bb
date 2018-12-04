@@ -580,7 +580,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)notifyTabLoading:(Tab*)tab {
   [_observers tabModel:self willStartLoadingTab:tab];
   [self notifyTabChanged:tab];
-  [_observers tabModel:self didStartLoadingTab:tab];
 }
 
 - (void)notifyTabFinishedLoading:(Tab*)tab {

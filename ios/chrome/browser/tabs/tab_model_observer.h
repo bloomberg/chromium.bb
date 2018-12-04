@@ -63,9 +63,6 @@
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
 
-// |tab| started loading a new URL.
-- (void)tabModel:(TabModel*)model didStartLoadingTab:(Tab*)tab;
-
 // |tab| finished loading a new URL.
 - (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab;
 
