@@ -124,8 +124,10 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     // The CopyOutputRequest API does not allow fixing the output size. Instead
     // we have the set area and scale in such a way that it would result in the
     // desired output size.
-    if (!request->has_area())
-      request->set_area(gfx::Rect(surface_dip_size_));
+    if (!request->has_area()) {
+      request->set_area(gfx::Rect(gfx::ScaleToRoundedSize(
+          surface_dip_size_, client_->GetDeviceScaleFactor())));
+    }
     request->set_result_selection(gfx::Rect(output_size));
     const gfx::Rect& area = request->area();
     request->SetScaleRatio(
