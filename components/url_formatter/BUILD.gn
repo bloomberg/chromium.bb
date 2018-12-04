@@ -51,6 +51,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":url_formatter",
     "//base",
+    "//base/test:test_support",
     "//components/url_formatter/top_domains:generate_top_domains_test_trie",
     "//net",
     "//net:preload_decoder",
