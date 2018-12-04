@@ -515,15 +515,12 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     }
     ParseAndReadTestStreamData(*test_stream_data_, &test_streams_);
 
-    if (g_native_input) {
 #if defined(USE_OZONE)
-      // If |g_native_input| is true, Ozone needs to be initialized so that
-      // DmaBufs is able to be created through Ozone DRM.
-      ui::OzonePlatform::InitParams params;
-      params.single_process = false;
-      ui::OzonePlatform::InitializeForUI(params);
+    // Initialize Ozone so that DMABuf can be created through Ozone DRM.
+    ui::OzonePlatform::InitParams params;
+    params.single_process = false;
+    ui::OzonePlatform::InitializeForUI(params);
 #endif
-    }
   }
 
   virtual void TearDown() {
@@ -2356,23 +2353,19 @@ void SetupOzone(base::WaitableEvent* done) {
 #endif
 
 void StartVEAThread(base::Thread* vea_client_thread) {
-  if (g_native_input) {
 #if defined(USE_OZONE)
-    // If |g_native_input_| is true, we create DmaBufs through Ozone DRM on
-    // Chrome OS. For initializing Ozone DRM, some additional setups are
-    // required. Otherwise, a thread should be started with a default settings.
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
-    ASSERT_TRUE(vea_client_thread->StartWithOptions(options));
-    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-    vea_client_thread->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&SetupOzone, &done));
-    done.Wait();
+  // If USE_OZONE, some additional setups are required.
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_UI;
+  ASSERT_TRUE(vea_client_thread->StartWithOptions(options));
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  vea_client_thread->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&SetupOzone, &done));
+  done.Wait();
+#else
+  ASSERT_TRUE(vea_client_thread->Start());
 #endif
-  } else {
-    ASSERT_TRUE(vea_client_thread->Start());
-  }
 }
 
 // Test parameters:
@@ -2413,11 +2406,9 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  if (g_native_input) {
-    // To create dmabuf through gbm, Ozone needs to be set up.
-    gpu_helper.reset(new ui::OzoneGpuTestHelper());
-    gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
-  }
+  // To create dmabuf through gbm, Ozone needs to be set up.
+  gpu_helper.reset(new ui::OzoneGpuTestHelper());
+  gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
 #endif
 
   if (g_env->test_streams_.size() > 1)
