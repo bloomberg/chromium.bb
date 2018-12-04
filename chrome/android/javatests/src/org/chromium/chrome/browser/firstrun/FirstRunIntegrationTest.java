@@ -26,7 +26,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -68,6 +67,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/911316")
     public void testGenericViewIntentGoesToFirstRun() {
         final String asyncClassName = ChromeLauncherActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, () -> {
@@ -81,6 +81,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/911316")
     public void testRedirectCustomTabActivityToFirstRun() {
         final String asyncClassName = ChromeLauncherActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, () -> {
@@ -94,7 +95,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
-    @FlakyTest(message = "crbug.com/907548")
+    @DisabledTest(message = "crbug.com/907548")
     public void testRedirectChromeTabbedActivityToFirstRun() {
         final String asyncClassName = ChromeTabbedActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, () -> {
@@ -108,6 +109,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/911316")
     public void testRedirectSearchActivityToFirstRun() {
         final String asyncClassName = SearchActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, () -> {
@@ -239,12 +241,14 @@ public class FirstRunIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/911316")
     public void testDefaultSearchEngine_DontShow() throws Exception {
         runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.DONT_SHOW);
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/911316")
     public void testDefaultSearchEngine_ShowExisting() throws Exception {
         runSearchEnginePromptTest(LocaleManager.SearchEnginePromoType.SHOW_EXISTING);
     }
