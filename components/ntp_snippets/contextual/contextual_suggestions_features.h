@@ -13,6 +13,10 @@ extern const base::Feature kContextualSuggestionsButton;
 extern const base::Feature kContextualSuggestionsIPHReverseScroll;
 extern const base::Feature kContextualSuggestionsOptOut;
 
+// Returns the minimum confidence threshold for showing contextual suggestions.
+// The value will be in range [0.0, 1.0] (inclusive).
+double GetMinimumConfidence();
+
 }  // namespace contextual_suggestions
 
 #endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FEATURES_H_
