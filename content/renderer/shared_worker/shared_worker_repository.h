@@ -50,14 +50,14 @@ class SharedWorkerRepository final
 
  private:
   void AddWorker(DocumentID document_id,
-                 std::unique_ptr<mojom::SharedWorkerClient> impl,
-                 mojom::SharedWorkerClientRequest request);
+                 std::unique_ptr<blink::mojom::SharedWorkerClient> impl,
+                 blink::mojom::SharedWorkerClientRequest request);
 
   service_manager::InterfaceProvider* interface_provider_;
 
   mojom::SharedWorkerConnectorPtr connector_;
 
-  using ClientSet = mojo::StrongBindingSet<mojom::SharedWorkerClient>;
+  using ClientSet = mojo::StrongBindingSet<blink::mojom::SharedWorkerClient>;
   using ClientMap = std::map<DocumentID, std::unique_ptr<ClientSet>>;
   ClientMap client_map_;
 

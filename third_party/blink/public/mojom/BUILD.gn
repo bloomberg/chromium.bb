@@ -68,6 +68,7 @@ mojom("mojom_platform") {
     "use_counter/css_property_id.mojom",
     "webaudio/audio_context_manager.mojom",
     "worker/dedicated_worker_factory.mojom",
+    "worker/shared_worker_client.mojom",
     "worker/shared_worker_creation_context_type.mojom",
     "worker/worker_main_script_load_params.mojom",
   ]
@@ -82,6 +83,7 @@ mojom("mojom_platform") {
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/interfaces",
+    "//third_party/blink/public:web_feature_mojo_bindings",
     "//third_party/blink/public/mojom/usb",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",

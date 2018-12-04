@@ -4,9 +4,9 @@
 
 module content.mojom;
 
-import "content/common/shared_worker/shared_worker_client.mojom";
 import "content/common/shared_worker/shared_worker_info.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/worker/shared_worker_client.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom";
 
 // This interface is exposed to enable a client to create and connect to a
@@ -19,7 +19,7 @@ interface SharedWorkerConnector {
   // blob URL. Without this by the time the worker code starts fetching
   // the URL the blob URL might no longer be valid.
   Connect(SharedWorkerInfo info,
-          SharedWorkerClient client,
+          blink.mojom.SharedWorkerClient client,
           blink.mojom.SharedWorkerCreationContextType creation_context_type,
           handle<message_pipe> message_port,
           blink.mojom.BlobURLToken? blob_url_token);

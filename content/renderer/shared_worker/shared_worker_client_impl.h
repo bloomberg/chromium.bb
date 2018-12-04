@@ -6,13 +6,13 @@
 #define CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_CLIENT_IMPL_H_
 
 #include "base/macros.h"
-#include "content/common/shared_worker/shared_worker_client.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/web/web_shared_worker_connect_listener.h"
 
 namespace content {
 
 // An instance of this class has the same lifetime as the shared worker.
-class SharedWorkerClientImpl : public mojom::SharedWorkerClient {
+class SharedWorkerClientImpl : public blink::mojom::SharedWorkerClient {
  public:
   explicit SharedWorkerClientImpl(
       std::unique_ptr<blink::WebSharedWorkerConnectListener> listener);

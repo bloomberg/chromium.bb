@@ -133,7 +133,7 @@ class SharedWorkerHostTest : public testing::Test {
   }
 
   MessagePortChannel AddClient(SharedWorkerHost* host,
-                               mojom::SharedWorkerClientPtr client) {
+                               blink::mojom::SharedWorkerClientPtr client) {
     mojo::MessagePipe message_pipe;
     MessagePortChannel local_port(std::move(message_pipe.handle0));
     MessagePortChannel remote_port(std::move(message_pipe.handle1));
@@ -163,7 +163,7 @@ TEST_F(SharedWorkerHostTest, Normal) {
 
   // Add the initiating client.
   MockSharedWorkerClient client;
-  mojom::SharedWorkerClientPtr client_ptr;
+  blink::mojom::SharedWorkerClientPtr client_ptr;
   client.Bind(mojo::MakeRequest(&client_ptr));
   MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
   base::RunLoop().RunUntilIdle();
@@ -214,7 +214,7 @@ TEST_F(SharedWorkerHostTest, DestructBeforeStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  mojom::SharedWorkerClientPtr client_ptr;
+  blink::mojom::SharedWorkerClientPtr client_ptr;
   client.Bind(mojo::MakeRequest(&client_ptr));
   MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
   base::RunLoop().RunUntilIdle();
@@ -233,7 +233,7 @@ TEST_F(SharedWorkerHostTest, TerminateBeforeStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  mojom::SharedWorkerClientPtr client_ptr;
+  blink::mojom::SharedWorkerClientPtr client_ptr;
   client.Bind(mojo::MakeRequest(&client_ptr));
   MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
   base::RunLoop().RunUntilIdle();
@@ -260,7 +260,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  mojom::SharedWorkerClientPtr client_ptr;
+  blink::mojom::SharedWorkerClientPtr client_ptr;
   client.Bind(mojo::MakeRequest(&client_ptr));
   MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
   base::RunLoop().RunUntilIdle();
@@ -302,7 +302,7 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
 
   // Add a client.
   MockSharedWorkerClient client;
-  mojom::SharedWorkerClientPtr client_ptr;
+  blink::mojom::SharedWorkerClientPtr client_ptr;
   client.Bind(mojo::MakeRequest(&client_ptr));
   MessagePortChannel local_port = AddClient(host.get(), std::move(client_ptr));
   base::RunLoop().RunUntilIdle();
