@@ -2073,8 +2073,7 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AudibleTime">
     <summary>
-      The number of seconds of audio that were audible during the entire
-      lifetime of the AudioContext.
+      Audible time in milliseconds for this event.
     </summary>
   </metric>
   <metric name="IsMainFrame">
