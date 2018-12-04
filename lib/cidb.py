@@ -1357,22 +1357,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._GetStages(master_build_id, buildbucket_ids=buildbucket_ids)
 
-  @minimum_schema(30)
-  def GetMasterStages(self, master_build_id):
-    """Gets the stages of a master build.
-
-    Args:
-      master_build_id: build id of the master build to fetch the slave
-                       stages for.
-
-    Returns:
-      A list containing, for each stage of master build found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-    """
-    return self._GetStages(master_build_id, is_master=True)
-
-
   @minimum_schema(44)
   def GetBuildsFailures(self, build_ids):
     """Gets the failure entries for all listed build_ids.
@@ -1601,48 +1585,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
-  @minimum_schema(47)
-  def GetAnnotatedBuilds(self, build_config, num_results, start_date=None,
-                         end_date=None):
-    """Returns most recent failed builds with additional failure information.
-
-    By default this function returns the all failed builds. Some arguments can
-    restrict the result to older builds.
-
-    Args:
-      build_config: config name of the build.
-      num_results: Number of builds to search back. Set this to
-          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
-          of results.
-      start_date: (Optional, type: datetime.date) Get builds that occured on or
-          after this date.
-      end_date: (Optional, type:datetime.date) Get builds that occured on or
-          before this date.
-
-    Returns:
-      A sorted list of dicts containing up to |number| dictionaries for
-      build statuses in descending order. Valid keys in the dictionary are
-      described in BAD_CL_ANNOTATION_KEYS.
-    """
-    where_clauses = ['build_config = "%s"' % build_config]
-    if start_date is not None:
-      where_clauses.append('date(start_time) >= date("%s")' %
-                           start_date.strftime(self._DATE_FORMAT))
-    if end_date is not None:
-      where_clauses.append('date(start_time) <= date("%s")' %
-                           end_date.strftime(self._DATE_FORMAT))
-
-    query = ('%s AND %s' %
-             (self._SQL_FETCH_ANNOTATIONS, ' AND '.join(where_clauses)))
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += ' LIMIT %d' % num_results
-
-    results = self._Execute(query).fetchall()
-
-    return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
-            for values in results]
-
   @minimum_schema(26)
   def GetAnnotationsForBuilds(self, build_ids):
     """Returns the annotations for given build_ids.
@@ -1728,37 +1670,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(
         '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, clause)).fetchall()
     return [clactions.CLAction(*values) for values in results]
-
-  def GetFailuresForChange(self, change_number, change_source, master_build_id):
-    """Gets all the failures for a given change during a given master build.
-
-    Note that the failures are from the master build and all its slaves.
-
-    Args:
-      change_number: Gerrit number
-      change_source: string, source of change, 'external' or 'internal'
-      master_build_id: Master Build id in the annotation table
-
-    Returns:
-      A list of failure_message_lib.StageFailure instances.
-    """
-    # preprocess keys for query
-    keys = list(failure_message_lib.FAILURE_KEYS)
-    keys[keys.index('id')] = 'fV.id'
-    keys[keys.index('timestamp')] = 'fV.timestamp'
-    keys[keys.index('build_id')] = 'fV.build_id'
-    keys[keys.index('buildbucket_id')] = 'fV.buildbucket_id'
-    columns_string = ', '.join(keys)
-
-    query = ('SELECT %s FROM clActionTable clT JOIN failureView fV '
-             'ON clT.build_id = fV.build_id '
-             'WHERE clT.change_number = %s AND clT.change_source = "%s" '
-             'AND (fV.master_build_id = %s OR clT.build_id = %s) ' %
-             (columns_string, str(change_number), change_source,
-              str(master_build_id), str(master_build_id)))
-    results = self._Execute(query).fetchall()
-
-    return [failure_message_lib.StageFailure(*values) for values in results]
 
   @minimum_schema(11)
   def GetActionsForBuild(self, build_id):
