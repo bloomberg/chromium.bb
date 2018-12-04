@@ -143,6 +143,9 @@
 
       extensions-toggle-row {
         @apply --cr-section;
+        /* TODO(johntlee): remove min-height override once --cr-section's
+         * min-height is removed (crbug.com/686905). */
+        min-height: initial;
         padding-bottom: 16px;
         padding-inline-end: 0;
         padding-inline-start: 0;
