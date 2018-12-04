@@ -63,12 +63,11 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD0(MaybeTerminate, void());
 
-  void SetHostForCreate(AppShimHandler::Host* host_for_create) {
+  void SetHostForCreate(AppShimHost* host_for_create) {
     host_for_create_ = host_for_create;
   }
-  AppShimHandler::Host* CreateHost(
-      const std::string& app_id,
-      const base::FilePath& profile_path) override {
+  AppShimHost* CreateHost(const std::string& app_id,
+                          const base::FilePath& profile_path) override {
     DCHECK(host_for_create_);
     auto* result = host_for_create_;
     host_for_create_ = nullptr;
@@ -93,7 +92,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
  private:
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>> callbacks_;
-  AppShimHandler::Host* host_for_create_ = nullptr;
+  AppShimHost* host_for_create_ = nullptr;
 };
 
 class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
@@ -104,18 +103,17 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   virtual ~TestingExtensionAppShimHandler() {}
 
   MOCK_METHOD3(OnShimFocus,
-               void(Host* host,
+               void(AppShimHost* host,
                     AppShimFocusType,
                     const std::vector<base::FilePath>& files));
 
-  void RealOnShimFocus(Host* host,
+  void RealOnShimFocus(AppShimHost* host,
                        AppShimFocusType focus_type,
                        const std::vector<base::FilePath>& files) {
     ExtensionAppShimHandler::OnShimFocus(host, focus_type, files);
   }
 
-  AppShimHandler::Host* FindHost(Profile* profile,
-                                 const std::string& app_id) {
+  AppShimHost* FindHost(Profile* profile, const std::string& app_id) {
     HostMap::const_iterator it = hosts().find(make_pair(profile, app_id));
     return it == hosts().end() ? NULL : it->second;
   }
