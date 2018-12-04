@@ -111,6 +111,11 @@
 #include "extensions/browser/extension_prefs.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#include "chromecast/browser/exo/wayland_server_controller.h"
+#include "chromecast/browser/exo/wm_helper_cast_shell.h"
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "device/bluetooth/cast/bluetooth_adapter_cast.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -559,6 +564,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       cast_browser_process_->browser_context());
 #endif
 
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  wayland_server_controller_ =
+      std::make_unique<WaylandServerController>(window_manager_.get());
+#endif
+
   // Initializing metrics service and network delegates must happen after cast
   // service is intialized because CastMetricsServiceClient and
   // CastNetworkDelegate may use components initialized by cast service.
@@ -627,6 +637,9 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
+#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+  wayland_server_controller_.reset();
+#endif
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context());

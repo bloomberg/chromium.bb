@@ -335,6 +335,8 @@ cast_source_set("browser") {
 
   if (enable_cast_wayland_server) {
     sources += [
+      "exo/wayland_server_controller.cc",
+      "exo/wayland_server_controller.h",
       "exo/wm_helper_cast_shell.cc",
       "exo/wm_helper_cast_shell.h",
     ]
