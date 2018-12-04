@@ -275,13 +275,9 @@ void AssistantInteractionController::OnCommittedQueryChanged(
   }
   model_.query_history().Add(query);
 
-  assistant::util::RecordAssistantQuerySource(assistant_query.source());
-}
-
-void AssistantInteractionController::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
   assistant::util::IncrementAssistantQueryCountForEntryPoint(
       assistant_controller_->ui_controller()->model()->entry_point());
+  assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
 void AssistantInteractionController::OnInteractionStarted(
