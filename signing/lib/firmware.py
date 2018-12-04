@@ -14,7 +14,6 @@ import re
 import shutil
 import tempfile
 
-from chromite.lib import cgpt
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -345,14 +344,14 @@ class Shellball(object):
 def ResignImageFirmware(image_file, keyset):
   """Resign the given firmware image.
 
+  Args:
+    image_file: string path to image.
+    keyset: Keyset to use for signing.
+
   Raises SignerFailedError
   """
-  image_disk = cgpt.Disk(image_file)
-
   with osutils.TempDir() as rootfs_dir:
-    with osutils.MountImagePartition(image_file,
-                                     image_disk.GetPartitionByLabel('ROOT-A'),
-                                     rootfs_dir):
+    with osutils.MountImagePartition(image_file, 'ROOT-A', rootfs_dir):
       sb_file = os.path.join(rootfs_dir, 'usr/sbin/chromeos-firmware')
       if os.path.exists(sb_file):
         logging.info("Found firmware, signing")
@@ -376,6 +375,12 @@ def SignerConfigsFromCSV(signer_config_file):
   ec_image
 
   go/cros-unibuild-signing
+
+  Args:
+    signer_config_file: File descriptor for signer_configs.csv.
+
+  Returns:
+    List of dicts in the signer_configs file.
   """
   csv_reader = csv.DictReader(signer_config_file)
 
