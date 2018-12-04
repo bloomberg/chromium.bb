@@ -51,7 +51,6 @@ class ApplicationStatusListener;
 namespace net {
 
 class CertVerifier;
-class ChannelIDService;
 class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
@@ -337,18 +336,9 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_create_intercepting_job_factory(
       CreateInterceptingJobFactory create_intercepting_job_factory);
 
-  // Override the default in-memory cookie store and channel id service.
-  // If both |cookie_store| and |channel_id_service| are NULL, CookieStore and
-  // ChannelIDService will be disabled for this context.
-  // If |cookie_store| is not NULL and |channel_id_service| is NULL,
-  // only ChannelIdService is disabled for this context.
-  // Note that a persistent cookie store should not be used with an in-memory
-  // channel id service, and one cookie store should not be shared between
-  // multiple channel-id stores (or used both with and without a channel id
-  // store).
-  void SetCookieAndChannelIdStores(
-      std::unique_ptr<CookieStore> cookie_store,
-      std::unique_ptr<ChannelIDService> channel_id_service);
+  // Override the default in-memory cookie store. If |cookie_store| is NULL,
+  // CookieStore will be disabled for this context.
+  void SetCookieStore(std::unique_ptr<CookieStore> cookie_store);
 
   // Sets a specific HttpServerProperties for use in the
   // URLRequestContext rather than creating a default HttpServerPropertiesImpl.
@@ -410,7 +400,6 @@ class NET_EXPORT URLRequestContextBuilder {
   NetLog* net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
   HostResolver* shared_host_resolver_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_;
   ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_;

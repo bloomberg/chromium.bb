@@ -44,7 +44,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -58,7 +57,6 @@
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -274,17 +272,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
   DCHECK(proxy_config_service_.get());
-  std::unique_ptr<net::ChannelIDService> channel_id_service;
-  if (TokenBindingManager::GetInstance()->is_enabled()) {
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
-    channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path_,
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
-
-    channel_id_service.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
-  }
 
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
@@ -314,8 +301,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
             std::move(proxy_config_service_), net_log_));
   }
   builder.set_net_log(net_log_);
-  builder.SetCookieAndChannelIdStores(std::make_unique<AwCookieStoreWrapper>(),
-                                      std::move(channel_id_service));
+  builder.SetCookieStore(std::make_unique<AwCookieStoreWrapper>());
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   // Note: we create this as IN_MEMORY when the network service is enabled

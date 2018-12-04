@@ -47,9 +47,8 @@ WebRunnerURLRequestContextGetter::GetURLRequestContext() {
 
     if (data_dir_path_.empty()) {
       // Set up an in-memory (ephemeral) CookieStore.
-      builder.SetCookieAndChannelIdStores(
-          content::CreateCookieStore(content::CookieStoreConfig(), nullptr),
-          nullptr);
+      builder.SetCookieStore(
+          content::CreateCookieStore(content::CookieStoreConfig(), nullptr));
     } else {
       // Set up a persistent CookieStore under |data_dir_path|.
       content::CookieStoreConfig cookie_config(
@@ -61,8 +60,8 @@ WebRunnerURLRequestContextGetter::GetURLRequestContext() {
       // TODO(crbug.com/884355): Add OSCrypt impl for Fuchsia and encrypt the
       // cookie store with it.
       NOTIMPLEMENTED() << "Persistent cookie store is NOT encrypted!";
-      builder.SetCookieAndChannelIdStores(
-          content::CreateCookieStore(cookie_config, nullptr), nullptr);
+      builder.SetCookieStore(
+          content::CreateCookieStore(cookie_config, nullptr));
     }
 
     url_request_context_ = builder.Build();

@@ -1626,15 +1626,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
             {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
-    std::unique_ptr<net::ChannelIDService> channel_id_service;
-    if (params_->channel_id_path) {
-      session_cleanup_channel_id_store =
-          base::MakeRefCounted<SessionCleanupChannelIDStore>(
-              params_->channel_id_path.value(), background_task_runner);
-      channel_id_service = std::make_unique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(
-              session_cleanup_channel_id_store.get()));
-    }
 
     net::CookieCryptoDelegate* crypto_delegate = nullptr;
     if (params_->enable_encrypted_cookies) {
@@ -1656,15 +1647,11 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
     std::unique_ptr<net::CookieMonster> cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
-                                             channel_id_service.get(), net_log);
+                                             nullptr, net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
-    if (channel_id_service) {
-      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
-    }
-    builder->SetCookieAndChannelIdStores(std::move(cookie_store),
-                                         std::move(channel_id_service));
+    builder->SetCookieStore(std::move(cookie_store));
   } else {
     DCHECK(!params_->restore_old_session_cookies);
     DCHECK(!params_->persist_session_cookies);

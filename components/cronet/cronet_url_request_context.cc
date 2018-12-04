@@ -341,8 +341,8 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
   // of HPKP by specifying transport_security_persister_path in the future.
   context_builder.set_transport_security_persister_path(base::FilePath());
 
-  // Disable net::CookieStore and net::ChannelIDService.
-  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
+  // Disable net::CookieStore.
+  context_builder.SetCookieStore(nullptr);
 
   context_ = context_builder.Build();
 
