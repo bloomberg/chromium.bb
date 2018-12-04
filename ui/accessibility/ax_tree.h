@@ -262,13 +262,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // the same ordered set) if no value is present in the cache.
   // This function is guaranteed to be only called on nodes that can hold
   // pos_in_set values, minimizing the size of the cache.
-  int32_t GetPosInSet(const AXNode& item) override;
+  int32_t GetPosInSet(const int32_t node_id,
+                      const AXNode* ordered_set) override;
   // Returns the set_size of node. Looks in ordered_set_info_map_ for cached
   // value. Calculates pos_inset_set and set_size for node (and all other nodes
   // in the same ordered set) if no value is present in the cache.
   // This function is guaranteed to be only called on nodes that can hold
   // set_size values, minimizing the size of the cache.
-  int32_t GetSetSize(const AXNode& node) override;
+  int32_t GetSetSize(const int32_t node_id, const AXNode* ordered_set) override;
 
  private:
   friend class AXTableInfoTest;
