@@ -52,6 +52,11 @@ namespace extensions {
 
 namespace {
 
+// Arbitrary delay to quit attaching the MimeHandlerViewGuest's WebContents to
+// the outer WebContents if no about:blank navigation is committed. The reason
+// for this delay is to allow user to decide on the outcome of 'beforeunload'.
+const int64_t kAttachFailureDelayMS = 30000;
+
 // Cancels the given navigation handle unconditionally.
 class CancelAndIgnoreNavigationForPluginFrameThrottle
     : public NavigationThrottle {
@@ -65,6 +70,7 @@ class CancelAndIgnoreNavigationForPluginFrameThrottle
     return "CancelAndIgnoreNavigationForPluginFrameThrottle";
   }
   ThrottleCheckResult WillStartRequest() override { return CANCEL_AND_IGNORE; }
+  ThrottleCheckResult WillProcessResponse() override { return BLOCK_RESPONSE; }
 };
 
 // TODO(ekaramad): Remove this once MimeHandlerViewGuest has fully migrated to
@@ -135,12 +141,11 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
 
   void FrameDeleted(RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(NavigationHandle* handle) override;
-  void BeforeUnloadFired(bool proceed,
-                         const base::TimeTicks& proceed_time) override;
-
   // During attaching, we should ignore any navigation which is not a navigation
   // to "about:blank" from the parent frame's SiteInstance.
   bool ShouldCancelAndIgnore(NavigationHandle* handle);
+
+  MimeHandlerViewGuest* GetGuestView() const;
 
   int32_t guest_instance_id() const { return guest_instance_id_; }
   const base::DictionaryValue& attach_params() const { return attach_params_; }
@@ -151,6 +156,7 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
 
  private:
   void NavigateToAboutBlank();
+  void CancelPendingTask();
 
   int32_t frame_tree_node_id_;
   const int32_t guest_instance_id_;
@@ -159,6 +165,8 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
   const bool is_full_page_plugin_;
   ExtensionsGuestViewMessageFilter* const filter_;
   scoped_refptr<SiteInstance> parent_site_instance_;
+
+  base::WeakPtrFactory<FrameNavigationHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationHelper);
 };
@@ -177,11 +185,17 @@ ExtensionsGuestViewMessageFilter::FrameNavigationHelper::FrameNavigationHelper(
       element_instance_id_(element_instance_id),
       is_full_page_plugin_(is_full_page_plugin),
       filter_(filter),
-      parent_site_instance_(plugin_rfh->GetParent()->GetSiteInstance()) {
-  DCHECK(filter->GetOrCreateGuestViewManager()->GetGuestByInstanceIDSafely(
-      guest_instance_id, plugin_rfh->GetParent()->GetProcess()->GetID()));
+      parent_site_instance_(plugin_rfh->GetParent()->GetSiteInstance()),
+      weak_factory_(this) {
+  DCHECK(GetGuestView());
   attach_params_.Swap(attach_params);
   NavigateToAboutBlank();
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
+                         CancelPendingTask,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kAttachFailureDelayMS));
 }
 
 ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
@@ -196,62 +210,33 @@ void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::FrameDeleted(
   // after MimeHandlerViewFrameContainer requests to create the
   // MimeHandlerViewGuest on the browser side.
   filter_->ResumeAttachOrDestroy(element_instance_id_,
-                                 nullptr /* plugin_rfh */);
+                                 MSG_ROUTING_NONE /* no plugin frame */);
 }
 
 void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
     DidFinishNavigation(NavigationHandle* handle) {
   if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
     return;
-
-  if (!handle->GetURL().IsAboutBlank()) {
-    // Another navigation has committed (it started before our navigation). The
-    // intended navigation to 'about:blank' should arrive later.
+  if (!handle->HasCommitted())
     return;
+  if (handle->GetRenderFrameHost()->GetSiteInstance() != parent_site_instance_)
+    return;
+  if (!handle->GetURL().IsAboutBlank())
+    return;
+  if (!handle->GetRenderFrameHost()->PrepareForInnerWebContentsAttach()) {
+    filter_->ResumeAttachOrDestroy(element_instance_id_,
+                                   MSG_ROUTING_NONE /* no plugin frame */);
   }
-
-  filter_->ResumeAttachOrDestroy(element_instance_id_,
-                                 handle->GetRenderFrameHost());
-}
-
-void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::BeforeUnloadFired(
-    bool proceed,
-    const base::TimeTicks& proceed_time) {
-  if (proceed)
-    return;
-  // Navigating to "about:blank" would involve unloading the current
-  // document/frame if any, and naturally "beforeunload" is a possibility that
-  // should be addressed. If the user chooses to stay on the old page after a
-  // beforeunload dialog, do not create the plugin frame and clean up the
-  // associated MimeHandlerView* classes.
-  // TODO(ekaramad): This will lead to a change in the behavior of plugin
-  // elements in Chrome for scenarios where the plugin element has a frame and
-  // then transitions into a MimeHandlerView. In the BrowserPlugin-based version
-  // of MimeHandlerView, loading a MimeHandlerView will not clear the existing
-  // frames inside the HTMLPlugInElement. This leads to some bugs including not
-  // firing either "unload" or "beforeunload" (naturally so, given that the
-  // frame is not detached. See https://crbug.com/776510 for more context). We
-  // might need to revisit the logic here if current HTMLPlugInElement bugs with
-  // respect to PluginView and FrameView transitions are fixed. There won't be a
-  // plugin frame as desired and the guest view will eventually die.
-  filter_->ResumeAttachOrDestroy(element_instance_id_,
-                                 nullptr /* plugin_rfh */);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ExtensionsGuestViewMessageFilter::ResumeAttachOrDestroy,
+                     filter_, element_instance_id_,
+                     handle->GetRenderFrameHost()->GetRoutingID()));
 }
 
 bool ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
     ShouldCancelAndIgnore(NavigationHandle* handle) {
-  if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
-    return false;
-
-  if (handle->GetRenderFrameHost()->GetSiteInstance() ==
-          parent_site_instance_ &&
-      handle->GetURL().IsAboutBlank()) {
-    // This is either the navigation which was triggered by this class, or a
-    // freebie. As long as such a navigation successfully commits, we are on the
-    // right track for attaching WebContentses.
-    return false;
-  }
-  return true;
+  return handle->GetFrameTreeNodeId() == frame_tree_node_id_;
 }
 
 void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
@@ -269,6 +254,19 @@ void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
   web_contents()->GetController().LoadURLWithParams(params);
 }
 
+void ExtensionsGuestViewMessageFilter::FrameNavigationHelper::
+    CancelPendingTask() {
+  filter_->ResumeAttachOrDestroy(element_instance_id_,
+                                 MSG_ROUTING_NONE /* no plugin frame */);
+}
+
+MimeHandlerViewGuest*
+ExtensionsGuestViewMessageFilter::FrameNavigationHelper::GetGuestView() const {
+  return MimeHandlerViewGuest::From(
+             parent_site_instance_->GetProcess()->GetID(), guest_instance_id_)
+      ->As<MimeHandlerViewGuest>();
+}
+
 // static
 std::unique_ptr<NavigationThrottle>
 ExtensionsGuestViewMessageFilter::MaybeCreateThrottle(
@@ -284,7 +282,6 @@ ExtensionsGuestViewMessageFilter::MaybeCreateThrottle(
     // This happens if the RenderProcessHost has not been initialized yet.
     return nullptr;
   }
-
   for (auto& pair : map[parent_process_id]->frame_navigation_helpers_) {
     if (!pair.second->ShouldCancelAndIgnore(handle))
       continue;
@@ -550,23 +547,24 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
       return;
     }
 
-    if (plugin_rfh->GetSiteInstance() !=
-            plugin_rfh->GetParent()->GetSiteInstance() ||
-        !plugin_rfh->GetLastCommittedURL().IsAboutBlank()) {
+    if (guest_view->web_contents()->CanAttachToOuterContentsFrame(plugin_rfh)) {
+      AttachToEmbedderFrame(plugin_frame_routing_id, element_instance_id,
+                            guest_instance_id, attach_params,
+                            is_full_page_plugin);
+
+    } else {
+      // TODO(ekaramad): Replace this navigation logic with an asynchronous
+      // attach API in content layer (https://crbug.com/911161).
       // The current API for attaching guests requires the frame in outer
-      // WebContents to be same-origin with parent. Also, to respect before
-      // unload handlers in the current plugin frame's document we should first
-      // navigate the plugin frame to "about:blank".
+      // WebContents to be same-origin with parent. The current frame could also
+      // have beforeunload handlers. Considering these issues, we should first
+      // navigate the frame to "about:blank" and put it in the same SiteInstance
+      // as parent before using it for attach API.
       frame_navigation_helpers_[element_instance_id] =
           std::make_unique<FrameNavigationHelper>(
               plugin_rfh, guest_view->guest_instance_id(), element_instance_id,
               &attach_params, is_full_page_plugin, this);
-      return;
     }
-
-    AttachToEmbedderFrame(plugin_frame_routing_id, element_instance_id,
-                          guest_instance_id, attach_params,
-                          is_full_page_plugin);
     return;
   }
 
@@ -580,19 +578,26 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
 
 void ExtensionsGuestViewMessageFilter::ResumeAttachOrDestroy(
     int32_t element_instance_id,
-    RenderFrameHost* plugin_rfh) {
-  auto helper = std::move(frame_navigation_helpers_[element_instance_id]);
-  frame_navigation_helpers_.erase(element_instance_id);
+    int32_t plugin_frame_routing_id) {
+  auto it = frame_navigation_helpers_.find(element_instance_id);
+  if (it == frame_navigation_helpers_.end()) {
+    // This is the timeout callback. The guest is either attached or destroyed.
+    return;
+  }
+  auto* plugin_rfh = content::RenderFrameHost::FromID(render_process_id_,
+                                                      plugin_frame_routing_id);
+  auto* helper = it->second.get();
+  auto* guest_view = helper->GetGuestView();
+  if (!guest_view)
+    return;
+
   if (plugin_rfh) {
-    DCHECK(plugin_rfh->GetLastCommittedURL().IsAboutBlank());
+    DCHECK(
+        guest_view->web_contents()->CanAttachToOuterContentsFrame(plugin_rfh));
     AttachToEmbedderFrame(plugin_rfh->GetRoutingID(), element_instance_id,
                           helper->guest_instance_id(), helper->attach_params(),
                           helper->is_full_page_plugin());
-  } else if (auto* guest_view =
-                 MimeHandlerViewGuest::From(
-                     helper->parent_site_instance()->GetProcess()->GetID(),
-                     helper->guest_instance_id())
-                     ->As<MimeHandlerViewGuest>()) {
+  } else {
     guest_view->GetEmbedderFrame()->Send(
         new ExtensionsGuestViewMsg_DestroyFrameContainer(element_instance_id));
     guest_view->Destroy(true);
