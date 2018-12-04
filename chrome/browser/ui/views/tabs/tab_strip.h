@@ -287,7 +287,8 @@ class TabStrip : public views::AccessiblePaneView,
       TabState tab_state,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override;
-  SkColor GetTabForegroundColor(TabState tab_state) const override;
+  SkColor GetTabForegroundColor(TabState tab_state,
+                                SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(
       bool* has_custom_image,

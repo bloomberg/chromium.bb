@@ -96,7 +96,8 @@ class FakeTabController : public TabController {
     return tab_state == TAB_ACTIVE ? tab_bg_color_active_
                                    : tab_bg_color_inactive_;
   }
-  SkColor GetTabForegroundColor(TabState tab_state) const override {
+  SkColor GetTabForegroundColor(TabState tab_state,
+                                SkColor background_color) const override {
     return tab_state == TAB_ACTIVE ? tab_fg_color_active_
                                    : tab_fg_color_inactive_;
   }
