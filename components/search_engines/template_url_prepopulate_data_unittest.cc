@@ -437,3 +437,24 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
         template_url.contextual_search_url_ref());
   }
 }
+
+TEST_F(TemplateURLPrepopulateDataTest, FindGoogleIndex) {
+  constexpr int kGoogleId = 1;
+  size_t index;
+  std::vector<std::unique_ptr<TemplateURLData>> urls;
+
+  // Google is first in US, so confirm index 0.
+  prefs_.SetInteger(country_codes::kCountryIDAtInstall, 'U' << 8 | 'S');
+  urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, &index);
+  EXPECT_EQ(index, size_t{0});
+  EXPECT_EQ(urls[index]->prepopulate_id, kGoogleId);
+
+  // TODO(orinj): Google is not first in CN; confirm it is found at index > 0.
+  // If Google ever does reach top in China, this test will need to be adjusted:
+  // check template_url_prepopulate_data.cc reference orders (engines_CN, etc.)
+  // to find a suitable country and index.
+  prefs_.SetInteger(country_codes::kCountryIDAtInstall, 'C' << 8 | 'N');
+  urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, &index);
+  EXPECT_EQ(index, size_t{0});
+  EXPECT_EQ(urls[index]->prepopulate_id, kGoogleId);
+}
