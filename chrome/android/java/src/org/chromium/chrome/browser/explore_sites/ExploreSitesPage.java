@@ -87,7 +87,6 @@ public class ExploreSitesPage extends BasicNativePage {
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
                          .with(CATEGORY_LIST_KEY, new ListModel<ExploreSitesCategory>())
-                         .with(SCROLL_TO_CATEGORY_KEY, 0)
                          .with(STATUS_KEY, CatalogLoadingState.LOADING)
                          .build();
 
@@ -141,10 +140,11 @@ public class ExploreSitesPage extends BasicNativePage {
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
+
         ListModel<ExploreSitesCategory> categoryListModel = mModel.get(CATEGORY_LIST_KEY);
         categoryListModel.set(categoryList);
         if (mNavFragment != null) {
-            lookupCategoryAndScroll(mNavFragment);
+            lookupCategoryAndScroll();
         } else {
             mModel.set(SCROLL_TO_CATEGORY_KEY,
                     Math.min(categoryListModel.size() - 1, INITIAL_SCROLL_POSITION));
@@ -177,16 +177,13 @@ public class ExploreSitesPage extends BasicNativePage {
     @Override
     public void updateForUrl(String url) {
         super.updateForUrl(url);
-        String fragment;
         try {
-            fragment = new URI(url).getFragment();
+            mNavFragment = new URI(url).getFragment();
         } catch (URISyntaxException e) {
-            fragment = "";
+            mNavFragment = null;
         }
-        if (mModel.get(STATUS_KEY) != CatalogLoadingState.SUCCESS) {
-            mNavFragment = fragment;
-        } else {
-            lookupCategoryAndScroll(fragment);
+        if (mModel.get(STATUS_KEY) == CatalogLoadingState.SUCCESS) {
+            lookupCategoryAndScroll();
         }
     }
 
@@ -198,20 +195,18 @@ public class ExploreSitesPage extends BasicNativePage {
 
     private void setTouchEnabled(boolean enabled) {} // Does nothing.
 
-    private void lookupCategoryAndScroll(String categoryId) {
-        int position = 0;
+    private void lookupCategoryAndScroll() {
         try {
-            int id = Integer.parseInt(categoryId);
+            int id = Integer.parseInt(mNavFragment);
             ListModel<ExploreSitesCategory> categoryList = mModel.get(CATEGORY_LIST_KEY);
             for (int i = 0; i < categoryList.size(); i++) {
                 if (categoryList.get(i).getId() == id) {
-                    position = i;
+                    mModel.set(SCROLL_TO_CATEGORY_KEY, i);
                     break;
                 }
             }
+
         } catch (NumberFormatException e) {
         } // do nothing
-        mModel.set(SCROLL_TO_CATEGORY_KEY, position);
-        mNavFragment = null;
     }
 }
