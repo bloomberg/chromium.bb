@@ -82,11 +82,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=905001)
 
-    # All non-ANGLE platforms.
-    self.Fail('conformance2/attribs/' +
-        'gl-bindAttribLocation-aliasing-inactive.html',
-        ['no_angle'], bug=829541)
-
     # Newly introduced flaky failure.
     # TODO(kbr): re-enable after fixing test.
     self.Flaky('conformance/textures/misc/' +
