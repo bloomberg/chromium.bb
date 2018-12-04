@@ -21,6 +21,7 @@ class AutofillPopupController;
 class AutofillPopupViewAndroid : public AutofillPopupView {
  public:
   explicit AutofillPopupViewAndroid(AutofillPopupController* controller);
+  ~AutofillPopupViewAndroid() override;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -49,7 +50,12 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
   void OnSuggestionsChanged() override;
 
  private:
-  ~AutofillPopupViewAndroid() override;
+  friend class AutofillPopupView;
+  // Creates the AutofillPopupBridge Java object.
+  void Init();
+  // Returns whether the dropdown was suppressed (mainly due to not enough
+  // screen space available).
+  bool WasSuppressed();
 
   AutofillPopupController* controller_;  // weak.
 
