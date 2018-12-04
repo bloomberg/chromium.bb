@@ -16,7 +16,7 @@ struct ShellTestConfiguration {
   // The temporary directory of the system.
   mojo_base.mojom.FilePath temp_path;
 
-  // The URL of the current layout test.
+  // The URL of the current web test.
   url.mojom.Url test_url;
 
   // True if tests can open external URLs.
@@ -29,12 +29,12 @@ struct ShellTestConfiguration {
   gfx.mojom.Size initial_size;
 
   // Whether the test is running in protocol mode.
-  // See TestInfo::protocol_mode in browser/layout_test/test_info_extractor.h.
+  // See TestInfo::protocol_mode in browser/web_test/test_info_extractor.h.
   bool protocol_mode;
 };
 
 // Results of a CaptureDump call.
-struct LayoutTestDump {
+struct WebTestDump {
   // Audio dump.
   array<uint8>? audio;
 
@@ -49,8 +49,8 @@ struct LayoutTestDump {
   gfx.mojom.Rect selection_rect;
 };
 
-interface LayoutTestControl {
-  CaptureDump() => (LayoutTestDump result);
+interface WebTestControl {
+  CaptureDump() => (WebTestDump result);
 
   CompositeWithRaster() => ();
 
@@ -61,11 +61,11 @@ interface LayoutTestControl {
   // that hosts parts of the main test window.
   ReplicateTestConfiguration(ShellTestConfiguration config);
 
-  // Sets the test config for a layout test that is being started.  This message
+  // Sets the test config for a web test that is being started.  This message
   // is sent only to a renderer that hosts parts of the main test window.
   SetTestConfiguration(ShellTestConfiguration config);
 
   // Sets up a secondary renderer (renderer that doesn't [yet] host parts of the
-  // main test window) for a layout test.
+  // main test window) for a web test.
   SetupSecondaryRenderer();
 };

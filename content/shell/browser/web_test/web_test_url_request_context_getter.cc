@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/shell/browser/shell_network_delegate.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "net/cert/cert_verifier.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/ignore_errors_cert_verifier.h"

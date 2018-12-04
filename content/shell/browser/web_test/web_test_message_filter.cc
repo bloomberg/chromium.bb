@@ -20,7 +20,7 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
-#include "content/shell/common/layout_test/layout_test_messages.h"
+#include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "net/base/net_errors.h"

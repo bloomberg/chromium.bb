@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_CONTENT_CLIENT_H_
-#define CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_CONTENT_CLIENT_H_
+#ifndef CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_CONTENT_CLIENT_H_
+#define CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_CONTENT_CLIENT_H_
 
 #include "base/macros.h"
 #include "content/shell/common/shell_content_client.h"
@@ -21,4 +21,4 @@ class LayoutTestContentClient : public ShellContentClient {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_CONTENT_CLIENT_H_
+#endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_CONTENT_CLIENT_H_

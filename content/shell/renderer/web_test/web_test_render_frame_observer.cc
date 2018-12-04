@@ -38,7 +38,7 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
 WebTestRenderFrameObserver::~WebTestRenderFrameObserver() = default;
 
 void WebTestRenderFrameObserver::BindRequest(
-    mojom::LayoutTestControlAssociatedRequest request) {
+    mojom::WebTestControlAssociatedRequest request) {
   binding_.Bind(std::move(request),
                 blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }

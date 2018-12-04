@@ -67,10 +67,10 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
-#include "content/shell/common/layout_test/layout_test_messages.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
-#include "content/shell/common/layout_test/layout_test_utils.h"
 #include "content/shell/common/shell_messages.h"
+#include "content/shell/common/web_test/web_test_messages.h"
+#include "content/shell/common/web_test/web_test_switches.h"
+#include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -385,7 +385,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
   accumulated_layout_test_runtime_flags_changes_.Clear();
-  layout_test_control_map_.clear();
+  web_test_control_map_.clear();
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
@@ -423,7 +423,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
           ->GetRenderViewHost()
           ->GetWidget()
           ->FlushForTesting();
-      GetLayoutTestControlPtr(
+      GetWebTestControlPtr(
           main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
           .FlushForTesting();
 
@@ -482,7 +482,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
         ->GetRenderViewHost()
         ->GetWidget()
         ->FlushForTesting();
-    GetLayoutTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
+    GetWebTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
 
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
@@ -641,7 +641,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
 
   RenderFrameHost* rfh = main_window_->web_contents()->GetMainFrame();
   printer_->StartStateDump();
-  GetLayoutTestControlPtr(rfh)->CaptureDump(
+  GetWebTestControlPtr(rfh)->CaptureDump(
       base::BindOnce(&BlinkTestController::OnCaptureDumpCompleted,
                      weak_factory_.GetWeakPtr()));
 }
@@ -701,7 +701,7 @@ void BlinkTestController::CompositeNodeQueueThen(
       next_node_host = nullptr;  // This one is now gone
     }
   } while (!next_node_host || !next_node_host->IsRenderFrameLive());
-  GetLayoutTestControlPtr(next_node_host)
+  GetWebTestControlPtr(next_node_host)
       ->CompositeWithRaster(
           base::BindOnce(&BlinkTestController::CompositeNodeQueueThen,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -957,11 +957,11 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     params->protocol_mode = protocol_mode_;
 
     if (did_send_initial_test_configuration_) {
-      GetLayoutTestControlPtr(frame)->ReplicateTestConfiguration(
+      GetWebTestControlPtr(frame)->ReplicateTestConfiguration(
           std::move(params));
     } else {
       did_send_initial_test_configuration_ = true;
-      GetLayoutTestControlPtr(frame)->SetTestConfiguration(std::move(params));
+      GetWebTestControlPtr(frame)->SetTestConfiguration(std::move(params));
     }
   }
 
@@ -971,7 +971,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     all_observed_render_process_hosts_.insert(process_host);
 
     if (!main_window) {
-      GetLayoutTestControlPtr(frame)->SetupSecondaryRenderer();
+      GetWebTestControlPtr(frame)->SetupSecondaryRenderer();
     }
 
     process_host->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
@@ -1023,8 +1023,7 @@ void BlinkTestController::OnCleanupFinished() {
   }
 }
 
-void BlinkTestController::OnCaptureDumpCompleted(
-    mojom::LayoutTestDumpPtr dump) {
+void BlinkTestController::OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump) {
   main_frame_dump_ = std::move(dump);
 
   waiting_for_main_frame_dump_ = false;
@@ -1050,7 +1049,7 @@ void BlinkTestController::ReportResults() {
   if (pixel_dump_) {
     // See if we need to draw the selection bounds rect on top of the snapshot.
     if (!main_frame_dump_->selection_rect.IsEmpty()) {
-      content::layout_test_utils::DrawSelectionRect(
+      content::web_test_utils::DrawSelectionRect(
           *pixel_dump_, main_frame_dump_->selection_rect);
     }
     // The snapshot arrives from the GPU process via shared memory. Because MSan
@@ -1134,7 +1133,7 @@ void BlinkTestController::OnInitiateLayoutDump() {
       continue;
 
     ++number_of_messages;
-    GetLayoutTestControlPtr(rfh)->DumpFrameLayout(
+    GetWebTestControlPtr(rfh)->DumpFrameLayout(
         base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
                        weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
   }
@@ -1351,24 +1350,23 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
   }
 }
 
-mojom::LayoutTestControlAssociatedPtr&
-BlinkTestController::GetLayoutTestControlPtr(RenderFrameHost* frame) {
+mojom::WebTestControlAssociatedPtr& BlinkTestController::GetWebTestControlPtr(
+    RenderFrameHost* frame) {
   GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
-  if (layout_test_control_map_.find(key) == layout_test_control_map_.end()) {
-    mojom::LayoutTestControlAssociatedPtr& new_ptr =
-        layout_test_control_map_[key];
+  if (web_test_control_map_.find(key) == web_test_control_map_.end()) {
+    mojom::WebTestControlAssociatedPtr& new_ptr = web_test_control_map_[key];
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
     new_ptr.set_connection_error_handler(
-        base::BindOnce(&BlinkTestController::HandleLayoutTestControlError,
+        base::BindOnce(&BlinkTestController::HandleWebTestControlError,
                        weak_factory_.GetWeakPtr(), key));
   }
-  DCHECK(layout_test_control_map_[key].get());
-  return layout_test_control_map_[key];
+  DCHECK(web_test_control_map_[key].get());
+  return web_test_control_map_[key];
 }
 
-void BlinkTestController::HandleLayoutTestControlError(
+void BlinkTestController::HandleWebTestControlError(
     const GlobalFrameRoutingId& key) {
-  layout_test_control_map_.erase(key);
+  web_test_control_map_.erase(key);
 }
 
 BlinkTestController::Node::Node() = default;

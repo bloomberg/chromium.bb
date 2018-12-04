@@ -17,8 +17,8 @@
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "content/shell/common/layout_test.mojom.h"
-#include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
+#include "content/shell/common/web_test.mojom.h"
+#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "v8/include/v8.h"
@@ -161,7 +161,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();
-  void CaptureDump(mojom::LayoutTestControl::CaptureDumpCallback callback);
+  void CaptureDump(mojom::WebTestControl::CaptureDumpCallback callback);
 
  private:
   // Message handlers.
@@ -188,8 +188,8 @@ class BlinkTestRunner : public RenderViewObserver,
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
-  mojom::LayoutTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
-  mojom::LayoutTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
+  mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
+  mojom::WebTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
 
   test_runner::TestPreferences prefs_;
 
@@ -205,8 +205,8 @@ class BlinkTestRunner : public RenderViewObserver,
 
   std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
 
-  mojom::LayoutTestControl::CaptureDumpCallback dump_callback_;
-  mojom::LayoutTestDumpPtr dump_result_;
+  mojom::WebTestControl::CaptureDumpCallback dump_callback_;
+  mojom::WebTestDumpPtr dump_result_;
   bool waiting_for_layout_dump_results_ = false;
   bool waiting_for_pixels_dump_result_ = false;
 

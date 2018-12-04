@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "content/public/browser/bluetooth_chooser.h"
-#include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
+#include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

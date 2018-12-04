@@ -36,7 +36,7 @@ enum ChooserEventType {
 };
 
 // FakeBluetoothChooser allows clients to control the global state of the
-// Bluetooth chooser during a layout test.
+// Bluetooth chooser during a web test.
 interface FakeBluetoothChooser {
   // Waits until at least |num_of_events| have been recorded before returning
   // |num_of_events| FakeBluetoothChooserEvents.

@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/shell/common/layout_test.mojom.h"
+#include "content/shell/common/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 
 class WebTestRenderFrameObserver : public RenderFrameObserver,
-                                   public mojom::LayoutTestControl {
+                                   public mojom::WebTestControl {
  public:
   explicit WebTestRenderFrameObserver(RenderFrame* render_frame);
   ~WebTestRenderFrameObserver() override;
@@ -29,9 +29,9 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void ReplicateTestConfiguration(
       mojom::ShellTestConfigurationPtr config) override;
   void SetupSecondaryRenderer() override;
-  void BindRequest(mojom::LayoutTestControlAssociatedRequest request);
+  void BindRequest(mojom::WebTestControlAssociatedRequest request);
 
-  mojo::AssociatedBinding<mojom::LayoutTestControl> binding_;
+  mojo::AssociatedBinding<mojom::WebTestControl> binding_;
   DISALLOW_COPY_AND_ASSIGN(WebTestRenderFrameObserver);
 };
 

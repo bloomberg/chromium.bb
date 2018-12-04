@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 
 namespace switches {
 
-// Allow access to external pages during layout tests.
+// Allow access to external pages during web tests.
 const char kAllowExternalPages[] = "allow-external-pages";
 
 #if defined(OS_ANDROID)
@@ -18,7 +18,7 @@ const char kAndroidStdinPort[] = "android-stdin-port";
 
 // Redirect stdout to the given port. Only supported on Android.
 const char kAndroidStdoutPort[] = "android-stdout-port";
-#endif // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 // When specified to "enable-leak-detection" command-line option,
 // causes the leak detector to cause immediate crash when found leak.
@@ -36,14 +36,14 @@ const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 // Enable font antialiasing for pixel tests.
 const char kEnableFontAntialiasing[] = "enable-font-antialiasing";
 
-// Always use the complex text path for layout tests.
+// Always use the complex text path for web tests.
 const char kAlwaysUseComplexText[] = "always-use-complex-text";
 
 // Enables the leak detection of loading webpages. This allows us to check
 // whether or not reloading a webpage releases web-related objects correctly.
 const char kEnableLeakDetection[] = "enable-leak-detection";
 
-// Encode binary layout test results (images, audio) using base64.
+// Encode binary web test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
 // Request the render trees of pages to be dumped as text once they have
@@ -52,7 +52,7 @@ const char kRunWebTests[] = "run-web-tests";
 
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
-// kRunLayoutTest is set. For the features' level, see
+// kRunWebTest is set. For the features' level, see
 // http://dev.chromium.org/blink/runtime-enabled-features.
 const char kStableReleaseMode[] = "stable-release-mode";
 

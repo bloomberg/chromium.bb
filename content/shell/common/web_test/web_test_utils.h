@@ -5,8 +5,8 @@
 // Helpful layout_test utility functions, built in both content_shell and
 // test_runner.
 
-#ifndef CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_UTILS_H_
-#define CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_UTILS_H_
+#ifndef CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_UTILS_H_
+#define CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_UTILS_H_
 
 class SkBitmap;
 namespace blink {
@@ -14,11 +14,11 @@ struct WebRect;
 }
 
 namespace content {
-namespace layout_test_utils {
+namespace web_test_utils {
 
 void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr);
 
-}  // namespace layout_test_utils
+}  // namespace web_test_utils
 }  // namespace content
 
-#endif  // CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_UTILS_H_
+#endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_UTILS_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/common/layout_test/layout_test_utils.h"
+#include "content/shell/common/web_test/web_test_utils.h"
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "third_party/blink/public/platform/web_rect.h"
 
 namespace content {
-namespace layout_test_utils {
+namespace web_test_utils {
 
 // Utility function to draw a selection rect into a bitmap.
 void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
@@ -24,5 +24,5 @@ void DrawSelectionRect(const SkBitmap& bitmap, const blink::WebRect& wr) {
   canvas.drawIRect(rect, flags);
 }
 
-}  // namespace layout_test_utils
+}  // namespace web_test_utils
 }  // namespace content

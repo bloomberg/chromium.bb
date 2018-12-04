@@ -26,8 +26,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_RegisterIsolatedFileSystem,
                            std::vector<base::FilePath> /* absolute_filenames */,
                            std::string /* filesystem_id */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ClearAllDatabases)
-IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota,
-                    int /* quota */)
+IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota, int /* quota */)
 IPC_MESSAGE_ROUTED3(LayoutTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */,
                     base::Optional<int> /* action_index */,
@@ -35,8 +34,7 @@ IPC_MESSAGE_ROUTED3(LayoutTestHostMsg_SimulateWebNotificationClick,
 IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClose,
                     std::string /* title */,
                     bool /* by_user */)
-IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_BlockThirdPartyCookies,
-                    bool /* block */)
+IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_BlockThirdPartyCookies, bool /* block */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     std::string /* name */,
