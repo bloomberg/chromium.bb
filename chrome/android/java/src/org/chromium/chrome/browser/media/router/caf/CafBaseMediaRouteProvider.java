@@ -45,7 +45,7 @@ public abstract class CafBaseMediaRouteProvider
     protected final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
     @VisibleForTesting
-    final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
+    protected final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
     protected Handler mHandler = new Handler();
 
     private CreateRouteRequestInfo mPendingCreateRouteRequestInfo;

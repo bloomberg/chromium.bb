@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.media.router.caf.remoting;
 
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
+import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 import org.chromium.chrome.browser.media.router.MediaSource;
@@ -53,5 +55,17 @@ public class CafRemotingMediaRouteProvider extends CafBaseMediaRouteProvider {
             MediaRouter androidMediaRouter, MediaRouteManager manager) {
         super(androidMediaRouter, manager);
         mSessionController = new RemotingSessionController(this);
+    }
+
+    @Override
+    @Nullable
+    public FlingingController getFlingingController(String routeId) {
+        if (!sessionController().isConnected()) {
+            return null;
+        }
+
+        if (!mRoutes.containsKey(routeId)) return null;
+
+        return sessionController().getFlingingController();
     }
 }
