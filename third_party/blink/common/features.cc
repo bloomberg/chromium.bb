@@ -24,6 +24,10 @@ const base::Feature kEnableGpuRasterizationViewportRestriction{
     "EnableGpuRasterizationViewportRestriction",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls script streaming.
+const base::Feature kScriptStreaming{"ScriptStreaming",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable FCP++ by experiment. See https://crbug.com/869924
 const base::Feature kFirstContentfulPaintPlusPlus{
     "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
@@ -301,6 +302,12 @@ bool ScriptResource::StartStreaming(
 
   // Don't bother streaming if there was an error, it won't work anyway.
   if (ErrorOccurred()) {
+    return false;
+  }
+
+  static bool script_streaming_enabled =
+      base::FeatureList::IsEnabled(features::kScriptStreaming);
+  if (!script_streaming_enabled) {
     return false;
   }
 
