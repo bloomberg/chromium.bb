@@ -33,18 +33,22 @@ def RunSteps(api):
       limit=1,
   )
 
+  # Query which returns no changes is still successful query.
+  empty_list = api.gerrit.get_changes(
+      host,
+      query_params=[
+        ('project', 'chromium/src'),
+        ('status', 'open'),
+        ('label', 'Commit-Queue>2'),
+      ],
+      name='changes empty query',
+  )
+  assert len(empty_list) == 0
+
   api.gerrit.get_change_description(
       host, change=123, patchset=1)
 
-  first = api.gerrit.get_change_destination_branch(host, change=123)
-  # Second call returns cached data.
-  second = api.gerrit.get_change_destination_branch(host, change=123)
-  assert first == second
-
   with api.step.defer_results():
-    api.gerrit.get_change_destination_branch(
-        host, change=122, name='missing_cl')
-
     api.gerrit.get_change_description(
         host, change=122, patchset=3)
 
@@ -61,7 +65,7 @@ def GenTests(api):
           api.gerrit.make_gerrit_get_branch_response_data()
       )
       + api.step_data(
-          'gerrit missing_cl',
-          api.gerrit.get_empty_changes_response_data()
+        'gerrit changes empty query',
+        api.gerrit.get_empty_changes_response_data()
       )
   )

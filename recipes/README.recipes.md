@@ -332,7 +332,7 @@ Create a new branch from given project and commit
 Returns:
   the ref of the branch created
 
-&mdash; **def [get\_change\_description](/recipes/recipe_modules/gerrit/api.py#106)(self, host, change, patchset):**
+&mdash; **def [get\_change\_description](/recipes/recipe_modules/gerrit/api.py#72)(self, host, change, patchset):**
 
 Get the description for a given CL and patchset.
 
@@ -344,20 +344,7 @@ Args:
 Returns:
   The description corresponding to given CL and patchset.
 
-&mdash; **def [get\_change\_destination\_branch](/recipes/recipe_modules/gerrit/api.py#72)(self, host, change, name=None, step_test_data=None):**
-
-Get the upstream branch for a given CL.
-
-Result is cached.
-
-Args:
-  host: URL of Gerrit host to query.
-  change: The change number.
-
-Returns:
-  the name of the branch
-
-&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#151)(self, host, query_params, start=None, limit=None, o_params=None, step_test_data=None, \*\*kwargs):**
+&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#117)(self, host, query_params, start=None, limit=None, o_params=None, step_test_data=None, \*\*kwargs):**
 
 Query changes for the given host.
 
@@ -382,7 +369,7 @@ Get a branch from given project and commit
 Returns:
   the revision of the branch
 
-&mdash; **def [get\_revision\_info](/recipes/recipe_modules/gerrit/api.py#121)(self, host, change, patchset):**
+&mdash; **def [get\_revision\_info](/recipes/recipe_modules/gerrit/api.py#87)(self, host, change, patchset):**
 
 Returns the info for a given patchset of a given change.
 
