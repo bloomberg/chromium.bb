@@ -33,6 +33,9 @@ Polymer({
     /** True if the dropdown is currently open. */
     dropdownOpen: {type: Boolean, reflectToAttribute: true, value: false},
 
+    /** Whether the dropdown should be centered or right aligned. */
+    dropdownCentered: {type: Boolean, reflectToAttribute: true, value: false},
+
     /** Toolbar icon currently being displayed. */
     dropdownIcon: {
       type: String,
@@ -72,6 +75,19 @@ Polymer({
         this.updateMaxHeight();
       this.fire('dropdown-opened', this.metricsId);
     }
+
+    if (this.dropdownOpen) {
+      const listener = (e) => {
+        if (e.path.includes(this))
+          return;
+        if (this.dropdownOpen)
+          this.toggleDropdown();
+        // Clean up the handler. The dropdown may already be closed.
+        window.removeEventListener('pointerdown', listener);
+      };
+      window.addEventListener('pointerdown', listener);
+    }
+
     this.playAnimation_(this.dropdownOpen);
   },
 
