@@ -2494,7 +2494,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int dequant_shift =
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
   const int q_step = pd->dequant_Q3[1] >> dequant_shift;
-  const double num_samples = txw * txh;
+  const int num_samples = txw * txh;
 
   const double rate_norm = (double)rd_stats->rate / num_samples;
   const double dist_norm = (double)rd_stats->dist / num_samples;
