@@ -171,7 +171,9 @@ Polymer({
     this.showStartDialog_ = false;
     this.showProgressDialog_ = false;
     this.showErrorDialog_ = false;
-    this.fire('passwords-export-dialog-close');
+    // Need to allow for the dialogs to be removed from the DOM before firing
+    // the close event. Otherwise the handler will not be able to set focus.
+    this.async(() => this.fire('passwords-export-dialog-close'));
   },
 
   /**
