@@ -8,13 +8,12 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/render_frame_host.h"
-#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_event_bundle_sink.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
@@ -32,8 +31,6 @@
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "ui/base/ui_base_features.h"
 #endif
-
-using extensions::AutomationEventRouter;
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
@@ -198,16 +195,13 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   }
   processing_events_ = true;
 
-  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = ui::DesktopAXTreeID();
-  event_bundle.mouse_location = aura::Env::GetInstance()->last_mouse_location();
-
+  std::vector<ui::AXTreeUpdate> tree_updates;
   ui::AXTreeUpdate update;
   if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
     LOG(ERROR) << "Unable to serialize one accessibility event.";
     return;
   }
-  event_bundle.updates.push_back(update);
+  tree_updates.push_back(update);
 
   // Make sure the focused node is serialized.
   views::AXAuraObjWrapper* focus =
@@ -215,9 +209,10 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   if (focus) {
     ui::AXTreeUpdate focused_node_update;
     current_tree_serializer_->SerializeChanges(focus, &focused_node_update);
-    event_bundle.updates.push_back(focused_node_update);
+    tree_updates.push_back(focused_node_update);
   }
 
+  std::vector<ui::AXEvent> events;
   // Fire the event on the node, but only if it's actually in the tree.
   // Sometimes we get events fired on nodes with an ancestor that's
   // marked invisible, for example. In those cases we should still
@@ -227,14 +222,14 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
     ui::AXEvent event;
     event.id = aura_obj->GetUniqueId();
     event.event_type = event_type;
-    event_bundle.events.push_back(event);
+    events.push_back(event);
   }
 
-  AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvents(event_bundle);
-
-  if (event_bundle_callback_for_testing_)
-    event_bundle_callback_for_testing_.Run(event_bundle);
+  if (event_bundle_sink_) {
+    event_bundle_sink_->DispatchAccessibilityEvents(
+        ui::DesktopAXTreeID(), std::move(tree_updates),
+        aura::Env::GetInstance()->last_mouse_location(), std::move(events));
+  }
 
   processing_events_ = false;
   auto pending_events_copy = pending_events_;

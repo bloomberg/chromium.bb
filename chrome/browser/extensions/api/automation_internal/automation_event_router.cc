@@ -26,6 +26,10 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#endif
+
 namespace extensions {
 
 // static
@@ -41,6 +45,10 @@ AutomationEventRouter::AutomationEventRouter()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
+#if defined(USE_AURA)
+  // Not reset because |this| is leaked.
+  AutomationManagerAura::GetInstance()->set_event_bundle_sink(this);
+#endif
 }
 
 AutomationEventRouter::~AutomationEventRouter() {
@@ -206,6 +214,20 @@ void AutomationEventRouter::Register(const ExtensionId& extension_id,
   iter->tree_ids.insert(ax_tree_id);
   if (desktop)
     iter->desktop = true;
+}
+
+void AutomationEventRouter::DispatchAccessibilityEvents(
+    const ui::AXTreeID& tree_id,
+    std::vector<ui::AXTreeUpdate> updates,
+    const gfx::Point& mouse_location,
+    std::vector<ui::AXEvent> events) {
+  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
+  event_bundle.tree_id = tree_id;
+  event_bundle.updates = std::move(updates);
+  event_bundle.mouse_location = mouse_location;
+  event_bundle.events = std::move(events);
+
+  DispatchAccessibilityEvents(event_bundle);
 }
 
 void AutomationEventRouter::Observe(
