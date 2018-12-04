@@ -2801,6 +2801,9 @@ crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/w
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-main-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-sub-frame-navigation.sub.html [ Skip ]
 
+# We don't fully implement the plugin-types check
+crbug.com/911114 external/wpt/content-security-policy/plugin-types/plugintypes-mismatched-data.html [ Skip ]
+crbug.com/911114 external/wpt/content-security-policy/plugin-types/plugintypes-mismatched-url.html [ Skip ]
 
 # Remove these from virtual tests when the reporting api is turned on by default
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Skip ]
