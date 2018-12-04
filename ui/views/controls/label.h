@@ -231,7 +231,10 @@ class VIEWS_EXPORT Label : public View,
 
   // Draw a focus ring. The default implementation does nothing.
   virtual void PaintFocusRing(gfx::Canvas* canvas) const;
-  gfx::Rect GetFocusRingBounds() const;
+
+  // Returns the preferred size and position of the text in local coordinates,
+  // which may exceed the local bounds of the label.
+  gfx::Rect GetTextBounds() const;
 
   void PaintText(gfx::Canvas* canvas);
 

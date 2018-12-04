@@ -34,14 +34,6 @@
 #include "ui/views/selection_controller.h"
 
 namespace views {
-namespace {
-// Returns additional Insets applied to |label->GetContentsBounds()| to obtain
-// the text bounds. GetContentsBounds() includes the Border, but not any
-// additional insets used by the Label (e.g. for a focus ring).
-gfx::Insets NonBorderInsets(const Label& label) {
-  return label.GetInsets() - label.View::GetInsets();
-}
-}  // namespace
 
 const char Label::kViewClassName[] = "Label";
 
@@ -449,20 +441,14 @@ void Label::PaintFocusRing(gfx::Canvas* canvas) const {
   // No focus ring by default.
 }
 
-gfx::Rect Label::GetFocusRingBounds() const {
+gfx::Rect Label::GetTextBounds() const {
   MaybeBuildDisplayText();
 
-  gfx::Rect focus_bounds;
-  if (!display_text_) {
-    focus_bounds = gfx::Rect(GetTextSize());
-  } else {
-    focus_bounds = gfx::Rect(gfx::Point() + display_text_->GetLineOffset(0),
-                             display_text_->GetStringSize());
-  }
+  if (!display_text_)
+    return gfx::Rect(GetTextSize());
 
-  focus_bounds.Inset(-NonBorderInsets(*this));
-  focus_bounds.Intersect(GetLocalBounds());
-  return focus_bounds;
+  return gfx::Rect(gfx::Point() + display_text_->GetLineOffset(0),
+                   display_text_->GetStringSize());
 }
 
 void Label::PaintText(gfx::Canvas* canvas) {
@@ -845,7 +831,6 @@ void Label::MaybeBuildDisplayText() const {
     return;
 
   gfx::Rect rect = GetContentsBounds();
-  rect.Inset(NonBorderInsets(*this));
   if (rect.IsEmpty())
     return;
 

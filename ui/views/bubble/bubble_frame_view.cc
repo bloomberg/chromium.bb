@@ -160,14 +160,17 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size,
   DCHECK(GetWidget()->client_view()->size() == size);
 
   const int radius = bubble_border_->GetBorderCornerRadius();
-  gfx::Insets content_insets = GetInsets();
-  // If the client bounds don't touch the edges, no need to mask.
-  if (std::min({content_insets.top(), content_insets.left(),
-                content_insets.bottom(), content_insets.right()}) > radius) {
+  const gfx::Insets insets =
+      GetClientInsetsForFrameWidth(GetContentsBounds().width());
+
+  // A mask is not needed if the content does not overlap the rounded corners.
+  if ((insets.top() > radius && insets.bottom() > radius) ||
+      (insets.left() > radius && insets.right() > radius)) {
     return false;
   }
-  gfx::RectF rect((gfx::Rect(size)));
-  path->addRoundRect(gfx::RectFToSkRect(rect), radius, radius);
+
+  const SkRect rect = SkRect::MakeIWH(size.width(), size.height());
+  path->addRoundRect(rect, radius, radius);
   return true;
 }
 
@@ -265,10 +268,6 @@ void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
 
 const char* BubbleFrameView::GetClassName() const {
   return kViewClassName;
-}
-
-gfx::Insets BubbleFrameView::GetInsets() const {
-  return GetClientInsetsForFrameWidth(GetContentsBounds().width());
 }
 
 gfx::Size BubbleFrameView::CalculatePreferredSize() const {

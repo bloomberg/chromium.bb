@@ -132,11 +132,29 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
   EXPECT_EQ(kColor, frame.bubble_border()->background_color());
 
-  int margin_x = frame.content_margins().left();
-  int margin_y = frame.content_margins().top();
-  gfx::Insets insets = frame.bubble_border()->GetInsets();
-  EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
-  EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
+  const gfx::Insets content_margins = frame.content_margins();
+  const gfx::Insets insets = frame.GetInsets();
+  const gfx::Rect client_view_bounds = frame.GetBoundsForClientView();
+  EXPECT_EQ(insets.left() + content_margins.left(), client_view_bounds.x());
+  EXPECT_EQ(insets.top() + content_margins.top(), client_view_bounds.y());
+}
+
+TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
+  TestBubbleFrameView frame(this);
+  frame.widget_delegate()->SetShouldShowCloseButton(true);
+  frame.ResetWindowControls();
+  EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
+  EXPECT_EQ(kColor, frame.bubble_border()->background_color());
+
+  const gfx::Insets content_margins = frame.content_margins();
+  const gfx::Insets insets = frame.GetInsets();
+  const int close_margin =
+      frame.GetCloseButtonForTest()->height() +
+      LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
+  const gfx::Rect client_view_bounds = frame.GetBoundsForClientView();
+  EXPECT_EQ(insets.left() + content_margins.left(), client_view_bounds.x());
+  EXPECT_EQ(insets.top() + content_margins.top() + close_margin,
+            client_view_bounds.y());
 }
 
 TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
@@ -150,21 +168,6 @@ TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
   footnote_dummy_view = nullptr;
   EXPECT_FALSE(container_view->visible());
   EXPECT_EQ(nullptr, frame.footnote_container_);
-}
-
-TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
-  TestBubbleFrameView frame(this);
-  frame.widget_delegate()->SetShouldShowCloseButton(true);
-  frame.ResetWindowControls();
-  EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
-  EXPECT_EQ(kColor, frame.bubble_border()->background_color());
-
-  gfx::Insets frame_insets = frame.GetInsets();
-  gfx::Insets border_insets = frame.bubble_border()->GetInsets();
-  EXPECT_EQ(border_insets.left() + frame_insets.left(),
-            frame.GetBoundsForClientView().x());
-  EXPECT_EQ(border_insets.top() + frame_insets.top(),
-            frame.GetBoundsForClientView().y());
 }
 
 TEST_F(BubbleFrameViewTest,
