@@ -1572,23 +1572,23 @@ This file contains the strings for ash.
       </message>
 
       <!-- Strings shown within MultiDevice setup notifications -->
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup when their Chromebook recognizes that they have a phone on their account that the Chromebook can connect to">
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup when their Chrome device recognizes that they have a phone on their account that the Chrome device can connect to">
         Your devices work even better together
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup when their Chromebook recognizes that they have a phone on their account that the Chromebook can connect to. Clicking it opens a prompt to guide them through setting up.">
-        Connect your Chromebook with your phone
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup when their Chrome device recognizes that they have a phone on their account that the Chrome device can connect to. Clicking it opens a prompt to guide them through setting up.">
+        Connect your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> with your phone
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chromebook.">
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chrome device.">
         <ph name="DEVICE_NAME">$1<ex>Pixel XL</ex></ph> added
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chromebook.">
-        Chromebook connected to a new phone
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chrome device.">
+        <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> connected to a new phone
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROME_DEVICE_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chrome device that all their Chrome devices are MultiDevice enabled.">
         Connected to <ph name="DEVICE_NAME">$1<ex>Pixel XL</ex></ph>
       </message>
-      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
-        This Chromebook and your phone will connect automatically
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROME_DEVICE_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chrome device that all their Chrome devices are MultiDevice enabled.">
+        This <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> and your phone will connect automatically
       </message>
 
       <!-- Window teleportation warning dialog -->
