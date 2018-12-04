@@ -371,7 +371,7 @@ html[dir=rtl] #bg-sel-footer {
   transition-duration: 200ms;
   transition-property: background-color, color, box-shadow, border;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .bg-sel-footer-button:disabled {
