@@ -419,6 +419,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         base::Value(shill::kTetheringNotDetectedState));
     base::DictionaryValue static_ipconfig;
     static_ipconfig.SetKey(shill::kAddressProperty, base::Value("1.2.3.4"));
+    static_ipconfig.SetKey(shill::kGatewayProperty, base::Value("0.0.0.0"));
+    static_ipconfig.SetKey(shill::kPrefixlenProperty, base::Value(1));
     service_test_->SetServiceProperty(
         kWifi1ServicePath, shill::kStaticIPConfigProperty, static_ipconfig);
     base::ListValue frequencies1;

@@ -189,6 +189,7 @@ const OncFieldSignature tether_with_state_fields[] = {
     {NULL}};
 
 const OncFieldSignature ipconfig_fields[] = {
+    {::onc::kRecommended, &kRecommendedSignature},
     {::onc::ipconfig::kGateway, &kStringSignature},
     {::onc::ipconfig::kIPAddress, &kStringSignature},
     {::onc::ipconfig::kNameServers, &kStringListSignature},

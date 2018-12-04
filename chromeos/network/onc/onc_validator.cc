@@ -44,6 +44,24 @@ std::string GetStringFromDict(const base::Value& dict, const char* key) {
   return value ? value->GetString() : std::string();
 }
 
+bool FieldIsRecommended(const base::DictionaryValue& object,
+                        const std::string& field_name) {
+  const base::Value* recommended =
+      object.FindKeyOfType(::onc::kRecommended, base::Value::Type::LIST);
+  return recommended &&
+         base::ContainsValue(recommended->GetList(), base::Value(field_name));
+}
+
+bool FieldIsSetToValueOrRecommended(const base::DictionaryValue& object,
+                                    const std::string& field_name,
+                                    const base::Value& expected_value) {
+  const base::Value* actual_value = object.FindKey(field_name);
+  if (actual_value && expected_value == *actual_value)
+    return true;
+
+  return FieldIsRecommended(object, field_name);
+}
+
 }  // namespace
 
 Validator::Validator(bool error_on_unknown_field,
@@ -116,8 +134,7 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
     } else if (&signature == &kEthernetSignature) {
       valid = ValidateEthernet(repaired.get());
     } else if (&signature == &kIPConfigSignature ||
-               &signature == &kSavedIPConfigSignature ||
-               &signature == &kStaticIPConfigSignature) {
+               &signature == &kSavedIPConfigSignature) {
       valid = ValidateIPConfig(repaired.get());
     } else if (&signature == &kWiFiSignature) {
       valid = ValidateWiFi(repaired.get());
@@ -148,6 +165,10 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
     } else if (&signature == &kTetherWithStateSignature) {
       valid = ValidateTether(repaired.get());
     }
+    // StaticIPConfig is not validated here, because its correctness depends
+    // on NetworkConfiguration's 'IPAddressConfigType', 'NameServersConfigType'
+    // and 'Recommended' fields. It's validated in
+    // ValidateNetworkConfiguration() instead.
   }
 
   if (valid)
@@ -426,6 +447,19 @@ bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
   return true;
 }
 
+bool Validator::FieldShouldExistOrBeRecommended(
+    const base::DictionaryValue& object,
+    const std::string& field_name) {
+  if (object.HasKey(field_name) || FieldIsRecommended(object, field_name))
+    return true;
+
+  std::ostringstream msg;
+  msg << "Field " << field_name << " is not found, but expected either to be "
+      << "set or to be recommended.";
+  AddValidationIssue(error_on_missing_field_, msg.str());
+  return !error_on_missing_field_;
+}
+
 bool Validator::OnlyOneFieldSet(const base::DictionaryValue& object,
                                 const std::string& field_name1,
                                 const std::string& field_name2) {
@@ -617,16 +651,8 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     all_required_exist &=
         RequireField(*result, kName) && RequireField(*result, kType);
 
-    std::string ip_address_config_type =
-        GetStringFromDict(*result, kIPAddressConfigType);
-    std::string name_servers_config_type =
-        GetStringFromDict(*result, kNameServersConfigType);
-    if (ip_address_config_type == kIPConfigTypeStatic ||
-        name_servers_config_type == kIPConfigTypeStatic) {
-      // TODO(pneubeck): Add ValidateStaticIPConfig and confirm that the
-      // correct properties are provided based on the config type.
-      all_required_exist &= RequireField(*result, kStaticIPConfig);
-    }
+    if (!NetworkHasCorrectStaticIPConfig(result))
+      return false;
 
     std::string type = GetStringFromDict(*result, kType);
 
@@ -683,7 +709,8 @@ bool Validator::ValidateEthernet(base::DictionaryValue* result) {
   return !error_on_missing_field_ || all_required_exist;
 }
 
-bool Validator::ValidateIPConfig(base::DictionaryValue* result) {
+bool Validator::ValidateIPConfig(base::DictionaryValue* result,
+                                 bool require_fields) {
   using namespace ::onc::ipconfig;
 
   const char* const kValidTypes[] = {kIPv4, kIPv6};
@@ -701,13 +728,47 @@ bool Validator::ValidateIPConfig(base::DictionaryValue* result) {
     return false;
   }
 
-  bool all_required_exist = RequireField(*result, kIPAddress) &&
-                            RequireField(*result, ::onc::ipconfig::kType);
-  if (result->HasKey(kIPAddress))
+  bool all_required_exist = true;
+  if (require_fields) {
+    all_required_exist &= RequireField(*result, kIPAddress);
     all_required_exist &= RequireField(*result, kRoutingPrefix);
-
+    all_required_exist &= RequireField(*result, kGateway);
+  } else {
+    all_required_exist &= FieldShouldExistOrBeRecommended(*result, kIPAddress);
+    all_required_exist &=
+        FieldShouldExistOrBeRecommended(*result, kRoutingPrefix);
+    all_required_exist &= FieldShouldExistOrBeRecommended(*result, kGateway);
+  }
 
   return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::NetworkHasCorrectStaticIPConfig(
+    base::DictionaryValue* network) {
+  using namespace ::onc::network_config;
+  using namespace ::onc::ipconfig;
+
+  bool must_have_ip_config = FieldIsSetToValueOrRecommended(
+      *network, kIPAddressConfigType, base::Value(kIPConfigTypeStatic));
+  bool must_have_nameservers = FieldIsSetToValueOrRecommended(
+      *network, kNameServersConfigType, base::Value(kIPConfigTypeStatic));
+
+  if (!must_have_ip_config && !must_have_nameservers)
+    return true;
+
+  if (!RequireField(*network, kStaticIPConfig))
+    return false;
+
+  base::DictionaryValue* static_ip_config = nullptr;
+  network->GetDictionary(kStaticIPConfig, &static_ip_config);
+  bool valid = true;
+  // StaticIPConfig should have all fields required by the corresponding
+  // IPAddressConfigType and NameServersConfigType values.
+  if (must_have_ip_config)
+    valid &= ValidateIPConfig(static_ip_config, false /* require_fields */);
+  if (must_have_nameservers)
+    valid &= FieldShouldExistOrBeRecommended(*static_ip_config, kNameServers);
+  return valid;
 }
 
 bool Validator::ValidateWiFi(base::DictionaryValue* result) {
