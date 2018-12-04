@@ -230,7 +230,6 @@ remoting/protocol/test_event_matchers.h
 remoting/protocol/video_feedback_stub.h
 remoting/protocol/video_stream.h
 sandbox/linux/system_headers/capability.h
-services/service_manager/public/c/main.h
 skia/ext/convolver_mips_dspr2.h
 skia/ext/skia_commit_hash.h
 testing/gmock_mutant.h

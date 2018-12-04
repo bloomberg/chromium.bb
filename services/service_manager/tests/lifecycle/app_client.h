@@ -23,8 +23,7 @@ namespace test {
 class AppClient : public Service,
                   public mojom::LifecycleControl {
  public:
-  explicit AppClient(service_manager::mojom::ServiceRequest request,
-                     base::OnceClosure quit_closure);
+  explicit AppClient(service_manager::mojom::ServiceRequest request);
   ~AppClient() override;
 
   // Service:
@@ -42,13 +41,9 @@ class AppClient : public Service,
   void CloseServiceManagerConnection() override;
 
  private:
-  class ServiceImpl;
-
   void LifecycleControlBindingLost();
 
   ServiceBinding service_binding_;
-  base::OnceClosure quit_closure_;
-
   BinderRegistry registry_;
   mojo::BindingSet<mojom::LifecycleControl> bindings_;
 
