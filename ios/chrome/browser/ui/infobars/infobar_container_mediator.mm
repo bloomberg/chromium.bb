@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -79,6 +80,21 @@
 }
 
 #pragma mark - TabModelObserver
+
+- (void)tabModel:(TabModel*)model
+    didChangeActiveTab:(Tab*)newTab
+           previousTab:(Tab*)previousTab
+               atIndex:(NSUInteger)index {
+  // Dismiss the language selector, if any; this is a no-op when there's no
+  // language selector presented.
+  [self.languageSelectionHandler dismissLanguageSelector];
+}
+
+- (void)tabModel:(TabModel*)model willStartLoadingTab:(Tab*)tab {
+  // Dismiss the language selector, if any; this is a no-op when there's no
+  // language selector presented.
+  [self.languageSelectionHandler dismissLanguageSelector];
+}
 
 // TODO(crbug.com/892376): Stop observing TabModel and use WebStateList instead.
 - (void)tabModel:(TabModel*)model

@@ -17,6 +17,7 @@ class WebState;
 @class TabModel;
 @protocol ApplicationCommands;
 @protocol InfobarPositioner;
+@protocol LanguageSelectionHandler;
 @protocol SyncPresenter;
 
 // Coordinator that owns and manages an InfoBarContainer.
@@ -55,6 +56,10 @@ class WebState;
 
 // The SyncPresenter delegate for this Coordinator.
 @property(nonatomic, weak) id<SyncPresenter> syncPresenter;
+
+// The delegate that allows user to select a language from a list of languages.
+@property(nonatomic, readonly) id<LanguageSelectionHandler>
+    languageSelectionHandler;
 
 @end
 

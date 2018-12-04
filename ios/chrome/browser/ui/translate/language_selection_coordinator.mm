@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/translate/language_selection_delegate.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
+#import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/translate/language_selection_mediator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
 
@@ -18,6 +19,10 @@
 @interface LanguageSelectionCoordinator ()<
     LanguageSelectionViewControllerDelegate,
     ContainedPresenterDelegate>
+// Presenter to use to for presenting the view controller.
+@property(nonatomic) id<ContainedPresenter> presenter;
+// The base view controller the instance was initialized with.
+@property(nonatomic, weak) UIViewController* baseViewController;
 // The view controller this coordinator manages.
 @property(nonatomic) LanguageSelectionViewController* selectionViewController;
 // A mediator to interoperate with the translation model.
@@ -40,10 +45,8 @@
 
 @implementation LanguageSelectionCoordinator
 
-// Public properties.
 @synthesize baseViewController = _baseViewController;
 @synthesize presenter = _presenter;
-// Private properties.
 @synthesize selectionViewController = _selectionViewController;
 @synthesize selectionMediator = _selectionMediator;
 @synthesize selectionDelegate = _selectionDelegate;
@@ -65,8 +68,7 @@
 #pragma mark - private methods
 
 - (void)start {
-  DCHECK(self.presenter);
-
+  self.presenter = [[VerticalAnimationContainer alloc] init];
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.presentedViewController = self.selectionViewController;
   self.presenter.delegate = self;
