@@ -27,9 +27,29 @@ message RecordPageloadMetricsRequest {
   optional PageloadDeviceInfo device_info = 3;
 }
 
+// Information about an attempted HTTPS Lite Page Redirect Preview.
+message HTTPSLitePagePreviewInfo {
+  // The end result statuses. See
+  // //components/previews/content/previews_user_data.h for more detail.
+  enum Status {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    BYPASS = 2;
+    REDIRECT = 3;
+    FAILURE = 4;
+    CONTROL = 5;
+  };
+
+  // The end status of the attempted preview.
+  optional Status status = 1;
+
+  // The time spent restarting navigations before the final navigation began.
+  optional Duration navigation_restart_penalty = 2;
+}
+
 // Metrics for a single pageload.
 message PageloadMetrics {
-  // Next ID: 34
+  // Next ID: 35
   reserved 3, 26;
 
   // The possible effective connection type values.
@@ -228,4 +248,8 @@ message PageloadMetrics {
 
   // The number of main frame redirects that occurred before commit.
   optional uint32 redirect_count = 33;
+
+  // Information about an attempted HTTPS Lite Page Redirect Preview, if one was
+  // attempted.
+  optional HTTPSLitePagePreviewInfo https_litepage_info = 34;
 }

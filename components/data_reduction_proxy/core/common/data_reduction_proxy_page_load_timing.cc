@@ -18,6 +18,9 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
         parse_blocked_on_script_load_duration,
     const base::Optional<base::TimeDelta>& parse_stop,
     const base::Optional<base::TimeDelta>& page_end_time,
+    const base::Optional<base::TimeDelta>& lite_page_redirect_penalty,
+    const base::Optional<previews::ServerLitePageStatus>&
+        lite_page_redirect_status,
     const base::TimeDelta& navigation_start_to_main_frame_fetch_start,
     int64_t network_bytes,
     int64_t original_network_bytes,
@@ -42,6 +45,8 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
           parse_blocked_on_script_load_duration),
       parse_stop(parse_stop),
       page_end_time(page_end_time),
+      lite_page_redirect_penalty(lite_page_redirect_penalty),
+      lite_page_redirect_status(lite_page_redirect_status),
       navigation_start_to_main_frame_fetch_start(
           navigation_start_to_main_frame_fetch_start),
       network_bytes(network_bytes),

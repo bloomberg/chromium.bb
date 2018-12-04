@@ -209,6 +209,11 @@ void DataReductionProxyMetricsObserverTestBase::
               pingback_client_->data().session_key());
     EXPECT_EQ(preview_info_->page_id, pingback_client_->data().page_id());
     EXPECT_EQ(ect_, pingback_client_->data().effective_connection_type());
+    EXPECT_EQ(preview_info_->status,
+              pingback_client_->timing()->lite_page_redirect_status.value());
+    // This is tested better in PreviewsLitePageRedirectMetricsObserverTest.
+    EXPECT_GT(pingback_client_->timing()->lite_page_redirect_penalty.value(),
+              base::TimeDelta());
   }
 }
 

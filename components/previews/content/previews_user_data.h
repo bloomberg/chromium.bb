@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/previews_state.h"
 
 namespace previews {
@@ -21,34 +22,6 @@ namespace previews {
 class PreviewsUserData {
  public:
   explicit PreviewsUserData(uint64_t page_id);
-
-  enum class ServerLitePageStatus {
-    // The preview has been attempted yet or we have not received a response
-    // from the server yet.
-    kUnknown = 0,
-
-    // A preview was committed.
-    kSuccess = 1,
-
-    // The server bypassed the request and the preview was not committed.
-    kBypass = 2,
-
-    // The server redirected to another site. If this is the state at commit,
-    // the preview was not committed. Before commit, this indicates that we
-    // attempted the preview and may attempt another one if triggered later in
-    // the redirect
-    // chain.
-    kRedirect = 3,
-
-    // The server responded with some error, or didn't respond at all, and the
-    // original page was loaded.
-    kError = 4,
-
-    // This navigation met all triggering criteria, but the configured
-    // variations indicate that we were in a control group, so the preview was
-    // not triggered or committed.
-    kControl = 5,
-  };
 
   struct ServerLitePageInfo {
     std::unique_ptr<ServerLitePageInfo> Clone() {

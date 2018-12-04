@@ -131,6 +131,18 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.page_end_time.value())
             .release());
   }
+  // Only set the lite page info if both the penalty and status have values.
+  if (timing.lite_page_redirect_penalty.has_value() &&
+      timing.lite_page_redirect_status.has_value()) {
+    HTTPSLitePagePreviewInfo* info = request->mutable_https_litepage_info();
+    info->set_allocated_navigation_restart_penalty(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.lite_page_redirect_penalty.value())
+            .release());
+    info->set_status(
+        protobuf_parser::ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
+            timing.lite_page_redirect_status.value()));
+  }
   request->set_allocated_navigation_start_to_main_frame_fetch_start(
       protobuf_parser::CreateDurationFromTimeDelta(
           timing.navigation_start_to_main_frame_fetch_start)
