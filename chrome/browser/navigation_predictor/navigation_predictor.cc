@@ -115,7 +115,19 @@ NavigationPredictor::NavigationPredictor(
       preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kRecordAnchorMetricsVisible,
           "preconnect_origin_score_threshold",
-          0)) {
+          0))
+#ifdef OS_ANDROID
+      ,
+      application_status_listener_(
+          base::android::ApplicationStatusListener::New(base::BindRepeating(
+              &NavigationPredictor::OnApplicationStateChange,
+              // It's safe to use base::Unretained here since the application
+              // state listener is owned by |this|. So, no callbacks can
+              // arrive after |this| has been destroyed.
+              base::Unretained(this)))),
+      application_state_(base::android::ApplicationStatusListener::GetState())
+#endif  // OS_ANDROID
+{
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -254,6 +266,16 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
 
   // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
   // the web contents that was fully hidden is now fully visible.
+  TakeActionNowOnTabOrAppVisibilityChange(
+      Action::kPreconnectOnVisibilityChange);
+
+  // To keep the overhead as low, Pre* action on tab foreground is taken at most
+  // once per page.
+  Observe(nullptr);
+}
+
+void NavigationPredictor::TakeActionNowOnTabOrAppVisibilityChange(
+    Action log_action) {
   base::Optional<url::Origin> preconnect_origin;
   if (prefetch_url_) {
     // Preconnect to the origin of the prefetch URL.
@@ -267,12 +289,7 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
       source_is_default_search_engine_page_
           ? "NavigationPredictor.OnDSE.ActionTaken"
           : "NavigationPredictor.OnNonDSE.ActionTaken";
-  base::UmaHistogramEnumeration(action_histogram_name,
-                                Action::kPreconnectOnVisibilityChange);
-
-  // To keep the overhead as low, Pre* action on tab foreground is taken at most
-  // once per page.
-  Observe(nullptr);
+  base::UmaHistogramEnumeration(action_histogram_name, log_action);
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
@@ -879,3 +896,27 @@ void NavigationPredictor::RecordMetricsOnLoad(
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsUrlIncrementedByOne",
                         metric.is_url_incremented_by_one);
 }
+
+#ifdef OS_ANDROID
+void NavigationPredictor::OnApplicationStateChange(
+    base::android::ApplicationState application_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (application_state_ !=
+          base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES ||
+      application_state !=
+          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    application_state_ = application_state;
+    return;
+  }
+
+  application_state_ = application_state;
+
+  // The app was moved from background to foreground.
+  TakeActionNowOnTabOrAppVisibilityChange(Action::kPreconnectOnAppForeground);
+
+  // To keep the overhead as low, Pre* action on app foreground is taken at most
+  // once per page.
+  application_status_listener_.reset();
+}
+#endif  // OS_ANDROID
