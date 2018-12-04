@@ -55,6 +55,9 @@ public class H2OLauncher {
      */
     public static void changeEnabledComponentsAndKillShellApk(
             Context context, ComponentName enableComponent, ComponentName disableComponent) {
+        // Force any pending SharedPreference writes to occur.
+        WebApkSharedPreferences.flushPendingWrites(context);
+
         PackageManager pm = context.getPackageManager();
         // The state change takes seconds if we do not let PackageManager kill the ShellAPK.
         pm.setComponentEnabledSetting(enableComponent,

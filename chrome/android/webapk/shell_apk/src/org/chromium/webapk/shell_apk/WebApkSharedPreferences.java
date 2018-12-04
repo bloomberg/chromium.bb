@@ -4,6 +4,7 @@
 
 package org.chromium.webapk.shell_apk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -32,5 +33,18 @@ public final class WebApkSharedPreferences {
 
     public static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    }
+
+    /** Deletes the SharedPreferences for the given context. */
+    public static void clear(Context context) {
+        SharedPreferences.Editor editor = getPrefs(context).edit();
+        editor.clear();
+        editor.apply();
+    }
+
+    /** Force any pending SharedPreference writes to occur. */
+    @SuppressLint({"ApplySharedPref"})
+    public static void flushPendingWrites(Context context) {
+        getPrefs(context).edit().commit();
     }
 }
