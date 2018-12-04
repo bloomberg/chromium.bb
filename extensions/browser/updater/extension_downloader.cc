@@ -27,6 +27,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
@@ -482,9 +483,11 @@ network::mojom::URLLoaderFactory* ExtensionDownloader::GetURLLoaderFactoryToUse(
     return url_loader_factory_.get();
   }
 
-  // file:// URL support.
-  auto file_url_loader_factory =
-      content::CreateFileURLLoaderFactory(profile_path_for_url_loader_factory_);
+  // For file:// URL support, since we only issue "no-cors" requests with this
+  // factory, we can pass nullptr for the second argument.
+  auto file_url_loader_factory = content::CreateFileURLLoaderFactory(
+      profile_path_for_url_loader_factory_,
+      nullptr /* shared_cors_origin_access_list */);
   file_url_loader_factory_ = std::move(file_url_loader_factory);
   return file_url_loader_factory_.get();
 }
