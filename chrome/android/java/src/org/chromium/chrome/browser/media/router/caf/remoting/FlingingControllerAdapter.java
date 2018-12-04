@@ -19,6 +19,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
     private final RemotingSessionController mSessionController;
     private MediaStatusObserver mMediaStatusObserver;
+    private long mCachedApproximateCurrentTime;
 
     FlingingControllerAdapter(RemotingSessionController sessionController) {
         mSessionController = sessionController;
@@ -47,7 +48,11 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
     @Override
     public long getApproximateCurrentTime() {
-        return mSessionController.getRemoteMediaClient().getApproximateStreamPosition();
+        if (mSessionController.isConnected()) {
+            mCachedApproximateCurrentTime =
+                    mSessionController.getRemoteMediaClient().getApproximateStreamPosition();
+        }
+        return mCachedApproximateCurrentTime;
     }
 
     ////////////////////////////////////////////

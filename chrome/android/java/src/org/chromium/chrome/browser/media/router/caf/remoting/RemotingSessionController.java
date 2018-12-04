@@ -39,6 +39,7 @@ public class RemotingSessionController extends BaseSessionController {
 
     @Override
     public void onSessionStarted() {
+        super.onSessionStarted();
         getRemoteMediaClient().load(
                 new MediaInfo.Builder(((RemotingMediaSource) getSource()).getMediaUrl()).build());
     }
