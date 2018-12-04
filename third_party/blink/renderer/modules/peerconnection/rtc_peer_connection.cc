@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -135,7 +136,7 @@ const char kOnlySupportedInUnifiedPlanMessage[] =
     "sdpSemantics:'unified-plan' present in the RTCConfiguration argument.";
 
 // The maximum number of PeerConnections that can exist simultaneously.
-const long kMaxPeerConnections = 500;
+const int64_t kMaxPeerConnections = 500;
 
 bool ThrowExceptionIfSignalingStateClosed(
     webrtc::PeerConnectionInterface::SignalingState state,
@@ -216,7 +217,7 @@ scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
     const RTCIceCandidateInit* ice_candidate_init =
         candidate.GetAsRTCIceCandidateInit();
     // TODO(guidou): Change default value to -1. crbug.com/614958.
-    unsigned short sdp_m_line_index = 0;
+    uint16_t sdp_m_line_index = 0;
     if (ice_candidate_init->hasSdpMLineIndex()) {
       sdp_m_line_index = ice_candidate_init->sdpMLineIndex();
     } else {
@@ -760,8 +761,9 @@ RTCPeerConnection::~RTCPeerConnection() {
   DCHECK(closed_ || stopped_);
   InstanceCounters::DecrementCounter(
       InstanceCounters::kRTCPeerConnectionCounter);
-  DCHECK(InstanceCounters::CounterValue(
-             InstanceCounters::kRTCPeerConnectionCounter) >= 0);
+  DCHECK_GE(InstanceCounters::CounterValue(
+                InstanceCounters::kRTCPeerConnectionCounter),
+            0);
 }
 
 void RTCPeerConnection::Dispose() {
@@ -1753,7 +1755,6 @@ String RTCPeerConnection::iceConnectionState() const {
     case webrtc::PeerConnectionInterface::kIceConnectionMax:
       NOTREACHED();
   }
-
   NOTREACHED();
   return String();
 }
