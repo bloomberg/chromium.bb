@@ -128,10 +128,6 @@ void EnableForTesting() {
   enable_for_testing_ = true;
 }
 
-bool IsEnabledForTesting() {
-  return enable_for_testing_;
-}
-
 void DisablePinByPolicyForTesting(bool disable) {
   disable_pin_by_policy_for_testing_ = disable;
 }
