@@ -35,11 +35,11 @@ function setUp() {
 }
 
 /**
- * Returns a Crostini implementation.
+ * Create a Crostini for tests.
  * @return {!Crostini}
  */
 function createCrostini() {
-  const crostini = new CrostiniImpl();
+  const crostini = createCrostiniForTest();
   crostini.init(/** @type {!VolumeManager} */ ({
     getLocationInfo: (entry) => {
       return /** @type {!EntryLocation} */ ('test');
