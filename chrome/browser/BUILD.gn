@@ -5018,6 +5018,7 @@ grit("resources") {
     "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
+    "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
     "//device/bluetooth/public/mojom:deprecated_experimental_interfaces_js",

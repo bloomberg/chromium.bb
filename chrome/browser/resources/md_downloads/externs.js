@@ -11,27 +11,8 @@
 var downloads = {};
 
 /**
- * The type of the download object. The definition is based on
- * MdDownloadsDOMHandler::CreateDownloadItemValue()
- * @typedef {{by_ext_id: string,
- *            by_ext_name: string,
- *            danger_type: string,
- *            date_string: string,
- *            file_externally_removed: boolean,
- *            file_name: string,
- *            file_path: string,
- *            file_url: string,
- *            id: string,
- *            last_reason_text: string,
- *            otr: boolean,
- *            percent: number,
- *            progress_status_text: string,
- *            resume: boolean,
- *            retry: boolean,
- *            since_string: string,
- *            started: number,
- *            state: string,
- *            total: number,
- *            url: string}}
+ * The type of the download object. The definition is based on the Data struct
+ * in md_downloads.mojom.
+ * @typedef {mdDownloads.mojom.Data | {hideDate: boolean}}
  */
 downloads.Data;

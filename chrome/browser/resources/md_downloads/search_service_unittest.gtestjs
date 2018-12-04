@@ -34,8 +34,11 @@ TEST_F('SearchServiceUnitTest', 'splitTerms', function() {
 });
 
 TEST_F('SearchServiceUnitTest', 'searchWithSimilarTerms', function() {
+  // TODO(calamity): Replace this with an mdDownloads.mojom.PageHandlerProxy()
+  // once we can include generated files from inside a gtestjs.
+  downloads.BrowserProxy.instance_ = {handler: {}};
   class TestSearchService extends downloads.SearchService {
-    loadMore() { /* No chrome.send() for you! */ }
+    loadMore() { /* Remove call to backend. */ }
   }
 
   const searchService = new TestSearchService();

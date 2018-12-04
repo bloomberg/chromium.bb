@@ -7,11 +7,14 @@
 #include <vector>
 
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
+#include "chrome/browser/ui/webui/md_downloads/mock_md_downloads_page.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,11 +22,14 @@ namespace {
 
 class TestMdDownloadsDOMHandler : public MdDownloadsDOMHandler {
  public:
-  explicit TestMdDownloadsDOMHandler(content::DownloadManager* download_manager,
-                                     content::WebUI* web_ui)
-      : MdDownloadsDOMHandler(download_manager, web_ui) {}
+  TestMdDownloadsDOMHandler(md_downloads::mojom::PagePtr page,
+                            content::DownloadManager* download_manager,
+                            content::WebUI* web_ui)
+      : MdDownloadsDOMHandler(md_downloads::mojom::PageHandlerRequest(),
+                              std::move(page),
+                              download_manager,
+                              web_ui) {}
 
-  using MdDownloadsDOMHandler::set_web_ui;
   using MdDownloadsDOMHandler::FinalizeRemovals;
   using MdDownloadsDOMHandler::RemoveDownloads;
 };
@@ -33,6 +39,8 @@ class TestMdDownloadsDOMHandler : public MdDownloadsDOMHandler {
 // A fixture to test MdDownloadsDOMHandler.
 class MdDownloadsDOMHandlerTest : public testing::Test {
  public:
+  MdDownloadsDOMHandlerTest() {}
+
   // testing::Test:
   void SetUp() override {
     ON_CALL(manager_, GetBrowserContext())
@@ -42,6 +50,9 @@ class MdDownloadsDOMHandlerTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
   content::MockDownloadManager* manager() { return &manager_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
+
+ protected:
+  testing::StrictMock<MockPage> page_;
 
  private:
   // NOTE: The initialization order of these members matters.
@@ -54,7 +65,7 @@ class MdDownloadsDOMHandlerTest : public testing::Test {
 
 TEST_F(MdDownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  TestMdDownloadsDOMHandler handler(manager(), web_ui());
+  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
 
   testing::Mock::VerifyAndClear(manager());
 
@@ -63,15 +74,11 @@ TEST_F(MdDownloadsDOMHandlerTest, ChecksForRemovedFiles) {
 }
 
 TEST_F(MdDownloadsDOMHandlerTest, HandleGetDownloads) {
-  TestMdDownloadsDOMHandler handler(manager(), web_ui());
-  handler.set_web_ui(web_ui());
+  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
 
-  base::ListValue empty_search_terms;
-  handler.HandleGetDownloads(&empty_search_terms);
+  handler.GetDownloads(std::vector<std::string>());
 
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
+  EXPECT_CALL(page_, InsertItems(0, testing::_));
 }
 
 TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
@@ -103,7 +110,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
 
   ASSERT_TRUE(DownloadItemModel(&completed).ShouldShowInShelf());
 
-  TestMdDownloadsDOMHandler handler(manager(), web_ui());
+  TestMdDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
   handler.RemoveDownloads(downloads);
 
   // Ensure |completed| has been "soft removed" (i.e. can be revived).

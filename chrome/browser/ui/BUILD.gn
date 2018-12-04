@@ -389,6 +389,7 @@ jumbo_split_static_library("ui") {
     "//chrome/browser/ui/webui/app_management:mojo_bindings",
     "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",
+    "//chrome/browser/ui/webui/md_downloads:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/common",

@@ -20,12 +20,12 @@ cr.define('downloads', function() {
       },
     },
 
-    /** @private {?downloads.BrowserProxy} */
+    /** @private {?mdDownloads.mojom.PageHandlerInterface} */
     browserProxy_: null,
 
     /** @override */
     ready: function() {
-      this.browserProxy_ = downloads.BrowserProxy.getInstance();
+      this.browserProxy_ = downloads.BrowserProxy.getInstance().handler;
     },
 
     /** @return {boolean} Whether removal can be undone. */
@@ -77,7 +77,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onOpenDownloadsFolderTap_: function() {
-      this.browserProxy_.openDownloadsFolder();
+      this.browserProxy_.openDownloadsFolderRequiringGesture();
       this.$.moreActionsMenu.close();
     },
 

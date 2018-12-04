@@ -15,17 +15,12 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/download_item.h"
 
-namespace base {
-class DictionaryValue;
-class ListValue;
-}
-
 namespace content {
 class DownloadManager;
-class WebUI;
 }
 
 // A class that tracks all downloads activity and keeps a sorted representation
@@ -34,7 +29,7 @@ class DownloadsListTracker
     : public download::AllDownloadItemNotifier::Observer {
  public:
   DownloadsListTracker(content::DownloadManager* download_manager,
-                       content::WebUI* web_ui);
+                       md_downloads::mojom::PagePtr page);
   ~DownloadsListTracker() override;
 
   // Clears all downloads on the page if currently sending updates and resets
@@ -44,7 +39,7 @@ class DownloadsListTracker
   // This class only cares about downloads that match |search_terms|.
   // An empty list shows all downloads (the default). Returns true if
   // |search_terms| differ from the current ones.
-  bool SetSearchTerms(const base::ListValue& search_terms);
+  bool SetSearchTerms(const std::vector<std::string>& search_terms);
 
   // Starts sending updates and sends a capped amount of downloads. Tracks which
   // downloads have been sent. Re-call this to send more.
@@ -67,11 +62,11 @@ class DownloadsListTracker
  protected:
   // Testing constructor.
   DownloadsListTracker(content::DownloadManager* download_manager,
-                       content::WebUI* web_ui,
+                       md_downloads::mojom::PagePtr page,
                        base::Callback<bool(const download::DownloadItem&)>);
 
   // Creates a dictionary value that's sent to the page as JSON.
-  virtual std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
+  virtual md_downloads::mojom::DataPtr CreateDownloadData(
       download::DownloadItem* item) const;
 
   // Exposed for testing.
@@ -113,8 +108,7 @@ class DownloadsListTracker
   download::AllDownloadItemNotifier main_notifier_;
   std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
 
-  // The WebUI object corresponding to the page we care about.
-  content::WebUI* const web_ui_;
+  md_downloads::mojom::PagePtr page_;
 
   // Callback used to determine if an item should show on the page. Set to
   // |ShouldShow()| in default constructor, passed in while testing.
