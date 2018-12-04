@@ -3299,7 +3299,7 @@
       },
       {
         "args": [
-          "--smoke-test-mode",
+          "--pageset-repeat=1",
           "--test-shard-map-filename=smoke_test_benchmark_shard_map.json",
           "--browser=debug_x64"
         ],
@@ -4866,7 +4866,7 @@
       },
       {
         "args": [
-          "--smoke-test-mode",
+          "--pageset-repeat=1",
           "--test-shard-map-filename=smoke_test_benchmark_shard_map.json",
           "--browser=debug"
         ],

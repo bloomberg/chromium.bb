@@ -44,13 +44,13 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   #
   # This smoke test dynamically tests all benchmarks. So disabling it for one
   # failing or flaky benchmark would disable a much wider swath of coverage
-  # than is usally intended. Instead, if a particular benchmark is failing,
+  # than is usually intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
   @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
     # Only measure a single page so that this test cycles reasonably quickly.
-    benchmark.options['smoke_test_mode'] = True
+    benchmark.options['pageset_repeat'] = 1
 
     # Some benchmarks are running multiple iterations
     # which is not needed for a smoke test

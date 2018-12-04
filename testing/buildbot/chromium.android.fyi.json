@@ -709,7 +709,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--smoke-test-mode",
+          "--pageset-repeat=1",
           "--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo",
           "-v",
           "--output-format=chartjson",
