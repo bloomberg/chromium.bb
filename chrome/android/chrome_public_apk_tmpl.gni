@@ -4,10 +4,10 @@
 
 import("//base/android/linker/config.gni")
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/rules.gni")
-import("//build/config/locales.gni")
 import("//build/config/android/extract_unwind_tables.gni")
+import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("channel.gni")
@@ -341,23 +341,5 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         }
       }
     }
-  }
-}
-
-# These empty templates are still being called from the clank/ BUILD.gn
-# scripts. Remove them when they have been fixed to call the
-# xxx_common_apk_or_module_tmpl templates above.
-
-template("chrome_public_apk_tmpl") {
-  chrome_public_common_apk_or_module_tmpl(target_name) {
-    forward_variables_from(invoker, "*")
-    target_type = "android_apk"
-  }
-}
-
-template("monochrome_public_apk_tmpl") {
-  monochrome_public_common_apk_or_module_tmpl(target_name) {
-    forward_variables_from(invoker, "*")
-    target_type = "android_apk"
   }
 }
