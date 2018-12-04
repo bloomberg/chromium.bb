@@ -594,12 +594,15 @@ class CompleteState(object):
         self.saved_state.files.pop(infile)
       else:
         filepath = os.path.join(self.root_dir, infile)
-        self.saved_state.files[infile] = isolated_format.file_to_metadata(
+        # This code used to try to reuse the previous data if possible in
+        # saved_state. This performance optimization is not done anymore. This
+        # code is going away soon and shouldn't be used in new code.
+        meta = isolated_format.file_to_metadata(
             filepath,
-            self.saved_state.files[infile],
             self.saved_state.read_only,
             self.saved_state.algo,
             collapse_symlinks)
+        self.saved_state.files[infile] = meta
 
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""

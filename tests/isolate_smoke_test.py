@@ -516,14 +516,13 @@ class IsolateTempdirBase(unittest.TestCase):
       return
     test_utils.make_tree(self.isolate_dir, DEPENDENCIES[case][0])
 
-  def _gen_files(self, read_only, empty_file, with_time):
+  def _gen_files(self, read_only, empty_file):
     """Returns a dict of files like calling isolate.files_to_metadata() on each
     file.
 
     Arguments:
     - read_only: Mark all the 'm' modes without the writeable bit.
     - empty_file: Add a specific empty file (size 0).
-    - with_time: Include 't' timestamps. For saved state .state files.
     """
     root_dir = self.isolate_dir
     if RELATIVE_CWD[self.case()] == '.':
@@ -538,10 +537,6 @@ class IsolateTempdirBase(unittest.TestCase):
         v[u's'] = int(filestats.st_size)
         if sys.platform != 'win32':
           v[u'm'] = _fix_file_mode(relfile, read_only)
-      if with_time:
-        # Used to skip recalculating the hash. Use the most recent update
-        # time.
-        v[u't'] = int(round(filestats.st_mtime))
       if is_link:
         v[u'l'] = os.readlink(filepath)  # pylint: disable=E1101
       else:
@@ -556,15 +551,13 @@ class IsolateTempdirBase(unittest.TestCase):
       if sys.platform != 'win32':
         item['m'] = 0400
       item['s'] = 0
-      if with_time:
-        item.pop('t', None)
     return files
 
   def _expected_isolated(self, args, read_only, empty_file):
     """Verifies self.isolated contains the expected data."""
     expected = {
       u'algo': u'sha-1',
-      u'files': self._gen_files(read_only, empty_file, False),
+      u'files': self._gen_files(read_only, empty_file),
       u'read_only': 1,
       u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
@@ -590,7 +583,7 @@ class IsolateTempdirBase(unittest.TestCase):
       u'extra_variables': {
         u'EXECUTABLE_SUFFIX': u'.exe' if sys.platform == 'win32' else u'',
       },
-      u'files': self._gen_files(read_only, empty_file, True),
+      u'files': self._gen_files(read_only, empty_file),
       u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),

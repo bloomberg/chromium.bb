@@ -336,10 +336,6 @@ class IsolateLoad(IsolateBase):
       for values in expected_isolated['files'].itervalues():
         self.assertTrue(values.pop('m'))
 
-  def _cleanup_saved_state(self, actual_saved_state):
-    for item in actual_saved_state['files'].itervalues():
-      self.assertTrue(item.pop('t'))
-
   def make_tree(self, contents):
     test_utils.make_tree(self.isolate_dir, contents)
 
@@ -443,7 +439,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir(self):
@@ -503,7 +498,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir_variable(self):
@@ -575,7 +569,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_variable_not_exist(self):
@@ -659,7 +652,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.isolated_dir))
 
@@ -760,7 +752,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.isolated_dir))
 
@@ -889,7 +880,6 @@ class IsolateLoad(IsolateBase):
       u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual(
         [

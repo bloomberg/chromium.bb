@@ -294,7 +294,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
 
 
 @tools.profile
-def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
+def file_to_metadata(filepath, read_only, algo, collapse_symlinks):
   """Processes an input file, a dependency, and return meta data about it.
 
   Behaviors:
@@ -304,8 +304,6 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
 
   Arguments:
     filepath: File to act on.
-    prevdict: the previous dictionary. It is used to retrieve the cached hash
-              to skip recalculating the hash. Optional.
     read_only: If 1 or 2, the file mode is manipulated. In practice, only save
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
@@ -321,11 +319,7 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
   # TODO(maruel): None is not a valid value.
   assert read_only in (None, 0, 1, 2), read_only
   out = {}
-  # Always check the file stat and check if it is a link. The timestamp is used
-  # to know if the file's content/symlink destination should be looked into.
-  # E.g. only reuse from prevdict if the timestamp hasn't changed.
-  # There is the risk of the file's timestamp being reset to its last value
-  # manually while its content changed. We don't protect against that use case.
+  # Always check the file stat and check if it is a link.
   try:
     if collapse_symlinks:
       # os.stat follows symbolic links
@@ -353,35 +347,19 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
     if not is_link:
       out['m'] = filemode
 
-  # Used to skip recalculating the hash or link destination. Use the most recent
-  # update time.
-  out['t'] = int(round(filestats.st_mtime))
-
   if not is_link:
     out['s'] = filestats.st_size
-    # If the timestamp wasn't updated and the file size is still the same, carry
-    # on the hash.
-    if (prevdict.get('t') == out['t'] and
-        prevdict.get('s') == out['s']):
-      # Reuse the previous hash if available.
-      out['h'] = prevdict.get('h')
-    if not out.get('h'):
-      out['h'] = hash_file(filepath, algo)
+    out['h'] = hash_file(filepath, algo)
   else:
-    # If the timestamp wasn't updated, carry on the link destination.
-    if prevdict.get('t') == out['t']:
-      # Reuse the previous link destination if available.
-      out['l'] = prevdict.get('l')
-    if out.get('l') is None:
-      # The link could be in an incorrect path case. In practice, this only
-      # happen on OSX on case insensitive HFS.
-      # TODO(maruel): It'd be better if it was only done once, in
-      # expand_directory_and_symlink(), so it would not be necessary to do again
-      # here.
-      symlink_value = fs.readlink(filepath)  # pylint: disable=E1101
-      filedir = file_path.get_native_path_case(os.path.dirname(filepath))
-      native_dest = file_path.fix_native_path_case(filedir, symlink_value)
-      out['l'] = os.path.relpath(native_dest, filedir)
+    # The link could be in an incorrect path case. In practice, this only
+    # happens on macOS on case insensitive HFS.
+    # TODO(maruel): It'd be better if it was only done once, in
+    # expand_directory_and_symlink(), so it would not be necessary to do again
+    # here.
+    symlink_value = fs.readlink(filepath)  # pylint: disable=no-member
+    filedir = file_path.get_native_path_case(os.path.dirname(filepath))
+    native_dest = file_path.fix_native_path_case(filedir, symlink_value)
+    out['l'] = os.path.relpath(native_dest, filedir)
   return out
 
 
