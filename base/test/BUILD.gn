@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/compiled_action.gni")
-import("//build/config/ui.gni")
 import("//build/config/nacl/config.gni")
+import("//build/config/ui.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -154,6 +154,10 @@ static_library("test_support") {
     "trace_event_analyzer.h",
     "trace_to_file.cc",
     "trace_to_file.h",
+    "type_id_test_support_a.cc",
+    "type_id_test_support_a.h",
+    "type_id_test_support_b.cc",
+    "type_id_test_support_b.h",
     "values_test_util.cc",
     "values_test_util.h",
   ]
