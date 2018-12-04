@@ -91,9 +91,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Delegate used to show HTTP Authentication dialogs.
 @property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
 
-// |YES| if the tab has finished loading.
-@property(nonatomic, readonly) BOOL loadFinished;
-
 // Creates a new Tab with the given WebState.
 - (instancetype)initWithWebState:(web::WebState*)webState;
 

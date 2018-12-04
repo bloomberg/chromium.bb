@@ -236,10 +236,6 @@ NSString* const kTabUrlKey = @"url";
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
 }
 
-- (BOOL)loadFinished {
-  return self.webState && !self.webState->IsLoading();
-}
-
 #pragma mark - Public API
 
 - (UIView*)viewForPrinting {
@@ -341,7 +337,7 @@ NSString* const kTabUrlKey = @"url";
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
-  DCHECK([self loadFinished]);
+  DCHECK(self.webState && !self.webState->IsLoading());
 
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
