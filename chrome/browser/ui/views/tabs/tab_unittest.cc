@@ -315,8 +315,9 @@ class TabTest : public ChromeViewsTestBase {
   void FinishRunningLoadingAnimations(TabIcon* icon) {
     // Forward the clock enough for any running animations to finish.
     DCHECK(icon->clock_ == &fake_clock_);
-    fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
-    icon->StepLoadingAnimation(icon->waiting_state_.elapsed_time);
+    constexpr base::TimeDelta delta = base::TimeDelta::FromMilliseconds(2000);
+    fake_clock_.Advance(delta);
+    icon->StepLoadingAnimation(icon->waiting_state_.elapsed_time + delta);
     icon->animation_state_ = icon->pending_animation_state_;
   }
 
