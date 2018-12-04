@@ -121,6 +121,10 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void DidReceiveScriptLoaderResponse();
   void OnScriptLoaderFinished();
   void ContinueOnScriptLoaderFinished();
+  void StartWorkerThread(std::unique_ptr<GlobalScopeCreationParams>,
+                         const KURL& script_response_url,
+                         const String& source_code);
+  WorkerClients* CreateWorkerClients();
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
 
