@@ -67,7 +67,10 @@
       'android-incremental-dbg': 'android_incremental_debug_bot',
       'android-jumbo-rel': 'android_jumbo_release_bot_minimal_symbols',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
-      'android-marshmallow-arm64-rel': 'android_release_bot_minimal_symbols_arm64',
+
+      # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
+      # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64',
     },
 
     'chromium.android.fyi': {
@@ -308,12 +311,12 @@
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
       'Android FYI dEQP Release (Nexus 5X)': 'deqp_android_release_trybot_arm64',
-      'Android FYI Release (Nexus 5)': 'android_release_trybot',
+      'Android FYI Release (Nexus 5)': 'gpu_tests_android_release_trybot',
       'Android FYI Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
-      'Android FYI Release (Nexus 6)': 'android_release_trybot',
-      'Android FYI Release (Nexus 6P)': 'android_release_trybot_arm64',
-      'Android FYI Release (Nexus 9)': 'android_release_trybot_arm64',
-      'Android FYI Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
+      'Android FYI Release (Nexus 6)': 'gpu_tests_android_release_trybot',
+      'Android FYI Release (Nexus 6P)': 'gpu_tests_android_release_trybot_arm64',
+      'Android FYI Release (Nexus 9)': 'gpu_tests_android_release_trybot_arm64',
+      'Android FYI Release (NVIDIA Shield TV)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI 32 Vk Release (Nexus 5X)': 'gpu_tests_android_vulkan_release_trybot',
       'Android FYI 32 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_release_trybot',
       'Android FYI 32 Vk Release (Pixel XL)': 'gpu_tests_android_vulkan_release_trybot',
@@ -552,7 +555,7 @@
 
     'tryserver.chromium.android': {
       'android-kitkat-arm-rel': 'android_release_trybot',
-      'android-marshmallow-arm64-rel': 'android_release_trybot_arm64_no_symbols',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_no_symbols',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android-binary-size': 'android_binary_size',
@@ -574,11 +577,11 @@
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_pixel_aosp': 'android_debug_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
-      'gpu-manual-try-android-l-nexus-5-32': 'android_release_trybot',
-      'gpu-manual-try-android-l-nexus-6-32': 'android_release_trybot',
-      'gpu-manual-try-android-m-nexus-6p-64': 'android_release_trybot_arm64',
-      'gpu-manual-try-android-m-nexus-9-64': 'android_release_trybot_arm64',
-      'gpu-manual-try-android-n-nvidia-shield-tv-64': 'android_release_trybot_arm64',
+      'gpu-manual-try-android-l-nexus-5-32': 'gpu_tests_android_release_trybot',
+      'gpu-manual-try-android-l-nexus-6-32': 'gpu_tests_android_release_trybot',
+      'gpu-manual-try-android-m-nexus-6p-64': 'gpu_tests_android_release_trybot_arm64',
+      'gpu-manual-try-android-m-nexus-9-64': 'gpu_tests_android_release_trybot_arm64',
+      'gpu-manual-try-android-n-nvidia-shield-tv-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-manual-try-android-p-pixel-2-32': 'gpu_tests_android_vulkan_release_trybot',
       'gpu-manual-try-android-p-pixel-2-32-deqp': 'deqp_android_vulkan_release_trybot',
       'gpu-manual-try-android-p-pixel-2-64': 'gpu_tests_android_vulkan_release_trybot_arm64',
@@ -972,10 +975,6 @@
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
     ],
 
-    'android_release_trybot_arm64_no_symbols': [
-      'android', 'release_trybot', 'arm64', 'no_symbols',
-    ],
-
     'android_shared_release_bot_x64': [
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
@@ -1349,16 +1348,29 @@
       'gpu_tests', 'internal_gles_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
     ],
 
+    'gpu_tests_android_release_bot_minimal_symbols_arm64': [
+      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'strip_debug_info', 'static_angle',
+    ],
+
+    'gpu_tests_android_release_trybot': [
+      'gpu_tests', 'android', 'release_trybot', 'static_angle',
+    ],
+
     'gpu_tests_android_release_trybot_arm64': [
-      'gpu_tests', 'android', 'release_trybot', 'arm64',
+      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
+    ],
+
+    'gpu_tests_android_release_trybot_arm64_no_symbols': [
+      'android', 'release_trybot', 'arm64', 'no_symbols', 'static_angle',
     ],
 
     'gpu_tests_android_vulkan_release_trybot': [
-      'gpu_tests', 'android', 'vulkan', 'release_trybot',
+      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'static_angle',
     ],
 
     'gpu_tests_android_vulkan_release_trybot_arm64': [
-      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'arm64',
+      'gpu_tests', 'android', 'vulkan', 'release_trybot', 'arm64', 'static_angle',
     ],
 
     'gpu_tests_debug_bot': [
@@ -2141,6 +2153,10 @@
 
     'static': {
       'gn_args': 'is_component_build=false',
+    },
+
+    'static_angle': {
+      'gn_args': 'use_static_angle=true',
     },
 
     'strip_debug_info': {

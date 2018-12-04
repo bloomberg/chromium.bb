@@ -822,6 +822,12 @@
             "type": "android"
           },
           "gl_renderer": ".*Google.*"
+        },
+        {
+          "os": {
+            "type": "android"
+          },
+          "gl_renderer": "ANGLE.*"
         }
       ],
       "features": [
@@ -1680,6 +1686,15 @@
       "features": [
         "accelerated_webgl",
         "accelerated_webgl2"
+      ]
+    },
+    {
+      "id":158,
+      "cr_bugs": [829435],
+      "description": "OOP rasterization on top of ANGLE not supported",
+      "gl_renderer": "ANGLE.*",
+      "features": [
+        "oop_rasterization"
       ]
     }
   ]
